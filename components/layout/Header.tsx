@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Bell, Search, Moon, Sun, Maximize2, MessageCircle, ChevronDown, Menu } from "lucide-react";
+import { Search, Moon, Sun, Maximize2, MessageCircle, ChevronDown, Menu } from "lucide-react";
 import UserMenu from "./UserMenu";
+import NotificationDropdown from "./NotificationDropdown";
 import { useTheme } from "@/contexts/ThemeContext";
 
 interface HeaderProps {
@@ -409,14 +410,7 @@ export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: 
           </button>
 
           {/* Notifications */}
-          <button
-            className="relative w-10 h-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#2d3139] midnight:hover:bg-blue-900/20 purple:hover:bg-purple-900/20 rounded-md transition-colors cursor-pointer"
-            aria-label="Notifications"
-          >
-            <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300" />
-            {/* Notification Badge */}
-            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-orange-500 rounded-full ring-2 ring-white dark:ring-[#1a1d23] midnight:ring-[#0f1729] purple:ring-[#2a1a3e]"></span>
-          </button>
+          <NotificationDropdown />
 
           {/* Messages - Hide on mobile */}
           <button
