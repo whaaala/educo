@@ -46,7 +46,7 @@ export default function UserMenu({
       {/* Trigger Button - Just Avatar */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-[#252930] transition-colors duration-200 focus:outline-none"
+        className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-[#252930] midnight:hover:bg-[#1a3a52] purple:hover:bg-[#3d1f5c] transition-colors duration-200 focus:outline-none"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
@@ -71,12 +71,12 @@ export default function UserMenu({
       {/* Dropdown Menu */}
       {isOpen && (
         <div
-          className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#1a1d23] rounded-lg shadow-xl border border-gray-200 dark:border-gray-800/50 z-50 transition-colors duration-300"
+          className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-xl border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 z-50 transition-colors duration-300"
           role="menu"
           aria-orientation="vertical"
         >
           {/* Profile Card Section */}
-          <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-800/50">
+          <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-3">
               {/* Avatar in dropdown */}
               <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
@@ -107,7 +107,7 @@ export default function UserMenu({
           <div className="py-2">
             <button
               onClick={() => handleMenuItemClick("profile")}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252930] transition-colors duration-150"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252930] midnight:hover:bg-[#1a3a52] purple:hover:bg-[#3d1f5c] transition-colors duration-150"
               role="menuitem"
             >
               <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
@@ -116,7 +116,7 @@ export default function UserMenu({
 
             <button
               onClick={() => handleMenuItemClick("settings")}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252930] transition-colors duration-150"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252930] midnight:hover:bg-[#1a3a52] purple:hover:bg-[#3d1f5c] transition-colors duration-150"
               role="menuitem"
             >
               <Settings className="w-4 h-4 text-gray-500 dark:text-gray-400" />
@@ -124,7 +124,7 @@ export default function UserMenu({
             </button>
 
             {/* Divider */}
-            <div className="my-2 border-t border-gray-100 dark:border-gray-800/50"></div>
+            <div className="my-2 border-t border-gray-100 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20"></div>
 
             {/* Logout */}
             <button

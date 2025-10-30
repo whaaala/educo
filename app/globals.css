@@ -8,6 +8,8 @@
 }
 
 @variant dark (&:where(.dark, .dark *));
+@variant midnight (&:where(.midnight, .midnight *));
+@variant purple (&:where(.purple, .purple *));
 
 :root {
   --background: #ffffff;
@@ -25,4 +27,24 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Midnight Blue Theme - Deep Ocean with cyan/teal accents */
+.midnight {
+  --midnight-glow: #00d4ff;
+  --midnight-border: rgba(6, 182, 212, 0.2);
+}
+
+.midnight * {
+  scrollbar-color: #0ea5e9 #0a0e27;
+}
+
+/* Purple Dream Theme - Royal Purple with magenta/pink accents */
+.purple {
+  --purple-glow: #ff00ff;
+  --purple-border: rgba(236, 72, 153, 0.2);
+}
+
+.purple * {
+  scrollbar-color: #e879f9 #1a0b2e;
 }

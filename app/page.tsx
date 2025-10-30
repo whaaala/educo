@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <MainLayout>
       <div className="w-full">
-        <div className="bg-white dark:bg-[#1a1d23] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 p-6 mb-6 transition-colors duration-300">
+        <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 mb-6 transition-colors duration-300">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
             Component Testing: Header & User Menu
           </h2>
@@ -53,7 +53,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#1a1d23] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 p-6 transition-colors duration-300">
+        <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 transition-colors duration-300">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
             Component Testing: Sidebar Navigation
           </h2>

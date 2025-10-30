@@ -170,7 +170,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             <button
               onClick={() => !isCollapsedDesktop && toggleExpanded(item.id)}
               className={cn(
-                "w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-300 transition-colors",
+                "w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-300 transition-colors",
                 level > 0 && "pl-8"
               )}
             >
@@ -192,7 +192,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             {/* Popover menu for collapsed sidebar */}
             {isCollapsedDesktop && level === 0 && hoveredItem === item.id && (
               <div
-                className="absolute left-full top-0 w-48 bg-white dark:bg-[#1a1d23] rounded-lg shadow-xl border border-gray-200 dark:border-gray-800 py-2 transition-colors duration-300"
+                className="absolute left-full top-0 w-48 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-xl border border-gray-200 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 transition-colors duration-300"
                 style={{
                   zIndex: 9999,
                   marginLeft: '4px', // Minimal gap to prevent hover break
@@ -200,14 +200,14 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                 onMouseEnter={() => handleMouseEnterItem(item.id)}
                 onMouseLeave={() => handleMouseLeaveItem(item.id)}
               >
-                <div className="px-4 py-2 text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800">
+                <div className="px-4 py-2 text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   {item.label}
                 </div>
                 {item.children?.map((child) => (
                   <Link
                     key={child.id}
                     href={child.href || "#"}
-                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
                   >
                     {child.icon}
                     <span>{child.label}</span>
@@ -221,7 +221,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             <Link
               href={item.href || "#"}
               className={cn(
-                "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-300 transition-colors",
+                "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-300 transition-colors",
                 level > 0 && "pl-8"
               )}
             >
@@ -265,7 +265,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       {isMobile === true && (
         <button
           onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="fixed top-4 left-4 z-50 p-2 bg-white dark:bg-[#1a1d23] rounded-lg shadow-md lg:hidden transition-colors duration-300"
+          className="fixed top-4 left-4 z-50 p-2 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-md lg:hidden transition-colors duration-300"
         >
           {isMobileOpen ? <X className="w-6 h-6 text-gray-900 dark:text-white" /> : <Menu className="w-6 h-6 text-gray-900 dark:text-white" />}
         </button>
@@ -283,7 +283,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 left-0 h-screen bg-white dark:bg-[#1a1d23] border-r border-gray-200 dark:border-gray-800 transition-all duration-300 z-40",
+          "fixed top-0 left-0 h-screen bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-r border-gray-200 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20 transition-all duration-300 z-40",
           // On mobile: always full width (w-64) when open
           // On desktop: w-20 when collapsed, w-64 when expanded
           "w-64 lg:w-auto",
@@ -296,7 +296,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
         <div className="flex flex-col h-full" style={isCollapsed && isMobile === false ? { overflow: 'visible' } : undefined}>
           {/* Logo Section */}
           <div className={cn(
-            "flex items-center px-4 py-6 border-b border-gray-200 dark:border-gray-800",
+            "flex items-center px-4 py-6 border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20",
             isCollapsed ? "justify-center" : "justify-between"
           )}>
             {isCollapsed ? (
@@ -311,10 +311,10 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                 {isMobile === false && (
                   <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="hidden lg:block p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#252930] transition-colors duration-200"
+                    className="hidden lg:block p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#252930] midnight:hover:bg-[#1a3a52] purple:hover:bg-[#3d1f5c] transition-colors duration-200"
                     title="Expand sidebar"
                   >
-                    <ChevronsRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                    <ChevronsRight className="w-5 h-5 text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100" />
                   </button>
                 )}
               </div>
@@ -337,10 +337,10 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                 {isMobile === false && (
                   <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="hidden lg:block p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#252930] transition-colors duration-200"
+                    className="hidden lg:block p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#252930] midnight:hover:bg-[#1a3a52] purple:hover:bg-[#3d1f5c] transition-colors duration-200"
                     title="Collapse sidebar"
                   >
-                    <ChevronsLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                    <ChevronsLeft className="w-5 h-5 text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100" />
                   </button>
                 )}
               </>
@@ -359,7 +359,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
 
           {/* Footer - Show based on mobile/collapsed state */}
           {(isMobile === true || (isMobile === false && !isCollapsed)) && (
-            <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div className="p-4 border-t border-gray-200 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="px-4 py-3 bg-blue-50 dark:bg-blue-500/10 rounded-lg">
                 <p className="text-sm font-medium text-blue-900 dark:text-blue-300">Need Help?</p>
                 <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">Check our documentation</p>
