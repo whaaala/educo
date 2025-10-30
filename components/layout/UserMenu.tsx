@@ -106,21 +106,21 @@ export default function UserMenu({
           {/* Menu Items */}
           <div className="py-2">
             <button
-              onClick={() => handleMenuItemClick("profile")}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252930] midnight:hover:bg-[#1a3a52] purple:hover:bg-[#3d1f5c] transition-colors duration-150"
-              role="menuitem"
-            >
-              <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-              <span>My Profile</span>
-            </button>
-
-            <button
               onClick={() => handleMenuItemClick("settings")}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252930] midnight:hover:bg-[#1a3a52] purple:hover:bg-[#3d1f5c] transition-colors duration-150"
               role="menuitem"
             >
               <Settings className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               <span>Settings</span>
+            </button>
+
+            <button
+              onClick={() => handleMenuItemClick("profile")}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252930] midnight:hover:bg-[#1a3a52] purple:hover:bg-[#3d1f5c] transition-colors duration-150"
+              role="menuitem"
+            >
+              <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span>My Profile</span>
             </button>
 
             {/* Divider */}
