@@ -11,11 +11,17 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   return (
     <ThemeProvider>
       <div className="flex min-h-screen bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] transition-colors duration-300">
-        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+        <Sidebar
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
+          isMobileSidebarOpen={isMobileSidebarOpen}
+          setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+        />
 
         {/* Main Content Area - Responsive to Sidebar */}
         <div
@@ -23,7 +29,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
             isCollapsed ? "lg:ml-20" : "lg:ml-64"
           }`}
         >
-          <Header />
+          <Header
+            isMobileSidebarOpen={isMobileSidebarOpen}
+            setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+          />
           <main className="p-6 lg:p-8">{children}</main>
         </div>
       </div>

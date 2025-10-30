@@ -5,7 +5,12 @@ import { Bell, Search, Moon, Sun, Maximize2, MessageCircle, ChevronDown, Menu } 
 import UserMenu from "./UserMenu";
 import { useTheme } from "@/contexts/ThemeContext";
 
-export default function Header() {
+interface HeaderProps {
+  isMobileSidebarOpen: boolean;
+  setIsMobileSidebarOpen: (value: boolean) => void;
+}
+
+export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
   const { theme, cycleTheme } = useTheme();
   const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
@@ -76,35 +81,10 @@ export default function Header() {
 
   return (
     <header className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-b border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 sticky top-0 z-30 transition-colors duration-300 backdrop-blur-xl dark:backdrop-blur-xl dark:bg-opacity-90">
-      <div className="flex items-center justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 sm:py-3">
-        {/* Left Side - Search */}
-        <div className="flex-1 max-w-md hidden lg:block">
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-              <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/70 purple:text-pink-400/70 group-hover:text-gray-600 dark:group-hover:text-gray-300 midnight:group-hover:text-cyan-300 purple:group-hover:text-pink-300 transition-colors duration-200" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search for anything..."
-              className="w-full pl-10 pr-4 py-2.5
-                bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33]
-                border border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20
-                text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50
-                placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400/60 purple:placeholder-pink-400/60
-                rounded-xl
-                text-sm font-medium
-                shadow-sm hover:shadow-md
-                focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 midnight:focus:ring-cyan-400/40 purple:focus:ring-pink-400/40
-                focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400
-                hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-400/40 purple:hover:border-pink-400/40
-                transition-all duration-200 ease-in-out
-                backdrop-blur-sm"
-            />
-          </div>
-        </div>
-
-        {/* Mobile Menu Button - Theme-aware design */}
+      <div className="flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-2 sm:py-3">
+        {/* Mobile Menu Button - Left side on mobile */}
         <button
+          onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
           className={`lg:hidden relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 cursor-pointer
             hover:scale-105 active:scale-95
             focus:outline-none focus:ring-2 focus:ring-offset-2
@@ -117,6 +97,7 @@ export default function Header() {
               : "bg-gray-800/40 backdrop-blur-sm border border-pink-400/30 hover:border-pink-400/50 hover:bg-gray-800/60 shadow-lg shadow-pink-500/20 focus:ring-pink-400/50 focus:ring-offset-[#2a1a3e]"
             }`}
           aria-label="Menu"
+          aria-expanded={isMobileSidebarOpen}
         >
           {/* Menu Icon - Custom hamburger for Midnight and Purple themes */}
           {theme === "light" ? (
@@ -147,6 +128,35 @@ export default function Header() {
             </svg>
           )}
         </button>
+
+        {/* Search Bar - Desktop only */}
+        <div className="flex-1 max-w-md hidden lg:block">
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+              <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/70 purple:text-pink-400/70 group-hover:text-gray-600 dark:group-hover:text-gray-300 midnight:group-hover:text-cyan-300 purple:group-hover:text-pink-300 transition-colors duration-200" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search for anything..."
+              className="w-full pl-10 pr-4 py-2.5
+                bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33]
+                border border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20
+                text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50
+                placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400/60 purple:placeholder-pink-400/60
+                rounded-xl
+                text-sm font-medium
+                shadow-sm hover:shadow-md
+                focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 midnight:focus:ring-cyan-400/40 purple:focus:ring-pink-400/40
+                focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400
+                hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-400/40 purple:hover:border-pink-400/40
+                transition-all duration-200 ease-in-out
+                backdrop-blur-sm"
+            />
+          </div>
+        </div>
+
+        {/* Spacer for mobile - pushes icons to the right */}
+        <div className="flex-1 lg:hidden"></div>
 
         {/* Right Side - All Icons */}
         <div className="flex items-center gap-0.5 sm:gap-1 h-10">

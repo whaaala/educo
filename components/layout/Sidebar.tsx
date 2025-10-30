@@ -14,8 +14,6 @@ import {
   FileText,
   Settings,
   ChevronDown,
-  Menu,
-  X,
   ChevronsLeft,
   ChevronsRight,
   Building2,
@@ -107,10 +105,11 @@ const menuItems: MenuItem[] = [
 interface SidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
+  isMobileSidebarOpen: boolean;
+  setIsMobileSidebarOpen: (value: boolean) => void;
 }
 
-export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen }: SidebarProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState<boolean | null>(null); // null on server, boolean on client
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
@@ -145,7 +144,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       const mobile = window.innerWidth <= 1023;
       setIsMobile(mobile);
       if (!mobile) {
-        setIsMobileOpen(false);
+        setIsMobileSidebarOpen(false);
       }
     };
 
@@ -365,21 +364,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile Menu Button - Only visible on mobile screens */}
-      {isMobile === true && (
-        <button
-          onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="fixed top-4 left-4 z-50 p-2 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-md lg:hidden transition-colors duration-300"
-        >
-          {isMobileOpen ? <X className="w-6 h-6 text-gray-900 dark:text-white" /> : <Menu className="w-6 h-6 text-gray-900 dark:text-white" />}
-        </button>
-      )}
-
       {/* Mobile Overlay - Only shows on mobile when menu is open */}
-      {isMobile && isMobileOpen && (
+      {isMobile && isMobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30"
-          onClick={() => setIsMobileOpen(false)}
+          onClick={() => setIsMobileSidebarOpen(false)}
           aria-hidden="true"
         />
       )}
@@ -401,7 +390,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
           "w-64 lg:w-auto",
           isCollapsed ? "lg:w-20" : "lg:w-64",
           // Mobile visibility
-          isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
         style={isCollapsed && isMobile === false ? { overflow: 'visible' } : undefined}
       >
