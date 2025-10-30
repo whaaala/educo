@@ -1,65 +1,63 @@
-import Image from "next/image";
+import MainLayout from "@/components/layout/MainLayout";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <MainLayout>
+      <div className="w-full">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Welcome to Educo
+        </h1>
+        <p className="text-gray-600 mb-8">
+          School ERP & Digital Management System
+        </p>
+
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Component Testing: Sidebar Navigation
+          </h2>
+          <div className="space-y-3 text-gray-600">
+            <p className="flex items-start gap-2">
+              <span className="text-green-600 font-semibold">✓</span>
+              <span>Collapsible sidebar - Click the menu icon in the sidebar header to collapse/expand</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <span className="text-green-600 font-semibold">✓</span>
+              <span>Mobile responsive - On mobile screens, use the hamburger menu in the top-left</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <span className="text-green-600 font-semibold">✓</span>
+              <span>Expandable menu items - Click on menu items with arrows to expand sub-menus</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <span className="text-green-600 font-semibold">✓</span>
+              <span>Hover effects - Menu items highlight on hover</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <span className="text-green-600 font-semibold">✓</span>
+              <span>Smooth animations - All transitions are smooth and professional</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <span className="text-green-600 font-semibold">✓</span>
+              <span className="font-semibold text-blue-600">NEW:</span>
+              <span>Content area now smoothly adjusts width when sidebar collapses/expands</span>
+            </p>
+          </div>
+
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="text-sm font-semibold text-blue-900 mb-2">
+              Testing Instructions:
+            </h3>
+            <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
+              <li>Test the sidebar collapse/expand functionality on desktop</li>
+              <li>Watch how the content area smoothly expands to fill the space</li>
+              <li>Resize your browser to mobile size and test the mobile menu</li>
+              <li>Click on menu items with children (Peoples, Academic, Management, Settings)</li>
+              <li>Verify hover states and transitions</li>
+              <li>Test navigation by clicking on individual menu items</li>
+            </ol>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </div>
+    </MainLayout>
   );
 }
