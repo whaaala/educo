@@ -98,6 +98,13 @@ export default function NotificationCard({
     ? "bg-transparent"
     : "bg-gray-50/50 dark:bg-[#1e2128]/50 midnight:bg-[#141b2e]/50 purple:bg-[#231533]/50";
 
+  // Don't render anything until mounted to avoid hydration issues
+  if (!isMounted) {
+    return (
+      <div className={`${bgColor} rounded-xl shadow-sm border border-gray-200 dark:border-gray-800/50 h-24 animate-pulse`}></div>
+    );
+  }
+
   return (
     <div
       className={`${bgColor} rounded-xl shadow-sm border ${
@@ -105,9 +112,10 @@ export default function NotificationCard({
           ? "border-blue-200 dark:border-blue-500/30 midnight:border-cyan-500/30 purple:border-pink-500/30"
           : "border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20"
       } hover:shadow-md transition-all duration-200 group`}
+      suppressHydrationWarning
     >
-      <div className="p-4">
-        <div className="flex gap-3">
+      <div className="p-4" suppressHydrationWarning>
+        <div className="flex gap-3" suppressHydrationWarning>
           {/* Avatar */}
           <div
             ref={avatarRef}
@@ -189,9 +197,9 @@ export default function NotificationCard({
           </div>
 
           {/* Content */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0" suppressHydrationWarning>
             {/* Message and Actions Row */}
-            <div className="flex items-start justify-between gap-4 mb-0.5">
+            <div className="flex items-start justify-between gap-4 mb-0.5" suppressHydrationWarning>
               <p className="text-base font-normal text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 leading-tight">
                 {message}
               </p>
@@ -225,11 +233,11 @@ export default function NotificationCard({
             </div>
 
             {/* Action Buttons */}
-            {actions && actions.length > 0 && (
+            {isMounted && actions && actions.length > 0 && (
               <div className="flex gap-2">
                 {actions.map((action, index) => (
                   <button
-                    key={index}
+                    key={`${id}-${action.label}-${index}`}
                     className={`px-5 py-2 text-sm font-semibold rounded-lg transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md active:scale-95 ${
                       action.variant === "primary"
                         ? "text-white bg-blue-600 hover:bg-blue-700 ring-1 ring-blue-600 hover:ring-blue-700"

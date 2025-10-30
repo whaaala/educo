@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Trash2, CheckCheck } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
 import NotificationCard from "@/components/notifications/NotificationCard";
@@ -120,6 +120,11 @@ const notifications: Notification[] = [
 export default function NotificationsPage() {
   const [notificationList, setNotificationList] = useState(notifications);
   const [filter, setFilter] = useState<"all" | "unread">("all");
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const unreadCount = notificationList.filter((n) => n.unread).length;
 
@@ -150,21 +155,34 @@ export default function NotificationsPage() {
       ? notificationList.filter((n) => n.unread)
       : notificationList;
 
+  if (!isMounted) {
+    return (
+      <MainLayout>
+        <div className="w-full pl-8 pr-4 sm:pl-10 sm:pr-6 lg:pl-12 lg:pr-8 pt-0 pb-2 mb-4">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-64"></div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+      <>
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
-            Notifications
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-            You have {unreadCount} unread {unreadCount === 1 ? "notification" : "notifications"}
-          </p>
-        </div>
+        <div className="w-full pl-8 pr-4 sm:pl-10 sm:pr-6 lg:pl-12 lg:pr-8 pt-0 pb-2 mb-4">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+          Notifications
+        </h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
+          You have {unreadCount} unread {unreadCount === 1 ? "notification" : "notifications"}
+        </p>
+      </div>
 
-        {/* Filter Tabs & Actions */}
-        <div className="bg-white dark:bg-[#252930] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 mb-6">
+      {/* Filter Tabs & Actions */}
+      <div className="w-full pl-8 pr-4 sm:pl-10 sm:pr-6 lg:pl-12 lg:pr-8 bg-white dark:bg-[#252930] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 mb-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             {/* Filter Tabs */}
             <div className="flex items-center gap-2">
@@ -212,44 +230,44 @@ export default function NotificationsPage() {
           </div>
         </div>
 
-        {/* Notifications List Container */}
-        <div className="bg-white dark:bg-[#252930] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
-          <div className="space-y-3">
-            {filteredNotifications.length === 0 ? (
-              <div className="p-12 text-center">
-                <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
-                  <CheckCheck className="w-8 h-8 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
-                  No notifications
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-                  {filter === "unread"
-                    ? "You don't have any unread notifications"
-                    : "You're all caught up!"}
-                </p>
+      {/* Notifications List Container */}
+      <div className="w-full pl-8 pr-4 sm:pl-10 sm:pr-6 lg:pl-12 lg:pr-8 bg-white dark:bg-[#252930] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
+        <div className="space-y-3">
+          {filteredNotifications.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+                <CheckCheck className="w-8 h-8 text-gray-400" />
               </div>
-            ) : (
-              filteredNotifications.map((notification, index) => (
-                <NotificationCard
-                  key={notification.id}
-                  id={notification.id}
-                  type={notification.type}
-                  message={notification.fullMessage || notification.message}
-                  time={notification.time}
-                  avatar={notification.avatar}
-                  userName={notification.userName}
-                  unread={notification.unread}
-                  actions={notification.actions}
-                  onMarkAsRead={handleMarkAsRead}
-                  onDelete={handleDelete}
-                  isOdd={index % 2 === 0}
-                />
-              ))
-            )}
-          </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+                No notifications
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
+                {filter === "unread"
+                  ? "You don't have any unread notifications"
+                  : "You're all caught up!"}
+              </p>
+            </div>
+          ) : (
+            filteredNotifications.map((notification, index) => (
+              <NotificationCard
+                key={notification.id}
+                id={notification.id}
+                type={notification.type}
+                message={notification.fullMessage || notification.message}
+                time={notification.time}
+                avatar={notification.avatar}
+                userName={notification.userName}
+                unread={notification.unread}
+                actions={notification.actions}
+                onMarkAsRead={handleMarkAsRead}
+                onDelete={handleDelete}
+                isOdd={index % 2 === 0}
+              />
+            ))
+          )}
         </div>
       </div>
+      </>
     </MainLayout>
   );
 }
