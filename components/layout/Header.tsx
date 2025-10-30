@@ -1,24 +1,32 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Bell, Search, Moon, Sun, Maximize2, MessageCircle, ChevronDown } from "lucide-react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { Bell, Search, Moon, Sun, Maximize2, MessageCircle, ChevronDown, Menu } from "lucide-react";
 import UserMenu from "./UserMenu";
 import { useTheme } from "@/contexts/ThemeContext";
 
 export default function Header() {
   const { theme, cycleTheme } = useTheme();
   const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
-  const [selectedYear, setSelectedYear] = useState("2024 / 2025");
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [isAddNewOpen, setIsAddNewOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState({
-    symbol: "🌐",
-    name: "English",
-    region: "Nationwide"
-  });
   const yearDropdownRef = useRef<HTMLDivElement>(null);
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const addNewRef = useRef<HTMLDivElement>(null);
+
+  // Generate academic years (memoized to avoid recalculation)
+  const academicYears = useMemo(() => {
+    const currentYear = 2024; // Fixed year to avoid hydration issues
+    const years = [];
+    for (let i = 0; i <= 5; i++) {
+      const startYear = currentYear - i;
+      const endYear = startYear + 1;
+      years.push(`${startYear} / ${endYear}`);
+    }
+    return years;
+  }, []);
+
+  const [selectedYear, setSelectedYear] = useState(academicYears[0]);
 
   // Language options
   const languages = [
@@ -29,19 +37,11 @@ export default function Header() {
     { symbol: "🔴", name: "Igbo", region: "Southeast", note: "Vibrant regional and diaspora language" }
   ];
 
-  // Generate academic years (current year + 5 previous years)
-  const generateAcademicYears = () => {
-    const currentYear = new Date().getFullYear();
-    const years = [];
-    for (let i = 0; i <= 5; i++) {
-      const startYear = currentYear - i;
-      const endYear = startYear + 1;
-      years.push(`${startYear} / ${endYear}`);
-    }
-    return years;
-  };
-
-  const academicYears = generateAcademicYears();
+  const [selectedLanguage, setSelectedLanguage] = useState({
+    symbol: "🌐",
+    name: "English",
+    region: "Nationwide"
+  });
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -75,22 +75,81 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-b border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 sticky top-0 z-30 transition-colors duration-300 backdrop-blur-xl dark:backdrop-blur-xl dark:bg-opacity-90">
-      <div className="flex items-center justify-between px-6 py-3">
+    <header className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-b border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 sticky top-0 z-30 transition-colors duration-300 backdrop-blur-xl dark:backdrop-blur-xl dark:bg-opacity-90">
+      <div className="flex items-center justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 sm:py-3">
         {/* Left Side - Search */}
-        <div className="flex-1 max-w-md">
-          <div className="relative">
+        <div className="flex-1 max-w-md hidden lg:block">
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+              <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/70 purple:text-pink-400/70 group-hover:text-gray-600 dark:group-hover:text-gray-300 midnight:group-hover:text-cyan-300 purple:group-hover:text-pink-300 transition-colors duration-200" />
+            </div>
             <input
               type="text"
-              placeholder="Search"
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 focus:border-transparent text-sm bg-gray-50 dark:bg-[#252930] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-500 dark:placeholder-gray-400 midnight:placeholder-cyan-400/50 purple:placeholder-pink-400/50 transition-colors duration-300"
+              placeholder="Search for anything..."
+              className="w-full pl-10 pr-4 py-2.5
+                bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33]
+                border border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20
+                text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50
+                placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400/60 purple:placeholder-pink-400/60
+                rounded-xl
+                text-sm font-medium
+                shadow-sm hover:shadow-md
+                focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 midnight:focus:ring-cyan-400/40 purple:focus:ring-pink-400/40
+                focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400
+                hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-400/40 purple:hover:border-pink-400/40
+                transition-all duration-200 ease-in-out
+                backdrop-blur-sm"
             />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60" />
           </div>
         </div>
 
+        {/* Mobile Menu Button - Theme-aware design */}
+        <button
+          className={`lg:hidden relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 cursor-pointer
+            hover:scale-105 active:scale-95
+            focus:outline-none focus:ring-2 focus:ring-offset-2
+            ${theme === "light"
+              ? "bg-white border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 shadow-md hover:shadow-lg focus:ring-blue-500 focus:ring-offset-white"
+              : theme === "dark"
+              ? "bg-[#2a2d35] border-2 border-gray-500 hover:border-gray-400 hover:bg-[#32353d] shadow-md hover:shadow-lg focus:ring-blue-400 focus:ring-offset-[#1a1d23]"
+              : theme === "midnight"
+              ? "bg-gray-800/40 backdrop-blur-sm border border-cyan-400/30 hover:border-cyan-400/50 hover:bg-gray-800/60 shadow-lg shadow-cyan-500/20 focus:ring-cyan-400/50 focus:ring-offset-[#0f1729]"
+              : "bg-gray-800/40 backdrop-blur-sm border border-pink-400/30 hover:border-pink-400/50 hover:bg-gray-800/60 shadow-lg shadow-pink-500/20 focus:ring-pink-400/50 focus:ring-offset-[#2a1a3e]"
+            }`}
+          aria-label="Menu"
+        >
+          {/* Menu Icon - Custom hamburger for Midnight and Purple themes */}
+          {theme === "light" ? (
+            <Menu className="w-5 h-5 text-gray-700" strokeWidth={2.5} />
+          ) : theme === "dark" ? (
+            <Menu className="w-5 h-5 text-gray-200" strokeWidth={2.5} />
+          ) : theme === "midnight" ? (
+            <svg
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <line x1="3" y1="6" x2="21" y2="6" strokeWidth="3" strokeLinecap="round" stroke="#FCFCFD" opacity="1"/>
+              <line x1="3" y1="12" x2="21" y2="12" strokeWidth="3" strokeLinecap="round" stroke="#FCFCFD" opacity="1"/>
+              <line x1="3" y1="18" x2="21" y2="18" strokeWidth="3" strokeLinecap="round" stroke="#FCFCFD" opacity="1"/>
+            </svg>
+          ) : (
+            <svg
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <line x1="3" y1="6" x2="21" y2="6" strokeWidth="3" strokeLinecap="round" stroke="#FCFCFD" opacity="1"/>
+              <line x1="3" y1="12" x2="21" y2="12" strokeWidth="3" strokeLinecap="round" stroke="#FCFCFD" opacity="1"/>
+              <line x1="3" y1="18" x2="21" y2="18" strokeWidth="3" strokeLinecap="round" stroke="#FCFCFD" opacity="1"/>
+            </svg>
+          )}
+        </button>
+
         {/* Right Side - All Icons */}
-        <div className="flex items-center gap-1 h-10">
+        <div className="flex items-center gap-0.5 sm:gap-1 h-10">
           {/* Academic Year Dropdown */}
           <div className="relative" ref={yearDropdownRef}>
             <button
@@ -101,12 +160,12 @@ export default function Header() {
                   : "bg-white dark:bg-[#252930] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#2d3139] midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 hover:border-gray-300 dark:hover:border-gray-500 midnight:hover:border-cyan-400/30 purple:hover:border-pink-400/30"
               }`}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span className="hidden md:inline">Academic Year : {selectedYear}</span>
-              <span className="md:hidden text-sm">AY: {selectedYear.split(" / ")[0]}</span>
-              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isYearDropdownOpen ? "rotate-180" : ""}`} />
+              <span className="hidden md:inline whitespace-nowrap font-semibold">Academic Year : {selectedYear}</span>
+              <span className="md:hidden text-xs sm:text-sm font-semibold whitespace-nowrap">AY: {selectedYear.split(" / ")[0]}</span>
+              <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 transition-transform duration-200 ${isYearDropdownOpen ? "rotate-180" : ""}`} />
             </button>
 
             {/* Dropdown Menu */}
@@ -222,7 +281,7 @@ export default function Header() {
           </div>
 
           {/* Add New Dropdown */}
-          <div className="relative" ref={addNewRef}>
+          <div className="relative hidden md:block" ref={addNewRef}>
             <button
               onClick={() => setIsAddNewOpen(!isAddNewOpen)}
               className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#252930] midnight:hover:bg-blue-900/20 purple:hover:bg-purple-900/20 rounded-md transition-colors cursor-pointer"
@@ -341,7 +400,7 @@ export default function Header() {
 
           {/* Notifications */}
           <button
-            className="relative w-10 h-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#2d3139] midnight:hover:bg-blue-900/20 purple:hover:bg-purple-900/20 rounded-md transition-colors mr-1 cursor-pointer"
+            className="relative w-10 h-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#2d3139] midnight:hover:bg-blue-900/20 purple:hover:bg-purple-900/20 rounded-md transition-colors cursor-pointer"
             aria-label="Notifications"
           >
             <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300" />
@@ -349,9 +408,9 @@ export default function Header() {
             <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-orange-500 rounded-full ring-2 ring-white dark:ring-[#1a1d23] midnight:ring-[#0f1729] purple:ring-[#2a1a3e]"></span>
           </button>
 
-          {/* Messages */}
+          {/* Messages - Hide on mobile */}
           <button
-            className="relative w-10 h-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#2d3139] midnight:hover:bg-blue-900/20 purple:hover:bg-purple-900/20 rounded-md transition-colors cursor-pointer"
+            className="hidden sm:flex relative w-10 h-10 items-center justify-center hover:bg-gray-100 dark:hover:bg-[#2d3139] midnight:hover:bg-blue-900/20 purple:hover:bg-purple-900/20 rounded-md transition-colors cursor-pointer"
             aria-label="Messages"
           >
             <MessageCircle className="w-5 h-5 text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300" />
@@ -359,9 +418,9 @@ export default function Header() {
             <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-green-500 rounded-full ring-2 ring-white dark:ring-[#1a1d23] midnight:ring-[#0f1729] purple:ring-[#2a1a3e]"></span>
           </button>
 
-          {/* Reception Strength */}
+          {/* Reception Strength - Hide on mobile */}
           <button
-            className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#2d3139] midnight:hover:bg-blue-900/20 purple:hover:bg-purple-900/20 rounded-md transition-colors cursor-pointer"
+            className="hidden md:flex w-10 h-10 items-center justify-center hover:bg-gray-100 dark:hover:bg-[#2d3139] midnight:hover:bg-blue-900/20 purple:hover:bg-purple-900/20 rounded-md transition-colors cursor-pointer"
             aria-label="Reception Strength"
             title="Signal Strength"
           >
@@ -380,10 +439,10 @@ export default function Header() {
             </svg>
           </button>
 
-          {/* Fullscreen Toggle */}
+          {/* Fullscreen Toggle - Hide on mobile */}
           <button
             onClick={toggleFullscreen}
-            className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#2d3139] midnight:hover:bg-blue-900/20 purple:hover:bg-purple-900/20 rounded-md transition-colors cursor-pointer"
+            className="hidden lg:flex w-10 h-10 items-center justify-center hover:bg-gray-100 dark:hover:bg-[#2d3139] midnight:hover:bg-blue-900/20 purple:hover:bg-purple-900/20 rounded-md transition-colors cursor-pointer"
             aria-label="Toggle Fullscreen"
           >
             <Maximize2 className="w-5 h-5 text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300" />

@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { User, Settings, LogOut } from "lucide-react";
 import Image from "next/image";
+import MenuItem from "./MenuItem";
+import MenuDivider from "./MenuDivider";
 
 interface UserMenuProps {
   userName?: string;
@@ -46,12 +48,12 @@ export default function UserMenu({
       {/* Trigger Button - Just Avatar */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-[#252930] midnight:hover:bg-[#1a3a52] purple:hover:bg-[#3d1f5c] transition-colors duration-200 focus:outline-none"
+        className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-[#252930] midnight:hover:bg-[#1a3a52] purple:hover:bg-[#3d1f5c] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
         {/* Avatar */}
-        <div className="relative w-9 h-9 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+        <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden bg-gray-200 flex-shrink-0 ring-2 ring-transparent hover:ring-blue-500/20 transition-all duration-200">
           {userAvatar ? (
             <Image
               src={userAvatar}
@@ -61,7 +63,7 @@ export default function UserMenu({
               className="object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white font-semibold text-sm">
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 text-white font-bold text-xs sm:text-sm shadow-lg">
               {userName.charAt(0).toUpperCase()}
             </div>
           )}
@@ -70,73 +72,80 @@ export default function UserMenu({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div
-          className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-xl border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 z-50 transition-colors duration-300"
-          role="menu"
-          aria-orientation="vertical"
-        >
-          {/* Profile Card Section */}
-          <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20">
-            <div className="flex items-center gap-3">
-              {/* Avatar in dropdown */}
-              <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                {userAvatar ? (
-                  <Image
-                    src={userAvatar}
-                    alt={userName}
-                    width={48}
-                    height={48}
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white font-semibold text-lg">
-                    {userName.charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
+        <>
+          {/* Mobile Overlay */}
+          <div
+            className="fixed inset-0 z-40 lg:hidden"
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+          />
 
-              {/* User Info */}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{userName}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{userRole}</p>
+          <div
+            className="fixed lg:absolute bottom-0 left-0 right-0 lg:right-0 lg:left-auto lg:bottom-auto lg:top-full mt-0 lg:mt-2 w-full lg:w-72 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-t-2xl lg:rounded-xl shadow-2xl border-t lg:border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 z-50 transition-colors duration-300 max-h-[85vh] lg:max-h-[calc(100vh-5rem)] overflow-y-auto animate-in slide-in-from-bottom lg:slide-in-from-top-2 duration-300"
+            role="menu"
+            aria-orientation="vertical"
+          >
+            {/* Mobile Handle Bar */}
+            <div className="lg:hidden flex justify-center pt-2 pb-1">
+              <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+            </div>
+
+            {/* Profile Card Section */}
+            <div className="px-4 sm:px-5 py-4 sm:py-5 border-b border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-br from-gray-50/50 to-transparent dark:from-gray-800/20">
+              <div className="flex items-center gap-3 sm:gap-4">
+                {/* Avatar in dropdown */}
+                <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-gray-200 flex-shrink-0 ring-2 ring-blue-500/10 shadow-lg">
+                  {userAvatar ? (
+                    <Image
+                      src={userAvatar}
+                      alt={userName}
+                      width={64}
+                      height={64}
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 text-white font-bold text-xl sm:text-2xl shadow-inner">
+                      {userName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+
+                {/* User Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{userName}</p>
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 truncate mt-0.5">{userRole}</p>
+                </div>
               </div>
             </div>
+
+            {/* Menu Items */}
+            <div className="py-2 px-2">
+              <MenuItem
+                icon={User}
+                label="My Profile"
+                onClick={() => handleMenuItemClick("profile")}
+              />
+
+              <MenuItem
+                icon={Settings}
+                label="Settings"
+                onClick={() => handleMenuItemClick("settings")}
+              />
+
+              <MenuDivider />
+
+              <MenuItem
+                icon={LogOut}
+                label="Logout"
+                onClick={() => handleMenuItemClick("logout")}
+                variant="danger"
+              />
+            </div>
+
+            {/* Mobile Bottom Padding */}
+            <div className="h-safe-bottom lg:hidden"></div>
           </div>
-
-          {/* Menu Items */}
-          <div className="py-2">
-            <button
-              onClick={() => handleMenuItemClick("settings")}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252930] midnight:hover:bg-[#1a3a52] purple:hover:bg-[#3d1f5c] transition-colors duration-150"
-              role="menuitem"
-            >
-              <Settings className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-              <span>Settings</span>
-            </button>
-
-            <button
-              onClick={() => handleMenuItemClick("profile")}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252930] midnight:hover:bg-[#1a3a52] purple:hover:bg-[#3d1f5c] transition-colors duration-150"
-              role="menuitem"
-            >
-              <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-              <span>My Profile</span>
-            </button>
-
-            {/* Divider */}
-            <div className="my-2 border-t border-gray-100 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20"></div>
-
-            {/* Logout */}
-            <button
-              onClick={() => handleMenuItemClick("logout")}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors duration-150"
-              role="menuitem"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Logout</span>
-            </button>
-          </div>
-        </div>
+        </>
       )}
     </div>
   );

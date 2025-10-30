@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 
 type Theme = "light" | "dark" | "midnight" | "purple";
 
@@ -17,15 +17,7 @@ const themes: Theme[] = ["light", "dark", "midnight", "purple"];
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
 
-  useEffect(() => {
-    // Check localStorage for saved theme preference on mount
-    const savedTheme = localStorage.getItem("theme") as Theme;
-    if (savedTheme && themes.includes(savedTheme)) {
-      applyTheme(savedTheme);
-    }
-  }, []);
-
-  const applyTheme = (newTheme: Theme) => {
+  const applyTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem("theme", newTheme);
 
@@ -36,7 +28,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (newTheme !== "light") {
       document.documentElement.classList.add(newTheme);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // Check localStorage for saved theme preference on mount
+    const savedTheme = localStorage.getItem("theme") as Theme;
+    if (savedTheme && themes.includes(savedTheme)) {
+      applyTheme(savedTheme);
+    }
+  }, [applyTheme]);
 
   const setTheme = (newTheme: Theme) => {
     applyTheme(newTheme);
