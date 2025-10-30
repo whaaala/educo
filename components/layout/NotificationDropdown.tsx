@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import { Bell, Clock } from "lucide-react";
-import Image from "next/image";
 
 interface Notification {
   id: string;
@@ -28,7 +28,7 @@ const defaultNotifications: Notification[] = [
     title: "Performance Alert",
     message: "performance in Math is below the threshold.",
     time: "Just Now",
-    avatar: "/avatars/shawn.jpg",
+    avatar: "https://i.pravatar.cc/300?img=12",
     userName: "Shawn",
     unread: true,
   },
@@ -38,7 +38,7 @@ const defaultNotifications: Notification[] = [
     title: "Appointment Added",
     message: "added appointment on 02:00 PM",
     time: "10 mins ago",
-    avatar: "/avatars/sylvia.jpg",
+    avatar: "https://i.pravatar.cc/300?img=1",
     userName: "Sylvia",
     unread: true,
     actions: [
@@ -52,7 +52,7 @@ const defaultNotifications: Notification[] = [
     title: "New Student Record",
     message: "is created by Teressa",
     time: "2 hrs ago",
-    avatar: "/avatars/george.jpg",
+    avatar: "https://i.pravatar.cc/300?img=33",
     userName: "George",
     unread: false,
   },
@@ -62,7 +62,7 @@ const defaultNotifications: Notification[] = [
     title: "Grade Updated",
     message: "received an A in Physics",
     time: "3 hrs ago",
-    avatar: "/avatars/emma.jpg",
+    avatar: "https://i.pravatar.cc/300?img=5",
     userName: "Emma",
     unread: false,
   },
@@ -72,7 +72,7 @@ const defaultNotifications: Notification[] = [
     title: "Meeting Request",
     message: "requested a parent-teacher meeting",
     time: "5 hrs ago",
-    avatar: "/avatars/james.jpg",
+    avatar: "https://i.pravatar.cc/300?img=17",
     userName: "James",
     unread: true,
     actions: [
@@ -86,7 +86,7 @@ const defaultNotifications: Notification[] = [
     title: "Attendance Updated",
     message: "marked absent for today",
     time: "6 hrs ago",
-    avatar: "/avatars/olivia.jpg",
+    avatar: "https://i.pravatar.cc/300?img=10",
     userName: "Olivia",
     unread: false,
   },
@@ -96,7 +96,7 @@ const defaultNotifications: Notification[] = [
     title: "Assignment Submitted",
     message: "submitted Chemistry assignment late",
     time: "1 day ago",
-    avatar: "/avatars/liam.jpg",
+    avatar: "https://i.pravatar.cc/300?img=19",
     userName: "Liam",
     unread: false,
   },
@@ -106,7 +106,7 @@ const defaultNotifications: Notification[] = [
     title: "Event Reminder",
     message: "scheduled Sports Day event tomorrow",
     time: "1 day ago",
-    avatar: "/avatars/sophia.jpg",
+    avatar: "https://i.pravatar.cc/300?img=9",
     userName: "Sophia",
     unread: false,
   },
@@ -115,18 +115,13 @@ const defaultNotifications: Notification[] = [
 export default function NotificationDropdown({
   notifications = defaultNotifications,
 }: NotificationDropdownProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const unreadCount = notifications.filter((n) => n.unread).length;
-
-  // Track if component is mounted
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   // Calculate dropdown position when it opens
   useEffect(() => {
@@ -165,8 +160,8 @@ export default function NotificationDropdown({
   };
 
   const handleViewAll = () => {
-    console.log("View all notifications");
     setIsOpen(false);
+    router.push("/notifications");
   };
 
   const getInitials = (name: string) => {
@@ -210,7 +205,7 @@ export default function NotificationDropdown({
       </button>
 
       {/* Dropdown Menu - Rendered via Portal */}
-      {isMounted &&
+      {typeof window !== "undefined" &&
         isOpen &&
         createPortal(
           <>
