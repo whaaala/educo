@@ -10,6 +10,7 @@ export default function Header() {
   const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState("2024 / 2025");
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
+  const [isAddNewOpen, setIsAddNewOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState({
     symbol: "🇳🇬",
     name: "English",
@@ -17,6 +18,7 @@ export default function Header() {
   });
   const yearDropdownRef = useRef<HTMLDivElement>(null);
   const langDropdownRef = useRef<HTMLDivElement>(null);
+  const addNewRef = useRef<HTMLDivElement>(null);
 
   // Language options
   const languages = [
@@ -50,16 +52,19 @@ export default function Header() {
       if (langDropdownRef.current && !langDropdownRef.current.contains(event.target as Node)) {
         setIsLangDropdownOpen(false);
       }
+      if (addNewRef.current && !addNewRef.current.contains(event.target as Node)) {
+        setIsAddNewOpen(false);
+      }
     };
 
-    if (isYearDropdownOpen || isLangDropdownOpen) {
+    if (isYearDropdownOpen || isLangDropdownOpen || isAddNewOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isYearDropdownOpen, isLangDropdownOpen]);
+  }, [isYearDropdownOpen, isLangDropdownOpen, isAddNewOpen]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -264,15 +269,102 @@ export default function Header() {
             <MessageCircle className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
 
-          {/* Maximize/Expand Icon */}
-          <button
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-            aria-label="Expand"
-          >
-            <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-            </svg>
-          </button>
+          {/* Add New Dropdown */}
+          <div className="relative" ref={addNewRef}>
+            <button
+              onClick={() => setIsAddNewOpen(!isAddNewOpen)}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-[#252930] midnight:hover:bg-blue-900/20 purple:hover:bg-purple-900/20 rounded-md transition-colors"
+              aria-label="Add New"
+            >
+              <svg className="w-5 h-5 text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9-9 9-9-1.8-9-9 1.8-9 9-9z"></path>
+                <path d="M9 12h6"></path>
+                <path d="M12 9v6"></path>
+              </svg>
+            </button>
+
+            {/* Add New Dropdown Menu */}
+            {isAddNewOpen && (
+              <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 transition-colors duration-300">
+                {/* Header */}
+                <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 midnight:from-cyan-500/10 midnight:to-blue-500/10 purple:from-pink-500/10 purple:to-purple-500/10 border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Add New</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-200 purple:text-pink-200 mt-0.5">Quick actions to create new records</p>
+                </div>
+
+                {/* Grid of Options */}
+                <div className="p-5 grid grid-cols-2 gap-4">
+                  {/* Students - Blue */}
+                  <button
+                    onClick={() => {
+                      setIsAddNewOpen(false);
+                      console.log("Add Student");
+                    }}
+                    className="group relative flex flex-col items-center justify-center p-6 rounded-2xl bg-gradient-to-br from-blue-100 via-indigo-50 to-blue-50 dark:from-blue-600/25 dark:via-indigo-600/20 dark:to-blue-500/15 midnight:from-blue-500/30 midnight:via-cyan-500/25 midnight:to-blue-400/20 purple:from-blue-500/25 purple:via-indigo-500/20 purple:to-blue-400/15 hover:shadow-2xl hover:shadow-blue-500/30 dark:hover:shadow-blue-400/20 midnight:hover:shadow-cyan-400/25 purple:hover:shadow-indigo-400/20 hover:scale-105 transition-all duration-300 border-2 border-blue-200/60 dark:border-blue-500/30 midnight:border-cyan-400/30 purple:border-indigo-400/30 hover:border-blue-400 dark:hover:border-blue-400/50 midnight:hover:border-cyan-300/50 purple:hover:border-indigo-300/50"
+                  >
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 dark:from-blue-400 dark:via-blue-500 dark:to-indigo-500 midnight:from-cyan-400 midnight:via-blue-400 midnight:to-blue-600 purple:from-blue-400 purple:via-indigo-400 purple:to-indigo-600 flex items-center justify-center mb-3 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300 shadow-xl shadow-blue-500/60 dark:shadow-blue-400/40 midnight:shadow-cyan-400/50 purple:shadow-indigo-400/50">
+                      <svg className="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    </div>
+                    <span className="text-sm font-bold text-blue-900 dark:text-blue-200 midnight:text-cyan-100 purple:text-indigo-200 mb-1">Students</span>
+                    <span className="text-xs text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-indigo-300 font-medium">Add new student</span>
+                  </button>
+
+                  {/* Teachers - Green */}
+                  <button
+                    onClick={() => {
+                      setIsAddNewOpen(false);
+                      console.log("Add Teacher");
+                    }}
+                    className="group relative flex flex-col items-center justify-center p-6 rounded-2xl bg-gradient-to-br from-emerald-100 via-green-50 to-teal-50 dark:from-emerald-600/25 dark:via-green-600/20 dark:to-teal-500/15 midnight:from-emerald-500/30 midnight:via-green-500/25 midnight:to-teal-400/20 purple:from-emerald-500/25 purple:via-green-500/20 purple:to-teal-400/15 hover:shadow-2xl hover:shadow-emerald-500/30 dark:hover:shadow-emerald-400/20 midnight:hover:shadow-emerald-400/25 purple:hover:shadow-green-400/20 hover:scale-105 transition-all duration-300 border-2 border-emerald-200/60 dark:border-emerald-500/30 midnight:border-emerald-400/30 purple:border-green-400/30 hover:border-emerald-400 dark:hover:border-emerald-400/50 midnight:hover:border-emerald-300/50 purple:hover:border-green-300/50"
+                  >
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 via-green-600 to-teal-600 dark:from-emerald-400 dark:via-green-500 dark:to-teal-500 midnight:from-emerald-400 midnight:via-green-400 midnight:to-teal-500 purple:from-emerald-400 purple:via-green-400 purple:to-green-600 flex items-center justify-center mb-3 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300 shadow-xl shadow-emerald-500/60 dark:shadow-emerald-400/40 midnight:shadow-emerald-400/50 purple:shadow-green-400/50">
+                      <svg className="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                    </div>
+                    <span className="text-sm font-bold text-emerald-900 dark:text-emerald-200 midnight:text-emerald-100 purple:text-green-200 mb-1">Teachers</span>
+                    <span className="text-xs text-emerald-700 dark:text-emerald-300 midnight:text-emerald-300 purple:text-green-300 font-medium">Add new teacher</span>
+                  </button>
+
+                  {/* Staffs - Yellow/Gold */}
+                  <button
+                    onClick={() => {
+                      setIsAddNewOpen(false);
+                      console.log("Add Staff");
+                    }}
+                    className="group relative flex flex-col items-center justify-center p-6 rounded-2xl bg-gradient-to-br from-amber-100 via-yellow-50 to-orange-50 dark:from-amber-600/25 dark:via-yellow-600/20 dark:to-orange-500/15 midnight:from-amber-500/30 midnight:via-yellow-500/25 midnight:to-orange-400/20 purple:from-amber-500/25 purple:via-yellow-500/20 purple:to-orange-400/15 hover:shadow-2xl hover:shadow-amber-500/30 dark:hover:shadow-amber-400/20 midnight:hover:shadow-yellow-400/25 purple:hover:shadow-amber-400/20 hover:scale-105 transition-all duration-300 border-2 border-amber-200/60 dark:border-amber-500/30 midnight:border-yellow-400/30 purple:border-amber-400/30 hover:border-amber-400 dark:hover:border-amber-400/50 midnight:hover:border-yellow-300/50 purple:hover:border-amber-300/50"
+                  >
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 via-yellow-600 to-orange-600 dark:from-amber-400 dark:via-yellow-500 dark:to-orange-500 midnight:from-amber-400 midnight:via-yellow-400 midnight:to-orange-500 purple:from-amber-400 purple:via-yellow-400 purple:to-orange-600 flex items-center justify-center mb-3 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300 shadow-xl shadow-amber-500/60 dark:shadow-amber-400/40 midnight:shadow-yellow-400/50 purple:shadow-amber-400/50">
+                      <svg className="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <span className="text-sm font-bold text-amber-900 dark:text-amber-200 midnight:text-yellow-100 purple:text-amber-200 mb-1">Staffs</span>
+                    <span className="text-xs text-amber-700 dark:text-amber-300 midnight:text-yellow-300 purple:text-amber-300 font-medium">Add new staff</span>
+                  </button>
+
+                  {/* Invoice - Indigo/Purple */}
+                  <button
+                    onClick={() => {
+                      setIsAddNewOpen(false);
+                      console.log("Add Invoice");
+                    }}
+                    className="group relative flex flex-col items-center justify-center p-6 rounded-2xl bg-gradient-to-br from-purple-100 via-fuchsia-50 to-indigo-100 dark:from-purple-600/25 dark:via-fuchsia-600/20 dark:to-indigo-500/15 midnight:from-purple-500/30 midnight:via-fuchsia-500/25 midnight:to-indigo-400/20 purple:from-fuchsia-500/25 purple:via-pink-500/20 purple:to-purple-400/15 hover:shadow-2xl hover:shadow-purple-500/30 dark:hover:shadow-purple-400/20 midnight:hover:shadow-fuchsia-400/25 purple:hover:shadow-pink-400/20 hover:scale-105 transition-all duration-300 border-2 border-purple-200/60 dark:border-purple-500/30 midnight:border-fuchsia-400/30 purple:border-pink-400/30 hover:border-purple-400 dark:hover:border-purple-400/50 midnight:hover:border-fuchsia-300/50 purple:hover:border-pink-300/50"
+                  >
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 via-fuchsia-600 to-indigo-600 dark:from-purple-400 dark:via-fuchsia-500 dark:to-indigo-500 midnight:from-purple-400 midnight:via-fuchsia-400 midnight:to-indigo-600 purple:from-fuchsia-400 purple:via-pink-400 purple:to-purple-600 flex items-center justify-center mb-3 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300 shadow-xl shadow-purple-500/60 dark:shadow-purple-400/40 midnight:shadow-fuchsia-400/50 purple:shadow-pink-400/50">
+                      <svg className="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z" />
+                      </svg>
+                    </div>
+                    <span className="text-sm font-bold text-purple-900 dark:text-purple-200 midnight:text-fuchsia-100 purple:text-pink-200 mb-1">Invoice</span>
+                    <span className="text-xs text-purple-700 dark:text-purple-300 midnight:text-fuchsia-300 purple:text-pink-300 font-medium">Create new invoice</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* User Menu */}
           <UserMenu />
