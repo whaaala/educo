@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { User, Settings, LogOut } from "lucide-react";
 import Image from "next/image";
 import MenuItem from "./MenuItem";
@@ -18,7 +19,27 @@ export default function UserMenu({
   userAvatar,
 }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Track if component is mounted
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Calculate dropdown position when it opens
+  useEffect(() => {
+    if (isOpen && buttonRef.current && typeof window !== 'undefined') {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownStyle({
+        position: 'fixed',
+        top: `${rect.bottom + 8}px`,
+        right: `${window.innerWidth - rect.right}px`,
+      });
+    }
+  }, [isOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -29,12 +50,16 @@ export default function UserMenu({
     };
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
+      // Delay adding the listener to avoid catching the same click that opened the menu
+      const timeoutId = setTimeout(() => {
+        document.addEventListener("mousedown", handleClickOutside);
+      }, 0);
 
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+      return () => {
+        clearTimeout(timeoutId);
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
   }, [isOpen]);
 
   const handleMenuItemClick = (action: string) => {
@@ -47,6 +72,7 @@ export default function UserMenu({
     <div className="relative" ref={menuRef}>
       {/* Trigger Button - Just Avatar */}
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-[#252930] midnight:hover:bg-[#1a3a52] purple:hover:bg-[#3d1f5c] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20"
         aria-expanded={isOpen}
@@ -70,25 +96,23 @@ export default function UserMenu({
         </div>
       </button>
 
-      {/* Dropdown Menu */}
-      {isOpen && (
-        <>
-          {/* Mobile Overlay */}
-          <div
-            className="fixed inset-0 z-40 lg:hidden"
-            onClick={() => setIsOpen(false)}
-            aria-hidden="true"
-          />
+      {/* Dropdown Menu - Rendered via Portal */}
+      {isMounted && isOpen &&
+        createPortal(
+          <>
+            {/* Overlay */}
+            <div
+              className="fixed inset-0 z-[100] bg-black/20"
+              onClick={() => setIsOpen(false)}
+              aria-hidden="true"
+            />
 
-          <div
-            className="fixed lg:absolute bottom-0 left-0 right-0 lg:right-0 lg:left-auto lg:bottom-auto lg:top-full mt-0 lg:mt-2 w-full lg:w-72 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-t-2xl lg:rounded-xl shadow-2xl border-t lg:border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 z-50 transition-colors duration-300 max-h-[85vh] lg:max-h-[calc(100vh-5rem)] overflow-y-auto animate-in slide-in-from-bottom lg:slide-in-from-top-2 duration-300"
-            role="menu"
-            aria-orientation="vertical"
-          >
-            {/* Mobile Handle Bar */}
-            <div className="lg:hidden flex justify-center pt-2 pb-1">
-              <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-            </div>
+            <div
+              style={dropdownStyle}
+              className="w-72 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[9999] transition-colors duration-300 max-h-[500px] overflow-y-auto"
+              role="menu"
+              aria-orientation="vertical"
+            >
 
             {/* Profile Card Section */}
             <div className="px-4 sm:px-5 py-4 sm:py-5 border-b border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-br from-gray-50/50 to-transparent dark:from-gray-800/20">
@@ -141,11 +165,9 @@ export default function UserMenu({
                 variant="danger"
               />
             </div>
-
-            {/* Mobile Bottom Padding */}
-            <div className="h-safe-bottom lg:hidden"></div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   );

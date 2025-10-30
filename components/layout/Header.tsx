@@ -80,8 +80,8 @@ export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: 
   };
 
   return (
-    <header className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-b border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 sticky top-0 z-30 transition-colors duration-300 backdrop-blur-xl dark:backdrop-blur-xl dark:bg-opacity-90">
-      <div className="flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-2 sm:py-3">
+    <header className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-b border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 sticky top-0 z-30 transition-colors duration-300 backdrop-blur-xl dark:backdrop-blur-xl dark:bg-opacity-90 overflow-visible">
+      <div className="flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-2 sm:py-3 overflow-visible">
         {/* Mobile Menu Button - Left side on mobile */}
         <button
           onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
@@ -159,7 +159,7 @@ export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: 
         <div className="flex-1 lg:hidden"></div>
 
         {/* Right Side - All Icons */}
-        <div className="flex items-center gap-0.5 sm:gap-1 h-10">
+        <div className="flex items-center gap-0.5 sm:gap-1 h-10 overflow-visible">
           {/* Academic Year Dropdown */}
           <div className="relative" ref={yearDropdownRef}>
             <button
@@ -174,7 +174,7 @@ export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: 
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span className="hidden md:inline whitespace-nowrap font-semibold">Academic Year : {selectedYear}</span>
-              <span className="md:hidden text-xs sm:text-sm font-semibold whitespace-nowrap">AY: {selectedYear.split(" / ")[0]}</span>
+              <span className="md:hidden text-xs sm:text-sm font-semibold whitespace-nowrap">AY: {selectedYear}</span>
               <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 transition-transform duration-200 ${isYearDropdownOpen ? "rotate-180" : ""}`} />
             </button>
 
