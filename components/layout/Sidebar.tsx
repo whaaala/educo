@@ -56,7 +56,17 @@ const menuItems: MenuItem[] = [
     label: "Peoples",
     icon: <Users className="w-5 h-5" />,
     children: [
-      { id: "students", label: "Students", icon: <GraduationCap className="w-4 h-4" />, href: "/students" },
+      {
+        id: "students",
+        label: "Students",
+        icon: <GraduationCap className="w-4 h-4" />,
+        children: [
+          { id: "all-students", label: "All Students", icon: <GraduationCap className="w-4 h-4" />, href: "/students" },
+          { id: "student-list", label: "Student List", icon: <GraduationCap className="w-4 h-4" />, href: "/students/list" },
+          { id: "student-details", label: "Student Details", icon: <GraduationCap className="w-4 h-4" />, href: "/students/details" },
+          { id: "student-promotion", label: "Student Promotion", icon: <GraduationCap className="w-4 h-4" />, href: "/students/promotion" },
+        ]
+      },
       { id: "parents", label: "Parents", icon: <Users className="w-4 h-4" />, href: "/parents" },
       { id: "teachers", label: "Teachers", icon: <Users className="w-4 h-4" />, href: "/teachers" },
       { id: "staff", label: "Staff", icon: <Users className="w-4 h-4" />, href: "/staff" },
@@ -113,7 +123,9 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState<boolean | null>(null); // null on server, boolean on client
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [hoveredSubmenuItem, setHoveredSubmenuItem] = useState<string | null>(null);
   const [hideTimeout, setHideTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [submenuHideTimeout, setSubmenuHideTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Handle delayed hide
   const handleMouseEnterItem = (itemId: string) => {
@@ -135,6 +147,27 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
       });
     }, 150); // 150ms delay
     setHideTimeout(timeout);
+  };
+
+  const handleMouseEnterSubmenuItem = (itemId: string) => {
+    // Clear any existing timeout
+    if (submenuHideTimeout) {
+      clearTimeout(submenuHideTimeout);
+      setSubmenuHideTimeout(null);
+    }
+    // Immediately show the new submenu
+    setHoveredSubmenuItem(itemId);
+  };
+
+  const handleMouseLeaveSubmenuItem = (itemId: string) => {
+    // Only hide if we're leaving the currently hovered submenu item
+    const timeout = setTimeout(() => {
+      setHoveredSubmenuItem((current) => {
+        // Only clear if we're still on the same item
+        return current === itemId ? null : current;
+      });
+    }, 150); // 150ms delay
+    setSubmenuHideTimeout(timeout);
   };
 
   // Detect if we're on mobile and close menu when resized to desktop
@@ -239,18 +272,75 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                   {item.label}
                 </div>
                 <div className="py-1">
-                  {item.children?.map((child) => (
-                    <Link
-                      key={child.id}
-                      href={child.href || "#"}
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300 transition-all duration-150 rounded-lg mx-2"
-                    >
-                      <div className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-700/50">
-                        {child.icon}
-                      </div>
-                      <span className="font-medium">{child.label}</span>
-                    </Link>
-                  ))}
+                  {item.children?.map((child) => {
+                    const childHasChildren = child.children && child.children.length > 0;
+
+                    if (childHasChildren) {
+                      // Render item with nested submenu on hover
+                      return (
+                        <div
+                          key={child.id}
+                          className="relative mx-2"
+                          onMouseEnter={() => handleMouseEnterSubmenuItem(child.id)}
+                          onMouseLeave={() => handleMouseLeaveSubmenuItem(child.id)}
+                        >
+                          <div className="flex items-center justify-between gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300 transition-all duration-150 rounded-lg cursor-pointer">
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-700/50">
+                                {child.icon}
+                              </div>
+                              <span className="font-medium">{child.label}</span>
+                            </div>
+                            <ChevronDown className="w-4 h-4 -rotate-90" />
+                          </div>
+
+                          {/* Nested submenu popup */}
+                          {hoveredSubmenuItem === child.id && (
+                            <div
+                              className="absolute left-full top-0 w-52 bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 backdrop-blur-sm animate-in fade-in slide-in-from-left-2 duration-200"
+                              style={{
+                                zIndex: 10000,
+                                marginLeft: '8px',
+                              }}
+                              onMouseEnter={() => handleMouseEnterSubmenuItem(child.id)}
+                              onMouseLeave={() => handleMouseLeaveSubmenuItem(child.id)}
+                            >
+                              <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide border-b border-gray-100 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                                {child.label}
+                              </div>
+                              <div className="py-1">
+                                {child.children?.map((grandchild) => (
+                                  <Link
+                                    key={grandchild.id}
+                                    href={grandchild.href || "#"}
+                                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300 transition-all duration-150 rounded-lg mx-2"
+                                  >
+                                    <div className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-700/50">
+                                      {grandchild.icon}
+                                    </div>
+                                    <span className="font-medium">{grandchild.label}</span>
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <Link
+                        key={child.id}
+                        href={child.href || "#"}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300 transition-all duration-150 rounded-lg mx-2"
+                      >
+                        <div className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-700/50">
+                          {child.icon}
+                        </div>
+                        <span className="font-medium">{child.label}</span>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -310,52 +400,62 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
         {/* Show children based on mobile/collapsed state */}
         {hasChildren && isExpanded && (isMobile === true || (isMobile === false && !isCollapsed)) && (
           <div className="mt-2 ml-2 space-y-1 pl-4 border-l-2 border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20">
-            {item.children?.map((child) => (
-              <Link
-                key={child.id}
-                href={child.href || "#"}
-                className={cn(
-                  "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium group",
-                  "text-gray-600 dark:text-gray-400 midnight:text-cyan-200 purple:text-pink-200",
-                  "hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50/50",
-                  "dark:hover:from-blue-500/5 dark:hover:to-indigo-500/5",
-                  "midnight:hover:from-cyan-500/5 midnight:hover:to-blue-500/5",
-                  "purple:hover:from-pink-500/5 purple:hover:to-purple-500/5",
-                  "hover:text-blue-700 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300",
-                  "hover:translate-x-1 hover:shadow-sm",
-                  "transition-all duration-200 ease-out",
-                  "border border-transparent hover:border-blue-200/30 dark:hover:border-blue-500/10",
-                  "midnight:hover:border-cyan-500/10 purple:hover:border-pink-500/10"
-                )}
-              >
-                <div className={cn(
-                  "flex items-center justify-center w-7 h-7 rounded-lg shrink-0",
-                  "bg-gradient-to-br from-gray-100 to-gray-50",
-                  "dark:from-gray-800/50 dark:to-gray-700/30",
-                  "midnight:from-cyan-500/10 midnight:to-blue-500/5",
-                  "purple:from-pink-500/10 purple:to-purple-500/5",
-                  "group-hover:from-blue-100 group-hover:to-indigo-50",
-                  "dark:group-hover:from-blue-500/15 dark:group-hover:to-indigo-500/10",
-                  "midnight:group-hover:from-cyan-500/20 midnight:group-hover:to-blue-500/15",
-                  "purple:group-hover:from-pink-500/20 purple:group-hover:to-purple-500/15",
-                  "group-hover:scale-110 group-hover:rotate-3",
-                  "transition-all duration-200 shadow-sm"
-                )}>
-                  <div className="scale-90">
-                    {child.icon}
-                  </div>
-                </div>
-                <span className="flex-1 tracking-wide">{child.label}</span>
-                <svg
-                  className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            {item.children?.map((child) => {
+              const childHasChildren = child.children && child.children.length > 0;
+
+              // If child has children, render it recursively
+              if (childHasChildren) {
+                return renderMenuItem(child, level + 1);
+              }
+
+              // Otherwise render as a simple link
+              return (
+                <Link
+                  key={child.id}
+                  href={child.href || "#"}
+                  className={cn(
+                    "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium group",
+                    "text-gray-600 dark:text-gray-400 midnight:text-cyan-200 purple:text-pink-200",
+                    "hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50/50",
+                    "dark:hover:from-blue-500/5 dark:hover:to-indigo-500/5",
+                    "midnight:hover:from-cyan-500/5 midnight:hover:to-blue-500/5",
+                    "purple:hover:from-pink-500/5 purple:hover:to-purple-500/5",
+                    "hover:text-blue-700 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300",
+                    "hover:translate-x-1 hover:shadow-sm",
+                    "transition-all duration-200 ease-out",
+                    "border border-transparent hover:border-blue-200/30 dark:hover:border-blue-500/10",
+                    "midnight:hover:border-cyan-500/10 purple:hover:border-pink-500/10"
+                  )}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-            ))}
+                  <div className={cn(
+                    "flex items-center justify-center w-7 h-7 rounded-lg shrink-0",
+                    "bg-gradient-to-br from-gray-100 to-gray-50",
+                    "dark:from-gray-800/50 dark:to-gray-700/30",
+                    "midnight:from-cyan-500/10 midnight:to-blue-500/5",
+                    "purple:from-pink-500/10 purple:to-purple-500/5",
+                    "group-hover:from-blue-100 group-hover:to-indigo-50",
+                    "dark:group-hover:from-blue-500/15 dark:group-hover:to-indigo-500/10",
+                    "midnight:group-hover:from-cyan-500/20 midnight:group-hover:to-blue-500/15",
+                    "purple:group-hover:from-pink-500/20 purple:group-hover:to-purple-500/15",
+                    "group-hover:scale-110 group-hover:rotate-3",
+                    "transition-all duration-200 shadow-sm"
+                  )}>
+                    <div className="scale-90">
+                      {child.icon}
+                    </div>
+                  </div>
+                  <span className="flex-1 tracking-wide">{child.label}</span>
+                  <svg
+                    className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
