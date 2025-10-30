@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Clock, CheckCheck, Trash2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { CheckCheck, Trash2 } from "lucide-react";
 import Image from "next/image";
 
 interface NotificationCardProps {
@@ -32,6 +32,46 @@ export default function NotificationCard({
   isOdd = false,
 }: NotificationCardProps) {
   const [isAvatarHovered, setIsAvatarHovered] = useState(false);
+  const [expandedPosition, setExpandedPosition] = useState({ top: 0, left: 0 });
+  const [isMounted, setIsMounted] = useState(false);
+  const avatarRef = useRef<HTMLDivElement>(null);
+
+  // Ensure client-side only rendering for hover effects
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Calculate position to keep expanded avatar within viewport
+  const handleMouseEnter = () => {
+    if (!isMounted || typeof window === 'undefined') return;
+
+    setIsAvatarHovered(true);
+    if (avatarRef.current) {
+      const rect = avatarRef.current.getBoundingClientRect();
+      const expandedWidth = 224; // 56 * 4 = 224px (w-56)
+      const expandedHeight = 224 + 60; // 224px + name card height
+      const margin = 16; // ml-4 = 16px
+
+      // Calculate horizontal position (prefer right side)
+      let left = rect.right + margin;
+      const spaceOnRight = window.innerWidth - rect.right;
+      if (spaceOnRight < (expandedWidth + margin + 20)) {
+        // Not enough space on right, position to fit within viewport
+        left = window.innerWidth - expandedWidth - 20; // 20px padding from edge
+      }
+
+      // Calculate vertical position (align with avatar top, but adjust if needed)
+      let top = rect.top;
+      const bottomMargin = 40; // Margin from bottom edge
+      const spaceBelow = window.innerHeight - rect.top;
+      if (spaceBelow < expandedHeight + bottomMargin) {
+        // Not enough space below, adjust upward with bottom margin
+        top = Math.max(20, window.innerHeight - expandedHeight - bottomMargin);
+      }
+
+      setExpandedPosition({ top, left });
+    }
+  };
 
   const getInitials = (name: string) => {
     return name
@@ -55,8 +95,8 @@ export default function NotificationCard({
   };
 
   const bgColor = isOdd
-    ? "bg-white dark:bg-[#252930] midnight:bg-[#0f1729] purple:bg-[#2a1a3e]"
-    : "bg-gray-50 dark:bg-[#1e2128] midnight:bg-[#141b2e] purple:bg-[#231533]";
+    ? "bg-transparent"
+    : "bg-gray-50/50 dark:bg-[#1e2128]/50 midnight:bg-[#141b2e]/50 purple:bg-[#231533]/50";
 
   return (
     <div
@@ -70,24 +110,40 @@ export default function NotificationCard({
         <div className="flex gap-3">
           {/* Avatar */}
           <div
+            ref={avatarRef}
             className="flex-shrink-0 relative group/avatar cursor-pointer"
-            onMouseEnter={() => setIsAvatarHovered(true)}
+            onMouseEnter={handleMouseEnter}
             onMouseLeave={() => setIsAvatarHovered(false)}
           >
             <div
               className={`w-14 h-14 rounded-xl bg-gradient-to-br ${getNotificationColor(
                 type
-              )} flex items-center justify-center text-white font-bold text-lg shadow-md relative transition-all`}
+              )} flex items-center justify-center text-white font-bold text-lg shadow-md relative transition-all overflow-hidden`}
             >
-              {userName ? getInitials(userName) : "N"}
+              {avatar ? (
+                <Image
+                  src={avatar}
+                  alt={userName || "User"}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                userName ? getInitials(userName) : "N"
+              )}
               {unread && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full border-2 border-white dark:border-[#252930]"></div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full border-2 border-white dark:border-[#252930] z-10"></div>
               )}
             </div>
 
             {/* Expanded Avatar Preview on Hover */}
-            {isAvatarHovered && (
-              <div className="absolute left-full ml-4 top-0 z-50 pointer-events-none">
+            {isMounted && isAvatarHovered && (
+              <div
+                className="fixed z-[100] pointer-events-none"
+                style={{
+                  top: `${expandedPosition.top}px`,
+                  left: `${expandedPosition.left}px`
+                }}
+              >
                 <div className="relative w-56 h-56 rounded-2xl overflow-hidden shadow-2xl border-4 border-white dark:border-gray-800 animate-in fade-in zoom-in-95 duration-200">
                   {/* Profile Image or Gradient Background */}
                   {avatar ? (
@@ -170,14 +226,14 @@ export default function NotificationCard({
 
             {/* Action Buttons */}
             {actions && actions.length > 0 && (
-              <div className="flex gap-2.5">
+              <div className="flex gap-2">
                 {actions.map((action, index) => (
                   <button
                     key={index}
-                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
+                    className={`px-5 py-2 text-sm font-semibold rounded-lg transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md active:scale-95 ${
                       action.variant === "primary"
-                        ? "text-white bg-blue-600 hover:bg-blue-700"
-                        : "text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
+                        ? "text-white bg-blue-600 hover:bg-blue-700 ring-1 ring-blue-600 hover:ring-blue-700"
+                        : "text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-600/50 ring-1 ring-gray-300 dark:ring-gray-600"
                     }`}
                   >
                     {action.label}

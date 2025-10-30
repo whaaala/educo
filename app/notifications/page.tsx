@@ -212,40 +212,42 @@ export default function NotificationsPage() {
           </div>
         </div>
 
-        {/* Notifications List */}
-        <div className="space-y-3">
-          {filteredNotifications.length === 0 ? (
-            <div className="bg-white dark:bg-[#252930] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-12 text-center">
-              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
-                <CheckCheck className="w-8 h-8 text-gray-400" />
+        {/* Notifications List Container */}
+        <div className="bg-white dark:bg-[#252930] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
+          <div className="space-y-3">
+            {filteredNotifications.length === 0 ? (
+              <div className="p-12 text-center">
+                <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+                  <CheckCheck className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+                  No notifications
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
+                  {filter === "unread"
+                    ? "You don't have any unread notifications"
+                    : "You're all caught up!"}
+                </p>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
-                No notifications
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-                {filter === "unread"
-                  ? "You don't have any unread notifications"
-                  : "You're all caught up!"}
-              </p>
-            </div>
-          ) : (
-            filteredNotifications.map((notification, index) => (
-              <NotificationCard
-                key={notification.id}
-                id={notification.id}
-                type={notification.type}
-                message={notification.fullMessage || notification.message}
-                time={notification.time}
-                avatar={notification.avatar}
-                userName={notification.userName}
-                unread={notification.unread}
-                actions={notification.actions}
-                onMarkAsRead={handleMarkAsRead}
-                onDelete={handleDelete}
-                isOdd={index % 2 === 0}
-              />
-            ))
-          )}
+            ) : (
+              filteredNotifications.map((notification, index) => (
+                <NotificationCard
+                  key={notification.id}
+                  id={notification.id}
+                  type={notification.type}
+                  message={notification.fullMessage || notification.message}
+                  time={notification.time}
+                  avatar={notification.avatar}
+                  userName={notification.userName}
+                  unread={notification.unread}
+                  actions={notification.actions}
+                  onMarkAsRead={handleMarkAsRead}
+                  onDelete={handleDelete}
+                  isOdd={index % 2 === 0}
+                />
+              ))
+            )}
+          </div>
         </div>
       </div>
     </MainLayout>
