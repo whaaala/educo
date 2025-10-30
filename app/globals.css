@@ -1,15 +1,19 @@
 @import "tailwindcss";
 
+@theme {
+  --color-background: #ffffff;
+  --color-foreground: #171717;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@variant dark (&:where(.dark, .dark *));
+@variant midnight (&:where(.midnight, .midnight *));
+@variant purple (&:where(.purple, .purple *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,4 +27,148 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Modern Custom Scrollbar Styles */
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 100px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.4);
+  border-radius: 100px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.6);
+}
+
+/* Dark theme scrollbar */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(75, 85, 99, 0.5);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(75, 85, 99, 0.7);
+}
+
+/* Midnight Blue Theme - Deep Ocean with cyan/teal accents */
+.midnight {
+  --midnight-glow: #00d4ff;
+  --midnight-border: rgba(6, 182, 212, 0.2);
+}
+
+.midnight * {
+  scrollbar-color: rgba(6, 182, 212, 0.3) transparent;
+}
+
+.midnight ::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.3);
+}
+
+.midnight ::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.5);
+}
+
+/* Purple Dream Theme - Royal Purple with magenta/pink accents */
+.purple {
+  --purple-glow: #ff00ff;
+  --purple-border: rgba(236, 72, 153, 0.2);
+}
+
+.purple * {
+  scrollbar-color: rgba(236, 72, 153, 0.3) transparent;
+}
+
+.purple ::-webkit-scrollbar-thumb {
+  background: rgba(236, 72, 153, 0.3);
+}
+
+.purple ::-webkit-scrollbar-thumb:hover {
+  background: rgba(236, 72, 153, 0.5);
+}
+
+/* Smooth scrolling behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for navigation areas */
+nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+nav::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 100px;
+}
+
+nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+.dark nav::-webkit-scrollbar-thumb {
+  background: rgba(75, 85, 99, 0.4);
+}
+
+.dark nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(75, 85, 99, 0.6);
+}
+
+.midnight nav::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.25);
+}
+
+.midnight nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.4);
+}
+
+.purple nav::-webkit-scrollbar-thumb {
+  background: rgba(236, 72, 153, 0.25);
+}
+
+.purple nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(236, 72, 153, 0.4);
+}
+
+/* Hamburger Menu Icon Overrides for Midnight and Purple Themes */
+/* Target the SVG lines in the mobile menu button */
+.midnight button[aria-label="Menu"] svg line,
+.purple button[aria-label="Menu"] svg line {
+  stroke: #ffffff !important;
+  stroke-width: 3 !important;
+  opacity: 1 !important;
+}
+
+/* Alternative: Using LAB color space if browser supports it */
+@supports (color: lab(99 -0.06 -1.8)) {
+  .midnight button[aria-label="Menu"] svg line,
+  .purple button[aria-label="Menu"] svg line {
+    stroke: lab(99 -0.06 -1.8) !important;
+  }
+}
+
+/* Ensure SVG is visible */
+.midnight button[aria-label="Menu"] svg,
+.purple button[aria-label="Menu"] svg {
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Override text-gray-900 for Midnight theme */
+.midnight .text-gray-900 {
+  color: lab(100 0 0) !important;
+}
+
+/* Override text-gray-900 for Purple Dream theme */
+.purple .text-gray-900 {
+  color: lab(100 0 0) !important;
 }
