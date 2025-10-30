@@ -109,16 +109,16 @@ export default function UserMenu({
 
             <div
               style={dropdownStyle}
-              className="w-72 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[9999] transition-colors duration-300 max-h-[500px] overflow-y-auto"
+              className="w-64 sm:w-72 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[9999] transition-colors duration-300 max-h-[500px] overflow-y-auto"
               role="menu"
               aria-orientation="vertical"
             >
 
             {/* Profile Card Section */}
-            <div className="px-4 sm:px-5 py-4 sm:py-5 border-b border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-br from-gray-50/50 to-transparent dark:from-gray-800/20">
-              <div className="flex items-center gap-3 sm:gap-4">
+            <div className="px-3 sm:px-4 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-br from-gray-50/50 to-transparent dark:from-gray-800/20">
+              <div className="flex items-center gap-2.5 sm:gap-3">
                 {/* Avatar in dropdown */}
-                <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-gray-200 flex-shrink-0 ring-2 ring-blue-500/10 shadow-lg">
+                <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden bg-gray-200 flex-shrink-0 ring-2 ring-blue-500/10 shadow-lg">
                   {userAvatar ? (
                     <Image
                       src={userAvatar}
@@ -128,7 +128,7 @@ export default function UserMenu({
                       className="object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 text-white font-bold text-xl sm:text-2xl shadow-inner">
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 text-white font-bold text-lg sm:text-xl shadow-inner">
                       {userName.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -136,14 +136,14 @@ export default function UserMenu({
 
                 {/* User Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{userName}</p>
-                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 truncate mt-0.5">{userRole}</p>
+                  <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{userName}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 truncate mt-0.5">{userRole}</p>
                 </div>
               </div>
             </div>
 
             {/* Menu Items */}
-            <div className="py-2 px-2">
+            <div className="py-1.5 px-1.5 sm:py-2 sm:px-2">
               <MenuItem
                 icon={User}
                 label="My Profile"
