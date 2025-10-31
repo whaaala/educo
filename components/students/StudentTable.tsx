@@ -20,7 +20,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       hidden: { desktop: true },
       className: "text-left w-10",
       render: (_, index) => (
-        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
+        <span className="text-sm font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200">
           {index + 1}
         </span>
       ),
@@ -33,7 +33,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       hidden: { mobile: true, tablet: true },
       className: "text-left pl-6 w-[10%]",
       render: (student) => (
-        <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 truncate block">
+        <span className="text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 truncate block">
           {student.id}
         </span>
       ),
@@ -45,7 +45,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       hidden: { mobile: true },
       className: "text-left w-[8%]",
       render: (student) => (
-        <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
+        <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
           {student.rollNo}
         </span>
       ),
@@ -56,11 +56,11 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       sortable: true,
       className: "text-left w-[20%]",
       render: (student) => (
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="w-7 h-7 xl:w-8 xl:h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 transition-all duration-300 shadow-md">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 xl:w-9 xl:h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 transition-all duration-300 shadow-md">
             {student.name.charAt(0)}
           </div>
-          <span className="text-xs font-semibold text-gray-900 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">
+          <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 truncate">
             {student.name}
           </span>
         </div>
@@ -75,7 +75,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       render: (student) => {
         const [classNum] = student.class.split(", ");
         return (
-          <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
+          <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
             {classNum}
           </span>
         );
@@ -91,7 +91,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       render: (student) => {
         const [, section] = student.class.split(", ");
         return (
-          <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
+          <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
             {section}
           </span>
         );
@@ -105,7 +105,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       hidden: { mobile: true, tablet: true },
       className: "text-left w-[8%]",
       render: (student) => (
-        <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
+        <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
           {student.gender}
         </span>
       ),
@@ -118,7 +118,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       render: (student) => (
         <div className="flex items-center justify-start">
           <span
-            className={`inline-flex items-center justify-center px-2 xl:px-3 py-1 xl:py-1.5 rounded-full text-[10px] xl:text-xs font-semibold shadow-sm transition-all duration-300 whitespace-nowrap ${
+            className={`inline-flex items-center justify-center px-3 xl:px-3.5 py-1.5 xl:py-2 rounded-full text-xs xl:text-sm font-semibold shadow-sm transition-all duration-300 whitespace-nowrap ${
               student.status === "Active"
                 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 midnight:bg-green-500/20 midnight:text-green-300 purple:bg-green-500/20 purple:text-green-300"
                 : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 midnight:bg-red-500/20 midnight:text-red-300 purple:bg-red-500/20 purple:text-red-300"
@@ -136,7 +136,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       hidden: { mobile: true, tablet: true },
       className: "text-left w-[12%]",
       render: (student) => (
-        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 whitespace-nowrap">
+        <span className="text-sm font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 whitespace-nowrap">
           {student.joinedOn}
         </span>
       ),

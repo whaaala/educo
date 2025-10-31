@@ -192,6 +192,8 @@ export default function DataTable<T>({
   // Apply staggered animation delays to rows and striped backgrounds for visible rows
   useEffect(() => {
     const allRows = document.querySelectorAll('tbody tr');
+    const totalRows = allRows.length;
+    console.log('🎯 useEffect triggered, totalRows:', totalRows, 'sortAsc:', sortAsc, 'isSorting:', isSorting, 'sortDirection:', sortDirection);
 
     if (searchQuery.trim()) {
       // When searching, apply striped backgrounds only to visible rows
@@ -223,36 +225,54 @@ export default function DataTable<T>({
       });
     } else {
       allRows.forEach((row, index) => {
-        (row as HTMLElement).style.setProperty('--delay', `${index / 40}s`);
+        const htmlRow = row as HTMLElement;
+        // For ascending: first rows (top) should have longest delay (animate last from bottom)
+        // For descending: first rows (top) should have shortest delay (animate first from top)
+        const delay = sortAsc
+          ? ((totalRows - 1 - index) / 150)  // Ascending: reverse delay (bottom to top) - ultra fast cascade
+          : (index / 150);                    // Descending: normal delay (top to bottom) - ultra fast cascade
+        htmlRow.style.setProperty('--delay', `${delay}s`);
+        console.log(`📌 Row ${index} delay:`, delay, 'sortAsc:', sortAsc);
       });
     }
-  }, [displayData, searchQuery]);
+  }, [displayData, searchQuery, sortAsc, isSorting, sortDirection]);
 
   // Handle column header click for sorting
   const handleSort = (columnKey: string) => {
     const column = columns.find(col => col.key === columnKey);
     if (!column?.sortable) return;
 
-    setIsSorting(true);
+    console.log('🔄 Sorting triggered:', columnKey);
+
     if (sortColumn === columnKey) {
       // Toggle sort direction
       const newSortAsc = !sortAsc;
       setSortAsc(newSortAsc);
       setSortDirection(newSortAsc ? 'asc' : 'desc');
+      console.log('📊 Direction:', newSortAsc ? 'asc' : 'desc');
     } else {
       // New column, start with ascending
       setSortColumn(columnKey);
       setSortAsc(true);
       setSortDirection('asc');
+      console.log('📊 New column, direction: asc');
     }
+
+    // Trigger animation after state updates
+    setTimeout(() => {
+      console.log('✨ Setting isSorting to true');
+      setIsSorting(true);
+    }, 50);
   };
 
   // Reset sorting animation after it completes
   useEffect(() => {
     if (isSorting) {
+      console.log('⏰ isSorting is true, will reset after 250ms');
       const timer = setTimeout(() => {
+        console.log('🔚 Resetting isSorting to false');
         setIsSorting(false);
-      }, 600);
+      }, 250); // Ultra fast animation duration (0.15s animation + tiny delays)
       return () => clearTimeout(timer);
     }
   }, [isSorting]);
@@ -270,9 +290,9 @@ export default function DataTable<T>({
   };
 
   return (
-    <div className="w-full bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 backdrop-blur-md shadow-lg rounded-xl md:rounded-2xl border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/30 purple:border-pink-500/30 transition-all duration-300 overflow-hidden">
+    <div className="w-full bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 shadow-lg rounded-xl md:rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 transition-all duration-300 overflow-hidden">
       {/* Table Header */}
-      <div className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750 midnight:from-gray-900 midnight:to-gray-850 purple:from-gray-900 purple:to-gray-850 backdrop-blur-md px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-3 border-b border-gray-200/70 dark:border-gray-700/70 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-t-xl md:rounded-t-2xl">
+      <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-t-xl md:rounded-t-2xl">
         <h2 className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-300 purple:text-pink-300 tracking-tight whitespace-nowrap">
           {title} {searchQuery && `(${sortedData.length})`}
         </h2>
@@ -294,7 +314,7 @@ export default function DataTable<T>({
         <table className="w-full table-fixed border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
           {/* Table Header */}
           <thead>
-            <tr className="bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-750 midnight:from-gray-800 midnight:to-gray-850 purple:from-gray-800 purple:to-gray-850 border-b-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/50 purple:border-pink-500/50 shadow-sm">
+            <tr className="bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border-b border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
               {columns.map((column) => {
                 // Determine alignment from className
                 const isLeftAligned = column.className?.includes('text-left');
@@ -305,28 +325,27 @@ export default function DataTable<T>({
                 <th
                   key={column.key}
                   onClick={() => handleSort(column.key)}
-                  className={`px-3 md:px-4 py-4 text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all duration-300 ${
-                    column.sortable !== false ? 'cursor-pointer group/header select-none' : ''
+                  className={`px-4 md:px-5 py-3 md:py-3.5 text-[11px] font-extrabold uppercase tracking-wider whitespace-nowrap transition-all duration-300 ease-in-out ${
+                    column.sortable !== false ? 'cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-gray-600/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10' : ''
                   } ${
                     sortColumn === column.key
-                      ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
-                      : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
+                      ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10'
+                      : 'text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300'
                   } ${getHiddenClasses(column.hidden)} ${column.className || ''}`}
                 >
-                  <div className={`flex items-center ${justifyClass} gap-2`}>
+                  <div className={`flex items-center ${justifyClass} gap-1.5`}>
                     <span className="relative">
                       {column.label}
-                      {sortColumn === column.key && (
-                        <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
-                      )}
                     </span>
                     {column.sortable !== false && (
-                      <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
+                      <span className={`icon-arrow inline-flex items-center justify-center w-4 h-4 rounded transition-all duration-300 ease-in-out ${
                         sortColumn === column.key
-                          ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
-                          : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
-                      } ${sortColumn === column.key && !sortAsc ? 'rotate-180' : ''}`}>
-                        ↑
+                          ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 scale-110 opacity-100'
+                          : 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 opacity-0 group-hover/header:opacity-100 scale-100'
+                      } ${sortColumn === column.key && !sortAsc ? 'rotate-180' : 'rotate-0'}`}>
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 15l7-7 7 7" />
+                        </svg>
                       </span>
                     )}
                   </div>
@@ -368,12 +387,21 @@ export default function DataTable<T>({
               displayData.map((item, index) => {
                 const isMatch = matchesSearch(item);
                 const shouldHide = searchQuery.trim() && !isMatch;
+                const animationClass = isSorting ? (sortDirection === 'asc' ? 'sorting-animate-asc' : 'sorting-animate-desc') : '';
+
+                if (index === 0) {
+                  console.log('🎨 First row classes:', {
+                    isSorting,
+                    sortDirection,
+                    animationClass,
+                    shouldHide
+                  });
+                }
 
                 return (
                   <tr
                   key={getRowKey(item, index)}
                   style={{
-                    '--delay': `${index / 25}s`,
                     opacity: shouldHide ? 0 : 1,
                     transform: shouldHide ? 'translateX(60px)' : 'translateX(0)',
                     height: shouldHide ? '0' : 'auto',
@@ -382,19 +410,17 @@ export default function DataTable<T>({
                     borderWidth: shouldHide ? '0' : undefined,
                     marginTop: shouldHide ? '0' : undefined,
                     marginBottom: shouldHide ? '0' : undefined,
-                    animation: searchQuery.trim() && !shouldHide ? `fadeSlideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${index / 40}s both` : 'none',
-                    transition: 'opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), background-color 0s, border-width 0.25s ease-out 0.35s',
-                    transitionDelay: `${index / 40}s`,
+                    animation: searchQuery.trim() && !shouldHide ? `fadeSlideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${index / 40}s both` : undefined,
+                    transition: !isSorting ? 'opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), background-color 0s, border-width 0.25s ease-out 0.35s' : undefined,
+                    transitionDelay: !isSorting ? `${index / 40}s` : undefined,
                   } as React.CSSProperties}
-                  className={`border-b border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:shadow-sm ${shouldHide ? 'hide' : ''} ${
-                    isSorting ? (sortDirection === 'asc' ? 'sorting-animate-asc' : 'sorting-animate-desc') : ''
-                  } ${onRowClick ? 'cursor-pointer' : ''}`}
+                  className={`border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 ${!isSorting ? 'transition-all duration-200' : ''} ${shouldHide ? 'hide' : ''} ${animationClass} ${onRowClick ? 'cursor-pointer' : ''}`}
                   onClick={() => onRowClick?.(item)}
                 >
                   {columns.map((column) => (
                     <td
                       key={column.key}
-                      className={`px-3 md:px-4 py-4 text-center ${getHiddenClasses(column.hidden)} ${column.className || ''} ${!column.render ? 'overflow-hidden' : ''}`}
+                      className={`px-4 md:px-5 py-4 md:py-5 text-center ${getHiddenClasses(column.hidden)} ${column.className || ''} ${!column.render ? 'overflow-hidden' : ''}`}
                       style={{
                         padding: shouldHide ? '0' : undefined,
                         fontSize: shouldHide ? '0' : undefined,
@@ -429,7 +455,7 @@ export default function DataTable<T>({
 
       {/* Pagination Controls - hide when searching */}
       {enablePagination && sortedData.length > 0 && !searchQuery.trim() && (
-        <div className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750 midnight:from-gray-900 midnight:to-gray-850 purple:from-gray-900 purple:to-gray-850 backdrop-blur-md px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 border-t border-gray-200/70 dark:border-gray-700/70 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-b-xl md:rounded-b-2xl">
+        <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-b-xl md:rounded-b-2xl">
           {/* Left - Showing info */}
           <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-medium order-2 sm:order-1">
             Showing <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{startIndex + 1}</span> to{" "}
