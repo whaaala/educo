@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   LayoutDashboard,
@@ -126,6 +126,8 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
   const [hoveredSubmenuItem, setHoveredSubmenuItem] = useState<string | null>(null);
   const [hideTimeout, setHideTimeout] = useState<NodeJS.Timeout | null>(null);
   const [submenuHideTimeout, setSubmenuHideTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [showLogoText, setShowLogoText] = useState(false);
+  const logoTextTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Handle delayed hide
   const handleMouseEnterItem = (itemId: string) => {
@@ -186,6 +188,31 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Handle delayed logo text visibility
+  useEffect(() => {
+    // Clear any existing timeout
+    if (logoTextTimeoutRef.current) {
+      clearTimeout(logoTextTimeoutRef.current);
+      logoTextTimeoutRef.current = null;
+    }
+
+    if (isMobile === true || (isMobile === false && !isCollapsed)) {
+      // Show logo text after 500ms delay
+      logoTextTimeoutRef.current = setTimeout(() => {
+        setShowLogoText(true);
+      }, 500);
+    } else {
+      // Hide immediately when collapsing
+      setShowLogoText(false);
+    }
+
+    return () => {
+      if (logoTextTimeoutRef.current) {
+        clearTimeout(logoTextTimeoutRef.current);
+      }
+    };
+  }, [isCollapsed, isMobile]);
+
   const toggleExpanded = (id: string) => {
     setExpandedItems((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
@@ -228,12 +255,12 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                 "transition-all duration-200 ease-in-out",
                 "border border-transparent hover:border-blue-200/50 dark:hover:border-blue-500/20",
                 "midnight:hover:border-cyan-500/20 purple:hover:border-pink-500/20",
-                level > 0 && "pl-8 ml-2"
+                level > 0 && "pl-3"
               )}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 min-h-[32px]">
                 <div className={cn(
-                  "flex items-center justify-center w-8 h-8 rounded-lg",
+                  "flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0",
                   "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10",
                   "group-hover:bg-blue-100 dark:group-hover:bg-blue-500/20",
                   "midnight:group-hover:bg-cyan-500/20 purple:group-hover:bg-pink-500/20",
@@ -242,9 +269,24 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                   {item.icon}
                 </div>
                 {/* Show label based on mobile/collapsed state */}
-                {(isMobile === true || (isMobile === false && !isCollapsed)) && (
-                  <span className="flex-1 text-left">{item.label}</span>
-                )}
+                <span
+                  className="flex-1 text-left overflow-hidden transition-all ease-in-out"
+                  style={{
+                    width: (isMobile === true || (isMobile === false && !isCollapsed)) ? 'auto' : '0px',
+                    transitionDuration: '300ms'
+                  }}
+                >
+                  <span
+                    className="whitespace-nowrap transition-opacity ease-in-out"
+                    style={{
+                      opacity: (isMobile === true || (isMobile === false && !isCollapsed)) ? 1 : 0,
+                      transitionDuration: '200ms',
+                      transitionDelay: (isMobile === true || (isMobile === false && !isCollapsed)) ? '200ms' : '0ms'
+                    }}
+                  >
+                    {item.label}
+                  </span>
+                </span>
               </div>
               {/* Show chevron based on mobile/collapsed state */}
               {(isMobile === true || (isMobile === false && !isCollapsed)) && (
@@ -361,11 +403,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                 "transition-all duration-200 ease-in-out",
                 "border border-transparent hover:border-blue-200/50 dark:hover:border-blue-500/20",
                 "midnight:hover:border-cyan-500/20 purple:hover:border-pink-500/20",
-                level > 0 && "pl-8 ml-2"
+                level > 0 && "pl-3"
               )}
             >
               <div className={cn(
-                "flex items-center justify-center w-8 h-8 rounded-lg",
+                "flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0",
                 "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10",
                 "group-hover:bg-blue-100 dark:group-hover:bg-blue-500/20",
                 "midnight:group-hover:bg-cyan-500/20 purple:group-hover:bg-pink-500/20",
@@ -374,9 +416,24 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                 {item.icon}
               </div>
               {/* Show label based on mobile/collapsed state */}
-              {(isMobile === true || (isMobile === false && !isCollapsed)) && (
-                <span className="flex-1">{item.label}</span>
-              )}
+              <span
+                className="flex-1 overflow-hidden transition-all ease-in-out"
+                style={{
+                  width: (isMobile === true || (isMobile === false && !isCollapsed)) ? 'auto' : '0px',
+                  transitionDuration: '300ms'
+                }}
+              >
+                <span
+                  className="whitespace-nowrap transition-opacity ease-in-out"
+                  style={{
+                    opacity: (isMobile === true || (isMobile === false && !isCollapsed)) ? 1 : 0,
+                    transitionDuration: '200ms',
+                    transitionDelay: (isMobile === true || (isMobile === false && !isCollapsed)) ? '200ms' : '0ms'
+                  }}
+                >
+                  {item.label}
+                </span>
+              </span>
             </Link>
 
             {/* Tooltip for collapsed sidebar */}
@@ -399,7 +456,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
 
         {/* Show children based on mobile/collapsed state */}
         {hasChildren && isExpanded && (isMobile === true || (isMobile === false && !isCollapsed)) && (
-          <div className="mt-2 ml-2 space-y-1 pl-4 border-l-2 border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="mt-2 space-y-1 pl-6 border-l-2 border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20">
             {item.children?.map((child) => {
               const childHasChildren = child.children && child.children.length > 0;
 
@@ -484,7 +541,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
           "border-r border-gray-200/80 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20",
           "shadow-xl shadow-gray-200/50 dark:shadow-black/20",
           "backdrop-blur-xl",
-          "transition-all duration-300 z-40",
+          "transition-all duration-500 ease-in-out z-40",
           // On mobile: always full width (w-64) when open
           // On desktop: w-20 when collapsed, w-64 when expanded
           "w-64 lg:w-auto",
@@ -500,6 +557,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
             "flex items-center px-4 py-5 border-b border-gray-200/80 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20",
             "bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-500/5 dark:to-indigo-500/5",
             "midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5",
+            "transition-all duration-500 ease-in-out",
             isCollapsed ? "justify-center" : "justify-between"
           )}>
             {isCollapsed ? (
@@ -528,9 +586,9 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                   <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 dark:shadow-blue-400/20 group-hover:scale-110 transition-transform duration-200">
                     <GraduationCap className="w-6 h-6 text-white" />
                   </div>
-                  {/* Show logo text when expanded */}
-                  {(isMobile === true || (isMobile === false && !isCollapsed)) && (
-                    <div>
+                  {/* Show logo text when expanded - only render after delay */}
+                  {showLogoText && (
+                    <div className="ml-3 animate-in fade-in slide-in-from-left-2 duration-200">
                       <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 midnight:from-cyan-50 midnight:to-cyan-200 purple:from-pink-50 purple:to-pink-200 bg-clip-text text-transparent">Educo</h1>
                       <p className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">School ERP System</p>
                     </div>

@@ -192,16 +192,22 @@ export default function DataTable<T>({
       </div>
 
       {/* Table Body Container */}
-      <div className="overflow-hidden">
-        <table className="w-full table-fixed border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
           {/* Table Header */}
           <thead>
             <tr className="bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-750 midnight:from-gray-800 midnight:to-gray-850 purple:from-gray-800 purple:to-gray-850 border-b-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/50 purple:border-pink-500/50 shadow-sm">
-              {columns.map((column) => (
+              {columns.map((column) => {
+                // Determine alignment from className
+                const isLeftAligned = column.className?.includes('text-left');
+                const isCenterAligned = column.className?.includes('text-center') || !isLeftAligned;
+                const justifyClass = isLeftAligned ? 'justify-start' : 'justify-center';
+
+                return (
                 <th
                   key={column.key}
                   onClick={() => handleSort(column.key)}
-                  className={`px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all duration-300 ${
+                  className={`px-3 md:px-4 py-4 text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all duration-300 ${
                     column.sortable !== false ? 'cursor-pointer group/header select-none' : ''
                   } ${
                     sortColumn === column.key
@@ -209,7 +215,7 @@ export default function DataTable<T>({
                       : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
                   } ${getHiddenClasses(column.hidden)} ${column.className || ''}`}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className={`flex items-center ${justifyClass} gap-2`}>
                     <span className="relative">
                       {column.label}
                       {sortColumn === column.key && (
@@ -227,7 +233,8 @@ export default function DataTable<T>({
                     )}
                   </div>
                 </th>
-              ))}
+                );
+              })}
             </tr>
           </thead>
 
@@ -248,7 +255,7 @@ export default function DataTable<T>({
                   {columns.map((column) => (
                     <td
                       key={column.key}
-                      className={`px-3 md:px-4 py-4 transition-all duration-300 ${getHiddenClasses(column.hidden)} ${column.className || ''} ${!column.render ? 'overflow-hidden' : ''}`}
+                      className={`px-3 md:px-4 py-4 text-center transition-all duration-300 ${getHiddenClasses(column.hidden)} ${column.className || ''} ${!column.render ? 'overflow-hidden' : ''}`}
                     >
                       {column.render ? column.render(item, index) : (
                         <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 block truncate">
