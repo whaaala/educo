@@ -127,28 +127,60 @@ export default function ModernCalendar({ value, onChange, onClose }: ModernCalen
         </button>
 
         <div className="flex items-center gap-2">
-          <select
-            value={currentDate.getMonth()}
-            onChange={(e) => handleMonthChange(Number(e.target.value))}
-            className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded px-2 py-1 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 transition-colors"
-          >
-            {monthNames.map((month, index) => (
-              <option key={month} value={index} className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
-                {month}
-              </option>
-            ))}
-          </select>
-          <select
-            value={currentDate.getFullYear()}
-            onChange={(e) => handleYearChange(Number(e.target.value))}
-            className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded px-2 py-1 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 transition-colors"
-          >
-            {yearRange.map((year) => (
-              <option key={year} value={year} className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
-                {year}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={currentDate.getMonth()}
+              onChange={(e) => handleMonthChange(Number(e.target.value))}
+              className="appearance-none text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-cyan-900/30 midnight:to-cyan-800/20 purple:from-pink-900/30 purple:to-pink-800/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-gray-600 dark:hover:to-gray-600 midnight:hover:from-cyan-900/40 midnight:hover:to-cyan-800/30 purple:hover:from-pink-900/40 purple:hover:to-pink-800/30 rounded-lg px-3 py-1.5 pr-8 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 midnight:focus:ring-cyan-500/40 purple:focus:ring-pink-500/40 transition-all shadow-sm border border-blue-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
+              style={{
+                backgroundImage: 'none'
+              }}
+            >
+              {monthNames.map((month, index) => (
+                <option
+                  key={month}
+                  value={index}
+                  className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white font-bold py-3 px-4 hover:bg-blue-50 dark:hover:bg-gray-700"
+                  style={{
+                    padding: '12px 16px',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    lineHeight: '1.5'
+                  }}
+                >
+                  {month}
+                </option>
+              ))}
+            </select>
+            <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 pointer-events-none rotate-90" />
+          </div>
+          <div className="relative">
+            <select
+              value={currentDate.getFullYear()}
+              onChange={(e) => handleYearChange(Number(e.target.value))}
+              className="appearance-none text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-purple-900/30 midnight:to-purple-800/20 purple:from-pink-900/30 purple:to-pink-800/20 hover:from-purple-100 hover:to-purple-100 dark:hover:from-gray-600 dark:hover:to-gray-600 midnight:hover:from-purple-900/40 midnight:hover:to-purple-800/30 purple:hover:from-pink-900/40 purple:hover:to-pink-800/30 rounded-lg px-3 py-1.5 pr-8 cursor-pointer outline-none focus:ring-2 focus:ring-purple-500/40 dark:focus:ring-purple-400/40 midnight:focus:ring-cyan-500/40 purple:focus:ring-pink-500/40 transition-all shadow-sm border border-purple-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
+              style={{
+                backgroundImage: 'none'
+              }}
+            >
+              {yearRange.map((year) => (
+                <option
+                  key={year}
+                  value={year}
+                  className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white font-bold py-3 px-4 hover:bg-purple-50 dark:hover:bg-gray-700"
+                  style={{
+                    padding: '12px 16px',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    lineHeight: '1.5'
+                  }}
+                >
+                  {year}
+                </option>
+              ))}
+            </select>
+            <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 pointer-events-none rotate-90" />
+          </div>
         </div>
 
         <button
