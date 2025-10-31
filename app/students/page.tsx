@@ -378,7 +378,7 @@ export default function AllStudentsPage() {
           ) : (
             <div
               key="list-view"
-              className="animate-in fade-in zoom-in-95 slide-in-from-left-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] rounded-2xl overflow-hidden"
+              className="animate-in fade-in zoom-in-95 slide-in-from-left-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
             >
               <StudentTable students={displayedStudents} />
             </div>

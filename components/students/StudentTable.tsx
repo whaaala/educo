@@ -1,593 +1,197 @@
 "use client";
 
 import { Student } from "./StudentCard";
-import { MoreVertical, MessageCircle, Phone, Mail, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState, useEffect } from "react";
-import SearchBar from "@/components/shared/SearchBar";
+import { MoreVertical, MessageCircle, Phone, Mail } from "lucide-react";
+import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 
 interface StudentTableProps {
   students: Student[];
 }
 
 export default function StudentTable({ students }: StudentTableProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [sortColumn, setSortColumn] = useState<number | null>(null);
-  const [sortAsc, setSortAsc] = useState(true);
-  const [isSorting, setIsSorting] = useState(false);
-
-  // Filter students based on search query
-  const filteredStudents = students.filter((student) => {
-    if (!searchQuery.trim()) return true;
-
-    const searchData = searchQuery.toLowerCase().trim();
-    const studentData = [
-      student.name,
-      student.id,
-      student.rollNo,
-      student.class,
-      student.gender,
-      student.status,
-      student.joinedOn,
-    ]
-      .join(' ')
-      .toLowerCase()
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    return studentData.includes(searchData);
-  });
-
-  // Sort students based on selected column
-  const sortedStudents = sortColumn !== null ? [...filteredStudents].sort((a, b) => {
-    const columns = [
-      '', // ID column (not sortable, just for display)
-      a.id, // Admission No
-      a.rollNo, // Roll No
-      a.name, // Name
-      a.class.split(", ")[0], // Class
-      a.class.split(", ")[1], // Section
-      a.gender, // Gender
-      a.status, // Status
-      a.joinedOn, // Date of Join
-    ];
-
-    const columnsB = [
-      '',
-      b.id,
-      b.rollNo,
-      b.name,
-      b.class.split(", ")[0],
-      b.class.split(", ")[1],
-      b.gender,
-      b.status,
-      b.joinedOn,
-    ];
-
-    const firstRow = columns[sortColumn]?.toString().toLowerCase() || '';
-    const secondRow = columnsB[sortColumn]?.toString().toLowerCase() || '';
-
-    if (sortAsc) {
-      return firstRow < secondRow ? -1 : 1;
-    } else {
-      return firstRow < secondRow ? 1 : -1;
-    }
-  }) : filteredStudents;
-
-  // Calculate pagination from sorted students
-  const totalPages = Math.ceil(sortedStudents.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedStudents = sortedStudents.slice(startIndex, endIndex);
-
-  // Reset to page 1 when search query changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
-
-  // Apply staggered animation delays to rows
-  useEffect(() => {
-    const tableRows = document.querySelectorAll('tbody tr');
-    tableRows.forEach((row, index) => {
-      (row as HTMLElement).style.setProperty('--delay', `${index / 25}s`);
-    });
-  }, [paginatedStudents]);
-
-  // Handle column header click for sorting
-  const handleSort = (columnIndex: number) => {
-    setIsSorting(true);
-    if (sortColumn === columnIndex) {
-      // Toggle sort direction
-      setSortAsc(!sortAsc);
-    } else {
-      // New column, start with ascending
-      setSortColumn(columnIndex);
-      setSortAsc(true);
-    }
-  };
-
-  // Reset sorting animation after it completes
-  useEffect(() => {
-    if (isSorting) {
-      const timer = setTimeout(() => {
-        setIsSorting(false);
-      }, 600); // Match the animation duration
-      return () => clearTimeout(timer);
-    }
-  }, [isSorting]);
+  // Define column configuration
+  const columns: ColumnConfig<Student>[] = [
+    {
+      key: "index",
+      label: "ID",
+      sortable: false,
+      hidden: { desktop: true },
+      className: "text-center",
+      render: (_, index) => (
+        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
+          {index + 1}
+        </span>
+      ),
+      searchable: false,
+    },
+    {
+      key: "id",
+      label: "Admission No",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      render: (student) => (
+        <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
+          {student.id}
+        </span>
+      ),
+    },
+    {
+      key: "rollNo",
+      label: "Roll No",
+      sortable: true,
+      hidden: { mobile: true },
+      render: (student) => (
+        <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
+          {student.rollNo}
+        </span>
+      ),
+    },
+    {
+      key: "name",
+      label: "Name",
+      sortable: true,
+      render: (student) => (
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 transition-all duration-300 shadow-md">
+            {student.name.charAt(0)}
+          </div>
+          <span className="text-xs font-semibold text-gray-900 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate max-w-[120px] md:max-w-none">
+            {student.name}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "class",
+      label: "Class",
+      sortable: true,
+      sortValue: (student) => student.class.split(", ")[0],
+      render: (student) => {
+        const [classNum] = student.class.split(", ");
+        return (
+          <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
+            {classNum}
+          </span>
+        );
+      },
+    },
+    {
+      key: "section",
+      label: "Section",
+      sortable: true,
+      hidden: { mobile: true },
+      sortValue: (student) => student.class.split(", ")[1],
+      render: (student) => {
+        const [, section] = student.class.split(", ");
+        return (
+          <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
+            {section}
+          </span>
+        );
+      },
+      searchable: false,
+    },
+    {
+      key: "gender",
+      label: "Gender",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      render: (student) => (
+        <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
+          {student.gender}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      label: "Status",
+      sortable: true,
+      render: (student) => (
+        <div className="flex items-center justify-start">
+          <span
+            className={`inline-block px-2 md:px-3 py-1 md:py-1.5 rounded-full text-[9px] md:text-xs font-bold text-center min-w-[60px] md:min-w-[70px] shadow-sm transition-all duration-300 ${
+              student.status === "Active"
+                ? "bg-green-500 text-white dark:bg-green-600"
+                : "bg-red-500 text-white dark:bg-red-600"
+            }`}
+          >
+            {student.status}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "joinedOn",
+      label: "Date of Join",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      render: (student) => (
+        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
+          {student.joinedOn}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      label: "Action",
+      sortable: false,
+      className: "text-center w-32",
+      render: (student) => (
+        <div className="flex items-center justify-center gap-0.5">
+          <button
+            className="p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95"
+            title="Message"
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log("Message", student.id);
+            }}
+          >
+            <MessageCircle className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+          </button>
+          <button
+            className="p-1.5 rounded-md hover:bg-green-50 dark:hover:bg-green-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95"
+            title="Call"
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log("Call", student.id);
+            }}
+          >
+            <Phone className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors" />
+          </button>
+          <button
+            className="p-1.5 rounded-md hover:bg-purple-50 dark:hover:bg-purple-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95"
+            title="Email"
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log("Email", student.id);
+            }}
+          >
+            <Mail className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
+          </button>
+          <button
+            className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95"
+            title="More"
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log("More", student.id);
+            }}
+          >
+            <MoreVertical className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors" />
+          </button>
+        </div>
+      ),
+      searchable: false,
+    },
+  ];
 
   return (
-    <div className="w-full bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 backdrop-blur-md shadow-lg rounded-xl md:rounded-2xl border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/30 purple:border-pink-500/30 transition-all duration-300">
-      {/* Table Header */}
-      <div className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750 midnight:from-gray-900 midnight:to-gray-850 purple:from-gray-900 purple:to-gray-850 backdrop-blur-md px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-3 border-b border-gray-200/70 dark:border-gray-700/70 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-t-xl md:rounded-t-2xl">
-        <h2 className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-300 purple:text-pink-300 tracking-tight whitespace-nowrap">
-          Student Records {searchQuery && `(${sortedStudents.length})`}
-        </h2>
-
-        {/* Search Bar */}
-        <SearchBar
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder="Search students..."
-          size="sm"
-          className="w-full sm:w-[45%] md:w-[35%]"
-        />
-      </div>
-
-      {/* Table Body Container */}
-      <div>
-        <table className="w-full border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
-          {/* Table Header */}
-          <thead>
-            <tr className="bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-750 midnight:from-gray-800 midnight:to-gray-850 purple:from-gray-800 purple:to-gray-850 border-b-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/50 purple:border-pink-500/50 shadow-sm">
-              {/* ID - Hidden on mobile */}
-              <th className="hidden lg:table-cell px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
-                ID
-              </th>
-              {/* Admission No - Hidden on mobile and tablet */}
-              <th
-                onClick={() => handleSort(1)}
-                className={`hidden xl:table-cell px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
-                  sortColumn === 1
-                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
-                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="relative">
-                    Admission No
-                    {sortColumn === 1 && (
-                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
-                    )}
-                  </span>
-                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
-                    sortColumn === 1
-                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
-                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
-                  } ${sortColumn === 1 && !sortAsc ? 'rotate-180' : ''}`}>
-                    ↑
-                  </span>
-                </div>
-              </th>
-              {/* Roll No - Hidden on mobile */}
-              <th
-                onClick={() => handleSort(2)}
-                className={`hidden md:table-cell px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
-                  sortColumn === 2
-                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
-                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="relative">
-                    Roll No
-                    {sortColumn === 2 && (
-                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
-                    )}
-                  </span>
-                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
-                    sortColumn === 2
-                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
-                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
-                  } ${sortColumn === 2 && !sortAsc ? 'rotate-180' : ''}`}>
-                    ↑
-                  </span>
-                </div>
-              </th>
-              {/* Name - Always visible */}
-              <th
-                onClick={() => handleSort(3)}
-                className={`px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
-                  sortColumn === 3
-                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
-                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="relative">
-                    Name
-                    {sortColumn === 3 && (
-                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
-                    )}
-                  </span>
-                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
-                    sortColumn === 3
-                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
-                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
-                  } ${sortColumn === 3 && !sortAsc ? 'rotate-180' : ''}`}>
-                    ↑
-                  </span>
-                </div>
-              </th>
-              {/* Class - Always visible */}
-              <th
-                onClick={() => handleSort(4)}
-                className={`px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
-                  sortColumn === 4
-                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
-                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="relative">
-                    Class
-                    {sortColumn === 4 && (
-                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
-                    )}
-                  </span>
-                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
-                    sortColumn === 4
-                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
-                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
-                  } ${sortColumn === 4 && !sortAsc ? 'rotate-180' : ''}`}>
-                    ↑
-                  </span>
-                </div>
-              </th>
-              {/* Section - Hidden on mobile */}
-              <th
-                onClick={() => handleSort(5)}
-                className={`hidden md:table-cell px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
-                  sortColumn === 5
-                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
-                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="relative">
-                    Section
-                    {sortColumn === 5 && (
-                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
-                    )}
-                  </span>
-                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
-                    sortColumn === 5
-                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
-                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
-                  } ${sortColumn === 5 && !sortAsc ? 'rotate-180' : ''}`}>
-                    ↑
-                  </span>
-                </div>
-              </th>
-              {/* Gender - Hidden on mobile and tablet */}
-              <th
-                onClick={() => handleSort(6)}
-                className={`hidden lg:table-cell px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
-                  sortColumn === 6
-                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
-                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="relative">
-                    Gender
-                    {sortColumn === 6 && (
-                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
-                    )}
-                  </span>
-                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
-                    sortColumn === 6
-                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
-                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
-                  } ${sortColumn === 6 && !sortAsc ? 'rotate-180' : ''}`}>
-                    ↑
-                  </span>
-                </div>
-              </th>
-              {/* Status - Always visible */}
-              <th
-                onClick={() => handleSort(7)}
-                className={`px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
-                  sortColumn === 7
-                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
-                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="relative">
-                    Status
-                    {sortColumn === 7 && (
-                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
-                    )}
-                  </span>
-                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
-                    sortColumn === 7
-                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
-                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
-                  } ${sortColumn === 7 && !sortAsc ? 'rotate-180' : ''}`}>
-                    ↑
-                  </span>
-                </div>
-              </th>
-              {/* Date of Join - Hidden on mobile */}
-              <th
-                onClick={() => handleSort(8)}
-                className={`hidden lg:table-cell px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
-                  sortColumn === 8
-                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
-                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="relative">
-                    Date of Join
-                    {sortColumn === 8 && (
-                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
-                    )}
-                  </span>
-                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
-                    sortColumn === 8
-                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
-                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
-                  } ${sortColumn === 8 && !sortAsc ? 'rotate-180' : ''}`}>
-                    ↑
-                  </span>
-                </div>
-              </th>
-              {/* Action - Always visible */}
-              <th className="px-3 md:px-4 py-4 text-center text-xs font-bold uppercase tracking-wide text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
-                Action
-              </th>
-            </tr>
-          </thead>
-
-          {/* Table Body - with Zebra Striping */}
-          <tbody>
-            {paginatedStudents.map((student, index) => {
-              // Extract class and section from "III, A" format
-              const [classNum, section] = student.class.split(", ");
-
-              return (
-                <tr
-                  key={student.id}
-                  style={{
-                    '--delay': `${index / 25}s`,
-                  } as React.CSSProperties}
-                  className={`border-b border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:shadow-sm ${
-                    isSorting ? 'sorting-animate' : ''
-                  }`}
-                  data-visible="true"
-                >
-                  {/* ID - Hidden on mobile */}
-                  <td className="hidden lg:table-cell px-4 py-4 text-left">
-                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                      {startIndex + index + 1}
-                    </span>
-                  </td>
-
-                  {/* Admission No - Hidden on mobile and tablet */}
-                  <td className="hidden xl:table-cell px-4 py-4 whitespace-nowrap transition-all duration-300" style={{ transitionDelay: `calc(var(--delay) + 0.15s)` }}>
-                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
-                      {student.id}
-                    </span>
-                  </td>
-
-                  {/* Roll No - Hidden on mobile */}
-                  <td className="hidden md:table-cell px-3 md:px-4 py-4 whitespace-nowrap transition-all duration-300" style={{ transitionDelay: `calc(var(--delay) + 0.2s)` }}>
-                    <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
-                      {student.rollNo}
-                    </span>
-                  </td>
-
-                  {/* Name with Avatar - Always visible */}
-                  <td className="px-3 md:px-4 py-4 whitespace-nowrap transition-all duration-300" style={{ transitionDelay: `calc(var(--delay) + 0.25s)` }}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 transition-all duration-300 shadow-md">
-                        {student.name.charAt(0)}
-                      </div>
-                      <span className="text-xs font-semibold text-gray-900 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate max-w-[120px] md:max-w-none">
-                        {student.name}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Class - Always visible */}
-                  <td className="px-3 md:px-4 py-4 whitespace-nowrap transition-all duration-300" style={{ transitionDelay: `calc(var(--delay) + 0.3s)` }}>
-                    <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
-                      {classNum}
-                    </span>
-                  </td>
-
-                  {/* Section - Hidden on mobile */}
-                  <td className="hidden md:table-cell px-3 md:px-4 py-4 whitespace-nowrap transition-all duration-300" style={{ transitionDelay: `calc(var(--delay) + 0.35s)` }}>
-                    <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
-                      {section}
-                    </span>
-                  </td>
-
-                  {/* Gender - Hidden on mobile and tablet */}
-                  <td className="hidden lg:table-cell px-4 py-4 whitespace-nowrap transition-all duration-300" style={{ transitionDelay: `calc(var(--delay) + 0.4s)` }}>
-                    <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
-                      {student.gender}
-                    </span>
-                  </td>
-
-                  {/* Status - Always visible */}
-                  <td className="px-3 md:px-4 py-4 whitespace-nowrap transition-all duration-300" style={{ transitionDelay: `calc(var(--delay) + 0.45s)` }}>
-                    <div className="flex items-center justify-start">
-                      <span
-                        className={`inline-block px-2 md:px-3 py-1 md:py-1.5 rounded-full text-[9px] md:text-xs font-bold text-center min-w-[60px] md:min-w-[70px] shadow-sm transition-all duration-300 ${
-                          student.status === "Active"
-                            ? "bg-green-500 text-white dark:bg-green-600"
-                            : "bg-red-500 text-white dark:bg-red-600"
-                        }`}
-                      >
-                        {student.status}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Date of Join - Hidden on mobile */}
-                  <td className="hidden lg:table-cell px-4 py-4 whitespace-nowrap transition-all duration-300" style={{ transitionDelay: `calc(var(--delay) + 0.5s)` }}>
-                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
-                      {student.joinedOn}
-                    </span>
-                  </td>
-
-                  {/* Action Buttons - Always visible, reduced on mobile */}
-                  <td className="px-3 md:px-4 py-4 whitespace-nowrap transition-all duration-300" style={{ transitionDelay: `calc(var(--delay) + 0.55s)` }}>
-                    <div className="flex items-center justify-center gap-1 md:gap-2">
-                      <button
-                        className="p-1.5 md:p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-110 active:scale-95"
-                        title="Message"
-                      >
-                        <MessageCircle className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
-                      </button>
-                      <button
-                        className="hidden md:block p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-110 active:scale-95"
-                        title="Call"
-                      >
-                        <Phone className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors" />
-                      </button>
-                      <button
-                        className="hidden md:block p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-110 active:scale-95"
-                        title="Email"
-                      >
-                        <Mail className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
-                      </button>
-                      <button
-                        className="p-1.5 md:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-110 active:scale-95"
-                        title="More"
-                      >
-                        <MoreVertical className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination Controls */}
-      <div className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750 midnight:from-gray-900 midnight:to-gray-850 purple:from-gray-900 purple:to-gray-850 backdrop-blur-md px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 border-t border-gray-200/70 dark:border-gray-700/70 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-b-xl md:rounded-b-2xl">
-          {/* Left - Showing info */}
-          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-medium order-2 sm:order-1">
-            {sortedStudents.length > 0 ? (
-              <>
-                Showing <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{startIndex + 1}</span> to{" "}
-                <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{Math.min(endIndex, sortedStudents.length)}</span> of{" "}
-                <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{sortedStudents.length}</span> {searchQuery ? 'filtered' : 'total'} entries
-              </>
-            ) : (
-              <span>No matching entries found</span>
-            )}
-          </div>
-
-          {/* Center - Page numbers */}
-          <div className="flex items-center gap-1 sm:gap-1.5 order-1 sm:order-2">
-            {/* Previous Button */}
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className={`p-1.5 rounded-lg transition-all duration-300 ${
-                currentPage === 1
-                  ? "opacity-40 cursor-not-allowed bg-gray-100 dark:bg-gray-700"
-                  : "hover:bg-blue-100 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 cursor-pointer hover:scale-110 active:scale-95"
-              }`}
-              title="Previous page"
-            >
-              <ChevronLeft className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-            </button>
-
-            {/* Page Numbers */}
-            <div className="flex items-center gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-                // Show first page, last page, current page, and pages around current
-                const showPage =
-                  pageNum === 1 ||
-                  pageNum === totalPages ||
-                  Math.abs(pageNum - currentPage) <= 1;
-
-                // Show ellipsis
-                const showEllipsisBefore = pageNum === currentPage - 2 && currentPage > 3;
-                const showEllipsisAfter = pageNum === currentPage + 2 && currentPage < totalPages - 2;
-
-                if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
-                  return null;
-                }
-
-                if (showEllipsisBefore || showEllipsisAfter) {
-                  return (
-                    <span key={pageNum} className="px-2 text-gray-400 dark:text-gray-500 font-bold">
-                      ...
-                    </span>
-                  );
-                }
-
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={`min-w-[30px] h-7 sm:h-8 px-2 sm:px-3 rounded-lg text-xs sm:text-sm font-bold transition-all duration-300 ${
-                      currentPage === pageNum
-                        ? "bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 text-white shadow-md scale-105"
-                        : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:scale-105 active:scale-95"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Next Button */}
-            <button
-              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-              className={`p-1.5 rounded-lg transition-all duration-300 ${
-                currentPage === totalPages
-                  ? "opacity-40 cursor-not-allowed bg-gray-100 dark:bg-gray-700"
-                  : "hover:bg-blue-100 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 cursor-pointer hover:scale-110 active:scale-95"
-              }`}
-              title="Next page"
-            >
-              <ChevronRight className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-            </button>
-          </div>
-
-          {/* Right - Items per page */}
-          <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 order-3">
-            <label htmlFor="itemsPerPage" className="whitespace-nowrap">Items per page:</label>
-            <select
-              id="itemsPerPage"
-              value={itemsPerPage}
-              onChange={(e) => {
-                setItemsPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-500 purple:focus:ring-pink-500 cursor-pointer"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={15}>15</option>
-              <option value={20}>20</option>
-              <option value={25}>25</option>
-            </select>
-          </div>
-      </div>
-    </div>
+    <DataTable
+      data={students}
+      columns={columns}
+      title="Student Records"
+      searchPlaceholder="Search students..."
+      getRowKey={(student) => student.id}
+      emptyMessage="No students found"
+    />
   );
 }
