@@ -306,6 +306,9 @@ export default function AllStudentsPage() {
 
   return (
     <MainLayout>
+      {/* Background Image for Glassmorphism Effect */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 midnight:from-gray-950 midnight:via-cyan-950/30 midnight:to-blue-950/30 purple:from-gray-950 purple:via-purple-950/30 purple:to-pink-950/30" />
+
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-6 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
         {/* Left Section - Title and Breadcrumb */}
