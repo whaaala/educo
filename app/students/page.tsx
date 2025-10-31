@@ -5,8 +5,8 @@ import MainLayout from "@/components/layout/MainLayout";
 import StudentCard, { Student } from "@/components/students/StudentCard";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
 import ExportButton from "@/components/shared/ExportButton";
+import DateRangePicker from "@/components/shared/DateRangePicker";
 import {
-  Calendar,
   Filter,
   Grid3x3,
   List,
@@ -168,12 +168,16 @@ export default function AllStudentsPage() {
   const [students] = useState<Student[]>(sampleStudents);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
-  const [dateRange, setDateRange] = useState("10/24/2025 - 10/30/2025");
   const [isMounted, setIsMounted] = useState(false);
   const [displayedCount, setDisplayedCount] = useState(12);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const previousCountRef = useRef(12);
+
+  const handleDateRangeChange = (startDate: string, endDate: string) => {
+    console.log("Date range changed:", startDate, "-", endDate);
+    // You can add logic here to filter students based on the date range
+  };
 
   useEffect(() => {
     setIsMounted(true);
@@ -276,11 +280,8 @@ export default function AllStudentsPage() {
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
             {/* Left Section - Date and Filter */}
             <div className="flex items-center gap-3 lg:flex-1">
-              {/* Date Range */}
-              <div className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 cursor-pointer">
-                <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-                <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">{dateRange}</span>
-              </div>
+              {/* Date Range Picker */}
+              <DateRangePicker onChange={handleDateRangeChange} />
 
               {/* Filter */}
               <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
