@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Search, Moon, Sun, Maximize2, MessageCircle, ChevronDown, Menu } from "lucide-react";
+import { Moon, Sun, Maximize2, MessageCircle, ChevronDown, Menu } from "lucide-react";
 import UserMenu from "./UserMenu";
 import NotificationDropdown from "./NotificationDropdown";
+import SearchBar from "@/components/shared/SearchBar";
 import { useTheme } from "@/contexts/ThemeContext";
 
 interface HeaderProps {
@@ -16,6 +17,7 @@ export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: 
   const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [isAddNewOpen, setIsAddNewOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const yearDropdownRef = useRef<HTMLDivElement>(null);
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const addNewRef = useRef<HTMLDivElement>(null);
@@ -134,28 +136,13 @@ export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: 
 
           {/* Search Bar */}
           <div className="flex-1 hidden lg:block">
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/70 purple:text-pink-400/70 group-hover:text-gray-600 dark:group-hover:text-gray-300 midnight:group-hover:text-cyan-300 purple:group-hover:text-pink-300 transition-colors duration-200" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search for anything..."
-                className="w-full pl-10 pr-4 py-2.5
-                  bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33]
-                  border border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20
-                  text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50
-                  placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400/60 purple:placeholder-pink-400/60
-                  rounded-xl
-                  text-sm font-medium
-                  shadow-sm hover:shadow-md
-                  focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 midnight:focus:ring-cyan-400/40 purple:focus:ring-pink-400/40
-                  focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400
-                  hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-400/40 purple:hover:border-pink-400/40
-                  transition-all duration-200 ease-in-out
-                  backdrop-blur-sm"
-              />
-            </div>
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search for anything..."
+              size="md"
+              fullWidth
+            />
           </div>
         </div>
 
