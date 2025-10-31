@@ -13,6 +13,9 @@ export default function StudentTable({ students }: StudentTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [sortColumn, setSortColumn] = useState<number | null>(null);
+  const [sortAsc, setSortAsc] = useState(true);
+  const [isSorting, setIsSorting] = useState(false);
 
   // Filter students based on search query
   const filteredStudents = students.filter((student) => {
@@ -36,11 +39,47 @@ export default function StudentTable({ students }: StudentTableProps) {
     return studentData.includes(searchData);
   });
 
-  // Calculate pagination from filtered students
-  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+  // Sort students based on selected column
+  const sortedStudents = sortColumn !== null ? [...filteredStudents].sort((a, b) => {
+    const columns = [
+      '', // ID column (not sortable, just for display)
+      a.id, // Admission No
+      a.rollNo, // Roll No
+      a.name, // Name
+      a.class.split(", ")[0], // Class
+      a.class.split(", ")[1], // Section
+      a.gender, // Gender
+      a.status, // Status
+      a.joinedOn, // Date of Join
+    ];
+
+    const columnsB = [
+      '',
+      b.id,
+      b.rollNo,
+      b.name,
+      b.class.split(", ")[0],
+      b.class.split(", ")[1],
+      b.gender,
+      b.status,
+      b.joinedOn,
+    ];
+
+    const firstRow = columns[sortColumn]?.toString().toLowerCase() || '';
+    const secondRow = columnsB[sortColumn]?.toString().toLowerCase() || '';
+
+    if (sortAsc) {
+      return firstRow < secondRow ? -1 : 1;
+    } else {
+      return firstRow < secondRow ? 1 : -1;
+    }
+  }) : filteredStudents;
+
+  // Calculate pagination from sorted students
+  const totalPages = Math.ceil(sortedStudents.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedStudents = filteredStudents.slice(startIndex, endIndex);
+  const paginatedStudents = sortedStudents.slice(startIndex, endIndex);
 
   // Reset to page 1 when search query changes
   useEffect(() => {
@@ -55,12 +94,35 @@ export default function StudentTable({ students }: StudentTableProps) {
     });
   }, [paginatedStudents]);
 
+  // Handle column header click for sorting
+  const handleSort = (columnIndex: number) => {
+    setIsSorting(true);
+    if (sortColumn === columnIndex) {
+      // Toggle sort direction
+      setSortAsc(!sortAsc);
+    } else {
+      // New column, start with ascending
+      setSortColumn(columnIndex);
+      setSortAsc(true);
+    }
+  };
+
+  // Reset sorting animation after it completes
+  useEffect(() => {
+    if (isSorting) {
+      const timer = setTimeout(() => {
+        setIsSorting(false);
+      }, 600); // Match the animation duration
+      return () => clearTimeout(timer);
+    }
+  }, [isSorting]);
+
   return (
     <div className="w-full bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 backdrop-blur-md shadow-lg rounded-xl md:rounded-2xl border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/30 purple:border-pink-500/30 transition-all duration-300">
       {/* Table Header */}
       <div className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750 midnight:from-gray-900 midnight:to-gray-850 purple:from-gray-900 purple:to-gray-850 backdrop-blur-md px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-3 border-b border-gray-200/70 dark:border-gray-700/70 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-t-xl md:rounded-t-2xl">
         <h2 className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-300 purple:text-pink-300 tracking-tight whitespace-nowrap">
-          Student Records {searchQuery && `(${filteredStudents.length})`}
+          Student Records {searchQuery && `(${sortedStudents.length})`}
         </h2>
 
         {/* Search Bar */}
@@ -84,36 +146,204 @@ export default function StudentTable({ students }: StudentTableProps) {
                 ID
               </th>
               {/* Admission No - Hidden on mobile and tablet */}
-              <th className="hidden xl:table-cell px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
-                Admission No
+              <th
+                onClick={() => handleSort(1)}
+                className={`hidden xl:table-cell px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
+                  sortColumn === 1
+                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
+                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="relative">
+                    Admission No
+                    {sortColumn === 1 && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
+                    )}
+                  </span>
+                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
+                    sortColumn === 1
+                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
+                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
+                  } ${sortColumn === 1 && !sortAsc ? 'rotate-180' : ''}`}>
+                    ↑
+                  </span>
+                </div>
               </th>
               {/* Roll No - Hidden on mobile */}
-              <th className="hidden md:table-cell px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
-                Roll No
+              <th
+                onClick={() => handleSort(2)}
+                className={`hidden md:table-cell px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
+                  sortColumn === 2
+                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
+                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="relative">
+                    Roll No
+                    {sortColumn === 2 && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
+                    )}
+                  </span>
+                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
+                    sortColumn === 2
+                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
+                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
+                  } ${sortColumn === 2 && !sortAsc ? 'rotate-180' : ''}`}>
+                    ↑
+                  </span>
+                </div>
               </th>
               {/* Name - Always visible */}
-              <th className="px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
-                Name
+              <th
+                onClick={() => handleSort(3)}
+                className={`px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
+                  sortColumn === 3
+                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
+                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="relative">
+                    Name
+                    {sortColumn === 3 && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
+                    )}
+                  </span>
+                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
+                    sortColumn === 3
+                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
+                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
+                  } ${sortColumn === 3 && !sortAsc ? 'rotate-180' : ''}`}>
+                    ↑
+                  </span>
+                </div>
               </th>
               {/* Class - Always visible */}
-              <th className="px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
-                Class
+              <th
+                onClick={() => handleSort(4)}
+                className={`px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
+                  sortColumn === 4
+                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
+                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="relative">
+                    Class
+                    {sortColumn === 4 && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
+                    )}
+                  </span>
+                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
+                    sortColumn === 4
+                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
+                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
+                  } ${sortColumn === 4 && !sortAsc ? 'rotate-180' : ''}`}>
+                    ↑
+                  </span>
+                </div>
               </th>
               {/* Section - Hidden on mobile */}
-              <th className="hidden md:table-cell px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
-                Section
+              <th
+                onClick={() => handleSort(5)}
+                className={`hidden md:table-cell px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
+                  sortColumn === 5
+                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
+                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="relative">
+                    Section
+                    {sortColumn === 5 && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
+                    )}
+                  </span>
+                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
+                    sortColumn === 5
+                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
+                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
+                  } ${sortColumn === 5 && !sortAsc ? 'rotate-180' : ''}`}>
+                    ↑
+                  </span>
+                </div>
               </th>
               {/* Gender - Hidden on mobile and tablet */}
-              <th className="hidden lg:table-cell px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
-                Gender
+              <th
+                onClick={() => handleSort(6)}
+                className={`hidden lg:table-cell px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
+                  sortColumn === 6
+                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
+                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="relative">
+                    Gender
+                    {sortColumn === 6 && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
+                    )}
+                  </span>
+                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
+                    sortColumn === 6
+                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
+                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
+                  } ${sortColumn === 6 && !sortAsc ? 'rotate-180' : ''}`}>
+                    ↑
+                  </span>
+                </div>
               </th>
               {/* Status - Always visible */}
-              <th className="px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
-                Status
+              <th
+                onClick={() => handleSort(7)}
+                className={`px-3 md:px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
+                  sortColumn === 7
+                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
+                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="relative">
+                    Status
+                    {sortColumn === 7 && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
+                    )}
+                  </span>
+                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
+                    sortColumn === 7
+                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
+                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
+                  } ${sortColumn === 7 && !sortAsc ? 'rotate-180' : ''}`}>
+                    ↑
+                  </span>
+                </div>
               </th>
               {/* Date of Join - Hidden on mobile */}
-              <th className="hidden lg:table-cell px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
-                Date of Join
+              <th
+                onClick={() => handleSort(8)}
+                className={`hidden lg:table-cell px-4 py-4 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap cursor-pointer transition-all duration-300 group/header select-none ${
+                  sortColumn === 8
+                    ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
+                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:text-blue-500 dark:hover:text-blue-400 midnight:hover:text-cyan-400 purple:hover:text-pink-400'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="relative">
+                    Date of Join
+                    {sortColumn === 8 && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 midnight:from-cyan-400 midnight:to-blue-400 purple:from-pink-400 purple:to-purple-400 rounded-full"></span>
+                    )}
+                  </span>
+                  <span className={`icon-arrow inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] transition-all duration-300 ${
+                    sortColumn === 8
+                      ? 'bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-sm scale-105'
+                      : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 group-hover/header:bg-gray-200 dark:group-hover/header:bg-gray-600 midnight:group-hover/header:bg-cyan-500/10 purple:group-hover/header:bg-pink-500/10 group-hover/header:text-gray-600 dark:group-hover/header:text-gray-300 midnight:group-hover/header:text-cyan-400 purple:group-hover/header:text-pink-400'
+                  } ${sortColumn === 8 && !sortAsc ? 'rotate-180' : ''}`}>
+                    ↑
+                  </span>
+                </div>
               </th>
               {/* Action - Always visible */}
               <th className="px-3 md:px-4 py-4 text-center text-xs font-bold uppercase tracking-wide text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
@@ -134,7 +364,9 @@ export default function StudentTable({ students }: StudentTableProps) {
                   style={{
                     '--delay': `${index / 25}s`,
                   } as React.CSSProperties}
-                  className="border-b border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:shadow-sm"
+                  className={`border-b border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:shadow-sm ${
+                    isSorting ? 'sorting-animate' : ''
+                  }`}
                   data-visible="true"
                 >
                   {/* ID - Hidden on mobile */}
@@ -253,11 +485,11 @@ export default function StudentTable({ students }: StudentTableProps) {
       <div className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750 midnight:from-gray-900 midnight:to-gray-850 purple:from-gray-900 purple:to-gray-850 backdrop-blur-md px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 border-t border-gray-200/70 dark:border-gray-700/70 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-b-xl md:rounded-b-2xl">
           {/* Left - Showing info */}
           <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-medium order-2 sm:order-1">
-            {filteredStudents.length > 0 ? (
+            {sortedStudents.length > 0 ? (
               <>
                 Showing <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{startIndex + 1}</span> to{" "}
-                <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{Math.min(endIndex, filteredStudents.length)}</span> of{" "}
-                <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{filteredStudents.length}</span> {searchQuery ? 'filtered' : 'total'} entries
+                <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{Math.min(endIndex, sortedStudents.length)}</span> of{" "}
+                <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{sortedStudents.length}</span> {searchQuery ? 'filtered' : 'total'} entries
               </>
             ) : (
               <span>No matching entries found</span>
