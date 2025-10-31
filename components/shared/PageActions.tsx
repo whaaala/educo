@@ -1,8 +1,9 @@
 "use client";
 
-import { RefreshCw, Printer } from "lucide-react";
+import { Printer } from "lucide-react";
 import ExportButton from "./ExportButton";
 import AddButton from "./AddButton";
+import RefreshButton from "./RefreshButton";
 
 interface PageActionsProps {
   onRefresh?: () => void;
@@ -33,14 +34,8 @@ export default function PageActions({
       {(showRefresh || showPrint) && (
         <div className="flex items-center gap-2">
           {/* Refresh */}
-          {showRefresh && (
-            <button
-              onClick={onRefresh}
-              className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
-              title="Refresh"
-            >
-              <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-            </button>
+          {showRefresh && onRefresh && (
+            <RefreshButton onRefresh={onRefresh} size="md" />
           )}
 
           {/* Print */}

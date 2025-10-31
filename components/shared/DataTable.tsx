@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, ReactNode } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import SearchBar from "./SearchBar";
 
 export interface ColumnConfig<T> {
@@ -32,6 +32,8 @@ export interface DataTableProps<T> {
   emptyMessage?: string;
   enablePagination?: boolean;
   enableItemsPerPage?: boolean;
+  isLoading?: boolean;
+  loadingMessage?: string;
 }
 
 export default function DataTable<T>({
@@ -47,6 +49,8 @@ export default function DataTable<T>({
   emptyMessage = "No records found",
   enablePagination = true,
   enableItemsPerPage = true,
+  isLoading = false,
+  loadingMessage = "Loading...",
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -192,8 +196,8 @@ export default function DataTable<T>({
       </div>
 
       {/* Table Body Container */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
+      <div className="overflow-hidden">
+        <table className="w-full table-fixed border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
           {/* Table Header */}
           <thead>
             <tr className="bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-750 midnight:from-gray-800 midnight:to-gray-850 purple:from-gray-800 purple:to-gray-850 border-b-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/50 purple:border-pink-500/50 shadow-sm">
@@ -240,7 +244,33 @@ export default function DataTable<T>({
 
           {/* Table Body */}
           <tbody>
-            {paginatedData.length > 0 ? (
+            {isLoading ? (
+              <tr>
+                <td
+                  colSpan={columns.length}
+                  className="px-4 py-16 text-center"
+                >
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="relative">
+                      {/* Spinning loader */}
+                      <Loader2
+                        className="w-10 h-10 animate-spin text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                      />
+
+                      {/* Pulsing circle background */}
+                      <div className="absolute inset-0 -z-10">
+                        <div className="w-full h-full rounded-full bg-blue-100 dark:bg-blue-900/20 midnight:bg-cyan-500/10 purple:bg-pink-500/10 animate-pulse" />
+                      </div>
+                    </div>
+
+                    {/* Loading message */}
+                    <p className="mt-3 text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 animate-pulse">
+                      {loadingMessage}
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            ) : paginatedData.length > 0 ? (
               paginatedData.map((item, index) => (
                 <tr
                   key={getRowKey(item, index)}

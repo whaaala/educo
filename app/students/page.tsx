@@ -11,6 +11,7 @@ import SortButton from "@/components/shared/SortButton";
 import ViewToggle from "@/components/shared/ViewToggle";
 import PageHeader from "@/components/shared/PageHeader";
 import PageActions from "@/components/shared/PageActions";
+import PageSpinner from "@/components/shared/PageSpinner";
 
 // Sample data
 const sampleStudents: Student[] = [
@@ -209,6 +210,13 @@ export default function AllStudentsPage() {
   const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string } | null>(null);
   const [isFiltering, setIsFiltering] = useState(false);
 
+  // Sort state
+  const [sortOption, setSortOption] = useState<string>("ascending");
+  const [isSorting, setIsSorting] = useState(false);
+
+  // Refresh state
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   // Sort options
   const sortOptions = [
     { label: "Ascending", value: "ascending" },
@@ -277,8 +285,26 @@ export default function AllStudentsPage() {
   };
 
   const handleSortChange = (sortValue: string) => {
-    console.log("Sort changed:", sortValue);
-    // You can add logic here to sort students
+    setIsSorting(true);
+    // Delay to allow exit animation
+    setTimeout(() => {
+      setSortOption(sortValue);
+      setTimeout(() => {
+        setIsSorting(false);
+      }, 100);
+    }, 300);
+  };
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    // Delay to allow exit animation
+    setTimeout(() => {
+      // Reset to first page when refreshing
+      setDisplayedCount(12);
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 100);
+    }, 300);
   };
 
   useEffect(() => {
@@ -315,8 +341,31 @@ export default function AllStudentsPage() {
     }, 500);
   };
 
+  // Apply sorting to students
+  const sortedStudents = [...students].sort((a, b) => {
+    switch (sortOption) {
+      case "ascending":
+        // Sort by name A-Z
+        return a.name.localeCompare(b.name);
+      case "descending":
+        // Sort by name Z-A
+        return b.name.localeCompare(a.name);
+      case "recently_viewed":
+        // Sort by ID descending (simulating recently viewed)
+        return b.id.localeCompare(a.id);
+      case "recently_added":
+        // Sort by joined date descending (most recent first)
+        const dateA = parseJoinedOnDate(a.joinedOn);
+        const dateB = parseJoinedOnDate(b.joinedOn);
+        if (!dateA || !dateB) return 0;
+        return dateB.getTime() - dateA.getTime();
+      default:
+        return 0;
+    }
+  });
+
   // Apply filters to students
-  const filteredStudents = students.filter((student) => {
+  const filteredStudents = sortedStudents.filter((student) => {
     // Check date range filter
     if (dateRange) {
       const joinedDate = parseJoinedOnDate(student.joinedOn);
@@ -369,6 +418,9 @@ export default function AllStudentsPage() {
   const displayedStudents = filteredStudents.slice(0, displayedCount);
   const hasMore = displayedCount < filteredStudents.length;
 
+  // Check if we're in a loading state
+  const isLoading = isFiltering || isSorting || isRefreshing;
+
   if (!isMounted) {
     return null;
   }
@@ -389,7 +441,7 @@ export default function AllStudentsPage() {
         />
 
         {/* Right Section - Action Buttons */}
-        <PageActions addButtonLabel="Add Student" />
+        <PageActions addButtonLabel="Add Student" onRefresh={handleRefresh} />
       </div>
 
       {/* Content */}
@@ -422,42 +474,44 @@ export default function AllStudentsPage() {
         </div>
 
         {/* Students Grid or Table */}
-        <div className="relative">
+        <div className="relative min-h-[400px]">
           {viewMode === "grid" ? (
             <div
-              key={`grid-view-${isFiltering ? 'filtering' : 'filtered'}`}
-              className={`transition-all duration-300 ${
-                isFiltering
-                  ? 'opacity-0 scale-95 translate-y-4'
-                  : 'opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]'
-              }`}
+              key={`grid-view-${isFiltering ? 'filtering' : 'filtered'}-${isSorting ? 'sorting' : 'sorted'}-${isRefreshing ? 'refreshing' : 'refreshed'}-${sortOption}`}
+              className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
             >
-              <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
-                {displayedStudents.map((student, index) => (
-                  <StudentCard key={student.id} student={student} colorIndex={index} />
-                ))}
-              </div>
+              {isLoading ? (
+                <PageSpinner message={isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."} size="md" />
+              ) : (
+                <>
+                  <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
+                    {displayedStudents.map((student, index) => (
+                      <StudentCard key={student.id} student={student} colorIndex={index} />
+                    ))}
+                  </div>
 
-              {/* Load More Button */}
-              {hasMore && (
-                <LoadMoreButton
-                  onClick={handleLoadMore}
-                  isLoading={isLoadingMore}
-                  text="Load More"
-                  loadingText="Loading..."
-                />
+                  {/* Load More Button */}
+                  {hasMore && (
+                    <LoadMoreButton
+                      onClick={handleLoadMore}
+                      isLoading={isLoadingMore}
+                      text="Load More"
+                      loadingText="Loading..."
+                    />
+                  )}
+                </>
               )}
             </div>
           ) : (
             <div
-              key={`list-view-${isFiltering ? 'filtering' : 'filtered'}`}
-              className={`transition-all duration-300 ${
-                isFiltering
-                  ? 'opacity-0 scale-95 translate-y-4'
-                  : 'opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]'
-              }`}
+              key={`list-view-${isFiltering ? 'filtering' : 'filtered'}-${isSorting ? 'sorting' : 'sorted'}-${isRefreshing ? 'refreshing' : 'refreshed'}-${sortOption}`}
+              className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
             >
-              <StudentTable students={displayedStudents} />
+              <StudentTable
+                students={displayedStudents}
+                isLoading={isLoading}
+                loadingMessage={isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."}
+              />
             </div>
           )}
         </div>

@@ -6,9 +6,11 @@ import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 
 interface StudentTableProps {
   students: Student[];
+  isLoading?: boolean;
+  loadingMessage?: string;
 }
 
-export default function StudentTable({ students }: StudentTableProps) {
+export default function StudentTable({ students, isLoading = false, loadingMessage = "Loading..." }: StudentTableProps) {
   // Define column configuration with left alignment
   const columns: ColumnConfig<Student>[] = [
     {
@@ -29,7 +31,7 @@ export default function StudentTable({ students }: StudentTableProps) {
       label: "Admission No",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left pl-6 w-28 xl:w-36",
+      className: "text-left pl-6",
       render: (student) => (
         <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 truncate block">
           {student.id}
@@ -41,7 +43,7 @@ export default function StudentTable({ students }: StudentTableProps) {
       label: "Roll No",
       sortable: true,
       hidden: { mobile: true },
-      className: "text-left w-16 xl:w-20",
+      className: "text-left",
       render: (student) => (
         <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
           {student.rollNo}
@@ -52,7 +54,7 @@ export default function StudentTable({ students }: StudentTableProps) {
       key: "name",
       label: "Name",
       sortable: true,
-      className: "text-left w-36 xl:w-44",
+      className: "text-left",
       render: (student) => (
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 xl:w-8 xl:h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 transition-all duration-300 shadow-md">
@@ -68,7 +70,7 @@ export default function StudentTable({ students }: StudentTableProps) {
       key: "class",
       label: "Class",
       sortable: true,
-      className: "text-left w-14 xl:w-16",
+      className: "text-left",
       sortValue: (student) => student.class.split(", ")[0],
       render: (student) => {
         const [classNum] = student.class.split(", ");
@@ -84,7 +86,7 @@ export default function StudentTable({ students }: StudentTableProps) {
       label: "Section",
       sortable: true,
       hidden: { mobile: true },
-      className: "text-left w-16 xl:w-20",
+      className: "text-left",
       sortValue: (student) => student.class.split(", ")[1],
       render: (student) => {
         const [, section] = student.class.split(", ");
@@ -101,7 +103,7 @@ export default function StudentTable({ students }: StudentTableProps) {
       label: "Gender",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left w-18 xl:w-20",
+      className: "text-left",
       render: (student) => (
         <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
           {student.gender}
@@ -112,7 +114,7 @@ export default function StudentTable({ students }: StudentTableProps) {
       key: "status",
       label: "Status",
       sortable: true,
-      className: "text-left w-20 xl:w-24",
+      className: "text-left",
       render: (student) => (
         <div className="flex items-center justify-start">
           <span
@@ -132,7 +134,7 @@ export default function StudentTable({ students }: StudentTableProps) {
       label: "Date of Join",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left w-24 xl:w-28",
+      className: "text-left",
       render: (student) => (
         <span className="text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 whitespace-nowrap">
           {student.joinedOn}
@@ -143,7 +145,7 @@ export default function StudentTable({ students }: StudentTableProps) {
       key: "actions",
       label: "Action",
       sortable: false,
-      className: "text-left w-28 xl:w-32",
+      className: "text-left",
       render: (student) => (
         <div className="flex items-center justify-start gap-0.5 xl:gap-1">
           <button
@@ -200,6 +202,8 @@ export default function StudentTable({ students }: StudentTableProps) {
       searchPlaceholder="Search students..."
       getRowKey={(student) => student.id}
       emptyMessage="No students found"
+      isLoading={isLoading}
+      loadingMessage={loadingMessage}
     />
   );
 }
