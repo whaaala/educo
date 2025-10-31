@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import StudentCard, { Student } from "@/components/students/StudentCard";
+import StudentTable from "@/components/students/StudentTable";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
 import DateRangePicker from "@/components/shared/DateRangePicker";
 import FilterButton, { FilterField, FilterValues } from "@/components/shared/FilterButton";
@@ -306,7 +307,7 @@ export default function AllStudentsPage() {
   return (
     <MainLayout>
       {/* Header */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-6 gap-4">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-6 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
         {/* Left Section - Title and Breadcrumb */}
         <PageHeader
           title="Students"
@@ -322,7 +323,7 @@ export default function AllStudentsPage() {
       </div>
 
       {/* Content */}
-      <div>
+      <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out">
         {/* Filters Bar */}
         <div className="mb-6">
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
@@ -350,22 +351,38 @@ export default function AllStudentsPage() {
           </div>
         </div>
 
-        {/* Students Grid */}
-        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {displayedStudents.map((student, index) => (
-            <StudentCard key={student.id} student={student} colorIndex={index} />
-          ))}
-        </div>
+        {/* Students Grid or Table */}
+        <div className="relative overflow-hidden">
+          {viewMode === "grid" ? (
+            <div
+              key="grid-view"
+              className="animate-in fade-in zoom-in-95 slide-in-from-right-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+            >
+              <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {displayedStudents.map((student, index) => (
+                  <StudentCard key={student.id} student={student} colorIndex={index} />
+                ))}
+              </div>
 
-        {/* Load More Button */}
-        {hasMore && (
-          <LoadMoreButton
-            onClick={handleLoadMore}
-            isLoading={isLoadingMore}
-            text="Load More"
-            loadingText="Loading..."
-          />
-        )}
+              {/* Load More Button */}
+              {hasMore && (
+                <LoadMoreButton
+                  onClick={handleLoadMore}
+                  isLoading={isLoadingMore}
+                  text="Load More"
+                  loadingText="Loading..."
+                />
+              )}
+            </div>
+          ) : (
+            <div
+              key="list-view"
+              className="animate-in fade-in zoom-in-95 slide-in-from-left-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+            >
+              <StudentTable students={displayedStudents} />
+            </div>
+          )}
+        </div>
       </div>
     </MainLayout>
   );

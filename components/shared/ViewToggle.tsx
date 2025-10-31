@@ -14,37 +14,36 @@ export default function ViewToggle({
   className = "",
 }: ViewToggleProps) {
   return (
-    <div className={`flex items-center gap-1 p-1 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 ${className}`}>
+    <div className={`relative flex items-center gap-1 p-1 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 shadow-sm ${className}`}>
+      {/* Animated background slider */}
+      <div
+        className={`absolute h-[calc(100%-8px)] w-[calc(50%-4px)] top-1 rounded-md bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 shadow-lg transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+          viewMode === "list" ? "left-1" : "left-[calc(50%+2px)]"
+        }`}
+      />
+
       <button
         onClick={() => onViewModeChange("list")}
-        className={`p-2 rounded-md transition-all duration-200 cursor-pointer ${
-          viewMode === "list"
-            ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 shadow-md"
-            : "hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
-        }`}
+        className="relative z-10 p-2 rounded-md transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] cursor-pointer transform hover:scale-110 active:scale-95"
         aria-label="List view"
         title="List view"
       >
-        <List className={`w-4 h-4 transition-colors ${
+        <List className={`w-4 h-4 transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
           viewMode === "list"
-            ? "text-white"
-            : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400"
+            ? "text-white scale-110 drop-shadow-sm"
+            : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 scale-100"
         }`} />
       </button>
       <button
         onClick={() => onViewModeChange("grid")}
-        className={`p-2 rounded-md transition-all duration-200 cursor-pointer ${
-          viewMode === "grid"
-            ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 shadow-md"
-            : "hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
-        }`}
+        className="relative z-10 p-2 rounded-md transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] cursor-pointer transform hover:scale-110 active:scale-95"
         aria-label="Grid view"
         title="Grid view"
       >
-        <Grid3x3 className={`w-4 h-4 transition-colors ${
+        <Grid3x3 className={`w-4 h-4 transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
           viewMode === "grid"
-            ? "text-white"
-            : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400"
+            ? "text-white scale-110 drop-shadow-sm"
+            : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 scale-100"
         }`} />
       </button>
     </div>
