@@ -186,7 +186,7 @@ export default function ProfileCard({
           <button
             onClick={primaryAction.onClick}
             style={{ cursor: 'pointer', zIndex: 11111 }}
-            className="w-auto px-4 py-2 rounded-lg sm:rounded-md bg-gradient-to-r from-blue-500 to-purple-500 sm:bg-white/80 sm:backdrop-blur-sm hover:from-blue-600 hover:to-purple-600 sm:hover:bg-white group-hover:from-blue-600 group-hover:to-purple-600 sm:group-hover:bg-white dark:bg-gray-700/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 text-[11px] sm:text-xs font-bold text-white sm:text-gray-800 sm:group-hover:text-black dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 transition-all duration-200 border-0 sm:border sm:border-white/50 sm:group-hover:border-white/70 shadow-lg sm:shadow-sm hover:shadow-xl sm:hover:shadow-md group-hover:shadow-xl sm:group-hover:shadow-md order-1 sm:order-2 active:scale-95 whitespace-nowrap"
+            className="w-auto px-4 py-2 rounded-md bg-gray-100 hover:bg-gray-200 group-hover:bg-white/90 dark:bg-gray-700/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 text-[11px] sm:text-xs font-semibold text-gray-700 hover:text-gray-900 group-hover:text-black dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 transition-all duration-200 border border-gray-200 hover:border-gray-300 group-hover:border-gray-300 shadow-sm hover:shadow-md group-hover:shadow-md order-1 sm:order-2 active:scale-95 whitespace-nowrap backdrop-blur-sm"
           >
             {primaryAction.label}
           </button>
