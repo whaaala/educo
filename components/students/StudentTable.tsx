@@ -16,18 +16,27 @@ export default function StudentTable({ students }: StudentTableProps) {
 
   // Filter students based on search query
   const filteredStudents = students.filter((student) => {
-    const searchLower = searchQuery.toLowerCase();
-    return !searchQuery ||
-      student.id.toLowerCase().includes(searchLower) ||
-      student.name.toLowerCase().includes(searchLower) ||
-      student.rollNo.toLowerCase().includes(searchLower) ||
-      student.class.toLowerCase().includes(searchLower) ||
-      student.gender.toLowerCase().includes(searchLower) ||
-      student.status.toLowerCase().includes(searchLower) ||
-      student.joinedOn.toLowerCase().includes(searchLower);
+    if (!searchQuery.trim()) return true;
+
+    const searchData = searchQuery.toLowerCase().trim();
+    const studentData = [
+      student.name,
+      student.id,
+      student.rollNo,
+      student.class,
+      student.gender,
+      student.status,
+      student.joinedOn,
+    ]
+      .join(' ')
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return studentData.includes(searchData);
   });
 
-  // Calculate pagination
+  // Calculate pagination from filtered students
   const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -38,18 +47,11 @@ export default function StudentTable({ students }: StudentTableProps) {
     setCurrentPage(1);
   }, [searchQuery]);
 
-  // Update zebra striping for visible rows
+  // Apply staggered animation delays to rows
   useEffect(() => {
-    const visibleRows = document.querySelectorAll('tr[data-visible="true"]');
-    visibleRows.forEach((row, index) => {
-      const isEven = index % 2 === 0;
-      if (isEven) {
-        row.classList.add('bg-black/5', 'dark:bg-black/20');
-        row.classList.remove('bg-transparent');
-      } else {
-        row.classList.add('bg-transparent');
-        row.classList.remove('bg-black/5', 'dark:bg-black/20');
-      }
+    const tableRows = document.querySelectorAll('tbody tr');
+    tableRows.forEach((row, index) => {
+      (row as HTMLElement).style.setProperty('--delay', `${index / 25}s`);
     });
   }, [paginatedStudents]);
 
@@ -58,7 +60,7 @@ export default function StudentTable({ students }: StudentTableProps) {
       {/* Table Header */}
       <div className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750 midnight:from-gray-900 midnight:to-gray-850 purple:from-gray-900 purple:to-gray-850 backdrop-blur-md px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-3 border-b border-gray-200/70 dark:border-gray-700/70 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-t-xl md:rounded-t-2xl">
         <h2 className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-300 purple:text-pink-300 tracking-tight whitespace-nowrap">
-          Student Records
+          Student Records {searchQuery && `(${filteredStudents.length})`}
         </h2>
 
         {/* Search Bar */}
@@ -132,11 +134,11 @@ export default function StudentTable({ students }: StudentTableProps) {
                   style={{
                     '--delay': `${index / 25}s`,
                   } as React.CSSProperties}
-                  className="border-b border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 transition-all duration-300 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:shadow-sm animate-in fade-in slide-in-from-right-4 duration-300"
+                  className="border-b border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:shadow-sm"
                   data-visible="true"
                 >
                   {/* ID - Hidden on mobile */}
-                  <td className="hidden lg:table-cell px-4 py-4 text-left transition-all duration-300" style={{ transitionDelay: `calc(var(--delay) + 0.1s)` }}>
+                  <td className="hidden lg:table-cell px-4 py-4 text-left">
                     <span className="text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
                       {startIndex + index + 1}
                     </span>
@@ -251,9 +253,15 @@ export default function StudentTable({ students }: StudentTableProps) {
       <div className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750 midnight:from-gray-900 midnight:to-gray-850 purple:from-gray-900 purple:to-gray-850 backdrop-blur-md px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 border-t border-gray-200/70 dark:border-gray-700/70 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-b-xl md:rounded-b-2xl">
           {/* Left - Showing info */}
           <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-medium order-2 sm:order-1">
-            Showing <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{startIndex + 1}</span> to{" "}
-            <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{Math.min(endIndex, filteredStudents.length)}</span> of{" "}
-            <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{filteredStudents.length}</span> entries
+            {filteredStudents.length > 0 ? (
+              <>
+                Showing <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{startIndex + 1}</span> to{" "}
+                <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{Math.min(endIndex, filteredStudents.length)}</span> of{" "}
+                <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{filteredStudents.length}</span> {searchQuery ? 'filtered' : 'total'} entries
+              </>
+            ) : (
+              <span>No matching entries found</span>
+            )}
           </div>
 
           {/* Center - Page numbers */}

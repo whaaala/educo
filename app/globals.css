@@ -172,3 +172,61 @@ nav::-webkit-scrollbar-thumb:hover {
 .purple .text-gray-900 {
   color: lab(100 0 0) !important;
 }
+
+/* Table search filter animation styles */
+tbody tr {
+  transition: opacity 0.5s ease-in-out var(--delay, 0s),
+              transform 0.5s ease-in-out var(--delay, 0s),
+              background-color 0s,
+              height 0.2s ease-in-out 0.5s;
+}
+
+tbody tr.hide {
+  opacity: 0;
+  transform: translateX(100%);
+  height: 0 !important;
+  overflow: hidden;
+  display: table-row;
+}
+
+/* Animate table cells when row is hidden */
+tbody tr td {
+  transition: padding 0.2s ease-in-out,
+              font-size 0.2s ease-in-out,
+              line-height 0.2s ease-in-out,
+              border 0s;
+}
+
+tbody tr.hide td {
+  padding: 0 !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  height: 0 !important;
+  border: 0 !important;
+  overflow: hidden;
+  transition-delay: 0.5s;
+}
+
+tbody tr.hide td * {
+  display: none;
+}
+
+tbody tr.hide td span {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  display: none;
+}
+
+tbody tr.hide td div {
+  display: none;
+}
+
+/* Avatar in hidden rows */
+tbody tr.hide td .w-7,
+tbody tr.hide td .w-8,
+tbody tr.hide td img {
+  width: 0 !important;
+  height: 0 !important;
+  display: none;
+  transition: width 0.2s ease-in-out 0.5s, height 0.2s ease-in-out 0.5s;
+}
