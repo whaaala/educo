@@ -6,8 +6,8 @@ import StudentCard, { Student } from "@/components/students/StudentCard";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
 import ExportButton from "@/components/shared/ExportButton";
 import DateRangePicker from "@/components/shared/DateRangePicker";
+import FilterButton, { FilterField, FilterValues } from "@/components/shared/FilterButton";
 import {
-  Filter,
   Grid3x3,
   List,
   RefreshCw,
@@ -174,9 +174,51 @@ export default function AllStudentsPage() {
   const gridRef = useRef<HTMLDivElement>(null);
   const previousCountRef = useRef(12);
 
+  // Filter fields configuration
+  const filterFields: FilterField[] = [
+    {
+      id: "class",
+      label: "Class",
+      options: ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"],
+      width: "half",
+    },
+    {
+      id: "section",
+      label: "Section",
+      options: ["A", "B"],
+      width: "half",
+    },
+    {
+      id: "name",
+      label: "Name",
+      options: ["A-E", "F-J", "K-O", "P-T", "U-Z"],
+      width: "full",
+    },
+    {
+      id: "gender",
+      label: "Gender",
+      options: ["Male", "Female"],
+      width: "half",
+    },
+    {
+      id: "status",
+      label: "Status",
+      options: ["Active", "Inactive"],
+      width: "half",
+    },
+  ];
+
+  // Filter state
+  const [filters, setFilters] = useState<FilterValues>({});
+
   const handleDateRangeChange = (startDate: string, endDate: string) => {
     console.log("Date range changed:", startDate, "-", endDate);
     // You can add logic here to filter students based on the date range
+  };
+
+  const handleFilterChange = (updatedFilters: FilterValues) => {
+    setFilters(updatedFilters);
+    setDisplayedCount(12); // Reset to first page when filters change
   };
 
   useEffect(() => {
@@ -213,8 +255,41 @@ export default function AllStudentsPage() {
     }, 500);
   };
 
-  const displayedStudents = students.slice(0, displayedCount);
-  const hasMore = displayedCount < students.length;
+  // Apply filters to students
+  const filteredStudents = students.filter((student) => {
+    // If no filters are active, show all students
+    const hasFilters = Object.values(filters).some((values) => values && values.length > 0);
+    if (!hasFilters) return true;
+
+    // Check each filter type (AND logic between types, OR within type)
+    const matchesClass = !filters.class || filters.class.length === 0 || filters.class.some((cls) => {
+      return student.class.startsWith(cls);
+    });
+
+    const matchesSection = !filters.section || filters.section.length === 0 || filters.section.some((section) => {
+      return student.class.includes(section);
+    });
+
+    const matchesName = !filters.name || filters.name.length === 0 || filters.name.some((range) => {
+      const firstLetter = student.name.charAt(0).toUpperCase();
+      // Map ranges like "A-E" to check if first letter is in range
+      if (range === "A-E") return firstLetter >= "A" && firstLetter <= "E";
+      if (range === "F-J") return firstLetter >= "F" && firstLetter <= "J";
+      if (range === "K-O") return firstLetter >= "K" && firstLetter <= "O";
+      if (range === "P-T") return firstLetter >= "P" && firstLetter <= "T";
+      if (range === "U-Z") return firstLetter >= "U" && firstLetter <= "Z";
+      return false;
+    });
+
+    const matchesGender = !filters.gender || filters.gender.length === 0 || filters.gender.includes(student.gender);
+
+    const matchesStatus = !filters.status || filters.status.length === 0 || filters.status.includes(student.status);
+
+    return matchesClass && matchesSection && matchesName && matchesGender && matchesStatus;
+  });
+
+  const displayedStudents = filteredStudents.slice(0, displayedCount);
+  const hasMore = displayedCount < filteredStudents.length;
 
   if (!isMounted) {
     return null;
@@ -284,11 +359,7 @@ export default function AllStudentsPage() {
               <DateRangePicker onChange={handleDateRangeChange} />
 
               {/* Filter */}
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
-                <Filter className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Filter</span>
-                <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-              </button>
+              <FilterButton fields={filterFields} onFilterChange={handleFilterChange} />
             </div>
 
             {/* Right Section - View Toggle and Sort */}
