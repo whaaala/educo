@@ -33,7 +33,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             isMobileSidebarOpen={isMobileSidebarOpen}
             setIsMobileSidebarOpen={setIsMobileSidebarOpen}
           />
-          <main className="p-6 lg:p-8">{children}</main>
+          <main className="pt-2 px-6 pb-6 lg:pt-2 lg:px-8 lg:pb-8">{children}</main>
         </div>
       </div>
     </ThemeProvider>
