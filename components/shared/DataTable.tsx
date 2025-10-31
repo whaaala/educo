@@ -59,6 +59,7 @@ export default function DataTable<T>({
   const [sortAsc, setSortAsc] = useState(true);
   const [isSorting, setIsSorting] = useState(false);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [isSearching, setIsSearching] = useState(false);
 
   // Filter data based on search query
   const filteredData = data.filter((item) => {
@@ -119,20 +120,113 @@ export default function DataTable<T>({
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedData = enablePagination ? sortedData.slice(startIndex, endIndex) : sortedData;
+
+  // When searching, show ALL data (not paginated) so we can hide non-matching rows with animation
+  const displayData = searchQuery.trim()
+    ? (sortColumn !== null ? [...data].sort((a, b) => {
+        const column = columns.find(col => col.key === sortColumn);
+        if (!column) return 0;
+
+        let firstValue: string | number;
+        let secondValue: string | number;
+
+        if (column.sortValue) {
+          firstValue = column.sortValue(a);
+          secondValue = column.sortValue(b);
+        } else {
+          firstValue = String((a as any)[column.key] || "");
+          secondValue = String((b as any)[column.key] || "");
+        }
+
+        if (typeof firstValue === "string" && typeof secondValue === "string") {
+          firstValue = firstValue.toLowerCase();
+          secondValue = secondValue.toLowerCase();
+        }
+
+        if (sortAsc) {
+          return firstValue < secondValue ? -1 : 1;
+        } else {
+          return firstValue < secondValue ? 1 : -1;
+        }
+      }) : data)
+    : (enablePagination ? sortedData.slice(startIndex, endIndex) : sortedData);
+
+  // Helper to check if item matches search
+  const matchesSearch = (item: T): boolean => {
+    if (!searchQuery.trim()) return true;
+
+    const searchData = searchQuery.toLowerCase().trim();
+    const searchableColumns = columns.filter(col => col.searchable !== false);
+
+    for (const column of searchableColumns) {
+      let value = "";
+      if (column.sortValue) {
+        value = String(column.sortValue(item));
+      } else {
+        value = String((item as any)[column.key] || "");
+      }
+      if (value.toLowerCase().includes(searchData)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // Handle search with animation
+  const handleSearchChange = (value: string) => {
+    setIsSearching(true);
+    setSearchQuery(value);
+    setCurrentPage(1);
+
+    // Reset searching state after animation
+    setTimeout(() => {
+      setIsSearching(false);
+    }, 600);
+  };
 
   // Reset to page 1 when search query changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
 
-  // Apply staggered animation delays to rows
+  // Apply staggered animation delays to rows and striped backgrounds for visible rows
   useEffect(() => {
-    const tableRows = document.querySelectorAll('tbody tr');
-    tableRows.forEach((row, index) => {
-      (row as HTMLElement).style.setProperty('--delay', `${index / 25}s`);
-    });
-  }, [paginatedData]);
+    const allRows = document.querySelectorAll('tbody tr');
+
+    if (searchQuery.trim()) {
+      // When searching, apply striped backgrounds only to visible rows
+      const visibleRows = Array.from(allRows).filter(row => {
+        return !row.classList.contains('hide');
+      });
+
+      allRows.forEach((row, index) => {
+        const htmlRow = row as HTMLElement;
+        htmlRow.style.setProperty('--delay', `${index / 40}s`);
+        // Reset background
+        htmlRow.style.backgroundColor = '';
+      });
+
+      // Apply staggered striped backgrounds with smooth transition
+      visibleRows.forEach((row, index) => {
+        const htmlRow = row as HTMLElement;
+        // Add smooth background transition
+        htmlRow.style.transition = 'background-color 0.4s ease-out';
+
+        // Delay the background application slightly for a smoother effect
+        setTimeout(() => {
+          if (index % 2 === 0) {
+            htmlRow.style.backgroundColor = 'transparent';
+          } else {
+            htmlRow.style.backgroundColor = 'rgba(0, 0, 0, 0.02)';
+          }
+        }, index * 25); // Stagger the background appearance
+      });
+    } else {
+      allRows.forEach((row, index) => {
+        (row as HTMLElement).style.setProperty('--delay', `${index / 40}s`);
+      });
+    }
+  }, [displayData, searchQuery]);
 
   // Handle column header click for sorting
   const handleSort = (columnKey: string) => {
@@ -187,7 +281,7 @@ export default function DataTable<T>({
         {showSearch && (
           <SearchBar
             value={searchQuery}
-            onChange={setSearchQuery}
+            onChange={handleSearchChange}
             placeholder={searchPlaceholder}
             size="sm"
             className="w-full sm:w-[45%] md:w-[35%]"
@@ -270,14 +364,29 @@ export default function DataTable<T>({
                   </div>
                 </td>
               </tr>
-            ) : paginatedData.length > 0 ? (
-              paginatedData.map((item, index) => (
-                <tr
+            ) : displayData.length > 0 ? (
+              displayData.map((item, index) => {
+                const isMatch = matchesSearch(item);
+                const shouldHide = searchQuery.trim() && !isMatch;
+
+                return (
+                  <tr
                   key={getRowKey(item, index)}
                   style={{
                     '--delay': `${index / 25}s`,
+                    opacity: shouldHide ? 0 : 1,
+                    transform: shouldHide ? 'translateX(60px)' : 'translateX(0)',
+                    height: shouldHide ? '0' : 'auto',
+                    overflow: shouldHide ? 'hidden' : 'visible',
+                    display: shouldHide ? 'block' : 'table-row',
+                    borderWidth: shouldHide ? '0' : undefined,
+                    marginTop: shouldHide ? '0' : undefined,
+                    marginBottom: shouldHide ? '0' : undefined,
+                    animation: searchQuery.trim() && !shouldHide ? `fadeSlideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${index / 40}s both` : 'none',
+                    transition: 'opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), background-color 0s, border-width 0.25s ease-out 0.35s',
+                    transitionDelay: `${index / 40}s`,
                   } as React.CSSProperties}
-                  className={`border-b border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:shadow-sm transition-all duration-200 ${
+                  className={`border-b border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:shadow-sm ${shouldHide ? 'hide' : ''} ${
                     isSorting ? (sortDirection === 'asc' ? 'sorting-animate-asc' : 'sorting-animate-desc') : ''
                   } ${onRowClick ? 'cursor-pointer' : ''}`}
                   onClick={() => onRowClick?.(item)}
@@ -285,7 +394,14 @@ export default function DataTable<T>({
                   {columns.map((column) => (
                     <td
                       key={column.key}
-                      className={`px-3 md:px-4 py-4 text-center transition-all duration-300 ${getHiddenClasses(column.hidden)} ${column.className || ''} ${!column.render ? 'overflow-hidden' : ''}`}
+                      className={`px-3 md:px-4 py-4 text-center ${getHiddenClasses(column.hidden)} ${column.className || ''} ${!column.render ? 'overflow-hidden' : ''}`}
+                      style={{
+                        padding: shouldHide ? '0' : undefined,
+                        fontSize: shouldHide ? '0' : undefined,
+                        lineHeight: shouldHide ? '0' : undefined,
+                        fontFamily: shouldHide ? 'sans-serif' : undefined,
+                        transition: 'padding 0.25s ease-out 0.35s, font-size 0.25s ease-out 0.35s, line-height 0.25s ease-out 0.35s',
+                      }}
                     >
                       {column.render ? column.render(item, index) : (
                         <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 block truncate">
@@ -295,7 +411,8 @@ export default function DataTable<T>({
                     </td>
                   ))}
                 </tr>
-              ))
+                );
+              })
             ) : (
               <tr>
                 <td
@@ -310,8 +427,8 @@ export default function DataTable<T>({
         </table>
       </div>
 
-      {/* Pagination Controls */}
-      {enablePagination && sortedData.length > 0 && (
+      {/* Pagination Controls - hide when searching */}
+      {enablePagination && sortedData.length > 0 && !searchQuery.trim() && (
         <div className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750 midnight:from-gray-900 midnight:to-gray-850 purple:from-gray-900 purple:to-gray-850 backdrop-blur-md px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 border-t border-gray-200/70 dark:border-gray-700/70 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-b-xl md:rounded-b-2xl">
           {/* Left - Showing info */}
           <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-medium order-2 sm:order-1">

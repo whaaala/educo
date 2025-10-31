@@ -31,7 +31,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Admission No",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left pl-6",
+      className: "text-left pl-6 w-[10%]",
       render: (student) => (
         <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 truncate block">
           {student.id}
@@ -43,7 +43,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Roll No",
       sortable: true,
       hidden: { mobile: true },
-      className: "text-left",
+      className: "text-left w-[8%]",
       render: (student) => (
         <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
           {student.rollNo}
@@ -54,9 +54,9 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "name",
       label: "Name",
       sortable: true,
-      className: "text-left",
+      className: "text-left w-[20%]",
       render: (student) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <div className="w-7 h-7 xl:w-8 xl:h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 transition-all duration-300 shadow-md">
             {student.name.charAt(0)}
           </div>
@@ -70,7 +70,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "class",
       label: "Class",
       sortable: true,
-      className: "text-left",
+      className: "text-left w-[8%]",
       sortValue: (student) => student.class.split(", ")[0],
       render: (student) => {
         const [classNum] = student.class.split(", ");
@@ -86,7 +86,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Section",
       sortable: true,
       hidden: { mobile: true },
-      className: "text-left",
+      className: "text-left w-[8%]",
       sortValue: (student) => student.class.split(", ")[1],
       render: (student) => {
         const [, section] = student.class.split(", ");
@@ -103,7 +103,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Gender",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left",
+      className: "text-left w-[8%]",
       render: (student) => (
         <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
           {student.gender}
@@ -114,7 +114,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "status",
       label: "Status",
       sortable: true,
-      className: "text-left",
+      className: "text-left w-[10%]",
       render: (student) => (
         <div className="flex items-center justify-start">
           <span
@@ -134,7 +134,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Date of Join",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left",
+      className: "text-left w-[12%]",
       render: (student) => (
         <span className="text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 whitespace-nowrap">
           {student.joinedOn}
@@ -145,7 +145,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "actions",
       label: "Action",
       sortable: false,
-      className: "text-left",
+      className: "text-left w-[13%]",
       render: (student) => (
         <div className="flex items-center justify-start gap-0.5 xl:gap-1">
           <button

@@ -307,6 +307,367 @@ export default function AllStudentsPage() {
     }, 300);
   };
 
+  const handlePrint = () => {
+    // Create a print window with the current data
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    // Get current date and time
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    // Use filtered students (all of them, not just displayed)
+    const studentsToPrint = filteredStudents;
+
+    // Build the HTML content
+    let htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Student Records - ${dateStr}</title>
+          <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              padding: 20px;
+              color: #1f2937;
+            }
+
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+              padding-bottom: 20px;
+              border-bottom: 2px solid #3b82f6;
+            }
+
+            .header h1 {
+              font-size: 28px;
+              color: #1f2937;
+              margin-bottom: 8px;
+            }
+
+            .header .subtitle {
+              font-size: 14px;
+              color: #6b7280;
+              margin-bottom: 4px;
+            }
+
+            .meta-info {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 20px;
+              font-size: 12px;
+              color: #6b7280;
+            }
+
+            ${viewMode === 'grid' ? `
+              .grid-container {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 16px;
+                margin-bottom: 20px;
+              }
+
+              .student-card {
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 16px;
+                break-inside: avoid;
+              }
+
+              .student-header {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 12px;
+              }
+
+              .student-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #3b82f6, #2563eb);
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 16px;
+              }
+
+              .student-name {
+                font-weight: 600;
+                font-size: 14px;
+                color: #1f2937;
+              }
+
+              .student-id {
+                font-size: 11px;
+                color: #3b82f6;
+              }
+
+              .student-info {
+                display: grid;
+                gap: 8px;
+                font-size: 12px;
+              }
+
+              .info-row {
+                display: flex;
+                justify-content: space-between;
+              }
+
+              .info-label {
+                color: #6b7280;
+                font-weight: 500;
+              }
+
+              .info-value {
+                color: #1f2937;
+              }
+
+              .status {
+                display: inline-block;
+                padding: 2px 8px;
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: 600;
+              }
+
+              .status-active {
+                background-color: #dcfce7;
+                color: #166534;
+              }
+
+              .status-inactive {
+                background-color: #fee2e2;
+                color: #991b1b;
+              }
+            ` : `
+              table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 11px;
+              }
+
+              thead {
+                background-color: #f3f4f6;
+              }
+
+              th {
+                padding: 12px 8px;
+                text-align: left;
+                font-weight: 600;
+                color: #374151;
+                border-bottom: 2px solid #d1d5db;
+              }
+
+              td {
+                padding: 10px 8px;
+                border-bottom: 1px solid #e5e7eb;
+              }
+
+              tbody tr:hover {
+                background-color: #f9fafb;
+              }
+
+              .student-name-cell {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+              }
+
+              .table-avatar {
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #3b82f6, #2563eb);
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 12px;
+                flex-shrink: 0;
+              }
+
+              .admission-no {
+                color: #3b82f6;
+                font-weight: 600;
+              }
+
+              .status {
+                display: inline-block;
+                padding: 3px 10px;
+                border-radius: 12px;
+                font-size: 10px;
+                font-weight: 600;
+              }
+
+              .status-active {
+                background-color: #dcfce7;
+                color: #166534;
+              }
+
+              .status-inactive {
+                background-color: #fee2e2;
+                color: #991b1b;
+              }
+            `}
+
+            .footer {
+              margin-top: 30px;
+              padding-top: 20px;
+              border-top: 1px solid #e5e7eb;
+              text-align: center;
+              font-size: 11px;
+              color: #6b7280;
+            }
+
+            @media print {
+              body {
+                padding: 10px;
+              }
+
+              .no-print {
+                display: none;
+              }
+
+              @page {
+                margin: 1cm;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Student Records</h1>
+            <div class="subtitle">Educo - School ERP System</div>
+            <div class="subtitle">View: ${viewMode === 'grid' ? 'Grid View' : 'Table View'}</div>
+          </div>
+
+          <div class="meta-info">
+            <div>
+              <strong>Date:</strong> ${dateStr} | <strong>Time:</strong> ${timeStr}
+            </div>
+            <div>
+              <strong>Total Students:</strong> ${studentsToPrint.length}
+            </div>
+          </div>
+    `;
+
+    if (viewMode === 'grid') {
+      // Grid view HTML
+      htmlContent += '<div class="grid-container">';
+      studentsToPrint.forEach((student) => {
+        htmlContent += `
+          <div class="student-card">
+            <div class="student-header">
+              <div class="student-avatar">${student.name.charAt(0)}</div>
+              <div>
+                <div class="student-name">${student.name}</div>
+                <div class="student-id">${student.id}</div>
+              </div>
+            </div>
+            <div class="student-info">
+              <div class="info-row">
+                <span class="info-label">Roll No:</span>
+                <span class="info-value">${student.rollNo}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Class:</span>
+                <span class="info-value">${student.class}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Gender:</span>
+                <span class="info-value">${student.gender}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Status:</span>
+                <span class="status ${student.status === 'Active' ? 'status-active' : 'status-inactive'}">${student.status}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Joined:</span>
+                <span class="info-value">${student.joinedOn}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      htmlContent += '</div>';
+    } else {
+      // Table view HTML
+      htmlContent += `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Admission No</th>
+              <th>Roll No</th>
+              <th>Name</th>
+              <th>Class</th>
+              <th>Section</th>
+              <th>Gender</th>
+              <th>Status</th>
+              <th>Date of Join</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      studentsToPrint.forEach((student, index) => {
+        const [classNum, section] = student.class.split(", ");
+        htmlContent += `
+          <tr>
+            <td>${index + 1}</td>
+            <td class="admission-no">${student.id}</td>
+            <td>${student.rollNo}</td>
+            <td>
+              <div class="student-name-cell">
+                <div class="table-avatar">${student.name.charAt(0)}</div>
+                <span>${student.name}</span>
+              </div>
+            </td>
+            <td>${classNum}</td>
+            <td>${section}</td>
+            <td>${student.gender}</td>
+            <td><span class="status ${student.status === 'Active' ? 'status-active' : 'status-inactive'}">${student.status}</span></td>
+            <td>${student.joinedOn}</td>
+          </tr>
+        `;
+      });
+
+      htmlContent += `
+          </tbody>
+        </table>
+      `;
+    }
+
+    htmlContent += `
+          <div class="footer">
+            <p>Generated on ${dateStr} at ${timeStr}</p>
+            <p style="margin-top: 4px;">Educo School ERP System - Student Records Report</p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+
+    // Wait for content to load then print
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+    };
+  };
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -441,7 +802,7 @@ export default function AllStudentsPage() {
         />
 
         {/* Right Section - Action Buttons */}
-        <PageActions addButtonLabel="Add Student" onRefresh={handleRefresh} />
+        <PageActions addButtonLabel="Add Student" onRefresh={handleRefresh} onPrint={handlePrint} />
       </div>
 
       {/* Content */}
@@ -485,9 +846,33 @@ export default function AllStudentsPage() {
               ) : (
                 <>
                   <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
-                    {displayedStudents.map((student, index) => (
-                      <StudentCard key={student.id} student={student} colorIndex={index} />
-                    ))}
+                    {displayedStudents.map((student, index) => {
+                      // Check if student matches current search/filters
+                      const matchesSearch = searchQuery.trim() === "" ||
+                        student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        student.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        student.rollNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        student.class.toLowerCase().includes(searchQuery.toLowerCase());
+
+                      const shouldHide = searchQuery.trim() !== "" && !matchesSearch;
+
+                      return (
+                        <div
+                          key={student.id}
+                          style={{
+                            opacity: shouldHide ? 0 : 1,
+                            transform: shouldHide ? 'translateX(60px) scale(0.9)' : 'translateX(0) scale(1)',
+                            height: shouldHide ? '0' : 'auto',
+                            overflow: shouldHide ? 'hidden' : 'visible',
+                            animation: searchQuery.trim() && !shouldHide ? `fadeSlideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${index / 40}s both` : 'none',
+                            transition: 'opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                            transitionDelay: `${index / 40}s`,
+                          } as React.CSSProperties}
+                        >
+                          <StudentCard student={student} colorIndex={index} />
+                        </div>
+                      );
+                    })}
                   </div>
 
                   {/* Load More Button */}
