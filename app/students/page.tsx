@@ -306,11 +306,9 @@ export default function AllStudentsPage() {
 
   return (
     <MainLayout>
-      {/* Background Image for Glassmorphism Effect */}
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 midnight:from-gray-950 midnight:via-cyan-950/30 midnight:to-blue-950/30 purple:from-gray-950 purple:via-purple-950/30 purple:to-pink-950/30" />
 
       {/* Header */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-6 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-0 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
         {/* Left Section - Title and Breadcrumb */}
         <PageHeader
           title="Students"
@@ -328,7 +326,7 @@ export default function AllStudentsPage() {
       {/* Content */}
       <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out">
         {/* Filters Bar */}
-        <div className="mb-6">
+        <div className="mb-3">
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
             {/* Left Section - Date and Filter */}
             <div className="flex items-center gap-3 lg:flex-1">
@@ -380,7 +378,7 @@ export default function AllStudentsPage() {
           ) : (
             <div
               key="list-view"
-              className="animate-in fade-in zoom-in-95 slide-in-from-left-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+              className="animate-in fade-in zoom-in-95 slide-in-from-left-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] rounded-2xl overflow-hidden"
             >
               <StudentTable students={displayedStudents} />
             </div>

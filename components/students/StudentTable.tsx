@@ -1,7 +1,7 @@
 "use client";
 
 import { Student } from "./StudentCard";
-import { MoreVertical, MessageCircle, Phone, Mail, Search } from "lucide-react";
+import { MoreVertical, MessageCircle, Phone, Mail, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface StudentTableProps {
@@ -10,6 +10,32 @@ interface StudentTableProps {
 
 export default function StudentTable({ students }: StudentTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Filter students based on search query
+  const filteredStudents = students.filter((student) => {
+    const searchLower = searchQuery.toLowerCase();
+    return !searchQuery ||
+      student.id.toLowerCase().includes(searchLower) ||
+      student.name.toLowerCase().includes(searchLower) ||
+      student.rollNo.toLowerCase().includes(searchLower) ||
+      student.class.toLowerCase().includes(searchLower) ||
+      student.gender.toLowerCase().includes(searchLower) ||
+      student.status.toLowerCase().includes(searchLower) ||
+      student.joinedOn.toLowerCase().includes(searchLower);
+  });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedStudents = filteredStudents.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   // Update zebra striping for visible rows
   useEffect(() => {
@@ -24,12 +50,12 @@ export default function StudentTable({ students }: StudentTableProps) {
         row.classList.remove('bg-black/5', 'dark:bg-black/20');
       }
     });
-  }, [searchQuery]);
+  }, [paginatedStudents]);
 
   return (
-    <div className="w-full h-[90vh] bg-white/80 dark:bg-gray-800/80 midnight:bg-gray-900/80 purple:bg-gray-900/80 backdrop-blur-md shadow-2xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-x-auto overflow-y-auto scrollbar-thin hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-600 scrollbar-thumb-transparent scrollbar-track-transparent transition-all duration-300">
+    <div className="w-full h-[calc(100vh-280px)] bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 backdrop-blur-md shadow-2xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/30 purple:border-pink-500/30 flex flex-col transition-all duration-300 overflow-hidden">
       {/* Table Header */}
-      <div className="sticky top-0 z-30 bg-white/90 dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="flex-shrink-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-t-2xl">
         <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200 midnight:text-cyan-300 purple:text-pink-300">
           Student Records
         </h2>
@@ -47,11 +73,11 @@ export default function StudentTable({ students }: StudentTableProps) {
         </div>
       </div>
 
-      {/* Table Body Container */}
-      <div className="w-full bg-white/60 dark:bg-gray-800/60 midnight:bg-gray-900/60 purple:bg-gray-900/60">
-        <table className="w-full border-collapse">
+      {/* Table Body Container - Scrollable */}
+      <div className="flex-1 overflow-x-auto overflow-y-auto scrollbar-thin hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-600 scrollbar-thumb-transparent scrollbar-track-transparent">
+        <table className="w-full border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
           {/* Table Header - Sticky */}
-          <thead className="sticky top-[68px] z-20">
+          <thead className="sticky top-0 z-20">
             <tr className="bg-gray-200 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border-b-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/50 purple:border-pink-500/50">
               <th className="sticky left-0 z-30 bg-gray-200 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 px-3 sm:px-4 py-3 text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap min-w-[3rem] sm:min-w-[4rem]">
                 ID
@@ -88,39 +114,23 @@ export default function StudentTable({ students }: StudentTableProps) {
 
           {/* Table Body - with Zebra Striping */}
           <tbody>
-            {students.map((student, index) => {
+            {paginatedStudents.map((student, index) => {
               // Extract class and section from "III, A" format
               const [classNum, section] = student.class.split(", ");
-
-              // Check if student matches search query
-              const searchLower = searchQuery.toLowerCase();
-              const isVisible = !searchQuery ||
-                student.id.toLowerCase().includes(searchLower) ||
-                student.name.toLowerCase().includes(searchLower) ||
-                student.rollNo.toLowerCase().includes(searchLower) ||
-                student.class.toLowerCase().includes(searchLower) ||
-                student.gender.toLowerCase().includes(searchLower) ||
-                student.status.toLowerCase().includes(searchLower) ||
-                student.joinedOn.toLowerCase().includes(searchLower);
 
               return (
                 <tr
                   key={student.id}
                   style={{
                     '--delay': `${index / 25}s`,
-                    display: isVisible ? 'table-row' : 'none',
                   } as React.CSSProperties}
-                  className={`transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 ${
-                    isVisible
-                      ? 'animate-in fade-in slide-in-from-right-4 duration-300'
-                      : ''
-                  }`}
-                  data-visible={isVisible}
+                  className="transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 animate-in fade-in slide-in-from-right-4 duration-300"
+                  data-visible="true"
                 >
                   {/* ID */}
                   <td className="px-3 sm:px-4 py-3 text-left transition-all duration-300" style={{ transitionDelay: `calc(var(--delay) + 0.1s)` }}>
                     <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                      {index + 1}
+                      {startIndex + index + 1}
                     </span>
                   </td>
 
@@ -227,6 +237,108 @@ export default function StudentTable({ students }: StudentTableProps) {
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination Controls - Fixed at bottom */}
+      <div className="flex-shrink-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-b-2xl">
+          {/* Left - Showing info */}
+          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
+            Showing <span className="font-semibold text-gray-900 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200">{startIndex + 1}</span> to{" "}
+            <span className="font-semibold text-gray-900 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200">{Math.min(endIndex, filteredStudents.length)}</span> of{" "}
+            <span className="font-semibold text-gray-900 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200">{filteredStudents.length}</span> entries
+          </div>
+
+          {/* Center - Page numbers */}
+          <div className="flex items-center gap-1 sm:gap-2">
+            {/* Previous Button */}
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className={`p-2 rounded-lg transition-all duration-200 ${
+                currentPage === 1
+                  ? "opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-700"
+                  : "hover:bg-blue-500/20 dark:hover:bg-blue-400/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 cursor-pointer"
+              }`}
+              title="Previous page"
+            >
+              <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
+            </button>
+
+            {/* Page Numbers */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                // Show first page, last page, current page, and pages around current
+                const showPage =
+                  pageNum === 1 ||
+                  pageNum === totalPages ||
+                  Math.abs(pageNum - currentPage) <= 1;
+
+                // Show ellipsis
+                const showEllipsisBefore = pageNum === currentPage - 2 && currentPage > 3;
+                const showEllipsisAfter = pageNum === currentPage + 2 && currentPage < totalPages - 2;
+
+                if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
+                  return null;
+                }
+
+                if (showEllipsisBefore || showEllipsisAfter) {
+                  return (
+                    <span key={pageNum} className="px-2 text-gray-400 dark:text-gray-500">
+                      ...
+                    </span>
+                  );
+                }
+
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`min-w-[32px] h-8 px-2 sm:px-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
+                      currentPage === pageNum
+                        ? "bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 text-white shadow-lg"
+                        : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Next Button */}
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className={`p-2 rounded-lg transition-all duration-200 ${
+                currentPage === totalPages
+                  ? "opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-700"
+                  : "hover:bg-blue-500/20 dark:hover:bg-blue-400/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 cursor-pointer"
+              }`}
+              title="Next page"
+            >
+              <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
+            </button>
+          </div>
+
+          {/* Right - Items per page */}
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
+            <label htmlFor="itemsPerPage">Items per page:</label>
+            <select
+              id="itemsPerPage"
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-500 purple:focus:ring-pink-500 cursor-pointer"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={15}>15</option>
+              <option value={20}>20</option>
+              <option value={25}>25</option>
+            </select>
+          </div>
       </div>
     </div>
   );
