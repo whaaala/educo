@@ -108,30 +108,22 @@ export default function FilterButton({ fields, onFilterChange, className = "" }:
       {/* Filter Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border-2 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md ${
-          isOpen || activeFilterCount > 0
-            ? "bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-400 dark:from-blue-500/20 dark:to-blue-600/10 dark:border-blue-500 midnight:from-cyan-500/20 midnight:to-cyan-600/10 midnight:border-cyan-500 purple:from-pink-500/20 purple:to-pink-600/10 purple:border-pink-500"
-            : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 cursor-pointer ${
+          isOpen
+            ? "bg-blue-50 border-blue-300 dark:bg-blue-500/20 dark:border-blue-500 midnight:bg-cyan-500/20 midnight:border-cyan-500 purple:bg-pink-500/20 purple:border-pink-500"
+            : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
         }`}
       >
-        <div
-          className={`p-1 sm:p-1.5 rounded-lg transition-colors ${
-            isOpen || activeFilterCount > 0
-              ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600"
-              : "bg-gray-100 dark:bg-gray-700 midnight:bg-cyan-500/20 purple:bg-pink-500/20"
+        <Filter
+          className={`w-4 h-4 transition-colors ${
+            isOpen
+              ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+              : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400"
           }`}
-        >
-          <Filter
-            className={`w-3 h-3 sm:w-3.5 sm:h-3.5 transition-colors ${
-              isOpen || activeFilterCount > 0
-                ? "text-white"
-                : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400"
-            }`}
-          />
-        </div>
+        />
         <span
-          className={`text-xs sm:text-sm font-bold transition-colors ${
-            isOpen || activeFilterCount > 0
+          className={`text-sm whitespace-nowrap transition-colors ${
+            isOpen
               ? "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
               : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300"
           }`}
@@ -139,12 +131,12 @@ export default function FilterButton({ fields, onFilterChange, className = "" }:
           Filter
         </span>
         {activeFilterCount > 0 && (
-          <span className="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-bold bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white rounded-full shadow-md animate-in zoom-in duration-200">
+          <span className="px-1.5 py-0.5 text-xs font-bold bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white rounded-full shadow-sm">
             {activeFilterCount}
           </span>
         )}
         <ChevronDown
-          className={`w-3 h-3 sm:w-4 sm:h-4 transition-all duration-200 ml-auto ${
+          className={`w-4 h-4 transition-all duration-200 ${
             isOpen
               ? "rotate-180 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
               : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400"

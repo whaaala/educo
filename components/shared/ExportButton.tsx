@@ -50,10 +50,10 @@ export default function ExportButton({ onExportPDF, onExportExcel }: ExportButto
     <div className="relative" ref={exportRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors cursor-pointer ${
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 cursor-pointer ${
           isOpen
             ? "bg-blue-50 border-blue-300 dark:bg-blue-500/20 dark:border-blue-500 midnight:bg-cyan-500/20 midnight:border-cyan-500 purple:bg-pink-500/20 purple:border-pink-500"
-            : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+            : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
         }`}
       >
         <Download className={`w-4 h-4 transition-colors ${
@@ -61,7 +61,7 @@ export default function ExportButton({ onExportPDF, onExportExcel }: ExportButto
             ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
             : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400"
         }`} />
-        <span className={`text-sm font-medium hidden sm:inline transition-colors ${
+        <span className={`text-sm whitespace-nowrap hidden sm:inline transition-colors ${
           isOpen
             ? "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
             : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300"

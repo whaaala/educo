@@ -4,17 +4,12 @@ import { useState, useEffect, useRef } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import StudentCard, { Student } from "@/components/students/StudentCard";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
-import ExportButton from "@/components/shared/ExportButton";
 import DateRangePicker from "@/components/shared/DateRangePicker";
 import FilterButton, { FilterField, FilterValues } from "@/components/shared/FilterButton";
-import {
-  Grid3x3,
-  List,
-  RefreshCw,
-  Printer,
-  Plus,
-  ChevronDown,
-} from "lucide-react";
+import SortButton from "@/components/shared/SortButton";
+import ViewToggle from "@/components/shared/ViewToggle";
+import PageHeader from "@/components/shared/PageHeader";
+import PageActions from "@/components/shared/PageActions";
 
 // Sample data
 const sampleStudents: Student[] = [
@@ -211,6 +206,14 @@ export default function AllStudentsPage() {
   // Filter state
   const [filters, setFilters] = useState<FilterValues>({});
 
+  // Sort options
+  const sortOptions = [
+    { label: "Ascending", value: "ascending" },
+    { label: "Descending", value: "descending" },
+    { label: "Recently Viewed", value: "recently_viewed" },
+    { label: "Recently Added", value: "recently_added" },
+  ];
+
   const handleDateRangeChange = (startDate: string, endDate: string) => {
     console.log("Date range changed:", startDate, "-", endDate);
     // You can add logic here to filter students based on the date range
@@ -219,6 +222,11 @@ export default function AllStudentsPage() {
   const handleFilterChange = (updatedFilters: FilterValues) => {
     setFilters(updatedFilters);
     setDisplayedCount(12); // Reset to first page when filters change
+  };
+
+  const handleSortChange = (sortValue: string) => {
+    console.log("Sort changed:", sortValue);
+    // You can add logic here to sort students
   };
 
   useEffect(() => {
@@ -300,52 +308,17 @@ export default function AllStudentsPage() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-6 gap-4">
         {/* Left Section - Title and Breadcrumb */}
-        <div className="w-full lg:w-auto lg:flex-shrink-0">
-          <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
-            Students
-          </h1>
-          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 flex-wrap">
-            <span className="hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">Dashboard</span>
-            <span>/</span>
-            <span className="hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">Peoples</span>
-            <span>/</span>
-            <span className="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium">Students Grid</span>
-          </div>
-        </div>
+        <PageHeader
+          title="Students"
+          breadcrumbs={[
+            { label: "Dashboard" },
+            { label: "Peoples" },
+            { label: "Students Grid", isActive: true },
+          ]}
+        />
 
-        {/* Right Section - Action Buttons with Full Width Spread */}
-        <div className="flex items-center justify-between lg:justify-end gap-2 lg:gap-4 w-full lg:flex-1 lg:max-w-2xl">
-          {/* Icon Buttons Group */}
-          <div className="flex items-center gap-2">
-            {/* Refresh */}
-            <button
-              className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
-              title="Refresh"
-            >
-              <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-            </button>
-
-            {/* Print */}
-            <button
-              className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
-              title="Print"
-            >
-              <Printer className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-            </button>
-          </div>
-
-          {/* Primary Actions Group */}
-          <div className="flex items-center gap-2 lg:gap-3">
-            {/* Export Button */}
-            <ExportButton />
-
-            {/* Add Student */}
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 text-white transition-colors shadow-md cursor-pointer">
-              <Plus className="w-4 h-4" />
-              <span className="text-sm font-medium whitespace-nowrap">Add Student</span>
-            </button>
-          </div>
-        </div>
+        {/* Right Section - Action Buttons */}
+        <PageActions addButtonLabel="Add Student" />
       </div>
 
       {/* Content */}
@@ -365,34 +338,14 @@ export default function AllStudentsPage() {
             {/* Right Section - View Toggle and Sort */}
             <div className="flex items-center justify-end gap-3 lg:flex-1">
               {/* View Toggle */}
-              <div className="flex items-center gap-1 p-1 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-2 rounded-md transition-colors cursor-pointer ${
-                    viewMode === "list"
-                      ? "bg-gray-100 dark:bg-gray-700 midnight:bg-cyan-500/20 purple:bg-pink-500/20"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                  }`}
-                >
-                  <List className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-                </button>
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded-md transition-colors cursor-pointer ${
-                    viewMode === "grid"
-                      ? "bg-blue-600 text-white"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                  }`}
-                >
-                  <Grid3x3 className="w-4 h-4" />
-                </button>
-              </div>
+              <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
 
               {/* Sort */}
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">Sort by A-Z</span>
-                <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-              </button>
+              <SortButton
+                options={sortOptions}
+                defaultOption="ascending"
+                onSortChange={handleSortChange}
+              />
             </div>
           </div>
         </div>
