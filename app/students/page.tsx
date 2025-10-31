@@ -315,7 +315,7 @@ export default function AllStudentsPage() {
           breadcrumbs={[
             { label: "Dashboard" },
             { label: "Peoples" },
-            { label: "Students Grid", isActive: true },
+            { label: viewMode === "grid" ? "Students Grid" : "Students Table", isActive: true },
           ]}
         />
 
