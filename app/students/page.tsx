@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import StudentCard, { Student } from "@/components/students/StudentCard";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
@@ -172,10 +172,33 @@ export default function AllStudentsPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [displayedCount, setDisplayedCount] = useState(12);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const previousCountRef = useRef(12);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    // Scroll to newly loaded content after displayedCount increases
+    if (displayedCount > previousCountRef.current && gridRef.current) {
+      // Find the first newly loaded card
+      const cards = gridRef.current.children;
+      const firstNewCardIndex = previousCountRef.current;
+
+      if (cards[firstNewCardIndex]) {
+        // Smooth scroll to the first new card
+        setTimeout(() => {
+          (cards[firstNewCardIndex] as HTMLElement).scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }, 100);
+      }
+
+      previousCountRef.current = displayedCount;
+    }
+  }, [displayedCount]);
 
   const handleLoadMore = () => {
     setIsLoadingMore(true);
@@ -307,7 +330,7 @@ export default function AllStudentsPage() {
         </div>
 
         {/* Students Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {displayedStudents.map((student, index) => (
             <StudentCard key={student.id} student={student} colorIndex={index} />
           ))}
