@@ -152,11 +152,19 @@ export default function ProfileCard({
                   onMenuClick?.();
                 }}
                 style={{ cursor: "pointer" }}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-md transition-all duration-200 group/menu"
+                className={`p-1 rounded-md transition-all duration-200 group/menu ${
+                  isMenuOpen
+                    ? "bg-blue-50 border border-blue-200 dark:bg-blue-500/20 dark:border-blue-500 midnight:bg-cyan-500/20 midnight:border-cyan-500 purple:bg-pink-500/20 purple:border-pink-500"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                }`}
               >
                 <MoreVertical
                   style={{ cursor: "pointer" }}
-                  className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover/menu:text-gray-600 dark:group-hover/menu:text-gray-300 midnight:group-hover/menu:text-cyan-400 purple:group-hover/menu:text-pink-400 transition-colors"
+                  className={`w-4 h-4 transition-colors ${
+                    isMenuOpen
+                      ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                      : "text-gray-400 dark:text-gray-500 group-hover/menu:text-gray-600 dark:group-hover/menu:text-gray-300 midnight:group-hover/menu:text-cyan-400 purple:group-hover/menu:text-pink-400"
+                  }`}
                 />
               </button>
             </div>
@@ -253,11 +261,11 @@ export default function ProfileCard({
       {isMenuOpen && (
         <div
           ref={menuRef}
-          className="absolute w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1"
+          className="absolute w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 animate-in fade-in slide-in-from-top-1 duration-200"
           style={{
             position: "absolute",
-            right: "1rem",
-            top: "3.5rem",
+            right: "0.5rem",
+            top: "2.25rem",
             zIndex: 99999,
           }}
         >

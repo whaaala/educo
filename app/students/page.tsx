@@ -4,12 +4,12 @@ import { useState, useEffect, useRef } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import StudentCard, { Student } from "@/components/students/StudentCard";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
+import ExportButton from "@/components/shared/ExportButton";
 import {
   Calendar,
   Filter,
   Grid3x3,
   List,
-  Download,
   RefreshCw,
   Printer,
   Plus,
@@ -257,12 +257,8 @@ export default function AllStudentsPage() {
 
           {/* Primary Actions Group */}
           <div className="flex items-center gap-2 lg:gap-3">
-            {/* Export */}
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
-              <Download className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hidden sm:inline">Export</span>
-              <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-            </button>
+            {/* Export Button */}
+            <ExportButton />
 
             {/* Add Student */}
             <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 text-white transition-colors shadow-md cursor-pointer">
