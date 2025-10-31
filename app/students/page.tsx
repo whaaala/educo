@@ -353,13 +353,13 @@ export default function AllStudentsPage() {
         </div>
 
         {/* Students Grid or Table */}
-        <div className="relative overflow-hidden">
+        <div className="relative">
           {viewMode === "grid" ? (
             <div
               key="grid-view"
               className="animate-in fade-in zoom-in-95 slide-in-from-right-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
             >
-              <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
                 {displayedStudents.map((student, index) => (
                   <StudentCard key={student.id} student={student} colorIndex={index} />
                 ))}
