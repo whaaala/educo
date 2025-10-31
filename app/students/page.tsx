@@ -206,6 +206,8 @@ export default function AllStudentsPage() {
 
   // Filter state
   const [filters, setFilters] = useState<FilterValues>({});
+  const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string } | null>(null);
+  const [isFiltering, setIsFiltering] = useState(false);
 
   // Sort options
   const sortOptions = [
@@ -215,14 +217,63 @@ export default function AllStudentsPage() {
     { label: "Recently Added", value: "recently_added" },
   ];
 
+  // Parse date string in format "DD MMM YYYY" to Date object
+  const parseJoinedOnDate = (dateStr: string): Date | null => {
+    try {
+      // Handle format like "10 Jan 2017" or "25 May 2024"
+      const months: { [key: string]: number } = {
+        Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+        Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+      };
+
+      const parts = dateStr.trim().split(" ");
+      if (parts.length !== 3) return null;
+
+      const day = parseInt(parts[0]);
+      const month = months[parts[1]];
+      const year = parseInt(parts[2]);
+
+      if (isNaN(day) || month === undefined || isNaN(year)) return null;
+
+      return new Date(year, month, day);
+    } catch {
+      return null;
+    }
+  };
+
+  // Parse date string in format "MM/DD/YYYY" to Date object
+  const parseDateRangeDate = (dateStr: string): Date | null => {
+    try {
+      const parts = dateStr.split("/");
+      if (parts.length !== 3) return null;
+
+      const month = parseInt(parts[0]) - 1; // 0-indexed
+      const day = parseInt(parts[1]);
+      const year = parseInt(parts[2]);
+
+      if (isNaN(month) || isNaN(day) || isNaN(year)) return null;
+
+      return new Date(year, month, day);
+    } catch {
+      return null;
+    }
+  };
+
   const handleDateRangeChange = (startDate: string, endDate: string) => {
-    console.log("Date range changed:", startDate, "-", endDate);
-    // You can add logic here to filter students based on the date range
+    setDateRange({ startDate, endDate });
+    setDisplayedCount(12); // Reset to first page when date range changes
   };
 
   const handleFilterChange = (updatedFilters: FilterValues) => {
-    setFilters(updatedFilters);
-    setDisplayedCount(12); // Reset to first page when filters change
+    setIsFiltering(true);
+    // Delay to allow exit animation
+    setTimeout(() => {
+      setFilters(updatedFilters);
+      setDisplayedCount(12); // Reset to first page when filters change
+      setTimeout(() => {
+        setIsFiltering(false);
+      }, 100);
+    }, 300);
   };
 
   const handleSortChange = (sortValue: string) => {
@@ -266,6 +317,24 @@ export default function AllStudentsPage() {
 
   // Apply filters to students
   const filteredStudents = students.filter((student) => {
+    // Check date range filter
+    if (dateRange) {
+      const joinedDate = parseJoinedOnDate(student.joinedOn);
+      const startDate = parseDateRangeDate(dateRange.startDate);
+      const endDate = parseDateRangeDate(dateRange.endDate);
+
+      if (joinedDate && startDate && endDate) {
+        // Normalize dates to start of day for comparison
+        const joinedDateNormalized = new Date(joinedDate.getFullYear(), joinedDate.getMonth(), joinedDate.getDate());
+        const startDateNormalized = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+        const endDateNormalized = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+
+        if (joinedDateNormalized < startDateNormalized || joinedDateNormalized > endDateNormalized) {
+          return false;
+        }
+      }
+    }
+
     // If no filters are active, show all students
     const hasFilters = Object.values(filters).some((values) => values && values.length > 0);
     if (!hasFilters) return true;
@@ -356,8 +425,12 @@ export default function AllStudentsPage() {
         <div className="relative">
           {viewMode === "grid" ? (
             <div
-              key="grid-view"
-              className="animate-in fade-in zoom-in-95 slide-in-from-right-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+              key={`grid-view-${isFiltering ? 'filtering' : 'filtered'}`}
+              className={`transition-all duration-300 ${
+                isFiltering
+                  ? 'opacity-0 scale-95 translate-y-4'
+                  : 'opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]'
+              }`}
             >
               <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
                 {displayedStudents.map((student, index) => (
@@ -377,8 +450,12 @@ export default function AllStudentsPage() {
             </div>
           ) : (
             <div
-              key="list-view"
-              className="animate-in fade-in zoom-in-95 slide-in-from-left-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+              key={`list-view-${isFiltering ? 'filtering' : 'filtered'}`}
+              className={`transition-all duration-300 ${
+                isFiltering
+                  ? 'opacity-0 scale-95 translate-y-4'
+                  : 'opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]'
+              }`}
             >
               <StudentTable students={displayedStudents} />
             </div>
