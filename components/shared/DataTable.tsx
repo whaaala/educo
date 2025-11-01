@@ -451,6 +451,7 @@ export default function DataTable<T>({
                   ? "opacity-40 cursor-not-allowed bg-gray-100 dark:bg-gray-700"
                   : "hover:bg-blue-100 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 cursor-pointer hover:scale-110 active:scale-95"
               }`}
+              style={{ cursor: currentPage === 1 || sortedData.length === 0 ? 'not-allowed' : 'pointer' }}
               title="Previous page"
             >
               <ChevronLeft className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
@@ -488,9 +489,10 @@ export default function DataTable<T>({
                       sortedData.length === 0
                         ? "opacity-40 cursor-not-allowed text-gray-400 dark:text-gray-500"
                         : currentPage === pageNum
-                        ? "bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 text-white shadow-md scale-105"
-                        : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:scale-105 active:scale-95"
+                        ? "bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 text-white shadow-md scale-105 cursor-pointer"
+                        : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:scale-105 active:scale-95 cursor-pointer"
                     }`}
+                    style={{ cursor: sortedData.length === 0 ? 'not-allowed' : 'pointer' }}
                   >
                     {pageNum}
                   </button>
@@ -507,6 +509,7 @@ export default function DataTable<T>({
                   ? "opacity-40 cursor-not-allowed bg-gray-100 dark:bg-gray-700"
                   : "hover:bg-blue-100 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 cursor-pointer hover:scale-110 active:scale-95"
               }`}
+              style={{ cursor: currentPage === totalPages || sortedData.length === 0 ? 'not-allowed' : 'pointer' }}
               title="Next page"
             >
               <ChevronRight className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
