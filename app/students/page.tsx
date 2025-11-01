@@ -268,8 +268,15 @@ export default function AllStudentsPage() {
   };
 
   const handleDateRangeChange = (startDate: string, endDate: string) => {
-    setDateRange({ startDate, endDate });
-    setDisplayedCount(12); // Reset to first page when date range changes
+    setIsFiltering(true);
+    // Delay to allow exit animation
+    setTimeout(() => {
+      setDateRange({ startDate, endDate });
+      setDisplayedCount(12); // Reset to first page when date range changes
+      setTimeout(() => {
+        setIsFiltering(false);
+      }, 100);
+    }, 300);
   };
 
   const handleFilterChange = (updatedFilters: FilterValues) => {
@@ -283,6 +290,23 @@ export default function AllStudentsPage() {
       }, 100);
     }, 300);
   };
+
+  const handleClearFilters = () => {
+    setIsFiltering(true);
+    setTimeout(() => {
+      setFilters({});
+      setDateRange(null);
+      setDisplayedCount(12);
+      setTimeout(() => {
+        setIsFiltering(false);
+      }, 100);
+    }, 300);
+  };
+
+  // Check if there are active filters
+  const hasActiveFilters =
+    Object.values(filters).some((values) => values && values.length > 0) ||
+    dateRange !== null;
 
   const handleSortChange = (sortValue: string) => {
     setIsSorting(true);
@@ -788,7 +812,6 @@ export default function AllStudentsPage() {
 
   return (
     <MainLayout>
-
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-0 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
         {/* Left Section - Title and Breadcrumb */}
@@ -805,35 +828,35 @@ export default function AllStudentsPage() {
         <PageActions addButtonLabel="Add Student" onRefresh={handleRefresh} onPrint={handlePrint} />
       </div>
 
-      {/* Content */}
-      <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out">
-        {/* Filters Bar */}
-        <div className="mb-3">
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
-            {/* Left Section - Date and Filter */}
-            <div className="flex items-center gap-3 lg:flex-1">
-              {/* Date Range Picker */}
-              <DateRangePicker onChange={handleDateRangeChange} />
+      {/* Filters Bar */}
+      <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out mb-6">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
+          {/* Left Section - Date and Filter */}
+          <div className="flex items-center gap-3 lg:flex-1">
+            {/* Date Range Picker */}
+            <DateRangePicker onChange={handleDateRangeChange} />
 
-              {/* Filter */}
-              <FilterButton fields={filterFields} onFilterChange={handleFilterChange} />
-            </div>
+            {/* Filter */}
+            <FilterButton fields={filterFields} onFilterChange={handleFilterChange} />
+          </div>
 
-            {/* Right Section - View Toggle and Sort */}
-            <div className="flex items-center justify-end gap-3 lg:flex-1">
-              {/* View Toggle */}
-              <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+          {/* Right Section - View Toggle and Sort */}
+          <div className="flex items-center justify-end gap-3 lg:flex-1">
+            {/* View Toggle */}
+            <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
 
-              {/* Sort */}
-              <SortButton
-                options={sortOptions}
-                defaultOption="ascending"
-                onSortChange={handleSortChange}
-              />
-            </div>
+            {/* Sort */}
+            <SortButton
+              options={sortOptions}
+              defaultOption="ascending"
+              onSortChange={handleSortChange}
+            />
           </div>
         </div>
+      </div>
 
+      {/* Content */}
+      <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out">
         {/* Students Grid or Table */}
         <div className="relative min-h-[400px]">
           {viewMode === "grid" ? (
@@ -843,6 +866,45 @@ export default function AllStudentsPage() {
             >
               {isLoading ? (
                 <PageSpinner message={isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."} size="md" />
+              ) : displayedStudents.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16">
+                  {/* Icon with gradient background */}
+                  <div className="relative mb-4">
+                    {/* Gradient background circle */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 midnight:from-cyan-500/5 midnight:to-cyan-600/5 purple:from-pink-500/5 purple:to-pink-600/5 animate-pulse" />
+                    </div>
+
+                    {/* Icon */}
+                    <div className="relative z-10 flex items-center justify-center w-16 h-16">
+                      <svg className="w-8 h-8 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1">
+                    No data available
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
+                    {hasActiveFilters
+                      ? 'No results match the current filters. Try adjusting your filters.'
+                      : 'No students found'}
+                  </p>
+
+                  {/* Clear filters link */}
+                  {hasActiveFilters && (
+                    <button
+                      onClick={handleClearFilters}
+                      className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer transition-colors duration-200"
+                    >
+                      Clear filters
+                    </button>
+                  )}
+                </div>
               ) : (
                 <>
                   <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
@@ -896,6 +958,9 @@ export default function AllStudentsPage() {
                 students={displayedStudents}
                 isLoading={isLoading}
                 loadingMessage={isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."}
+                onClearFilters={handleClearFilters}
+                hasActiveFilters={hasActiveFilters}
+                totalStudentsCount={students.length}
               />
             </div>
           )}

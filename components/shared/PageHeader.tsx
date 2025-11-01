@@ -29,8 +29,12 @@ export default function PageHeader({
               <span className="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium">
                 {item.label}
               </span>
-            ) : (
+            ) : index === 0 ? (
               <span className="hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">
+                {item.label}
+              </span>
+            ) : (
+              <span>
                 {item.label}
               </span>
             )}

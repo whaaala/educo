@@ -80,6 +80,8 @@ export default function FilterButton({ fields, onFilterChange, className = "" }:
     });
     setSelectedValues(resetValues);
     onFilterChange(resetValues);
+    setIsOpen(false);
+    setOpenDropdownId(null);
   };
 
   const handleApply = () => {

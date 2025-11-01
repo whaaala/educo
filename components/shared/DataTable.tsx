@@ -34,6 +34,9 @@ export interface DataTableProps<T> {
   enableItemsPerPage?: boolean;
   isLoading?: boolean;
   loadingMessage?: string;
+  onClearFilters?: () => void;
+  hasActiveFilters?: boolean;
+  totalDataCount?: number;
 }
 
 export default function DataTable<T>({
@@ -51,6 +54,9 @@ export default function DataTable<T>({
   enableItemsPerPage = true,
   isLoading = false,
   loadingMessage = "Loading...",
+  onClearFilters,
+  hasActiveFilters = false,
+  totalDataCount,
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -397,20 +403,26 @@ export default function DataTable<T>({
                     <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
                       {searchQuery.trim()
                         ? `No results match "${searchQuery}". Try a different search term.`
+                        : hasActiveFilters
+                        ? 'No results match the current filters. Try adjusting your filters.'
                         : emptyMessage}
                     </p>
 
-                    {/* Clear search link */}
-                    {searchQuery.trim() && (
+                    {/* Clear search/filters link */}
+                    {(searchQuery.trim() || (hasActiveFilters && onClearFilters)) && (
                       <button
                         onClick={() => {
-                          setIsSearching(true);
-                          setSearchQuery('');
-                          setCurrentPage(1);
+                          if (searchQuery.trim()) {
+                            setIsSearching(true);
+                            setSearchQuery('');
+                            setCurrentPage(1);
+                          } else if (onClearFilters) {
+                            onClearFilters();
+                          }
                         }}
                         className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer transition-colors duration-200"
                       >
-                        Clear search
+                        {searchQuery.trim() ? 'Clear search' : 'Clear filters'}
                       </button>
                     )}
                   </div>
@@ -422,8 +434,10 @@ export default function DataTable<T>({
       </div>
 
       {/* Pagination Controls */}
-      {enablePagination && (sortedData.length > 0 || data.length > 0) && (
-        <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-b-xl md:rounded-b-2xl">
+      {enablePagination && (totalDataCount ? totalDataCount > 0 : data.length > 0) && (
+        <div className={`bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-b-xl md:rounded-b-2xl transition-opacity duration-200 ${
+          isLoading ? 'opacity-50 pointer-events-none' : 'opacity-100'
+        }`}>
           {/* Left - Showing info */}
           <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-medium order-2 sm:order-1">
             {sortedData.length > 0 ? (
@@ -445,13 +459,13 @@ export default function DataTable<T>({
             {/* Previous Button */}
             <button
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1 || sortedData.length === 0}
+              disabled={currentPage === 1 || sortedData.length === 0 || isLoading}
               className={`p-1.5 rounded-lg transition-all duration-300 ${
-                currentPage === 1 || sortedData.length === 0
+                currentPage === 1 || sortedData.length === 0 || isLoading
                   ? "opacity-40 cursor-not-allowed bg-gray-100 dark:bg-gray-700"
                   : "hover:bg-blue-100 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 cursor-pointer hover:scale-110 active:scale-95"
               }`}
-              style={{ cursor: currentPage === 1 || sortedData.length === 0 ? 'not-allowed' : 'pointer' }}
+              style={{ cursor: currentPage === 1 || sortedData.length === 0 || isLoading ? 'not-allowed' : 'pointer' }}
               title="Previous page"
             >
               <ChevronLeft className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
@@ -483,16 +497,16 @@ export default function DataTable<T>({
                 return (
                   <button
                     key={pageNum}
-                    onClick={() => sortedData.length > 0 && setCurrentPage(pageNum)}
-                    disabled={sortedData.length === 0}
+                    onClick={() => sortedData.length > 0 && !isLoading && setCurrentPage(pageNum)}
+                    disabled={sortedData.length === 0 || isLoading}
                     className={`min-w-[30px] h-7 sm:h-8 px-2 sm:px-3 rounded-lg text-xs sm:text-sm font-bold transition-all duration-300 ${
-                      sortedData.length === 0
+                      sortedData.length === 0 || isLoading
                         ? "opacity-40 cursor-not-allowed text-gray-400 dark:text-gray-500"
                         : currentPage === pageNum
                         ? "bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 text-white shadow-md scale-105 cursor-pointer"
                         : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:scale-105 active:scale-95 cursor-pointer"
                     }`}
-                    style={{ cursor: sortedData.length === 0 ? 'not-allowed' : 'pointer' }}
+                    style={{ cursor: sortedData.length === 0 || isLoading ? 'not-allowed' : 'pointer' }}
                   >
                     {pageNum}
                   </button>
@@ -503,13 +517,13 @@ export default function DataTable<T>({
             {/* Next Button */}
             <button
               onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages || sortedData.length === 0}
+              disabled={currentPage === totalPages || sortedData.length === 0 || isLoading}
               className={`p-1.5 rounded-lg transition-all duration-300 ${
-                currentPage === totalPages || sortedData.length === 0
+                currentPage === totalPages || sortedData.length === 0 || isLoading
                   ? "opacity-40 cursor-not-allowed bg-gray-100 dark:bg-gray-700"
                   : "hover:bg-blue-100 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 cursor-pointer hover:scale-110 active:scale-95"
               }`}
-              style={{ cursor: currentPage === totalPages || sortedData.length === 0 ? 'not-allowed' : 'pointer' }}
+              style={{ cursor: currentPage === totalPages || sortedData.length === 0 || isLoading ? 'not-allowed' : 'pointer' }}
               title="Next page"
             >
               <ChevronRight className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
@@ -519,7 +533,7 @@ export default function DataTable<T>({
           {/* Right - Items per page */}
           {enableItemsPerPage && (
             <div className={`flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm order-3 ${
-              sortedData.length === 0
+              sortedData.length === 0 || isLoading
                 ? 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 opacity-50'
                 : 'text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70'
             }`}>
@@ -527,13 +541,13 @@ export default function DataTable<T>({
               <select
                 id="itemsPerPage"
                 value={itemsPerPage}
-                disabled={sortedData.length === 0}
+                disabled={sortedData.length === 0 || isLoading}
                 onChange={(e) => {
                   setItemsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
                 className={`px-2 py-1 rounded-lg border text-xs sm:text-sm focus:outline-none ${
-                  sortedData.length === 0
+                  sortedData.length === 0 || isLoading
                     ? 'cursor-not-allowed opacity-60 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
                     : 'cursor-pointer border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-500 purple:focus:ring-pink-500'
                 }`}

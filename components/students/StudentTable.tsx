@@ -8,9 +8,12 @@ interface StudentTableProps {
   students: Student[];
   isLoading?: boolean;
   loadingMessage?: string;
+  onClearFilters?: () => void;
+  hasActiveFilters?: boolean;
+  totalStudentsCount?: number;
 }
 
-export default function StudentTable({ students, isLoading = false, loadingMessage = "Loading..." }: StudentTableProps) {
+export default function StudentTable({ students, isLoading = false, loadingMessage = "Loading...", onClearFilters, hasActiveFilters = false, totalStudentsCount }: StudentTableProps) {
   // Define column configuration with left alignment
   const columns: ColumnConfig<Student>[] = [
     {
@@ -204,6 +207,9 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       emptyMessage="No students found"
       isLoading={isLoading}
       loadingMessage={loadingMessage}
+      onClearFilters={onClearFilters}
+      hasActiveFilters={hasActiveFilters}
+      totalDataCount={totalStudentsCount}
     />
   );
 }
