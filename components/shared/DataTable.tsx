@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, ReactNode } from "react";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Search, FileX } from "lucide-react";
 import SearchBar from "./SearchBar";
 
 export interface ColumnConfig<T> {
@@ -60,6 +60,7 @@ export default function DataTable<T>({
   const [isSorting, setIsSorting] = useState(false);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [isSearching, setIsSearching] = useState(false);
+  const [sortCounter, setSortCounter] = useState(0);
 
   // Filter data based on search query
   const filteredData = data.filter((item) => {
@@ -128,14 +129,14 @@ export default function DataTable<T>({
 
   // Handle search with animation
   const handleSearchChange = (value: string) => {
-    setIsSearching(true);
     setSearchQuery(value);
     setCurrentPage(1);
+    setIsSearching(true);
 
-    // Reset searching state after animation
+    // Reset searching state after animation completes
     setTimeout(() => {
       setIsSearching(false);
-    }, 600);
+    }, 500);
   };
 
   // Reset to page 1 when search query changes
@@ -171,6 +172,9 @@ export default function DataTable<T>({
     const column = columns.find(col => col.key === columnKey);
     if (!column?.sortable) return;
 
+    // Don't sort if there are no results
+    if (sortedData.length === 0) return;
+
     console.log('🔄 Sorting triggered:', columnKey);
 
     if (sortColumn === columnKey) {
@@ -186,6 +190,9 @@ export default function DataTable<T>({
       setSortDirection('asc');
       console.log('📊 New column, direction: asc');
     }
+
+    // Increment sort counter to trigger re-render with new keys
+    setSortCounter(prev => prev + 1);
 
     // Trigger animation after state updates
     setTimeout(() => {
@@ -255,9 +262,13 @@ export default function DataTable<T>({
                   key={column.key}
                   onClick={() => handleSort(column.key)}
                   className={`px-4 md:px-5 py-3 md:py-3.5 text-[11px] font-extrabold uppercase tracking-wider whitespace-nowrap transition-all duration-300 ease-in-out ${
-                    column.sortable !== false ? 'cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-gray-600/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10' : ''
+                    sortedData.length === 0
+                      ? 'cursor-not-allowed opacity-50'
+                      : column.sortable !== false ? 'cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-gray-600/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10' : ''
                   } ${
-                    sortColumn === column.key
+                    sortedData.length === 0
+                      ? 'text-gray-400 dark:text-gray-500'
+                      : sortColumn === column.key
                       ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10'
                       : 'text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300'
                   } ${getHiddenClasses(column.hidden)} ${column.className || ''}`}
@@ -327,9 +338,9 @@ export default function DataTable<T>({
 
                 return (
                   <tr
-                  key={`${getRowKey(item, index)}-${sortColumn}-${sortDirection}-${isSorting ? 'sorting' : 'static'}-${searchQuery}`}
+                  key={`${getRowKey(item, index)}-${sortCounter}-${searchQuery}`}
                   style={{
-                    animation: isSearching ? `fadeSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${index / 60}s both` : undefined,
+                    animation: isSearching ? `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${index / 80}s both` : undefined,
                   } as React.CSSProperties}
                   className={`border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 ${!isSorting ? 'transition-all duration-200' : ''} ${animationClass} ${onRowClick ? 'cursor-pointer' : ''}`}
                   onClick={() => onRowClick?.(item)}
@@ -353,9 +364,56 @@ export default function DataTable<T>({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70"
+                  className="px-4 py-12 text-center"
                 >
-                  {emptyMessage}
+                  <div className="flex flex-col items-center justify-center">
+                    {/* Icon with gradient background */}
+                    <div className="relative mb-4">
+                      {/* Gradient background circle */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className={`w-16 h-16 rounded-full ${
+                          searchQuery.trim()
+                            ? 'bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-500/10 dark:to-blue-600/10 midnight:from-cyan-500/10 midnight:to-cyan-600/10 purple:from-pink-500/10 purple:to-pink-600/10'
+                            : 'bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 midnight:from-cyan-500/5 midnight:to-cyan-600/5 purple:from-pink-500/5 purple:to-pink-600/5'
+                        } animate-pulse`} />
+                      </div>
+
+                      {/* Icon */}
+                      <div className="relative z-10 flex items-center justify-center w-16 h-16">
+                        {searchQuery.trim() ? (
+                          <Search className="w-8 h-8 text-blue-400 dark:text-blue-500 midnight:text-cyan-400 purple:text-pink-400" strokeWidth={1.5} />
+                        ) : (
+                          <FileX className="w-8 h-8 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50" strokeWidth={1.5} />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1">
+                      {searchQuery.trim() ? 'No results found' : 'No data available'}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
+                      {searchQuery.trim()
+                        ? `No results match "${searchQuery}". Try a different search term.`
+                        : emptyMessage}
+                    </p>
+
+                    {/* Clear search link */}
+                    {searchQuery.trim() && (
+                      <button
+                        onClick={() => {
+                          setIsSearching(true);
+                          setSearchQuery('');
+                          setCurrentPage(1);
+                        }}
+                        className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer transition-colors duration-200"
+                      >
+                        Clear search
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             )}
@@ -364,13 +422,22 @@ export default function DataTable<T>({
       </div>
 
       {/* Pagination Controls */}
-      {enablePagination && sortedData.length > 0 && (
+      {enablePagination && (sortedData.length > 0 || data.length > 0) && (
         <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-b-xl md:rounded-b-2xl">
           {/* Left - Showing info */}
           <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-medium order-2 sm:order-1">
-            Showing <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{startIndex + 1}</span> to{" "}
-            <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{Math.min(endIndex, sortedData.length)}</span> of{" "}
-            <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{sortedData.length}</span> {searchQuery.trim() ? 'filtered' : 'total'} entries
+            {sortedData.length > 0 ? (
+              <>
+                Showing <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{startIndex + 1}</span> to{" "}
+                <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{Math.min(endIndex, sortedData.length)}</span> of{" "}
+                <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{sortedData.length}</span> {searchQuery.trim() ? 'filtered' : 'total'} entries
+              </>
+            ) : (
+              <>
+                Showing <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">0</span> of{" "}
+                <span className="font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-200 purple:text-pink-200">{data.length}</span> total entries
+              </>
+            )}
           </div>
 
           {/* Center - Page numbers */}
@@ -378,9 +445,9 @@ export default function DataTable<T>({
             {/* Previous Button */}
             <button
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
+              disabled={currentPage === 1 || sortedData.length === 0}
               className={`p-1.5 rounded-lg transition-all duration-300 ${
-                currentPage === 1
+                currentPage === 1 || sortedData.length === 0
                   ? "opacity-40 cursor-not-allowed bg-gray-100 dark:bg-gray-700"
                   : "hover:bg-blue-100 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 cursor-pointer hover:scale-110 active:scale-95"
               }`}
@@ -415,9 +482,12 @@ export default function DataTable<T>({
                 return (
                   <button
                     key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
+                    onClick={() => sortedData.length > 0 && setCurrentPage(pageNum)}
+                    disabled={sortedData.length === 0}
                     className={`min-w-[30px] h-7 sm:h-8 px-2 sm:px-3 rounded-lg text-xs sm:text-sm font-bold transition-all duration-300 ${
-                      currentPage === pageNum
+                      sortedData.length === 0
+                        ? "opacity-40 cursor-not-allowed text-gray-400 dark:text-gray-500"
+                        : currentPage === pageNum
                         ? "bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 text-white shadow-md scale-105"
                         : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:scale-105 active:scale-95"
                     }`}
@@ -431,9 +501,9 @@ export default function DataTable<T>({
             {/* Next Button */}
             <button
               onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages || sortedData.length === 0}
               className={`p-1.5 rounded-lg transition-all duration-300 ${
-                currentPage === totalPages
+                currentPage === totalPages || sortedData.length === 0
                   ? "opacity-40 cursor-not-allowed bg-gray-100 dark:bg-gray-700"
                   : "hover:bg-blue-100 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 cursor-pointer hover:scale-110 active:scale-95"
               }`}
@@ -445,16 +515,25 @@ export default function DataTable<T>({
 
           {/* Right - Items per page */}
           {enableItemsPerPage && (
-            <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 order-3">
+            <div className={`flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm order-3 ${
+              sortedData.length === 0
+                ? 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 opacity-50'
+                : 'text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70'
+            }`}>
               <label htmlFor="itemsPerPage" className="whitespace-nowrap">Items per page:</label>
               <select
                 id="itemsPerPage"
                 value={itemsPerPage}
+                disabled={sortedData.length === 0}
                 onChange={(e) => {
                   setItemsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-500 purple:focus:ring-pink-500 cursor-pointer"
+                className={`px-2 py-1 rounded-lg border text-xs sm:text-sm focus:outline-none ${
+                  sortedData.length === 0
+                    ? 'cursor-not-allowed opacity-60 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
+                    : 'cursor-pointer border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-500 purple:focus:ring-pink-500'
+                }`}
               >
                 {itemsPerPageOptions.map((option) => (
                   <option key={option} value={option}>{option}</option>
