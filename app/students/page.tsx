@@ -2653,15 +2653,41 @@ export default function AllStudentsPage() {
                 </span>
               </div>
             )}
+
+            {/* Delete All Button - Grid view (desktop: after count badge, mobile: hidden here) */}
+            {viewMode === "grid" && selectedIds.size > 0 && (
+              <div className="hidden sm:block">
+                <DeleteAllButton
+                  selectedCount={selectedIds.size}
+                  onDeleteAll={handleDeleteAll}
+                />
+              </div>
+            )}
           </div>
 
           {/* Right Section - View Toggle and Sort */}
           <div className="flex items-center justify-end gap-3 lg:flex-1">
+            {/* Delete All Button - Grid view (mobile: before checkbox, far left) */}
+            {viewMode === "grid" && selectedIds.size > 0 && (
+              <div className="block sm:hidden">
+                <DeleteAllButton
+                  selectedCount={selectedIds.size}
+                  onDeleteAll={handleDeleteAll}
+                />
+              </div>
+            )}
+
             {/* Select All Checkbox - Only show in grid view */}
             {viewMode === "grid" && (
               <div className="flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 shadow-sm">
                 <input
                   type="checkbox"
+                  ref={(el) => {
+                    if (el) {
+                      const isSomeSelected = selectedIds.size > 0 && selectedIds.size < displayedStudents.length;
+                      el.indeterminate = isSomeSelected;
+                    }
+                  }}
                   checked={selectedIds.size === displayedStudents.length && displayedStudents.length > 0}
                   onChange={(e) => {
                     if (e.target.checked) {
