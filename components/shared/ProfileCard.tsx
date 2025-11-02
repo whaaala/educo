@@ -174,20 +174,32 @@ export default function ProfileCard({
         {/* Profile Avatar and Info */}
         <div className="px-3 sm:px-4 md:px-3 py-1.5 sm:py-2 md:py-1.5 pb-2 sm:pb-3 md:pb-2 group-hover:pb-3 sm:group-hover:pb-4 md:group-hover:pb-2.5 flex items-center gap-2 sm:gap-2.5 md:gap-2 transition-all duration-300">
           {avatar ? (
-            <div className="relative">
+            <div
+              className="relative cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("Avatar clicked", id);
+              }}
+            >
               <img
                 src={avatar}
                 alt={name}
-                className="w-10 h-10 sm:w-11 sm:h-11 md:w-10 md:h-10 rounded-full object-cover shrink-0 ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-md transition-transform duration-300 group-hover:scale-110"
+                className="w-10 h-10 sm:w-11 sm:h-11 md:w-10 md:h-10 rounded-full object-cover shrink-0 ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-md transition-transform duration-300 group-hover:scale-110 hover:scale-125"
               />
               <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full opacity-0 group-hover:opacity-25 blur transition-opacity duration-300" />
             </div>
           ) : (
-            <div className="relative">
+            <div
+              className="relative cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("Avatar clicked", id);
+              }}
+            >
               <div
                 className={`w-10 h-10 sm:w-11 sm:h-11 md:w-10 md:h-10 rounded-full bg-gradient-to-br ${getAvatarGradient(
                   colorIndex,
-                )} flex items-center justify-center text-white text-xs sm:text-sm md:text-xs font-bold shrink-0 shadow-md ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl`}
+                )} flex items-center justify-center text-white text-xs sm:text-sm md:text-xs font-bold shrink-0 shadow-md ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 transition-all duration-300 group-hover:scale-110 hover:scale-125 group-hover:shadow-xl`}
               >
                 {getInitials(name)}
               </div>

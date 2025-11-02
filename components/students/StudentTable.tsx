@@ -34,9 +34,9 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Admission No",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left pl-6 w-[10%]",
+      className: "text-left pl-6 w-[12%]",
       render: (student) => (
-        <span className="text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 truncate block">
+        <span className="text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 block cursor-pointer whitespace-nowrap">
           {student.id}
         </span>
       ),
@@ -60,7 +60,13 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       className: "text-left w-[20%]",
       render: (student) => (
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 xl:w-9 xl:h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 transition-all duration-300 shadow-md">
+          <div
+            className="w-8 h-8 xl:w-9 xl:h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 transition-all duration-300 shadow-md cursor-pointer hover:scale-110"
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log("Avatar clicked", student.id);
+            }}
+          >
             {student.name.charAt(0)}
           </div>
           <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 truncate">
@@ -152,7 +158,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       render: (student) => (
         <div className="flex items-center justify-start gap-0.5 xl:gap-1">
           <button
-            className="p-1 xl:p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95"
+            className="p-1 xl:p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer"
             title="Message"
             onClick={(e) => {
               e.stopPropagation();
@@ -162,7 +168,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
             <MessageCircle className="w-3 h-3 xl:w-3.5 xl:h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
           </button>
           <button
-            className="p-1 xl:p-1.5 rounded-md hover:bg-green-50 dark:hover:bg-green-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95"
+            className="p-1 xl:p-1.5 rounded-md hover:bg-green-50 dark:hover:bg-green-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer"
             title="Call"
             onClick={(e) => {
               e.stopPropagation();
@@ -172,7 +178,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
             <Phone className="w-3 h-3 xl:w-3.5 xl:h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors" />
           </button>
           <button
-            className="p-1 xl:p-1.5 rounded-md hover:bg-purple-50 dark:hover:bg-purple-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95"
+            className="p-1 xl:p-1.5 rounded-md hover:bg-purple-50 dark:hover:bg-purple-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer"
             title="Email"
             onClick={(e) => {
               e.stopPropagation();
@@ -182,7 +188,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
             <Mail className="w-3 h-3 xl:w-3.5 xl:h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
           </button>
           <button
-            className="p-1 xl:p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95"
+            className="p-1 xl:p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer"
             title="More"
             onClick={(e) => {
               e.stopPropagation();

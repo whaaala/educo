@@ -267,7 +267,7 @@ export default function DataTable<T>({
                 <th
                   key={column.key}
                   onClick={() => handleSort(column.key)}
-                  className={`px-4 md:px-5 py-3 md:py-3.5 text-[11px] font-extrabold uppercase tracking-wider whitespace-nowrap transition-all duration-300 ease-in-out ${
+                  className={`px-5 md:px-6 py-4 md:py-4.5 text-[11px] font-extrabold uppercase tracking-wider whitespace-nowrap transition-all duration-300 ease-in-out ${
                     sortedData.length === 0
                       ? 'cursor-not-allowed opacity-50'
                       : column.sortable !== false ? 'cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-gray-600/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10' : ''
@@ -354,7 +354,7 @@ export default function DataTable<T>({
                   {columns.map((column) => (
                     <td
                       key={column.key}
-                      className={`px-4 md:px-5 py-4 md:py-5 text-center ${getHiddenClasses(column.hidden)} ${column.className || ''} ${!column.render ? 'overflow-hidden' : ''}`}
+                      className={`px-5 md:px-6 py-5 md:py-6 text-center ${getHiddenClasses(column.hidden)} ${column.className || ''} ${!column.render ? 'overflow-hidden' : ''}`}
                     >
                       {column.render ? column.render(item, index) : (
                         <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 block truncate">

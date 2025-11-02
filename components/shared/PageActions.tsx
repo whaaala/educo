@@ -9,6 +9,8 @@ interface PageActionsProps {
   onRefresh?: () => void;
   onPrint?: () => void;
   onAdd?: () => void;
+  onExportPDF?: () => void;
+  onExportExcel?: () => void;
   addButtonLabel?: string;
   showRefresh?: boolean;
   showPrint?: boolean;
@@ -21,6 +23,8 @@ export default function PageActions({
   onRefresh,
   onPrint,
   onAdd,
+  onExportPDF,
+  onExportExcel,
   addButtonLabel = "Add",
   showRefresh = true,
   showPrint = true,
@@ -55,7 +59,7 @@ export default function PageActions({
       {(showExport || showAdd) && (
         <div className="flex items-center gap-2 lg:gap-3">
           {/* Export Button */}
-          {showExport && <ExportButton />}
+          {showExport && <ExportButton onExportPDF={onExportPDF} onExportExcel={onExportExcel} />}
 
           {/* Add Button */}
           {showAdd && <AddButton label={addButtonLabel} onClick={onAdd} />}

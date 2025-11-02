@@ -20,6 +20,7 @@ import {
   Network,
   ClipboardList,
   Boxes,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -86,7 +87,7 @@ const menuItems: MenuItem[] = [
   {
     id: "management",
     label: "Management",
-    icon: <Settings className="w-5 h-5" />,
+    icon: <Briefcase className="w-5 h-5" />,
     children: [
       { id: "fees", label: "Fees", icon: <DollarSign className="w-4 h-4" />, href: "/fees" },
       { id: "library", label: "Library", icon: <BookOpen className="w-4 h-4" />, href: "/library" },
@@ -244,7 +245,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
             <button
               onClick={() => !isCollapsedDesktop && toggleExpanded(item.id)}
               className={cn(
-                "w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm",
+                "w-full flex items-center px-3 py-2.5 rounded-xl font-medium text-sm cursor-pointer",
                 "text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100",
                 "hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50",
                 "dark:hover:from-blue-500/10 dark:hover:to-indigo-500/10",
@@ -258,7 +259,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                 level > 0 && "pl-3"
               )}
             >
-              <div className="flex items-center gap-3 min-h-[32px]">
+              <div className="flex items-center gap-3.5 min-h-[32px] flex-1 min-w-0">
                 <div className={cn(
                   "flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0",
                   "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10",
@@ -270,7 +271,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                 </div>
                 {/* Show label based on mobile/collapsed state */}
                 <span
-                  className="flex-1 text-left overflow-hidden transition-all ease-in-out"
+                  className="flex-1 text-left overflow-hidden transition-all ease-in-out min-w-0"
                   style={{
                     width: (isMobile === true || (isMobile === false && !isCollapsed)) ? 'auto' : '0px',
                     transitionDuration: '300ms'
@@ -291,7 +292,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
               {/* Show chevron based on mobile/collapsed state */}
               {(isMobile === true || (isMobile === false && !isCollapsed)) && (
                 <div className={cn(
-                  "transition-transform duration-200",
+                  "transition-transform duration-200 flex-shrink-0 w-6 flex items-center justify-center",
                   isExpanded && "rotate-180"
                 )}>
                   <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
@@ -355,7 +356,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                                   <Link
                                     key={grandchild.id}
                                     href={grandchild.href || "#"}
-                                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300 transition-all duration-150 rounded-lg mx-2"
+                                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300 transition-all duration-150 rounded-lg mx-2 cursor-pointer"
                                   >
                                     <div className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-700/50">
                                       {grandchild.icon}
@@ -374,7 +375,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                       <Link
                         key={child.id}
                         href={child.href || "#"}
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300 transition-all duration-150 rounded-lg mx-2"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300 transition-all duration-150 rounded-lg mx-2 cursor-pointer"
                       >
                         <div className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-700/50">
                           {child.icon}
@@ -392,7 +393,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
             <Link
               href={item.href || "#"}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm",
+                "w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl font-medium text-sm cursor-pointer",
                 "text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100",
                 "hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50",
                 "dark:hover:from-blue-500/10 dark:hover:to-indigo-500/10",
@@ -471,7 +472,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                   key={child.id}
                   href={child.href || "#"}
                   className={cn(
-                    "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium group",
+                    "flex items-center gap-3.5 px-3 py-2 rounded-lg text-sm font-medium group cursor-pointer",
                     "text-gray-600 dark:text-gray-400 midnight:text-cyan-200 purple:text-pink-200",
                     "hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50/50",
                     "dark:hover:from-blue-500/5 dark:hover:to-indigo-500/5",
@@ -563,7 +564,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
             {isCollapsed ? (
               // Collapsed state: Show only logo icon centered with expand button below
               <div className="flex flex-col items-center gap-3">
-                <Link href="/" className="flex items-center justify-center group">
+                <Link href="/" className="flex items-center justify-center group cursor-pointer">
                   <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 dark:shadow-blue-400/20 group-hover:scale-110 transition-transform duration-200">
                     <GraduationCap className="w-6 h-6 text-white" />
                   </div>
@@ -572,7 +573,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                 {isMobile === false && (
                   <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="hidden lg:flex items-center justify-center p-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 hover:scale-110"
+                    className="hidden lg:flex items-center justify-center p-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 hover:scale-110 cursor-pointer"
                     title="Expand sidebar"
                   >
                     <ChevronsRight className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
@@ -582,7 +583,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
             ) : (
               // Expanded state: Show logo and text with collapse button on the right
               <>
-                <Link href="/" className="flex items-center gap-3 group">
+                <Link href="/" className="flex items-center gap-3 group cursor-pointer">
                   <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 dark:shadow-blue-400/20 group-hover:scale-110 transition-transform duration-200">
                     <GraduationCap className="w-6 h-6 text-white" />
                   </div>
@@ -598,7 +599,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                 {isMobile === false && (
                   <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="hidden lg:flex items-center justify-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 hover:scale-110"
+                    className="hidden lg:flex items-center justify-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 hover:scale-110 cursor-pointer"
                     title="Collapse sidebar"
                   >
                     <ChevronsLeft className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />

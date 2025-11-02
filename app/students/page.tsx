@@ -14,6 +14,8 @@ import PageActions from "@/components/shared/PageActions";
 import PageSpinner from "@/components/shared/PageSpinner";
 import { useAcademicYear } from "@/contexts/AcademicYearContext";
 import { filterStudentsByAcademicYear } from "@/utils/academicYear";
+import { exportStudentsToPDF } from "@/utils/pdfExport";
+import { exportStudentsToExcel } from "@/utils/excelExport";
 
 // Sample data
 const sampleStudents: Student[] = [
@@ -1640,6 +1642,24 @@ export default function AllStudentsPage() {
     };
   };
 
+  const handleExportPDF = () => {
+    // Export all filtered students to PDF
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+    const filename = `students_${dateStr}.pdf`;
+
+    exportStudentsToPDF(filteredStudents, filename);
+  };
+
+  const handleExportExcel = () => {
+    // Export all filtered students to Excel
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+    const filename = `students_${dateStr}.xlsx`;
+
+    exportStudentsToExcel(filteredStudents, filename);
+  };
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -1806,7 +1826,13 @@ export default function AllStudentsPage() {
         />
 
         {/* Right Section - Action Buttons */}
-        <PageActions addButtonLabel="Add Student" onRefresh={handleRefresh} onPrint={handlePrint} />
+        <PageActions
+          addButtonLabel="Add Student"
+          onRefresh={handleRefresh}
+          onPrint={handlePrint}
+          onExportPDF={handleExportPDF}
+          onExportExcel={handleExportExcel}
+        />
       </div>
 
       {/* Filters Bar */}
