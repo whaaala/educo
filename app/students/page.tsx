@@ -2007,7 +2007,35 @@ export default function AllStudentsPage() {
     }, 300);
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    // Helper function to convert image URL to base64
+    const getBase64Image = async (url: string): Promise<string> => {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch (error) {
+        console.error('Error loading image:', error);
+        return '';
+      }
+    };
+
+    // Convert all student avatars to base64
+    const studentsWithBase64Avatars = await Promise.all(
+      filteredStudents.map(async (student) => {
+        if (student.avatar) {
+          const base64 = await getBase64Image(student.avatar);
+          return { ...student, avatar: base64 || student.avatar };
+        }
+        return student;
+      })
+    );
+
     // Create a print window with the current data
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -2017,8 +2045,8 @@ export default function AllStudentsPage() {
     const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
-    // Use filtered students (all of them, not just displayed)
-    const studentsToPrint = filteredStudents;
+    // Use filtered students with base64 avatars
+    const studentsToPrint = studentsWithBase64Avatars;
 
     // Build the HTML content
     let htmlContent = `
@@ -2099,6 +2127,14 @@ export default function AllStudentsPage() {
                 justify-content: center;
                 font-weight: bold;
                 font-size: 16px;
+                object-fit: cover;
+              }
+
+              .student-avatar img {
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+                object-fit: cover;
               }
 
               .student-name {
@@ -2195,6 +2231,14 @@ export default function AllStudentsPage() {
                 font-weight: bold;
                 font-size: 12px;
                 flex-shrink: 0;
+                object-fit: cover;
+              }
+
+              .table-avatar img {
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+                object-fit: cover;
               }
 
               .admission-no {
@@ -2269,7 +2313,9 @@ export default function AllStudentsPage() {
         htmlContent += `
           <div class="student-card">
             <div class="student-header">
-              <div class="student-avatar">${student.name.charAt(0)}</div>
+              <div class="student-avatar">
+                ${student.avatar ? `<img src="${student.avatar}" alt="${student.name}" />` : student.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+              </div>
               <div>
                 <div class="student-name">${student.name}</div>
                 <div class="student-id">${student.id}</div>
@@ -2330,7 +2376,9 @@ export default function AllStudentsPage() {
             <td>${student.rollNo}</td>
             <td>
               <div class="student-name-cell">
-                <div class="table-avatar">${student.name.charAt(0)}</div>
+                <div class="table-avatar">
+                  ${student.avatar ? `<img src="${student.avatar}" alt="${student.name}" />` : student.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                </div>
                 <span>${student.name}</span>
               </div>
             </td>
@@ -2361,10 +2409,27 @@ export default function AllStudentsPage() {
     printWindow.document.write(htmlContent);
     printWindow.document.close();
 
-    // Wait for content to load then print
+    // Wait for all images to load before printing
     printWindow.onload = () => {
-      printWindow.focus();
-      printWindow.print();
+      const images = printWindow.document.querySelectorAll('img');
+      const imagePromises = Array.from(images).map(img => {
+        return new Promise((resolve) => {
+          if (img.complete) {
+            resolve(true);
+          } else {
+            img.onload = () => resolve(true);
+            img.onerror = () => resolve(true); // Resolve even on error to prevent hanging
+          }
+        });
+      });
+
+      Promise.all(imagePromises).then(() => {
+        // Small delay to ensure rendering is complete
+        setTimeout(() => {
+          printWindow.focus();
+          printWindow.print();
+        }, 500);
+      });
     };
   };
 

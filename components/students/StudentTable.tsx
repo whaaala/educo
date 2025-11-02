@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Student } from "./StudentCard";
-import { MoreVertical, MessageCircle, Phone, Mail, DollarSign, Eye, Edit, Lock, TrendingUp, Trash2 } from "lucide-react";
+import { MoreVertical, MessageCircle, Phone, Mail, Eye, Edit, Lock, TrendingUp, Trash2 } from "lucide-react";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import CollectFeesModal from "@/components/shared/CollectFeesModal";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
@@ -385,7 +385,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
             title="Add Fees"
             onClick={(e) => handleAddFeesClick(student, e)}
           >
-            <DollarSign className="w-3 h-3 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-white flex-shrink-0" />
+            <span className="text-white font-bold flex-shrink-0">₦</span>
             <span className="text-[10px] md:text-[10px] lg:text-xs xl:text-sm font-bold text-white whitespace-nowrap">Add Fees</span>
           </button>
           <div className="relative flex-shrink-0 overflow-visible" ref={openMenuStudentId === student.id ? menuRef : null}>

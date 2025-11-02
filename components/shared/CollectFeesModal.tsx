@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import {
   X,
   Calendar,
-  DollarSign,
   Layers,
   Clock,
   CreditCard,
@@ -13,6 +12,11 @@ import {
   Hash,
   ChevronDown
 } from "lucide-react";
+
+// Custom Naira Icon Component
+const NairaIcon = ({ className }: { className?: string }) => (
+  <span className={className}>₦</span>
+);
 import ModernCalendar from "./ModernCalendar";
 import FormInput from "./FormInput";
 import FormDropdown from "./FormDropdown";
@@ -159,7 +163,7 @@ export default function CollectFeesModal({
                       Outstanding
                     </span>
                     <p className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                      ${student.totalOutstanding}
+                      ₦{student.totalOutstanding}
                     </p>
                   </div>
                   <div className="bg-gray-100 dark:bg-gray-700/50 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-md p-1.5">
@@ -235,14 +239,14 @@ export default function CollectFeesModal({
             {/* Amount */}
             <FormInput
               label="Amount"
-              icon={<DollarSign className="w-3.5 h-3.5" />}
+              icon={<NairaIcon className="w-3.5 h-3.5" />}
               iconBgColor="bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30"
               iconColor="text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400"
               value={amount}
               onChange={setAmount}
               placeholder="0.00"
               type="text"
-              leftIcon={<span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-bold text-sm">$</span>}
+              leftIcon={<span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-bold text-sm">₦</span>}
               leftIconBg="bg-gray-100 dark:bg-gray-700 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
             />
 

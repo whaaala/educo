@@ -7,7 +7,6 @@ import {
   Users,
   GraduationCap,
   BookOpen,
-  DollarSign,
   Bus,
   Home,
   Calendar,
@@ -22,6 +21,11 @@ import {
   Boxes,
   Briefcase,
 } from "lucide-react";
+
+// Custom Naira Icon Component
+const NairaIcon = ({ className }: { className?: string }) => (
+  <span className={className} style={{ fontSize: '1rem', fontWeight: 'bold' }}>₦</span>
+);
 import { cn } from "@/lib/utils";
 
 interface MenuItem {
@@ -89,7 +93,7 @@ const menuItems: MenuItem[] = [
     label: "Management",
     icon: <Briefcase className="w-5 h-5" />,
     children: [
-      { id: "fees", label: "Fees", icon: <DollarSign className="w-4 h-4" />, href: "/fees" },
+      { id: "fees", label: "Fees", icon: <NairaIcon className="w-4 h-4" />, href: "/fees" },
       { id: "library", label: "Library", icon: <BookOpen className="w-4 h-4" />, href: "/library" },
       { id: "dormitory", label: "Dormitory", icon: <Home className="w-4 h-4" />, href: "/dormitory" },
       { id: "transport", label: "Transport", icon: <Bus className="w-4 h-4" />, href: "/transport" },
