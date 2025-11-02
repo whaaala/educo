@@ -1819,6 +1819,15 @@ export default function AllStudentsPage() {
 
             {/* Filter */}
             <FilterButton fields={filterFields} onFilterChange={handleFilterChange} />
+
+            {/* Student Count Badge (Grid View Only) - Shown on all screens */}
+            {viewMode === "grid" && (
+              <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
+                <span className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
+                  1 to {Math.min(displayedCount, filteredStudents.length)} of {filteredStudents.length}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Right Section - View Toggle and Sort */}
