@@ -14,6 +14,7 @@ export interface ColumnConfig<T> {
     desktop?: boolean;
   };
   render?: (item: T, index: number) => ReactNode;
+  renderHeader?: () => ReactNode;
   sortValue?: (item: T) => string | number;
   searchable?: boolean;
   className?: string;
@@ -266,11 +267,11 @@ export default function DataTable<T>({
                 return (
                 <th
                   key={column.key}
-                  onClick={() => handleSort(column.key)}
+                  onClick={() => column.renderHeader ? undefined : handleSort(column.key)}
                   className={`px-5 md:px-6 py-4 md:py-4.5 text-[11px] font-extrabold uppercase tracking-wider whitespace-nowrap transition-all duration-300 ease-in-out ${
                     sortedData.length === 0
                       ? 'cursor-not-allowed opacity-50'
-                      : column.sortable !== false ? 'cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-gray-600/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10' : ''
+                      : column.sortable !== false && !column.renderHeader ? 'cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-gray-600/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10' : ''
                   } ${
                     sortedData.length === 0
                       ? 'text-gray-400 dark:text-gray-500'
@@ -279,22 +280,26 @@ export default function DataTable<T>({
                       : 'text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300'
                   } ${getHiddenClasses(column.hidden)} ${column.className || ''}`}
                 >
-                  <div className={`flex items-center ${justifyClass} gap-1.5`}>
-                    <span className="relative">
-                      {column.label}
-                    </span>
-                    {column.sortable !== false && (
-                      <span className={`icon-arrow inline-flex items-center justify-center w-4 h-4 rounded transition-all duration-300 ease-in-out ${
-                        sortColumn === column.key
-                          ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 scale-110 opacity-100'
-                          : 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 opacity-0 group-hover/header:opacity-100 scale-100'
-                      } ${sortColumn === column.key && !sortAsc ? 'rotate-180' : 'rotate-0'}`}>
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 15l7-7 7 7" />
-                        </svg>
+                  {column.renderHeader ? (
+                    column.renderHeader()
+                  ) : (
+                    <div className={`flex items-center ${justifyClass} gap-1.5`}>
+                      <span className="relative">
+                        {column.label}
                       </span>
-                    )}
-                  </div>
+                      {column.sortable !== false && (
+                        <span className={`icon-arrow inline-flex items-center justify-center w-4 h-4 rounded transition-all duration-300 ease-in-out ${
+                          sortColumn === column.key
+                            ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 scale-110 opacity-100'
+                            : 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 opacity-0 group-hover/header:opacity-100 scale-100'
+                        } ${sortColumn === column.key && !sortAsc ? 'rotate-180' : 'rotate-0'}`}>
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 15l7-7 7 7" />
+                          </svg>
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </th>
                 );
               })}

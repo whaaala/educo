@@ -13,7 +13,11 @@ export default function ModernCalendar({ value, onChange, onClose }: ModernCalen
   const [currentDate, setCurrentDate] = useState(
     value ? new Date(value) : new Date()
   );
+  const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
+  const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
+  const monthDropdownRef = useRef<HTMLDivElement>(null);
+  const yearDropdownRef = useRef<HTMLDivElement>(null);
 
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
@@ -90,6 +94,23 @@ export default function ModernCalendar({ value, onChange, onClose }: ModernCalen
     onClose();
   };
 
+  // Handle click outside to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (monthDropdownRef.current && !monthDropdownRef.current.contains(event.target as Node)) {
+        setIsMonthDropdownOpen(false);
+      }
+      if (yearDropdownRef.current && !yearDropdownRef.current.contains(event.target as Node)) {
+        setIsYearDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const isToday = (date: Date) => {
     const today = new Date();
     return (
@@ -127,59 +148,75 @@ export default function ModernCalendar({ value, onChange, onClose }: ModernCalen
         </button>
 
         <div className="flex items-center gap-2">
-          <div className="relative">
-            <select
-              value={currentDate.getMonth()}
-              onChange={(e) => handleMonthChange(Number(e.target.value))}
+          <div className="relative" ref={monthDropdownRef}>
+            <button
+              type="button"
+              onClick={() => {
+                setIsMonthDropdownOpen(!isMonthDropdownOpen);
+                setIsYearDropdownOpen(false);
+              }}
               className="appearance-none text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-cyan-900/30 midnight:to-cyan-800/20 purple:from-pink-900/30 purple:to-pink-800/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-gray-600 dark:hover:to-gray-600 midnight:hover:from-cyan-900/40 midnight:hover:to-cyan-800/30 purple:hover:from-pink-900/40 purple:hover:to-pink-800/30 rounded-lg px-3 py-1.5 pr-8 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 midnight:focus:ring-cyan-500/40 purple:focus:ring-pink-500/40 transition-all shadow-sm border border-blue-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
-              style={{
-                backgroundImage: 'none'
-              }}
             >
-              {monthNames.map((month, index) => (
-                <option
-                  key={month}
-                  value={index}
-                  className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white font-bold py-3 px-4 hover:bg-blue-50 dark:hover:bg-gray-700"
-                  style={{
-                    padding: '12px 16px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    lineHeight: '1.5'
-                  }}
-                >
-                  {month}
-                </option>
-              ))}
-            </select>
-            <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 pointer-events-none rotate-90" />
+              {monthNames[currentDate.getMonth()]}
+            </button>
+            <ChevronRight className={`absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 pointer-events-none transition-transform ${isMonthDropdownOpen ? 'rotate-[-90deg]' : 'rotate-90'}`} />
+
+            {isMonthDropdownOpen && (
+              <div className="absolute top-full mt-1 left-0 w-40 max-h-60 overflow-y-auto bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[10000] py-1">
+                {monthNames.map((month, index) => (
+                  <button
+                    key={month}
+                    type="button"
+                    onClick={() => {
+                      handleMonthChange(index);
+                      setIsMonthDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors ${
+                      currentDate.getMonth() === index
+                        ? 'bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
+                        : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20'
+                    }`}
+                  >
+                    {month}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <div className="relative">
-            <select
-              value={currentDate.getFullYear()}
-              onChange={(e) => handleYearChange(Number(e.target.value))}
-              className="appearance-none text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-purple-900/30 midnight:to-purple-800/20 purple:from-pink-900/30 purple:to-pink-800/20 hover:from-purple-100 hover:to-purple-100 dark:hover:from-gray-600 dark:hover:to-gray-600 midnight:hover:from-purple-900/40 midnight:hover:to-purple-800/30 purple:hover:from-pink-900/40 purple:hover:to-pink-800/30 rounded-lg px-3 py-1.5 pr-8 cursor-pointer outline-none focus:ring-2 focus:ring-purple-500/40 dark:focus:ring-purple-400/40 midnight:focus:ring-cyan-500/40 purple:focus:ring-pink-500/40 transition-all shadow-sm border border-purple-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
-              style={{
-                backgroundImage: 'none'
+          <div className="relative" ref={yearDropdownRef}>
+            <button
+              type="button"
+              onClick={() => {
+                setIsYearDropdownOpen(!isYearDropdownOpen);
+                setIsMonthDropdownOpen(false);
               }}
+              className="appearance-none text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-purple-900/30 midnight:to-purple-800/20 purple:from-pink-900/30 purple:to-pink-800/20 hover:from-purple-100 hover:to-purple-100 dark:hover:from-gray-600 dark:hover:to-gray-600 midnight:hover:from-purple-900/40 midnight:hover:to-purple-800/30 purple:hover:from-pink-900/40 purple:hover:to-pink-800/30 rounded-lg px-3 py-1.5 pr-8 cursor-pointer outline-none focus:ring-2 focus:ring-purple-500/40 dark:focus:ring-purple-400/40 midnight:focus:ring-cyan-500/40 purple:focus:ring-pink-500/40 transition-all shadow-sm border border-purple-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
             >
-              {yearRange.map((year) => (
-                <option
-                  key={year}
-                  value={year}
-                  className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white font-bold py-3 px-4 hover:bg-purple-50 dark:hover:bg-gray-700"
-                  style={{
-                    padding: '12px 16px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    lineHeight: '1.5'
-                  }}
-                >
-                  {year}
-                </option>
-              ))}
-            </select>
-            <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 pointer-events-none rotate-90" />
+              {currentDate.getFullYear()}
+            </button>
+            <ChevronRight className={`absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 pointer-events-none transition-transform ${isYearDropdownOpen ? 'rotate-[-90deg]' : 'rotate-90'}`} />
+
+            {isYearDropdownOpen && (
+              <div className="absolute top-full mt-1 left-0 w-32 max-h-60 overflow-y-auto bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[10000] py-1">
+                {yearRange.map((year) => (
+                  <button
+                    key={year}
+                    type="button"
+                    onClick={() => {
+                      handleYearChange(year);
+                      setIsYearDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors ${
+                      currentDate.getFullYear() === year
+                        ? 'bg-purple-50 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400'
+                        : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-purple-900/20 purple:hover:bg-pink-900/20'
+                    }`}
+                  >
+                    {year}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
