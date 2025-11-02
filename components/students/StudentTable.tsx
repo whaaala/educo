@@ -147,7 +147,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "index",
       label: "",
       sortable: false,
-      className: "text-center w-[3%]",
+      className: "text-center w-[2%]",
       render: (student) => (
         <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
           <input
@@ -182,7 +182,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Admission No",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left w-[10%]",
+      className: "text-left w-[12%]",
       render: (student) => (
         <span className="text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 block cursor-pointer whitespace-nowrap">
           {student.id}
@@ -194,7 +194,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Roll No",
       sortable: true,
       hidden: { mobile: true },
-      className: "text-left w-[6%]",
+      className: "text-left w-[8%]",
       render: (student) => (
         <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
           {student.rollNo}
@@ -205,7 +205,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "name",
       label: "Name",
       sortable: true,
-      className: "text-left w-[16%]",
+      className: "text-left w-[18%]",
       render: (student) => (
         <div className="flex items-center gap-2.5 min-w-0">
           {student.avatar ? (
@@ -261,7 +261,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "class",
       label: "Class",
       sortable: true,
-      className: "text-left w-[6%]",
+      className: "text-left w-[7%]",
       sortValue: (student) => student.class.split(", ")[0],
       render: (student) => {
         const [classNum] = student.class.split(", ");
@@ -277,7 +277,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Section",
       sortable: true,
       hidden: { mobile: true },
-      className: "text-left w-[7%]",
+      className: "text-left w-[8%]",
       sortValue: (student) => student.class.split(", ")[1],
       render: (student) => {
         const [, section] = student.class.split(", ");
@@ -294,7 +294,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Gender",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left w-[7%]",
+      className: "text-left w-[8%]",
       render: (student) => (
         <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
           {student.gender}
@@ -305,7 +305,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "status",
       label: "Status",
       sortable: true,
-      className: "text-left w-[8%] pr-28",
+      className: "text-left w-[9%]",
       render: (student) => (
         <div className="flex items-center justify-start">
           <span
@@ -325,7 +325,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Date of Join",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left w-[10%]",
+      className: "text-left w-[11%]",
       render: (student) => (
         <span className="text-sm font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 whitespace-nowrap">
           {student.joinedOn}
@@ -336,7 +336,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "actions",
       label: "Action",
       sortable: false,
-      className: "text-left w-[24%]",
+      className: "text-left w-[20%]",
       render: (student) => (
         <div className="flex items-center justify-start gap-1 xl:gap-1.5 ml-[0.7rem] md:ml-0">
           <button
