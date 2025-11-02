@@ -1897,7 +1897,7 @@ export default function AllStudentsPage() {
                 </div>
               ) : (
                 <>
-                  <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
+                  <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2 pr-2 md:pr-0">
                     {displayedStudents.map((student, index) => {
                       // Check if student matches current search/filters
                       const matchesSearch = searchQuery.trim() === "" ||
