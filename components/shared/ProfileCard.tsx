@@ -16,6 +16,7 @@ import { useState, useRef, useEffect } from "react";
 import CollectFeesModal from "./CollectFeesModal";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import AddFeesButton from "./AddFeesButton";
+import NameLabel from "./NameLabel";
 
 export interface ProfileDetail {
   label: string;
@@ -183,7 +184,7 @@ export default function ProfileCard({
                 {status}
               </span>
             </div>
-            <div className="relative">
+            <div className="relative group/moremenu">
               <button
                 ref={buttonRef}
                 onClick={(e) => {
@@ -207,6 +208,10 @@ export default function ProfileCard({
                   }`}
                 />
               </button>
+              {/* Hover Label */}
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/moremenu:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
+                <NameLabel name="More" variant="compact" />
+              </div>
             </div>
           </div>
         </div>
@@ -248,8 +253,8 @@ export default function ProfileCard({
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 midnight:from-cyan-400 midnight:via-purple-400 midnight:to-cyan-400 purple:from-pink-400 purple:via-purple-400 purple:to-pink-400 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
             </div>
           )}
-          <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1 truncate transition-colors duration-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 leading-tight">
+          <div className="flex-1 min-w-0 space-y-1.5">
+            <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 group-hover:text-black truncate">
               {name}
             </h3>
             <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
@@ -279,34 +284,44 @@ export default function ProfileCard({
         <div className="px-4 pb-2 pt-0 flex items-center justify-between border-t border-white/40 group-hover:border-white/60 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 mt-1.5 pt-2 relative z-10 transition-all duration-200">
           <div className="flex items-center gap-2">
             {actions.map((action, index) => (
-              <button
-                key={index}
-                onClick={action.onClick}
-                style={{ cursor: "pointer", zIndex: 11111 }}
-                className="group/action flex items-center justify-center w-8 h-8 rounded-full border-2 border-white/60 group-hover:border-white/80 dark:border-gray-600/50 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white/70 backdrop-blur-sm group-hover:bg-white/95 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30 group-hover:shadow-md dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 shadow-sm"
-                title={action.label}
-              >
-                <action.icon
-                  style={{ cursor: "pointer" }}
-                  className="w-3.5 h-3.5 text-gray-700 group-hover:text-gray-900 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 transition-colors"
-                />
-              </button>
+              <div key={index} className="relative group/action">
+                <button
+                  onClick={action.onClick}
+                  style={{ cursor: "pointer", zIndex: 11111 }}
+                  className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-white/60 group-hover:border-white/80 dark:border-gray-600/50 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white/70 backdrop-blur-sm group-hover:bg-white/95 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30 group-hover:shadow-md dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 shadow-sm"
+                >
+                  <action.icon
+                    style={{ cursor: "pointer" }}
+                    className="w-3.5 h-3.5 text-gray-700 group-hover:text-gray-900 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 transition-colors"
+                  />
+                </button>
+                {/* Hover Label */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/action:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
+                  <NameLabel name={action.label} variant="compact" />
+                </div>
+              </div>
             ))}
           </div>
           {primaryAction && (
-            <AddFeesButton
-              onClick={(e) => {
-                e.stopPropagation();
-                if (primaryAction.label === "Add Fees") {
-                  setIsFeesModalOpen(true);
-                } else if (primaryAction.onClick) {
-                  primaryAction.onClick();
-                }
-              }}
-              label={primaryAction.label}
-              size="md"
-              currency="₦"
-            />
+            <div className="relative group/primaryaction">
+              <AddFeesButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (primaryAction.label === "Add Fees") {
+                    setIsFeesModalOpen(true);
+                  } else if (primaryAction.onClick) {
+                    primaryAction.onClick();
+                  }
+                }}
+                label={primaryAction.label}
+                size="md"
+                currency="₦"
+              />
+              {/* Hover Label */}
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/primaryaction:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
+                <NameLabel name={primaryAction.label} variant="compact" />
+              </div>
+            </div>
           )}
         </div>
         </div>
