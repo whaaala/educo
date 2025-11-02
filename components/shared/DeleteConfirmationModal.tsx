@@ -1,6 +1,8 @@
 "use client";
 
 import { AlertTriangle } from "lucide-react";
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -27,21 +29,37 @@ export default function DeleteConfirmationModal({
   confirmButtonText = "Delete",
   cancelButtonText = "Cancel",
 }: DeleteConfirmationModalProps) {
+  // Prevent body scrolling when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   // Generate initials from name if not provided
   const initials = itemInitials || itemName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
-  return (
+  const modalContent = (
     <div
-      className="fixed inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/70 backdrop-blur-md flex items-start justify-center pt-20 p-4 overflow-y-auto animate-in fade-in duration-200"
+      className="fixed inset-0 flex items-start justify-center pt-20 p-4 animate-in fade-in duration-200"
       style={{ zIndex: 999999 }}
       onClick={onClose}
     >
+      {/* Backdrop with blur */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/70 backdrop-blur-md" />
+
+      {/* Modal Content */}
       <div
-        className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 slide-in-from-top-4 duration-300"
+        className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 slide-in-from-top-4 duration-300 z-10"
         onClick={(e) => e.stopPropagation()}
-        style={{ position: 'relative', zIndex: 1000000 }}
       >
         {/* Gradient Header Background */}
         <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-br from-red-500 via-red-600 to-orange-600 dark:from-red-600 dark:via-red-700 dark:to-orange-700 midnight:from-red-500 midnight:via-red-600 midnight:to-rose-600 purple:from-red-500 purple:via-pink-600 purple:to-rose-600 opacity-10 rounded-t-3xl"></div>
@@ -109,4 +127,6 @@ export default function DeleteConfirmationModal({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

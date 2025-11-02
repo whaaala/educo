@@ -27,6 +27,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Jan 2017",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=1",
   },
   {
     id: "AD9892433",
@@ -36,6 +37,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "19 Aug 2014",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=2",
   },
   {
     id: "AD9892432",
@@ -45,6 +47,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "5 Dec 2017",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=3",
   },
   {
     id: "AD9892431",
@@ -55,6 +58,7 @@ const sampleStudents: Student[] = [
     joinedOn: "13 May 2017",
     leftOn: "15 Jun 2019",
     status: "Inactive",
+    avatar: "https://i.pravatar.cc/150?img=4",
   },
   {
     id: "AD9892430",
@@ -64,6 +68,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "20 Jun 20215",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=5",
   },
   {
     id: "AD9892429",
@@ -73,6 +78,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "20 Jun 20215",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=6",
   },
   {
     id: "AD9892428",
@@ -82,6 +88,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "18 Jan 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=7",
   },
   {
     id: "AD9892427",
@@ -91,6 +98,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "26 May 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=8",
   },
   {
     id: "AD9892426",
@@ -100,6 +108,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Mar 2019",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=9",
   },
   {
     id: "AD9892425",
@@ -109,6 +118,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "22 Jul 2018",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=10",
   },
   {
     id: "AD9892424",
@@ -118,6 +128,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "10 Sep 2019",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=11",
   },
   {
     id: "AD9892423",
@@ -127,6 +138,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "5 Nov 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=12",
   },
   {
     id: "AD9892422",
@@ -136,6 +148,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "18 Feb 2018",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=13",
   },
   {
     id: "AD9892421",
@@ -145,6 +158,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "30 Apr 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=14",
   },
   {
     id: "AD9892420",
@@ -154,6 +168,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "12 Aug 2019",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=15",
   },
   {
     id: "AD9892419",
@@ -163,6 +178,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "25 Jan 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=16",
   },
 
   // Additional students for Academic Year 2024/2025 (Sep 2024 onwards)
@@ -174,6 +190,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Sep 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=17",
   },
   {
     id: "AD9892521",
@@ -183,6 +200,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Sep 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=18",
   },
   {
     id: "AD9892522",
@@ -192,6 +210,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Sep 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=19",
   },
   {
     id: "AD9892523",
@@ -201,6 +220,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Sep 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=20",
   },
   {
     id: "AD9892524",
@@ -210,6 +230,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "25 Sep 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=21",
   },
   {
     id: "AD9892525",
@@ -219,6 +240,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "1 Oct 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=22",
   },
   {
     id: "AD9892526",
@@ -228,6 +250,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Oct 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=23",
   },
   {
     id: "AD9892527",
@@ -237,6 +260,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Oct 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=24",
   },
   {
     id: "AD9892528",
@@ -246,6 +270,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Oct 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=25",
   },
   {
     id: "AD9892529",
@@ -255,6 +280,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Oct 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=26",
   },
   {
     id: "AD9892530",
@@ -264,6 +290,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "25 Oct 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=27",
   },
   {
     id: "AD9892531",
@@ -273,6 +300,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "1 Nov 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=28",
   },
   {
     id: "AD9892532",
@@ -282,6 +310,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Nov 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=29",
   },
   {
     id: "AD9892533",
@@ -291,6 +320,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Nov 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=30",
   },
   {
     id: "AD9892534",
@@ -300,6 +330,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Nov 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=31",
   },
   {
     id: "AD9892535",
@@ -309,6 +340,522 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Nov 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=32",
+  },
+
+  // Recent entries for date picker testing (Today, Yesterday, Last 7 Days, Last 30 Days)
+  // Note: Current date is 2 Nov 2025
+  {
+    id: "AD9892600",
+    name: "Alex Thompson",
+    rollNo: "37001",
+    class: "I, A",
+    gender: "Male",
+    joinedOn: "2 Nov 2025", // Today
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=33",
+  },
+  {
+    id: "AD9892601",
+    name: "Maya Rodriguez",
+    rollNo: "37002",
+    class: "I, B",
+    gender: "Female",
+    joinedOn: "2 Nov 2025", // Today
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=34",
+  },
+  {
+    id: "AD9892602",
+    name: "Jordan Lee",
+    rollNo: "37003",
+    class: "II, A",
+    gender: "Male",
+    joinedOn: "1 Nov 2025", // Yesterday
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=35",
+  },
+  {
+    id: "AD9892603",
+    name: "Sofia Chen",
+    rollNo: "37004",
+    class: "II, B",
+    gender: "Female",
+    joinedOn: "1 Nov 2025", // Yesterday
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=36",
+  },
+  {
+    id: "AD9892604",
+    name: "Marcus Williams",
+    rollNo: "37005",
+    class: "III, A",
+    gender: "Male",
+    joinedOn: "31 Oct 2025", // Last 7 Days
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=37",
+  },
+  {
+    id: "AD9892605",
+    name: "Aria Patel",
+    rollNo: "37006",
+    class: "I, A",
+    gender: "Female",
+    joinedOn: "30 Oct 2025", // Last 7 Days
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=38",
+  },
+  {
+    id: "AD9892606",
+    name: "Ryan Martinez",
+    rollNo: "37007",
+    class: "IV, B",
+    gender: "Male",
+    joinedOn: "29 Oct 2025", // Last 7 Days
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=39",
+  },
+  {
+    id: "AD9892607",
+    name: "Luna Garcia",
+    rollNo: "37008",
+    class: "I, B",
+    gender: "Female",
+    joinedOn: "28 Oct 2025", // Last 7 Days
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=40",
+  },
+  {
+    id: "AD9892608",
+    name: "Kai Johnson",
+    rollNo: "37009",
+    class: "III, A",
+    gender: "Male",
+    joinedOn: "27 Oct 2025", // Last 7 Days
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=41",
+  },
+  {
+    id: "AD9892609",
+    name: "Zara Wilson",
+    rollNo: "37010",
+    class: "II, A",
+    gender: "Female",
+    joinedOn: "26 Oct 2025", // Last 7 Days
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=42",
+  },
+  {
+    id: "AD9892610",
+    name: "Ethan Brown",
+    rollNo: "37011",
+    class: "V, A",
+    gender: "Male",
+    joinedOn: "25 Oct 2025", // Last 30 Days
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=43",
+  },
+  {
+    id: "AD9892611",
+    name: "Olivia Davis",
+    rollNo: "37012",
+    class: "I, B",
+    gender: "Female",
+    joinedOn: "20 Oct 2025", // Last 30 Days
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=44",
+  },
+  {
+    id: "AD9892612",
+    name: "Noah Anderson",
+    rollNo: "37013",
+    class: "VI, A",
+    gender: "Male",
+    joinedOn: "15 Oct 2025", // Last 30 Days
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=45",
+  },
+  {
+    id: "AD9892613",
+    name: "Emma Thomas",
+    rollNo: "37014",
+    class: "II, B",
+    gender: "Female",
+    joinedOn: "10 Oct 2025", // Last 30 Days
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=46",
+  },
+  {
+    id: "AD9892614",
+    name: "Liam Jackson",
+    rollNo: "37015",
+    class: "III, B",
+    gender: "Male",
+    joinedOn: "5 Oct 2025", // Last 30 Days (within custom range 10/04/2025 - 11/02/2025)
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=47",
+  },
+  {
+    id: "AD9892615",
+    name: "Ava White",
+    rollNo: "37016",
+    class: "I, A",
+    gender: "Female",
+    joinedOn: "4 Oct 2025", // Custom range start date
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=48",
+  },
+  {
+    id: "AD9892616",
+    name: "James Harris",
+    rollNo: "37017",
+    class: "IV, A",
+    gender: "Male",
+    joinedOn: "1 Oct 2025", // This Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=49",
+  },
+  {
+    id: "AD9892617",
+    name: "Isabella Martin",
+    rollNo: "37018",
+    class: "II, A",
+    gender: "Female",
+    joinedOn: "15 Sep 2025", // This Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=50",
+  },
+  {
+    id: "AD9892618",
+    name: "William Taylor",
+    rollNo: "37019",
+    class: "V, B",
+    gender: "Male",
+    joinedOn: "1 Sep 2025", // This Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=51",
+  },
+  {
+    id: "AD9892619",
+    name: "Sophia Moore",
+    rollNo: "37020",
+    class: "I, B",
+    gender: "Female",
+    joinedOn: "15 Aug 2025", // This Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=52",
+  },
+  {
+    id: "AD9892620",
+    name: "Benjamin Clark",
+    rollNo: "37021",
+    class: "III, A",
+    gender: "Male",
+    joinedOn: "1 Jul 2025", // This Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=53",
+  },
+  {
+    id: "AD9892621",
+    name: "Charlotte Evans",
+    rollNo: "37022",
+    class: "I, B",
+    gender: "Female",
+    joinedOn: "1 Nov 2025", // Yesterday - Additional
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=54",
+  },
+  {
+    id: "AD9892622",
+    name: "Henry Robinson",
+    rollNo: "37023",
+    class: "IV, A",
+    gender: "Male",
+    joinedOn: "1 Nov 2025", // Yesterday - Additional
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=55",
+  },
+  {
+    id: "AD9892623",
+    name: "Amelia Scott",
+    rollNo: "37024",
+    class: "II, B",
+    gender: "Female",
+    joinedOn: "1 Nov 2025", // Yesterday - Additional
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=56",
+  },
+  {
+    id: "AD9892624",
+    name: "Sebastian King",
+    rollNo: "37025",
+    class: "V, A",
+    gender: "Male",
+    joinedOn: "23 Oct 2025", // Last 30 Days
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=57",
+  },
+  {
+    id: "AD9892625",
+    name: "Victoria Green",
+    rollNo: "37026",
+    class: "I, A",
+    gender: "Female",
+    joinedOn: "18 Oct 2025", // Last 30 Days
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=58",
+  },
+  {
+    id: "AD9892626",
+    name: "Daniel Wright",
+    rollNo: "37027",
+    class: "III, B",
+    gender: "Male",
+    joinedOn: "12 Oct 2025", // Last 30 Days
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=59",
+  },
+  {
+    id: "AD9892627",
+    name: "Grace Turner",
+    rollNo: "37028",
+    class: "II, A",
+    gender: "Female",
+    joinedOn: "8 Oct 2025", // Last 30 Days
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=60",
+  },
+  {
+    id: "AD9892628",
+    name: "Matthew Phillips",
+    rollNo: "37029",
+    class: "VI, B",
+    gender: "Male",
+    joinedOn: "6 Oct 2025", // Last 30 Days
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=61",
+  },
+  {
+    id: "AD9892629",
+    name: "Lily Campbell",
+    rollNo: "37030",
+    class: "I, B",
+    gender: "Female",
+    joinedOn: "3 Oct 2025", // Last 30 Days (barely outside custom range)
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=62",
+  },
+  {
+    id: "AD9892630",
+    name: "Jackson Parker",
+    rollNo: "37031",
+    class: "IV, A",
+    gender: "Male",
+    joinedOn: "1 Jun 2025", // This Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=63",
+  },
+  {
+    id: "AD9892631",
+    name: "Chloe Edwards",
+    rollNo: "37032",
+    class: "II, B",
+    gender: "Female",
+    joinedOn: "15 May 2025", // This Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=64",
+  },
+  {
+    id: "AD9892632",
+    name: "Samuel Collins",
+    rollNo: "37033",
+    class: "III, A",
+    gender: "Male",
+    joinedOn: "1 Apr 2025", // This Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=65",
+  },
+  {
+    id: "AD9892633",
+    name: "Ella Stewart",
+    rollNo: "37034",
+    class: "I, A",
+    gender: "Female",
+    joinedOn: "20 Mar 2025", // This Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=66",
+  },
+  {
+    id: "AD9892634",
+    name: "David Morris",
+    rollNo: "37035",
+    class: "V, B",
+    gender: "Male",
+    joinedOn: "1 Feb 2025", // This Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=67",
+  },
+  {
+    id: "AD9892635",
+    name: "Hannah Rogers",
+    rollNo: "37036",
+    class: "II, A",
+    gender: "Female",
+    joinedOn: "15 Jan 2025", // This Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=68",
+  },
+
+  // Next Year entries (2026)
+  {
+    id: "AD9892700",
+    name: "Oliver Peterson",
+    rollNo: "38001",
+    class: "I, A",
+    gender: "Male",
+    joinedOn: "5 Jan 2026", // Next Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=69",
+  },
+  {
+    id: "AD9892701",
+    name: "Sophie Reed",
+    rollNo: "38002",
+    class: "I, B",
+    gender: "Female",
+    joinedOn: "15 Jan 2026", // Next Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=70",
+  },
+  {
+    id: "AD9892702",
+    name: "Lucas Cook",
+    rollNo: "38003",
+    class: "II, A",
+    gender: "Male",
+    joinedOn: "1 Feb 2026", // Next Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=1",
+  },
+  {
+    id: "AD9892703",
+    name: "Mia Bailey",
+    rollNo: "38004",
+    class: "I, A",
+    gender: "Female",
+    joinedOn: "14 Feb 2026", // Next Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=2",
+  },
+  {
+    id: "AD9892704",
+    name: "Jack Rivera",
+    rollNo: "38005",
+    class: "III, B",
+    gender: "Male",
+    joinedOn: "1 Mar 2026", // Next Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=3",
+  },
+  {
+    id: "AD9892705",
+    name: "Avery Cooper",
+    rollNo: "38006",
+    class: "I, B",
+    gender: "Female",
+    joinedOn: "15 Mar 2026", // Next Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=4",
+  },
+  {
+    id: "AD9892706",
+    name: "Carter Richardson",
+    rollNo: "38007",
+    class: "II, A",
+    gender: "Male",
+    joinedOn: "1 Apr 2026", // Next Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=5",
+  },
+  {
+    id: "AD9892707",
+    name: "Scarlett Cox",
+    rollNo: "38008",
+    class: "IV, A",
+    gender: "Female",
+    joinedOn: "20 Apr 2026", // Next Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=6",
+  },
+  {
+    id: "AD9892708",
+    name: "Logan Howard",
+    rollNo: "38009",
+    class: "I, A",
+    gender: "Male",
+    joinedOn: "1 May 2026", // Next Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=7",
+  },
+  {
+    id: "AD9892709",
+    name: "Aria Ward",
+    rollNo: "38010",
+    class: "III, B",
+    gender: "Female",
+    joinedOn: "15 May 2026", // Next Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=8",
+  },
+  {
+    id: "AD9892710",
+    name: "Wyatt Torres",
+    rollNo: "38011",
+    class: "II, B",
+    gender: "Male",
+    joinedOn: "1 Jun 2026", // Next Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=9",
+  },
+  {
+    id: "AD9892711",
+    name: "Penelope Peterson",
+    rollNo: "38012",
+    class: "I, B",
+    gender: "Female",
+    joinedOn: "20 Jun 2026", // Next Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=10",
+  },
+  {
+    id: "AD9892712",
+    name: "Grayson Gray",
+    rollNo: "38013",
+    class: "V, A",
+    gender: "Male",
+    joinedOn: "1 Jul 2026", // Next Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=11",
+  },
+  {
+    id: "AD9892713",
+    name: "Layla Ramirez",
+    rollNo: "38014",
+    class: "I, A",
+    gender: "Female",
+    joinedOn: "15 Aug 2026", // Next Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=12",
+  },
+  {
+    id: "AD9892714",
+    name: "Ezra James",
+    rollNo: "38015",
+    class: "IV, B",
+    gender: "Male",
+    joinedOn: "1 Sep 2026", // Next Year
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=13",
   },
 
   // Additional students for Academic Year 2023/2024 (Sep 2023 - Aug 2024)
@@ -320,6 +867,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Sep 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=14",
   },
   {
     id: "AD9892451",
@@ -329,6 +877,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Sep 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=15",
   },
   {
     id: "AD9892452",
@@ -338,6 +887,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Sep 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=16",
   },
   {
     id: "AD9892453",
@@ -347,6 +897,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Sep 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=17",
   },
   {
     id: "AD9892454",
@@ -356,6 +907,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "25 Sep 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=18",
   },
   {
     id: "AD9892455",
@@ -365,6 +917,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "1 Oct 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=19",
   },
   {
     id: "AD9892456",
@@ -374,6 +927,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Oct 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=20",
   },
   {
     id: "AD9892457",
@@ -383,6 +937,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Oct 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=21",
   },
   {
     id: "AD9892458",
@@ -392,6 +947,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Oct 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=22",
   },
   {
     id: "AD9892459",
@@ -401,6 +957,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Oct 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=23",
   },
   {
     id: "AD9892460",
@@ -410,6 +967,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Jan 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=24",
   },
   {
     id: "AD9892461",
@@ -419,6 +977,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Jan 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=25",
   },
   {
     id: "AD9892462",
@@ -428,6 +987,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "25 Jan 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=26",
   },
   {
     id: "AD9892463",
@@ -437,6 +997,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "1 Feb 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=27",
   },
   {
     id: "AD9892464",
@@ -446,6 +1007,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Feb 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=28",
   },
   {
     id: "AD9892465",
@@ -455,6 +1017,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Feb 2024",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=29",
   },
 
   // Additional students for Academic Year 2022/2023 (Sep 2022 - Aug 2023)
@@ -466,6 +1029,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Sep 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=30",
   },
   {
     id: "AD9892401",
@@ -475,6 +1039,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Sep 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=31",
   },
   {
     id: "AD9892402",
@@ -484,6 +1049,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Sep 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=32",
   },
   {
     id: "AD9892403",
@@ -493,6 +1059,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Sep 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=33",
   },
   {
     id: "AD9892404",
@@ -502,6 +1069,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "25 Sep 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=34",
   },
   {
     id: "AD9892405",
@@ -511,6 +1079,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "1 Oct 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=35",
   },
   {
     id: "AD9892406",
@@ -520,6 +1089,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Oct 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=36",
   },
   {
     id: "AD9892407",
@@ -529,6 +1099,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Oct 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=37",
   },
   {
     id: "AD9892408",
@@ -538,6 +1109,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Oct 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=38",
   },
   {
     id: "AD9892409",
@@ -547,6 +1119,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Oct 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=39",
   },
   {
     id: "AD9892410",
@@ -556,6 +1129,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Jan 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=40",
   },
   {
     id: "AD9892411",
@@ -565,6 +1139,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Jan 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=41",
   },
   {
     id: "AD9892412",
@@ -574,6 +1149,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "25 Jan 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=42",
   },
   {
     id: "AD9892413",
@@ -583,6 +1159,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "1 Feb 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=43",
   },
   {
     id: "AD9892414",
@@ -592,6 +1169,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Feb 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=44",
   },
   {
     id: "AD9892415",
@@ -601,6 +1179,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Feb 2023",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=45",
   },
 
   // Additional students for Academic Year 2021/2022 (Sep 2021 - Aug 2022)
@@ -612,6 +1191,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Sep 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=46",
   },
   {
     id: "AD9892351",
@@ -621,6 +1201,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Sep 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=47",
   },
   {
     id: "AD9892352",
@@ -630,6 +1211,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Sep 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=48",
   },
   {
     id: "AD9892353",
@@ -639,6 +1221,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Sep 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=49",
   },
   {
     id: "AD9892354",
@@ -648,6 +1231,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "25 Sep 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=50",
   },
   {
     id: "AD9892355",
@@ -657,6 +1241,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "1 Oct 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=51",
   },
   {
     id: "AD9892356",
@@ -666,6 +1251,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Oct 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=52",
   },
   {
     id: "AD9892357",
@@ -675,6 +1261,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Oct 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=53",
   },
   {
     id: "AD9892358",
@@ -684,6 +1271,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Oct 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=54",
   },
   {
     id: "AD9892359",
@@ -693,6 +1281,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Oct 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=55",
   },
   {
     id: "AD9892360",
@@ -702,6 +1291,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Jan 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=56",
   },
   {
     id: "AD9892361",
@@ -711,6 +1301,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Jan 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=57",
   },
   {
     id: "AD9892362",
@@ -720,6 +1311,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "25 Jan 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=58",
   },
   {
     id: "AD9892363",
@@ -729,6 +1321,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "1 Feb 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=59",
   },
   {
     id: "AD9892364",
@@ -738,6 +1331,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Feb 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=60",
   },
   {
     id: "AD9892365",
@@ -747,6 +1341,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Feb 2022",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=61",
   },
 
   // Additional students for Academic Year 2020/2021 (Sep 2020 - Aug 2021)
@@ -758,6 +1353,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Sep 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=62",
   },
   {
     id: "AD9892301",
@@ -767,6 +1363,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Sep 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=63",
   },
   {
     id: "AD9892302",
@@ -776,6 +1373,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Sep 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=64",
   },
   {
     id: "AD9892303",
@@ -785,6 +1383,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Sep 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=65",
   },
   {
     id: "AD9892304",
@@ -794,6 +1393,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "25 Sep 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=66",
   },
   {
     id: "AD9892305",
@@ -803,6 +1403,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "1 Oct 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=67",
   },
   {
     id: "AD9892306",
@@ -812,6 +1413,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Oct 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=68",
   },
   {
     id: "AD9892307",
@@ -821,6 +1423,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Oct 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=69",
   },
   {
     id: "AD9892308",
@@ -830,6 +1433,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Oct 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=70",
   },
   {
     id: "AD9892309",
@@ -839,6 +1443,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Oct 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=1",
   },
   {
     id: "AD9892310",
@@ -848,6 +1453,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Jan 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=2",
   },
   {
     id: "AD9892311",
@@ -857,6 +1463,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Jan 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=3",
   },
   {
     id: "AD9892312",
@@ -866,6 +1473,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "25 Jan 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=4",
   },
   {
     id: "AD9892313",
@@ -875,6 +1483,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "1 Feb 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=5",
   },
   {
     id: "AD9892314",
@@ -884,6 +1493,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Feb 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=6",
   },
   {
     id: "AD9892315",
@@ -893,6 +1503,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Feb 2021",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=7",
   },
 
   // Additional students for Academic Year 2019/2020 (Sep 2019 - Aug 2020)
@@ -904,6 +1515,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Sep 2019",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=8",
   },
   {
     id: "AD9892251",
@@ -913,6 +1525,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Sep 2019",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=9",
   },
   {
     id: "AD9892252",
@@ -922,6 +1535,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Sep 2019",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=10",
   },
   {
     id: "AD9892253",
@@ -931,6 +1545,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Sep 2019",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=11",
   },
   {
     id: "AD9892254",
@@ -940,6 +1555,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "25 Sep 2019",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=12",
   },
   {
     id: "AD9892255",
@@ -949,6 +1565,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "1 Oct 2019",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=13",
   },
   {
     id: "AD9892256",
@@ -958,6 +1575,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Oct 2019",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=14",
   },
   {
     id: "AD9892257",
@@ -967,6 +1585,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Oct 2019",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=15",
   },
   {
     id: "AD9892258",
@@ -976,6 +1595,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Oct 2019",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=16",
   },
   {
     id: "AD9892259",
@@ -985,6 +1605,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Oct 2019",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=17",
   },
   {
     id: "AD9892260",
@@ -994,6 +1615,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "15 Jan 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=18",
   },
   {
     id: "AD9892261",
@@ -1003,6 +1625,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "20 Jan 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=19",
   },
   {
     id: "AD9892262",
@@ -1012,6 +1635,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "25 Jan 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=20",
   },
   {
     id: "AD9892263",
@@ -1021,6 +1645,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "1 Feb 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=21",
   },
   {
     id: "AD9892264",
@@ -1030,6 +1655,7 @@ const sampleStudents: Student[] = [
     gender: "Male",
     joinedOn: "5 Feb 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=22",
   },
   {
     id: "AD9892265",
@@ -1039,6 +1665,7 @@ const sampleStudents: Student[] = [
     gender: "Female",
     joinedOn: "10 Feb 2020",
     status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=23",
   },
 
   // Students who left/graduated (with leftOn dates)
@@ -1051,6 +1678,7 @@ const sampleStudents: Student[] = [
     joinedOn: "5 Sep 2018",
     leftOn: "20 Jun 2020",
     status: "Inactive",
+    avatar: "https://i.pravatar.cc/150?img=24",
   },
   {
     id: "AD9892601",
@@ -1061,6 +1689,7 @@ const sampleStudents: Student[] = [
     joinedOn: "10 Sep 2019",
     leftOn: "25 Jun 2021",
     status: "Inactive",
+    avatar: "https://i.pravatar.cc/150?img=25",
   },
   {
     id: "AD9892602",
@@ -1071,6 +1700,7 @@ const sampleStudents: Student[] = [
     joinedOn: "15 Sep 2017",
     leftOn: "15 Jul 2019",
     status: "Inactive",
+    avatar: "https://i.pravatar.cc/150?img=26",
   },
   {
     id: "AD9892603",
@@ -1081,6 +1711,7 @@ const sampleStudents: Student[] = [
     joinedOn: "20 Sep 2020",
     leftOn: "30 Jun 2022",
     status: "Inactive",
+    avatar: "https://i.pravatar.cc/150?img=27",
   },
   {
     id: "AD9892604",
@@ -1091,6 +1722,7 @@ const sampleStudents: Student[] = [
     joinedOn: "5 Sep 2021",
     leftOn: "20 Aug 2023",
     status: "Inactive",
+    avatar: "https://i.pravatar.cc/150?img=28",
   },
   {
     id: "AD9892605",
@@ -1101,6 +1733,7 @@ const sampleStudents: Student[] = [
     joinedOn: "10 Sep 2022",
     leftOn: "15 Jul 2024",
     status: "Inactive",
+    avatar: "https://i.pravatar.cc/150?img=29",
   },
 ];
 

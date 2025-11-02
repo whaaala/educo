@@ -23,7 +23,9 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
   const [openMenuStudentId, setOpenMenuStudentId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+  const [menuPosition, setMenuPosition] = useState<'bottom' | 'top'>('bottom');
   const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleAddFeesClick = (student: Student, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -52,7 +54,27 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
 
   const handleMenuToggle = (studentId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setOpenMenuStudentId(openMenuStudentId === studentId ? null : studentId);
+
+    if (openMenuStudentId === studentId) {
+      setOpenMenuStudentId(null);
+      return;
+    }
+
+    // Calculate if menu would go off-screen
+    const button = e.currentTarget as HTMLElement;
+    const buttonRect = button.getBoundingClientRect();
+    const menuHeight = 380; // Approximate height of the menu with 6 items
+    const spaceBelow = window.innerHeight - buttonRect.bottom;
+    const spaceAbove = buttonRect.top;
+
+    // Position menu above if not enough space below
+    if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
+      setMenuPosition('top');
+    } else {
+      setMenuPosition('bottom');
+    }
+
+    setOpenMenuStudentId(studentId);
   };
 
   const handleMenuItemClick = (action: string, student: Student) => {
@@ -165,15 +187,39 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       className: "text-left w-[16%]",
       render: (student) => (
         <div className="flex items-center gap-2.5 min-w-0">
-          <div
-            className="w-8 h-8 xl:w-9 xl:h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 transition-all duration-300 shadow-md cursor-pointer hover:scale-110"
-            onClick={(e) => {
-              e.stopPropagation();
-              console.log("Avatar clicked", student.id);
-            }}
-          >
-            {student.name.charAt(0)}
-          </div>
+          {student.avatar ? (
+            <div
+              className="relative cursor-pointer group/avatar flex-shrink-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("Avatar clicked", student.id);
+              }}
+            >
+              <img
+                src={student.avatar}
+                alt={student.name}
+                className="w-8 h-8 xl:w-9 xl:h-9 rounded-full object-cover shrink-0 ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
+                style={{ position: 'relative', transformOrigin: 'center center' }}
+              />
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 midnight:from-cyan-400 midnight:via-purple-400 midnight:to-cyan-400 purple:from-pink-400 purple:via-purple-400 purple:to-pink-400 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
+            </div>
+          ) : (
+            <div
+              className="relative cursor-pointer group/avatar flex-shrink-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("Avatar clicked", student.id);
+              }}
+            >
+              <div
+                className="w-8 h-8 xl:w-9 xl:h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-lg ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
+                style={{ position: 'relative', transformOrigin: 'center center' }}
+              >
+                {student.name.charAt(0)}
+              </div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 midnight:from-cyan-400 midnight:via-purple-400 midnight:to-cyan-400 purple:from-pink-400 purple:via-purple-400 purple:to-pink-400 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
+            </div>
+          )}
           <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 truncate">
             {student.name}
           </span>
@@ -303,6 +349,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
           </button>
           <div className="relative" ref={openMenuStudentId === student.id ? menuRef : null}>
             <button
+              ref={openMenuStudentId === student.id ? buttonRef : null}
               className={`p-0.5 xl:p-1 rounded-md transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer ${
                 openMenuStudentId === student.id
                   ? 'bg-gray-200 dark:bg-gray-600 midnight:bg-cyan-500/30 purple:bg-pink-500/30'
@@ -315,7 +362,11 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
             </button>
 
             {openMenuStudentId === student.id && (
-              <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[9999] py-1 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className={`absolute right-0 w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[9999] py-1 animate-in fade-in duration-200 ${
+                menuPosition === 'top'
+                  ? 'bottom-full mb-1 slide-in-from-bottom-2'
+                  : 'top-full mt-1 slide-in-from-top-2'
+              }`}>
                 <button
                   onClick={() => handleMenuItemClick('View Student', student)}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
