@@ -40,6 +40,8 @@ export interface ProfileCardProps {
   };
   customActions?: ProfileAction[];
   onMenuClick?: () => void;
+  isSelected?: boolean;
+  onSelectionChange?: (id: string, selected: boolean) => void;
 }
 
 export default function ProfileCard({
@@ -53,6 +55,8 @@ export default function ProfileCard({
   primaryAction = { label: "Add Fees" },
   customActions,
   onMenuClick,
+  isSelected = false,
+  onSelectionChange,
 }: ProfileCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFeesModalOpen, setIsFeesModalOpen] = useState(false);
@@ -137,9 +141,23 @@ export default function ProfileCard({
 
         {/* Card Header */}
         <div className="relative px-4 pt-2 pb-0.5 flex items-center justify-between z-10">
-          <span className="text-sm font-bold text-gray-800 group-hover:text-gray-900 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 transition-colors duration-200 truncate max-w-[60%]">
-            {id}
-          </span>
+          <div className="flex items-center gap-2">
+            {onSelectionChange && (
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onSelectionChange(id, e.target.checked);
+                }}
+                className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+            <span className="text-sm font-bold text-gray-800 group-hover:text-gray-900 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 transition-colors duration-200">
+              {id}
+            </span>
+          </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <div
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-300 ${

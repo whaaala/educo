@@ -17,9 +17,11 @@ export interface Student {
 interface StudentCardProps {
   student: Student;
   colorIndex: number;
+  isSelected?: boolean;
+  onSelectionChange?: (id: string, selected: boolean) => void;
 }
 
-export default function StudentCard({ student, colorIndex }: StudentCardProps) {
+export default function StudentCard({ student, colorIndex, isSelected, onSelectionChange }: StudentCardProps) {
   return (
     <ProfileCard
       id={student.id}
@@ -34,6 +36,8 @@ export default function StudentCard({ student, colorIndex }: StudentCardProps) {
         { label: "Joined On", value: student.joinedOn },
       ]}
       primaryAction={{ label: "Add Fees" }}
+      isSelected={isSelected}
+      onSelectionChange={onSelectionChange}
     />
   );
 }

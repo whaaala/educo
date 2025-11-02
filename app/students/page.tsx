@@ -2657,6 +2657,28 @@ export default function AllStudentsPage() {
 
           {/* Right Section - View Toggle and Sort */}
           <div className="flex items-center justify-end gap-3 lg:flex-1">
+            {/* Select All Checkbox - Only show in grid view */}
+            {viewMode === "grid" && (
+              <div className="flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 shadow-sm">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.size === displayedStudents.length && displayedStudents.length > 0}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      // Select all displayed students
+                      setSelectedIds(new Set(displayedStudents.map(s => s.id)));
+                    } else {
+                      // Deselect all
+                      setSelectedIds(new Set());
+                    }
+                  }}
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                />
+                <span className="hidden sm:inline text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
+                  Select All
+                </span>
+              </div>
+            )}
             {/* View Toggle */}
             <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
 
@@ -2746,7 +2768,20 @@ export default function AllStudentsPage() {
                             transitionDelay: `${index / 40}s`,
                           } as React.CSSProperties}
                         >
-                          <StudentCard student={student} colorIndex={index} />
+                          <StudentCard
+                            student={student}
+                            colorIndex={index}
+                            isSelected={selectedIds.has(student.id)}
+                            onSelectionChange={(id, selected) => {
+                              const newSelectedIds = new Set(selectedIds);
+                              if (selected) {
+                                newSelectedIds.add(id);
+                              } else {
+                                newSelectedIds.delete(id);
+                              }
+                              setSelectedIds(newSelectedIds);
+                            }}
+                          />
                         </div>
                       );
                     })}
