@@ -10,10 +10,12 @@ import {
   Edit,
   TrendingUp,
   Trash2,
+  Plus,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import CollectFeesModal from "./CollectFeesModal";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import AddFeesButton from "./AddFeesButton";
 
 export interface ProfileDetail {
   label: string;
@@ -292,19 +294,19 @@ export default function ProfileCard({
             ))}
           </div>
           {primaryAction && (
-            <button
-              onClick={() => {
+            <AddFeesButton
+              onClick={(e) => {
+                e.stopPropagation();
                 if (primaryAction.label === "Add Fees") {
                   setIsFeesModalOpen(true);
                 } else if (primaryAction.onClick) {
                   primaryAction.onClick();
                 }
               }}
-              style={{ cursor: "pointer", zIndex: 11111 }}
-              className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 group-hover:bg-white/90 dark:bg-gray-700/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 text-xs font-semibold text-gray-700 hover:text-gray-900 group-hover:text-black dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 transition-all duration-200 border border-gray-200 hover:border-gray-300 group-hover:border-gray-300 shadow-sm hover:shadow-md group-hover:shadow-md active:scale-95 whitespace-nowrap backdrop-blur-sm"
-            >
-              {primaryAction.label}
-            </button>
+              label={primaryAction.label}
+              size="md"
+              currency="₦"
+            />
           )}
         </div>
         </div>

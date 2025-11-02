@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Student } from "./StudentCard";
-import { MoreVertical, MessageCircle, Phone, Mail, Eye, Edit, Lock, TrendingUp, Trash2 } from "lucide-react";
+import { MoreVertical, MessageCircle, Phone, Mail, Eye, Edit, Lock, TrendingUp, Trash2, Plus } from "lucide-react";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import CollectFeesModal from "@/components/shared/CollectFeesModal";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import Tooltip from "@/components/shared/Tooltip";
+import AddFeesButton from "@/components/shared/AddFeesButton";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 interface StudentTableProps {
@@ -380,14 +381,12 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
             <Mail className="w-4 h-4 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
           </button>
           <div className="w-px md:w-0.5 lg:w-1"></div>
-          <button
-            className="px-1 py-0.5 md:px-1.5 md:py-1 lg:px-2 lg:py-1.5 rounded-md bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 midnight:from-cyan-600 midnight:to-purple-600 midnight:hover:from-cyan-700 midnight:hover:to-purple-700 purple:from-pink-600 purple:to-purple-600 purple:hover:from-pink-700 purple:hover:to-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-sm hover:shadow-md flex items-center gap-0.5 lg:gap-1 flex-shrink-0"
-            title="Add Fees"
+          <AddFeesButton
             onClick={(e) => handleAddFeesClick(student, e)}
-          >
-            <span className="text-white font-bold flex-shrink-0">₦</span>
-            <span className="text-[10px] md:text-[10px] lg:text-xs xl:text-sm font-bold text-white whitespace-nowrap">Add Fees</span>
-          </button>
+            currency="₦"
+            label="Add Fees"
+            size="md"
+          />
           <div className="relative flex-shrink-0 overflow-visible" ref={openMenuStudentId === student.id ? menuRef : null}>
             <button
               ref={openMenuStudentId === student.id ? buttonRef : null}

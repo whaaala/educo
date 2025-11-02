@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
 import StudentCard, { Student } from "@/components/students/StudentCard";
 import StudentTable from "@/components/students/StudentTable";
@@ -1742,15 +1743,34 @@ const sampleStudents: Student[] = [
 export default function AllStudentsPage() {
   const academicYearContext = useAcademicYear();
   const { selectedYear } = academicYearContext;
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Get view mode from URL, default to grid
+  const urlView = searchParams.get("view");
+  const initialView = urlView === "list" ? "list" : "grid";
 
   const [students] = useState<Student[]>(sampleStudents);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">(initialView);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMounted, setIsMounted] = useState(false);
   const [displayedCount, setDisplayedCount] = useState(8); // 8 for grid, 10 for table
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const previousCountRef = useRef(8);
+
+  // Handler to update view mode and URL
+  const handleViewModeChange = (newMode: "grid" | "list") => {
+    setViewMode(newMode);
+    router.push(`/students?view=${newMode}`);
+  };
+
+  // Sync view mode with URL changes
+  useEffect(() => {
+    const urlView = searchParams.get("view");
+    const newViewMode = urlView === "list" ? "list" : "grid";
+    setViewMode(newViewMode);
+  }, [searchParams]);
 
   // Filter fields configuration
   const filterFields: FilterField[] = [
@@ -2706,7 +2726,7 @@ export default function AllStudentsPage() {
               </div>
             )}
             {/* View Toggle */}
-            <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+            <ViewToggle viewMode={viewMode} onViewModeChange={handleViewModeChange} />
 
             {/* Sort */}
             <SortButton

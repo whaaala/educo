@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -66,8 +67,8 @@ const menuItems: MenuItem[] = [
         label: "Students",
         icon: <GraduationCap className="w-4 h-4" />,
         children: [
-          { id: "all-students", label: "All Students", icon: <GraduationCap className="w-4 h-4" />, href: "/students" },
-          { id: "student-list", label: "Student List", icon: <GraduationCap className="w-4 h-4" />, href: "/students/list" },
+          { id: "all-students", label: "All Students", icon: <GraduationCap className="w-4 h-4" />, href: "/students?view=grid" },
+          { id: "student-list", label: "Student List", icon: <GraduationCap className="w-4 h-4" />, href: "/students?view=list" },
           { id: "student-details", label: "Student Details", icon: <GraduationCap className="w-4 h-4" />, href: "/students/details" },
           { id: "student-promotion", label: "Student Promotion", icon: <GraduationCap className="w-4 h-4" />, href: "/students/promotion" },
         ]
@@ -125,6 +126,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen }: SidebarProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState<boolean | null>(null); // null on server, boolean on client
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
@@ -133,6 +136,40 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
   const [submenuHideTimeout, setSubmenuHideTimeout] = useState<NodeJS.Timeout | null>(null);
   const [showLogoText, setShowLogoText] = useState(false);
   const logoTextTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Helper function to check if a link is active
+  const isLinkActive = (href: string) => {
+    if (!href || href === "#") return false;
+
+    // Parse the href to get pathname and search params
+    const url = new URL(href, window.location.origin);
+    const linkPathname = url.pathname;
+    const linkSearch = url.search;
+
+    // Check if pathname matches
+    if (pathname !== linkPathname) return false;
+
+    // If there are search params in the link, check them too
+    if (linkSearch) {
+      const currentSearch = searchParams.toString();
+      return linkSearch === `?${currentSearch}`;
+    }
+
+    // If no search params in link, it's active if pathname matches
+    return true;
+  };
+
+  // Helper function to check if a parent item has any active children
+  const hasActiveChild = (item: MenuItem): boolean => {
+    if (!item.children) return false;
+
+    for (const child of item.children) {
+      if (child.href && isLinkActive(child.href)) return true;
+      if (child.children && hasActiveChild(child)) return true;
+    }
+
+    return false;
+  };
 
   // Handle delayed hide
   const handleMouseEnterItem = (itemId: string) => {
@@ -249,27 +286,21 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
             <button
               onClick={() => !isCollapsedDesktop && toggleExpanded(item.id)}
               className={cn(
-                "w-full flex items-center px-3 py-2.5 rounded-xl font-medium text-sm cursor-pointer",
-                "text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100",
-                "hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50",
-                "dark:hover:from-blue-500/10 dark:hover:to-indigo-500/10",
-                "midnight:hover:from-cyan-500/10 midnight:hover:to-blue-500/10",
-                "purple:hover:from-pink-500/10 purple:hover:to-purple-500/10",
-                "hover:text-blue-700 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300",
-                "hover:shadow-sm hover:scale-[1.02]",
-                "transition-all duration-200 ease-in-out",
-                "border border-transparent hover:border-blue-200/50 dark:hover:border-blue-500/20",
-                "midnight:hover:border-cyan-500/20 purple:hover:border-pink-500/20",
+                "w-full flex items-center px-3 py-2.5 rounded-xl font-medium text-sm cursor-pointer relative",
+                "transition-all duration-200 ease-out",
+                hasActiveChild(item)
+                  ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
+                  : "text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5",
                 level > 0 && "pl-3"
               )}
             >
               <div className="flex items-center gap-3.5 min-h-[32px] flex-1 min-w-0">
                 <div className={cn(
                   "flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0",
-                  "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10",
-                  "group-hover:bg-blue-100 dark:group-hover:bg-blue-500/20",
-                  "midnight:group-hover:bg-cyan-500/20 purple:group-hover:bg-pink-500/20",
-                  "transition-colors duration-200"
+                  "transition-all duration-200",
+                  hasActiveChild(item)
+                    ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
+                    : "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
                 )}>
                   {item.icon}
                 </div>
@@ -324,6 +355,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
 
                     if (childHasChildren) {
                       // Render item with nested submenu on hover
+                      const childIsActive = hasActiveChild(child);
                       return (
                         <div
                           key={child.id}
@@ -331,14 +363,24 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                           onMouseEnter={() => handleMouseEnterSubmenuItem(child.id)}
                           onMouseLeave={() => handleMouseLeaveSubmenuItem(child.id)}
                         >
-                          <div className="flex items-center justify-between gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300 transition-all duration-150 rounded-lg cursor-pointer">
+                          <div className={cn(
+                            "flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-all duration-200 rounded-xl cursor-pointer",
+                            childIsActive
+                              ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
+                              : "text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
+                          )}>
                             <div className="flex items-center gap-3">
-                              <div className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-700/50">
+                              <div className={cn(
+                                "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200",
+                                childIsActive
+                                  ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
+                                  : "bg-gray-100 dark:bg-gray-700/50"
+                              )}>
                                 {child.icon}
                               </div>
-                              <span className="font-medium">{child.label}</span>
+                              <span className={cn("font-medium")}>{child.label}</span>
                             </div>
-                            <ChevronDown className="w-4 h-4 -rotate-90" />
+                            <ChevronDown className={cn("w-4 h-4 -rotate-90 transition-transform duration-200")} />
                           </div>
 
                           {/* Nested submenu popup */}
@@ -356,18 +398,31 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                                 {child.label}
                               </div>
                               <div className="py-1">
-                                {child.children?.map((grandchild) => (
-                                  <Link
-                                    key={grandchild.id}
-                                    href={grandchild.href || "#"}
-                                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300 transition-all duration-150 rounded-lg mx-2 cursor-pointer"
-                                  >
-                                    <div className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-700/50">
-                                      {grandchild.icon}
-                                    </div>
-                                    <span className="font-medium">{grandchild.label}</span>
-                                  </Link>
-                                ))}
+                                {child.children?.map((grandchild) => {
+                                  const isActive = isLinkActive(grandchild.href || "");
+                                  return (
+                                    <Link
+                                      key={grandchild.id}
+                                      href={grandchild.href || "#"}
+                                      className={cn(
+                                        "flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 rounded-xl mx-2 cursor-pointer",
+                                        isActive
+                                          ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
+                                          : "text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/80 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
+                                      )}
+                                    >
+                                      <div className={cn(
+                                        "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200",
+                                        isActive
+                                          ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
+                                          : "bg-gray-100 dark:bg-gray-700/50"
+                                      )}>
+                                        {grandchild.icon}
+                                      </div>
+                                      <span className="font-medium">{grandchild.label}</span>
+                                    </Link>
+                                  );
+                                })}
                               </div>
                             </div>
                           )}
@@ -471,40 +526,26 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
               }
 
               // Otherwise render as a simple link
+              const childIsActive = isLinkActive(child.href || "");
               return (
                 <Link
                   key={child.id}
                   href={child.href || "#"}
                   className={cn(
-                    "flex items-center gap-3.5 px-3 py-2 rounded-lg text-sm font-medium group cursor-pointer",
-                    "text-gray-600 dark:text-gray-400 midnight:text-cyan-200 purple:text-pink-200",
-                    "hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50/50",
-                    "dark:hover:from-blue-500/5 dark:hover:to-indigo-500/5",
-                    "midnight:hover:from-cyan-500/5 midnight:hover:to-blue-500/5",
-                    "purple:hover:from-pink-500/5 purple:hover:to-purple-500/5",
-                    "hover:text-blue-700 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300",
-                    "hover:translate-x-1 hover:shadow-sm",
-                    "transition-all duration-200 ease-out",
-                    "border border-transparent hover:border-blue-200/30 dark:hover:border-blue-500/10",
-                    "midnight:hover:border-cyan-500/10 purple:hover:border-pink-500/10"
+                    "flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer",
+                    "transition-all duration-200",
+                    childIsActive
+                      ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
+                      : "text-gray-600 dark:text-gray-400 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
                   )}
                 >
                   <div className={cn(
-                    "flex items-center justify-center w-7 h-7 rounded-lg shrink-0",
-                    "bg-gradient-to-br from-gray-100 to-gray-50",
-                    "dark:from-gray-800/50 dark:to-gray-700/30",
-                    "midnight:from-cyan-500/10 midnight:to-blue-500/5",
-                    "purple:from-pink-500/10 purple:to-purple-500/5",
-                    "group-hover:from-blue-100 group-hover:to-indigo-50",
-                    "dark:group-hover:from-blue-500/15 dark:group-hover:to-indigo-500/10",
-                    "midnight:group-hover:from-cyan-500/20 midnight:group-hover:to-blue-500/15",
-                    "purple:group-hover:from-pink-500/20 purple:group-hover:to-purple-500/15",
-                    "group-hover:scale-110 group-hover:rotate-3",
-                    "transition-all duration-200 shadow-sm"
+                    "flex items-center justify-center w-7 h-7 rounded-lg shrink-0 transition-all duration-200",
+                    childIsActive
+                      ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
+                      : "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
                   )}>
-                    <div className="scale-90">
-                      {child.icon}
-                    </div>
+                    {child.icon}
                   </div>
                   <span className="flex-1 tracking-wide">{child.label}</span>
                   <svg
