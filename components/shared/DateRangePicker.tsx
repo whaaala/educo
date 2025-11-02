@@ -7,6 +7,7 @@ import DualCalendar from "./DualCalendar";
 interface DateRangePickerProps {
   value?: { startDate: string; endDate: string };
   onChange?: (startDate: string, endDate: string) => void;
+  resetKey?: number;
 }
 
 type QuickOption = {
@@ -14,7 +15,7 @@ type QuickOption = {
   getValue: () => { startDate: Date; endDate: Date };
 };
 
-export default function DateRangePicker({ value, onChange }: DateRangePickerProps) {
+export default function DateRangePicker({ value, onChange, resetKey }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showCustomCalendar, setShowCustomCalendar] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string>("Last 7 Days");
@@ -91,6 +92,21 @@ export default function DateRangePicker({ value, onChange }: DateRangePickerProp
       setEndDate(value.endDate);
     }
   }, []);
+
+  // Reset when resetKey changes
+  useEffect(() => {
+    if (resetKey !== undefined && resetKey > 0) {
+      const lastWeek = quickOptions.find((opt) => opt.label === "Last 7 Days");
+      if (lastWeek) {
+        const { startDate: start, endDate: end } = lastWeek.getValue();
+        setStartDate(formatDate(start));
+        setEndDate(formatDate(end));
+        setSelectedOption("Last 7 Days");
+        setIsOpen(false);
+        setShowCustomCalendar(false);
+      }
+    }
+  }, [resetKey]);
 
   // Click outside to close
   useEffect(() => {

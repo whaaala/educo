@@ -19,9 +19,10 @@ interface FilterButtonProps {
   fields: FilterField[];
   onFilterChange: (filters: FilterValues) => void;
   className?: string;
+  resetKey?: number;
 }
 
-export default function FilterButton({ fields, onFilterChange, className = "" }: FilterButtonProps) {
+export default function FilterButton({ fields, onFilterChange, className = "", resetKey }: FilterButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -34,6 +35,19 @@ export default function FilterButton({ fields, onFilterChange, className = "" }:
     });
     return initial;
   });
+
+  // Reset when resetKey changes
+  useEffect(() => {
+    if (resetKey !== undefined && resetKey > 0) {
+      const resetValues: FilterValues = {};
+      fields.forEach((field) => {
+        resetValues[field.id] = [];
+      });
+      setSelectedValues(resetValues);
+      setIsOpen(false);
+      setOpenDropdownId(null);
+    }
+  }, [resetKey]);
 
   // Click outside handler for main dropdown and nested dropdowns
   useEffect(() => {

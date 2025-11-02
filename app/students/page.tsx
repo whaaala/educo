@@ -1795,6 +1795,7 @@ export default function AllStudentsPage() {
 
   // Refresh state
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
 
   // Sort options
   const sortOptions = [
@@ -1903,6 +1904,13 @@ export default function AllStudentsPage() {
 
   const handleRefresh = () => {
     setIsRefreshing(true);
+    // Clear all filters and search
+    setSearchQuery("");
+    setDateRange(null);
+    setFilters({});
+    setSortOption("ascending");
+    // Increment resetKey to trigger reset in FilterButton and SortButton
+    setResetKey(prev => prev + 1);
     // Delay to allow exit animation
     setTimeout(() => {
       // Reset to first page when refreshing
@@ -2474,10 +2482,10 @@ export default function AllStudentsPage() {
           {/* Left Section - Date and Filter */}
           <div className="flex items-center gap-3 lg:flex-1">
             {/* Date Range Picker */}
-            <DateRangePicker onChange={handleDateRangeChange} />
+            <DateRangePicker onChange={handleDateRangeChange} resetKey={resetKey} />
 
             {/* Filter */}
-            <FilterButton fields={filterFields} onFilterChange={handleFilterChange} />
+            <FilterButton fields={filterFields} onFilterChange={handleFilterChange} resetKey={resetKey} />
 
             {/* Student Count Badge (Grid View Only) - Shown on all screens */}
             {viewMode === "grid" && (
@@ -2499,6 +2507,7 @@ export default function AllStudentsPage() {
               options={sortOptions}
               defaultOption="ascending"
               onSortChange={handleSortChange}
+              resetKey={resetKey}
             />
           </div>
         </div>

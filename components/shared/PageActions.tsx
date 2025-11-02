@@ -1,9 +1,9 @@
 "use client";
 
-import { Printer } from "lucide-react";
 import ExportButton from "./ExportButton";
 import AddButton from "./AddButton";
 import RefreshButton from "./RefreshButton";
+import PrintButton from "./PrintButton";
 
 interface PageActionsProps {
   onRefresh?: () => void;
@@ -43,14 +43,8 @@ export default function PageActions({
           )}
 
           {/* Print */}
-          {showPrint && (
-            <button
-              onClick={onPrint}
-              className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
-              title="Print"
-            >
-              <Printer className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-            </button>
+          {showPrint && onPrint && (
+            <PrintButton onPrint={onPrint} size="md" />
           )}
         </div>
       )}

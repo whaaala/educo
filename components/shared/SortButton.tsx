@@ -13,6 +13,7 @@ interface SortButtonProps {
   defaultOption?: string;
   onSortChange?: (value: string) => void;
   className?: string;
+  resetKey?: number;
 }
 
 export default function SortButton({
@@ -20,10 +21,19 @@ export default function SortButton({
   defaultOption = "ascending",
   onSortChange,
   className = "",
+  resetKey,
 }: SortButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(defaultOption);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Reset when resetKey changes
+  useEffect(() => {
+    if (resetKey !== undefined && resetKey > 0) {
+      setSelectedOption(defaultOption);
+      setIsOpen(false);
+    }
+  }, [resetKey]);
 
   // Click outside handler
   useEffect(() => {

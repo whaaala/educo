@@ -63,12 +63,12 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
     // Calculate if menu would go off-screen
     const button = e.currentTarget as HTMLElement;
     const buttonRect = button.getBoundingClientRect();
-    const menuHeight = 380; // Approximate height of the menu with 6 items
+    const menuHeight = 320; // Approximate height of the menu with 6 items
     const spaceBelow = window.innerHeight - buttonRect.bottom;
     const spaceAbove = buttonRect.top;
 
     // Position menu above if not enough space below
-    if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
+    if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
       setMenuPosition('top');
     } else {
       setMenuPosition('bottom');
@@ -362,7 +362,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
             </button>
 
             {openMenuStudentId === student.id && (
-              <div className={`absolute right-0 w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[9999] py-1 animate-in fade-in duration-200 ${
+              <div className={`absolute right-0 w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[99999] py-1 animate-in fade-in duration-200 ${
                 menuPosition === 'top'
                   ? 'bottom-full mb-1 slide-in-from-bottom-2'
                   : 'top-full mt-1 slide-in-from-top-2'
