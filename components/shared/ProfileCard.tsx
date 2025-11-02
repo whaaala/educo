@@ -10,6 +10,7 @@ import {
   Edit,
   TrendingUp,
   Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import CollectFeesModal from "./CollectFeesModal";
@@ -55,11 +56,25 @@ export default function ProfileCard({
 }: ProfileCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFeesModalOpen, setIsFeesModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
+  const handleConfirmDelete = () => {
+    console.log('Deleting student:', id);
+    // Add your delete logic here
+    setIsDeleteModalOpen(false);
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+  };
+
+  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node) &&
+          buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false);
       }
     };
@@ -106,10 +121,10 @@ export default function ProfileCard({
   const actions = customActions || defaultActions;
 
   return (
-    <div className="relative">
+    <>
+      <div className="relative">
       <div
-        className="group relative bg-white dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 hover:bg-gradient-to-br hover:from-blue-100 hover:via-purple-100 hover:to-pink-100 dark:hover:bg-gray-800/90 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 dark:hover:shadow-blue-400/30 midnight:hover:shadow-cyan-400/30 purple:hover:shadow-pink-400/30 hover:border-purple-300/60 dark:hover:border-blue-400/50 midnight:hover:border-cyan-400/50 purple:hover:border-pink-400/50 hover:-translate-y-1 hover:scale-[1.01]"
-        style={{ overflow: "visible" }}
+        className="group relative bg-white dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 hover:bg-gradient-to-br hover:from-blue-100 hover:via-purple-100 hover:to-pink-100 dark:hover:bg-gray-800/90 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 dark:hover:shadow-blue-400/30 midnight:hover:shadow-cyan-400/30 purple:hover:shadow-pink-400/30 hover:border-purple-300/60 dark:hover:border-blue-400/50 midnight:hover:border-cyan-400/50 purple:hover:border-pink-400/50"
       >
         {/* Gradient Overlay Effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/3 to-pink-500/5 dark:from-blue-400/15 dark:via-purple-400/8 dark:to-pink-400/15 midnight:from-cyan-400/15 midnight:via-purple-400/8 midnight:to-cyan-400/15 purple:from-pink-400/15 purple:via-purple-400/8 purple:to-pink-400/15 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -145,9 +160,11 @@ export default function ProfileCard({
                 {status}
               </span>
             </div>
-            <div className="relative z-50">
+            <div className="relative">
               <button
-                onClick={() => {
+                ref={buttonRef}
+                onClick={(e) => {
+                  e.stopPropagation();
                   setIsMenuOpen(!isMenuOpen);
                   onMenuClick?.();
                 }}
@@ -269,16 +286,14 @@ export default function ProfileCard({
         </div>
       </div>
 
-      {/* Dropdown Menu - Outside card transform context */}
+      {/* Dropdown Menu - Positioned outside rounded card to avoid clipping */}
       {isMenuOpen && (
         <div
           ref={menuRef}
-          className="absolute w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 animate-in fade-in slide-in-from-top-1 duration-200"
+          className="absolute w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 animate-in fade-in slide-in-from-top-1 duration-200 z-[99999]"
           style={{
-            position: "absolute",
-            right: "0.5rem",
-            top: "2.25rem",
-            zIndex: 99999,
+            top: buttonRef.current ? `${buttonRef.current.getBoundingClientRect().bottom - (buttonRef.current.closest('.relative')?.getBoundingClientRect().top || 0) + 4}px` : '0px',
+            right: '16px',
           }}
         >
           <button
@@ -289,7 +304,7 @@ export default function ProfileCard({
             className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
             style={{ cursor: "pointer" }}
           >
-            <Eye className="w-4 h-4 text-gray-600" />
+            <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
             <span>View Student</span>
           </button>
 
@@ -301,7 +316,7 @@ export default function ProfileCard({
             className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
             style={{ cursor: "pointer" }}
           >
-            <Edit className="w-4 h-4 text-gray-600" />
+            <Edit className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
             <span>Edit</span>
           </button>
 
@@ -313,14 +328,14 @@ export default function ProfileCard({
             className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
             style={{ cursor: "pointer" }}
           >
-            <TrendingUp className="w-4 h-4 text-gray-600" />
+            <TrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
             <span>Promote Student</span>
           </button>
 
           <button
             onClick={() => {
               setIsMenuOpen(false);
-              // Handle delete action
+              setIsDeleteModalOpen(true);
             }}
             className="w-full px-4 py-2 text-left text-sm font-normal text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 flex items-center gap-3 transition-all duration-200"
             style={{ cursor: "pointer" }}
@@ -330,6 +345,7 @@ export default function ProfileCard({
           </button>
         </div>
       )}
+      </div>
 
       {/* Collect Fees Modal */}
       <CollectFeesModal
@@ -345,6 +361,85 @@ export default function ProfileCard({
           status: status === "Active" ? "Unpaid" : "Paid",
         }}
       />
-    </div>
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div
+          className="fixed inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/70 backdrop-blur-md flex items-start justify-center pt-20 p-4 overflow-y-auto animate-in fade-in duration-200"
+          style={{ zIndex: 999999 }}
+          onClick={handleCancelDelete}
+        >
+          <div
+            className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 slide-in-from-top-4 duration-300"
+            onClick={(e) => e.stopPropagation()}
+            style={{ position: 'relative', zIndex: 1000000 }}
+          >
+            {/* Gradient Header Background */}
+            <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-br from-red-500 via-red-600 to-orange-600 dark:from-red-600 dark:via-red-700 dark:to-orange-700 midnight:from-red-500 midnight:via-red-600 midnight:to-rose-600 purple:from-red-500 purple:via-pink-600 purple:to-rose-600 opacity-10 rounded-t-3xl"></div>
+
+            {/* Content */}
+            <div className="relative pt-4 pb-3 px-5">
+              {/* Icon with animated rings */}
+              <div className="flex justify-center mb-2">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-red-500 dark:bg-red-400 rounded-full opacity-20 animate-ping"></div>
+                  <div className="relative w-9 h-9 bg-gradient-to-br from-red-500 to-orange-600 dark:from-red-500 dark:to-red-600 midnight:from-red-500 midnight:to-rose-600 purple:from-red-500 purple:to-pink-600 rounded-full flex items-center justify-center shadow-lg shadow-red-500/50 dark:shadow-red-500/30">
+                    <AlertTriangle className="w-4.5 h-4.5 text-white" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Title */}
+              <h2 className="text-sm font-bold text-center text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3">
+                Delete Student
+              </h2>
+            </div>
+
+            {/* Content */}
+            <div className="relative px-5 pt-3 pb-5">
+              {/* Student Info Card */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg p-2.5 mb-2.5 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md flex-shrink-0">
+                    {getInitials(name)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                      {name}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400">
+                      {id}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Warning Message - Red Background */}
+              <div className="bg-red-50 dark:bg-red-900/20 midnight:bg-red-500/10 purple:bg-red-500/10 border-l-4 border-red-500 dark:border-red-400 rounded-lg p-2.5 mb-3.5">
+                <p className="text-xs leading-relaxed text-red-800 dark:text-red-300 midnight:text-red-300 purple:text-red-300">
+                  This will permanently remove this student and all associated data. This action cannot be undone.
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex flex-col-reverse sm:flex-row gap-2">
+                <button
+                  onClick={handleCancelDelete}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-all duration-200 cursor-pointer shadow-sm hover:shadow border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 dark:from-red-500 dark:to-red-600 dark:hover:from-red-600 dark:hover:to-red-700 transition-all duration-200 cursor-pointer shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  Delete Student
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

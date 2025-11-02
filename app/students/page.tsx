@@ -1872,13 +1872,14 @@ export default function AllStudentsPage() {
       </div>
 
       {/* Content */}
-      <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out">
+      <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out" style={{ overflow: 'visible' }}>
         {/* Students Grid or Table */}
-        <div className="relative min-h-[400px]">
+        <div className="relative min-h-[400px]" style={{ overflow: 'visible' }}>
           {viewMode === "grid" ? (
             <div
               key={`grid-view-${isFiltering ? 'filtering' : 'filtered'}-${isSorting ? 'sorting' : 'sorted'}-${isRefreshing ? 'refreshing' : 'refreshed'}-${sortOption}`}
               className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+              style={{ overflow: 'visible' }}
             >
               {isLoading ? (
                 <PageSpinner message={isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."} size="md" />
@@ -1923,7 +1924,7 @@ export default function AllStudentsPage() {
                 </div>
               ) : (
                 <>
-                  <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2 pr-2 md:pr-0">
+                  <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2 pr-2 md:pr-0" style={{ overflow: 'visible' }}>
                     {displayedStudents.map((student, index) => {
                       // Check if student matches current search/filters
                       const matchesSearch = searchQuery.trim() === "" ||
@@ -1939,11 +1940,9 @@ export default function AllStudentsPage() {
                           key={student.id}
                           style={{
                             opacity: shouldHide ? 0 : 1,
-                            transform: shouldHide ? 'translateX(60px) scale(0.9)' : 'translateX(0) scale(1)',
                             height: shouldHide ? '0' : 'auto',
                             overflow: shouldHide ? 'hidden' : 'visible',
-                            animation: searchQuery.trim() && !shouldHide ? `fadeSlideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${index / 40}s both` : 'none',
-                            transition: 'opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                            transition: 'opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                             transitionDelay: `${index / 40}s`,
                           } as React.CSSProperties}
                         >
