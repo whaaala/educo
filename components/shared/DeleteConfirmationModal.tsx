@@ -2,7 +2,6 @@
 
 import { AlertTriangle } from "lucide-react";
 import { useEffect } from "react";
-import { createPortal } from "react-dom";
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -29,96 +28,87 @@ export default function DeleteConfirmationModal({
   confirmButtonText = "Delete",
   cancelButtonText = "Cancel",
 }: DeleteConfirmationModalProps) {
-  // Prevent body scrolling when modal is open
+  // Close on escape key
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-
-    return () => {
-      document.body.style.overflow = '';
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
     };
-  }, [isOpen]);
+    if (isOpen) {
+      document.addEventListener("keydown", handleEscape);
+    }
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   // Generate initials from name if not provided
   const initials = itemInitials || itemName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
-  const modalContent = (
+  return (
     <div
-      className="fixed inset-0 flex items-start justify-center pt-20 p-4 animate-in fade-in duration-200"
-      style={{ zIndex: 999999 }}
+      className="fixed inset-0 z-[100000] flex items-start justify-center pt-16 sm:pt-20 p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={onClose}
     >
-      {/* Backdrop with blur */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/70 backdrop-blur-md" />
-
       {/* Modal Content */}
       <div
-        className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 slide-in-from-top-4 duration-300 z-10"
+        className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md flex flex-col animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Gradient Header Background */}
-        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-br from-red-500 via-red-600 to-orange-600 dark:from-red-600 dark:via-red-700 dark:to-orange-700 midnight:from-red-500 midnight:via-red-600 midnight:to-rose-600 purple:from-red-500 purple:via-pink-600 purple:to-rose-600 opacity-10 rounded-t-3xl"></div>
-
-        {/* Content */}
-        <div className="relative pt-4 pb-3 px-5">
-          {/* Icon with animated rings */}
+        {/* Header */}
+        <div className="bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 px-6 pt-4 pb-3 rounded-t-2xl border-b border-red-100 dark:border-red-800/30 midnight:border-red-700/30 purple:border-red-700/30 flex-shrink-0">
           <div className="flex justify-center mb-2">
+            {/* Icon with animated rings */}
             <div className="relative">
               <div className="absolute inset-0 bg-red-500 dark:bg-red-400 rounded-full opacity-20 animate-ping"></div>
-              <div className="relative w-9 h-9 bg-gradient-to-br from-red-500 to-orange-600 dark:from-red-500 dark:to-red-600 midnight:from-red-500 midnight:to-rose-600 purple:from-red-500 purple:to-pink-600 rounded-full flex items-center justify-center shadow-lg shadow-red-500/50 dark:shadow-red-500/30">
+              <div className="relative w-9 h-9 bg-red-500 dark:bg-red-600 midnight:bg-red-600 purple:bg-red-600 rounded-full flex items-center justify-center">
                 <AlertTriangle className="w-4.5 h-4.5 text-white" strokeWidth={2.5} />
               </div>
             </div>
           </div>
-
-          {/* Title */}
-          <h2 className="text-sm font-bold text-center text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3">
+          <h2 className="text-sm font-bold text-center text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
             {title}
           </h2>
         </div>
 
         {/* Content */}
-        <div className="relative px-5 pt-3 pb-5">
+        <div className="px-6 pt-4 pb-6">
           {/* Item Info Card */}
-          <div className="bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg p-2.5 mb-2.5 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md flex-shrink-0">
+          <div className="bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg p-3 mb-4 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md flex-shrink-0">
                 {initials}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                <p className="font-semibold text-sm text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 truncate">
                   {itemName}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
                   {itemId}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Warning Message - Red Background */}
-          <div className="bg-red-50 dark:bg-red-900/20 midnight:bg-red-500/10 purple:bg-red-500/10 border-l-4 border-red-500 dark:border-red-400 rounded-lg p-2.5 mb-3.5">
-            <p className="text-xs leading-relaxed text-red-800 dark:text-red-300 midnight:text-red-300 purple:text-red-300">
+          {/* Warning Message */}
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/10 midnight:bg-red-900/10 purple:bg-red-900/10 border-l-4 border-red-500 dark:border-red-600 midnight:border-red-600 purple:border-red-600 rounded">
+            <p className="text-sm text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
               {warningMessage}
             </p>
           </div>
 
           {/* Buttons */}
-          <div className="flex flex-col-reverse sm:flex-row gap-2">
+          <div className="flex items-center justify-end gap-3">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-all duration-200 cursor-pointer shadow-sm hover:shadow border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:scale-[1.02] active:scale-[0.98]"
+              className="px-5 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-all duration-200 active:scale-95"
             >
               {cancelButtonText}
             </button>
             <button
               onClick={onConfirm}
-              className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 dark:from-red-500 dark:to-red-600 dark:hover:from-red-600 dark:hover:to-red-700 transition-all duration-200 cursor-pointer shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 hover:scale-[1.02] active:scale-[0.98]"
+              className="px-5 py-2.5 rounded-lg font-semibold text-sm text-white bg-red-600 dark:bg-red-600 midnight:bg-red-600 purple:bg-red-600 hover:bg-red-700 dark:hover:bg-red-700 midnight:hover:bg-red-700 purple:hover:bg-red-700 transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl"
             >
               {confirmButtonText}
             </button>
@@ -127,6 +117,4 @@ export default function DeleteConfirmationModal({
       </div>
     </div>
   );
-
-  return createPortal(modalContent, document.body);
 }
