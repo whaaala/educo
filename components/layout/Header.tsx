@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Moon, Sun, Maximize2, MessageCircle, ChevronDown, Menu } from "lucide-react";
 import UserMenu from "./UserMenu";
 import NotificationDropdown from "./NotificationDropdown";
 import SearchBar from "@/components/shared/SearchBar";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAcademicYear } from "@/contexts/AcademicYearContext";
 
 interface HeaderProps {
   isMobileSidebarOpen: boolean;
@@ -14,6 +15,9 @@ interface HeaderProps {
 
 export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
   const { theme, cycleTheme } = useTheme();
+  const academicYearContext = useAcademicYear();
+  const { selectedYear, setSelectedYear, academicYears } = academicYearContext;
+
   const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [isAddNewOpen, setIsAddNewOpen] = useState(false);
@@ -21,20 +25,6 @@ export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: 
   const yearDropdownRef = useRef<HTMLDivElement>(null);
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const addNewRef = useRef<HTMLDivElement>(null);
-
-  // Generate academic years (memoized to avoid recalculation)
-  const academicYears = useMemo(() => {
-    const currentYear = 2024; // Fixed year to avoid hydration issues
-    const years = [];
-    for (let i = 0; i <= 5; i++) {
-      const startYear = currentYear - i;
-      const endYear = startYear + 1;
-      years.push(`${startYear} / ${endYear}`);
-    }
-    return years;
-  }, []);
-
-  const [selectedYear, setSelectedYear] = useState(academicYears[0]);
 
   // Language options
   const languages = [

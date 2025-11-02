@@ -12,6 +12,8 @@ import ViewToggle from "@/components/shared/ViewToggle";
 import PageHeader from "@/components/shared/PageHeader";
 import PageActions from "@/components/shared/PageActions";
 import PageSpinner from "@/components/shared/PageSpinner";
+import { useAcademicYear } from "@/contexts/AcademicYearContext";
+import { filterStudentsByAcademicYear } from "@/utils/academicYear";
 
 // Sample data
 const sampleStudents: Student[] = [
@@ -49,6 +51,7 @@ const sampleStudents: Student[] = [
     class: "II, B",
     gender: "Female",
     joinedOn: "13 May 2017",
+    leftOn: "15 Jun 2019",
     status: "Inactive",
   },
   {
@@ -82,7 +85,7 @@ const sampleStudents: Student[] = [
     id: "AD9892427",
     name: "Susan Boswell",
     rollNo: "35006",
-    class: "VIII, B",
+    class: "II, A",
     gender: "Female",
     joinedOn: "26 May 2020",
     status: "Active",
@@ -91,7 +94,7 @@ const sampleStudents: Student[] = [
     id: "AD9892426",
     name: "David Johnson",
     rollNo: "35005",
-    class: "VI, A",
+    class: "VIII, A",
     gender: "Male",
     joinedOn: "15 Mar 2019",
     status: "Active",
@@ -100,7 +103,7 @@ const sampleStudents: Student[] = [
     id: "AD9892425",
     name: "Emily Brown",
     rollNo: "35004",
-    class: "IV, B",
+    class: "VII, B",
     gender: "Female",
     joinedOn: "22 Jul 2018",
     status: "Active",
@@ -109,7 +112,7 @@ const sampleStudents: Student[] = [
     id: "AD9892424",
     name: "Michael Davis",
     rollNo: "35003",
-    class: "V, A",
+    class: "VI, A",
     gender: "Male",
     joinedOn: "10 Sep 2019",
     status: "Active",
@@ -118,16 +121,16 @@ const sampleStudents: Student[] = [
     id: "AD9892423",
     name: "Sarah Wilson",
     rollNo: "35002",
-    class: "III, B",
+    class: "V, B",
     gender: "Female",
     joinedOn: "5 Nov 2020",
-    status: "Inactive",
+    status: "Active",
   },
   {
     id: "AD9892422",
     name: "James Martinez",
     rollNo: "35001",
-    class: "VII, A",
+    class: "III, B",
     gender: "Male",
     joinedOn: "18 Feb 2018",
     status: "Active",
@@ -159,17 +162,958 @@ const sampleStudents: Student[] = [
     joinedOn: "25 Jan 2020",
     status: "Active",
   },
+
+  // Additional students for Academic Year 2024/2025 (Sep 2024 onwards)
+  {
+    id: "AD9892520",
+    name: "Oliver Martinez",
+    rollNo: "36000",
+    class: "I, A",
+    gender: "Male",
+    joinedOn: "5 Sep 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892521",
+    name: "Emma Thompson",
+    rollNo: "36001",
+    class: "I, B",
+    gender: "Female",
+    joinedOn: "10 Sep 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892522",
+    name: "Liam Anderson",
+    rollNo: "36002",
+    class: "II, A",
+    gender: "Male",
+    joinedOn: "15 Sep 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892523",
+    name: "Sophia Williams",
+    rollNo: "36003",
+    class: "I, A",
+    gender: "Female",
+    joinedOn: "20 Sep 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892524",
+    name: "Noah Johnson",
+    rollNo: "36004",
+    class: "III, B",
+    gender: "Male",
+    joinedOn: "25 Sep 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892525",
+    name: "Ava Davis",
+    rollNo: "36005",
+    class: "I, B",
+    gender: "Female",
+    joinedOn: "1 Oct 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892526",
+    name: "Ethan Brown",
+    rollNo: "36006",
+    class: "II, A",
+    gender: "Male",
+    joinedOn: "5 Oct 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892527",
+    name: "Isabella Garcia",
+    rollNo: "36007",
+    class: "I, A",
+    gender: "Female",
+    joinedOn: "10 Oct 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892528",
+    name: "Mason Miller",
+    rollNo: "36008",
+    class: "IV, B",
+    gender: "Male",
+    joinedOn: "15 Oct 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892529",
+    name: "Mia Wilson",
+    rollNo: "36009",
+    class: "I, B",
+    gender: "Female",
+    joinedOn: "20 Oct 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892530",
+    name: "Lucas Moore",
+    rollNo: "36010",
+    class: "II, A",
+    gender: "Male",
+    joinedOn: "25 Oct 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892531",
+    name: "Charlotte Taylor",
+    rollNo: "36011",
+    class: "I, A",
+    gender: "Female",
+    joinedOn: "1 Nov 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892532",
+    name: "Benjamin Anderson",
+    rollNo: "36012",
+    class: "III, B",
+    gender: "Male",
+    joinedOn: "5 Nov 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892533",
+    name: "Amelia Jackson",
+    rollNo: "36013",
+    class: "I, B",
+    gender: "Female",
+    joinedOn: "10 Nov 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892534",
+    name: "Elijah White",
+    rollNo: "36014",
+    class: "II, A",
+    gender: "Male",
+    joinedOn: "15 Nov 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892535",
+    name: "Harper Harris",
+    rollNo: "36015",
+    class: "I, A",
+    gender: "Female",
+    joinedOn: "20 Nov 2024",
+    status: "Active",
+  },
+
+  // Additional students for Academic Year 2023/2024 (Sep 2023 - Aug 2024)
+  {
+    id: "AD9892450",
+    name: "Daniel Rodriguez",
+    rollNo: "35500",
+    class: "II, A",
+    gender: "Male",
+    joinedOn: "5 Sep 2023",
+    status: "Active",
+  },
+  {
+    id: "AD9892451",
+    name: "Emily Lewis",
+    rollNo: "35501",
+    class: "II, B",
+    gender: "Female",
+    joinedOn: "10 Sep 2023",
+    status: "Active",
+  },
+  {
+    id: "AD9892452",
+    name: "Matthew Lee",
+    rollNo: "35502",
+    class: "III, A",
+    gender: "Male",
+    joinedOn: "15 Sep 2023",
+    status: "Active",
+  },
+  {
+    id: "AD9892453",
+    name: "Grace Walker",
+    rollNo: "35503",
+    class: "II, A",
+    gender: "Female",
+    joinedOn: "20 Sep 2023",
+    status: "Active",
+  },
+  {
+    id: "AD9892454",
+    name: "Henry Hall",
+    rollNo: "35504",
+    class: "IV, B",
+    gender: "Male",
+    joinedOn: "25 Sep 2023",
+    status: "Active",
+  },
+  {
+    id: "AD9892455",
+    name: "Chloe Allen",
+    rollNo: "35505",
+    class: "II, B",
+    gender: "Female",
+    joinedOn: "1 Oct 2023",
+    status: "Active",
+  },
+  {
+    id: "AD9892456",
+    name: "Samuel Young",
+    rollNo: "35506",
+    class: "III, A",
+    gender: "Male",
+    joinedOn: "5 Oct 2023",
+    status: "Active",
+  },
+  {
+    id: "AD9892457",
+    name: "Victoria King",
+    rollNo: "35507",
+    class: "II, A",
+    gender: "Female",
+    joinedOn: "10 Oct 2023",
+    status: "Active",
+  },
+  {
+    id: "AD9892458",
+    name: "Joseph Wright",
+    rollNo: "35508",
+    class: "V, B",
+    gender: "Male",
+    joinedOn: "15 Oct 2023",
+    status: "Active",
+  },
+  {
+    id: "AD9892459",
+    name: "Lily Lopez",
+    rollNo: "35509",
+    class: "II, B",
+    gender: "Female",
+    joinedOn: "20 Oct 2023",
+    status: "Active",
+  },
+  {
+    id: "AD9892460",
+    name: "David Hill",
+    rollNo: "35510",
+    class: "III, A",
+    gender: "Male",
+    joinedOn: "15 Jan 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892461",
+    name: "Zoey Scott",
+    rollNo: "35511",
+    class: "II, A",
+    gender: "Female",
+    joinedOn: "20 Jan 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892462",
+    name: "Jackson Green",
+    rollNo: "35512",
+    class: "IV, B",
+    gender: "Male",
+    joinedOn: "25 Jan 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892463",
+    name: "Penelope Adams",
+    rollNo: "35513",
+    class: "II, B",
+    gender: "Female",
+    joinedOn: "1 Feb 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892464",
+    name: "Sebastian Baker",
+    rollNo: "35514",
+    class: "III, A",
+    gender: "Male",
+    joinedOn: "5 Feb 2024",
+    status: "Active",
+  },
+  {
+    id: "AD9892465",
+    name: "Scarlett Nelson",
+    rollNo: "35515",
+    class: "II, A",
+    gender: "Female",
+    joinedOn: "10 Feb 2024",
+    status: "Active",
+  },
+
+  // Additional students for Academic Year 2022/2023 (Sep 2022 - Aug 2023)
+  {
+    id: "AD9892400",
+    name: "William Turner",
+    rollNo: "35000",
+    class: "III, A",
+    gender: "Male",
+    joinedOn: "5 Sep 2022",
+    status: "Active",
+  },
+  {
+    id: "AD9892401",
+    name: "Sofia Phillips",
+    rollNo: "35001",
+    class: "III, B",
+    gender: "Female",
+    joinedOn: "10 Sep 2022",
+    status: "Active",
+  },
+  {
+    id: "AD9892402",
+    name: "Ryan Campbell",
+    rollNo: "35002",
+    class: "IV, A",
+    gender: "Male",
+    joinedOn: "15 Sep 2022",
+    status: "Active",
+  },
+  {
+    id: "AD9892403",
+    name: "Ella Parker",
+    rollNo: "35003",
+    class: "III, A",
+    gender: "Female",
+    joinedOn: "20 Sep 2022",
+    status: "Active",
+  },
+  {
+    id: "AD9892404",
+    name: "Nathan Evans",
+    rollNo: "35004",
+    class: "V, B",
+    gender: "Male",
+    joinedOn: "25 Sep 2022",
+    status: "Active",
+  },
+  {
+    id: "AD9892405",
+    name: "Layla Edwards",
+    rollNo: "35005",
+    class: "III, B",
+    gender: "Female",
+    joinedOn: "1 Oct 2022",
+    status: "Active",
+  },
+  {
+    id: "AD9892406",
+    name: "Caleb Collins",
+    rollNo: "35006",
+    class: "IV, A",
+    gender: "Male",
+    joinedOn: "5 Oct 2022",
+    status: "Active",
+  },
+  {
+    id: "AD9892407",
+    name: "Nora Stewart",
+    rollNo: "35007",
+    class: "III, A",
+    gender: "Female",
+    joinedOn: "10 Oct 2022",
+    status: "Active",
+  },
+  {
+    id: "AD9892408",
+    name: "Isaac Sanchez",
+    rollNo: "35008",
+    class: "VI, B",
+    gender: "Male",
+    joinedOn: "15 Oct 2022",
+    status: "Active",
+  },
+  {
+    id: "AD9892409",
+    name: "Hannah Morris",
+    rollNo: "35009",
+    class: "III, B",
+    gender: "Female",
+    joinedOn: "20 Oct 2022",
+    status: "Active",
+  },
+  {
+    id: "AD9892410",
+    name: "Gabriel Rogers",
+    rollNo: "35010",
+    class: "IV, A",
+    gender: "Male",
+    joinedOn: "15 Jan 2023",
+    status: "Active",
+  },
+  {
+    id: "AD9892411",
+    name: "Addison Reed",
+    rollNo: "35011",
+    class: "III, A",
+    gender: "Female",
+    joinedOn: "20 Jan 2023",
+    status: "Active",
+  },
+  {
+    id: "AD9892412",
+    name: "Dylan Cook",
+    rollNo: "35012",
+    class: "V, B",
+    gender: "Male",
+    joinedOn: "25 Jan 2023",
+    status: "Active",
+  },
+  {
+    id: "AD9892413",
+    name: "Aubrey Morgan",
+    rollNo: "35013",
+    class: "III, B",
+    gender: "Female",
+    joinedOn: "1 Feb 2023",
+    status: "Active",
+  },
+  {
+    id: "AD9892414",
+    name: "Christian Bell",
+    rollNo: "35014",
+    class: "IV, A",
+    gender: "Male",
+    joinedOn: "5 Feb 2023",
+    status: "Active",
+  },
+  {
+    id: "AD9892415",
+    name: "Savannah Murphy",
+    rollNo: "35015",
+    class: "III, A",
+    gender: "Female",
+    joinedOn: "10 Feb 2023",
+    status: "Active",
+  },
+
+  // Additional students for Academic Year 2021/2022 (Sep 2021 - Aug 2022)
+  {
+    id: "AD9892350",
+    name: "Luke Cox",
+    rollNo: "34500",
+    class: "IV, A",
+    gender: "Male",
+    joinedOn: "5 Sep 2021",
+    status: "Active",
+  },
+  {
+    id: "AD9892351",
+    name: "Natalie Howard",
+    rollNo: "34501",
+    class: "IV, B",
+    gender: "Female",
+    joinedOn: "10 Sep 2021",
+    status: "Active",
+  },
+  {
+    id: "AD9892352",
+    name: "Wyatt Ward",
+    rollNo: "34502",
+    class: "V, A",
+    gender: "Male",
+    joinedOn: "15 Sep 2021",
+    status: "Active",
+  },
+  {
+    id: "AD9892353",
+    name: "Samantha Torres",
+    rollNo: "34503",
+    class: "IV, A",
+    gender: "Female",
+    joinedOn: "20 Sep 2021",
+    status: "Active",
+  },
+  {
+    id: "AD9892354",
+    name: "Grayson Peterson",
+    rollNo: "34504",
+    class: "VI, B",
+    gender: "Male",
+    joinedOn: "25 Sep 2021",
+    status: "Active",
+  },
+  {
+    id: "AD9892355",
+    name: "Bella Gray",
+    rollNo: "34505",
+    class: "IV, B",
+    gender: "Female",
+    joinedOn: "1 Oct 2021",
+    status: "Active",
+  },
+  {
+    id: "AD9892356",
+    name: "Zachary Ramirez",
+    rollNo: "34506",
+    class: "V, A",
+    gender: "Male",
+    joinedOn: "5 Oct 2021",
+    status: "Active",
+  },
+  {
+    id: "AD9892357",
+    name: "Audrey James",
+    rollNo: "34507",
+    class: "IV, A",
+    gender: "Female",
+    joinedOn: "10 Oct 2021",
+    status: "Active",
+  },
+  {
+    id: "AD9892358",
+    name: "Aaron Watson",
+    rollNo: "34508",
+    class: "VII, B",
+    gender: "Male",
+    joinedOn: "15 Oct 2021",
+    status: "Active",
+  },
+  {
+    id: "AD9892359",
+    name: "Leah Brooks",
+    rollNo: "34509",
+    class: "IV, B",
+    gender: "Female",
+    joinedOn: "20 Oct 2021",
+    status: "Active",
+  },
+  {
+    id: "AD9892360",
+    name: "Charles Kelly",
+    rollNo: "34510",
+    class: "V, A",
+    gender: "Male",
+    joinedOn: "15 Jan 2022",
+    status: "Active",
+  },
+  {
+    id: "AD9892361",
+    name: "Anna Sanders",
+    rollNo: "34511",
+    class: "IV, A",
+    gender: "Female",
+    joinedOn: "20 Jan 2022",
+    status: "Active",
+  },
+  {
+    id: "AD9892362",
+    name: "Thomas Price",
+    rollNo: "34512",
+    class: "VI, B",
+    gender: "Male",
+    joinedOn: "25 Jan 2022",
+    status: "Active",
+  },
+  {
+    id: "AD9892363",
+    name: "Madison Bennett",
+    rollNo: "34513",
+    class: "IV, B",
+    gender: "Female",
+    joinedOn: "1 Feb 2022",
+    status: "Active",
+  },
+  {
+    id: "AD9892364",
+    name: "Eli Wood",
+    rollNo: "34514",
+    class: "V, A",
+    gender: "Male",
+    joinedOn: "5 Feb 2022",
+    status: "Active",
+  },
+  {
+    id: "AD9892365",
+    name: "Eleanor Barnes",
+    rollNo: "34515",
+    class: "IV, A",
+    gender: "Female",
+    joinedOn: "10 Feb 2022",
+    status: "Active",
+  },
+
+  // Additional students for Academic Year 2020/2021 (Sep 2020 - Aug 2021)
+  {
+    id: "AD9892300",
+    name: "Cameron Perry",
+    rollNo: "34000",
+    class: "V, A",
+    gender: "Male",
+    joinedOn: "5 Sep 2020",
+    status: "Active",
+  },
+  {
+    id: "AD9892301",
+    name: "Paisley Powell",
+    rollNo: "34001",
+    class: "V, B",
+    gender: "Female",
+    joinedOn: "10 Sep 2020",
+    status: "Active",
+  },
+  {
+    id: "AD9892302",
+    name: "Adrian Long",
+    rollNo: "34002",
+    class: "VI, A",
+    gender: "Male",
+    joinedOn: "15 Sep 2020",
+    status: "Active",
+  },
+  {
+    id: "AD9892303",
+    name: "Skylar Patterson",
+    rollNo: "34003",
+    class: "V, A",
+    gender: "Female",
+    joinedOn: "20 Sep 2020",
+    status: "Active",
+  },
+  {
+    id: "AD9892304",
+    name: "Hudson Hughes",
+    rollNo: "34004",
+    class: "VII, B",
+    gender: "Male",
+    joinedOn: "25 Sep 2020",
+    status: "Active",
+  },
+  {
+    id: "AD9892305",
+    name: "Kennedy Flores",
+    rollNo: "34005",
+    class: "V, B",
+    gender: "Female",
+    joinedOn: "1 Oct 2020",
+    status: "Active",
+  },
+  {
+    id: "AD9892306",
+    name: "Colton Washington",
+    rollNo: "34006",
+    class: "VI, A",
+    gender: "Male",
+    joinedOn: "5 Oct 2020",
+    status: "Active",
+  },
+  {
+    id: "AD9892307",
+    name: "Genesis Butler",
+    rollNo: "34007",
+    class: "V, A",
+    gender: "Female",
+    joinedOn: "10 Oct 2020",
+    status: "Active",
+  },
+  {
+    id: "AD9892308",
+    name: "Jordan Simmons",
+    rollNo: "34008",
+    class: "VIII, B",
+    gender: "Male",
+    joinedOn: "15 Oct 2020",
+    status: "Active",
+  },
+  {
+    id: "AD9892309",
+    name: "Kinsley Foster",
+    rollNo: "34009",
+    class: "V, B",
+    gender: "Female",
+    joinedOn: "20 Oct 2020",
+    status: "Active",
+  },
+  {
+    id: "AD9892310",
+    name: "Landon Bryant",
+    rollNo: "34010",
+    class: "VI, A",
+    gender: "Male",
+    joinedOn: "15 Jan 2021",
+    status: "Active",
+  },
+  {
+    id: "AD9892311",
+    name: "Naomi Alexander",
+    rollNo: "34011",
+    class: "V, A",
+    gender: "Female",
+    joinedOn: "20 Jan 2021",
+    status: "Active",
+  },
+  {
+    id: "AD9892312",
+    name: "Asher Russell",
+    rollNo: "34012",
+    class: "VII, B",
+    gender: "Male",
+    joinedOn: "25 Jan 2021",
+    status: "Active",
+  },
+  {
+    id: "AD9892313",
+    name: "Aaliyah Griffin",
+    rollNo: "34013",
+    class: "V, B",
+    gender: "Female",
+    joinedOn: "1 Feb 2021",
+    status: "Active",
+  },
+  {
+    id: "AD9892314",
+    name: "Carson Diaz",
+    rollNo: "34014",
+    class: "VI, A",
+    gender: "Male",
+    joinedOn: "5 Feb 2021",
+    status: "Active",
+  },
+  {
+    id: "AD9892315",
+    name: "Quinn Hayes",
+    rollNo: "34015",
+    class: "V, A",
+    gender: "Female",
+    joinedOn: "10 Feb 2021",
+    status: "Active",
+  },
+
+  // Additional students for Academic Year 2019/2020 (Sep 2019 - Aug 2020)
+  {
+    id: "AD9892250",
+    name: "Maverick Sullivan",
+    rollNo: "33500",
+    class: "VI, A",
+    gender: "Male",
+    joinedOn: "5 Sep 2019",
+    status: "Active",
+  },
+  {
+    id: "AD9892251",
+    name: "Ivy Wallace",
+    rollNo: "33501",
+    class: "VI, B",
+    gender: "Female",
+    joinedOn: "10 Sep 2019",
+    status: "Active",
+  },
+  {
+    id: "AD9892252",
+    name: "Silas West",
+    rollNo: "33502",
+    class: "VII, A",
+    gender: "Male",
+    joinedOn: "15 Sep 2019",
+    status: "Active",
+  },
+  {
+    id: "AD9892253",
+    name: "Willow Gardner",
+    rollNo: "33503",
+    class: "VI, A",
+    gender: "Female",
+    joinedOn: "20 Sep 2019",
+    status: "Active",
+  },
+  {
+    id: "AD9892254",
+    name: "Miles Webb",
+    rollNo: "33504",
+    class: "VIII, B",
+    gender: "Male",
+    joinedOn: "25 Sep 2019",
+    status: "Active",
+  },
+  {
+    id: "AD9892255",
+    name: "Everly Greene",
+    rollNo: "33505",
+    class: "VI, B",
+    gender: "Female",
+    joinedOn: "1 Oct 2019",
+    status: "Active",
+  },
+  {
+    id: "AD9892256",
+    name: "Sawyer Newman",
+    rollNo: "33506",
+    class: "VII, A",
+    gender: "Male",
+    joinedOn: "5 Oct 2019",
+    status: "Active",
+  },
+  {
+    id: "AD9892257",
+    name: "Ellie Castillo",
+    rollNo: "33507",
+    class: "VI, A",
+    gender: "Female",
+    joinedOn: "10 Oct 2019",
+    status: "Active",
+  },
+  {
+    id: "AD9892258",
+    name: "Bryson Mendoza",
+    rollNo: "33508",
+    class: "VIII, B",
+    gender: "Male",
+    joinedOn: "15 Oct 2019",
+    status: "Active",
+  },
+  {
+    id: "AD9892259",
+    name: "Isla Valdez",
+    rollNo: "33509",
+    class: "VI, B",
+    gender: "Female",
+    joinedOn: "20 Oct 2019",
+    status: "Active",
+  },
+  {
+    id: "AD9892260",
+    name: "Brayden Castillo",
+    rollNo: "33510",
+    class: "VII, A",
+    gender: "Male",
+    joinedOn: "15 Jan 2020",
+    status: "Active",
+  },
+  {
+    id: "AD9892261",
+    name: "Aurora Reeves",
+    rollNo: "33511",
+    class: "VI, A",
+    gender: "Female",
+    joinedOn: "20 Jan 2020",
+    status: "Active",
+  },
+  {
+    id: "AD9892262",
+    name: "Jameson Hunt",
+    rollNo: "33512",
+    class: "VIII, B",
+    gender: "Male",
+    joinedOn: "25 Jan 2020",
+    status: "Active",
+  },
+  {
+    id: "AD9892263",
+    name: "Nova Tucker",
+    rollNo: "33513",
+    class: "VI, B",
+    gender: "Female",
+    joinedOn: "1 Feb 2020",
+    status: "Active",
+  },
+  {
+    id: "AD9892264",
+    name: "Declan Wheeler",
+    rollNo: "33514",
+    class: "VII, A",
+    gender: "Male",
+    joinedOn: "5 Feb 2020",
+    status: "Active",
+  },
+  {
+    id: "AD9892265",
+    name: "Emilia Cross",
+    rollNo: "33515",
+    class: "VI, A",
+    gender: "Female",
+    joinedOn: "10 Feb 2020",
+    status: "Active",
+  },
+
+  // Students who left/graduated (with leftOn dates)
+  {
+    id: "AD9892600",
+    name: "Thomas Bennett",
+    rollNo: "32001",
+    class: "XII, A",
+    gender: "Male",
+    joinedOn: "5 Sep 2018",
+    leftOn: "20 Jun 2020",
+    status: "Inactive",
+  },
+  {
+    id: "AD9892601",
+    name: "Rachel Foster",
+    rollNo: "32002",
+    class: "XII, B",
+    gender: "Female",
+    joinedOn: "10 Sep 2019",
+    leftOn: "25 Jun 2021",
+    status: "Inactive",
+  },
+  {
+    id: "AD9892602",
+    name: "Kevin Hughes",
+    rollNo: "32003",
+    class: "X, A",
+    gender: "Male",
+    joinedOn: "15 Sep 2017",
+    leftOn: "15 Jul 2019",
+    status: "Inactive",
+  },
+  {
+    id: "AD9892603",
+    name: "Monica Price",
+    rollNo: "32004",
+    class: "XI, B",
+    gender: "Female",
+    joinedOn: "20 Sep 2020",
+    leftOn: "30 Jun 2022",
+    status: "Inactive",
+  },
+  {
+    id: "AD9892604",
+    name: "Brandon Russell",
+    rollNo: "32005",
+    class: "IX, A",
+    gender: "Male",
+    joinedOn: "5 Sep 2021",
+    leftOn: "20 Aug 2023",
+    status: "Inactive",
+  },
+  {
+    id: "AD9892605",
+    name: "Stephanie Griffin",
+    rollNo: "32006",
+    class: "VIII, B",
+    gender: "Female",
+    joinedOn: "10 Sep 2022",
+    leftOn: "15 Jul 2024",
+    status: "Inactive",
+  },
 ];
 
 export default function AllStudentsPage() {
+  const academicYearContext = useAcademicYear();
+  const { selectedYear } = academicYearContext;
+
   const [students] = useState<Student[]>(sampleStudents);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [isMounted, setIsMounted] = useState(false);
-  const [displayedCount, setDisplayedCount] = useState(12);
+  const [displayedCount, setDisplayedCount] = useState(8); // 8 for grid, 10 for table
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
-  const previousCountRef = useRef(12);
+  const previousCountRef = useRef(8);
 
   // Filter fields configuration
   const filterFields: FilterField[] = [
@@ -272,7 +1216,8 @@ export default function AllStudentsPage() {
     // Delay to allow exit animation
     setTimeout(() => {
       setDateRange({ startDate, endDate });
-      setDisplayedCount(12); // Reset to first page when date range changes
+      const initialCount = viewMode === "grid" ? 8 : 10;
+      setDisplayedCount(initialCount); // Reset to first page when date range changes
       setTimeout(() => {
         setIsFiltering(false);
       }, 100);
@@ -284,7 +1229,8 @@ export default function AllStudentsPage() {
     // Delay to allow exit animation
     setTimeout(() => {
       setFilters(updatedFilters);
-      setDisplayedCount(12); // Reset to first page when filters change
+      const initialCount = viewMode === "grid" ? 8 : 10;
+      setDisplayedCount(initialCount); // Reset to first page when filters change
       setTimeout(() => {
         setIsFiltering(false);
       }, 100);
@@ -296,7 +1242,8 @@ export default function AllStudentsPage() {
     setTimeout(() => {
       setFilters({});
       setDateRange(null);
-      setDisplayedCount(12);
+      const initialCount = viewMode === "grid" ? 8 : 10;
+      setDisplayedCount(initialCount);
       setTimeout(() => {
         setIsFiltering(false);
       }, 100);
@@ -324,7 +1271,8 @@ export default function AllStudentsPage() {
     // Delay to allow exit animation
     setTimeout(() => {
       // Reset to first page when refreshing
-      setDisplayedCount(12);
+      const initialCount = viewMode === "grid" ? 8 : 10;
+      setDisplayedCount(initialCount);
       setTimeout(() => {
         setIsRefreshing(false);
       }, 100);
@@ -696,6 +1644,31 @@ export default function AllStudentsPage() {
     setIsMounted(true);
   }, []);
 
+  // Reset displayedCount when view mode changes
+  useEffect(() => {
+    if (isMounted) {
+      const initialCount = viewMode === "grid" ? 8 : 10;
+      setDisplayedCount(initialCount);
+      previousCountRef.current = initialCount;
+    }
+  }, [viewMode, isMounted]);
+
+  // Handle academic year changes
+  useEffect(() => {
+    if (isMounted) {
+      setIsFiltering(true);
+      setTimeout(() => {
+        // Reset to initial count based on view mode when academic year changes
+        const initialCount = viewMode === "grid" ? 8 : 10;
+        setDisplayedCount(initialCount);
+        setTimeout(() => {
+          setIsFiltering(false);
+        }, 100);
+      }, 300);
+    }
+  }, [selectedYear, isMounted, viewMode]);
+
+
   useEffect(() => {
     // Scroll to newly loaded content after displayedCount increases
     if (displayedCount > previousCountRef.current && gridRef.current) {
@@ -721,13 +1694,17 @@ export default function AllStudentsPage() {
     setIsLoadingMore(true);
     // Simulate loading delay
     setTimeout(() => {
-      setDisplayedCount((prev) => prev + 4);
+      // Load 8 more cards
+      setDisplayedCount((prev) => prev + 8);
       setIsLoadingMore(false);
     }, 500);
   };
 
-  // Apply sorting to students
-  const sortedStudents = [...students].sort((a, b) => {
+  // Filter students by academic year first
+  const academicYearFilteredStudents = filterStudentsByAcademicYear(students, selectedYear);
+
+  // Apply sorting to academically filtered students
+  const sortedStudents = [...academicYearFilteredStudents].sort((a, b) => {
     switch (sortOption) {
       case "ascending":
         // Sort by name A-Z
@@ -745,11 +1722,15 @@ export default function AllStudentsPage() {
         if (!dateA || !dateB) return 0;
         return dateB.getTime() - dateA.getTime();
       default:
-        return 0;
+        // Default: Sort by joined date ascending (oldest first)
+        const defaultDateA = parseJoinedOnDate(a.joinedOn);
+        const defaultDateB = parseJoinedOnDate(b.joinedOn);
+        if (!defaultDateA || !defaultDateB) return 0;
+        return defaultDateA.getTime() - defaultDateB.getTime();
     }
   });
 
-  // Apply filters to students
+  // Apply additional filters to students
   const filteredStudents = sortedStudents.filter((student) => {
     // Check date range filter
     if (dateRange) {
@@ -955,7 +1936,7 @@ export default function AllStudentsPage() {
               className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
             >
               <StudentTable
-                students={displayedStudents}
+                students={filteredStudents}
                 isLoading={isLoading}
                 loadingMessage={isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."}
                 onClearFilters={handleClearFilters}

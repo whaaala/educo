@@ -210,6 +210,8 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       onClearFilters={onClearFilters}
       hasActiveFilters={hasActiveFilters}
       totalDataCount={totalStudentsCount}
+      defaultItemsPerPage={10}
+      itemsPerPageOptions={[10, 20, 50, 100]}
     />
   );
 }

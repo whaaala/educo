@@ -9,6 +9,7 @@ export interface Student {
   class: string;
   gender: "Male" | "Female";
   joinedOn: string;
+  leftOn?: string;
   status: "Active" | "Inactive";
   avatar?: string;
 }
