@@ -257,7 +257,7 @@ export default function DataTable<T>({
 
       {/* Table Body Container */}
       <div className="overflow-visible">
-        <table className="w-full table-fixed border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
+        <table className="w-full table-fixed border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 overflow-visible">
           {/* Table Header */}
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border-b border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
@@ -356,7 +356,7 @@ export default function DataTable<T>({
                   style={{
                     animation: isSearching ? `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${index / 80}s both` : undefined,
                   } as React.CSSProperties}
-                  className={`border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 ${!isSorting ? 'transition-all duration-200' : ''} ${animationClass} ${onRowClick ? 'cursor-pointer' : ''}`}
+                  className={`border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 ${!isSorting ? 'transition-all duration-200' : ''} ${animationClass} ${onRowClick ? 'cursor-pointer' : ''} overflow-visible`}
                   onClick={() => onRowClick?.(item)}
                 >
                   {columns.map((column) => (

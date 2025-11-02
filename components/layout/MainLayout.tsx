@@ -1,16 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 interface MainLayoutProps {
   children: React.ReactNode;
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const { isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen } = useSidebar();
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] transition-colors duration-300">

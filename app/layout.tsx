@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AcademicYearProvider } from "@/contexts/AcademicYearContext";
+import { SidebarProvider } from "@/contexts/SidebarContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +28,9 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <AcademicYearProvider>
-            {children}
+            <SidebarProvider>
+              {children}
+            </SidebarProvider>
           </AcademicYearProvider>
         </ThemeProvider>
       </body>

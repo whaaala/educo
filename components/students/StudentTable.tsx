@@ -7,6 +7,7 @@ import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import CollectFeesModal from "@/components/shared/CollectFeesModal";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import Tooltip from "@/components/shared/Tooltip";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 interface StudentTableProps {
   students: Student[];
@@ -20,6 +21,7 @@ interface StudentTableProps {
 }
 
 export default function StudentTable({ students, isLoading = false, loadingMessage = "Loading...", onClearFilters, hasActiveFilters = false, totalStudentsCount, selectedIds: externalSelectedIds, onSelectionChange }: StudentTableProps) {
+  const { isCollapsed } = useSidebar();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
@@ -142,12 +144,12 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
   const isSomeSelected = selectedIds.size > 0 && selectedIds.size < students.length;
 
   // Define column configuration with left alignment
-  const columns: ColumnConfig<Student>[] = [
+  const allColumns: ColumnConfig<Student>[] = [
     {
       key: "index",
       label: "",
       sortable: false,
-      className: "text-center w-[2%]",
+      className: "text-center w-[8%] md:w-[2%]",
       render: (student) => (
         <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
           <input
@@ -182,7 +184,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Admission No",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left w-[12%]",
+      className: "text-left w-[10%]",
       render: (student) => (
         <span className="text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 block cursor-pointer whitespace-nowrap">
           {student.id}
@@ -205,7 +207,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "name",
       label: "Name",
       sortable: true,
-      className: "text-left w-[18%]",
+      className: "text-left w-[30%] md:w-[15%]",
       render: (student) => (
         <div className="flex items-center gap-2.5 min-w-0">
           {student.avatar ? (
@@ -242,16 +244,23 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
             </div>
           )}
           <Tooltip content={student.name}>
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 truncate">
-              {(() => {
-                const nameParts = student.name.split(' ');
-                if (nameParts.length > 1) {
-                  const firstName = nameParts[0];
-                  const lastInitial = nameParts[nameParts.length - 1].charAt(0);
-                  return `${firstName} ${lastInitial}`;
-                }
-                return student.name;
-              })()}
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 md:truncate-none truncate">
+              {/* On mobile: show truncated name with first name + last initial */}
+              {/* On desktop: show full name */}
+              <span className="md:hidden">
+                {(() => {
+                  const nameParts = student.name.split(' ');
+                  if (nameParts.length > 1) {
+                    const firstName = nameParts[0];
+                    const lastInitial = nameParts[nameParts.length - 1].charAt(0);
+                    return `${firstName} ${lastInitial}`;
+                  }
+                  return student.name;
+                })()}
+              </span>
+              <span className="hidden md:inline">
+                {student.name}
+              </span>
             </span>
           </Tooltip>
         </div>
@@ -261,7 +270,8 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "class",
       label: "Class",
       sortable: true,
-      className: "text-left w-[7%]",
+      hidden: { mobile: true },
+      className: "text-left w-[15%] md:w-[6%]",
       sortValue: (student) => student.class.split(", ")[0],
       render: (student) => {
         const [classNum] = student.class.split(", ");
@@ -277,7 +287,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Section",
       sortable: true,
       hidden: { mobile: true },
-      className: "text-left w-[8%]",
+      className: "text-left w-[6%]",
       sortValue: (student) => student.class.split(", ")[1],
       render: (student) => {
         const [, section] = student.class.split(", ");
@@ -305,7 +315,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "status",
       label: "Status",
       sortable: true,
-      className: "text-left w-[9%]",
+      className: "text-left w-[22%] md:w-[8%]",
       render: (student) => (
         <div className="flex items-center justify-start">
           <span
@@ -336,52 +346,52 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "actions",
       label: "Action",
       sortable: false,
-      className: "text-left w-[20%]",
+      className: "text-left w-[40%] md:w-[25%] lg:w-[20%] !overflow-visible",
       render: (student) => (
-        <div className="flex items-center justify-start gap-1 xl:gap-1.5 ml-[0.7rem] md:ml-0">
+        <div className="flex items-center justify-start gap-0.5 md:gap-1 lg:gap-1.5 xl:gap-2 pr-1 md:pr-2">
           <button
-            className="p-0.5 xl:p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer"
+            className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer flex-shrink-0"
             title="Message"
             onClick={(e) => {
               e.stopPropagation();
               console.log("Message", student.id);
             }}
           >
-            <MessageCircle className="w-3 h-3 xl:w-3.5 xl:h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+            <MessageCircle className="w-4 h-4 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
           </button>
           <button
-            className="p-0.5 xl:p-1 rounded-md hover:bg-green-50 dark:hover:bg-green-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer"
+            className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-green-50 dark:hover:bg-green-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer flex-shrink-0"
             title="Call"
             onClick={(e) => {
               e.stopPropagation();
               console.log("Call", student.id);
             }}
           >
-            <Phone className="w-3 h-3 xl:w-3.5 xl:h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors" />
+            <Phone className="w-4 h-4 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors" />
           </button>
           <button
-            className="p-0.5 xl:p-1 rounded-md hover:bg-purple-50 dark:hover:bg-purple-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer"
+            className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-purple-50 dark:hover:bg-purple-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer flex-shrink-0"
             title="Email"
             onClick={(e) => {
               e.stopPropagation();
               console.log("Email", student.id);
             }}
           >
-            <Mail className="w-3 h-3 xl:w-3.5 xl:h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
+            <Mail className="w-4 h-4 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
           </button>
-          <div className="w-1"></div>
+          <div className="w-px md:w-0.5 lg:w-1"></div>
           <button
-            className="px-1.5 py-1 xl:px-2 xl:py-1.5 rounded-md bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 midnight:from-cyan-600 midnight:to-purple-600 midnight:hover:from-cyan-700 midnight:hover:to-purple-700 purple:from-pink-600 purple:to-purple-600 purple:hover:from-pink-700 purple:hover:to-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-sm hover:shadow-md flex items-center gap-0.5 xl:gap-1"
+            className="px-1 py-0.5 md:px-1.5 md:py-1 lg:px-2 lg:py-1.5 rounded-md bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 midnight:from-cyan-600 midnight:to-purple-600 midnight:hover:from-cyan-700 midnight:hover:to-purple-700 purple:from-pink-600 purple:to-purple-600 purple:hover:from-pink-700 purple:hover:to-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-sm hover:shadow-md flex items-center gap-0.5 lg:gap-1 flex-shrink-0"
             title="Add Fees"
             onClick={(e) => handleAddFeesClick(student, e)}
           >
-            <DollarSign className="w-2.5 h-2.5 xl:w-3 xl:h-3 text-white flex-shrink-0" />
-            <span className="text-[10px] xl:text-xs font-bold text-white whitespace-nowrap">Add Fees</span>
+            <DollarSign className="w-3 h-3 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-white flex-shrink-0" />
+            <span className="text-[10px] md:text-[10px] lg:text-xs xl:text-sm font-bold text-white whitespace-nowrap">Add Fees</span>
           </button>
-          <div className="relative" ref={openMenuStudentId === student.id ? menuRef : null}>
+          <div className="relative flex-shrink-0 overflow-visible" ref={openMenuStudentId === student.id ? menuRef : null}>
             <button
               ref={openMenuStudentId === student.id ? buttonRef : null}
-              className={`p-0.5 xl:p-1 rounded-md transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer ${
+              className={`p-0.5 md:p-1 xl:p-1.5 rounded-md transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer ${
                 openMenuStudentId === student.id
                   ? 'bg-gray-200 dark:bg-gray-600 midnight:bg-cyan-500/30 purple:bg-pink-500/30'
                   : 'hover:bg-gray-100 dark:hover:bg-gray-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20'
@@ -389,15 +399,18 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
               title="More"
               onClick={(e) => handleMenuToggle(student.id, e)}
             >
-              <MoreVertical className="w-3 h-3 xl:w-3.5 xl:h-3.5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors" />
+              <MoreVertical className="w-4 h-4 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors" />
             </button>
 
             {openMenuStudentId === student.id && (
-              <div className={`absolute right-0 w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[99999] py-1 animate-in fade-in duration-200 ${
-                menuPosition === 'top'
-                  ? 'bottom-full mb-1 slide-in-from-bottom-2'
-                  : 'top-full mt-1 slide-in-from-top-2'
-              }`}>
+              <div
+                ref={menuRef}
+                className={`absolute right-0 w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[999999] py-1 animate-in fade-in duration-200 ${
+                  menuPosition === 'top'
+                    ? 'bottom-full mb-1 slide-in-from-bottom-2'
+                    : 'top-full mt-1 slide-in-from-top-2'
+                }`}
+              >
                 <button
                   onClick={() => handleMenuItemClick('View Student', student)}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
@@ -448,6 +461,14 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       searchable: false,
     },
   ];
+
+  // Filter columns based on sidebar state - hide Roll No when sidebar is expanded
+  const columns = allColumns.filter(column => {
+    if (column.key === 'rollNo' && !isCollapsed) {
+      return false; // Hide Roll No column when sidebar is expanded
+    }
+    return true;
+  });
 
   return (
     <>
