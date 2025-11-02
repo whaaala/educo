@@ -12,6 +12,8 @@ import ViewToggle from "@/components/shared/ViewToggle";
 import PageHeader from "@/components/shared/PageHeader";
 import PageActions from "@/components/shared/PageActions";
 import PageSpinner from "@/components/shared/PageSpinner";
+import DeleteAllButton from "@/components/shared/DeleteAllButton";
+import BulkDeleteModal, { BulkDeleteItem } from "@/components/shared/BulkDeleteModal";
 import { useAcademicYear } from "@/contexts/AcademicYearContext";
 import { filterStudentsByAcademicYear } from "@/utils/academicYear";
 import { exportStudentsToPDF } from "@/utils/pdfExport";
@@ -1796,6 +1798,11 @@ export default function AllStudentsPage() {
   // Refresh state
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [resetKey, setResetKey] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Bulk delete modal state
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [itemsToDelete, setItemsToDelete] = useState<BulkDeleteItem[]>([]);
 
   // Sort options
   const sortOptions = [
@@ -1884,6 +1891,84 @@ export default function AllStudentsPage() {
         setIsFiltering(false);
       }, 100);
     }, 300);
+  };
+
+  const handleDeleteAll = () => {
+    console.log('🚀 NEW handleDeleteAll - Opening bulk delete modal');
+    if (selectedIds.size > 0) {
+      // Get the selected students' details
+      const selectedStudents = filteredStudents.filter(student =>
+        selectedIds.has(student.id)
+      );
+
+      // Convert to BulkDeleteItem format
+      const items: BulkDeleteItem[] = selectedStudents.map(student => ({
+        id: student.id,
+        name: student.name,
+        subtitle: student.id,
+        avatarColor: student.avatar ? undefined : getRandomColor(student.name),
+        avatar: student.avatar,
+      }));
+
+      console.log('📋 Items to show in modal:', items.length);
+      setItemsToDelete(items);
+      setIsBulkDeleteModalOpen(true);
+      console.log('✅ Modal state set to true');
+    }
+  };
+
+  // Helper function to get consistent color for a name
+  const getRandomColor = (name: string): string => {
+    const colors = [
+      '#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6',
+      '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#84CC16'
+    ];
+    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+
+  const handleRemoveFromDeleteList = (itemId: string) => {
+    setItemsToDelete(prevItems => prevItems.filter(item => item.id !== itemId));
+    setSelectedIds(prevIds => {
+      const newIds = new Set(prevIds);
+      newIds.delete(itemId);
+      return newIds;
+    });
+  };
+
+  const handleConfirmBulkDelete = (itemIds: string[]) => {
+    console.log('Deleting students:', itemIds);
+    // Add your bulk delete logic here
+    // For now, just clear the selection and close modal
+    setSelectedIds(new Set());
+    setIsBulkDeleteModalOpen(false);
+    setItemsToDelete([]);
+  };
+
+  const handleCloseBulkDeleteModal = () => {
+    setIsBulkDeleteModalOpen(false);
+  };
+
+  const handleRestoreItem = (item: BulkDeleteItem) => {
+    // Add item back to itemsToDelete
+    setItemsToDelete(prevItems => [...prevItems, item]);
+    // Add item back to selectedIds
+    setSelectedIds(prevIds => {
+      const newIds = new Set(prevIds);
+      newIds.add(item.id);
+      return newIds;
+    });
+  };
+
+  const handleRestoreAll = (items: BulkDeleteItem[]) => {
+    // Add all items back to itemsToDelete
+    setItemsToDelete(prevItems => [...prevItems, ...items]);
+    // Add all items back to selectedIds
+    setSelectedIds(prevIds => {
+      const newIds = new Set(prevIds);
+      items.forEach(item => newIds.add(item.id));
+      return newIds;
+    });
   };
 
   // Check if there are active filters
@@ -2480,12 +2565,20 @@ export default function AllStudentsPage() {
       <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out mb-6">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
           {/* Left Section - Date and Filter */}
-          <div className="flex items-center gap-3 lg:flex-1">
+          <div className="flex items-center gap-2 sm:gap-3 lg:flex-1">
             {/* Date Range Picker */}
             <DateRangePicker onChange={handleDateRangeChange} resetKey={resetKey} />
 
             {/* Filter */}
             <FilterButton fields={filterFields} onFilterChange={handleFilterChange} resetKey={resetKey} />
+
+            {/* Delete All Button - Only show in table view when items are selected */}
+            {viewMode === "list" && selectedIds.size > 0 && (
+              <DeleteAllButton
+                selectedCount={selectedIds.size}
+                onDeleteAll={handleDeleteAll}
+              />
+            )}
 
             {/* Student Count Badge (Grid View Only) - Shown on all screens */}
             {viewMode === "grid" && (
@@ -2618,11 +2711,27 @@ export default function AllStudentsPage() {
                 onClearFilters={handleClearFilters}
                 hasActiveFilters={hasActiveFilters}
                 totalStudentsCount={students.length}
+                selectedIds={selectedIds}
+                onSelectionChange={setSelectedIds}
               />
             </div>
           )}
         </div>
       </div>
+
+      {/* Bulk Delete Modal */}
+      <BulkDeleteModal
+        isOpen={isBulkDeleteModalOpen}
+        onClose={handleCloseBulkDeleteModal}
+        onConfirm={handleConfirmBulkDelete}
+        items={itemsToDelete}
+        onRemoveItem={handleRemoveFromDeleteList}
+        onRestoreItem={handleRestoreItem}
+        onRestoreAll={handleRestoreAll}
+        title="Delete Students"
+        warningMessage="This will permanently remove these students and all associated data. This action cannot be undone."
+        confirmButtonText="Delete Students"
+      />
     </MainLayout>
   );
 }

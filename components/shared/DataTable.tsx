@@ -235,21 +235,24 @@ export default function DataTable<T>({
   return (
     <div className="w-full bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 shadow-lg rounded-xl md:rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 transition-all duration-300 overflow-visible">
       {/* Table Header */}
-      <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-t-xl md:rounded-t-2xl">
+      <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-2 sm:gap-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-t-xl md:rounded-t-2xl">
         <h2 className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-300 purple:text-pink-300 tracking-tight whitespace-nowrap">
           {title} {searchQuery && `(${sortedData.length})`}
         </h2>
 
-        {/* Search Bar */}
-        {showSearch && (
-          <SearchBar
-            value={searchQuery}
-            onChange={handleSearchChange}
-            placeholder={searchPlaceholder}
-            size="sm"
-            className="w-full sm:w-[45%] md:w-[35%]"
-          />
-        )}
+        {/* Right side actions */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
+          {/* Search Bar */}
+          {showSearch && (
+            <SearchBar
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder={searchPlaceholder}
+              size="sm"
+              className="w-full sm:w-[45%] md:w-[35%]"
+            />
+          )}
+        </div>
       </div>
 
       {/* Table Body Container */}

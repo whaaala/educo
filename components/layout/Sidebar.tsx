@@ -595,6 +595,16 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                     </div>
                   )}
                 </Link>
+                {/* Close button for mobile */}
+                {isMobile === true && (
+                  <button
+                    onClick={() => setIsMobileSidebarOpen(false)}
+                    className="lg:hidden flex items-center justify-center p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/10 midnight:hover:bg-red-500/10 purple:hover:bg-red-500/10 transition-all duration-200 hover:scale-110 cursor-pointer"
+                    title="Close sidebar"
+                  >
+                    <ChevronsLeft className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
+                  </button>
+                )}
                 {/* Collapse button - only show on desktop */}
                 {isMobile === false && (
                   <button

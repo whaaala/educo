@@ -6,6 +6,7 @@ import { MoreVertical, MessageCircle, Phone, Mail, DollarSign, Eye, Edit, Lock, 
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import CollectFeesModal from "@/components/shared/CollectFeesModal";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
+import Tooltip from "@/components/shared/Tooltip";
 
 interface StudentTableProps {
   students: Student[];
@@ -14,18 +15,30 @@ interface StudentTableProps {
   onClearFilters?: () => void;
   hasActiveFilters?: boolean;
   totalStudentsCount?: number;
+  selectedIds?: Set<string>;
+  onSelectionChange?: (selectedIds: Set<string>) => void;
 }
 
-export default function StudentTable({ students, isLoading = false, loadingMessage = "Loading...", onClearFilters, hasActiveFilters = false, totalStudentsCount }: StudentTableProps) {
+export default function StudentTable({ students, isLoading = false, loadingMessage = "Loading...", onClearFilters, hasActiveFilters = false, totalStudentsCount, selectedIds: externalSelectedIds, onSelectionChange }: StudentTableProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
   const [openMenuStudentId, setOpenMenuStudentId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
   const [menuPosition, setMenuPosition] = useState<'bottom' | 'top'>('bottom');
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Use external state if provided, otherwise use internal state
+  const selectedIds = externalSelectedIds ?? internalSelectedIds;
+  const updateSelectedIds = (newIds: Set<string>) => {
+    if (onSelectionChange) {
+      onSelectionChange(newIds);
+    } else {
+      setInternalSelectedIds(newIds);
+    }
+  };
 
   const handleAddFeesClick = (student: Student, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -35,9 +48,9 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedIds(new Set(students.map(s => s.id)));
+      updateSelectedIds(new Set(students.map(s => s.id)));
     } else {
-      setSelectedIds(new Set());
+      updateSelectedIds(new Set());
     }
   };
 
@@ -49,7 +62,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
     } else {
       newSelectedIds.delete(studentId);
     }
-    setSelectedIds(newSelectedIds);
+    updateSelectedIds(newSelectedIds);
   };
 
   const handleMenuToggle = (studentId: string, e: React.MouseEvent) => {
@@ -102,6 +115,15 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
     setStudentToDelete(null);
   };
 
+  const handleDeleteAll = () => {
+    if (selectedIds.size > 0) {
+      console.log('Deleting students:', Array.from(selectedIds));
+      // Add your bulk delete logic here
+      // After deletion, clear the selected IDs
+      updateSelectedIds(new Set());
+    }
+  };
+
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -123,12 +145,11 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
   const columns: ColumnConfig<Student>[] = [
     {
       key: "index",
-      label: "ID",
+      label: "",
       sortable: false,
-      hidden: { desktop: true },
-      className: "text-left w-12",
+      className: "text-center w-[3%]",
       render: (student) => (
-        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
           <input
             type="checkbox"
             checked={selectedIds.has(student.id)}
@@ -139,7 +160,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       ),
       searchable: false,
       renderHeader: () => (
-        <div className="flex items-center justify-start" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
           <div className="relative">
             <input
               type="checkbox"
@@ -161,7 +182,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Admission No",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left pl-6 w-[11%]",
+      className: "text-left w-[10%]",
       render: (student) => (
         <span className="text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 block cursor-pointer whitespace-nowrap">
           {student.id}
@@ -173,7 +194,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Roll No",
       sortable: true,
       hidden: { mobile: true },
-      className: "text-left w-[7%]",
+      className: "text-left w-[6%]",
       render: (student) => (
         <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
           {student.rollNo}
@@ -220,9 +241,19 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 midnight:from-cyan-400 midnight:via-purple-400 midnight:to-cyan-400 purple:from-pink-400 purple:via-purple-400 purple:to-pink-400 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
             </div>
           )}
-          <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 truncate">
-            {student.name}
-          </span>
+          <Tooltip content={student.name}>
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 truncate">
+              {(() => {
+                const nameParts = student.name.split(' ');
+                if (nameParts.length > 1) {
+                  const firstName = nameParts[0];
+                  const lastInitial = nameParts[nameParts.length - 1].charAt(0);
+                  return `${firstName} ${lastInitial}`;
+                }
+                return student.name;
+              })()}
+            </span>
+          </Tooltip>
         </div>
       ),
     },
@@ -274,7 +305,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "status",
       label: "Status",
       sortable: true,
-      className: "text-left w-[9%]",
+      className: "text-left w-[8%] pr-28",
       render: (student) => (
         <div className="flex items-center justify-start">
           <span
@@ -294,7 +325,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Date of Join",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left w-[11%]",
+      className: "text-left w-[10%]",
       render: (student) => (
         <span className="text-sm font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 whitespace-nowrap">
           {student.joinedOn}
@@ -305,9 +336,9 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "actions",
       label: "Action",
       sortable: false,
-      className: "text-left w-[20%]",
+      className: "text-left w-[24%]",
       render: (student) => (
-        <div className="flex items-center justify-start gap-1 xl:gap-1.5">
+        <div className="flex items-center justify-start gap-1 xl:gap-1.5 ml-[0.7rem] md:ml-0">
           <button
             className="p-0.5 xl:p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer"
             title="Message"
