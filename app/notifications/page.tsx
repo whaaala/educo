@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import { Trash2, CheckCheck } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
+import PageLoader from "@/components/shared/PageLoader";
 import NotificationCard from "@/components/notifications/NotificationCard";
+import { usePageLoad } from "@/hooks/usePageLoad";
 
 interface Notification {
   id: string;
@@ -121,6 +123,7 @@ export default function NotificationsPage() {
   const [notificationList, setNotificationList] = useState(notifications);
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [isMounted, setIsMounted] = useState(false);
+  const isLoading = usePageLoad(600);
 
   useEffect(() => {
     setIsMounted(true);
@@ -170,9 +173,14 @@ export default function NotificationsPage() {
 
   return (
     <MainLayout>
-      <>
-        {/* Header */}
-        <div className="w-full pl-8 pr-4 sm:pl-10 sm:pr-6 lg:pl-12 lg:pr-8 pt-0 pb-2 mb-4">
+      {/* Loading Screen */}
+      <PageLoader isLoading={isLoading} loadingText="Loading Notifications" />
+
+      {/* Main Content - Fades in after loading */}
+      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+        <>
+          {/* Header */}
+          <div className="w-full pl-8 pr-4 sm:pl-10 sm:pr-6 lg:pl-12 lg:pr-8 pt-0 pb-2 mb-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
           Notifications
         </h1>
@@ -267,7 +275,8 @@ export default function NotificationsPage() {
           )}
         </div>
       </div>
-      </>
+        </>
+      </div>
     </MainLayout>
   );
 }

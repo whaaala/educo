@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 interface BreadcrumbItem {
   label: string;
   href?: string;
@@ -29,10 +31,13 @@ export default function PageHeader({
               <span className="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium">
                 {item.label}
               </span>
-            ) : index === 0 ? (
-              <span className="hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">
+            ) : item.href ? (
+              <Link
+                href={item.href}
+                className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors"
+              >
                 {item.label}
-              </span>
+              </Link>
             ) : (
               <span>
                 {item.label}

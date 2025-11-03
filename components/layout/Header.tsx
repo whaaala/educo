@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Moon, Sun, Maximize2, MessageCircle, ChevronDown, Menu } from "lucide-react";
 import UserMenu from "./UserMenu";
 import NotificationDropdown from "./NotificationDropdown";
@@ -14,6 +15,7 @@ interface HeaderProps {
 }
 
 export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
+  const router = useRouter();
   const { theme, cycleTheme } = useTheme();
   const academicYearContext = useAcademicYear();
   const { selectedYear, setSelectedYear, academicYears } = academicYearContext;
@@ -297,7 +299,7 @@ export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: 
                   <button
                     onClick={() => {
                       setIsAddNewOpen(false);
-                      console.log("Add Student");
+                      router.push("/students/add");
                     }}
                     className="group relative flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-br from-blue-100 via-indigo-50 to-blue-50 dark:from-blue-600/25 dark:via-indigo-600/20 dark:to-blue-500/15 midnight:from-blue-500/30 midnight:via-cyan-500/25 midnight:to-blue-400/20 purple:from-blue-500/25 purple:via-indigo-500/20 purple:to-blue-400/15 hover:shadow-lg hover:shadow-blue-500/20 dark:hover:shadow-blue-400/15 midnight:hover:shadow-cyan-400/20 purple:hover:shadow-indigo-400/15 hover:scale-105 transition-all duration-150 border border-blue-200/50 dark:border-blue-500/20 midnight:border-cyan-400/25 purple:border-indigo-400/25 hover:border-blue-400 dark:hover:border-blue-400/40 midnight:hover:border-cyan-300/40 purple:hover:border-indigo-300/40 cursor-pointer"
                   >

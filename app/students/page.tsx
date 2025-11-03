@@ -13,12 +13,14 @@ import ViewToggle from "@/components/shared/ViewToggle";
 import PageHeader from "@/components/shared/PageHeader";
 import PageActions from "@/components/shared/PageActions";
 import PageSpinner from "@/components/shared/PageSpinner";
+import PageLoader from "@/components/shared/PageLoader";
 import DeleteAllButton from "@/components/shared/DeleteAllButton";
 import BulkDeleteModal, { BulkDeleteItem } from "@/components/shared/BulkDeleteModal";
 import { useAcademicYear } from "@/contexts/AcademicYearContext";
 import { filterStudentsByAcademicYear } from "@/utils/academicYear";
 import { exportStudentsToPDF } from "@/utils/pdfExport";
 import { exportStudentsToExcel } from "@/utils/excelExport";
+import { usePageLoad } from "@/hooks/usePageLoad";
 
 // Sample data
 const sampleStudents: Student[] = [
@@ -1745,6 +1747,7 @@ export default function AllStudentsPage() {
   const { selectedYear } = academicYearContext;
   const searchParams = useSearchParams();
   const router = useRouter();
+  const isPageLoading = usePageLoad(600);
 
   // Get view mode from URL, default to grid
   const urlView = searchParams.get("view");
@@ -2473,6 +2476,11 @@ export default function AllStudentsPage() {
     exportStudentsToExcel(filteredStudents, filename);
   };
 
+  const handleAddStudent = () => {
+    // Navigate to Add Student page
+    router.push('/students/add');
+  };
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -2626,13 +2634,18 @@ export default function AllStudentsPage() {
 
   return (
     <MainLayout>
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-0 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
+      {/* Loading Screen */}
+      <PageLoader isLoading={isPageLoading} loadingText="Loading Students" />
+
+      {/* Main Content - Fades in after loading */}
+      <div className={`transition-opacity duration-500 ${isPageLoading ? 'opacity-0' : 'opacity-100'}`}>
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-0 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
         {/* Left Section - Title and Breadcrumb */}
         <PageHeader
           title="Students"
           breadcrumbs={[
-            { label: "Dashboard" },
+            { label: "Dashboard", href: "/" },
             { label: "Peoples" },
             { label: viewMode === "grid" ? "Students Grid" : "Students Table", isActive: true },
           ]}
@@ -2641,6 +2654,7 @@ export default function AllStudentsPage() {
         {/* Right Section - Action Buttons */}
         <PageActions
           addButtonLabel="Add Student"
+          onAdd={handleAddStudent}
           onRefresh={handleRefresh}
           onPrint={handlePrint}
           onExportPDF={handleExportPDF}
@@ -2867,19 +2881,20 @@ export default function AllStudentsPage() {
         </div>
       </div>
 
-      {/* Bulk Delete Modal */}
-      <BulkDeleteModal
-        isOpen={isBulkDeleteModalOpen}
-        onClose={handleCloseBulkDeleteModal}
-        onConfirm={handleConfirmBulkDelete}
-        items={itemsToDelete}
-        onRemoveItem={handleRemoveFromDeleteList}
-        onRestoreItem={handleRestoreItem}
-        onRestoreAll={handleRestoreAll}
-        title="Delete Students"
-        warningMessage="This will permanently remove these students and all associated data. This action cannot be undone."
-        confirmButtonText="Delete Students"
-      />
+        {/* Bulk Delete Modal */}
+        <BulkDeleteModal
+          isOpen={isBulkDeleteModalOpen}
+          onClose={handleCloseBulkDeleteModal}
+          onConfirm={handleConfirmBulkDelete}
+          items={itemsToDelete}
+          onRemoveItem={handleRemoveFromDeleteList}
+          onRestoreItem={handleRestoreItem}
+          onRestoreAll={handleRestoreAll}
+          title="Delete Students"
+          warningMessage="This will permanently remove these students and all associated data. This action cannot be undone."
+          confirmButtonText="Delete Students"
+        />
+      </div>
     </MainLayout>
   );
 }
