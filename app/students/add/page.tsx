@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
 import PageHeader from "@/components/shared/PageHeader";
@@ -16,11 +16,62 @@ import MedicalHistorySection from "@/components/students/form-sections/MedicalHi
 import PreviousSchoolSection from "@/components/students/form-sections/PreviousSchoolSection";
 import OtherDetailsSection from "@/components/students/form-sections/OtherDetailsSection";
 import { usePageLoad } from "@/hooks/usePageLoad";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 export default function AddStudentPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isLoading = usePageLoad(800);
+  const { isCollapsed } = useSidebar();
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+  const [isSticky, setIsSticky] = useState(true);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const buttonsRef = useRef<HTMLDivElement | null>(null);
+
+  // Handle responsive layout
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsLargeScreen(window.innerWidth >= 1024);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Handle sticky behavior based on scroll position
+  useEffect(() => {
+    const mainElement = document.querySelector('main');
+
+    const handleScroll = () => {
+      if (!formRef.current || !buttonsRef.current || !mainElement) return;
+
+      const formRect = formRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      const buttonsHeight = buttonsRef.current.offsetHeight;
+
+      // Check if we've scrolled enough that the form bottom would be visible
+      // When form bottom is visible in viewport (accounting for button height), switch to relative
+      if (formRect.bottom <= viewportHeight - buttonsHeight + 16) {
+        setIsSticky(false);
+      } else {
+        setIsSticky(true);
+      }
+    };
+
+    if (mainElement) {
+      mainElement.addEventListener('scroll', handleScroll);
+      handleScroll(); // Check initial state
+    }
+
+    return () => {
+      if (mainElement) {
+        mainElement.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, []);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -165,63 +216,73 @@ export default function AddStudentPage() {
           />
         </div>
 
-        <div className="pb-20">
         {/* Form */}
         <form
+          ref={formRef}
           onSubmit={handleSubmit}
-          className="space-y-6"
+          className="space-y-6 pb-32"
         >
-        {/* Personal Information */}
-        <PersonalInformationSection
-          formData={formData}
-          onChange={handleChange}
-        />
+          {/* Personal Information */}
+          <PersonalInformationSection
+            formData={formData}
+            onChange={handleChange}
+          />
 
-        {/* Parents & Guardian Information */}
-        <ParentsGuardianSection formData={formData} onChange={handleChange} />
+          {/* Parents & Guardian Information */}
+          <ParentsGuardianSection formData={formData} onChange={handleChange} />
 
-        {/* Siblings */}
-        <SiblingsSection formData={formData} onChange={handleChange} />
+          {/* Siblings */}
+          <SiblingsSection formData={formData} onChange={handleChange} />
 
-        {/* Address */}
-        <AddressSection formData={formData} onChange={handleChange} />
+          {/* Address */}
+          <AddressSection formData={formData} onChange={handleChange} />
 
-        {/* Transport Information */}
-        <TransportSection formData={formData} onChange={handleChange} />
+          {/* Transport Information */}
+          <TransportSection formData={formData} onChange={handleChange} />
 
-        {/* Hostel Information */}
-        <HostelSection formData={formData} onChange={handleChange} />
+          {/* Hostel Information */}
+          <HostelSection formData={formData} onChange={handleChange} />
 
-        {/* Documents & Certificates */}
-        <DocumentsSection formData={formData} onChange={handleChange} />
+          {/* Documents & Certificates */}
+          <DocumentsSection formData={formData} onChange={handleChange} />
 
-        {/* Medical History */}
-        <MedicalHistorySection formData={formData} onChange={handleChange} />
+          {/* Medical History */}
+          <MedicalHistorySection formData={formData} onChange={handleChange} />
 
-        {/* Previous School Details */}
-        <PreviousSchoolSection formData={formData} onChange={handleChange} />
+          {/* Previous School Details */}
+          <PreviousSchoolSection formData={formData} onChange={handleChange} />
 
-        {/* Other Details */}
-        <OtherDetailsSection formData={formData} onChange={handleChange} />
+          {/* Other Details */}
+          <OtherDetailsSection formData={formData} onChange={handleChange} />
+        </form>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 sticky bottom-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 px-4 sm:px-6 py-4 -mx-4 sm:-mx-6 shadow-lg">
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-all duration-200"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-          >
-            {isSubmitting ? "Adding Student..." : "Add Student"}
-          </button>
-        </div>
-      </form>
+        {/* Action Buttons - Sticky to bottom until form ends */}
+        <div
+          ref={buttonsRef}
+          className={`${isSticky ? 'fixed' : 'relative'} bottom-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-t-xl shadow-lg backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 py-4 px-6 z-50`}
+          style={isSticky ? {
+            left: isLargeScreen ? `calc(${isCollapsed ? '5rem' : '18rem'} + 2rem)` : '1rem',
+            right: isLargeScreen ? '2rem' : '1rem',
+            transition: 'left 500ms, right 0ms'
+          } : undefined}
+        >
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-all duration-200"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              onClick={handleSubmit}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+            >
+              {isSubmitting ? "Adding Student..." : "Add Student"}
+            </button>
+          </div>
         </div>
       </div>
     </MainLayout>

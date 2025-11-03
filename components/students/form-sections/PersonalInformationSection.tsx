@@ -71,7 +71,7 @@ export default function PersonalInformationSection({
             </p>
           </div>
         </div>
-        <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400">
+        <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 cursor-pointer">
           {isExpanded ? (
             <ChevronUp className="w-4 h-4" />
           ) : (
