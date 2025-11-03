@@ -21,6 +21,7 @@ import {
   ClipboardList,
   Boxes,
   Briefcase,
+  Globe,
 } from "lucide-react";
 
 // Custom Naira Icon Component
@@ -111,6 +112,8 @@ const menuItems: MenuItem[] = [
     label: "Settings",
     icon: <Settings className="w-5 h-5" />,
     children: [
+      { id: "overview", label: "Settings Overview", icon: <Settings className="w-4 h-4" />, href: "/settings" },
+      { id: "regional", label: "Regional Settings", icon: <Globe className="w-4 h-4" />, href: "/settings" },
       { id: "general", label: "General Settings", icon: <Settings className="w-4 h-4" />, href: "/settings/general" },
       { id: "schools", label: "Schools & Branches", icon: <Home className="w-4 h-4" />, href: "/settings/schools" },
       { id: "users", label: "User Management", icon: <Users className="w-4 h-4" />, href: "/settings/users" },

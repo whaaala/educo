@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AcademicYearProvider } from "@/contexts/AcademicYearContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
+import { CountryProvider } from "@/contexts/CountryContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,11 +28,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] transition-colors duration-300`}
       >
         <ThemeProvider>
-          <AcademicYearProvider>
-            <SidebarProvider>
-              {children}
-            </SidebarProvider>
-          </AcademicYearProvider>
+          <CountryProvider>
+            <AcademicYearProvider>
+              <SidebarProvider>
+                {children}
+              </SidebarProvider>
+            </AcademicYearProvider>
+          </CountryProvider>
         </ThemeProvider>
       </body>
     </html>

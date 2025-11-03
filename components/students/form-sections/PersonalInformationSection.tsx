@@ -22,6 +22,8 @@ import FileUpload from "@/components/shared/FileUpload";
 import TagInput from "@/components/shared/TagInput";
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
+import { getLanguageOptions, getEducationalLevels, getBloodGroups, getReligions } from "@/config/countries";
+import { useCountry } from "@/contexts/CountryContext";
 
 interface PersonalInformationSectionProps {
   formData: any;
@@ -33,26 +35,23 @@ export default function PersonalInformationSection({
   onChange,
 }: PersonalInformationSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const { countryCode } = useCountry();
 
   // Sample data for dropdowns
   const academicYears = ["2024/2025", "2025/2026"].map(year => ({ value: year, label: year }));
   const statuses = ["Active", "Inactive", "Alumni", "Transferred"].map(s => ({ value: s, label: s }));
-  const classes = [
-    "Primary 1", "Primary 2", "Primary 3", "Primary 4", "Primary 5", "Primary 6",
-    "JSS 1", "JSS 2", "JSS 3",
-    "SS 1", "SS 2", "SS 3"
-  ].map(c => ({ value: c, label: c }));
+  const classes = getEducationalLevels(countryCode);
   const sections = ["A", "B", "C", "D"].map(s => ({ value: s, label: s }));
   const genders = ["Male", "Female", "Other"].map(g => ({ value: g, label: g }));
-  const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => ({ value: bg, label: bg }));
+  const bloodGroups = getBloodGroups(countryCode);
   const houses = ["Mandela House", "Nyerere House", "Azikiwe House", "Lumumba House"].map(h => ({ value: h, label: h }));
-  const religions = ["Christianity", "Islam", "Traditional", "Other"].map(r => ({ value: r, label: r }));
+  const religions = getReligions(countryCode);
   const categories = ["General", "OBC", "SC", "ST", "Other"].map(c => ({ value: c, label: c }));
-  const motherTongues = ["English", "Yoruba", "Hausa", "Igbo", "Swahili", "French", "Arabic"].map(l => ({ value: l, label: l }));
-  const languageOptions = ["English", "French", "Yoruba", "Hausa", "Igbo", "Swahili", "Arabic", "Spanish"];
+  const motherTongues = getLanguageOptions(countryCode);
+  const languageOptions = getLanguageOptions(countryCode).map(opt => opt.value);
 
   return (
-    <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
+    <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
       {/* Collapsible Header */}
       <button
         type="button"
@@ -83,29 +82,33 @@ export default function PersonalInformationSection({
 
       {/* Collapsible Content */}
       {isExpanded && (
-        <div className="p-6 space-y-8 animate-in fade-in duration-200">
+        <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10 animate-in fade-in duration-200">
           {/* Profile Photo Upload */}
           <div>
             <FileUpload
               value={formData.profilePhoto}
               onChange={(file) => onChange("profilePhoto", file)}
               helpText="Upload image size 4MB, Format JPG, PNG, SVG"
+              circular
+              compact
             />
           </div>
 
           {/* Academic Details Section */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
-              <GraduationCap className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
+                <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                 Academic Details
               </h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
               <FormDropdown
                 label="Academic Year"
                 icon={<Calendar className="w-full h-full" />}
-                value={formData.academicYear || ""}
+                value={formData.academicYear || "2024/2025"}
                 onChange={(value) => onChange("academicYear", value)}
                 options={academicYears}
                 placeholder="Select year"
@@ -123,7 +126,7 @@ export default function PersonalInformationSection({
                 icon={<Calendar className="w-full h-full" />}
                 value={formData.admissionDate || ""}
                 onChange={(value) => onChange("admissionDate", value)}
-                type="text"
+                type="date"
                 placeholder="YYYY-MM-DD"
               />
               <FormInput
@@ -137,7 +140,7 @@ export default function PersonalInformationSection({
               <FormDropdown
                 label="Status"
                 icon={<BadgeCheck className="w-full h-full" />}
-                value={formData.status || ""}
+                value={formData.status || "Active"}
                 onChange={(value) => onChange("status", value)}
                 options={statuses}
                 placeholder="Select status"
@@ -147,13 +150,15 @@ export default function PersonalInformationSection({
 
           {/* Personal Details Section */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
-              <User className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
+                <User className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                 Personal Details
               </h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
               <FormInput
                 label="First Name"
                 icon={<User className="w-full h-full" />}
@@ -194,8 +199,6 @@ export default function PersonalInformationSection({
                 options={sections}
                 placeholder="Select section"
               />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <FormDropdown
                 label="Gender"
                 icon={<Users className="w-full h-full" />}
@@ -209,7 +212,7 @@ export default function PersonalInformationSection({
                 icon={<Calendar className="w-full h-full" />}
                 value={formData.dateOfBirth || ""}
                 onChange={(value) => onChange("dateOfBirth", value)}
-                type="text"
+                type="date"
                 placeholder="YYYY-MM-DD"
               />
               <FormDropdown
@@ -236,8 +239,6 @@ export default function PersonalInformationSection({
                 options={religions}
                 placeholder="Select religion"
               />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <FormDropdown
                 label="Category"
                 icon={<Tag className="w-full h-full" />}
@@ -267,13 +268,15 @@ export default function PersonalInformationSection({
 
           {/* Contact Information Section */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
-              <Phone className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
+                <Phone className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                 Contact Information
               </h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
               <FormInput
                 label="Primary Contact Number"
                 icon={<Phone className="w-full h-full" />}
@@ -303,13 +306,15 @@ export default function PersonalInformationSection({
 
           {/* Language Proficiency Section */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
-              <Languages className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
+                <Languages className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                 Language Proficiency
               </h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
               <FormDropdown
                 label="Mother Tongue"
                 icon={<Languages className="w-full h-full" />}

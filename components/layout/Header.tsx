@@ -8,6 +8,7 @@ import NotificationDropdown from "./NotificationDropdown";
 import SearchBar from "@/components/shared/SearchBar";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAcademicYear } from "@/contexts/AcademicYearContext";
+import { useCountry } from "@/contexts/CountryContext";
 
 interface HeaderProps {
   isMobileSidebarOpen: boolean;
@@ -19,6 +20,7 @@ export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: 
   const { theme, cycleTheme } = useTheme();
   const academicYearContext = useAcademicYear();
   const { selectedYear, setSelectedYear, academicYears } = academicYearContext;
+  const { countryConfig } = useCountry();
 
   const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
@@ -28,20 +30,60 @@ export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: 
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const addNewRef = useRef<HTMLDivElement>(null);
 
-  // Language options
-  const languages = [
-    { symbol: "🌐", name: "English", region: "Nationwide", note: "Official & educational language" },
-    { symbol: "💬", name: "Nigerian Pidgin", region: "Nationwide", note: "Informal lingua franca" },
-    { symbol: "🟡", name: "Hausa", region: "North", note: "Widely spoken trade language" },
-    { symbol: "🟢", name: "Yoruba", region: "Southwest", note: "Major cultural and urban language" },
-    { symbol: "🔴", name: "Igbo", region: "Southeast", note: "Vibrant regional and diaspora language" }
-  ];
+  // Language icons mapping
+  const languageIcons: Record<string, string> = {
+    "English": "🌍",
+    "Nigerian Pidgin": "💬",
+    "Ghanaian Pidgin": "💬",
+    "Kenyan Pidgin": "💬",
+    "South African Pidgin": "💬",
+    "Tanzanian Pidgin": "💬",
+    "Ugandan Pidgin": "💬",
+    "Hausa": "🟡",
+    "Yoruba": "🟢",
+    "Igbo": "🔴",
+    "Swahili": "🔵",
+    "Zulu": "🟣",
+    "Xhosa": "🟠",
+    "Akan": "💚",
+    "Ewe": "💙",
+    "French": "🗼",
+    "Spanish": "🎭",
+    "German": "🎼",
+    "Italian": "🎨",
+    "Portuguese": "⚓",
+    "Dutch": "🌷",
+    "Swedish": "❄️",
+    "Polish": "🦅",
+    "Irish": "☘️",
+    "Afrikaans": "🦁",
+    "Arabic": "☪️",
+    "Amharic": "🟤",
+  };
+
+  // Generate language options dynamically from country config
+  const languages = countryConfig.languages.common.slice(0, 5).map((lang) => ({
+    symbol: languageIcons[lang] || "🌐",
+    name: lang,
+    region: countryConfig.languages.official.includes(lang) ? "Official" : "Common",
+    note: countryConfig.languages.official.includes(lang) ? "Official language" : "Widely spoken"
+  }));
 
   const [selectedLanguage, setSelectedLanguage] = useState({
-    symbol: "🌐",
-    name: "English",
-    region: "Nationwide"
+    symbol: languageIcons[countryConfig.languages.official[0]] || "🌐",
+    name: countryConfig.languages.official[0] || "English",
+    region: "Official"
   });
+
+  // Update selected language when country changes
+  useEffect(() => {
+    const firstOfficialLang = countryConfig.languages.official[0] || "English";
+    setSelectedLanguage({
+      symbol: languageIcons[firstOfficialLang] || "🌐",
+      name: firstOfficialLang,
+      region: "Official"
+    });
+  }, [countryConfig]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {

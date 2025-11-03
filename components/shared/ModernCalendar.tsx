@@ -142,7 +142,7 @@ export default function ModernCalendar({ value, onChange, onClose }: ModernCalen
         <button
           type="button"
           onClick={handlePrevMonth}
-          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
         >
           <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
         </button>
@@ -171,7 +171,7 @@ export default function ModernCalendar({ value, onChange, onClose }: ModernCalen
                       handleMonthChange(index);
                       setIsMonthDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
                       currentDate.getMonth() === index
                         ? 'bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400'
                         : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20'
@@ -206,7 +206,7 @@ export default function ModernCalendar({ value, onChange, onClose }: ModernCalen
                       handleYearChange(year);
                       setIsYearDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
                       currentDate.getFullYear() === year
                         ? 'bg-purple-50 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400'
                         : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-purple-900/20 purple:hover:bg-pink-900/20'
@@ -223,7 +223,7 @@ export default function ModernCalendar({ value, onChange, onClose }: ModernCalen
         <button
           type="button"
           onClick={handleNextMonth}
-          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
         >
           <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
         </button>
@@ -253,7 +253,7 @@ export default function ModernCalendar({ value, onChange, onClose }: ModernCalen
               type="button"
               onClick={() => handleDateSelect(dayInfo.date)}
               className={`
-                relative h-9 w-full flex items-center justify-center text-sm font-medium rounded-full transition-all duration-150
+                relative h-9 w-full flex items-center justify-center text-sm font-medium rounded-full transition-all duration-150 cursor-pointer
                 ${!dayInfo.isCurrentMonth
                   ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-300/30 purple:text-pink-300/30 hover:bg-gray-50 dark:hover:bg-gray-800"
                   : "text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100"
@@ -284,14 +284,14 @@ export default function ModernCalendar({ value, onChange, onClose }: ModernCalen
             onChange(formattedDate);
             onClose();
           }}
-          className="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 rounded-lg transition-colors"
+          className="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 rounded-lg transition-colors cursor-pointer"
         >
           Today
         </button>
         <button
           type="button"
           onClick={onClose}
-          className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-lg transition-colors"
+          className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-lg transition-colors cursor-pointer"
         >
           Clear
         </button>
