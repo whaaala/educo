@@ -2014,6 +2014,8 @@ export default function AllStudentsPage() {
     setDateRange(null);
     setFilters({});
     setSortOption("ascending");
+    // Clear all selected checkboxes
+    setSelectedIds(new Set());
     // Increment resetKey to trigger reset in FilterButton and SortButton
     setResetKey(prev => prev + 1);
     // Delay to allow exit animation

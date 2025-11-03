@@ -151,14 +151,14 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "index",
       label: "",
       sortable: false,
-      className: "text-center w-[8%] md:w-[2%]",
+      className: "text-center w-[5%] md:w-[2%]",
       render: (student) => (
         <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
           <input
             type="checkbox"
             checked={selectedIds.has(student.id)}
             onChange={(e) => handleSelectRow(student.id, e)}
-            className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 dark:text-blue-500 midnight:text-cyan-500 purple:text-pink-500 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 cursor-pointer transition-all duration-200 hover:border-blue-500 dark:hover:border-blue-400 midnight:hover:border-cyan-400 purple:hover:border-pink-400"
+            className="w-3.5 h-3.5 md:w-4 md:h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 dark:text-blue-500 midnight:text-cyan-500 purple:text-pink-500 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 cursor-pointer transition-all duration-200 hover:border-blue-500 dark:hover:border-blue-400 midnight:hover:border-cyan-400 purple:hover:border-pink-400"
           />
         </div>
       ),
@@ -175,7 +175,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
                 }
               }}
               onChange={handleSelectAll}
-              className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 dark:text-blue-500 midnight:text-cyan-500 purple:text-pink-500 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 cursor-pointer transition-all duration-200 hover:border-blue-500 dark:hover:border-blue-400 midnight:hover:border-cyan-400 purple:hover:border-pink-400"
+              className="w-3.5 h-3.5 md:w-4 md:h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 dark:text-blue-500 midnight:text-cyan-500 purple:text-pink-500 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 cursor-pointer transition-all duration-200 hover:border-blue-500 dark:hover:border-blue-400 midnight:hover:border-cyan-400 purple:hover:border-pink-400"
             />
           </div>
         </div>
@@ -209,9 +209,9 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "name",
       label: "Name",
       sortable: true,
-      className: "text-left w-[35%] md:w-[15%]",
+      className: "text-left w-[38%] md:w-[15%]",
       render: (student) => (
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-1.5 md:gap-2.5 min-w-0">
           {student.avatar ? (
             <div
               className="relative cursor-pointer group/avatar flex-shrink-0"
@@ -223,7 +223,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
               <img
                 src={student.avatar}
                 alt={student.name}
-                className="w-8 h-8 xl:w-9 xl:h-9 rounded-full object-cover shrink-0 ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
+                className="w-7 h-7 md:w-8 md:h-8 xl:w-9 xl:h-9 rounded-full object-cover shrink-0 ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
                 style={{ position: 'relative', transformOrigin: 'center center' }}
               />
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 midnight:from-cyan-400 midnight:via-purple-400 midnight:to-cyan-400 purple:from-pink-400 purple:via-purple-400 purple:to-pink-400 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
@@ -237,7 +237,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
               }}
             >
               <div
-                className="w-8 h-8 xl:w-9 xl:h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-lg ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
+                className="w-7 h-7 md:w-8 md:h-8 xl:w-9 xl:h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs md:text-sm font-bold shrink-0 shadow-lg ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
                 style={{ position: 'relative', transformOrigin: 'center center' }}
               >
                 {student.name.charAt(0)}
@@ -317,11 +317,11 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "status",
       label: "Status",
       sortable: true,
-      className: "text-left w-[20%] md:w-[8%]",
+      className: "text-left w-[18%] md:w-[8%]",
       render: (student) => (
         <div className="flex items-center justify-start">
           <span
-            className={`inline-flex items-center justify-center px-3 xl:px-3.5 py-1.5 xl:py-2 rounded-full text-xs xl:text-sm font-semibold shadow-sm transition-all duration-300 whitespace-nowrap ${
+            className={`inline-flex items-center justify-center px-2 md:px-3 xl:px-3.5 py-1 md:py-1.5 xl:py-2 rounded-full text-[10px] md:text-xs xl:text-sm font-semibold shadow-sm transition-all duration-300 whitespace-nowrap ${
               student.status === "Active"
                 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 midnight:bg-green-500/20 midnight:text-green-300 purple:bg-green-500/20 purple:text-green-300"
                 : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 midnight:bg-red-500/20 midnight:text-red-300 purple:bg-red-500/20 purple:text-red-300"
@@ -348,9 +348,9 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "actions",
       label: "Action",
       sortable: false,
-      className: "text-left w-[37%] md:w-[25%] lg:w-[20%] !overflow-visible",
+      className: "text-left w-[39%] md:w-[25%] lg:w-[20%] !overflow-visible",
       render: (student) => (
-        <div className="flex items-center justify-start gap-0.5 md:gap-1 lg:gap-1.5 xl:gap-2 pr-1 md:pr-2">
+        <div className="flex items-center justify-start gap-0.5 md:gap-1 lg:gap-1.5 xl:gap-2 pr-0.5 md:pr-2">
           <div className="relative group/msg flex-shrink-0">
             <button
               className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
@@ -359,7 +359,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
                 console.log("Message", student.id);
               }}
             >
-              <MessageCircle className="w-4 h-4 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/msg:text-blue-600 dark:group-hover/msg:text-blue-400 transition-colors" />
+              <MessageCircle className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/msg:text-blue-600 dark:group-hover/msg:text-blue-400 transition-colors" />
             </button>
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
               <NameLabel name="Message" variant="compact" />
@@ -373,7 +373,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
                 console.log("Call", student.id);
               }}
             >
-              <Phone className="w-4 h-4 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/call:text-green-600 dark:group-hover/call:text-green-400 transition-colors" />
+              <Phone className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/call:text-green-600 dark:group-hover/call:text-green-400 transition-colors" />
             </button>
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/call:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
               <NameLabel name="Call" variant="compact" />
@@ -387,19 +387,20 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
                 console.log("Email", student.id);
               }}
             >
-              <Mail className="w-4 h-4 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/email:text-purple-600 dark:group-hover/email:text-purple-400 transition-colors" />
+              <Mail className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/email:text-purple-600 dark:group-hover/email:text-purple-400 transition-colors" />
             </button>
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/email:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
               <NameLabel name="Email" variant="compact" />
             </div>
           </div>
-          <div className="w-px md:w-0.5 lg:w-1"></div>
+          <div className="w-px md:w-0.5 lg:w-1 hidden md:block"></div>
           <div className="relative group/addfees flex-shrink-0">
             <AddFeesButton
               onClick={(e) => handleAddFeesClick(student, e)}
               currency="₦"
               label="Add Fees"
-              size="md"
+              size="sm"
+              className="md:!px-3 md:!py-1.5 md:!text-xs"
             />
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/addfees:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
               <NameLabel name="Add Fees" variant="compact" />
@@ -416,7 +417,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
               title="More"
               onClick={(e) => handleMenuToggle(student.id, e)}
             >
-              <MoreVertical className="w-4 h-4 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors" />
+              <MoreVertical className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors" />
             </button>
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/more:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
               <NameLabel name="More" variant="compact" />
