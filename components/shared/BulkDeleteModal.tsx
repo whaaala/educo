@@ -1,7 +1,7 @@
 "use client";
 
 import { X, AlertTriangle, Search, ArrowUpAZ, ArrowDownZA, Undo2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export interface BulkDeleteItem {
   id: string;
@@ -41,6 +41,19 @@ export default function BulkDeleteModal({
   const [initialItemCount, setInitialItemCount] = useState(0);
   const [removedItems, setRemovedItems] = useState<BulkDeleteItem[]>([]);
   const [showRemovedItems, setShowRemovedItems] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Scroll modal into view when it opens
+  useEffect(() => {
+    if (isOpen && modalRef.current) {
+      setTimeout(() => {
+        modalRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }, 100);
+    }
+  }, [isOpen]);
 
   // Track initial item count when modal opens
   useEffect(() => {
@@ -142,6 +155,7 @@ export default function BulkDeleteModal({
   return (
     <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div
+        ref={modalRef}
         className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md max-h-[calc(100vh-3rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >

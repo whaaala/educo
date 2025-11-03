@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -28,6 +28,21 @@ export default function DeleteConfirmationModal({
   confirmButtonText = "Delete",
   cancelButtonText = "Cancel",
 }: DeleteConfirmationModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Scroll modal into view when it opens
+  useEffect(() => {
+    if (isOpen && modalRef.current) {
+      // Small delay to ensure modal is rendered
+      setTimeout(() => {
+        modalRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }, 100);
+    }
+  }, [isOpen]);
+
   // Close on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -53,6 +68,7 @@ export default function DeleteConfirmationModal({
     >
       {/* Modal Content */}
       <div
+        ref={modalRef}
         className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md flex flex-col animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >

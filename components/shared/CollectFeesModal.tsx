@@ -55,12 +55,25 @@ export default function CollectFeesModal({
   const [showCalendar, setShowCalendar] = useState(false);
   const [mounted, setMounted] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   // Handle mounting for portal
   useEffect(() => {
     setMounted(true);
     return () => setMounted(false);
   }, []);
+
+  // Scroll modal into view when it opens
+  useEffect(() => {
+    if (isOpen && modalRef.current) {
+      setTimeout(() => {
+        modalRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }, 100);
+    }
+  }, [isOpen]);
 
   // Close calendar when clicking outside
   useEffect(() => {
@@ -99,7 +112,7 @@ export default function CollectFeesModal({
 
   const modalContent = (
     <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/60 backdrop-blur-md pt-4 pb-4 px-4 sm:px-6 overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200">
+      <div ref={modalRef} className="relative w-full max-w-3xl bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header with Gradient */}
         <div className="flex-shrink-0 relative bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 midnight:from-cyan-600 midnight:to-purple-600 purple:from-pink-600 purple:to-purple-600 px-4 sm:px-5 py-3 sm:py-4">
           <div className="flex items-center justify-between">
@@ -380,7 +393,6 @@ export default function CollectFeesModal({
           </FormButton>
           <FormButton
             type="submit"
-            onClick={handleSubmit}
             variant="primary"
             icon={<span className="text-lg">→</span>}
             className="px-6 sm:px-8"
