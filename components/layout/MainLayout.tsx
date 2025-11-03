@@ -22,8 +22,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
       {/* Main Content Area - Responsive to Sidebar */}
       <div
-        className={`flex-1 transition-all duration-300 relative z-0 lg:z-10 overflow-x-hidden ${
-          isCollapsed ? "lg:ml-20" : "lg:ml-64"
+        className={`flex-1 transition-all duration-500 relative z-0 lg:z-10 overflow-x-hidden ${
+          isCollapsed ? "lg:ml-20" : "lg:ml-72"
         }`}
       >
         <Header

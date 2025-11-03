@@ -289,15 +289,16 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
             <button
               onClick={() => !isCollapsedDesktop && toggleExpanded(item.id)}
               className={cn(
-                "w-full flex items-center px-3 py-2.5 rounded-xl font-medium text-sm cursor-pointer relative",
+                "w-full flex items-center gap-3 px-3 py-2.5 pr-3 rounded-xl font-medium text-sm cursor-pointer",
                 "transition-all duration-200 ease-out",
+                "border",
                 hasActiveChild(item)
-                  ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
-                  : "text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5",
+                  ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border-blue-200/30 dark:border-blue-700/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
+                  : "text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border-transparent",
                 level > 0 && "pl-3"
               )}
             >
-              <div className="flex items-center gap-3.5 min-h-[32px] flex-1 min-w-0">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className={cn(
                   "flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0",
                   "transition-all duration-200",
@@ -309,14 +310,15 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                 </div>
                 {/* Show label based on mobile/collapsed state */}
                 <span
-                  className="flex-1 text-left overflow-hidden transition-all ease-in-out min-w-0"
+                  className="text-left transition-all ease-in-out"
                   style={{
                     width: (isMobile === true || (isMobile === false && !isCollapsed)) ? 'auto' : '0px',
+                    overflow: (isMobile === true || (isMobile === false && !isCollapsed)) ? 'visible' : 'hidden',
                     transitionDuration: '300ms'
                   }}
                 >
                   <span
-                    className="whitespace-nowrap transition-opacity ease-in-out"
+                    className="whitespace-nowrap transition-opacity ease-in-out block"
                     style={{
                       opacity: (isMobile === true || (isMobile === false && !isCollapsed)) ? 1 : 0,
                       transitionDuration: '200ms',
@@ -327,15 +329,14 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                   </span>
                 </span>
               </div>
-              {/* Show chevron based on mobile/collapsed state */}
-              {(isMobile === true || (isMobile === false && !isCollapsed)) && (
-                <div className={cn(
-                  "transition-transform duration-200 flex-shrink-0 w-6 flex items-center justify-center",
-                  isExpanded && "rotate-180"
-                )}>
-                  <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                </div>
-              )}
+              {/* Show chevron based on mobile/collapsed state - with fixed width for rotation */}
+              <div className={cn(
+                "transition-transform duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)] flex-shrink-0 w-8 flex items-center justify-center ml-auto",
+                isExpanded && "rotate-180",
+                !(isMobile === true || (isMobile === false && !isCollapsed)) && "opacity-0"
+              )}>
+                <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              </div>
             </button>
 
             {/* Popover menu for collapsed sidebar */}
@@ -455,7 +456,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
             <Link
               href={item.href || "#"}
               className={cn(
-                "w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl font-medium text-sm cursor-pointer",
+                "w-full flex items-center gap-3 px-3 py-2.5 pr-3 rounded-xl font-medium text-sm cursor-pointer",
                 "text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100",
                 "hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50",
                 "dark:hover:from-blue-500/10 dark:hover:to-indigo-500/10",
@@ -469,34 +470,39 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                 level > 0 && "pl-3"
               )}
             >
-              <div className={cn(
-                "flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0",
-                "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10",
-                "group-hover:bg-blue-100 dark:group-hover:bg-blue-500/20",
-                "midnight:group-hover:bg-cyan-500/20 purple:group-hover:bg-pink-500/20",
-                "transition-colors duration-200"
-              )}>
-                {item.icon}
-              </div>
-              {/* Show label based on mobile/collapsed state */}
-              <span
-                className="flex-1 overflow-hidden transition-all ease-in-out"
-                style={{
-                  width: (isMobile === true || (isMobile === false && !isCollapsed)) ? 'auto' : '0px',
-                  transitionDuration: '300ms'
-                }}
-              >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className={cn(
+                  "flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0",
+                  "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10",
+                  "group-hover:bg-blue-100 dark:group-hover:bg-blue-500/20",
+                  "midnight:group-hover:bg-cyan-500/20 purple:group-hover:bg-pink-500/20",
+                  "transition-colors duration-200"
+                )}>
+                  {item.icon}
+                </div>
+                {/* Show label based on mobile/collapsed state */}
                 <span
-                  className="whitespace-nowrap transition-opacity ease-in-out"
+                  className="text-left transition-all ease-in-out"
                   style={{
-                    opacity: (isMobile === true || (isMobile === false && !isCollapsed)) ? 1 : 0,
-                    transitionDuration: '200ms',
-                    transitionDelay: (isMobile === true || (isMobile === false && !isCollapsed)) ? '200ms' : '0ms'
+                    width: (isMobile === true || (isMobile === false && !isCollapsed)) ? 'auto' : '0px',
+                    overflow: (isMobile === true || (isMobile === false && !isCollapsed)) ? 'visible' : 'hidden',
+                    transitionDuration: '300ms'
                   }}
                 >
-                  {item.label}
+                  <span
+                    className="whitespace-nowrap transition-opacity ease-in-out block"
+                    style={{
+                      opacity: (isMobile === true || (isMobile === false && !isCollapsed)) ? 1 : 0,
+                      transitionDuration: '200ms',
+                      transitionDelay: (isMobile === true || (isMobile === false && !isCollapsed)) ? '200ms' : '0ms'
+                    }}
+                  >
+                    {item.label}
+                  </span>
                 </span>
-              </span>
+              </div>
+              {/* Spacer to match chevron width and maintain alignment */}
+              <div className="flex-shrink-0 w-8 ml-auto"></div>
             </Link>
 
             {/* Tooltip for collapsed sidebar */}
@@ -518,8 +524,17 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
         )}
 
         {/* Show children based on mobile/collapsed state */}
-        {hasChildren && isExpanded && (isMobile === true || (isMobile === false && !isCollapsed)) && (
-          <div className="mt-2 space-y-1 pl-6 border-l-2 border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        {hasChildren && (isMobile === true || (isMobile === false && !isCollapsed)) && (
+          <div
+            className={cn(
+              "overflow-hidden transition-all duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
+              isExpanded ? "max-h-[2000px] opacity-100 mt-2" : "max-h-0 opacity-0 mt-0"
+            )}
+          >
+            <div className={cn(
+              "space-y-1 pl-6 transition-all duration-[500ms] ease-out delay-[80ms]",
+              isExpanded ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
+            )}>
             {item.children?.map((child) => {
               const childHasChildren = child.children && child.children.length > 0;
 
@@ -535,33 +550,30 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                   key={child.id}
                   href={child.href || "#"}
                   className={cn(
-                    "flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer",
+                    "flex items-center gap-3 px-3 py-2.5 pr-3 rounded-xl text-sm font-medium cursor-pointer",
                     "transition-all duration-200",
                     childIsActive
                       ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
                       : "text-gray-600 dark:text-gray-400 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
                   )}
                 >
-                  <div className={cn(
-                    "flex items-center justify-center w-7 h-7 rounded-lg shrink-0 transition-all duration-200",
-                    childIsActive
-                      ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
-                      : "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
-                  )}>
-                    {child.icon}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className={cn(
+                      "flex items-center justify-center w-7 h-7 rounded-lg shrink-0 transition-all duration-200",
+                      childIsActive
+                        ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
+                        : "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
+                    )}>
+                      {child.icon}
+                    </div>
+                    <span className="tracking-wide">{child.label}</span>
                   </div>
-                  <span className="flex-1 tracking-wide">{child.label}</span>
-                  <svg
-                    className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  {/* Spacer to match parent items' chevron width and maintain alignment */}
+                  <div className="flex-shrink-0 w-8 ml-auto"></div>
                 </Link>
               );
             })}
+            </div>
           </div>
         )}
       </div>
@@ -591,10 +603,10 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
           "shadow-xl shadow-gray-200/50 dark:shadow-black/20",
           "backdrop-blur-xl",
           "transition-all duration-500 ease-in-out z-40",
-          // On mobile: always full width (w-64) when open
-          // On desktop: w-20 when collapsed, w-64 when expanded
-          "w-64 lg:w-auto",
-          isCollapsed ? "lg:w-20" : "lg:w-64",
+          // On mobile: always full width (w-72) when open
+          // On desktop: w-20 when collapsed, w-72 when expanded
+          "w-72 lg:w-auto",
+          isCollapsed ? "lg:w-20" : "lg:w-72",
           // Mobile visibility
           isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
