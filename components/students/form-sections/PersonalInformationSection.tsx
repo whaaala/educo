@@ -16,7 +16,9 @@ import {
   Mail,
   Languages,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  MapPin,
+  Globe
 } from "lucide-react";
 import FileUpload from "@/components/shared/FileUpload";
 import TagInput from "@/components/shared/TagInput";
@@ -94,14 +96,14 @@ export default function PersonalInformationSection({
             />
           </div>
 
-          {/* Academic Details Section */}
+          {/* Academic & School Information Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
                 <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                Academic Details
+                Academic & School Information
               </h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
@@ -145,6 +147,22 @@ export default function PersonalInformationSection({
                 options={statuses}
                 placeholder="Select status"
               />
+              <FormDropdown
+                label="Class"
+                icon={<BookOpen className="w-full h-full" />}
+                value={formData.class || ""}
+                onChange={(value) => onChange("class", value)}
+                options={classes}
+                placeholder="Select class"
+              />
+              <FormDropdown
+                label="Section"
+                icon={<Users className="w-full h-full" />}
+                value={formData.section || ""}
+                onChange={(value) => onChange("section", value)}
+                options={sections}
+                placeholder="Select section"
+              />
             </div>
           </div>
 
@@ -176,28 +194,12 @@ export default function PersonalInformationSection({
                 type="text"
               />
               <FormInput
-                label="Other Names"
+                label="Middle Name"
                 icon={<User className="w-full h-full" />}
-                value={formData.otherNames || ""}
-                onChange={(value) => onChange("otherNames", value)}
-                placeholder="Enter other names"
+                value={formData.middleName || ""}
+                onChange={(value) => onChange("middleName", value)}
+                placeholder="Enter middle name"
                 type="text"
-              />
-              <FormDropdown
-                label="Class"
-                icon={<BookOpen className="w-full h-full" />}
-                value={formData.class || ""}
-                onChange={(value) => onChange("class", value)}
-                options={classes}
-                placeholder="Select class"
-              />
-              <FormDropdown
-                label="Section"
-                icon={<Users className="w-full h-full" />}
-                value={formData.section || ""}
-                onChange={(value) => onChange("section", value)}
-                options={sections}
-                placeholder="Select section"
               />
               <FormDropdown
                 label="Gender"
@@ -224,28 +226,12 @@ export default function PersonalInformationSection({
                 placeholder="Select blood group"
               />
               <FormDropdown
-                label="House"
-                icon={<Home className="w-full h-full" />}
-                value={formData.house || ""}
-                onChange={(value) => onChange("house", value)}
-                options={houses}
-                placeholder="Select house"
-              />
-              <FormDropdown
                 label="Religion"
                 icon={<BookOpen className="w-full h-full" />}
                 value={formData.religion || ""}
                 onChange={(value) => onChange("religion", value)}
                 options={religions}
                 placeholder="Select religion"
-              />
-              <FormDropdown
-                label="Category"
-                icon={<Tag className="w-full h-full" />}
-                value={formData.category || ""}
-                onChange={(value) => onChange("category", value)}
-                options={categories}
-                placeholder="Select category"
               />
               <FormInput
                 label="Ethnic Group"
@@ -263,6 +249,78 @@ export default function PersonalInformationSection({
                 placeholder="Enter caste"
                 type="text"
               />
+              <FormDropdown
+                label="House"
+                icon={<Home className="w-full h-full" />}
+                value={formData.house || ""}
+                onChange={(value) => onChange("house", value)}
+                options={houses}
+                placeholder="Select house"
+              />
+              <FormDropdown
+                label="Category"
+                icon={<Tag className="w-full h-full" />}
+                value={formData.category || ""}
+                onChange={(value) => onChange("category", value)}
+                options={categories}
+                placeholder="Select category"
+              />
+              <FormInput
+                label="Primary Address Line 1"
+                icon={<MapPin className="w-full h-full" />}
+                value={formData.addressLine1 || ""}
+                onChange={(value) => onChange("addressLine1", value)}
+                placeholder="Street address and house number"
+                type="text"
+              />
+              <FormInput
+                label="Primary Address Line 2"
+                icon={<MapPin className="w-full h-full" />}
+                value={formData.addressLine2 || ""}
+                onChange={(value) => onChange("addressLine2", value)}
+                placeholder="Apartment, suite, unit, or P.O. Box"
+                type="text"
+              />
+              <FormInput
+                label="City/Town"
+                icon={<MapPin className="w-full h-full" />}
+                value={formData.city || ""}
+                onChange={(value) => onChange("city", value)}
+                placeholder="Enter city or town"
+                type="text"
+              />
+              <FormInput
+                label="State"
+                icon={<MapPin className="w-full h-full" />}
+                value={formData.state || ""}
+                onChange={(value) => onChange("state", value)}
+                placeholder="State or FCT"
+                type="text"
+              />
+              <FormInput
+                label="Postal Code"
+                icon={<Hash className="w-full h-full" />}
+                value={formData.postalCode || ""}
+                onChange={(value) => onChange("postalCode", value)}
+                placeholder="6-digit postal code"
+                type="text"
+              />
+              <FormInput
+                label="Country"
+                icon={<Globe className="w-full h-full" />}
+                value={formData.country || "Nigeria"}
+                onChange={(value) => onChange("country", value)}
+                placeholder="Nigeria"
+                type="text"
+              />
+              <FormInput
+                label="Address Phone Number"
+                icon={<Phone className="w-full h-full" />}
+                value={formData.addressPhone || ""}
+                onChange={(value) => onChange("addressPhone", value)}
+                placeholder="+234xxxxxxxxxx (for courier)"
+                type="text"
+              />
             </div>
           </div>
 
@@ -276,7 +334,7 @@ export default function PersonalInformationSection({
                 Contact Information
               </h3>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
               <FormInput
                 label="Primary Contact Number"
                 icon={<Phone className="w-full h-full" />}
@@ -300,6 +358,76 @@ export default function PersonalInformationSection({
                 onChange={(value) => onChange("email", value)}
                 placeholder="student@example.com"
                 type="email"
+              />
+            </div>
+          </div>
+
+          {/* Secondary Address Information Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                Secondary Address Information
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+              <FormInput
+                label="Secondary Address Line 1"
+                icon={<MapPin className="w-full h-full" />}
+                value={formData.secondaryAddressLine1 || ""}
+                onChange={(value) => onChange("secondaryAddressLine1", value)}
+                placeholder="Street address and house number"
+                type="text"
+              />
+              <FormInput
+                label="Secondary Address Line 2"
+                icon={<MapPin className="w-full h-full" />}
+                value={formData.secondaryAddressLine2 || ""}
+                onChange={(value) => onChange("secondaryAddressLine2", value)}
+                placeholder="Apartment, suite, unit, or P.O. Box"
+                type="text"
+              />
+              <FormInput
+                label="City/Town"
+                icon={<MapPin className="w-full h-full" />}
+                value={formData.secondaryCity || ""}
+                onChange={(value) => onChange("secondaryCity", value)}
+                placeholder="Enter city or town"
+                type="text"
+              />
+              <FormInput
+                label="State"
+                icon={<MapPin className="w-full h-full" />}
+                value={formData.secondaryState || ""}
+                onChange={(value) => onChange("secondaryState", value)}
+                placeholder="State or FCT"
+                type="text"
+              />
+              <FormInput
+                label="Postal Code"
+                icon={<Hash className="w-full h-full" />}
+                value={formData.secondaryPostalCode || ""}
+                onChange={(value) => onChange("secondaryPostalCode", value)}
+                placeholder="6-digit postal code"
+                type="text"
+              />
+              <FormInput
+                label="Country"
+                icon={<Globe className="w-full h-full" />}
+                value={formData.secondaryCountry || "Nigeria"}
+                onChange={(value) => onChange("secondaryCountry", value)}
+                placeholder="Nigeria"
+                type="text"
+              />
+              <FormInput
+                label="Phone Number"
+                icon={<Phone className="w-full h-full" />}
+                value={formData.secondaryAddressPhone || ""}
+                onChange={(value) => onChange("secondaryAddressPhone", value)}
+                placeholder="+234xxxxxxxxxx (for courier)"
+                type="text"
               />
             </div>
           </div>

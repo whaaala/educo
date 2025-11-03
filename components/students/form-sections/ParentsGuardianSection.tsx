@@ -1,7 +1,10 @@
 "use client";
 
-import { Users } from "lucide-react";
+import { useState } from "react";
+import { Users, ChevronDown, ChevronUp, User, Mail, Phone, Briefcase, MapPin, Heart, Hash, Globe } from "lucide-react";
 import FileUpload from "@/components/shared/FileUpload";
+import FormInput from "@/components/shared/FormInput";
+import FormDropdown from "@/components/shared/FormDropdown";
 
 interface ParentsGuardianSectionProps {
   formData: any;
@@ -12,326 +15,516 @@ export default function ParentsGuardianSection({
   formData,
   onChange,
 }: ParentsGuardianSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  // Dropdown options
+  const genders = ["Male", "Female", "Other"].map(g => ({ value: g, label: g }));
+  const guardianRelations = [
+    "Father",
+    "Mother",
+    "Uncle",
+    "Aunt",
+    "Grandfather",
+    "Grandmother",
+    "Brother",
+    "Sister",
+    "Cousin",
+    "Sponsor",
+    "Other"
+  ].map(r => ({ value: r, label: r }));
+
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-lg overflow-hidden">
-      {/* Section Header */}
-      <div className="bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-600 dark:to-pink-600 midnight:from-purple-700 midnight:to-pink-700 purple:from-pink-600 purple:to-purple-600 px-6 py-4">
+    <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+      {/* Collapsible Header */}
+      <button
+        type="button"
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full bg-purple-50/50 dark:bg-purple-900/10 midnight:bg-purple-900/10 purple:bg-pink-900/10 hover:bg-purple-50 dark:hover:bg-purple-900/20 midnight:hover:bg-purple-900/20 purple:hover:bg-pink-900/20 px-6 py-3 flex items-center justify-between transition-all duration-200 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+      >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-            <Users className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30 flex items-center justify-center">
+            <Users className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400" />
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">
+          <div className="text-left">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
               Parents & Guardian Information
             </h2>
-            <p className="text-sm text-white/80">
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
               Parent and guardian contact details
             </p>
           </div>
         </div>
-      </div>
+        <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 cursor-pointer">
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          )}
+        </div>
+      </button>
 
-      {/* Form Content */}
-      <div className="p-6 space-y-8">
+      {/* Collapsible Content */}
+      {isExpanded && (
+        <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10 animate-in fade-in duration-200">
         {/* Father's Information */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-300 purple:text-pink-300 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 pb-2">
-            Father&apos;s Information
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Father's Photo */}
-            <div className="lg:col-span-3">
-              <FileUpload
-                label="Father's Photo"
-                accept="image/jpeg,image/png,image/svg+xml"
-                maxSize={4}
-                value={formData.fatherPhoto}
-                onChange={(file) => onChange("fatherPhoto", file)}
-                helpText="Upload image size 4MB, Format JPG, PNG, SVG"
-                preview={true}
-              />
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-900/20 midnight:bg-purple-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
+              <User className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400" />
             </div>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              Father&apos;s Information
+            </h3>
+          </div>
 
-            {/* Father's Name */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Father&apos;s Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.fatherName || ""}
-                onChange={(e) => onChange("fatherName", e.target.value)}
-                placeholder="Enter father's full name"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
+          {/* Father's Photo */}
+          <div className="pl-2">
+            <FileUpload
+              value={formData.fatherPhoto}
+              onChange={(file) => onChange("fatherPhoto", file)}
+              helpText="Upload image size 4MB, Format JPG, PNG, SVG"
+              circular
+              compact
+            />
+          </div>
 
-            {/* Father's Email */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={formData.fatherEmail || ""}
-                onChange={(e) => onChange("fatherEmail", e.target.value)}
-                placeholder="father@example.com"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
-
-            {/* Father's Phone */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Phone Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                required
-                value={formData.fatherPhone || ""}
-                onChange={(e) => onChange("fatherPhone", e.target.value)}
-                placeholder="+234xxxxxxxxxx"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
-
-            {/* Father's Occupation */}
-            <div className="lg:col-span-3">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Occupation
-              </label>
-              <input
-                type="text"
-                value={formData.fatherOccupation || ""}
-                onChange={(e) => onChange("fatherOccupation", e.target.value)}
-                placeholder="Enter father's occupation"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+            <FormInput
+              label="First Name"
+              icon={<User className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.fatherFirstName || ""}
+              onChange={(value) => onChange("fatherFirstName", value)}
+              placeholder="Enter father's first name"
+              type="text"
+            />
+            <FormInput
+              label="Last Name"
+              icon={<User className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.fatherLastName || ""}
+              onChange={(value) => onChange("fatherLastName", value)}
+              placeholder="Enter father's last name"
+              type="text"
+            />
+            <FormInput
+              label="Middle Name"
+              icon={<User className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.fatherMiddleName || ""}
+              onChange={(value) => onChange("fatherMiddleName", value)}
+              placeholder="Enter father's middle name"
+              type="text"
+            />
+            <FormInput
+              label="Email Address"
+              icon={<Mail className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.fatherEmail || ""}
+              onChange={(value) => onChange("fatherEmail", value)}
+              placeholder="father@example.com"
+              type="email"
+            />
+            <FormInput
+              label="Phone Number"
+              icon={<Phone className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.fatherPhone || ""}
+              onChange={(value) => onChange("fatherPhone", value)}
+              placeholder="+234xxxxxxxxxx"
+              type="text"
+            />
+            <FormInput
+              label="Occupation"
+              icon={<Briefcase className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.fatherOccupation || ""}
+              onChange={(value) => onChange("fatherOccupation", value)}
+              placeholder="Enter father's occupation"
+              type="text"
+            />
+            <FormInput
+              label="Address Line 1"
+              icon={<MapPin className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.fatherAddressLine1 || ""}
+              onChange={(value) => onChange("fatherAddressLine1", value)}
+              placeholder="Street address and house number"
+              type="text"
+            />
+            <FormInput
+              label="Address Line 2"
+              icon={<MapPin className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.fatherAddressLine2 || ""}
+              onChange={(value) => onChange("fatherAddressLine2", value)}
+              placeholder="Apartment, suite, unit, or P.O. Box"
+              type="text"
+            />
+            <FormInput
+              label="City/Town"
+              icon={<MapPin className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.fatherCity || ""}
+              onChange={(value) => onChange("fatherCity", value)}
+              placeholder="Enter city or town"
+              type="text"
+            />
+            <FormInput
+              label="State"
+              icon={<MapPin className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.fatherState || ""}
+              onChange={(value) => onChange("fatherState", value)}
+              placeholder="State or FCT"
+              type="text"
+            />
+            <FormInput
+              label="Postal Code"
+              icon={<Hash className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.fatherPostalCode || ""}
+              onChange={(value) => onChange("fatherPostalCode", value)}
+              placeholder="6-digit postal code"
+              type="text"
+            />
+            <FormInput
+              label="Country"
+              icon={<Globe className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.fatherCountry || "Nigeria"}
+              onChange={(value) => onChange("fatherCountry", value)}
+              placeholder="Nigeria"
+              type="text"
+            />
           </div>
         </div>
 
         {/* Mother's Information */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-300 purple:text-pink-300 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 pb-2">
-            Mother&apos;s Information
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Mother's Photo */}
-            <div className="lg:col-span-3">
-              <FileUpload
-                label="Mother's Photo"
-                accept="image/jpeg,image/png,image/svg+xml"
-                maxSize={4}
-                value={formData.motherPhoto}
-                onChange={(file) => onChange("motherPhoto", file)}
-                helpText="Upload image size 4MB, Format JPG, PNG, SVG"
-                preview={true}
-              />
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-900/20 midnight:bg-purple-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
+              <Heart className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400" />
             </div>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              Mother&apos;s Information
+            </h3>
+          </div>
 
-            {/* Mother's Name */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Mother&apos;s Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.motherName || ""}
-                onChange={(e) => onChange("motherName", e.target.value)}
-                placeholder="Enter mother's full name"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
+          {/* Mother's Photo */}
+          <div className="pl-2">
+            <FileUpload
+              value={formData.motherPhoto}
+              onChange={(file) => onChange("motherPhoto", file)}
+              helpText="Upload image size 4MB, Format JPG, PNG, SVG"
+              circular
+              compact
+            />
+          </div>
 
-            {/* Mother's Email */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={formData.motherEmail || ""}
-                onChange={(e) => onChange("motherEmail", e.target.value)}
-                placeholder="mother@example.com"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
-
-            {/* Mother's Phone */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Phone Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                required
-                value={formData.motherPhone || ""}
-                onChange={(e) => onChange("motherPhone", e.target.value)}
-                placeholder="+234xxxxxxxxxx"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
-
-            {/* Mother's Occupation */}
-            <div className="lg:col-span-3">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Occupation
-              </label>
-              <input
-                type="text"
-                value={formData.motherOccupation || ""}
-                onChange={(e) => onChange("motherOccupation", e.target.value)}
-                placeholder="Enter mother's occupation"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+            <FormInput
+              label="First Name"
+              icon={<User className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.motherFirstName || ""}
+              onChange={(value) => onChange("motherFirstName", value)}
+              placeholder="Enter mother's first name"
+              type="text"
+            />
+            <FormInput
+              label="Last Name"
+              icon={<User className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.motherLastName || ""}
+              onChange={(value) => onChange("motherLastName", value)}
+              placeholder="Enter mother's last name"
+              type="text"
+            />
+            <FormInput
+              label="Middle Name"
+              icon={<User className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.motherMiddleName || ""}
+              onChange={(value) => onChange("motherMiddleName", value)}
+              placeholder="Enter mother's middle name"
+              type="text"
+            />
+            <FormInput
+              label="Email Address"
+              icon={<Mail className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.motherEmail || ""}
+              onChange={(value) => onChange("motherEmail", value)}
+              placeholder="mother@example.com"
+              type="email"
+            />
+            <FormInput
+              label="Phone Number"
+              icon={<Phone className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.motherPhone || ""}
+              onChange={(value) => onChange("motherPhone", value)}
+              placeholder="+234xxxxxxxxxx"
+              type="text"
+            />
+            <FormInput
+              label="Occupation"
+              icon={<Briefcase className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.motherOccupation || ""}
+              onChange={(value) => onChange("motherOccupation", value)}
+              placeholder="Enter mother's occupation"
+              type="text"
+            />
+            <FormInput
+              label="Address Line 1"
+              icon={<MapPin className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.motherAddressLine1 || ""}
+              onChange={(value) => onChange("motherAddressLine1", value)}
+              placeholder="Street address and house number"
+              type="text"
+            />
+            <FormInput
+              label="Address Line 2"
+              icon={<MapPin className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.motherAddressLine2 || ""}
+              onChange={(value) => onChange("motherAddressLine2", value)}
+              placeholder="Apartment, suite, unit, or P.O. Box"
+              type="text"
+            />
+            <FormInput
+              label="City/Town"
+              icon={<MapPin className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.motherCity || ""}
+              onChange={(value) => onChange("motherCity", value)}
+              placeholder="Enter city or town"
+              type="text"
+            />
+            <FormInput
+              label="State"
+              icon={<MapPin className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.motherState || ""}
+              onChange={(value) => onChange("motherState", value)}
+              placeholder="State or FCT"
+              type="text"
+            />
+            <FormInput
+              label="Postal Code"
+              icon={<Hash className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.motherPostalCode || ""}
+              onChange={(value) => onChange("motherPostalCode", value)}
+              placeholder="6-digit postal code"
+              type="text"
+            />
+            <FormInput
+              label="Country"
+              icon={<Globe className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.motherCountry || "Nigeria"}
+              onChange={(value) => onChange("motherCountry", value)}
+              placeholder="Nigeria"
+              type="text"
+            />
           </div>
         </div>
 
         {/* Guardian Information */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-300 purple:text-pink-300 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 pb-2">
-            Guardian Information
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Guardian Is */}
-            <div className="lg:col-span-3">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-3">
-                Guardian Is <span className="text-red-500">*</span>
-              </label>
-              <div className="flex flex-wrap gap-4">
-                {["Father", "Mother", "Guardian", "Other"].map((option) => (
-                  <label
-                    key={option}
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <input
-                      type="radio"
-                      name="guardianIs"
-                      value={option}
-                      checked={formData.guardianIs === option}
-                      onChange={(e) => onChange("guardianIs", e.target.value)}
-                      className="w-4 h-4 text-blue-600 dark:text-blue-500 midnight:text-cyan-500 purple:text-pink-500 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400"
-                    />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                      {option}
-                    </span>
-                  </label>
-                ))}
-              </div>
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-900/20 midnight:bg-purple-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
+              <Users className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400" />
             </div>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              Guardian Information
+            </h3>
+          </div>
 
-            {/* Guardian Photo */}
-            <div className="lg:col-span-3">
-              <FileUpload
-                label="Guardian's Photo"
-                accept="image/jpeg,image/png,image/svg+xml"
-                maxSize={4}
-                value={formData.guardianPhoto}
-                onChange={(file) => onChange("guardianPhoto", file)}
-                helpText="Upload image size 4MB, Format JPG, PNG, SVG"
-                preview={true}
-              />
-            </div>
+          {/* Guardian Photo */}
+          <div className="pl-2">
+            <FileUpload
+              value={formData.guardianPhoto}
+              onChange={(file) => onChange("guardianPhoto", file)}
+              helpText="Upload image size 4MB, Format JPG, PNG, SVG"
+              circular
+              compact
+            />
+          </div>
 
-            {/* Guardian Name */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Guardian Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.guardianName || ""}
-                onChange={(e) => onChange("guardianName", e.target.value)}
-                placeholder="Enter guardian's full name"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
-
-            {/* Guardian Relation */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Guardian Relation <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.guardianRelation || ""}
-                onChange={(e) => onChange("guardianRelation", e.target.value)}
-                placeholder="e.g., Uncle, Aunt, Sponsor"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
-
-            {/* Guardian Phone */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Phone Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                required
-                value={formData.guardianPhone || ""}
-                onChange={(e) => onChange("guardianPhone", e.target.value)}
-                placeholder="+234xxxxxxxxxx"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
-
-            {/* Guardian Email */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={formData.guardianEmail || ""}
-                onChange={(e) => onChange("guardianEmail", e.target.value)}
-                placeholder="guardian@example.com"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
-
-            {/* Guardian Occupation */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Occupation
-              </label>
-              <input
-                type="text"
-                value={formData.guardianOccupation || ""}
-                onChange={(e) =>
-                  onChange("guardianOccupation", e.target.value)
-                }
-                placeholder="Enter guardian's occupation"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
-
-            {/* Guardian Address */}
-            <div className="lg:col-span-3">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Address <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                required
-                value={formData.guardianAddress || ""}
-                onChange={(e) => onChange("guardianAddress", e.target.value)}
-                placeholder="Enter guardian's full address"
-                rows={3}
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all resize-none"
-              />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+            <FormInput
+              label="First Name"
+              icon={<User className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.guardianFirstName || ""}
+              onChange={(value) => onChange("guardianFirstName", value)}
+              placeholder="Enter guardian's first name"
+              type="text"
+            />
+            <FormInput
+              label="Last Name"
+              icon={<User className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.guardianLastName || ""}
+              onChange={(value) => onChange("guardianLastName", value)}
+              placeholder="Enter guardian's last name"
+              type="text"
+            />
+            <FormInput
+              label="Middle Name"
+              icon={<User className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.guardianMiddleName || ""}
+              onChange={(value) => onChange("guardianMiddleName", value)}
+              placeholder="Enter guardian's middle name"
+              type="text"
+            />
+            <FormDropdown
+              label="Gender"
+              icon={<Users className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.guardianGender || ""}
+              onChange={(value) => onChange("guardianGender", value)}
+              options={genders}
+              placeholder="Select gender"
+            />
+            <FormDropdown
+              label="Guardian Relation"
+              icon={<Users className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.guardianRelation || ""}
+              onChange={(value) => onChange("guardianRelation", value)}
+              options={guardianRelations}
+              placeholder="Select relation"
+            />
+            <FormInput
+              label="Phone Number"
+              icon={<Phone className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.guardianPhone || ""}
+              onChange={(value) => onChange("guardianPhone", value)}
+              placeholder="+234xxxxxxxxxx"
+              type="text"
+            />
+            <FormInput
+              label="Email Address"
+              icon={<Mail className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.guardianEmail || ""}
+              onChange={(value) => onChange("guardianEmail", value)}
+              placeholder="guardian@example.com"
+              type="email"
+            />
+            <FormInput
+              label="Occupation"
+              icon={<Briefcase className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.guardianOccupation || ""}
+              onChange={(value) => onChange("guardianOccupation", value)}
+              placeholder="Enter guardian's occupation"
+              type="text"
+            />
+            <FormInput
+              label="Address Line 1"
+              icon={<MapPin className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.guardianAddressLine1 || ""}
+              onChange={(value) => onChange("guardianAddressLine1", value)}
+              placeholder="Street address and house number"
+              type="text"
+            />
+            <FormInput
+              label="Address Line 2"
+              icon={<MapPin className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.guardianAddressLine2 || ""}
+              onChange={(value) => onChange("guardianAddressLine2", value)}
+              placeholder="Apartment, suite, unit, or P.O. Box"
+              type="text"
+            />
+            <FormInput
+              label="City/Town"
+              icon={<MapPin className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.guardianCity || ""}
+              onChange={(value) => onChange("guardianCity", value)}
+              placeholder="Enter city or town"
+              type="text"
+            />
+            <FormInput
+              label="State"
+              icon={<MapPin className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.guardianState || ""}
+              onChange={(value) => onChange("guardianState", value)}
+              placeholder="State or FCT"
+              type="text"
+            />
+            <FormInput
+              label="Postal Code"
+              icon={<Hash className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.guardianPostalCode || ""}
+              onChange={(value) => onChange("guardianPostalCode", value)}
+              placeholder="6-digit postal code"
+              type="text"
+            />
+            <FormInput
+              label="Country"
+              icon={<Globe className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={formData.guardianCountry || "Nigeria"}
+              onChange={(value) => onChange("guardianCountry", value)}
+              placeholder="Nigeria"
+              type="text"
+            />
           </div>
         </div>
-      </div>
-    </div>
+        </div>
+      )}
+    </section>
   );
 }
