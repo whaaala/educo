@@ -397,7 +397,7 @@ export default function ValidationErrorsModal({
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/30 midnight:hover:bg-yellow-900/30 purple:hover:bg-yellow-900/30 transition-colors duration-200"
+              className="p-1.5 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/30 midnight:hover:bg-yellow-900/30 purple:hover:bg-yellow-900/30 transition-colors duration-200 cursor-pointer"
               aria-label="Close"
             >
               <X className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
