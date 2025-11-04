@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useRef, useEffect } from "react";
+import ErrorMessage from "./ErrorMessage";
 
 interface FormTextareaProps {
   label: string;
@@ -12,6 +13,8 @@ interface FormTextareaProps {
   placeholder?: string;
   rows?: number;
   optional?: boolean;
+  required?: boolean;
+  error?: string;
 }
 
 export default function FormTextarea({
@@ -24,6 +27,8 @@ export default function FormTextarea({
   placeholder = "",
   rows = 4,
   optional = false,
+  required = false,
+  error,
 }: FormTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -53,7 +58,8 @@ export default function FormTextarea({
           <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
         </div>
         <span>{label}</span>
-        {optional && (
+        {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
+        {optional && !required && (
           <span className="text-xs text-gray-400 dark:text-gray-500">(Optional)</span>
         )}
       </label>
@@ -65,9 +71,10 @@ export default function FormTextarea({
           placeholder={placeholder}
           rows={rows}
           style={{ minHeight: `${minHeight}px` }}
-          className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 placeholder:font-normal focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 resize-y overflow-hidden"
+          className={`w-full px-4 py-2.5 rounded-xl border ${error ? "border-red-500 dark:border-red-400" : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"} bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 placeholder:font-normal focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 resize-y overflow-hidden`}
         />
       </div>
+      <ErrorMessage message={error} />
     </div>
   );
 }

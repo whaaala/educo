@@ -17,10 +17,14 @@ import PreviousSchoolSection from "@/components/students/form-sections/PreviousS
 import OtherDetailsSection from "@/components/students/form-sections/OtherDetailsSection";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { validateForm, ValidationErrors } from "@/lib/validation";
+import { studentFormValidationRules } from "@/lib/studentFormValidation";
 
 export default function AddStudentPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const isLoading = usePageLoad(800);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
@@ -213,10 +217,47 @@ export default function AddStudentPage() {
       ...prev,
       [field]: value,
     }));
+
+    // Clear error for this field when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+
+    // Mark field as touched
+    setTouchedFields((prev) => new Set(prev).add(field));
+  };
+
+  const validateFormData = (): boolean => {
+    const validationErrors = validateForm(formData, studentFormValidationRules);
+    setErrors(validationErrors);
+    
+    // Mark all fields as touched
+    const allFields = Object.keys(studentFormValidationRules);
+    setTouchedFields(new Set(allFields));
+    
+    return Object.keys(validationErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form before submission
+    if (!validateFormData()) {
+      // Scroll to first error
+      const firstErrorField = Object.keys(errors)[0];
+      if (firstErrorField) {
+        const errorElement = document.querySelector(`[data-field="${firstErrorField}"]`);
+        if (errorElement) {
+          errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -268,34 +309,71 @@ export default function AddStudentPage() {
           <PersonalInformationSection
             formData={formData}
             onChange={handleChange}
+            errors={errors}
           />
 
           {/* Parents & Guardian Information */}
-          <ParentsGuardianSection formData={formData} onChange={handleChange} />
+          <ParentsGuardianSection 
+            formData={formData} 
+            onChange={handleChange}
+            errors={errors}
+          />
 
           {/* Siblings */}
-          <SiblingsSection formData={formData} onChange={handleChange} />
+          <SiblingsSection 
+            formData={formData} 
+            onChange={handleChange}
+            errors={errors}
+          />
 
           {/* Address */}
-          <AddressSection formData={formData} onChange={handleChange} />
+          <AddressSection 
+            formData={formData} 
+            onChange={handleChange}
+            errors={errors}
+          />
 
           {/* Transport Information */}
-          <TransportSection formData={formData} onChange={handleChange} />
+          <TransportSection 
+            formData={formData} 
+            onChange={handleChange}
+            errors={errors}
+          />
 
           {/* Hostel Information */}
-          <HostelSection formData={formData} onChange={handleChange} />
+          <HostelSection 
+            formData={formData} 
+            onChange={handleChange}
+            errors={errors}
+          />
 
           {/* Documents & Certificates */}
-          <DocumentsSection formData={formData} onChange={handleChange} />
+          <DocumentsSection 
+            formData={formData} 
+            onChange={handleChange}
+            errors={errors}
+          />
 
           {/* Medical History */}
-          <MedicalHistorySection formData={formData} onChange={handleChange} />
+          <MedicalHistorySection 
+            formData={formData} 
+            onChange={handleChange}
+            errors={errors}
+          />
 
           {/* Previous School Details */}
-          <PreviousSchoolSection formData={formData} onChange={handleChange} />
+          <PreviousSchoolSection 
+            formData={formData} 
+            onChange={handleChange}
+            errors={errors}
+          />
 
           {/* Other Details */}
-          <OtherDetailsSection formData={formData} onChange={handleChange} />
+          <OtherDetailsSection 
+            formData={formData} 
+            onChange={handleChange}
+            errors={errors}
+          />
         </form>
 
         {/* Action Buttons - Sticky to bottom until form ends */}

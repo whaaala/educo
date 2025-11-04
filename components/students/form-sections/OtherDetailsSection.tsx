@@ -23,11 +23,13 @@ import { getBanks, getIdTypes } from "@/lib/mockBanks";
 interface OtherDetailsSectionProps {
   formData: any;
   onChange: (field: string, value: any) => void;
+  errors?: Record<string, string>;
 }
 
 export default function OtherDetailsSection({
   formData,
   onChange,
+  errors = {},
 }: OtherDetailsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -53,17 +55,22 @@ export default function OtherDetailsSection({
           </div>
         </div>
         <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 cursor-pointer">
-          {isExpanded ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          )}
+          <ChevronUp
+            className={`w-4 h-4 transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+              isExpanded ? "rotate-0" : "rotate-180"
+            }`}
+          />
         </div>
       </button>
 
       {/* Collapsible Content */}
-      {isExpanded && (
-        <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10 animate-in fade-in duration-200">
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+          isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10">
           {/* Bank Account Details Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
@@ -220,9 +227,17 @@ export default function OtherDetailsSection({
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400" />
               </div>
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                Consent & Agreement
+                Consent & Agreement <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>
               </h3>
             </div>
+            {(errors.photoConsent || errors.dataConsent || errors.medicalConsent) && (
+              <div className="pl-2">
+                <div className="flex items-start gap-2 text-sm text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
+                  <span>⚠</span>
+                  <span>All consent fields are required</span>
+                </div>
+              </div>
+            )}
             <div className="space-y-3 pl-2">
               <label className="flex items-start gap-3 cursor-pointer p-4 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10 midnight:bg-emerald-900/10 purple:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/30 midnight:border-emerald-800/30 purple:border-emerald-800/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 midnight:hover:bg-emerald-900/20 purple:hover:bg-emerald-900/20 transition-all">
                 <input
@@ -280,8 +295,9 @@ export default function OtherDetailsSection({
               </div>
             </div>
           </div>
+          </div>
         </div>
-      )}
+      </div>
     </section>
   );
 }

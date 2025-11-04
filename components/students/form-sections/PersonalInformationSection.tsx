@@ -28,11 +28,13 @@ import { useCountry } from "@/contexts/CountryContext";
 interface PersonalInformationSectionProps {
   formData: any;
   onChange: (field: string, value: any) => void;
+  errors?: Record<string, string>;
 }
 
 export default function PersonalInformationSection({
   formData,
   onChange,
+  errors = {},
 }: PersonalInformationSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const { countryCode } = useCountry();
@@ -72,17 +74,22 @@ export default function PersonalInformationSection({
           </div>
         </div>
         <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 cursor-pointer">
-          {isExpanded ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          )}
+          <ChevronUp
+            className={`w-4 h-4 transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+              isExpanded ? "rotate-0" : "rotate-180"
+            }`}
+          />
         </div>
       </button>
 
       {/* Collapsible Content */}
-      {isExpanded && (
-        <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10 animate-in fade-in duration-200">
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+          isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10">
           {/* Profile Photo Upload */}
           <div>
             <FileUpload
@@ -112,6 +119,8 @@ export default function PersonalInformationSection({
                 onChange={(value) => onChange("academicYear", value)}
                 options={academicYears}
                 placeholder="Select year"
+                required
+                error={errors.academicYear}
               />
               <FormInput
                 label="Admission Number"
@@ -120,6 +129,7 @@ export default function PersonalInformationSection({
                 onChange={(value) => onChange("admissionNumber", value)}
                 placeholder="e.g., ADM-000345"
                 type="text"
+                error={errors.admissionNumber}
               />
               <FormInput
                 label="Admission Date"
@@ -128,6 +138,8 @@ export default function PersonalInformationSection({
                 onChange={(value) => onChange("admissionDate", value)}
                 type="date"
                 placeholder="YYYY-MM-DD"
+                required
+                error={errors.admissionDate}
               />
               <FormInput
                 label="Roll Number"
@@ -136,6 +148,8 @@ export default function PersonalInformationSection({
                 onChange={(value) => onChange("rollNumber", value)}
                 placeholder="Enter roll number"
                 type="text"
+                required
+                error={errors.rollNumber}
               />
               <FormDropdown
                 label="Status"
@@ -144,6 +158,8 @@ export default function PersonalInformationSection({
                 onChange={(value) => onChange("status", value)}
                 options={statuses}
                 placeholder="Select status"
+                required
+                error={errors.status}
               />
               <FormDropdown
                 label="Class"
@@ -152,6 +168,8 @@ export default function PersonalInformationSection({
                 onChange={(value) => onChange("class", value)}
                 options={classes}
                 placeholder="Select class"
+                required
+                error={errors.class}
               />
               <FormDropdown
                 label="Section"
@@ -160,6 +178,8 @@ export default function PersonalInformationSection({
                 onChange={(value) => onChange("section", value)}
                 options={sections}
                 placeholder="Select section"
+                required
+                error={errors.section}
               />
             </div>
           </div>
@@ -182,6 +202,8 @@ export default function PersonalInformationSection({
                 onChange={(value) => onChange("firstName", value)}
                 placeholder="Enter first name"
                 type="text"
+                required
+                error={errors.firstName}
               />
               <FormInput
                 label="Last Name"
@@ -190,6 +212,8 @@ export default function PersonalInformationSection({
                 onChange={(value) => onChange("lastName", value)}
                 placeholder="Enter last name"
                 type="text"
+                required
+                error={errors.lastName}
               />
               <FormInput
                 label="Middle Name"
@@ -198,6 +222,7 @@ export default function PersonalInformationSection({
                 onChange={(value) => onChange("middleName", value)}
                 placeholder="Enter middle name"
                 type="text"
+                error={errors.middleName}
               />
               <FormDropdown
                 label="Gender"
@@ -206,6 +231,8 @@ export default function PersonalInformationSection({
                 onChange={(value) => onChange("gender", value)}
                 options={genders}
                 placeholder="Select gender"
+                required
+                error={errors.gender}
               />
               <FormInput
                 label="Date of Birth"
@@ -214,6 +241,8 @@ export default function PersonalInformationSection({
                 onChange={(value) => onChange("dateOfBirth", value)}
                 type="date"
                 placeholder="YYYY-MM-DD"
+                required
+                error={errors.dateOfBirth}
               />
               <FormDropdown
                 label="Blood Group"
@@ -284,6 +313,8 @@ export default function PersonalInformationSection({
                 onChange={(value) => onChange("primaryContact", value)}
                 placeholder="+234xxxxxxxxxx"
                 type="text"
+                required
+                error={errors.primaryContact}
               />
               <FormInput
                 label="Secondary Contact Number"
@@ -300,6 +331,8 @@ export default function PersonalInformationSection({
                 onChange={(value) => onChange("email", value)}
                 placeholder="student@example.com"
                 type="email"
+                required
+                error={errors.email}
               />
             </div>
           </div>
@@ -334,8 +367,9 @@ export default function PersonalInformationSection({
               </div>
             </div>
           </div>
+          </div>
         </div>
-      )}
+      </div>
     </section>
   );
 }

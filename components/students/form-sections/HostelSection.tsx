@@ -49,17 +49,22 @@ export default function HostelSection({
           </div>
         </div>
         <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 cursor-pointer">
-          {isExpanded ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          )}
+          <ChevronUp
+            className={`w-4 h-4 transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+              isExpanded ? "rotate-0" : "rotate-180"
+            }`}
+          />
         </div>
       </button>
 
       {/* Collapsible Content */}
-      {isExpanded && (
-        <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10 animate-in fade-in duration-200">
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+          isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10">
           {/* Hostel Details Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
@@ -109,8 +114,9 @@ export default function HostelSection({
               </div>
             </div>
           </div>
+          </div>
         </div>
-      )}
+      </div>
     </section>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Users, ChevronDown, ChevronUp, User, Mail, Phone, Briefcase, MapPin, Heart, Hash, Globe } from "lucide-react";
+import { Users, ChevronDown, ChevronUp, User, Mail, Phone, Briefcase, MapPin, Heart, Hash, Globe, Info } from "lucide-react";
 import FileUpload from "@/components/shared/FileUpload";
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
@@ -9,12 +9,50 @@ import FormDropdown from "@/components/shared/FormDropdown";
 interface ParentsGuardianSectionProps {
   formData: any;
   onChange: (field: string, value: any) => void;
+  errors?: Record<string, string>;
 }
 
 export default function ParentsGuardianSection({
   formData,
   onChange,
+  errors = {},
 }: ParentsGuardianSectionProps) {
+  // Helper function to check if a parent/guardian section is complete
+  const isFatherComplete = () => {
+    return !!(
+      formData.fatherFirstName &&
+      formData.fatherLastName &&
+      formData.fatherEmail &&
+      formData.fatherPhone
+    );
+  };
+
+  const isMotherComplete = () => {
+    return !!(
+      formData.motherFirstName &&
+      formData.motherLastName &&
+      formData.motherEmail &&
+      formData.motherPhone
+    );
+  };
+
+  const isGuardianComplete = () => {
+    return !!(
+      formData.guardianFirstName &&
+      formData.guardianLastName &&
+      formData.guardianEmail &&
+      formData.guardianPhone
+    );
+  };
+
+  // Check if at least one is complete
+  const hasAtLeastOneComplete = isFatherComplete() || isMotherComplete() || isGuardianComplete();
+  
+  // Determine which fields should show as required
+  // If none are complete, show all as required. If one is complete, others are optional
+  const showFatherRequired = !hasAtLeastOneComplete || !isFatherComplete();
+  const showMotherRequired = !hasAtLeastOneComplete || !isMotherComplete();
+  const showGuardianRequired = !hasAtLeastOneComplete || !isGuardianComplete();
   const [isExpanded, setIsExpanded] = useState(true);
 
   // Dropdown options
@@ -55,17 +93,34 @@ export default function ParentsGuardianSection({
           </div>
         </div>
         <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 cursor-pointer">
-          {isExpanded ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          )}
+          <ChevronUp
+            className={`w-4 h-4 transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+              isExpanded ? "rotate-0" : "rotate-180"
+            }`}
+          />
         </div>
       </button>
 
       {/* Collapsible Content */}
-      {isExpanded && (
-        <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10 animate-in fade-in duration-200">
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+          isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10">
+            {/* Info Box - At least one parent/guardian required */}
+            <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 midnight:bg-purple-900/20 purple:bg-pink-900/20 border border-purple-200 dark:border-purple-800/30 midnight:border-purple-800/30 purple:border-pink-800/30">
+              <div className="flex items-start gap-2.5">
+                <div className="w-5 h-5 rounded bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Info className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400" />
+                </div>
+                <p className="text-sm text-purple-700 dark:text-purple-300 midnight:text-purple-300 purple:text-pink-300">
+                  <strong className="font-semibold">Required:</strong> At least one parent or guardian (Father, Mother, or Guardian) must have complete information including First Name, Last Name, Email Address, and Phone Number.
+                </p>
+              </div>
+            </div>
+
         {/* Father's Information */}
         <div className="space-y-4">
           <div className="flex items-center gap-2.5">
@@ -98,6 +153,8 @@ export default function ParentsGuardianSection({
               onChange={(value) => onChange("fatherFirstName", value)}
               placeholder="Enter father's first name"
               type="text"
+              required={showFatherRequired}
+              error={errors.fatherFirstName}
             />
             <FormInput
               label="Last Name"
@@ -108,6 +165,8 @@ export default function ParentsGuardianSection({
               onChange={(value) => onChange("fatherLastName", value)}
               placeholder="Enter father's last name"
               type="text"
+              required={showFatherRequired}
+              error={errors.fatherLastName}
             />
             <FormInput
               label="Middle Name"
@@ -128,6 +187,8 @@ export default function ParentsGuardianSection({
               onChange={(value) => onChange("fatherEmail", value)}
               placeholder="father@example.com"
               type="email"
+              required={showFatherRequired}
+              error={errors.fatherEmail}
             />
             <FormInput
               label="Phone Number"
@@ -138,6 +199,8 @@ export default function ParentsGuardianSection({
               onChange={(value) => onChange("fatherPhone", value)}
               placeholder="+234xxxxxxxxxx"
               type="text"
+              required={showFatherRequired}
+              error={errors.fatherPhone}
             />
             <FormInput
               label="Occupation"
@@ -244,6 +307,8 @@ export default function ParentsGuardianSection({
               onChange={(value) => onChange("motherFirstName", value)}
               placeholder="Enter mother's first name"
               type="text"
+              required={showMotherRequired}
+              error={errors.motherFirstName}
             />
             <FormInput
               label="Last Name"
@@ -254,6 +319,8 @@ export default function ParentsGuardianSection({
               onChange={(value) => onChange("motherLastName", value)}
               placeholder="Enter mother's last name"
               type="text"
+              required={showMotherRequired}
+              error={errors.motherLastName}
             />
             <FormInput
               label="Middle Name"
@@ -274,6 +341,8 @@ export default function ParentsGuardianSection({
               onChange={(value) => onChange("motherEmail", value)}
               placeholder="mother@example.com"
               type="email"
+              required={showMotherRequired}
+              error={errors.motherEmail}
             />
             <FormInput
               label="Phone Number"
@@ -284,6 +353,8 @@ export default function ParentsGuardianSection({
               onChange={(value) => onChange("motherPhone", value)}
               placeholder="+234xxxxxxxxxx"
               type="text"
+              required={showMotherRequired}
+              error={errors.motherPhone}
             />
             <FormInput
               label="Occupation"
@@ -390,6 +461,8 @@ export default function ParentsGuardianSection({
               onChange={(value) => onChange("guardianFirstName", value)}
               placeholder="Enter guardian's first name"
               type="text"
+              required={showGuardianRequired}
+              error={errors.guardianFirstName}
             />
             <FormInput
               label="Last Name"
@@ -400,6 +473,8 @@ export default function ParentsGuardianSection({
               onChange={(value) => onChange("guardianLastName", value)}
               placeholder="Enter guardian's last name"
               type="text"
+              required={showGuardianRequired}
+              error={errors.guardianLastName}
             />
             <FormInput
               label="Middle Name"
@@ -440,6 +515,8 @@ export default function ParentsGuardianSection({
               onChange={(value) => onChange("guardianPhone", value)}
               placeholder="+234xxxxxxxxxx"
               type="text"
+              required={showGuardianRequired}
+              error={errors.guardianPhone}
             />
             <FormInput
               label="Email Address"
@@ -450,6 +527,8 @@ export default function ParentsGuardianSection({
               onChange={(value) => onChange("guardianEmail", value)}
               placeholder="guardian@example.com"
               type="email"
+              required={showGuardianRequired}
+              error={errors.guardianEmail}
             />
             <FormInput
               label="Occupation"
@@ -522,9 +601,10 @@ export default function ParentsGuardianSection({
               type="text"
             />
           </div>
+          </div>
+          </div>
         </div>
-        </div>
-      )}
+      </div>
     </section>
   );
 }
