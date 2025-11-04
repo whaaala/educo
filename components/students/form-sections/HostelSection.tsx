@@ -1,6 +1,17 @@
 "use client";
 
-import { Home } from "lucide-react";
+import { useState } from "react";
+import {
+  Home,
+  Building2,
+  Hash,
+  ChevronUp,
+  ChevronDown,
+  Info,
+} from "lucide-react";
+import FormInput from "@/components/shared/FormInput";
+import FormDropdown from "@/components/shared/FormDropdown";
+import { getHostels } from "@/lib/mockHostel";
 
 interface HostelSectionProps {
   formData: any;
@@ -11,85 +22,95 @@ export default function HostelSection({
   formData,
   onChange,
 }: HostelSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  // Get hostel data from reusable mock data
+  const hostels = getHostels();
+
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-lg overflow-hidden">
-      {/* Section Header */}
-      <div className="bg-gradient-to-r from-rose-500 to-red-500 dark:from-rose-600 dark:to-red-600 midnight:from-rose-700 midnight:to-red-700 purple:from-red-600 purple:to-rose-600 px-6 py-4">
+    <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+      {/* Collapsible Header */}
+      <button
+        type="button"
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full bg-rose-50/50 dark:bg-rose-900/10 midnight:bg-rose-900/10 purple:bg-rose-900/10 hover:bg-rose-50 dark:hover:bg-rose-900/20 midnight:hover:bg-rose-900/20 purple:hover:bg-rose-900/20 px-6 py-3 flex items-center justify-between transition-all duration-200 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+      >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-            <Home className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/30 midnight:bg-rose-900/30 purple:bg-rose-900/30 flex items-center justify-center">
+            <Home className="w-4 h-4 text-rose-600 dark:text-rose-400 midnight:text-rose-400 purple:text-rose-400" />
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">Hostel Information</h2>
-            <p className="text-sm text-white/80">
+          <div className="text-left">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              Hostel Information
+            </h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
               Boarding facility and room details
             </p>
           </div>
         </div>
-      </div>
+        <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 cursor-pointer">
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          )}
+        </div>
+      </button>
 
-      {/* Form Content */}
-      <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Hostel Name */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-              Hostel Name
-            </label>
-            <select
-              value={formData.hostelName || ""}
-              onChange={(e) => onChange("hostelName", e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-            >
-              <option value="">Select Hostel</option>
-              <optgroup label="Boys Hostels">
-                <option value="Mandela House (Boys)">
-                  Mandela House (Boys)
-                </option>
-                <option value="Nyerere Hall (Boys)">Nyerere Hall (Boys)</option>
-                <option value="Azikiwe Block (Boys)">
-                  Azikiwe Block (Boys)
-                </option>
-              </optgroup>
-              <optgroup label="Girls Hostels">
-                <option value="Queens Hall (Girls)">Queens Hall (Girls)</option>
-                <option value="Princess House (Girls)">
-                  Princess House (Girls)
-                </option>
-                <option value="Duchess Block (Girls)">
-                  Duchess Block (Girls)
-                </option>
-              </optgroup>
-              <optgroup label="Mixed/Junior Hostels">
-                <option value="Junior Block A">Junior Block A</option>
-                <option value="Junior Block B">Junior Block B</option>
-              </optgroup>
-            </select>
+      {/* Collapsible Content */}
+      {isExpanded && (
+        <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10 animate-in fade-in duration-200">
+          {/* Hostel Details Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-rose-100 dark:bg-rose-900/20 midnight:bg-rose-900/20 purple:bg-rose-900/20 flex items-center justify-center flex-shrink-0">
+                <Building2 className="w-4 h-4 text-rose-600 dark:text-rose-400 midnight:text-rose-400 purple:text-rose-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                Hostel Details
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+              <FormDropdown
+                label="Hostel Name"
+                icon={<Building2 className="w-full h-full" />}
+                iconBgColor="bg-rose-100 dark:bg-rose-900/30 midnight:bg-rose-900/30 purple:bg-rose-900/30"
+                iconColor="text-rose-600 dark:text-rose-400 midnight:text-rose-400 purple:text-rose-400"
+                value={formData.hostelName || ""}
+                onChange={(value) => onChange("hostelName", value)}
+                options={hostels}
+                placeholder="Select Hostel"
+              />
+              <FormInput
+                label="Room Number"
+                icon={<Hash className="w-full h-full" />}
+                iconBgColor="bg-rose-100 dark:bg-rose-900/30 midnight:bg-rose-900/30 purple:bg-rose-900/30"
+                iconColor="text-rose-600 dark:text-rose-400 midnight:text-rose-400 purple:text-rose-400"
+                value={formData.roomNumber || ""}
+                onChange={(value) => onChange("roomNumber", value)}
+                placeholder="e.g., 101, A-204"
+                type="text"
+              />
+            </div>
           </div>
 
-          {/* Room Number/Type */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-              Room Number
-            </label>
-            <input
-              type="text"
-              value={formData.roomNumber || ""}
-              onChange={(e) => onChange("roomNumber", e.target.value)}
-              placeholder="e.g., 101, A-204"
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-            />
+          {/* Info Box */}
+          <div className="pl-2">
+            <div className="p-4 rounded-lg bg-rose-50 dark:bg-rose-900/20 midnight:bg-rose-900/20 purple:bg-rose-900/20 border border-rose-200 dark:border-rose-800/30 midnight:border-rose-800/30 purple:border-rose-800/30">
+              <div className="flex items-start gap-2.5">
+                <div className="w-5 h-5 rounded bg-rose-100 dark:bg-rose-900/30 midnight:bg-rose-900/30 purple:bg-rose-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Info className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 midnight:text-rose-400 purple:text-rose-400" />
+                </div>
+                <p className="text-sm text-rose-700 dark:text-rose-300 midnight:text-rose-300 purple:text-rose-300">
+                  <strong className="font-semibold">Note:</strong> Hostel
+                  information is optional and only applicable for boarding
+                  students. Leave blank for day students.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Info Box */}
-        <div className="mt-6 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 border border-blue-200 dark:border-blue-800/30 midnight:border-cyan-800/30 purple:border-pink-800/30">
-          <p className="text-sm text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
-            <strong>Note:</strong> Hostel information is optional and only
-            applicable for boarding students. Leave blank for day students.
-          </p>
-        </div>
-      </div>
-    </div>
+      )}
+    </section>
   );
 }

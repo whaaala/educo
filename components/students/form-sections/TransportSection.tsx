@@ -1,6 +1,22 @@
 "use client";
 
-import { Bus } from "lucide-react";
+import { useState } from "react";
+import {
+  Bus,
+  Route,
+  Car,
+  MapPin,
+  ChevronUp,
+  ChevronDown,
+  Info
+} from "lucide-react";
+import FormInput from "@/components/shared/FormInput";
+import FormDropdown from "@/components/shared/FormDropdown";
+import {
+  getTransportRoutes,
+  getTransportVehicles,
+  getPickupPoints,
+} from "@/lib/mockTransport";
 
 interface TransportSectionProps {
   formData: any;
@@ -11,97 +27,107 @@ export default function TransportSection({
   formData,
   onChange,
 }: TransportSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  // Get transport data from reusable mock data
+  const routes = getTransportRoutes();
+  const vehicles = getTransportVehicles();
+  const pickupPoints = getPickupPoints();
+
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-lg overflow-hidden">
-      {/* Section Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-amber-500 dark:from-orange-600 dark:to-amber-600 midnight:from-orange-700 midnight:to-amber-700 purple:from-amber-600 purple:to-orange-600 px-6 py-4">
+    <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+      {/* Collapsible Header */}
+      <button
+        type="button"
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full bg-indigo-50/50 dark:bg-indigo-900/10 midnight:bg-indigo-900/10 purple:bg-indigo-900/10 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 midnight:hover:bg-indigo-900/20 purple:hover:bg-indigo-900/20 px-6 py-3 flex items-center justify-between transition-all duration-200 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+      >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-            <Bus className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-indigo-900/30 flex items-center justify-center">
+            <Bus className="w-4 h-4 text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-indigo-400" />
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">
+          <div className="text-left">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
               Transport Information
             </h2>
-            <p className="text-sm text-white/80">
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
               School transport and route details
             </p>
           </div>
         </div>
-      </div>
+        <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 cursor-pointer">
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          )}
+        </div>
+      </button>
 
-      {/* Form Content */}
-      <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Route Name */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-              Route Name
-            </label>
-            <select
-              value={formData.transportRoute || ""}
-              onChange={(e) => onChange("transportRoute", e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-            >
-              <option value="">Select Route</option>
-              <option value="Route 1 - Ikeja">Route 1 - Ikeja</option>
-              <option value="Route 2 - Victoria Island">
-                Route 2 - Victoria Island
-              </option>
-              <option value="Route 3 - Lekki">Route 3 - Lekki</option>
-              <option value="Route 4 - Surulere">Route 4 - Surulere</option>
-              <option value="Route 5 - Ikoyi">Route 5 - Ikoyi</option>
-              <option value="Route 6 - Ajah">Route 6 - Ajah</option>
-              <option value="Route 7 - Yaba">Route 7 - Yaba</option>
-              <option value="Route 8 - Gbagada">Route 8 - Gbagada</option>
-            </select>
+      {/* Collapsible Content */}
+      {isExpanded && (
+        <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10 animate-in fade-in duration-200">
+          {/* Transport Details Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-900/20 midnight:bg-indigo-900/20 purple:bg-indigo-900/20 flex items-center justify-center flex-shrink-0">
+                <Bus className="w-4 h-4 text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-indigo-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                Transport Details
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+              <FormDropdown
+                label="Route Name"
+                icon={<Route className="w-full h-full" />}
+                iconBgColor="bg-indigo-100 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-indigo-900/30"
+                iconColor="text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-indigo-400"
+                value={formData.transportRoute || ""}
+                onChange={(value) => onChange("transportRoute", value)}
+                options={routes}
+                placeholder="Select Route"
+              />
+              <FormDropdown
+                label="Vehicle Number"
+                icon={<Car className="w-full h-full" />}
+                iconBgColor="bg-indigo-100 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-indigo-900/30"
+                iconColor="text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-indigo-400"
+                value={formData.vehicleNumber || ""}
+                onChange={(value) => onChange("vehicleNumber", value)}
+                options={vehicles}
+                placeholder="Select Vehicle"
+              />
+              <FormDropdown
+                label="Pickup Point"
+                icon={<MapPin className="w-full h-full" />}
+                iconBgColor="bg-indigo-100 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-indigo-900/30"
+                iconColor="text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-indigo-400"
+                value={formData.pickupPoint || ""}
+                onChange={(value) => onChange("pickupPoint", value)}
+                options={pickupPoints}
+                placeholder="Select pickup point"
+              />
+            </div>
           </div>
 
-          {/* Vehicle Number */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-              Vehicle Number
-            </label>
-            <select
-              value={formData.vehicleNumber || ""}
-              onChange={(e) => onChange("vehicleNumber", e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-            >
-              <option value="">Select Vehicle</option>
-              <option value="BUS-001">BUS-001</option>
-              <option value="BUS-002">BUS-002</option>
-              <option value="BUS-003">BUS-003</option>
-              <option value="BUS-004">BUS-004</option>
-              <option value="BUS-005">BUS-005</option>
-              <option value="BUS-006">BUS-006</option>
-              <option value="VAN-001">VAN-001</option>
-              <option value="VAN-002">VAN-002</option>
-            </select>
-          </div>
-
-          {/* Pickup Point */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-              Pickup Point
-            </label>
-            <input
-              type="text"
-              value={formData.pickupPoint || ""}
-              onChange={(e) => onChange("pickupPoint", e.target.value)}
-              placeholder="Enter pickup location"
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-            />
+          {/* Info Box */}
+          <div className="pl-2">
+            <div className="p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 midnight:bg-indigo-900/20 purple:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800/30 midnight:border-indigo-800/30 purple:border-indigo-800/30">
+              <div className="flex items-start gap-2.5">
+                <div className="w-5 h-5 rounded bg-indigo-100 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-indigo-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Info className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-indigo-400" />
+                </div>
+                <p className="text-sm text-indigo-700 dark:text-indigo-300 midnight:text-indigo-300 purple:text-indigo-300">
+                  <strong className="font-semibold">Note:</strong> Transport
+                  information is optional. Leave blank if the student does not
+                  use school transport services.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Info Box */}
-        <div className="mt-6 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 border border-blue-200 dark:border-blue-800/30 midnight:border-cyan-800/30 purple:border-pink-800/30">
-          <p className="text-sm text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
-            <strong>Note:</strong> Transport information is optional. Leave blank
-            if the student does not use school transport services.
-          </p>
-        </div>
-      </div>
-    </div>
+      )}
+    </section>
   );
 }

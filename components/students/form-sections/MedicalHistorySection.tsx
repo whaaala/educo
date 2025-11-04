@@ -1,7 +1,23 @@
 "use client";
 
-import { Activity } from "lucide-react";
+import { useState } from "react";
+import {
+  Activity,
+  ChevronUp,
+  ChevronDown,
+  Info,
+  Heart,
+  Pill,
+  Stethoscope,
+  Phone,
+  Building2,
+  UtensilsCrossed,
+  FileText,
+  AlertCircle,
+} from "lucide-react";
 import TagInput from "@/components/shared/TagInput";
+import FormInput from "@/components/shared/FormInput";
+import FormTextarea from "@/components/shared/FormTextarea";
 
 interface MedicalHistorySectionProps {
   formData: any;
@@ -12,6 +28,8 @@ export default function MedicalHistorySection({
   formData,
   onChange,
 }: MedicalHistorySectionProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
   const commonAllergies = [
     "Peanuts",
     "Tree Nuts",
@@ -46,166 +64,223 @@ export default function MedicalHistorySection({
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-lg overflow-hidden">
-      {/* Section Header */}
-      <div className="bg-gradient-to-r from-red-500 to-pink-500 dark:from-red-600 dark:to-pink-600 midnight:from-red-700 midnight:to-pink-700 purple:from-pink-600 purple:to-red-600 px-6 py-4">
+    <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+      {/* Collapsible Header */}
+      <button
+        type="button"
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full bg-pink-50/50 dark:bg-pink-900/10 midnight:bg-pink-900/10 purple:bg-pink-900/10 hover:bg-pink-50 dark:hover:bg-pink-900/20 midnight:hover:bg-pink-900/20 purple:hover:bg-pink-900/20 px-6 py-3 flex items-center justify-between transition-all duration-200 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+      >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-            <Activity className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-pink-100 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30 flex items-center justify-center">
+            <Activity className="w-4 h-4 text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400" />
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">
+          <div className="text-left">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
               Medical History & Health Information
             </h2>
-            <p className="text-sm text-white/80">
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
               Student health details and medical conditions
             </p>
           </div>
         </div>
-      </div>
-
-      {/* Form Content */}
-      <div className="p-6 space-y-6">
-        {/* Medical Conditions */}
-        <TagInput
-          label="Medical Conditions (if any)"
-          value={formData.medicalConditions || []}
-          onChange={(tags) => onChange("medicalConditions", tags)}
-          placeholder="Type condition and press Enter"
-          suggestions={commonConditions}
-        />
-
-        {/* Allergies */}
-        <TagInput
-          label="Allergies"
-          value={formData.allergies || []}
-          onChange={(tags) => onChange("allergies", tags)}
-          placeholder="Type allergy and press Enter"
-          suggestions={commonAllergies}
-        />
-
-        {/* Current Medications */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-            Current Medications
-          </label>
-          <textarea
-            value={formData.currentMedications || ""}
-            onChange={(e) => onChange("currentMedications", e.target.value)}
-            placeholder="List any medications the student is currently taking, including dosage and frequency"
-            rows={3}
-            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all resize-none"
-          />
+        <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 cursor-pointer">
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          )}
         </div>
+      </button>
 
-        {/* Previous Surgeries/Hospitalizations */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-            Previous Surgeries or Hospitalizations
-          </label>
-          <textarea
-            value={formData.previousSurgeries || ""}
-            onChange={(e) => onChange("previousSurgeries", e.target.value)}
-            placeholder="Describe any previous surgeries or major hospitalizations"
-            rows={3}
-            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all resize-none"
-          />
-        </div>
-
-        {/* Emergency Contact (Medical) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-              Doctor&apos;s Name
-            </label>
-            <input
-              type="text"
-              value={formData.doctorName || ""}
-              onChange={(e) => onChange("doctorName", e.target.value)}
-              placeholder="Enter family doctor's name"
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-            />
+      {/* Collapsible Content */}
+      {isExpanded && (
+        <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10 animate-in fade-in duration-200">
+          {/* Medical Conditions & Allergies Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-pink-100 dark:bg-pink-900/20 midnight:bg-pink-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-4 h-4 text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                Medical Conditions & Allergies
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
+                  <div className="w-4 h-4 rounded bg-pink-100 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+                    <div className="w-2.5 h-2.5 text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400">
+                      <Stethoscope className="w-full h-full" />
+                    </div>
+                  </div>
+                  <span>Medical Conditions (if any)</span>
+                </label>
+                <TagInput
+                  value={formData.medicalConditions || []}
+                  onChange={(tags) => onChange("medicalConditions", tags)}
+                  placeholder="Type condition and press Enter"
+                  suggestions={commonConditions}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
+                  <div className="w-4 h-4 rounded bg-pink-100 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+                    <div className="w-2.5 h-2.5 text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400">
+                      <Heart className="w-full h-full" />
+                    </div>
+                  </div>
+                  <span>Allergies</span>
+                </label>
+                <TagInput
+                  value={formData.allergies || []}
+                  onChange={(tags) => onChange("allergies", tags)}
+                  placeholder="Type allergy and press Enter"
+                  suggestions={commonAllergies}
+                />
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-              Doctor&apos;s Phone Number
-            </label>
-            <input
-              type="tel"
-              value={formData.doctorPhone || ""}
-              onChange={(e) => onChange("doctorPhone", e.target.value)}
-              placeholder="+234xxxxxxxxxx"
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-            />
+          {/* Medications & Medical History Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-pink-100 dark:bg-pink-900/20 midnight:bg-pink-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
+                <Pill className="w-4 h-4 text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                Medications & Medical History
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+              <FormTextarea
+                label="Current Medications"
+                icon={<Pill className="w-full h-full" />}
+                iconBgColor="bg-pink-100 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30"
+                iconColor="text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400"
+                value={formData.currentMedications || ""}
+                onChange={(value) => onChange("currentMedications", value)}
+                placeholder="List any medications the student is currently taking, including dosage and frequency"
+                rows={3}
+              />
+              <FormTextarea
+                label="Previous Surgeries or Hospitalizations"
+                icon={<Stethoscope className="w-full h-full" />}
+                iconBgColor="bg-pink-100 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30"
+                iconColor="text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400"
+                value={formData.previousSurgeries || ""}
+                onChange={(value) => onChange("previousSurgeries", value)}
+                placeholder="Describe any previous surgeries or major hospitalizations"
+                rows={3}
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-              Hospital/Clinic Name
-            </label>
-            <input
-              type="text"
-              value={formData.hospitalName || ""}
-              onChange={(e) => onChange("hospitalName", e.target.value)}
-              placeholder="Enter preferred hospital/clinic"
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-            />
+          {/* Emergency Contact (Medical) Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-pink-100 dark:bg-pink-900/20 midnight:bg-pink-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
+                <Phone className="w-4 h-4 text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                Emergency Contact (Medical)
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+              <FormInput
+                label="Doctor's Name"
+                icon={<Stethoscope className="w-full h-full" />}
+                iconBgColor="bg-pink-100 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30"
+                iconColor="text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400"
+                value={formData.doctorName || ""}
+                onChange={(value) => onChange("doctorName", value)}
+                placeholder="Enter family doctor's name"
+                type="text"
+              />
+              <FormInput
+                label="Doctor's Phone Number"
+                icon={<Phone className="w-full h-full" />}
+                iconBgColor="bg-pink-100 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30"
+                iconColor="text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400"
+                value={formData.doctorPhone || ""}
+                onChange={(value) => onChange("doctorPhone", value)}
+                placeholder="+234xxxxxxxxxx"
+                type="text"
+              />
+              <FormInput
+                label="Hospital/Clinic Name"
+                icon={<Building2 className="w-full h-full" />}
+                iconBgColor="bg-pink-100 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30"
+                iconColor="text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400"
+                value={formData.hospitalName || ""}
+                onChange={(value) => onChange("hospitalName", value)}
+                placeholder="Enter preferred hospital/clinic"
+                type="text"
+              />
+              <FormInput
+                label="Hospital Phone Number"
+                icon={<Phone className="w-full h-full" />}
+                iconBgColor="bg-pink-100 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30"
+                iconColor="text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400"
+                value={formData.hospitalPhone || ""}
+                onChange={(value) => onChange("hospitalPhone", value)}
+                placeholder="+234xxxxxxxxxx"
+                type="text"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-              Hospital Phone Number
-            </label>
-            <input
-              type="tel"
-              value={formData.hospitalPhone || ""}
-              onChange={(e) => onChange("hospitalPhone", e.target.value)}
-              placeholder="+234xxxxxxxxxx"
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-            />
+          {/* Dietary & Additional Information Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-pink-100 dark:bg-pink-900/20 midnight:bg-pink-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
+                <UtensilsCrossed className="w-4 h-4 text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                Dietary & Additional Information
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+              <FormTextarea
+                label="Special Dietary Requirements"
+                icon={<UtensilsCrossed className="w-full h-full" />}
+                iconBgColor="bg-pink-100 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30"
+                iconColor="text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400"
+                value={formData.dietaryRequirements || ""}
+                onChange={(value) => onChange("dietaryRequirements", value)}
+                placeholder="Describe any special dietary needs or restrictions (e.g., vegetarian, halal, kosher, food intolerances)"
+                rows={2}
+              />
+              <FormTextarea
+                label="Additional Medical Notes"
+                icon={<FileText className="w-full h-full" />}
+                iconBgColor="bg-pink-100 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30"
+                iconColor="text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400"
+                value={formData.additionalMedicalNotes || ""}
+                onChange={(value) => onChange("additionalMedicalNotes", value)}
+                placeholder="Any other medical information the school should be aware of"
+                rows={2}
+              />
+            </div>
+          </div>
+
+          {/* Info Box */}
+          <div className="pl-2">
+            <div className="p-4 rounded-lg bg-pink-50 dark:bg-pink-900/20 midnight:bg-pink-900/20 purple:bg-pink-900/20 border border-pink-200 dark:border-pink-800/30 midnight:border-pink-800/30 purple:border-pink-800/30">
+              <div className="flex items-start gap-2.5">
+                <div className="w-5 h-5 rounded bg-pink-100 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Info className="w-3.5 h-3.5 text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400" />
+                </div>
+                <p className="text-sm text-pink-700 dark:text-pink-300 midnight:text-pink-300 purple:text-pink-300">
+                  <strong className="font-semibold">Confidential:</strong> All
+                  medical information will be kept strictly confidential and used
+                  only for the student&apos;s health and safety at school.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Special Dietary Requirements */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-            Special Dietary Requirements
-          </label>
-          <textarea
-            value={formData.dietaryRequirements || ""}
-            onChange={(e) => onChange("dietaryRequirements", e.target.value)}
-            placeholder="Describe any special dietary needs or restrictions (e.g., vegetarian, halal, kosher, food intolerances)"
-            rows={2}
-            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all resize-none"
-          />
-        </div>
-
-        {/* Additional Medical Notes */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-            Additional Medical Notes
-          </label>
-          <textarea
-            value={formData.additionalMedicalNotes || ""}
-            onChange={(e) =>
-              onChange("additionalMedicalNotes", e.target.value)
-            }
-            placeholder="Any other medical information the school should be aware of"
-            rows={3}
-            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all resize-none"
-          />
-        </div>
-
-        {/* Info Box */}
-        <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 border border-red-200 dark:border-red-800/30 midnight:border-red-800/30 purple:border-red-800/30">
-          <p className="text-sm text-red-700 dark:text-red-300 midnight:text-red-300 purple:text-red-300">
-            <strong>Confidential:</strong> All medical information will be kept
-            strictly confidential and used only for the student&apos;s health
-            and safety at school.
-          </p>
-        </div>
-      </div>
-    </div>
+      )}
+    </section>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useRef, useEffect } from "react";
 
 interface FormTextareaProps {
   label: string;
@@ -25,11 +25,32 @@ export default function FormTextarea({
   rows = 4,
   optional = false,
 }: FormTextareaProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Calculate minimum height based on rows (approximately 2.5rem per row including padding)
+  const minHeight = rows * 40; // 40px per row (2.5rem base + padding)
+
+  // Auto-resize textarea
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      // Reset height to calculate scrollHeight correctly
+      textarea.style.height = "auto";
+      // Set height to scrollHeight or minimum height, whichever is larger
+      const newHeight = Math.max(textarea.scrollHeight, minHeight);
+      textarea.style.height = `${newHeight}px`;
+    }
+  }, [value, minHeight]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onChange(e.target.value);
+  };
+
   return (
     <div className="group">
-      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-2">
-        <div className={`w-7 h-7 rounded-lg ${iconBgColor} flex items-center justify-center`}>
-          <div className={`w-3.5 h-3.5 ${iconColor}`}>{icon}</div>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
+        <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
+          <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
         </div>
         <span>{label}</span>
         {optional && (
@@ -37,16 +58,15 @@ export default function FormTextarea({
         )}
       </label>
       <div className="relative">
-        <div className={`absolute left-4 top-4 w-4 h-4 ${iconColor} pointer-events-none`}>
-          {icon}
-        </div>
         <textarea
+          ref={textareaRef}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={handleChange}
           placeholder={placeholder}
           rows={rows}
-          className="w-full pl-12 pr-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all hover:border-blue-300 dark:hover:border-gray-600 shadow-sm resize-none"
-        ></textarea>
+          style={{ minHeight: `${minHeight}px` }}
+          className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 placeholder:font-normal focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 resize-y overflow-hidden"
+        />
       </div>
     </div>
   );

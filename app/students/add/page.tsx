@@ -262,7 +262,7 @@ export default function AddStudentPage() {
         <form
           ref={formRef}
           onSubmit={handleSubmit}
-          className="space-y-6 pb-32"
+          className="space-y-6 pb-32 md:pb-36 lg:pb-16 xl:pb-20"
         >
           {/* Personal Information */}
           <PersonalInformationSection

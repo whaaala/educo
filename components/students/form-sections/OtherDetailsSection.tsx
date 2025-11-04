@@ -1,6 +1,24 @@
 "use client";
 
-import { Info } from "lucide-react";
+import { useState } from "react";
+import {
+  Info,
+  FileText,
+  AlertCircle,
+  ChevronUp,
+  ChevronDown,
+  Building2,
+  User,
+  CreditCard,
+  Hash,
+  FileCheck,
+  Shield,
+  CheckCircle2,
+} from "lucide-react";
+import FormInput from "@/components/shared/FormInput";
+import FormDropdown from "@/components/shared/FormDropdown";
+import FormTextarea from "@/components/shared/FormTextarea";
+import { getBanks, getIdTypes } from "@/lib/mockBanks";
 
 interface OtherDetailsSectionProps {
   formData: any;
@@ -11,259 +29,259 @@ export default function OtherDetailsSection({
   formData,
   onChange,
 }: OtherDetailsSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-lg overflow-hidden">
-      {/* Section Header */}
-      <div className="bg-gradient-to-r from-gray-700 to-gray-900 dark:from-gray-800 dark:to-gray-950 midnight:from-gray-900 midnight:to-black purple:from-gray-900 purple:to-black px-6 py-4">
+    <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+      {/* Collapsible Header */}
+      <button
+        type="button"
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full bg-emerald-50/50 dark:bg-emerald-900/10 midnight:bg-emerald-900/10 purple:bg-emerald-900/10 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 midnight:hover:bg-emerald-900/20 purple:hover:bg-emerald-900/20 px-6 py-3 flex items-center justify-between transition-all duration-200 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+      >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-            <Info className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30 flex items-center justify-center">
+            <Info className="w-4 h-4 text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400" />
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">
+          <div className="text-left">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
               Other Details & Bank Information
             </h2>
-            <p className="text-sm text-white/80">
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
               Additional information and financial details
             </p>
           </div>
         </div>
-      </div>
+        <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 cursor-pointer">
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          )}
+        </div>
+      </button>
 
-      {/* Form Content */}
-      <div className="p-6 space-y-8">
-        {/* Bank Account Details */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-300 purple:text-pink-300 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 pb-2">
-            Bank Account Details (Optional)
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Bank Name */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Bank Name
-              </label>
-              <select
+      {/* Collapsible Content */}
+      {isExpanded && (
+        <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10 animate-in fade-in duration-200">
+          {/* Bank Account Details Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/20 midnight:bg-emerald-900/20 purple:bg-emerald-900/20 flex items-center justify-center flex-shrink-0">
+                <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                Bank Account Details (Optional)
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+              <FormDropdown
+                label="Bank Name"
+                icon={<Building2 className="w-full h-full" />}
+                iconBgColor="bg-emerald-100 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30"
+                iconColor="text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400"
                 value={formData.bankName || ""}
-                onChange={(e) => onChange("bankName", e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              >
-                <option value="">Select Bank</option>
-                <option value="Access Bank">Access Bank</option>
-                <option value="Zenith Bank">Zenith Bank</option>
-                <option value="GTBank">GTBank</option>
-                <option value="First Bank">First Bank</option>
-                <option value="UBA">UBA</option>
-                <option value="Ecobank">Ecobank</option>
-                <option value="Fidelity Bank">Fidelity Bank</option>
-                <option value="Union Bank">Union Bank</option>
-                <option value="Stanbic IBTC">Stanbic IBTC</option>
-                <option value="Sterling Bank">Sterling Bank</option>
-                <option value="Polaris Bank">Polaris Bank</option>
-                <option value="Wema Bank">Wema Bank</option>
-                <option value="Unity Bank">Unity Bank</option>
-                <option value="Keystone Bank">Keystone Bank</option>
-                <option value="FCMB">FCMB</option>
-                <option value="Heritage Bank">Heritage Bank</option>
-                <option value="Jaiz Bank">Jaiz Bank</option>
-                <option value="Providus Bank">Providus Bank</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            {/* Account Name */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Account Name
-              </label>
-              <input
-                type="text"
+                onChange={(value) => onChange("bankName", value)}
+                options={getBanks()}
+                placeholder="Select Bank"
+              />
+              <FormInput
+                label="Account Name"
+                icon={<User className="w-full h-full" />}
+                iconBgColor="bg-emerald-100 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30"
+                iconColor="text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400"
                 value={formData.accountName || ""}
-                onChange={(e) => onChange("accountName", e.target.value)}
+                onChange={(value) => onChange("accountName", value)}
                 placeholder="Enter account holder name"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
-
-            {/* Account Number */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Account Number
-              </label>
-              <input
                 type="text"
+              />
+              <FormInput
+                label="Account Number"
+                icon={<CreditCard className="w-full h-full" />}
+                iconBgColor="bg-emerald-100 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30"
+                iconColor="text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400"
                 value={formData.accountNumber || ""}
-                onChange={(e) => onChange("accountNumber", e.target.value)}
+                onChange={(value) => onChange("accountNumber", value)}
                 placeholder="Enter account number"
-                maxLength={10}
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
-
-            {/* IFSC/Sort Code */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                IFSC / Sort Code
-              </label>
-              <input
                 type="text"
+              />
+              <FormInput
+                label="IFSC / Sort Code"
+                icon={<Hash className="w-full h-full" />}
+                iconBgColor="bg-emerald-100 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30"
+                iconColor="text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400"
                 value={formData.ifscCode || ""}
-                onChange={(e) => onChange("ifscCode", e.target.value)}
+                onChange={(value) => onChange("ifscCode", value)}
                 placeholder="Enter IFSC or Sort Code"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              />
-            </div>
-          </div>
-
-          <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
-            <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
-              <strong>Note:</strong> Bank details may be used for scholarship
-              disbursements or refunds.
-            </p>
-          </div>
-        </div>
-
-        {/* National Identification */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-300 purple:text-pink-300 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 pb-2">
-            National Identification (Optional)
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* ID Type */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                ID Type
-              </label>
-              <select
-                value={formData.idType || ""}
-                onChange={(e) => onChange("idType", e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
-              >
-                <option value="">Select ID Type</option>
-                <option value="National ID (NIN)">National ID (NIN)</option>
-                <option value="Birth Certificate">Birth Certificate</option>
-                <option value="Passport">Passport</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            {/* ID Number */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                ID Number
-              </label>
-              <input
                 type="text"
+              />
+            </div>
+            <div className="pl-2">
+              <div className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 midnight:bg-emerald-900/20 purple:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30 midnight:border-emerald-800/30 purple:border-emerald-800/30">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded bg-emerald-100 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Info className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400" />
+                  </div>
+                  <p className="text-sm text-emerald-700 dark:text-emerald-300 midnight:text-emerald-300 purple:text-emerald-300">
+                    <strong className="font-semibold">Note:</strong> Bank details
+                    may be used for scholarship disbursements or refunds.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* National Identification Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/20 midnight:bg-emerald-900/20 purple:bg-emerald-900/20 flex items-center justify-center flex-shrink-0">
+                <FileCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                National Identification (Optional)
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+              <FormDropdown
+                label="ID Type"
+                icon={<Shield className="w-full h-full" />}
+                iconBgColor="bg-emerald-100 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30"
+                iconColor="text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400"
+                value={formData.idType || ""}
+                onChange={(value) => onChange("idType", value)}
+                options={getIdTypes()}
+                placeholder="Select ID Type"
+              />
+              <FormInput
+                label="ID Number"
+                icon={<Hash className="w-full h-full" />}
+                iconBgColor="bg-emerald-100 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30"
+                iconColor="text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400"
                 value={formData.idNumber || ""}
-                onChange={(e) => onChange("idNumber", e.target.value)}
+                onChange={(value) => onChange("idNumber", value)}
                 placeholder="Enter ID number"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all"
+                type="text"
               />
             </div>
           </div>
-        </div>
 
-        {/* Additional Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-300 purple:text-pink-300 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 pb-2">
-            Additional Information
-          </h3>
+          {/* Additional Information Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/20 midnight:bg-emerald-900/20 purple:bg-emerald-900/20 flex items-center justify-center flex-shrink-0">
+                <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                Additional Information
+              </h3>
+            </div>
+            <div className="pl-2">
+              <FormTextarea
+                label="Notes / Comments"
+                icon={<FileText className="w-full h-full" />}
+                iconBgColor="bg-emerald-100 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30"
+                iconColor="text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400"
+                value={formData.additionalNotes || ""}
+                onChange={(value) => onChange("additionalNotes", value)}
+                placeholder="Any other information that would be helpful for the school to know (special talents, interests, behavioral notes, etc.)"
+                rows={5}
+              />
+            </div>
+          </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-              Notes / Comments
-            </label>
-            <textarea
-              value={formData.additionalNotes || ""}
-              onChange={(e) => onChange("additionalNotes", e.target.value)}
-              placeholder="Any other information that would be helpful for the school to know (special talents, interests, behavioral notes, etc.)"
-              rows={5}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all resize-none"
-            />
+          {/* Emergency Instructions Section */}
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/20 midnight:bg-emerald-900/20 purple:bg-emerald-900/20 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                Emergency Instructions
+              </h3>
+            </div>
+            <div className="pl-2">
+              <FormTextarea
+                label="Special Instructions for Emergencies"
+                icon={<AlertCircle className="w-full h-full" />}
+                iconBgColor="bg-emerald-100 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30"
+                iconColor="text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400"
+                value={formData.emergencyInstructions || ""}
+                onChange={(value) => onChange("emergencyInstructions", value)}
+                placeholder="Provide any special instructions for the school staff in case of emergencies (e.g., who to contact first, special considerations, etc.)"
+                rows={4}
+              />
+            </div>
+          </div>
+
+          {/* Consent & Agreement Section */}
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/20 midnight:bg-emerald-900/20 purple:bg-emerald-900/20 flex items-center justify-center flex-shrink-0">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                Consent & Agreement
+              </h3>
+            </div>
+            <div className="space-y-3 pl-2">
+              <label className="flex items-start gap-3 cursor-pointer p-4 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10 midnight:bg-emerald-900/10 purple:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/30 midnight:border-emerald-800/30 purple:border-emerald-800/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 midnight:hover:bg-emerald-900/20 purple:hover:bg-emerald-900/20 transition-all">
+                <input
+                  type="checkbox"
+                  checked={formData.photoConsent || false}
+                  onChange={(e) => onChange("photoConsent", e.target.checked)}
+                  className="mt-1 w-5 h-5 text-emerald-600 dark:text-emerald-500 midnight:text-emerald-500 purple:text-emerald-500 rounded border-gray-300 dark:border-gray-600 focus:ring-emerald-500 dark:focus:ring-emerald-400 midnight:focus:ring-emerald-400 purple:focus:ring-emerald-400 focus:ring-2"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
+                  Permission has been requested and granted for the student&apos;s photo/video to be used in
+                  school publications, website, and promotional materials.
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer p-4 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10 midnight:bg-emerald-900/10 purple:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/30 midnight:border-emerald-800/30 purple:border-emerald-800/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 midnight:hover:bg-emerald-900/20 purple:hover:bg-emerald-900/20 transition-all">
+                <input
+                  type="checkbox"
+                  checked={formData.dataConsent || false}
+                  onChange={(e) => onChange("dataConsent", e.target.checked)}
+                  className="mt-1 w-5 h-5 text-emerald-600 dark:text-emerald-500 midnight:text-emerald-500 purple:text-emerald-500 rounded border-gray-300 dark:border-gray-600 focus:ring-emerald-500 dark:focus:ring-emerald-400 midnight:focus:ring-emerald-400 purple:focus:ring-emerald-400 focus:ring-2"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
+                  Permission has been requested and granted for the school to process and store the student&apos;s
+                  personal data in accordance with data protection regulations.
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer p-4 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10 midnight:bg-emerald-900/10 purple:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/30 midnight:border-emerald-800/30 purple:border-emerald-800/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 midnight:hover:bg-emerald-900/20 purple:hover:bg-emerald-900/20 transition-all">
+                <input
+                  type="checkbox"
+                  checked={formData.medicalConsent || false}
+                  onChange={(e) => onChange("medicalConsent", e.target.checked)}
+                  className="mt-1 w-5 h-5 text-emerald-600 dark:text-emerald-500 midnight:text-emerald-500 purple:text-emerald-500 rounded border-gray-300 dark:border-gray-600 focus:ring-emerald-500 dark:focus:ring-emerald-400 midnight:focus:ring-emerald-400 purple:focus:ring-emerald-400 focus:ring-2"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
+                  Permission has been requested and granted for the school to provide emergency medical treatment for
+                  the student if parents/guardians cannot be reached.
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* Final Info Box */}
+          <div className="pl-2 pt-2">
+            <div className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 midnight:bg-emerald-900/20 purple:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30 midnight:border-emerald-800/30 purple:border-emerald-800/30">
+              <div className="flex items-start gap-2.5">
+                <div className="w-5 h-5 rounded bg-emerald-100 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400" />
+                </div>
+                <p className="text-sm text-emerald-700 dark:text-emerald-300 midnight:text-emerald-300 purple:text-emerald-300">
+                  <strong className="font-semibold">Review carefully:</strong> Please
+                  review all information before submitting. Ensure all required
+                  fields are completed accurately.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Emergency Instructions */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-300 purple:text-pink-300 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 pb-2">
-            Emergency Instructions
-          </h3>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-              Special Instructions for Emergencies
-            </label>
-            <textarea
-              value={formData.emergencyInstructions || ""}
-              onChange={(e) =>
-                onChange("emergencyInstructions", e.target.value)
-              }
-              placeholder="Provide any special instructions for the school staff in case of emergencies (e.g., who to contact first, special considerations, etc.)"
-              rows={4}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 transition-all resize-none"
-            />
-          </div>
-        </div>
-
-        {/* Consent & Agreement */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-300 purple:text-pink-300 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 pb-2">
-            Consent & Agreement
-          </h3>
-
-          <div className="space-y-3">
-            <label className="flex items-start gap-3 cursor-pointer p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-gray-900 purple:hover:bg-gray-900 transition-all">
-              <input
-                type="checkbox"
-                checked={formData.photoConsent || false}
-                onChange={(e) => onChange("photoConsent", e.target.checked)}
-                className="mt-1 w-5 h-5 text-blue-600 dark:text-blue-500 midnight:text-cyan-500 purple:text-pink-500 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 focus:ring-2"
-              />
-              <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                I give permission for my child&apos;s photo/video to be used in
-                school publications, website, and promotional materials.
-              </span>
-            </label>
-
-            <label className="flex items-start gap-3 cursor-pointer p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-gray-900 purple:hover:bg-gray-900 transition-all">
-              <input
-                type="checkbox"
-                checked={formData.dataConsent || false}
-                onChange={(e) => onChange("dataConsent", e.target.checked)}
-                className="mt-1 w-5 h-5 text-blue-600 dark:text-blue-500 midnight:text-cyan-500 purple:text-pink-500 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 focus:ring-2"
-              />
-              <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                I consent to the school processing and storing my child&apos;s
-                personal data in accordance with data protection regulations.
-              </span>
-            </label>
-
-            <label className="flex items-start gap-3 cursor-pointer p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-gray-900 purple:hover:bg-gray-900 transition-all">
-              <input
-                type="checkbox"
-                checked={formData.medicalConsent || false}
-                onChange={(e) => onChange("medicalConsent", e.target.checked)}
-                className="mt-1 w-5 h-5 text-blue-600 dark:text-blue-500 midnight:text-cyan-500 purple:text-pink-500 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 focus:ring-2"
-              />
-              <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                I authorize the school to provide emergency medical treatment for
-                my child if I cannot be reached.
-              </span>
-            </label>
-          </div>
-        </div>
-
-        {/* Final Info Box */}
-        <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 midnight:bg-green-900/20 purple:bg-green-900/20 border border-green-200 dark:border-green-800/30 midnight:border-green-800/30 purple:border-green-800/30">
-          <p className="text-sm text-green-700 dark:text-green-300 midnight:text-green-300 purple:text-green-300">
-            <strong>Review carefully:</strong> Please review all information
-            before submitting. Ensure all required fields are completed
-            accurately.
-          </p>
-        </div>
-      </div>
-    </div>
+      )}
+    </section>
   );
 }

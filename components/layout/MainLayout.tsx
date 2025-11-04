@@ -30,7 +30,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           isMobileSidebarOpen={isMobileSidebarOpen}
           setIsMobileSidebarOpen={setIsMobileSidebarOpen}
         />
-        <main className="flex-1 overflow-y-auto pt-2 px-4 pb-6 lg:pt-2 lg:px-8 lg:pb-8">{children}</main>
+        <main className="flex-1 overflow-y-auto pt-2 px-4 pb-4 lg:pt-2 lg:px-8 lg:pb-6">{children}</main>
       </div>
     </div>
   );
