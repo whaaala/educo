@@ -122,7 +122,7 @@ export default function MedicalHistorySection({
                   <span>Medical Conditions (if any)</span>
                 </label>
                 <TagInput
-                  value={formData.medicalConditions || []}
+                  value={Array.isArray(formData.medicalConditions) ? formData.medicalConditions : []}
                   onChange={(tags) => onChange("medicalConditions", tags)}
                   placeholder="Type condition and press Enter"
                   suggestions={commonConditions}
@@ -138,7 +138,7 @@ export default function MedicalHistorySection({
                   <span>Allergies</span>
                 </label>
                 <TagInput
-                  value={formData.allergies || []}
+                  value={Array.isArray(formData.allergies) ? formData.allergies : []}
                   onChange={(tags) => onChange("allergies", tags)}
                   placeholder="Type allergy and press Enter"
                   suggestions={commonAllergies}

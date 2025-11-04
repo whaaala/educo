@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import PageLoader from "@/components/shared/PageLoader";
@@ -17,14 +17,27 @@ import PreviousSchoolSection from "@/components/students/form-sections/PreviousS
 import OtherDetailsSection from "@/components/students/form-sections/OtherDetailsSection";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { useAcademicYear } from "@/contexts/AcademicYearContext";
 import { validateForm, ValidationErrors } from "@/lib/validation";
 import { studentFormValidationRules } from "@/lib/studentFormValidation";
+import dynamic from "next/dynamic";
+import { getExtendedStudentDataById } from "@/lib/mockStudents";
 
-export default function AddStudentPage() {
+const ValidationErrorsModal = dynamic(
+  () => import("@/components/shared/ValidationErrorsModal"),
+  { ssr: false }
+);
+
+export default function EditStudentPage() {
+  const params = useParams();
+  const studentId = params?.id as string;
   const router = useRouter();
+  const { selectedYear } = useAcademicYear();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  const [showValidationModal, setShowValidationModal] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const isLoading = usePageLoad(800);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
@@ -80,13 +93,13 @@ export default function AddStudentPage() {
   // Form state
   const [formData, setFormData] = useState({
     // Personal Information
-    profilePhoto: null as File | null,
-    academicYear: "",
+    profilePhoto: null as File | string | null,
+    academicYear: selectedYear || "",
     studentNumber: "",
     admissionNumber: "",
     admissionDate: new Date().toISOString().split("T")[0],
     rollNumber: "",
-    status: "",
+    status: "Active",
     firstName: "",
     lastName: "",
     middleName: "",
@@ -125,7 +138,7 @@ export default function AddStudentPage() {
     secondaryAddressPhone: "",
 
     // Father's Info
-    fatherPhoto: null as File | null,
+    fatherPhoto: null as File | string | null,
     fatherFirstName: "",
     fatherLastName: "",
     fatherMiddleName: "",
@@ -140,7 +153,7 @@ export default function AddStudentPage() {
     fatherCountry: "Nigeria",
 
     // Mother's Info
-    motherPhoto: null as File | null,
+    motherPhoto: null as File | string | null,
     motherFirstName: "",
     motherLastName: "",
     motherMiddleName: "",
@@ -156,7 +169,7 @@ export default function AddStudentPage() {
 
     // Guardian Info
     guardianIs: "Father",
-    guardianPhoto: null as File | null,
+    guardianPhoto: null as File | string | null,
     guardianFirstName: "",
     guardianLastName: "",
     guardianMiddleName: "",
@@ -212,6 +225,82 @@ export default function AddStudentPage() {
     otherInformation: "",
   });
 
+  // Load student data when component mounts or studentId changes
+  useEffect(() => {
+    if (!studentId) {
+      console.error("No student ID provided in URL");
+      router.push("/students?view=grid");
+      return;
+    }
+
+    // Fetch student data
+    const fetchStudentData = async () => {
+      setIsLoadingData(true);
+
+      try {
+        // Simulate API delay
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        // Get student data from shared mock data using the student ID from URL
+        const extendedStudentData = getExtendedStudentDataById(studentId, selectedYear || "2024/2025");
+
+        if (extendedStudentData) {
+          console.log(`Successfully loaded student data for ID: ${studentId}`, extendedStudentData);
+          
+          // Normalize array fields to ensure they're always arrays (never undefined/null)
+          const normalizedData = {
+            ...extendedStudentData,
+            languagesKnown: Array.isArray(extendedStudentData.languagesKnown) ? extendedStudentData.languagesKnown : [],
+            allergies: Array.isArray(extendedStudentData.allergies) ? extendedStudentData.allergies : [],
+            medications: Array.isArray(extendedStudentData.medications) ? extendedStudentData.medications : [],
+            medicalConditions: Array.isArray(extendedStudentData.medicalConditions) ? extendedStudentData.medicalConditions : [],
+            siblings: Array.isArray(extendedStudentData.siblings) ? extendedStudentData.siblings : [],
+            documents: Array.isArray(extendedStudentData.documents) ? extendedStudentData.documents : [],
+          };
+          
+          // Map ExtendedStudentData to formData structure
+          setFormData(prev => ({
+            ...prev,
+            ...normalizedData,
+          }));
+          
+          setIsLoadingData(false);
+          return;
+        } else {
+          // Student not found - redirect back to students page
+          console.error(`Student with ID ${studentId} not found`);
+          alert(`Student with ID ${studentId} not found. Redirecting to students page.`);
+          router.push("/students?view=grid");
+          return;
+        }
+      } catch (error) {
+        console.error("Error fetching student data:", error);
+        alert("Error loading student data. Please try again.");
+        router.push("/students?view=grid");
+        setIsLoadingData(false);
+        return;
+      }
+    };
+
+    fetchStudentData();
+  }, [studentId, selectedYear, router]);
+
+  // Set academic year from context if not already set
+  useEffect(() => {
+    if (selectedYear) {
+      setFormData((prev) => {
+        // Only update if academicYear is empty or doesn't match selectedYear
+        if (!prev.academicYear || prev.academicYear !== selectedYear) {
+          return {
+            ...prev,
+            academicYear: selectedYear,
+          };
+        }
+        return prev;
+      });
+    }
+  }, [selectedYear]);
+
   const handleChange = (field: string, value: any) => {
     setFormData((prev) => ({
       ...prev,
@@ -231,30 +320,74 @@ export default function AddStudentPage() {
     setTouchedFields((prev) => new Set(prev).add(field));
   };
 
-  const validateFormData = (): boolean => {
+  const validateFormData = (): ValidationErrors => {
     const validationErrors = validateForm(formData, studentFormValidationRules);
     setErrors(validationErrors);
-    
+
     // Mark all fields as touched
     const allFields = Object.keys(studentFormValidationRules);
     setTouchedFields(new Set(allFields));
-    
-    return Object.keys(validationErrors).length === 0;
+
+    return validationErrors;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate form before submission
-    if (!validateFormData()) {
-      // Scroll to first error
-      const firstErrorField = Object.keys(errors)[0];
-      if (firstErrorField) {
-        const errorElement = document.querySelector(`[data-field="${firstErrorField}"]`);
-        if (errorElement) {
-          errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    // Prepare form data
+    const updatedFormData = { ...formData };
+
+    // Validate form before submission using updated data
+    const validationErrors = validateForm(updatedFormData, studentFormValidationRules);
+    setErrors(validationErrors);
+
+    // Mark all fields as touched
+    const allFields = Object.keys(studentFormValidationRules);
+    setTouchedFields(new Set(allFields));
+    const errorKeys = Object.keys(validationErrors);
+    const errorCount = errorKeys.length;
+
+    if (errorCount > 0) {
+      // Log validation errors with explicit details
+      console.log("⚠️ Form validation failed!");
+      console.log("Error count:", errorCount);
+      console.log("Error keys:", errorKeys);
+      console.log("Errors object:", JSON.parse(JSON.stringify(validationErrors)));
+      console.log("Form data:", JSON.parse(JSON.stringify(updatedFormData)));
+
+      // Show validation errors modal
+      setShowValidationModal(true);
+
+      // Scroll to first error after DOM updates
+      setTimeout(() => {
+        const firstErrorField = errorKeys[0];
+        if (firstErrorField) {
+          // Try to find the error field using multiple strategies
+          let errorElement = document.querySelector(`[data-field="${firstErrorField}"]`);
+
+          if (!errorElement) {
+            // Look for input/select with name or id matching the field
+            errorElement = document.querySelector(
+              `input[name="${firstErrorField}"], select[name="${firstErrorField}"], [name="${firstErrorField}"]`
+            );
+          }
+
+          if (!errorElement) {
+            // Look for the form section containing this field
+            errorElement = document.querySelector(`[id*="${firstErrorField}"]`);
+          }
+
+          if (errorElement) {
+            errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          } else {
+            // Fallback: scroll to first error message element
+            const errorMsg = document.querySelector('[class*="error"]');
+            if (errorMsg) {
+              errorMsg.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }
         }
-      }
+      }, 100);
       return;
     }
 
@@ -262,7 +395,10 @@ export default function AddStudentPage() {
 
     try {
       // TODO: Implement form submission logic
-      console.log("Form data:", formData);
+      console.log("✅ Form validation passed!");
+      console.log("Updating student with ID:", studentId);
+      console.log("Form data:", JSON.parse(JSON.stringify(updatedFormData)));
+      console.log("Form data (JSON):", JSON.stringify(updatedFormData, null, 2));
 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -283,24 +419,25 @@ export default function AddStudentPage() {
   return (
     <MainLayout>
       {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Form" />
+      <PageLoader isLoading={isLoading || isLoadingData} loadingText={isLoadingData ? "Loading Student Data" : "Loading Form"} />
 
       {/* Main Content - Fades in after loading */}
       <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
         {/* Header */}
         <div className="py-4 mb-2">
           <PageHeader
-            title="Add Student"
+            title="Edit Student"
             breadcrumbs={[
               { label: "Dashboard", href: "/" },
               { label: "Students", href: "/students?view=grid" },
-              { label: "Add Student", isActive: true },
+              { label: "Edit Student", isActive: true },
             ]}
           />
         </div>
 
         {/* Form */}
         <form
+          id="edit-student-form"
           ref={formRef}
           onSubmit={handleSubmit}
           className="space-y-6 pb-32 md:pb-36 lg:pb-16 xl:pb-20"
@@ -313,64 +450,64 @@ export default function AddStudentPage() {
           />
 
           {/* Parents & Guardian Information */}
-          <ParentsGuardianSection 
-            formData={formData} 
+          <ParentsGuardianSection
+            formData={formData}
             onChange={handleChange}
             errors={errors}
           />
 
           {/* Siblings */}
-          <SiblingsSection 
-            formData={formData} 
+          <SiblingsSection
+            formData={formData}
             onChange={handleChange}
             errors={errors}
           />
 
           {/* Address */}
-          <AddressSection 
-            formData={formData} 
+          <AddressSection
+            formData={formData}
             onChange={handleChange}
             errors={errors}
           />
 
           {/* Transport Information */}
-          <TransportSection 
-            formData={formData} 
+          <TransportSection
+            formData={formData}
             onChange={handleChange}
             errors={errors}
           />
 
           {/* Hostel Information */}
-          <HostelSection 
-            formData={formData} 
+          <HostelSection
+            formData={formData}
             onChange={handleChange}
             errors={errors}
           />
 
           {/* Documents & Certificates */}
-          <DocumentsSection 
-            formData={formData} 
+          <DocumentsSection
+            formData={formData}
             onChange={handleChange}
             errors={errors}
           />
 
           {/* Medical History */}
-          <MedicalHistorySection 
-            formData={formData} 
+          <MedicalHistorySection
+            formData={formData}
             onChange={handleChange}
             errors={errors}
           />
 
           {/* Previous School Details */}
-          <PreviousSchoolSection 
-            formData={formData} 
+          <PreviousSchoolSection
+            formData={formData}
             onChange={handleChange}
             errors={errors}
           />
 
           {/* Other Details */}
-          <OtherDetailsSection 
-            formData={formData} 
+          <OtherDetailsSection
+            formData={formData}
             onChange={handleChange}
             errors={errors}
           />
@@ -390,21 +527,28 @@ export default function AddStudentPage() {
             <button
               type="button"
               onClick={handleCancel}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-all duration-200"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-all duration-200 cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
+              form="edit-student-form"
               disabled={isSubmitting}
-              onClick={handleSubmit}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl cursor-pointer"
             >
-              {isSubmitting ? "Adding Student..." : "Add Student"}
+              {isSubmitting ? "Updating Student..." : "Update Student"}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Validation Errors Modal */}
+      <ValidationErrorsModal
+        isOpen={showValidationModal}
+        onClose={() => setShowValidationModal(false)}
+        errors={errors}
+      />
     </MainLayout>
   );
 }

@@ -43,6 +43,7 @@ export interface ProfileCardProps {
   };
   customActions?: ProfileAction[];
   onMenuClick?: () => void;
+  onEdit?: (id: string) => void;
   isSelected?: boolean;
   onSelectionChange?: (id: string, selected: boolean) => void;
 }
@@ -58,6 +59,7 @@ export default function ProfileCard({
   primaryAction = { label: "Add Fees" },
   customActions,
   onMenuClick,
+  onEdit,
   isSelected = false,
   onSelectionChange,
 }: ProfileCardProps) {
@@ -351,7 +353,9 @@ export default function ProfileCard({
             <button
               onClick={() => {
                 setIsMenuOpen(false);
-                // Handle edit action
+                if (onEdit) {
+                  onEdit(id);
+                }
               }}
               className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
               style={{ cursor: "pointer" }}

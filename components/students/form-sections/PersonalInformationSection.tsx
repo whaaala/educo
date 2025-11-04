@@ -362,7 +362,7 @@ export default function PersonalInformationSection({
               <div>
                 <TagInput
                   label="Languages Known"
-                  value={formData.languagesKnown || []}
+                  value={Array.isArray(formData.languagesKnown) ? formData.languagesKnown : []}
                   onChange={(tags) => onChange("languagesKnown", tags)}
                   placeholder="Type a language and press Enter"
                   suggestions={languageOptions}

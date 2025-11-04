@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Upload, X, ImageIcon, File } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Upload, X, ImageIcon } from "lucide-react";
 
 interface FileUploadProps {
   label?: string;
   accept?: string;
   maxSize?: number; // in MB
-  value: File | null;
+  value: File | string | null; // Accept File, URL string, or null
   onChange: (file: File | null) => void;
   helpText?: string;
   preview?: boolean;
@@ -32,6 +32,28 @@ export default function FileUpload({
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Handle existing URLs or new File uploads
+  useEffect(() => {
+    if (typeof value === "string" && value.trim() !== "") {
+      // Value is an existing URL
+      setPreviewUrl(value);
+    } else if (value instanceof File) {
+      // Value is a new File - generate preview
+      if (preview && value.type.startsWith("image/")) {
+        setIsLoadingPreview(true);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewUrl(reader.result as string);
+          setIsLoadingPreview(false);
+        };
+        reader.readAsDataURL(value);
+      }
+    } else {
+      // Value is null - clear preview
+      setPreviewUrl(null);
+    }
+  }, [value, preview]);
+
   const handleFileChange = (file: File | null) => {
     if (!file) return;
 
@@ -43,17 +65,6 @@ export default function FileUpload({
 
     setError(null);
     onChange(file);
-
-    // Generate preview for images
-    if (preview && file.type.startsWith("image/")) {
-      setIsLoadingPreview(true);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-        setIsLoadingPreview(false);
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,10 +156,10 @@ export default function FileUpload({
               <div className="flex items-center justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
-                    {value.name}
+                    {value instanceof File ? value.name : "Profile Picture"}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
-                    {(value.size / 1024).toFixed(1)} KB
+                    {value instanceof File ? `${(value.size / 1024).toFixed(1)} KB` : "Existing image"}
                   </p>
                 </div>
                 <button
@@ -236,10 +247,12 @@ export default function FileUpload({
             {value ? (
               <div>
                 <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
-                  {value.name}
+                  {value instanceof File ? value.name : "Profile Picture"}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mt-1">
-                  {(value.size / 1024).toFixed(1)} KB • Click anywhere to change
+                  {value instanceof File 
+                    ? `${(value.size / 1024).toFixed(1)} KB • Click anywhere to change`
+                    : "Existing image • Click anywhere to change"}
                 </p>
               </div>
             ) : (

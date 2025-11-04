@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Student } from "./StudentCard";
 import { MoreVertical, MessageCircle, Phone, Mail, Eye, Edit, Lock, TrendingUp, Trash2, Plus } from "lucide-react";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
@@ -23,6 +24,7 @@ interface StudentTableProps {
 }
 
 export default function StudentTable({ students, isLoading = false, loadingMessage = "Loading...", onClearFilters, hasActiveFilters = false, totalStudentsCount, selectedIds: externalSelectedIds, onSelectionChange }: StudentTableProps) {
+  const router = useRouter();
   const { isCollapsed } = useSidebar();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -98,6 +100,9 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
     if (action === 'Delete') {
       setStudentToDelete(student);
       setIsDeleteModalOpen(true);
+      setOpenMenuStudentId(null);
+    } else if (action === 'Edit') {
+      router.push(`/students/edit/${student.id}`);
       setOpenMenuStudentId(null);
     } else {
       console.log(`${action} clicked for student:`, student.id);

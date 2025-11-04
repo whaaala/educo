@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import ProfileCard from "@/components/shared/ProfileCard";
 
 export interface Student {
@@ -22,6 +23,12 @@ interface StudentCardProps {
 }
 
 export default function StudentCard({ student, colorIndex, isSelected, onSelectionChange }: StudentCardProps) {
+  const router = useRouter();
+
+  const handleEdit = (id: string) => {
+    router.push(`/students/edit/${id}`);
+  };
+
   return (
     <ProfileCard
       id={student.id}
@@ -38,6 +45,7 @@ export default function StudentCard({ student, colorIndex, isSelected, onSelecti
       primaryAction={{ label: "Add Fees" }}
       isSelected={isSelected}
       onSelectionChange={onSelectionChange}
+      onEdit={handleEdit}
     />
   );
 }
