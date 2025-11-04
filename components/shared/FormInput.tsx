@@ -38,21 +38,9 @@ export default function FormInput({
 }: FormInputProps) {
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarContainerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Click outside handler for calendar
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (calendarContainerRef.current && !calendarContainerRef.current.contains(event.target as Node)) {
-        setShowCalendar(false);
-      }
-    };
-
-    if (showCalendar) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showCalendar]);
+  // Note: Click outside handling is done by ModernCalendar component via portal
 
   // Format date for display
   const formatDateDisplay = (dateString: string) => {
@@ -77,6 +65,7 @@ export default function FormInput({
         </label>
         <div className="relative" ref={calendarContainerRef}>
           <button
+            ref={buttonRef}
             type="button"
             onClick={() => !disabled && setShowCalendar(!showCalendar)}
             disabled={disabled}
@@ -91,9 +80,9 @@ export default function FormInput({
               value={value}
               onChange={(date) => {
                 onChange(date);
-                setShowCalendar(false);
               }}
               onClose={() => setShowCalendar(false)}
+              triggerRef={buttonRef}
             />
           )}
         </div>

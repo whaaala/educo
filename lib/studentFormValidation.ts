@@ -16,7 +16,8 @@ export const studentFormValidationRules: ValidationRules = {
   
   // Optional but validated if provided
   middleName: { maxLength: 50 },
-  rollNumber: { required: true, maxLength: 20 },
+  // System-generated fields (not required as they're auto-generated)
+  rollNumber: { maxLength: 20 },
   admissionNumber: { maxLength: 30 },
   studentNumber: { maxLength: 30 },
   bloodGroup: {},

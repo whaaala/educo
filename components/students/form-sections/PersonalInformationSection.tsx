@@ -24,6 +24,7 @@ import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
 import { getLanguageOptions, getEducationalLevels, getBloodGroups, getReligions } from "@/config/countries";
 import { useCountry } from "@/contexts/CountryContext";
+import { useAcademicYear } from "@/contexts/AcademicYearContext";
 
 interface PersonalInformationSectionProps {
   formData: any;
@@ -38,9 +39,10 @@ export default function PersonalInformationSection({
 }: PersonalInformationSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const { countryCode } = useCountry();
-
-  // Sample data for dropdowns
-  const academicYears = ["2024/2025", "2025/2026"].map(year => ({ value: year, label: year }));
+  const { academicYears: academicYearsFromContext } = useAcademicYear();
+  
+  // Use academic years from context, formatted for dropdown
+  const academicYears = academicYearsFromContext.map(year => ({ value: year, label: year }));
   const statuses = ["Active", "Inactive", "Alumni", "Transferred"].map(s => ({ value: s, label: s }));
   const classes = getEducationalLevels(countryCode);
   const sections = ["A", "B", "C", "D"].map(s => ({ value: s, label: s }));
@@ -112,25 +114,26 @@ export default function PersonalInformationSection({
               </h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
-              <FormDropdown
-                label="Academic Year"
-                icon={<Calendar className="w-full h-full" />}
-                value={formData.academicYear || "2024/2025"}
-                onChange={(value) => onChange("academicYear", value)}
-                options={academicYears}
-                placeholder="Select year"
-                required
-                error={errors.academicYear}
-              />
-              <FormInput
-                label="Admission Number"
-                icon={<Hash className="w-full h-full" />}
-                value={formData.admissionNumber || ""}
-                onChange={(value) => onChange("admissionNumber", value)}
-                placeholder="e.g., ADM-000345"
-                type="text"
-                error={errors.admissionNumber}
-              />
+                              <FormDropdown
+                  label="Academic Year"
+                  icon={<Calendar className="w-full h-full" />}
+                  value={formData.academicYear || ""}
+                  onChange={(value) => onChange("academicYear", value)}
+                  options={academicYears}
+                  placeholder="Select year"
+                  required
+                  error={errors.academicYear}
+                />
+                              <FormInput
+                  label="Admission Number"
+                  icon={<Hash className="w-full h-full" />}
+                  value={formData.admissionNumber || ""}
+                  onChange={(value) => onChange("admissionNumber", value)}
+                  placeholder="System Generated"
+                  type="text"
+                  disabled={true}
+                  error={errors.admissionNumber}
+                />
               <FormInput
                 label="Admission Date"
                 icon={<Calendar className="w-full h-full" />}
@@ -141,16 +144,16 @@ export default function PersonalInformationSection({
                 required
                 error={errors.admissionDate}
               />
-              <FormInput
-                label="Roll Number"
-                icon={<Hash className="w-full h-full" />}
-                value={formData.rollNumber || ""}
-                onChange={(value) => onChange("rollNumber", value)}
-                placeholder="Enter roll number"
-                type="text"
-                required
-                error={errors.rollNumber}
-              />
+                              <FormInput
+                  label="Roll Number"
+                  icon={<Hash className="w-full h-full" />}
+                  value={formData.rollNumber || ""}
+                  onChange={(value) => onChange("rollNumber", value)}
+                  placeholder="System Generated"
+                  type="text"
+                  disabled={true}
+                  error={errors.rollNumber}
+                />
               <FormDropdown
                 label="Status"
                 icon={<BadgeCheck className="w-full h-full" />}
