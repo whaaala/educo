@@ -18,7 +18,6 @@ import {
   Lock,
   Download,
   Clock,
-  Building2,
   Edit,
   KeyRound,
   Search,
@@ -26,6 +25,9 @@ import {
 } from "lucide-react";
 import type { ExtendedStudentData } from "@/lib/mockStudents";
 import StudentProfileCard from "@/components/students/StudentProfileCard";
+import PrimaryContactInfoCard from "@/components/students/PrimaryContactInfoCard";
+import SiblingInformationCard from "@/components/students/SiblingInformationCard";
+import HostelTransportCard from "@/components/students/HostelTransportCard";
 import CollectFeesModal from "@/components/shared/CollectFeesModal";
 
 type TabType = "details" | "timetable" | "attendance" | "fees" | "exam" | "library";
@@ -254,8 +256,6 @@ function StudentSidebar({
   profilePhotoUrl: string | null;
   onAddFees?: () => void;
 }) {
-  const [hostelTransportTab, setHostelTransportTab] = useState<"hostel" | "transport">("hostel");
-
   return (
     <div className="flex flex-col">
       {/* Student Profile Card */}
@@ -269,124 +269,29 @@ function StudentSidebar({
       </div>
 
       {/* Primary Contact Info */}
-      <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 mb-4">
-        <h3 className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 uppercase tracking-wide">
-          Primary Contact Info
-        </h3>
-        <div className="space-y-2.5 text-sm">
-          {studentData.primaryContact && (
-            <div className="flex items-center gap-2">
-              <Phone className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 flex-shrink-0" />
-              <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Phone Number:</span>
-              <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 ml-auto">{studentData.primaryContact}</span>
-            </div>
-          )}
-          {studentData.email && (
-            <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 flex-shrink-0" />
-              <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Email Address:</span>
-              <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 ml-auto">{studentData.email}</span>
-            </div>
-          )}
-        </div>
+      <div className="mb-4">
+        <PrimaryContactInfoCard
+          phoneNumber={studentData.primaryContact}
+          email={studentData.email}
+        />
       </div>
 
       {/* Sibling Information */}
-      {Array.isArray(studentData.siblings) && studentData.siblings.length > 0 && (
-        <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 mb-4">
-          <h3 className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 uppercase tracking-wide">
-            Sibling Information
-          </h3>
-          <div className="space-y-3">
-            {studentData.siblings.map((sibling: any, idx: number) => {
-              const siblingPhotoUrl = typeof sibling?.photo === "string" ? sibling.photo : null;
-              const siblingName = sibling?.name || "Unknown";
-              return (
-                <div key={idx} className="flex flex-col items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 rounded-lg">
-                  {siblingPhotoUrl ? (
-                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30">
-                      <Image
-                        src={siblingPhotoUrl}
-                        alt={siblingName}
-                        width={64}
-                        height={64}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center border-2 border-gray-200 dark:border-gray-700">
-                      <span className="text-lg font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
-                        {siblingName.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-                  <div className="text-center">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
-                      {siblingName}
-                    </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-                      {sibling?.class || "-"}, {sibling?.section || "-"}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      <div className="mb-4">
+        <SiblingInformationCard siblings={studentData.siblings} />
+      </div>
 
       {/* Hostel / Transportation */}
-      {(studentData.useHostel || studentData.useTransport) && (
-        <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 mb-4">
-          <div className="flex gap-1 mb-3">
-            <button
-              onClick={() => setHostelTransportTab("hostel")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors duration-200 ${
-                hostelTransportTab === "hostel"
-                  ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white border-b-2 border-blue-600 dark:border-blue-500 midnight:border-cyan-600 purple:border-pink-600"
-                  : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:text-gray-900 dark:hover:text-gray-300"
-              } cursor-pointer`}
-            >
-              Hostel
-            </button>
-            <button
-              onClick={() => setHostelTransportTab("transport")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors duration-200 ${
-                hostelTransportTab === "transport"
-                  ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white border-b-2 border-blue-600 dark:border-blue-500 midnight:border-cyan-600 purple:border-pink-600"
-                  : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:text-gray-900 dark:hover:text-gray-300"
-              } cursor-pointer`}
-            >
-              Transportation
-            </button>
-          </div>
-          {hostelTransportTab === "hostel" && studentData.useHostel && (
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-                <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-                  {studentData.hostelName || "Hostel"}, Floor
-                </span>
-              </div>
-              <div className="text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 font-medium">
-                Room No : {studentData.roomNumber || "-"}
-              </div>
-            </div>
-          )}
-          {hostelTransportTab === "transport" && studentData.useTransport && (
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Route:</span>
-                <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">{studentData.transportRoute || studentData.route || "-"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Vehicle:</span>
-                <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">{studentData.vehicleNumber || "-"}</span>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      <div className="mb-4">
+        <HostelTransportCard
+          useHostel={studentData.useHostel}
+          useTransport={studentData.useTransport}
+          hostelName={studentData.hostelName}
+          roomNumber={studentData.roomNumber}
+          transportRoute={studentData.transportRoute || studentData.route}
+          vehicleNumber={studentData.vehicleNumber}
+        />
+      </div>
     </div>
   );
 }

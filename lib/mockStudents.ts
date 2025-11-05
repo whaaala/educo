@@ -218,21 +218,27 @@ function parseDate(dateStr: string): string {
 
 // Helper function to generate profile pictures
 function getProfilePicture(type: "student" | "father" | "mother" | "guardian", gender: "Male" | "Female", index: number): string {
-  const baseIndex = index % 50; // Cycle through 50 different images
+  // pravatar.cc supports img parameters from 1-70
+  // Use modulo to ensure we stay within valid range
+  const baseIndex = (index % 70) + 1;
   
   if (type === "father") {
-    return `https://i.pravatar.cc/400?img=${30 + baseIndex}`;
+    // For fathers, use range 31-50 (30 + 1 to 30 + 20)
+    const imgNum = 30 + ((baseIndex - 1) % 20) + 1;
+    return `https://i.pravatar.cc/400?img=${imgNum}`;
   } else if (type === "mother") {
-    return `https://i.pravatar.cc/400?img=${20 + baseIndex}`;
+    // For mothers, use range 21-40 (20 + 1 to 20 + 20)
+    const imgNum = 20 + ((baseIndex - 1) % 20) + 1;
+    return `https://i.pravatar.cc/400?img=${imgNum}`;
   } else if (type === "guardian") {
     return gender === "Male" 
-      ? `https://i.pravatar.cc/400?img=${30 + baseIndex}`
-      : `https://i.pravatar.cc/400?img=${20 + baseIndex}`;
+      ? `https://i.pravatar.cc/400?img=${30 + ((baseIndex - 1) % 20) + 1}`
+      : `https://i.pravatar.cc/400?img=${20 + ((baseIndex - 1) % 20) + 1}`;
   } else {
-    // Student profile picture
+    // Student profile picture - use range 1-30 for variety
     return gender === "Female"
-      ? `https://i.pravatar.cc/400?img=${10 + baseIndex}`
-      : `https://i.pravatar.cc/400?img=${40 + baseIndex}`;
+      ? `https://i.pravatar.cc/400?img=${((baseIndex - 1) % 30) + 1}`
+      : `https://i.pravatar.cc/400?img=${((baseIndex - 1) % 30) + 31}`; // 31-60 for males
   }
 }
 
@@ -411,17 +417,40 @@ function generateExtendedStudentData(student: Student, academicYear: string = "2
     guardianPostalCode: address.postal,
     guardianCountry: "Nigeria",
     
-              // Siblings (some students have siblings - always ensure it's an array)
-     siblings: studentIndex % 4 === 0 ? [
-       {
-         name: `${["David", "Mary", "John", "Sarah"][studentIndex % 4]} ${lastName}`,
-         relationship: gender === "Male" ? "Brother" : "Sister",
-         age: approximateAge + (studentIndex % 3) - 1,
-         class: classNum === "I" ? "II" : classNum,
-         school: studentIndex % 2 === 0 ? "Same School" : "Different School"
+              // Siblings (about 50% of students have siblings - always ensure it's an array)
+     siblings: studentIndex % 2 === 0 ? (() => {
+       const siblingNames = ["David", "Mary", "John", "Sarah", "Emma", "Michael", "Sophia", "James", "Olivia", "William", "Ava", "Benjamin", "Isabella", "Lucas", "Mia", "Henry"];
+       const siblingSections = ["A", "B", "C", "D"];
+       const siblingClasses = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+       
+       // Some students have 1 sibling, some have 2
+       const numSiblings = studentIndex % 5 === 0 ? 2 : 1;
+       const siblings = [];
+       
+       for (let i = 0; i < numSiblings; i++) {
+         const siblingIndex = (studentIndex + i) % siblingNames.length;
+         const siblingName = siblingNames[siblingIndex];
+         const siblingGender: "Male" | "Female" = ["David", "John", "Michael", "James", "William", "Benjamin", "Lucas", "Henry"].includes(siblingName) ? "Male" : "Female";
+         const siblingClassIndex = (studentIndex + i) % siblingClasses.length;
+         const siblingClass = siblingClasses[siblingClassIndex];
+         const siblingSection = siblingSections[(studentIndex + i) % siblingSections.length];
+         const siblingAge = approximateAge + (i % 2 === 0 ? 1 : -1);
+         
+         siblings.push({
+           name: `${siblingName} ${lastName}`,
+           relationship: siblingGender === "Male" ? "Brother" : "Sister",
+           age: siblingAge,
+           class: siblingClass,
+           section: siblingSection,
+           photo: getProfilePicture("student", siblingGender, studentIndex + i),
+           classNum: siblingClass,
+           school: studentIndex % 3 === 0 ? "Same School" : "Different School"
+         });
        }
-     ] : ([] as any[]),
-     isSiblingStudyingHere: studentIndex % 4 === 0 && studentIndex % 2 === 0,
+       
+       return siblings;
+     })() : ([] as any[]),
+     isSiblingStudyingHere: studentIndex % 2 === 0 && studentIndex % 3 === 0,
     
     // Address
     currentAddressLine1: address.line1,
