@@ -28,6 +28,13 @@ import StudentProfileCard from "@/components/students/StudentProfileCard";
 import PrimaryContactInfoCard from "@/components/students/PrimaryContactInfoCard";
 import SiblingInformationCard from "@/components/students/SiblingInformationCard";
 import HostelTransportCard from "@/components/students/HostelTransportCard";
+import ParentsInformationCard from "@/components/students/ParentsInformationCard";
+import AddressCard from "@/components/students/AddressCard";
+import DocumentsCard from "@/components/students/DocumentsCard";
+import PreviousSchoolDetailsCard from "@/components/students/PreviousSchoolDetailsCard";
+import MedicalHistoryCard from "@/components/students/MedicalHistoryCard";
+import BankDetailsCard from "@/components/students/BankDetailsCard";
+import OtherInfoCard from "@/components/students/OtherInfoCard";
 import CollectFeesModal from "@/components/shared/CollectFeesModal";
 
 type TabType = "details" | "timetable" | "attendance" | "fees" | "exam" | "library";
@@ -366,306 +373,72 @@ function StudentDetailsTab({
     return parts.length > 0 ? parts.join(", ") : "-";
   })();
 
+  // Build parents array
+  const parents = [];
+  if (studentData.motherFirstName) {
+    parents.push({
+      name: `${studentData.motherFirstName} ${studentData.motherMiddleName || ""} ${studentData.motherLastName || ""}`.trim(),
+      role: "Mother",
+      phone: studentData.motherPhone || "-",
+      email: studentData.motherEmail || "-",
+      photoUrl: motherPhotoUrl,
+    });
+  }
+  if (studentData.fatherFirstName) {
+    parents.push({
+      name: `${studentData.fatherFirstName} ${studentData.fatherMiddleName || ""} ${studentData.fatherLastName || ""}`.trim(),
+      role: "Father",
+      phone: studentData.fatherPhone || "-",
+      email: studentData.fatherEmail || "-",
+      photoUrl: fatherPhotoUrl,
+    });
+  }
+  if (studentData.guardianFirstName) {
+    parents.push({
+      name: `${studentData.guardianFirstName} ${studentData.guardianMiddleName || ""} ${studentData.guardianLastName || ""}`.trim(),
+      role: `Guardian (${studentData.guardianRelation || "Guardian"})`,
+      phone: studentData.guardianPhone || "-",
+      email: studentData.guardianEmail || "-",
+      photoUrl: guardianPhotoUrl,
+    });
+  }
+
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
+    <div className="space-y-6">
       {/* Parents/Guardian Information */}
-      <div className="mb-8">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
-          Parents/Guardian Information
-        </h3>
-        <div className="space-y-4">
-          {studentData.motherFirstName && (
-            <ParentCard
-              name={`${studentData.motherFirstName} ${studentData.motherMiddleName || ""} ${studentData.motherLastName || ""}`.trim()}
-              role="Mother"
-              phone={studentData.motherPhone || "-"}
-              email={studentData.motherEmail || "-"}
-              photoUrl={motherPhotoUrl}
-            />
-          )}
-          {studentData.fatherFirstName && (
-            <ParentCard
-              name={`${studentData.fatherFirstName} ${studentData.fatherMiddleName || ""} ${studentData.fatherLastName || ""}`.trim()}
-              role="Father"
-              phone={studentData.fatherPhone || "-"}
-              email={studentData.fatherEmail || "-"}
-              photoUrl={fatherPhotoUrl}
-            />
-          )}
-          {studentData.guardianFirstName && (
-            <ParentCard
-              name={`${studentData.guardianFirstName} ${studentData.guardianMiddleName || ""} ${studentData.guardianLastName || ""}`.trim()}
-              role={`Guardian (${studentData.guardianRelation || "Guardian"})`}
-              phone={studentData.guardianPhone || "-"}
-              email={studentData.guardianEmail || "-"}
-              photoUrl={guardianPhotoUrl}
-            />
-          )}
-        </div>
-      </div>
+      <ParentsInformationCard parents={parents} />
 
-      {/* Documents */}
-      {Array.isArray(studentData.documents) && studentData.documents.length > 0 && (
-        <div className="mb-8">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
-            Documents
-          </h3>
-          <div className="space-y-3">
-            {studentData.documents.map((doc: any, idx: number) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-red-500 rounded flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-xs font-bold">PDF</span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
-                    {doc?.name || `Document ${idx + 1}`}
-                  </span>
-                </div>
-                <button className="p-2 bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 cursor-pointer">
-                  <Download className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Address */}
-      <div className="mb-8">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
-          Address
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex items-start gap-3">
-            <Search className="w-5 h-5 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
-                Current Address
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-                {currentAddress}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <ExternalLink className="w-5 h-5 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
-                Permanent Address
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-                {permanentAddress}
-              </p>
-            </div>
-          </div>
-        </div>
+      {/* Documents and Address - Side by Side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <DocumentsCard documents={studentData.documents || []} />
+        <AddressCard
+          currentAddress={currentAddress}
+          permanentAddress={permanentAddress}
+        />
       </div>
 
       {/* Previous School Details */}
-      {studentData.previousSchoolName && (
-        <div className="mb-8">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
-            Previous School Details
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-1">
-                Previous School Name
-              </p>
-              <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
-                {studentData.previousSchoolName}
-              </p>
-            </div>
-            {studentData.previousSchoolAddress && (
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-1">
-                  School Address
-                </p>
-                <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
-                  {studentData.previousSchoolAddress}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <PreviousSchoolDetailsCard
+        schoolName={studentData.previousSchoolName}
+        schoolAddress={studentData.previousSchoolAddress}
+      />
 
-      {/* Bank Details */}
-      {(studentData.bankName || studentData.branch || studentData.ifscNumber) && (
-        <div className="mb-8">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
-            Bank Details
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {studentData.bankName && (
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-1">
-                  Bank Name
-                </p>
-                <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
-                  {studentData.bankName}
-                </p>
-              </div>
-            )}
-            {studentData.branch && (
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-1">
-                  Branch
-                </p>
-                <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
-                  {studentData.branch}
-                </p>
-              </div>
-            )}
-            {studentData.ifscNumber && (
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-1">
-                  IFSC
-                </p>
-                <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
-                  {studentData.ifscNumber}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Medical History */}
-      <div className="mb-8">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
-          Medical History
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {Array.isArray(studentData.allergies) && studentData.allergies.length > 0 ? (
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-2">
-                Known Allergies
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {studentData.allergies.map((allergy: string, idx: number) => (
-                  <span
-                    key={idx}
-                    className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 rounded-full text-xs font-medium"
-                  >
-                    {allergy}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-2">
-                Known Allergies
-              </p>
-              <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
-                -
-              </p>
-            </div>
-          )}
-          {Array.isArray(studentData.medications) && studentData.medications.length > 0 ? (
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-2">
-                Medications
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {studentData.medications.map((med: string, idx: number) => (
-                  <span
-                    key={idx}
-                    className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 rounded-full text-xs font-medium"
-                  >
-                    {med}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-2">
-                Medications
-              </p>
-              <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
-                -
-              </p>
-            </div>
-          )}
-        </div>
+      {/* Medical History and Bank Details - Side by Side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <MedicalHistoryCard
+          allergies={studentData.allergies}
+          medications={studentData.medications}
+        />
+        <BankDetailsCard
+          bankName={studentData.bankName}
+          branch={studentData.branch}
+          ifscNumber={studentData.ifscNumber}
+        />
       </div>
+
 
       {/* Other Info */}
-      <div>
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
-          Other Info
-        </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 leading-relaxed">
-          Depending on the specific needs of your organization or system, additional information may be collected or tracked. It's important to ensure that any data collected complies with privacy regulations and policies to protect students' sensitive information.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// Parent Card Component
-function ParentCard({
-  name,
-  role,
-  phone,
-  email,
-  photoUrl,
-}: {
-  name: string;
-  role: string;
-  phone: string;
-  email: string;
-  photoUrl: string | null;
-}) {
-  return (
-    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20">
-      <div className="flex items-center gap-4 flex-1 min-w-0">
-        {photoUrl ? (
-          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 flex-shrink-0">
-            <Image
-              src={photoUrl}
-              alt={name}
-              width={48}
-              height={48}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ) : (
-          <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center border-2 border-gray-200 dark:border-gray-700 flex-shrink-0">
-            <span className="text-lg font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
-              {name.charAt(0).toUpperCase()}
-            </span>
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 truncate">
-              {name}
-            </h4>
-            <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 flex-shrink-0">
-              ({role})
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-4 text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-            <span className="flex items-center gap-1">
-              <Phone className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{phone}</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Mail className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{email}</span>
-            </span>
-          </div>
-        </div>
-      </div>
-      <button className="p-2 bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 cursor-pointer flex-shrink-0 ml-2">
-        <Lock className="w-4 h-4" />
-      </button>
+      <OtherInfoCard />
     </div>
   );
 }
