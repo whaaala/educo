@@ -104,6 +104,9 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
     } else if (action === 'Edit') {
       router.push(`/students/edit/${student.id}`);
       setOpenMenuStudentId(null);
+    } else if (action === 'View Student') {
+      router.push(`/students/${student.id}`);
+      setOpenMenuStudentId(null);
     } else {
       console.log(`${action} clicked for student:`, student.id);
       setOpenMenuStudentId(null);

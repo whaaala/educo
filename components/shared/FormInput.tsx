@@ -64,22 +64,34 @@ export default function FormInput({
           {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
         </label>
         <div className="relative" ref={calendarContainerRef}>
+          <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none z-10" />
           <button
             ref={buttonRef}
             type="button"
-            onClick={() => !disabled && setShowCalendar(!showCalendar)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!disabled) {
+                setShowCalendar((prev) => {
+                  console.log("Calendar toggle:", !prev);
+                  return !prev;
+                });
+              }
+            }}
             disabled={disabled}
-            className={`w-full pl-4 pr-10 py-2.5 rounded-xl border ${error ? "border-red-500 dark:border-red-400" : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"} bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 text-left ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`w-full pl-12 pr-10 py-2.5 rounded-xl border ${error ? "border-red-500 dark:border-red-400" : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"} bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 text-left cursor-pointer ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+            style={{ position: 'relative', zIndex: 1 }}
           >
             {value ? formatDateDisplay(value) : <span className="text-gray-400/70 dark:text-gray-500/70 midnight:text-cyan-400/50 purple:text-pink-400/50 italic font-normal">{placeholder}</span>}
           </button>
           <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none" />
 
-          {showCalendar && (
+          {showCalendar && buttonRef.current && (
             <ModernCalendar
               value={value}
               onChange={(date) => {
                 onChange(date);
+                setShowCalendar(false);
               }}
               onClose={() => setShowCalendar(false)}
               triggerRef={buttonRef}

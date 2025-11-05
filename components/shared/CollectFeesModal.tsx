@@ -10,18 +10,17 @@ import {
   CreditCard,
   FileText,
   Hash,
-  ChevronDown
 } from "lucide-react";
+
+import FormInput from "./FormInput";
+import FormDropdown from "./FormDropdown";
+import FormTextarea from "./FormTextarea";
+import FormButton from "./FormButton";
 
 // Custom Naira Icon Component
 const NairaIcon = ({ className }: { className?: string }) => (
   <span className={className}>₦</span>
 );
-import ModernCalendar from "./ModernCalendar";
-import FormInput from "./FormInput";
-import FormDropdown from "./FormDropdown";
-import FormTextarea from "./FormTextarea";
-import FormButton from "./FormButton";
 
 interface Student {
   id: string;
@@ -30,7 +29,8 @@ interface Student {
   avatar?: string;
   totalOutstanding: string;
   lastDate: string;
-  status: "Paid" | "Unpaid";
+  dueDate?: string; // Optional due date for payment
+  status: "Paid" | "Unpaid" | "Balanced" | "Due" | "Overdue";
 }
 
 interface CollectFeesModalProps {
@@ -52,9 +52,7 @@ export default function CollectFeesModal({
   const [paymentReference, setPaymentReference] = useState("");
   const [status, setStatus] = useState(false);
   const [notes, setNotes] = useState("");
-  const [showCalendar, setShowCalendar] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const calendarRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Handle mounting for portal
@@ -74,23 +72,6 @@ export default function CollectFeesModal({
       }, 100);
     }
   }, [isOpen]);
-
-  // Close calendar when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
-        setShowCalendar(false);
-      }
-    };
-
-    if (showCalendar) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showCalendar]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -190,14 +171,22 @@ export default function CollectFeesModal({
                   <div className="flex items-center justify-center">
                     <span
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-bold shadow-sm ${
-                        student.status === "Paid"
+                        student.status === "Paid" || student.status === "Balanced"
                           ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 ring-1 ring-green-500/30"
+                          : student.status === "Due"
+                          ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 ring-1 ring-yellow-500/30"
+                          : student.status === "Overdue"
+                          ? "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 ring-1 ring-red-500/30"
                           : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 ring-1 ring-red-500/30"
                       }`}
                     >
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${
-                          student.status === "Paid" ? "bg-green-600 animate-pulse" : "bg-red-600 animate-pulse"
+                          student.status === "Paid" || student.status === "Balanced"
+                            ? "bg-green-600 animate-pulse"
+                            : student.status === "Due"
+                            ? "bg-yellow-600 animate-pulse"
+                            : "bg-red-600 animate-pulse"
                         }`}
                       ></span>
                       {student.status}
@@ -264,43 +253,16 @@ export default function CollectFeesModal({
             />
 
             {/* Collection Date */}
-            <div className="group" ref={calendarRef}>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-orange-100 dark:bg-orange-900/30 midnight:bg-orange-900/30 purple:bg-orange-900/30 flex items-center justify-center">
-                  <Calendar className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400" />
-                </div>
-                <span>Collection Date</span>
-              </label>
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none z-10" />
-                <input
-                  type="text"
-                  value={collectionDate ? new Date(collectionDate).toLocaleDateString('en-US', {
-                    weekday: 'short',
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  }) : ''}
-                  onClick={() => setShowCalendar(!showCalendar)}
-                  onFocus={() => setShowCalendar(true)}
-                  readOnly
-                  placeholder="Select collection date"
-                  className="w-full pl-12 pr-12 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-medium focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all hover:border-blue-300 dark:hover:border-gray-600 shadow-sm cursor-pointer placeholder:text-gray-400 dark:placeholder:text-gray-500"
-                />
-                <ChevronDown
-                  className={`absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none transition-transform duration-200 ${showCalendar ? 'rotate-180' : ''}`}
-                />
-                {showCalendar && (
-                  <ModernCalendar
-                    value={collectionDate}
-                    onChange={(date) => {
-                      setCollectionDate(date);
-                    }}
-                    onClose={() => setShowCalendar(false)}
-                  />
-                )}
-              </div>
-            </div>
+            <FormInput
+              label="Collection Date"
+              icon={<Calendar className="w-3.5 h-3.5" />}
+              iconBgColor="bg-orange-100 dark:bg-orange-900/30 midnight:bg-orange-900/30 purple:bg-orange-900/30"
+              iconColor="text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400"
+              value={collectionDate}
+              onChange={setCollectionDate}
+              placeholder="Select collection date"
+              type="date"
+            />
 
             {/* Payment Type */}
             <FormDropdown

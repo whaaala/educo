@@ -29,6 +29,10 @@ export default function StudentCard({ student, colorIndex, isSelected, onSelecti
     router.push(`/students/edit/${id}`);
   };
 
+  const handleView = (id: string) => {
+    router.push(`/students/${id}`);
+  };
+
   return (
     <ProfileCard
       id={student.id}
@@ -46,6 +50,7 @@ export default function StudentCard({ student, colorIndex, isSelected, onSelecti
       isSelected={isSelected}
       onSelectionChange={onSelectionChange}
       onEdit={handleEdit}
+      onView={handleView}
     />
   );
 }

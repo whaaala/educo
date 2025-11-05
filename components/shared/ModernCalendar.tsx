@@ -121,23 +121,17 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
       top: `${Math.max(8, top)}px`, // Ensure at least 8px from top
       left: `${left}px`,
       width: `${calendarWidth}px`,
-      zIndex: 9998, // High but not above modals/alerts
+      zIndex: 10000, // Higher than modal z-index (9999) to appear above modals
     });
   }, [triggerRef]);
 
   // Update position when calendar opens or when month/year dropdowns change
   useEffect(() => {
     if (isMounted && triggerRef?.current) {
-      // Initial position update
-      updateCalendarPosition();
-      
-      // Track scroll state
-      let hasScrolled = false;
-      
-      // Reset scroll state after a short delay to allow initial setup
-      const resetTimeout = setTimeout(() => {
-        hasScrolled = false;
-      }, 100);
+      // Initial position update - only if dropdowns are not open
+      if (!isMonthDropdownOpen && !isYearDropdownOpen) {
+        updateCalendarPosition();
+      }
       
       // Find all scrollable parent elements
       const findScrollableParents = (element: HTMLElement | null): HTMLElement[] => {
@@ -164,30 +158,16 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
         return scrollableParents;
       };
       
-      // Throttle function for performance
-      let ticking = false;
-      const throttledUpdate = () => {
-        if (!ticking) {
-          window.requestAnimationFrame(() => {
-            updateCalendarPosition();
-            ticking = false;
-          });
-          ticking = true;
-        }
-      };
-      
       const handleResize = () => {
-        updateCalendarPosition();
+        // Don't update position if dropdowns are open
+        if (!isMonthDropdownOpen && !isYearDropdownOpen) {
+          updateCalendarPosition();
+        }
       };
       
       const handleScroll = (event: Event) => {
-        // Don't close if user is actively selecting a date
+        // Don't update position if user is actively selecting a date
         if (isSelectingRef.current) {
-          return;
-        }
-        
-        // Don't close if month or year dropdowns are open (user is selecting)
-        if (isMonthDropdownOpen || isYearDropdownOpen) {
           return;
         }
         
@@ -202,17 +182,16 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
             monthGridRef.current?.contains(target) ||
             yearGridRef.current?.contains(target)
           ) {
-            // Scroll is within calendar, don't close
+            // Scroll is within calendar, don't update position
             return;
           }
         }
         
-        // Close calendar immediately when scrolling starts (better UX)
-        // Only if scroll is from outside the calendar
-        if (!hasScrolled) {
-          hasScrolled = true;
-          onClose();
-          return;
+        // Update calendar position immediately on every scroll event (real-time following)
+        // Don't update if dropdowns are open to prevent jumping
+        if (!isMonthDropdownOpen && !isYearDropdownOpen) {
+          // Update position immediately for real-time following
+          updateCalendarPosition();
         }
       };
       
@@ -231,7 +210,6 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
       });
       
       return () => {
-        clearTimeout(resetTimeout);
         window.removeEventListener('resize', handleResize);
         window.removeEventListener('scroll', handleScroll, true);
         document.removeEventListener('scroll', handleScroll, true);
@@ -243,7 +221,36 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
         });
       };
          }
-   }, [isMounted, isMonthDropdownOpen, isYearDropdownOpen, updateCalendarPosition, triggerRef, onClose]);
+   }, [isMounted, updateCalendarPosition, triggerRef, onClose, isMonthDropdownOpen, isYearDropdownOpen]);
+
+  // Track previous dropdown state to only update position when closing (not opening)
+  const prevMonthDropdownRef = useRef(false);
+  const prevYearDropdownRef = useRef(false);
+
+  // Update position when dropdowns close (but not when they open)
+  useEffect(() => {
+    if (isMounted && triggerRef?.current) {
+      const wasDropdownOpen = prevMonthDropdownRef.current || prevYearDropdownRef.current;
+      const isDropdownOpen = isMonthDropdownOpen || isYearDropdownOpen;
+      
+      // Only update position when transitioning from open to closed
+      if (wasDropdownOpen && !isDropdownOpen) {
+        // Small delay to ensure dropdown has fully closed before recalculating
+        const timeoutId = setTimeout(() => {
+          updateCalendarPosition();
+        }, 100);
+        
+        prevMonthDropdownRef.current = isMonthDropdownOpen;
+        prevYearDropdownRef.current = isYearDropdownOpen;
+        
+        return () => clearTimeout(timeoutId);
+      }
+      
+      // Update refs for next comparison
+      prevMonthDropdownRef.current = isMonthDropdownOpen;
+      prevYearDropdownRef.current = isYearDropdownOpen;
+    }
+  }, [isMounted, isMonthDropdownOpen, isYearDropdownOpen, updateCalendarPosition, triggerRef]);
 
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
