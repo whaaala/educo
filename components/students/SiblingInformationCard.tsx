@@ -22,9 +22,9 @@ export default function SiblingInformationCard({
   }
 
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-800/50 midnight:border-cyan-500/30 purple:border-pink-500/30 p-5 transition-all duration-300 hover:shadow-xl hover:border-gray-300/70 dark:hover:border-gray-700/70 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40">
       {/* Header */}
-      <h3 className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2.5 uppercase tracking-wide">
+      <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4 uppercase tracking-wider">
         Sibling Information
       </h3>
 

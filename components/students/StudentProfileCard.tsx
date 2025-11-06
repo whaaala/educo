@@ -30,82 +30,85 @@ export default function StudentProfileCard({
   onAddFees,
 }: StudentProfileCardProps) {
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
-      {/* Profile Header */}
-      <div className="flex items-center gap-4 mb-5">
-        {/* Profile Picture */}
-        <div className="relative flex-shrink-0">
-          {profilePhotoUrl ? (
-            <div className="relative w-20 h-20 rounded-xl overflow-hidden ring-1 ring-gray-200/50 dark:ring-gray-700/50 midnight:ring-cyan-500/20 purple:ring-pink-500/20 shadow-sm">
-              <Image
-                src={profilePhotoUrl}
-                alt={fullName}
-                width={80}
-                height={80}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="relative w-20 h-20 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 flex items-center justify-center ring-1 ring-gray-200/50 dark:ring-gray-700/50 midnight:ring-cyan-500/20 purple:ring-pink-500/20 shadow-sm">
-              <span className="text-2xl font-bold text-white">
-                {fullName.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
-        </div>
+    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-800/50 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-gray-300/70 dark:hover:border-gray-700/70 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40">
+      {/* Profile Header with gradient background */}
+      <div className="relative bg-gradient-to-br from-blue-50 to-indigo-50/30 dark:from-gray-800/40 dark:to-gray-900/40 midnight:from-cyan-900/20 midnight:to-blue-900/20 purple:from-pink-900/20 purple:to-purple-900/20 p-6 pb-8">
+        {/* Decorative circles */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/5 dark:bg-blue-400/5 midnight:bg-cyan-400/5 purple:bg-pink-400/5 rounded-full -mr-16 -mt-16"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-400/5 dark:bg-indigo-400/5 midnight:bg-blue-400/5 purple:bg-purple-400/5 rounded-full -ml-12 -mb-12"></div>
 
-        {/* Name and Details */}
-        <div className="flex flex-col h-20 justify-center gap-1 flex-1 min-w-0">
-          {/* Status Badge */}
-          <div className="inline-flex items-center gap-1 w-fit px-2 py-0.5 bg-green-50 dark:bg-green-900/20 midnight:bg-green-900/20 purple:bg-green-900/20 rounded-md border border-green-200/60 dark:border-green-800/40 midnight:border-green-700/40 purple:border-green-700/40">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-green-400 midnight:bg-green-400 purple:bg-green-400"></div>
-            <span className="text-xs font-medium text-green-700 dark:text-green-400 midnight:text-green-400 purple:text-green-400">
-              {studentData.status || "Active"}
-            </span>
+        <div className="relative flex items-center gap-4">
+          {/* Profile Picture with enhanced styling */}
+          <div className="relative flex-shrink-0">
+            {profilePhotoUrl ? (
+              <div className="relative w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-white/50 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-xl">
+                <Image
+                  src={profilePhotoUrl}
+                  alt={fullName}
+                  width={96}
+                  height={96}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="relative w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 flex items-center justify-center ring-4 ring-white/50 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-xl">
+                <span className="text-3xl font-bold text-white">
+                  {fullName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
           </div>
 
-          {/* Name */}
-          <h2 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 tracking-tight truncate leading-tight">
-            {fullName}
-          </h2>
+          {/* Name and Details */}
+          <div className="flex flex-col justify-center gap-1.5 flex-1 min-w-0">
+            {/* Status Badge */}
+            <div className="inline-flex items-center gap-1.5 w-fit px-2.5 py-1 bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30 rounded-lg border border-green-300/60 dark:border-green-700/50 midnight:border-green-600/50 purple:border-green-600/50 shadow-sm">
+              <div className="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 midnight:bg-green-400 purple:bg-green-400 animate-pulse"></div>
+              <span className="text-xs font-semibold text-green-700 dark:text-green-300 midnight:text-green-300 purple:text-green-300 uppercase tracking-wide">
+                {studentData.status || "Active"}
+              </span>
+            </div>
 
-          {/* Admission Number */}
-          <p className="text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
-            {studentData.admissionNumber}
-          </p>
+            {/* Name */}
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 tracking-tight truncate leading-tight">
+              {fullName}
+            </h2>
+
+            {/* Admission Number */}
+            <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 tracking-wide">
+              {studentData.admissionNumber}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Divider */}
-      <div className="h-px bg-gray-100 dark:bg-gray-800/50 midnight:bg-gray-800/30 purple:bg-gray-800/30 mb-5"></div>
-
       {/* Basic Information */}
-      <div className="mb-5">
-        <h3 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+      <div className="p-6 pt-0 mt-6">
+        <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4 uppercase tracking-wider">
           Basic Information
         </h3>
-        <div className="space-y-3.5">
+        <div className="space-y-3">
           {/* Roll No */}
           {studentData.rollNumber && (
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">Roll No</span>
-              <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.rollNumber}</span>
+            <div className="flex justify-between items-center py-2 px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Roll No</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.rollNumber}</span>
             </div>
           )}
 
           {/* Gender */}
           {studentData.gender && (
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">Gender</span>
-              <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.gender}</span>
+            <div className="flex justify-between items-center py-2 px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Gender</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.gender}</span>
             </div>
           )}
 
           {/* Date Of Birth */}
           {studentData.dateOfBirth && (
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">Date Of Birth</span>
-              <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <div className="flex justify-between items-center py-2 px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Date Of Birth</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                 {formatDate(studentData.dateOfBirth)}
               </span>
             </div>
@@ -113,59 +116,59 @@ export default function StudentProfileCard({
 
           {/* Blood Group */}
           {studentData.bloodGroup && (
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">Blood Group</span>
-              <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.bloodGroup}</span>
+            <div className="flex justify-between items-center py-2 px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Blood Group</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.bloodGroup}</span>
             </div>
           )}
 
           {/* Religion */}
           {studentData.religion && (
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">Religion</span>
-              <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.religion}</span>
+            <div className="flex justify-between items-center py-2 px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Religion</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.religion}</span>
             </div>
           )}
 
           {/* Caste */}
           {studentData.caste && (
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">Caste</span>
-              <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.caste}</span>
+            <div className="flex justify-between items-center py-2 px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Caste</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.caste}</span>
             </div>
           )}
 
           {/* Category */}
           {studentData.category && (
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">Category</span>
-              <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.category}</span>
+            <div className="flex justify-between items-center py-2 px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Category</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.category}</span>
             </div>
           )}
 
           {/* Mother tongue */}
           {studentData.motherTongue && (
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">Mother tongue</span>
-              <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.motherTongue}</span>
+            <div className="flex justify-between items-center py-2 px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Mother tongue</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.motherTongue}</span>
             </div>
           )}
 
           {/* Language */}
-          <div className="flex justify-between items-start">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80 pt-0.5">Language</span>
-            <div className="flex gap-2 flex-wrap justify-end">
+          <div className="flex justify-between items-start py-2 px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 pt-1">Language</span>
+            <div className="flex gap-1.5 flex-wrap justify-end">
               {Array.isArray(studentData.languagesKnown) && studentData.languagesKnown.length > 0 ? (
                 studentData.languagesKnown.map((lang, idx) => (
                   <span
                     key={idx}
-                    className="px-2.5 py-1 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-gray-100 dark:bg-gray-800/60 midnight:bg-gray-800/60 purple:bg-gray-800/60"
+                    className="px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 border border-blue-200/50 dark:border-blue-800/50 midnight:border-cyan-800/50 purple:border-pink-800/50"
                   >
                     {lang}
                   </span>
                 ))
               ) : (
-                <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">-</span>
+                <span className="text-sm font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">-</span>
               )}
             </div>
           </div>
@@ -174,12 +177,14 @@ export default function StudentProfileCard({
 
       {/* Add Fees Button */}
       {onAddFees && (
-        <button
-          onClick={onAddFees}
-          className="w-full mt-5 px-4 py-2.5 bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white rounded-lg font-medium text-sm shadow-sm hover:bg-blue-700 dark:hover:bg-blue-600 midnight:hover:bg-cyan-700 purple:hover:bg-pink-700 hover:shadow-md active:scale-[0.98] transition-all duration-200 cursor-pointer"
-        >
-          Add Fees
-        </button>
+        <div className="p-6 pt-0">
+          <button
+            onClick={onAddFees}
+            className="w-full px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+          >
+            Add Fees
+          </button>
+        </div>
       )}
     </div>
   );

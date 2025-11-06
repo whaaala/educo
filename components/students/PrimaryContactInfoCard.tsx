@@ -15,30 +15,27 @@ export default function PrimaryContactInfoCard({
   const cleanPhoneNumber = phoneNumber?.replace(/\s+/g, "").replace(/[^\d+]/g, "") || "";
 
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-800/50 midnight:border-cyan-500/30 purple:border-pink-500/30 p-4 transition-all duration-300 hover:shadow-xl hover:border-gray-300/70 dark:hover:border-gray-700/70 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40">
       {/* Header */}
-      <h3 className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2.5 uppercase tracking-wide">
+      <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 uppercase tracking-wider">
         Primary Contact Info
       </h3>
-
-      {/* Divider */}
-      <div className="h-px bg-gray-100 dark:bg-gray-800/50 midnight:bg-gray-800/30 purple:bg-gray-800/30 mb-2.5"></div>
 
       {/* Contact Information */}
       <div className="space-y-2">
         {phoneNumber && (
           <a
             href={`tel:${cleanPhoneNumber}`}
-            className="flex items-center gap-2.5 py-1.5 px-2.5 rounded-lg bg-gray-50/50 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30 hover:bg-gray-100/70 dark:hover:bg-gray-800/50 transition-colors duration-200 cursor-pointer group"
+            className="flex items-center gap-2.5 py-2.5 px-3 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/30 dark:from-blue-900/20 dark:to-indigo-900/20 midnight:from-blue-900/20 midnight:to-cyan-900/20 purple:from-blue-900/20 purple:to-purple-900/20 hover:from-blue-100 hover:to-indigo-100/40 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all duration-200 cursor-pointer group border border-blue-100/50 dark:border-blue-800/30 midnight:border-blue-800/30 purple:border-blue-800/30 hover:border-blue-200/70 dark:hover:border-blue-700/50"
           >
-            <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-blue-900/30 purple:bg-blue-900/30 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/40 transition-colors">
-              <Phone className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400" />
+            <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/40 midnight:bg-blue-900/40 purple:bg-blue-900/40 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/50 group-hover:scale-110 transition-all duration-200 shadow-sm">
+              <Phone className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80 mb-0.5">
+              <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-0.5 uppercase tracking-wide">
                 Phone Number
               </div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
+              <div className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
                 {phoneNumber}
               </div>
             </div>
@@ -48,16 +45,16 @@ export default function PrimaryContactInfoCard({
         {email && (
           <a
             href={`mailto:${email}`}
-            className="flex items-center gap-2.5 py-1.5 px-2.5 rounded-lg bg-gray-50/50 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30 hover:bg-gray-100/70 dark:hover:bg-gray-800/50 transition-colors duration-200 cursor-pointer group"
+            className="flex items-center gap-2.5 py-2.5 px-3 rounded-xl bg-gradient-to-br from-purple-50 to-violet-50/30 dark:from-purple-900/20 dark:to-violet-900/20 midnight:from-purple-900/20 midnight:to-pink-900/20 purple:from-purple-900/20 purple:to-pink-900/20 hover:from-purple-100 hover:to-violet-100/40 dark:hover:from-purple-900/30 dark:hover:to-violet-900/30 transition-all duration-200 cursor-pointer group border border-purple-100/50 dark:border-purple-800/30 midnight:border-purple-800/30 purple:border-purple-800/30 hover:border-purple-200/70 dark:hover:border-purple-700/50"
           >
-            <div className="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-purple-900/30 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-200 dark:group-hover:bg-purple-900/40 transition-colors">
-              <Mail className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-purple-400" />
+            <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900/40 midnight:bg-purple-900/40 purple:bg-purple-900/40 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-200 dark:group-hover:bg-purple-800/50 group-hover:scale-110 transition-all duration-200 shadow-sm">
+              <Mail className="w-4.5 h-4.5 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-purple-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80 mb-0.5">
+              <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-0.5 uppercase tracking-wide">
                 Email Address
               </div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 midnight:group-hover:text-purple-400 purple:group-hover:text-pink-400 transition-colors">
+              <div className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 midnight:group-hover:text-purple-400 purple:group-hover:text-pink-400 transition-colors">
                 {email}
               </div>
             </div>

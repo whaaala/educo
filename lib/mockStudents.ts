@@ -1,6 +1,20 @@
 // Shared mock student data
 import { Student } from "@/components/students/StudentCard";
 
+// Timetable interfaces
+export interface TimetableEntry {
+  day: string;
+  periods: Period[];
+}
+
+export interface Period {
+  time: string;
+  subject: string;
+  teacher: string;
+  teacherAvatar?: string;
+  type?: "class" | "break";
+}
+
 // Extended student data interface matching the form structure
 export interface ExtendedStudentData {
   // Personal Information
@@ -197,6 +211,9 @@ export interface ExtendedStudentData {
   branch?: string;
   ifscNumber?: string;
   otherInformation?: string;
+
+  // Timetable
+  timetable?: TimetableEntry[];
 }
 
 // Helper function to parse date string like "10 Jan 2017" to "2017-01-10"
@@ -544,7 +561,89 @@ function generateExtendedStudentData(student: Student, academicYear: string = "2
     branch: studentIndex % 3 === 0 ? `${address.city} Branch` : undefined,
     ifscNumber: studentIndex % 3 === 0 ? `FIRSTNGA${100 + studentIndex}` : undefined,
     otherInformation: studentIndex % 5 === 0 ? `Excellent student with good academic performance. Participates actively in ${gender === "Male" ? "sports" : "cultural activities"}.` : undefined,
+
+    // Timetable - Generate a weekly schedule
+    timetable: generateTimetable(studentIndex),
   };
+}
+
+// Helper function to generate timetable
+function generateTimetable(studentIndex: number): TimetableEntry[] {
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const subjects = ["Maths", "Spanish", "Computer", "Physics", "English", "Science", "Chemistry"];
+  const teachers = ["Jacquelin", "Erickson", "Daniel", "Teresa", "Hellana", "Morgan", "Aaron"];
+  const teacherAvatars = [
+    "https://i.pravatar.cc/150?img=11",
+    "https://i.pravatar.cc/150?img=12",
+    "https://i.pravatar.cc/150?img=13",
+    "https://i.pravatar.cc/150?img=14",
+    "https://i.pravatar.cc/150?img=15",
+    "https://i.pravatar.cc/150?img=16",
+    "https://i.pravatar.cc/150?img=17",
+  ];
+
+  const timeSlots = [
+    { time: "09:00 - 09:45 AM", isBreak: false },
+    { time: "09:45 - 10:30 AM", isBreak: false },
+    { time: "10:45 - 11:30 AM", isBreak: false },
+    { time: "11:30 - 12:15 PM", isBreak: false },
+    { time: "01:30 - 02:15 PM", isBreak: false },
+    { time: "02:15 - 03:00 PM", isBreak: false },
+    { time: "03:15 - 04:00 PM", isBreak: false },
+  ];
+
+  const breaks = [
+    { time: "10:30 to 10:45 AM", label: "Morning Break" },
+    { time: "10:30 to 10:45 AM", label: "Lunch" },
+    { time: "03:30 PM to 03:45 PM", label: "Evening Break" },
+  ];
+
+  return days.map((day, dayIndex) => {
+    const periods: Period[] = timeSlots.map((slot, slotIndex) => {
+      // Add breaks at specific positions
+      if (dayIndex < 6 && slotIndex === 1) {
+        return {
+          time: breaks[0].time,
+          subject: breaks[0].label,
+          teacher: "",
+          type: "break" as const,
+        };
+      }
+      if (dayIndex < 6 && slotIndex === 3) {
+        return {
+          time: breaks[1].time,
+          subject: breaks[1].label,
+          teacher: "",
+          type: "break" as const,
+        };
+      }
+      if (dayIndex < 6 && slotIndex === 6) {
+        return {
+          time: breaks[2].time,
+          subject: breaks[2].label,
+          teacher: "",
+          type: "break" as const,
+        };
+      }
+
+      // Rotate subjects and teachers based on day and slot
+      const subjectIndex = (dayIndex + slotIndex + studentIndex) % subjects.length;
+      const teacherIndex = (dayIndex + slotIndex + studentIndex) % teachers.length;
+
+      return {
+        time: slot.time,
+        subject: subjects[subjectIndex],
+        teacher: teachers[teacherIndex],
+        teacherAvatar: teacherAvatars[teacherIndex],
+        type: "class" as const,
+      };
+    });
+
+    return {
+      day,
+      periods: periods.filter((p) => p.type === "class" || p.type === "break"),
+    };
+  });
 }
 
 // Basic student list - matches the students page

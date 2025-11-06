@@ -10,7 +10,6 @@ import Image from "next/image";
 import {
   GraduationCap,
   Calendar,
-  DollarSign,
   FileText,
   BookOpen,
   Phone,
@@ -18,7 +17,6 @@ import {
   Lock,
   Download,
   Clock,
-  Edit,
   KeyRound,
   Search,
   ExternalLink,
@@ -36,6 +34,11 @@ import MedicalHistoryCard from "@/components/students/MedicalHistoryCard";
 import BankDetailsCard from "@/components/students/BankDetailsCard";
 import OtherInfoCard from "@/components/students/OtherInfoCard";
 import CollectFeesModal from "@/components/shared/CollectFeesModal";
+import ActionButton from "@/components/shared/ActionButton";
+import SecondaryButton from "@/components/shared/SecondaryButton";
+import CurrencyIcon from "@/components/shared/CurrencyIcon";
+import TimeTable from "@/components/students/TimeTable";
+import { Edit } from "lucide-react";
 
 type TabType = "details" | "timetable" | "attendance" | "fees" | "exam" | "library";
 
@@ -151,7 +154,7 @@ export default function ViewStudentPage() {
     { id: "details" as TabType, label: "Student Details", icon: GraduationCap },
     { id: "timetable" as TabType, label: "Time Table", icon: Clock },
     { id: "attendance" as TabType, label: "Leave & Attendance", icon: Calendar },
-    { id: "fees" as TabType, label: "Fees", icon: DollarSign },
+    { id: "fees" as TabType, label: "Fees", icon: CurrencyIcon },
     { id: "exam" as TabType, label: "Exam & Results", icon: FileText },
     { id: "library" as TabType, label: "Library", icon: BookOpen },
   ];
@@ -162,41 +165,37 @@ export default function ViewStudentPage() {
       
       <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-6 mt-6">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+              <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
                 Student Details
               </h1>
-              <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-                <a href="/" className="hover:text-gray-900 dark:hover:text-gray-200 midnight:hover:text-cyan-200 purple:hover:text-pink-200 transition-colors">
+              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 flex-wrap">
+                <a href="/" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
                   Dashboard
                 </a>
                 <span>/</span>
-                <a href="/students" className="hover:text-gray-900 dark:hover:text-gray-200 midnight:hover:text-cyan-200 purple:hover:text-pink-200 transition-colors">
+                <a href="/students" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
                   Student
                 </a>
                 <span>/</span>
-                <span className="text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 font-medium">
+                <span className="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium">
                   Student Details
                 </span>
-              </nav>
+              </div>
             </div>
-            <div className="flex gap-3">
-              <button
+            <div className="flex flex-wrap sm:flex-nowrap gap-3">
+              <SecondaryButton
+                label="Login Details"
+                icon={KeyRound}
                 onClick={() => {}}
-                className="px-4 py-2 bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-              >
-                <KeyRound className="w-4 h-4" />
-                Login Details
-              </button>
-              <button
+              />
+              <ActionButton
+                label="Edit Student"
+                icon={Edit}
                 onClick={() => router.push(`/students/edit/${studentId}`)}
-                className="px-4 py-2 bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 midnight:hover:bg-cyan-700 purple:hover:bg-pink-700 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-              >
-                <Edit className="w-4 h-4" />
-                Edit Student
-              </button>
+              />
             </div>
           </div>
         </div>
@@ -219,7 +218,7 @@ export default function ViewStudentPage() {
               activeTab={activeTab}
               setActiveTab={setActiveTab}
             />
-            
+
             <div className="mt-6">
               {activeTab === "details" && (
                 <StudentDetailsTab
@@ -229,7 +228,7 @@ export default function ViewStudentPage() {
                   guardianPhotoUrl={guardianPhotoUrl}
                 />
               )}
-              {activeTab === "timetable" && <TimetableTab />}
+              {activeTab === "timetable" && <TimetableTab timetable={studentData.timetable} />}
               {activeTab === "attendance" && <AttendanceTab />}
               {activeTab === "fees" && <FeesTab />}
               {activeTab === "exam" && <ExamResultsTab />}
@@ -314,25 +313,56 @@ function StudentTabs({
   setActiveTab: (tab: TabType) => void;
 }) {
   return (
-    <div className="flex flex-wrap lg:flex-nowrap">
-      {tabs.map((tab) => {
-        const Icon = tab.icon;
-        const isActive = activeTab === tab.id;
-        return (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-1.5 px-2 sm:px-3 md:px-4 py-4 border-b-[3px] transition-all duration-200 whitespace-nowrap flex-1 sm:flex-initial lg:flex-initial ${
-              isActive
-                ? "border-blue-600 dark:border-blue-500 midnight:border-cyan-600 purple:border-pink-600 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-semibold"
-                : "border-transparent text-gray-700 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:text-gray-900 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
-            } cursor-pointer`}
-          >
-            <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70"}`} />
-            <span className="text-sm">{tab.label}</span>
-          </button>
-        );
-      })}
+    <div className="relative bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-[#1a1d23]/30 dark:to-[#14161b]/50 midnight:from-[#0f1729]/30 midnight:to-[#0a0f1c]/50 purple:from-[#2a1a3e]/30 purple:to-[#1f1330]/50 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/30 dark:border-gray-800/30 midnight:border-cyan-500/10 purple:border-pink-500/10 p-1.5 overflow-hidden">
+      {/* Animated background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-400/5 dark:via-purple-400/5 dark:to-pink-400/5 midnight:from-cyan-400/5 midnight:via-blue-400/5 midnight:to-cyan-400/5 purple:from-pink-400/5 purple:via-purple-400/5 purple:to-pink-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+      <div className="relative flex flex-wrap lg:flex-nowrap gap-1.5">
+        {tabs.map((tab, index) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                animationDelay: `${index * 50}ms`
+              }}
+              className={`relative flex items-center justify-center gap-2.5 px-4 sm:px-5 py-3.5 rounded-xl transition-all duration-300 ease-out whitespace-nowrap flex-1 sm:flex-initial lg:flex-initial group overflow-hidden ${
+                isActive
+                  ? "bg-blue-50/80 dark:bg-blue-950/20 midnight:bg-cyan-950/20 purple:bg-pink-950/20 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 shadow-sm border border-blue-100/50 dark:border-blue-900/30 midnight:border-cyan-900/30 purple:border-pink-900/30"
+                  : "text-gray-700 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:bg-white/40 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/30 purple:hover:bg-gray-800/30 hover:text-gray-900 dark:hover:text-gray-200 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:shadow-sm"
+              } cursor-pointer active:scale-95 animate-fadeIn`}
+            >
+              {/* Shine effect on active tab */}
+              {isActive && (
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              )}
+
+              {/* Hover glow effect for inactive tabs */}
+              {!isActive && (
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-blue-500/5 group-hover:via-purple-500/5 group-hover:to-pink-500/5 transition-all duration-500 rounded-xl" />
+              )}
+
+              <Icon className={`relative w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 transition-all duration-300 ${
+                isActive
+                  ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                  : "text-gray-600 dark:text-gray-500 midnight:text-cyan-300/70 purple:text-pink-300/70 group-hover:scale-110 group-hover:rotate-6"
+              }`} />
+              <span className={`relative text-xs sm:text-sm font-semibold transition-all duration-300 ${
+                isActive ? "tracking-wide" : "group-hover:tracking-wide"
+              }`}>
+                {tab.label}
+              </span>
+
+              {/* Active indicator dot - subtle */}
+              {isActive && (
+                <div className="absolute top-2 right-2 w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 midnight:bg-cyan-400 purple:bg-pink-400 rounded-full shadow-sm" />
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -444,26 +474,22 @@ function StudentDetailsTab({
 }
 
 // Placeholder components for other tabs
-function TimetableTab() {
-  return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
-      <div className="text-center py-12">
-        <Clock className="w-16 h-16 text-gray-400 dark:text-gray-600 midnight:text-cyan-800 purple:text-pink-800 mx-auto mb-4" />
-        <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-          Timetable content coming soon
-        </p>
-      </div>
-    </div>
-  );
+function TimetableTab({ timetable }: { timetable?: import("@/lib/mockStudents").TimetableEntry[] }) {
+  return <TimeTable timetable={timetable} />;
 }
 
 function AttendanceTab() {
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
-      <div className="text-center py-12">
-        <Calendar className="w-16 h-16 text-gray-400 dark:text-gray-600 midnight:text-cyan-800 purple:text-pink-800 mx-auto mb-4" />
-        <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-          Attendance content coming soon
+    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+      <div className="text-center py-16">
+        <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 midnight:from-green-950/30 midnight:to-emerald-950/30 purple:from-green-950/30 purple:to-emerald-950/30 mb-6 mx-auto">
+          <Calendar className="w-12 h-12 text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+          Leave & Attendance Coming Soon
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 max-w-sm mx-auto">
+          Track student attendance records and leave applications here
         </p>
       </div>
     </div>
@@ -472,11 +498,16 @@ function AttendanceTab() {
 
 function FeesTab() {
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
-      <div className="text-center py-12">
-        <DollarSign className="w-16 h-16 text-gray-400 dark:text-gray-600 midnight:text-cyan-800 purple:text-pink-800 mx-auto mb-4" />
-        <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-          Fees content coming soon
+    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+      <div className="text-center py-16">
+        <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 midnight:from-amber-950/30 midnight:to-yellow-950/30 purple:from-amber-950/30 purple:to-yellow-950/30 mb-6 mx-auto">
+          <CurrencyIcon className="w-12 h-12 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+          Fees Management Coming Soon
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 max-w-sm mx-auto">
+          View and manage student fee payments and outstanding balances
         </p>
       </div>
     </div>
@@ -485,11 +516,16 @@ function FeesTab() {
 
 function ExamResultsTab() {
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
-      <div className="text-center py-12">
-        <FileText className="w-16 h-16 text-gray-400 dark:text-gray-600 midnight:text-cyan-800 purple:text-pink-800 mx-auto mb-4" />
-        <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-          Exam & Results content coming soon
+    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+      <div className="text-center py-16">
+        <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30 midnight:from-purple-950/30 midnight:to-violet-950/30 purple:from-pink-950/30 purple:to-purple-950/30 mb-6 mx-auto">
+          <FileText className="w-12 h-12 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+          Exam & Results Coming Soon
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 max-w-sm mx-auto">
+          Access student exam schedules, results, and performance analytics
         </p>
       </div>
     </div>
@@ -498,14 +534,18 @@ function ExamResultsTab() {
 
 function LibraryTab() {
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
-      <div className="text-center py-12">
-        <BookOpen className="w-16 h-16 text-gray-400 dark:text-gray-600 midnight:text-cyan-800 purple:text-pink-800 mx-auto mb-4" />
-        <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-          Library content coming soon
+    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+      <div className="text-center py-16">
+        <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30 midnight:from-rose-950/30 midnight:to-pink-950/30 purple:from-pink-950/30 purple:to-rose-950/30 mb-6 mx-auto">
+          <BookOpen className="w-12 h-12 text-rose-600 dark:text-rose-400 midnight:text-rose-400 purple:text-pink-400" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+          Library Records Coming Soon
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 max-w-sm mx-auto">
+          View student's borrowed books, due dates, and library history
         </p>
       </div>
     </div>
   );
 }
-
