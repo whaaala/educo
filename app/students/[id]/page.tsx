@@ -313,11 +313,11 @@ function StudentTabs({
   setActiveTab: (tab: TabType) => void;
 }) {
   return (
-    <div className="relative bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-[#1a1d23]/30 dark:to-[#14161b]/50 midnight:from-[#0f1729]/30 midnight:to-[#0a0f1c]/50 purple:from-[#2a1a3e]/30 purple:to-[#1f1330]/50 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/30 dark:border-gray-800/30 midnight:border-cyan-500/10 purple:border-pink-500/10 p-1.5 overflow-hidden">
+    <div className="relative bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-[#1a1d23]/30 dark:to-[#14161b]/50 midnight:from-[#0f1729]/30 midnight:to-[#0a0f1c]/50 purple:from-[#2a1a3e]/30 purple:to-[#1f1330]/50 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/30 dark:border-gray-800/30 midnight:border-cyan-500/10 purple:border-pink-500/10 p-1.5 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
       {/* Animated background gradient */}
       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-400/5 dark:via-purple-400/5 dark:to-pink-400/5 midnight:from-cyan-400/5 midnight:via-blue-400/5 midnight:to-cyan-400/5 purple:from-pink-400/5 purple:via-purple-400/5 purple:to-pink-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-      <div className="relative flex flex-wrap lg:flex-nowrap gap-1.5">
+      <div className="relative flex gap-1.5 min-w-max lg:min-w-0">
         {tabs.map((tab, index) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -328,7 +328,7 @@ function StudentTabs({
               style={{
                 animationDelay: `${index * 50}ms`
               }}
-              className={`relative flex items-center justify-center gap-2.5 px-4 sm:px-5 py-3.5 rounded-xl transition-all duration-300 ease-out whitespace-nowrap flex-1 sm:flex-initial lg:flex-initial group overflow-hidden ${
+              className={`relative flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl transition-all duration-300 ease-out whitespace-nowrap group overflow-hidden ${
                 isActive
                   ? "bg-blue-50/80 dark:bg-blue-950/20 midnight:bg-cyan-950/20 purple:bg-pink-950/20 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 shadow-sm border border-blue-100/50 dark:border-blue-900/30 midnight:border-cyan-900/30 purple:border-pink-900/30"
                   : "text-gray-700 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:bg-white/40 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/30 purple:hover:bg-gray-800/30 hover:text-gray-900 dark:hover:text-gray-200 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:shadow-sm"
@@ -344,12 +344,12 @@ function StudentTabs({
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-blue-500/5 group-hover:via-purple-500/5 group-hover:to-pink-500/5 transition-all duration-500 rounded-xl" />
               )}
 
-              <Icon className={`relative w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 transition-all duration-300 ${
+              <Icon className={`relative w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 transition-all duration-300 ${
                 isActive
                   ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                   : "text-gray-600 dark:text-gray-500 midnight:text-cyan-300/70 purple:text-pink-300/70 group-hover:scale-110 group-hover:rotate-6"
               }`} />
-              <span className={`relative text-xs sm:text-sm font-semibold transition-all duration-300 ${
+              <span className={`relative text-[11.75px] sm:text-xs font-semibold transition-all duration-300 ${
                 isActive ? "tracking-wide" : "group-hover:tracking-wide"
               }`}>
                 {tab.label}
@@ -357,7 +357,7 @@ function StudentTabs({
 
               {/* Active indicator dot - subtle */}
               {isActive && (
-                <div className="absolute top-2 right-2 w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 midnight:bg-cyan-400 purple:bg-pink-400 rounded-full shadow-sm" />
+                <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 midnight:bg-cyan-400 purple:bg-pink-400 rounded-full shadow-sm" />
               )}
             </button>
           );

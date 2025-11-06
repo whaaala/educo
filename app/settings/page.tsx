@@ -5,8 +5,10 @@ import PageHeader from "@/components/shared/PageHeader";
 import PageLoader from "@/components/shared/PageLoader";
 import CountrySelector from "@/components/shared/CountrySelector";
 import LanguageSelector from "@/components/shared/LanguageSelector";
+import TimetableManagementSettings from "@/components/settings/TimetableManagementSettings";
+import UserPermissionManagement from "@/components/settings/UserPermissionManagement";
 import { usePageLoad } from "@/hooks/usePageLoad";
-import { Settings as SettingsIcon, Globe, Palette, Calendar, Bell, Languages } from "lucide-react";
+import { Settings as SettingsIcon, Globe, Palette, Calendar, Bell, Languages, Clock, Shield } from "lucide-react";
 
 export default function SettingsPage() {
   const isLoading = usePageLoad(800);
@@ -109,6 +111,50 @@ export default function SettingsPage() {
               <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
                 Use the theme switcher in the sidebar to change between Light, Dark, Midnight, and Purple themes.
               </p>
+            </div>
+          </section>
+
+          {/* User Permissions Section */}
+          <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 px-6 py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    Calendar Permissions
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+                    Manage who can create, edit, and delete calendar events
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6">
+              <UserPermissionManagement />
+            </div>
+          </section>
+
+          {/* Timetable Configuration Section */}
+          <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 px-6 py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    Timetable Management
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+                    Configure timetable calendar and manage custom events
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6">
+              <TimetableManagementSettings />
             </div>
           </section>
 

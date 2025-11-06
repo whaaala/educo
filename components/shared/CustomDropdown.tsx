@@ -59,7 +59,7 @@ export default function CustomDropdown({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`appearance-none w-full text-sm sm:text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 ${styles.button} rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 pr-7 sm:pr-9 cursor-pointer outline-none focus:ring-2 transition-all shadow-sm border`}
+        className={`appearance-none w-full text-[10px] sm:text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 ${styles.button} rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 pr-7 sm:pr-9 cursor-pointer outline-none focus:ring-2 transition-all shadow-sm border`}
       >
         {selectedOption?.label || value}
       </button>
