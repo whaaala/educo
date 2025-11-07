@@ -39,6 +39,7 @@ export interface TimetableConfig {
   dayOverrides?: DayScheduleOverride[]; // Day-specific overrides
   fixedTimeSlots?: boolean; // If true, use exact time slots, don't auto-generate
   customTimeSlots?: string[]; // Custom time slots if fixedTimeSlots is true
+  blockedDays?: string[]; // Days with no classes (e.g., ["Saturday", "Sunday"])
 }
 
 // Predefined calendar configurations
@@ -57,6 +58,7 @@ export const CALENDAR_CONFIGS: Record<CalendarType, Omit<TimetableConfig, "weekS
       lunch: { start: "12:00", end: "13:00" },
       eveningBreak: { start: "15:00", end: "15:15" },
     },
+    blockedDays: ["Saturday", "Sunday"], // Default: no classes on weekends
   },
   "6-day": {
     calendarType: "6-day",

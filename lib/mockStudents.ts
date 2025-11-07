@@ -214,6 +214,9 @@ export interface ExtendedStudentData {
 
   // Timetable
   timetable?: TimetableEntry[];
+
+  // Subject Enrollment
+  enrolledSubjects?: string[]; // List of subjects the student is enrolled in
 }
 
 // Helper function to parse date string like "10 Jan 2017" to "2017-01-10"
@@ -562,15 +565,138 @@ function generateExtendedStudentData(student: Student, academicYear: string = "2
     ifscNumber: studentIndex % 3 === 0 ? `FIRSTNGA${100 + studentIndex}` : undefined,
     otherInformation: studentIndex % 5 === 0 ? `Excellent student with good academic performance. Participates actively in ${gender === "Male" ? "sports" : "cultural activities"}.` : undefined,
 
-    // Timetable - Generate a weekly schedule
-    timetable: generateTimetable(studentIndex),
+    // Generate enrolled subjects first
+    enrolledSubjects: generateEnrolledSubjects(studentIndex, ALL_SUBJECTS.length),
   };
 }
 
-// Helper function to generate timetable
-function generateTimetable(studentIndex: number): TimetableEntry[] {
+// Update the return to include timetable after enrolledSubjects is defined
+function generateExtendedStudentDataWithTimetable(student: Student, academicYear: string = "2024/2025"): ExtendedStudentData {
+  const baseData = generateExtendedStudentData(student, academicYear);
+
+  // Generate timetable based on enrolled subjects
+  return {
+    ...baseData,
+    timetable: generateTimetable(
+      parseInt(student.id.match(/\d+$/)?.[0] || "0") % 50,
+      baseData.enrolledSubjects || []
+    ),
+  };
+}
+
+// All available subjects (same as in AttendanceByClass DEFAULT_SUBJECTS)
+const ALL_SUBJECTS = [
+  "Mathematics",
+  "English",
+  "Science",
+  "History",
+  "Physical Education",
+  "Art",
+  "Music",
+  "Geography",
+  "Computer Science",
+  "Chemistry",
+  "Physics",
+  "Biology",
+  "Literature",
+  "Spanish",
+  "French",
+];
+
+// Helper function to generate student-specific enrolled subjects
+function generateEnrolledSubjects(studentIndex: number, numSubjects: number): string[] {
+  // Students are enrolled in 5-10 subjects based on their index
+  const minSubjects = 5;
+  const maxSubjects = Math.min(10, numSubjects);
+  const enrolledCount = minSubjects + (studentIndex % (maxSubjects - minSubjects + 1));
+
+  // Create a deterministic but varied selection based on studentIndex
+  const selectedSubjects: string[] = [];
+  const startIndex = studentIndex % ALL_SUBJECTS.length;
+
+  for (let i = 0; i < enrolledCount; i++) {
+    const subjectIndex = (startIndex + i) % ALL_SUBJECTS.length;
+    selectedSubjects.push(ALL_SUBJECTS[subjectIndex]);
+  }
+
+  return selectedSubjects;
+}
+
+// Attendance status types
+export type AttendanceStatus = "present" | "absent" | "late" | "excused";
+
+// Attendance data structure
+export interface ClassAttendanceData {
+  date: string;
+  day: string;
+  [key: `period${number}`]: AttendanceStatus | string;
+}
+
+// Helper function to generate deterministic student-specific attendance data
+function generateStudentAttendance(
+  studentId: string,
+  periodsPerDay: number,
+  numberOfDays: number = 31,
+  startYear: number = 2024
+): ClassAttendanceData[] {
+  const data: ClassAttendanceData[] = [];
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  // Use studentId to create a consistent seed for this student's attendance
+  const studentSeed = studentId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+  // Simple deterministic random number generator using student seed
+  let seed = studentSeed;
+  const deterministicRandom = () => {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+
+  // Start from January 1st of the selected year and generate sequential dates
+  const currentDate = new Date(startYear, 0, 1); // Jan 1
+
+  for (let i = 0; i < numberOfDays; i++) {
+    const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const dayName = days[dayOfWeek === 0 ? 6 : dayOfWeek - 1]; // Adjust: Mon-Fri (skip weekends for display)
+
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const month = months[currentDate.getMonth()];
+    const year = currentDate.getFullYear();
+
+    const row: any = {
+      date: `${day} ${month} ${year}`,
+      day: dayName,
+    };
+
+    // Generate attendance for each period
+    // This student's attendance pattern is deterministic but realistic
+    for (let p = 1; p <= periodsPerDay; p++) {
+      const rand = deterministicRandom();
+      let status: AttendanceStatus;
+
+      // 85% present, 8% absent, 4% late, 3% excused
+      if (rand > 0.92) status = "absent";
+      else if (rand > 0.88) status = "late";
+      else if (rand > 0.85) status = "excused";
+      else status = "present";
+
+      row[`period${p}`] = status;
+    }
+
+    data.push(row as ClassAttendanceData);
+
+    // Move to next day
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return data;
+}
+
+// Helper function to generate timetable with enrolled subjects only
+function generateTimetable(studentIndex: number, enrolledSubjects: string[]): TimetableEntry[] {
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const subjects = ["Maths", "Spanish", "Computer", "Physics", "English", "Science", "Chemistry"];
+  const subjects = enrolledSubjects.length > 0 ? enrolledSubjects : ALL_SUBJECTS.slice(0, 7);
   const teachers = ["Jacquelin", "Erickson", "Daniel", "Teresa", "Hellana", "Morgan", "Aaron"];
   const teacherAvatars = [
     "https://i.pravatar.cc/150?img=11",
@@ -1010,13 +1136,13 @@ function getExtendedStudentsArray(academicYear: string = "2024/2025"): ExtendedS
   if (cachedExtendedStudents && cachedAcademicYear === academicYear) {
     return cachedExtendedStudents;
   }
-  
-  // Generate extended data for all students
-  cachedExtendedStudents = sampleStudents.map((student) => 
-    generateExtendedStudentData(student, academicYear)
+
+  // Generate extended data for all students with timetable
+  cachedExtendedStudents = sampleStudents.map((student) =>
+    generateExtendedStudentDataWithTimetable(student, academicYear)
   );
   cachedAcademicYear = academicYear;
-  
+
   return cachedExtendedStudents;
 }
 
@@ -1046,5 +1172,21 @@ export function getAllExtendedStudentData(academicYear?: string): ExtendedStuden
 // Export pre-generated extended students array for direct access
 export function getSampleExtendedStudents(academicYear: string = "2024/2025"): ExtendedStudentData[] {
   return getExtendedStudentsArray(academicYear);
+}
+
+// Helper function to get enrolled subjects for a student by ID
+export function getStudentEnrolledSubjects(studentId: string): string[] {
+  const student = getExtendedStudentDataById(studentId);
+  return student?.enrolledSubjects || [];
+}
+
+// Helper function to get student-specific attendance data
+export function getStudentAttendanceData(
+  studentId: string,
+  periodsPerDay: number,
+  numberOfDays: number = 31,
+  startYear: number = 2024
+): ClassAttendanceData[] {
+  return generateStudentAttendance(studentId, periodsPerDay, numberOfDays, startYear);
 }
 

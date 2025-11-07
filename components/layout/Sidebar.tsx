@@ -145,7 +145,9 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
     if (!href || href === "#") return false;
 
     // Parse the href to get pathname and search params
-    const url = new URL(href, window.location.origin);
+    // Use typeof window check to prevent SSR errors
+    const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+    const url = new URL(href, origin);
     const linkPathname = url.pathname;
     const linkSearch = url.search;
 

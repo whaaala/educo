@@ -45,12 +45,15 @@ import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import AddButton from "@/components/shared/AddButton";
 import AttendanceStatsCard from "@/components/students/AttendanceStatsCard";
 import AttendanceCalendar from "@/components/students/AttendanceCalendar";
+import AttendanceByClass from "@/components/students/AttendanceByClass";
 import FeesTable from "@/components/students/FeesTable";
 import MobileDropdown from "@/components/shared/MobileDropdown";
-import { Edit } from "lucide-react";
+import { getAttendanceMode } from "@/components/settings/AttendanceSettings";
+import { Edit, UserCheck, CheckCircle2 } from "lucide-react";
 
 type TabType = "details" | "timetable" | "attendance" | "fees" | "exam" | "library";
 
+// CACHE BUSTER: 2025-11-07-16:03
 export default function ViewStudentPage() {
   const params = useParams();
   const studentId = params?.id as string;
@@ -239,7 +242,7 @@ export default function ViewStudentPage() {
                 />
               )}
               {activeTab === "timetable" && <TimetableTab timetable={studentData.timetable} />}
-              {activeTab === "attendance" && <AttendanceTab />}
+              {activeTab === "attendance" && <AttendanceTab studentId={studentId} />}
               {activeTab === "fees" && <FeesTab />}
               {activeTab === "exam" && <ExamResultsTab />}
               {activeTab === "library" && <LibraryTab />}
@@ -598,9 +601,17 @@ const MOCK_LEAVE_APPLICATIONS: LeaveApplication[] = [
   },
 ];
 
-function AttendanceTab() {
+function AttendanceTab({ studentId }: { studentId: string }) {
   const [activeSubTab, setActiveSubTab] = useState<"leaves" | "attendance">("leaves");
   const [isApplyLeaveModalOpen, setIsApplyLeaveModalOpen] = useState(false);
+
+  // Attendance mode state - load directly from localStorage with fallback
+  const [attendanceMode, setAttendanceMode] = useState<"by-class" | "by-day">(() => {
+    if (typeof window !== "undefined") {
+      return getAttendanceMode();
+    }
+    return "by-day";
+  });
 
   // Status Badge Component
   const getStatusBadge = (status: LeaveApplication["status"]) => {
@@ -679,12 +690,12 @@ function AttendanceTab() {
       {/* Main Content Card */}
       <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
         {/* Header with Tabs */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-4 sm:p-5 lg:p-6 border-b border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2 sm:p-3 border-b border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20">
           {/* Sub Tabs */}
           <div className="flex gap-2">
             <button
               onClick={() => setActiveSubTab("leaves")}
-              className={`px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
+              className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
                 activeSubTab === "leaves"
                   ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-md"
                   : "bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700"
@@ -694,7 +705,7 @@ function AttendanceTab() {
             </button>
             <button
               onClick={() => setActiveSubTab("attendance")}
-              className={`px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
+              className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
                 activeSubTab === "attendance"
                   ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-md"
                   : "bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700"
@@ -780,8 +791,12 @@ function AttendanceTab() {
                 <AttendanceStatsCard type="late" count={12} />
               </div>
 
-              {/* Attendance Calendar */}
-              <AttendanceCalendar />
+              {/* Attendance Display - Shows by-class or by-day based on settings */}
+              {attendanceMode === "by-class" ? (
+                <AttendanceByClass studentId={studentId} />
+              ) : (
+                <AttendanceCalendar />
+              )}
             </div>
           )}
         </div>

@@ -43,6 +43,9 @@ export default function TimetableManagementSettings() {
   const handleSaveSettings = (config: TimetableConfig) => {
     setCustomConfig(config);
     localStorage.setItem('customTimetableConfig', JSON.stringify(config));
+
+    // Dispatch custom event to notify components in the same tab
+    window.dispatchEvent(new Event('timetableConfigChanged'));
   };
 
   const handleSaveEvent = (event: CalendarEvent) => {
