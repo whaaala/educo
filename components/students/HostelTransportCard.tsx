@@ -35,9 +35,9 @@ export default function HostelTransportCard({
   }
 
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-3 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-2 sm:p-3 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
       {/* Tabs */}
-      <div className="flex gap-1 mb-2 pb-1.5 border-b border-gray-100 dark:border-gray-800/50 midnight:border-gray-800/30 purple:border-gray-800/30">
+      <div className="flex gap-1 mb-1.5 sm:mb-2 pb-1 sm:pb-1.5 border-b border-gray-100 dark:border-gray-800/50 midnight:border-gray-800/30 purple:border-gray-800/30">
         <button
           onClick={() => setActiveTab("hostel")}
           className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all duration-200 ${
@@ -63,7 +63,7 @@ export default function HostelTransportCard({
       {/* Content */}
       <div className="pt-0.5">
         {activeTab === "hostel" && (
-          <div className="space-y-2">
+          <div className="space-y-1.5 sm:space-y-2">
             {(hostelName || roomNumber) ? (
               <>
                 {hostelName && (
@@ -106,7 +106,7 @@ export default function HostelTransportCard({
         )}
 
         {activeTab === "transport" && (
-          <div className="space-y-2">
+          <div className="space-y-1.5 sm:space-y-2">
             {(transportRoute || vehicleNumber) ? (
               <>
                 {transportRoute && (

@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Clock, ChevronLeft, ChevronRight, Coffee, Utensils, Moon } from "lucide-react";
+import { Clock, ChevronLeft, ChevronRight, Coffee, Utensils, Moon, Calendar } from "lucide-react";
 import type { TimetableEntry, Period } from "@/lib/mockStudents";
 import TimetableCell from "./TimetableCell";
 import BreakCard from "./BreakCard";
 import CustomDropdown from "@/components/shared/CustomDropdown";
+import MobileDropdown from "@/components/shared/MobileDropdown";
 import { getSchoolConfig, generateTimeSlots, getBreakPeriods, type CalendarEvent, type TimetableConfig } from "@/lib/timetableConfig";
 import { getCurrentUser, getUserEvents } from "@/lib/calendarPermissions";
 
@@ -384,13 +385,13 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
     <div className="space-y-6">
       {/* Timetable Grid with integrated header */}
       <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-lg overflow-hidden">
-        {/* Header Section */}
-        <div className="px-6 py-2 border-b border-gray-200/50 dark:border-gray-800/50 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-900/5 dark:to-indigo-900/5 midnight:from-cyan-900/5 midnight:to-blue-900/5 purple:from-pink-900/5 purple:to-purple-900/5">
+        {/* Desktop Header Section */}
+        <div className="hidden md:block px-6 py-2 border-b border-gray-200/50 dark:border-gray-800/50 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-900/5 dark:to-indigo-900/5 midnight:from-cyan-900/5 midnight:to-blue-900/5 purple:from-pink-900/5 purple:to-purple-900/5">
           <div className="flex items-center justify-between gap-3">
             {/* Left: Title */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                {customConfig ? "Custom Timetable" : "Timetable"}
+                Timetable
               </h2>
             </div>
 
@@ -440,10 +441,58 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
           </div>
         </div>
 
+        {/* Mobile Header Section */}
+        <div className="md:hidden px-3 py-3 space-y-2.5 border-b border-gray-200/50 dark:border-gray-800/50 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-gradient-to-br from-blue-50/40 to-indigo-50/40 dark:from-blue-900/10 dark:to-indigo-900/10 midnight:from-cyan-900/10 midnight:to-blue-900/10 purple:from-pink-900/10 purple:to-purple-900/10">
+          {/* Title */}
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
+              <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+            </div>
+            <h2 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              Timetable
+            </h2>
+          </div>
+
+          {/* Year Selector */}
+          <MobileDropdown
+            value={selectedYear}
+            options={yearOptions}
+            onChange={(value) => setSelectedYear(value as string)}
+            icon={<Calendar className="w-4 h-4" />}
+          />
+
+          {/* Week Navigation with Dropdown */}
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handlePreviousWeek}
+              disabled={currentWeek === 1}
+              className="flex-shrink-0 p-2 rounded-lg bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-2 border-blue-200/60 dark:border-blue-800/60 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95 shadow-sm"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <MobileDropdown
+              value={currentWeek}
+              options={weekOptions}
+              onChange={handleWeekChange}
+              icon={<Calendar className="w-4 h-4" />}
+              className="flex-1"
+            />
+
+            <button
+              onClick={handleNextWeek}
+              disabled={currentWeek === totalWeeks}
+              className="flex-shrink-0 p-2 rounded-lg bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-2 border-blue-200/60 dark:border-blue-800/60 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95 shadow-sm"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
         {/* Timetable Content */}
         <div className="px-0 py-3 sm:p-6">
-            {/* Week Selection Info Banner */}
-            <div className="mb-4 px-3 py-2 bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 rounded-lg border border-blue-100/30 dark:border-blue-800/20 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            {/* Week Selection Info Banner - Hidden on Mobile */}
+            <div className="hidden md:block mb-4 px-3 py-2 bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 rounded-lg border border-blue-100/30 dark:border-blue-800/20 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
                 <div className="flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 flex-shrink-0" />
@@ -467,23 +516,34 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
               </div>
             </div>
 
-            {/* Mobile Day Selector - Only visible on small screens */}
-            <div className="mb-4 md:hidden overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
-              <div className="flex gap-2 min-w-max pb-2">
-                {activeTimetable.map((daySchedule, index) => (
-                  <button
-                    key={daySchedule.day}
-                    onClick={() => setSelectedMobileDay(index)}
-                    className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 whitespace-nowrap ${
-                      selectedMobileDay === index
-                        ? "bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-600 dark:to-indigo-600 midnight:from-cyan-500 midnight:to-blue-500 purple:from-pink-500 purple:to-purple-500 text-white shadow-md"
-                        : "bg-gray-100 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 text-gray-700 dark:text-gray-300 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700"
-                    }`}
-                  >
-                    {daySchedule.day}
-                  </button>
-                ))}
+            {/* Mobile Day Selector with Date Range */}
+            <div className="md:hidden px-3 mb-4 space-y-2.5">
+              {/* Date Range Info */}
+              <div className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-50/60 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 rounded-lg border border-blue-100/40 dark:border-blue-800/20 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                <Clock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 flex-shrink-0" />
+                <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
+                  {(() => {
+                    const now = new Date();
+                    const startOfYear = new Date(now.getFullYear(), 0, 1);
+                    const weekStart = new Date(startOfYear);
+                    weekStart.setDate(startOfYear.getDate() + (currentWeek - 1) * 7);
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+                    return `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                  })()}
+                </span>
               </div>
+
+              {/* Day Selector Dropdown */}
+              <MobileDropdown
+                value={selectedMobileDay}
+                options={activeTimetable.map((daySchedule, index) => ({
+                  label: daySchedule.day,
+                  value: index,
+                }))}
+                onChange={(value) => setSelectedMobileDay(Number(value))}
+                icon={<Calendar className="w-4 h-4" />}
+              />
             </div>
 
             {/* Days Header Row - Hidden on mobile */}
@@ -560,8 +620,8 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
               );
             })}
 
-            {/* Mobile View - Single Day Vertical Layout */}
-            <div className="md:hidden space-y-3 px-4">
+            {/* Mobile View - 2-Column Grid Layout */}
+            <div className="md:hidden grid grid-cols-2 gap-2 px-4">
               {allClassPeriods.map((_, periodIndex) => {
                 const daySchedule = activeTimetable[selectedMobileDay];
                 const classPeriods = daySchedule.periods.filter((p) => p.type !== "break");

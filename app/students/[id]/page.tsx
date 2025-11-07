@@ -38,6 +38,14 @@ import ActionButton from "@/components/shared/ActionButton";
 import SecondaryButton from "@/components/shared/SecondaryButton";
 import CurrencyIcon from "@/components/shared/CurrencyIcon";
 import TimeTable from "@/components/students/TimeTable";
+import LoginDetailsModal from "@/components/students/LoginDetailsModal";
+import LeaveStatsCard from "@/components/students/LeaveStatsCard";
+import LeaveApplicationsTable from "@/components/students/LeaveApplicationsTable";
+import ApplyLeaveModal from "@/components/students/ApplyLeaveModal";
+import AttendanceStatsCard from "@/components/students/AttendanceStatsCard";
+import AttendanceCalendar from "@/components/students/AttendanceCalendar";
+import FeesTable from "@/components/students/FeesTable";
+import MobileDropdown from "@/components/shared/MobileDropdown";
 import { Edit } from "lucide-react";
 
 type TabType = "details" | "timetable" | "attendance" | "fees" | "exam" | "library";
@@ -51,6 +59,7 @@ export default function ViewStudentPage() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("details");
   const [isFeesModalOpen, setIsFeesModalOpen] = useState(false);
+  const [isLoginDetailsModalOpen, setIsLoginDetailsModalOpen] = useState(false);
 
   useEffect(() => {
     if (studentId) {
@@ -189,7 +198,7 @@ export default function ViewStudentPage() {
               <SecondaryButton
                 label="Login Details"
                 icon={KeyRound}
-                onClick={() => {}}
+                onClick={() => setIsLoginDetailsModalOpen(true)}
               />
               <ActionButton
                 label="Edit Student"
@@ -200,7 +209,7 @@ export default function ViewStudentPage() {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
+        <div className="flex flex-col lg:flex-row gap-2.5 lg:gap-6 items-start">
           {/* Left Sidebar */}
           <div className="w-full lg:w-80 flex-shrink-0">
             <StudentSidebar
@@ -219,7 +228,7 @@ export default function ViewStudentPage() {
               setActiveTab={setActiveTab}
             />
 
-            <div className="mt-6">
+            <div className="mt-2 lg:mt-6">
               {activeTab === "details" && (
                 <StudentDetailsTab
                   studentData={studentData}
@@ -246,6 +255,28 @@ export default function ViewStudentPage() {
           student={getStudentForModal()!}
         />
       )}
+
+      {/* Login Details Modal */}
+      {studentData && (
+        <LoginDetailsModal
+          isOpen={isLoginDetailsModalOpen}
+          onClose={() => setIsLoginDetailsModalOpen(false)}
+          studentName={fullName}
+          studentPhoto={profilePhotoUrl}
+          loginDetails={[
+            {
+              userType: "Parent",
+              username: `parent${studentData.admissionNumber || "53"}`,
+              password: `parent@${studentData.admissionNumber || "53"}`,
+            },
+            {
+              userType: "Student",
+              username: `student${studentData.admissionNumber || "20"}`,
+              password: `stdt@${studentData.admissionNumber || "53"}`,
+            },
+          ]}
+        />
+      )}
     </MainLayout>
   );
 }
@@ -265,7 +296,7 @@ function StudentSidebar({
   return (
     <div className="flex flex-col">
       {/* Student Profile Card */}
-      <div className="mb-4">
+      <div className="mb-3 sm:mb-4">
         <StudentProfileCard
           studentData={studentData}
           fullName={fullName}
@@ -275,7 +306,7 @@ function StudentSidebar({
       </div>
 
       {/* Primary Contact Info */}
-      <div className="mb-4">
+      <div className="mb-3 sm:mb-4">
         <PrimaryContactInfoCard
           phoneNumber={studentData.primaryContact}
           email={studentData.email}
@@ -283,12 +314,12 @@ function StudentSidebar({
       </div>
 
       {/* Sibling Information */}
-      <div className="mb-4">
+      <div className="mb-3 sm:mb-4">
         <SiblingInformationCard siblings={studentData.siblings} />
       </div>
 
       {/* Hostel / Transportation */}
-      <div className="mb-4">
+      <div className="mb-3 sm:mb-4">
         <HostelTransportCard
           useHostel={studentData.useHostel}
           useTransport={studentData.useTransport}
@@ -312,58 +343,77 @@ function StudentTabs({
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
 }) {
+  const activeTabData = tabs.find(tab => tab.id === activeTab);
+  const ActiveIcon = activeTabData?.icon;
+
   return (
-    <div className="relative bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-[#1a1d23]/30 dark:to-[#14161b]/50 midnight:from-[#0f1729]/30 midnight:to-[#0a0f1c]/50 purple:from-[#2a1a3e]/30 purple:to-[#1f1330]/50 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/30 dark:border-gray-800/30 midnight:border-cyan-500/10 purple:border-pink-500/10 p-1.5 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
-      {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-400/5 dark:via-purple-400/5 dark:to-pink-400/5 midnight:from-cyan-400/5 midnight:via-blue-400/5 midnight:to-cyan-400/5 purple:from-pink-400/5 purple:via-purple-400/5 purple:to-pink-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-
-      <div className="relative flex gap-1.5 min-w-max lg:min-w-0">
-        {tabs.map((tab, index) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                animationDelay: `${index * 50}ms`
-              }}
-              className={`relative flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl transition-all duration-300 ease-out whitespace-nowrap group overflow-hidden ${
-                isActive
-                  ? "bg-blue-50/80 dark:bg-blue-950/20 midnight:bg-cyan-950/20 purple:bg-pink-950/20 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 shadow-sm border border-blue-100/50 dark:border-blue-900/30 midnight:border-cyan-900/30 purple:border-pink-900/30"
-                  : "text-gray-700 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:bg-white/40 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/30 purple:hover:bg-gray-800/30 hover:text-gray-900 dark:hover:text-gray-200 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:shadow-sm"
-              } cursor-pointer active:scale-95 animate-fadeIn`}
-            >
-              {/* Shine effect on active tab */}
-              {isActive && (
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-              )}
-
-              {/* Hover glow effect for inactive tabs */}
-              {!isActive && (
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-blue-500/5 group-hover:via-purple-500/5 group-hover:to-pink-500/5 transition-all duration-500 rounded-xl" />
-              )}
-
-              <Icon className={`relative w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 transition-all duration-300 ${
-                isActive
-                  ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
-                  : "text-gray-600 dark:text-gray-500 midnight:text-cyan-300/70 purple:text-pink-300/70 group-hover:scale-110 group-hover:rotate-6"
-              }`} />
-              <span className={`relative text-[11.75px] sm:text-xs font-semibold transition-all duration-300 ${
-                isActive ? "tracking-wide" : "group-hover:tracking-wide"
-              }`}>
-                {tab.label}
-              </span>
-
-              {/* Active indicator dot - subtle */}
-              {isActive && (
-                <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 midnight:bg-cyan-400 purple:bg-pink-400 rounded-full shadow-sm" />
-              )}
-            </button>
-          );
-        })}
+    <>
+      {/* Mobile Dropdown Selector */}
+      <div className="md:hidden mb-3">
+        <MobileDropdown
+          value={activeTab}
+          options={tabs.map((tab) => ({
+            label: tab.label,
+            value: tab.id,
+          }))}
+          onChange={(value) => setActiveTab(value as TabType)}
+          icon={ActiveIcon && <ActiveIcon className="w-5 h-5" />}
+        />
       </div>
-    </div>
+
+      {/* Desktop Horizontal Tabs */}
+      <div className="hidden md:block relative bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-[#1a1d23]/30 dark:to-[#14161b]/50 midnight:from-[#0f1729]/30 midnight:to-[#0a0f1c]/50 purple:from-[#2a1a3e]/30 purple:to-[#1f1330]/50 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/30 dark:border-gray-800/30 midnight:border-cyan-500/10 purple:border-pink-500/10 p-1.5 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
+        {/* Animated background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-400/5 dark:via-purple-400/5 dark:to-pink-400/5 midnight:from-cyan-400/5 midnight:via-blue-400/5 midnight:to-cyan-400/5 purple:from-pink-400/5 purple:via-purple-400/5 purple:to-pink-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+        <div className="relative flex gap-1.5 min-w-max lg:min-w-0">
+          {tabs.map((tab, index) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  animationDelay: `${index * 50}ms`
+                }}
+                className={`relative flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl transition-all duration-300 ease-out whitespace-nowrap group overflow-hidden ${
+                  isActive
+                    ? "bg-blue-50/80 dark:bg-blue-950/20 midnight:bg-cyan-950/20 purple:bg-pink-950/20 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 shadow-sm border border-blue-100/50 dark:border-blue-900/30 midnight:border-cyan-900/30 purple:border-pink-900/30"
+                    : "text-gray-700 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:bg-white/40 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/30 purple:hover:bg-gray-800/30 hover:text-gray-900 dark:hover:text-gray-200 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:shadow-sm"
+                } cursor-pointer active:scale-95 animate-fadeIn`}
+              >
+                {/* Shine effect on active tab */}
+                {isActive && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                )}
+
+                {/* Hover glow effect for inactive tabs */}
+                {!isActive && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-blue-500/5 group-hover:via-purple-500/5 group-hover:to-pink-500/5 transition-all duration-500 rounded-xl" />
+                )}
+
+                <Icon className={`relative w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 transition-all duration-300 ${
+                  isActive
+                    ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                    : "text-gray-600 dark:text-gray-500 midnight:text-cyan-300/70 purple:text-pink-300/70 group-hover:scale-110 group-hover:rotate-6"
+                }`} />
+                <span className={`relative text-[11.75px] sm:text-xs font-semibold transition-all duration-300 ${
+                  isActive ? "tracking-wide" : "group-hover:tracking-wide"
+                }`}>
+                  {tab.label}
+                </span>
+
+                {/* Active indicator dot - subtle */}
+                {isActive && (
+                  <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 midnight:bg-cyan-400 purple:bg-pink-400 rounded-full shadow-sm" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -479,19 +529,114 @@ function TimetableTab({ timetable }: { timetable?: import("@/lib/mockStudents").
 }
 
 function AttendanceTab() {
+  const [activeSubTab, setActiveSubTab] = useState<"leaves" | "attendance">("leaves");
+  const [isApplyLeaveModalOpen, setIsApplyLeaveModalOpen] = useState(false);
+
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
-      <div className="text-center py-16">
-        <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 midnight:from-green-950/30 midnight:to-emerald-950/30 purple:from-green-950/30 purple:to-emerald-950/30 mb-6 mx-auto">
-          <Calendar className="w-12 h-12 text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" />
-        </div>
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
-          Leave & Attendance Coming Soon
-        </h3>
-        <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 max-w-sm mx-auto">
-          Track student attendance records and leave applications here
-        </p>
+    <div className="space-y-6">
+      {/* Leave Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <LeaveStatsCard
+          title="Medical Leave (10)"
+          total={10}
+          used={5}
+          available={5}
+          variant="medical"
+        />
+        <LeaveStatsCard
+          title="Casual Leave (12)"
+          total={12}
+          used={1}
+          available={11}
+          variant="casual"
+        />
+        <LeaveStatsCard
+          title="Maternity Leave (10)"
+          total={10}
+          used={0}
+          available={10}
+          variant="maternity"
+        />
+        <LeaveStatsCard
+          title="Paternity Leave (0)"
+          total={0}
+          used={0}
+          available={0}
+          variant="paternity"
+        />
       </div>
+
+      {/* Main Content Card */}
+      <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
+        {/* Header with Tabs and Apply Leave Button */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 border-b border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          {/* Sub Tabs */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveSubTab("leaves")}
+              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                activeSubTab === "leaves"
+                  ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-md"
+                  : "bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700"
+              }`}
+            >
+              Leaves
+            </button>
+            <button
+              onClick={() => setActiveSubTab("attendance")}
+              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                activeSubTab === "attendance"
+                  ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-md"
+                  : "bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700"
+              }`}
+            >
+              Attendance
+            </button>
+          </div>
+
+          {/* Apply Leave Button */}
+          {activeSubTab === "leaves" && (
+            <button
+              onClick={() => setIsApplyLeaveModalOpen(true)}
+              className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-500 midnight:to-cyan-600 purple:from-pink-500 purple:to-pink-600 text-white hover:from-blue-700 hover:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 midnight:hover:from-cyan-600 midnight:hover:to-cyan-700 purple:hover:from-pink-600 purple:hover:to-pink-700 transition-all duration-200 font-semibold shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2"
+            >
+              <Calendar className="w-4 h-4" />
+              Apply Leave
+            </button>
+          )}
+        </div>
+
+        {/* Tab Content */}
+        <div className="p-6">
+          {activeSubTab === "leaves" ? (
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+                Leaves
+              </h3>
+              <LeaveApplicationsTable />
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Attendance Stats Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <AttendanceStatsCard type="present" count={265} />
+                <AttendanceStatsCard type="absent" count={5} />
+                <AttendanceStatsCard type="halfday" count={1} />
+                <AttendanceStatsCard type="late" count={12} />
+              </div>
+
+              {/* Attendance Calendar */}
+              <AttendanceCalendar />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Apply Leave Modal */}
+      <ApplyLeaveModal
+        isOpen={isApplyLeaveModalOpen}
+        onClose={() => setIsApplyLeaveModalOpen(false)}
+      />
     </div>
   );
 }
@@ -499,17 +644,7 @@ function AttendanceTab() {
 function FeesTab() {
   return (
     <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
-      <div className="text-center py-16">
-        <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 midnight:from-amber-950/30 midnight:to-yellow-950/30 purple:from-amber-950/30 purple:to-yellow-950/30 mb-6 mx-auto">
-          <CurrencyIcon className="w-12 h-12 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
-        </div>
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
-          Fees Management Coming Soon
-        </h3>
-        <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 max-w-sm mx-auto">
-          View and manage student fee payments and outstanding balances
-        </p>
-      </div>
+      <FeesTable />
     </div>
   );
 }

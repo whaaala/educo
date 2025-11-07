@@ -43,38 +43,41 @@ export default function TimetableCell({
         </div>
       )}
 
-      {/* Mobile Layout - Modern Redesigned Card */}
-      <div className="md:hidden relative flex flex-col h-full min-h-[130px]">
+      {/* Mobile Layout - Enhanced Readability Design */}
+      <div className="md:hidden relative flex flex-col h-full min-h-[135px]">
         {/* Top Section - Time & Subject */}
-        <div className="p-3 pb-2.5 flex-1">
-          {/* Time Badge - Top Left */}
-          <div className="flex items-center gap-1.5 mb-3">
-            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-white/70 to-white/50 dark:from-black/40 dark:to-black/30 backdrop-blur-sm border border-white/30 dark:border-gray-700/30">
-              <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-              <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap">
+        <div className="p-2.5 pb-2 flex-1">
+          {/* Time Badge - Enhanced */}
+          <div className="flex items-center gap-1.5 mb-2.5">
+            <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-gradient-to-r from-white/70 to-white/50 dark:from-black/40 dark:to-black/30 backdrop-blur-sm border border-white/30 dark:border-gray-700/30 shadow-sm">
+              <Clock className="w-3 h-3 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+              <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap tracking-wide">
                 {time}
               </span>
             </div>
           </div>
 
-          {/* Subject - Prominent Display */}
+          {/* Subject - Enhanced Display */}
           <div className="flex items-center justify-start">
-            <h3 className={`text-xl font-black ${textColor} leading-tight tracking-tight`}>
+            <h3 className={`text-base font-black ${textColor} leading-tight tracking-tight line-clamp-2`}>
               {subject}
             </h3>
           </div>
         </div>
 
-        {/* Bottom Section - Teacher Info */}
+        {/* Bottom Section - Teacher Info (Clickable) */}
         {teacher && (
-          <div className="px-3 pb-3">
+          <div className="px-2.5 pb-2.5">
             <div className="relative">
               {/* Divider Line */}
-              <div className="absolute -top-2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300/50 dark:via-gray-600/50 to-transparent"></div>
+              <div className="absolute -top-1.5 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300/50 dark:via-gray-600/50 to-transparent"></div>
 
-              <div className="flex items-center gap-2.5 pt-2">
+              <button
+                onClick={onClick}
+                className="w-full flex items-center gap-2.5 pt-2.5 px-2 py-1.5 -mx-2 -mb-1.5 rounded-lg hover:bg-white/60 dark:hover:bg-black/20 active:bg-white/80 dark:active:bg-black/30 transition-all duration-200 group/teacher cursor-pointer"
+              >
                 {teacherAvatar ? (
-                  <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-offset-2 ring-white/60 dark:ring-gray-600/60 shadow-md">
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-white/80 dark:ring-gray-600/60 shadow-md group-hover/teacher:ring-blue-500/50 dark:group-hover/teacher:ring-blue-400/50 group-hover/teacher:scale-105 transition-all duration-200">
                     <Image
                       src={teacherAvatar}
                       alt={teacher}
@@ -84,19 +87,28 @@ export default function TimetableCell({
                     />
                   </div>
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700 flex items-center justify-center flex-shrink-0 shadow-md">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700 flex items-center justify-center flex-shrink-0 shadow-md group-hover/teacher:from-blue-400 group-hover/teacher:to-blue-500 dark:group-hover/teacher:from-blue-500 dark:group-hover/teacher:to-blue-600 group-hover/teacher:scale-105 transition-all duration-200">
                     <User className="w-4 h-4 text-white dark:text-gray-300" />
                   </div>
                 )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-gray-700 dark:text-gray-300 truncate leading-tight">
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate leading-tight group-hover/teacher:text-blue-600 dark:group-hover/teacher:text-blue-400 transition-colors duration-200">
                     {teacher}
                   </p>
-                  <p className="text-[10px] font-medium text-gray-500 dark:text-gray-500 leading-tight">
+                  <p className="text-[9px] font-medium text-gray-500 dark:text-gray-400 truncate leading-tight mt-0.5">
                     Instructor
                   </p>
                 </div>
-              </div>
+                {/* Arrow indicator */}
+                <svg
+                  className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover/teacher:text-blue-500 dark:group-hover/teacher:text-blue-400 group-hover/teacher:translate-x-0.5 transition-all duration-200 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           </div>
         )}
