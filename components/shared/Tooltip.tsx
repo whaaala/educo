@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 interface TooltipProps {
   content: string;
@@ -11,21 +12,39 @@ interface TooltipProps {
 export default function Tooltip({ content, children, delay = 300 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState<'top' | 'bottom'>('top');
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const updatePosition = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const spaceAbove = rect.top;
+      const spaceBelow = window.innerHeight - rect.bottom;
+
+      // Show below if not enough space above
+      const newPosition = spaceAbove < 80 && spaceBelow > 80 ? 'bottom' : 'top';
+      setPosition(newPosition);
+
+      // Calculate tooltip position
+      const left = rect.left + rect.width / 2;
+      const top = newPosition === 'top'
+        ? rect.top - 8  // 8px offset from top
+        : rect.bottom + 8; // 8px offset from bottom
+
+      setCoords({ top, left });
+    }
+  };
 
   const showTooltip = () => {
     timeoutRef.current = setTimeout(() => {
-      // Calculate position
-      if (triggerRef.current) {
-        const rect = triggerRef.current.getBoundingClientRect();
-        const spaceAbove = rect.top;
-        const spaceBelow = window.innerHeight - rect.bottom;
-
-        // Show below if not enough space above
-        setPosition(spaceAbove < 80 && spaceBelow > 80 ? 'bottom' : 'top');
-      }
+      updatePosition();
       setIsVisible(true);
     }, delay);
   };
@@ -45,19 +64,34 @@ export default function Tooltip({ content, children, delay = 300 }: TooltipProps
     };
   }, []);
 
+  useEffect(() => {
+    if (isVisible) {
+      updatePosition();
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+
+      return () => {
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+      };
+    }
+  }, [isVisible]);
+
   return (
-    <div
-      ref={triggerRef}
-      className="relative inline-block"
-      onMouseEnter={showTooltip}
-      onMouseLeave={hideTooltip}
-    >
-      {children}
-      {isVisible && (
+    <>
+      <div
+        ref={triggerRef}
+        className="relative inline-block"
+        onMouseEnter={showTooltip}
+        onMouseLeave={hideTooltip}
+      >
+        {children}
+      </div>
+      {mounted && isVisible && createPortal(
         <div
           ref={tooltipRef}
           className={`
-            absolute left-1/2 -translate-x-1/2 z-[100000] px-3 py-2
+            fixed z-[100000] px-3 py-2
             bg-gray-900 dark:bg-gray-950 midnight:bg-gray-950 purple:bg-gray-950
             text-white text-sm font-medium rounded-lg shadow-2xl
             whitespace-nowrap pointer-events-none
@@ -65,11 +99,16 @@ export default function Tooltip({ content, children, delay = 300 }: TooltipProps
             backdrop-blur-sm
             animate-in fade-in zoom-in-95 duration-200
             ${position === 'top'
-              ? 'bottom-full mb-2 slide-in-from-bottom-2'
-              : 'top-full mt-2 slide-in-from-top-2'
+              ? 'slide-in-from-bottom-2'
+              : 'slide-in-from-top-2'
             }
           `}
           style={{
+            top: `${coords.top}px`,
+            left: `${coords.left}px`,
+            transform: position === 'top'
+              ? 'translate(-50%, -100%)'
+              : 'translate(-50%, 0)',
             maxWidth: '300px',
             wordWrap: 'break-word',
             whiteSpace: 'normal',
@@ -88,8 +127,9 @@ export default function Tooltip({ content, children, delay = 300 }: TooltipProps
             `}
           />
           <span className="relative z-10">{content}</span>
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 }

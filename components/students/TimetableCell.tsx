@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Clock, Edit2, User } from "lucide-react";
+import Tooltip from "@/components/shared/Tooltip";
 
 interface TimetableCellProps {
   time: string;
@@ -12,6 +13,7 @@ interface TimetableCellProps {
   textColor: string;
   onClick?: () => void;
   isEditable?: boolean;
+  totalDays?: number; // Total days in the timetable (5, 6, or 7)
 }
 
 export default function TimetableCell({
@@ -23,7 +25,10 @@ export default function TimetableCell({
   textColor,
   onClick,
   isEditable = false,
+  totalDays = 5,
 }: TimetableCellProps) {
+  // Check if this is a 7-day week configuration
+  const isSevenDayWeek = totalDays === 7;
   return (
     <div
       onClick={onClick}
@@ -115,40 +120,72 @@ export default function TimetableCell({
       </div>
 
       {/* Desktop/Tablet Layout - Compact Design */}
-      <div className="hidden md:flex flex-col gap-1 md:gap-1.5 lg:gap-2 p-2 md:p-2.5 lg:p-3 relative h-full min-h-[85px] md:min-h-[95px] lg:min-h-[105px]">
+      <div className={`hidden md:flex flex-col relative h-full ${
+        isSevenDayWeek
+          ? "gap-1 lg:gap-1.5 xl:gap-2 p-1.5 md:p-2 lg:p-2.5 xl:p-3 min-h-[95px] lg:min-h-[110px] xl:min-h-[125px]"
+          : "gap-2 lg:gap-2.5 p-3 lg:p-3.5 min-h-[100px] lg:min-h-[115px]"
+      }`}>
         {/* Time with icon */}
-        <div className="flex items-start gap-0.5 w-full min-w-0">
-          <Clock className="w-2 h-2 md:w-2 md:h-2 lg:w-2.5 lg:h-2.5 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 flex-shrink-0 stroke-[2] mt-0.5" />
-          <span className="text-[5.5px] md:text-[6px] lg:text-[7px] xl:text-[8px] font-bold text-gray-800 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 leading-tight block flex-1 min-w-0 break-words">
-            {time}
-          </span>
-        </div>
+        <Tooltip content={time}>
+          <div className={`flex items-center w-full min-w-0 ${isSevenDayWeek ? "gap-0.5 lg:gap-1" : "gap-1"}`}>
+            <Clock className={`text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 flex-shrink-0 stroke-[2.5] ${
+              isSevenDayWeek
+                ? "w-[6px] h-[6px] lg:w-[7px] lg:h-[7px] xl:w-[8px] xl:h-[8px]"
+                : "w-[6px] h-[6px] lg:w-[6px] lg:h-[6px] xl:w-[6px] xl:h-[6px]"
+            }`} />
+            <span className={`font-bold text-gray-800 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 leading-none whitespace-nowrap flex-1 min-w-0 ${
+              isSevenDayWeek
+                ? "text-[9px] lg:text-[10px] xl:text-[11px] truncate"
+                : "text-[9px] lg:text-[10px] xl:text-[10px] truncate"
+            }`}>
+              {time}
+            </span>
+          </div>
+        </Tooltip>
 
         {/* Subject */}
         <div className="flex-1 flex flex-col justify-center min-h-0 overflow-hidden">
-          <div className={`text-[10px] md:text-[11px] lg:text-[12px] xl:text-[13px] font-bold ${textColor} line-clamp-2 leading-[1.3] break-words hyphens-auto`}>
-            {subject}
-          </div>
+          <Tooltip content={subject}>
+            <div className={`font-bold ${textColor} truncate leading-tight ${
+              isSevenDayWeek
+                ? "text-[11px] md:text-xs lg:text-[13px] xl:text-sm"
+                : "text-sm lg:text-base xl:text-base"
+            }`}>
+              {subject}
+            </div>
+          </Tooltip>
         </div>
 
         {/* Teacher - Clickable */}
         {teacher && (
-          <div className="flex items-center gap-0.5 md:gap-1 pt-0.5 cursor-pointer group/teacher hover:bg-white/40 dark:hover:bg-white/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-md px-0.5 py-0.5 -mx-0.5 -my-0.5 transition-all duration-200 min-w-0 overflow-hidden">
-            {teacherAvatar && (
-              <div className="relative w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4 xl:w-5 xl:h-5 rounded-sm md:rounded-md overflow-hidden flex-shrink-0 ring-1 md:ring-2 ring-transparent group-hover/teacher:ring-blue-500/50 dark:group-hover/teacher:ring-blue-400/50 midnight:group-hover/teacher:ring-cyan-400/50 purple:group-hover/teacher:ring-pink-400/50 transition-all duration-200">
-                <Image
-                  src={teacherAvatar}
-                  alt={teacher}
-                  width={20}
-                  height={20}
-                  className="w-full h-full object-cover group-hover/teacher:scale-110 transition-transform duration-200"
-                />
-              </div>
-            )}
-            <span className="text-[8px] md:text-[9px] lg:text-[10px] xl:text-[11px] font-bold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate group-hover/teacher:text-blue-600 dark:group-hover/teacher:text-blue-400 midnight:group-hover/teacher:text-cyan-400 purple:group-hover/teacher:text-pink-400 transition-colors duration-200 leading-tight overflow-hidden text-ellipsis flex-1 min-w-0">
-              {teacher}
-            </span>
-          </div>
+          <Tooltip content={teacher}>
+            <div className={`flex items-center pt-0.5 cursor-pointer group/teacher hover:bg-white/40 dark:hover:bg-white/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-md px-1 py-0.5 -mx-1 -my-0.5 transition-all duration-200 min-w-0 overflow-hidden ${
+              isSevenDayWeek ? "gap-1 lg:gap-1.5 xl:gap-2" : "gap-1.5 lg:gap-2"
+            }`}>
+              {teacherAvatar && (
+                <div className={`relative rounded-md overflow-hidden flex-shrink-0 ring-2 ring-transparent group-hover/teacher:ring-blue-500/50 dark:group-hover/teacher:ring-blue-400/50 midnight:group-hover/teacher:ring-cyan-400/50 purple:group-hover/teacher:ring-pink-400/50 transition-all duration-200 ${
+                  isSevenDayWeek
+                    ? "w-3.5 h-3.5 lg:w-4 lg:h-4 xl:w-5 xl:h-5"
+                    : "w-5 h-5 lg:w-6 lg:h-6 xl:w-6 xl:h-6"
+                }`}>
+                  <Image
+                    src={teacherAvatar}
+                    alt={teacher}
+                    width={isSevenDayWeek ? 20 : 24}
+                    height={isSevenDayWeek ? 20 : 24}
+                    className="w-full h-full object-cover group-hover/teacher:scale-110 transition-transform duration-200"
+                  />
+                </div>
+              )}
+              <span className={`font-bold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate group-hover/teacher:text-blue-600 dark:group-hover/teacher:text-blue-400 midnight:group-hover/teacher:text-cyan-400 purple:group-hover/teacher:text-pink-400 transition-colors duration-200 leading-tight overflow-hidden text-ellipsis flex-1 min-w-0 ${
+                isSevenDayWeek
+                  ? "text-[9px] md:text-[10px] lg:text-[11px] xl:text-xs"
+                  : "text-xs lg:text-sm xl:text-sm"
+              }`}>
+                {teacher}
+              </span>
+            </div>
+          </Tooltip>
         )}
       </div>
     </div>

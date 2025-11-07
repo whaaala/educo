@@ -547,12 +547,12 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
             </div>
 
             {/* Days Header Row - Hidden on mobile */}
-            <div className={`hidden md:grid gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6 ${
+            <div className={`hidden md:grid mb-4 sm:mb-6 ${
               schoolConfig.daysOfWeek.length === 5
-                ? "md:grid-cols-5"
+                ? "md:grid-cols-5 gap-2 sm:gap-3 lg:gap-4"
                 : schoolConfig.daysOfWeek.length === 6
-                ? "md:grid-cols-6"
-                : "md:grid-cols-4 lg:grid-cols-7"
+                ? "md:grid-cols-6 gap-2 sm:gap-3 lg:gap-4"
+                : "md:grid-cols-4 lg:grid-cols-7 gap-1.5 md:gap-2 lg:gap-3 xl:gap-4"
             }`}>
               {activeTimetable.map((daySchedule) => (
                 <div
@@ -573,12 +573,12 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
               return (
                 <div
                   key={periodIndex}
-                  className={`hidden md:grid gap-2 sm:gap-3 lg:gap-4 mb-3 sm:mb-4 last:mb-0 ${
+                  className={`hidden md:grid mb-3 sm:mb-4 last:mb-0 ${
                     schoolConfig.daysOfWeek.length === 5
-                      ? "md:grid-cols-5"
+                      ? "md:grid-cols-5 gap-2 sm:gap-3 lg:gap-4"
                       : schoolConfig.daysOfWeek.length === 6
-                      ? "md:grid-cols-6"
-                      : "md:grid-cols-4 lg:grid-cols-7"
+                      ? "md:grid-cols-6 gap-2 sm:gap-3 lg:gap-4"
+                      : "md:grid-cols-4 lg:grid-cols-7 gap-1.5 md:gap-2 lg:gap-3 xl:gap-4"
                   }`}
                 >
                   {/* Day Columns */}
@@ -612,6 +612,7 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
                           teacherAvatar={displayPeriod.teacherAvatar}
                           backgroundColor={colors.bg}
                           textColor={colors.text}
+                          totalDays={schoolConfig.daysOfWeek.length}
                         />
                       </div>
                     );
