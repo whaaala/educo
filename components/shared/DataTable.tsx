@@ -256,8 +256,8 @@ export default function DataTable<T>({
       </div>
 
       {/* Table Body Container */}
-      <div className="overflow-visible">
-        <table className="w-full table-fixed border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 overflow-visible">
+      <div className="overflow-x-auto overflow-y-visible -mx-px smooth-scroll">
+        <table className="w-full min-w-[640px] border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
           {/* Table Header */}
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border-b border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
@@ -271,7 +271,7 @@ export default function DataTable<T>({
                 <th
                   key={column.key}
                   onClick={() => column.renderHeader ? undefined : handleSort(column.key)}
-                  className={`px-5 md:px-6 py-4 md:py-4.5 text-[11px] font-extrabold uppercase tracking-wider whitespace-nowrap transition-all duration-300 ease-in-out ${
+                  className={`px-3 sm:px-5 md:px-6 py-3 sm:py-4 md:py-4.5 text-[11px] font-extrabold uppercase tracking-wider whitespace-nowrap transition-all duration-300 ease-in-out ${
                     sortedData.length === 0
                       ? 'cursor-not-allowed opacity-50'
                       : column.sortable !== false && !column.renderHeader ? 'cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-gray-600/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10' : ''
@@ -356,13 +356,13 @@ export default function DataTable<T>({
                   style={{
                     animation: isSearching ? `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${index / 80}s both` : undefined,
                   } as React.CSSProperties}
-                  className={`border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 ${!isSorting ? 'transition-all duration-200' : ''} ${animationClass} ${onRowClick ? 'cursor-pointer' : ''} overflow-visible`}
+                  className={`border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 ${!isSorting ? 'transition-all duration-200' : ''} ${animationClass} ${onRowClick ? 'cursor-pointer' : ''}`}
                   onClick={() => onRowClick?.(item)}
                 >
                   {columns.map((column) => (
                     <td
                       key={column.key}
-                      className={`px-5 md:px-6 py-5 md:py-6 text-center ${getHiddenClasses(column.hidden)} ${column.className || ''} ${!column.render ? 'overflow-hidden' : ''}`}
+                      className={`px-3 sm:px-5 md:px-6 py-3 sm:py-5 md:py-6 text-center ${getHiddenClasses(column.hidden)} ${column.className || ''}`}
                     >
                       {column.render ? column.render(item, index) : (
                         <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 block truncate">
@@ -545,25 +545,37 @@ export default function DataTable<T>({
                 ? 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 opacity-50'
                 : 'text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70'
             }`}>
-              <label htmlFor="itemsPerPage" className="whitespace-nowrap">Items per page:</label>
-              <select
-                id="itemsPerPage"
-                value={itemsPerPage}
-                disabled={sortedData.length === 0 || isLoading}
-                onChange={(e) => {
-                  setItemsPerPage(Number(e.target.value));
-                  setCurrentPage(1);
-                }}
-                className={`px-2 py-1 rounded-lg border text-xs sm:text-sm focus:outline-none ${
+              <label htmlFor="itemsPerPage" className="whitespace-nowrap font-medium">Items per page:</label>
+              <div className="relative">
+                <select
+                  id="itemsPerPage"
+                  value={itemsPerPage}
+                  disabled={sortedData.length === 0 || isLoading}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className={`appearance-none pl-3 pr-8 py-1.5 rounded-lg border text-xs sm:text-sm font-semibold focus:outline-none transition-all duration-200 ${
+                    sortedData.length === 0 || isLoading
+                      ? 'cursor-not-allowed opacity-60 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
+                      : 'cursor-pointer border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 hover:border-blue-500 dark:hover:border-blue-400 midnight:hover:border-cyan-400 purple:hover:border-pink-400 hover:shadow-md focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 midnight:focus:ring-cyan-500/50 purple:focus:ring-pink-500/50'
+                  }`}
+                >
+                  {itemsPerPageOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+                {/* Custom dropdown arrow */}
+                <div className={`absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200 ${
                   sortedData.length === 0 || isLoading
-                    ? 'cursor-not-allowed opacity-60 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
-                    : 'cursor-pointer border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-500 purple:focus:ring-pink-500'
-                }`}
-              >
-                {itemsPerPageOptions.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
+                    ? 'text-gray-400 dark:text-gray-500'
+                    : 'text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400'
+                }`}>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
           )}
         </div>

@@ -40,8 +40,9 @@ import CurrencyIcon from "@/components/shared/CurrencyIcon";
 import TimeTable from "@/components/students/TimeTable";
 import LoginDetailsModal from "@/components/students/LoginDetailsModal";
 import LeaveStatsCard from "@/components/students/LeaveStatsCard";
-import LeaveApplicationsTable from "@/components/students/LeaveApplicationsTable";
 import ApplyLeaveModal from "@/components/students/ApplyLeaveModal";
+import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import AddButton from "@/components/shared/AddButton";
 import AttendanceStatsCard from "@/components/students/AttendanceStatsCard";
 import AttendanceCalendar from "@/components/students/AttendanceCalendar";
 import FeesTable from "@/components/students/FeesTable";
@@ -528,53 +529,162 @@ function TimetableTab({ timetable }: { timetable?: import("@/lib/mockStudents").
   return <TimeTable timetable={timetable} />;
 }
 
+// Leave Application Type
+interface LeaveApplication {
+  id: string;
+  leaveType: string;
+  startDate: string;
+  endDate: string;
+  numberOfDays: number;
+  appliedOn: string;
+  status: "Approved" | "Pending" | "Rejected";
+}
+
+// Mock Leave Applications Data
+const MOCK_LEAVE_APPLICATIONS: LeaveApplication[] = [
+  {
+    id: "1",
+    leaveType: "Casual Leave",
+    startDate: "07 May 2024",
+    endDate: "07 May 2024",
+    numberOfDays: 1,
+    appliedOn: "07 May 2024",
+    status: "Approved",
+  },
+  {
+    id: "2",
+    leaveType: "Casual Leave",
+    startDate: "08 May 2024",
+    endDate: "08 May 2024",
+    numberOfDays: 1,
+    appliedOn: "04 May 2024",
+    status: "Approved",
+  },
+  {
+    id: "3",
+    leaveType: "Casual Leave",
+    startDate: "20 May 2024",
+    endDate: "20 May 2024",
+    numberOfDays: 1,
+    appliedOn: "19 May 2024",
+    status: "Pending",
+  },
+  {
+    id: "4",
+    leaveType: "Medical Leave",
+    startDate: "05 May 2024",
+    endDate: "09 May 2024",
+    numberOfDays: 5,
+    appliedOn: "05 May 2024",
+    status: "Approved",
+  },
+  {
+    id: "5",
+    leaveType: "Medical Leave",
+    startDate: "08 May 2024",
+    endDate: "11 May 2024",
+    numberOfDays: 4,
+    appliedOn: "08 May 2024",
+    status: "Pending",
+  },
+  {
+    id: "6",
+    leaveType: "Special Leave",
+    startDate: "09 May 2024",
+    endDate: "09 May 2024",
+    numberOfDays: 1,
+    appliedOn: "09 May 2024",
+    status: "Pending",
+  },
+];
+
 function AttendanceTab() {
   const [activeSubTab, setActiveSubTab] = useState<"leaves" | "attendance">("leaves");
   const [isApplyLeaveModalOpen, setIsApplyLeaveModalOpen] = useState(false);
 
-  return (
-    <div className="space-y-6">
-      {/* Leave Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <LeaveStatsCard
-          title="Medical Leave (10)"
-          total={10}
-          used={5}
-          available={5}
-          variant="medical"
-        />
-        <LeaveStatsCard
-          title="Casual Leave (12)"
-          total={12}
-          used={1}
-          available={11}
-          variant="casual"
-        />
-        <LeaveStatsCard
-          title="Maternity Leave (10)"
-          total={10}
-          used={0}
-          available={10}
-          variant="maternity"
-        />
-        <LeaveStatsCard
-          title="Paternity Leave (0)"
-          total={0}
-          used={0}
-          available={0}
-          variant="paternity"
-        />
-      </div>
+  // Status Badge Component
+  const getStatusBadge = (status: LeaveApplication["status"]) => {
+    const variants = {
+      Approved: "bg-green-100 dark:bg-green-950/30 midnight:bg-green-950/30 purple:bg-green-950/30 text-green-700 dark:text-green-300 midnight:text-green-300 purple:text-green-300 border-green-200 dark:border-green-800 midnight:border-green-800 purple:border-green-800",
+      Pending: "bg-cyan-100 dark:bg-cyan-950/30 midnight:bg-cyan-950/30 purple:bg-cyan-950/30 text-cyan-700 dark:text-cyan-300 midnight:text-cyan-300 purple:text-cyan-300 border-cyan-200 dark:border-cyan-800 midnight:border-cyan-800 purple:border-cyan-800",
+      Rejected: "bg-red-100 dark:bg-red-950/30 midnight:bg-red-950/30 purple:bg-red-950/30 text-red-700 dark:text-red-300 midnight:text-red-300 purple:text-red-300 border-red-200 dark:border-red-800 midnight:border-red-800 purple:border-red-800",
+    };
 
+    return (
+      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border ${variants[status]}`}>
+        <span className={`w-2 h-2 rounded-full ${status === "Approved" ? "bg-green-500" : status === "Pending" ? "bg-cyan-500" : "bg-red-500"}`}></span>
+        {status}
+      </span>
+    );
+  };
+
+  // Define columns for Leave Applications DataTable
+  const leaveColumns: ColumnConfig<LeaveApplication>[] = [
+    {
+      key: "leaveType",
+      label: "Leave Type",
+      sortable: true,
+      className: "text-left",
+      render: (item) => (
+        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
+          {item.leaveType}
+        </span>
+      ),
+    },
+    {
+      key: "leaveDates",
+      label: "Leave Date",
+      sortable: true,
+      sortValue: (item) => item.startDate,
+      className: "text-left",
+      render: (item) => (
+        <span className="text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">
+          {item.startDate} - {item.endDate}
+        </span>
+      ),
+    },
+    {
+      key: "numberOfDays",
+      label: "No of Days",
+      sortable: true,
+      className: "text-center",
+      render: (item) => (
+        <span className="text-sm font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
+          {item.numberOfDays}
+        </span>
+      ),
+    },
+    {
+      key: "appliedOn",
+      label: "Applied On",
+      sortable: true,
+      className: "text-left",
+      render: (item) => (
+        <span className="text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">
+          {item.appliedOn}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      label: "Status",
+      sortable: true,
+      className: "text-center",
+      render: (item) => getStatusBadge(item.status),
+    },
+  ];
+
+  return (
+    <div className="space-y-4 sm:space-y-5 lg:space-y-6">
       {/* Main Content Card */}
-      <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
-        {/* Header with Tabs and Apply Leave Button */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 border-b border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
+        {/* Header with Tabs */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-4 sm:p-5 lg:p-6 border-b border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20">
           {/* Sub Tabs */}
           <div className="flex gap-2">
             <button
               onClick={() => setActiveSubTab("leaves")}
-              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
+              className={`px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
                 activeSubTab === "leaves"
                   ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-md"
                   : "bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700"
@@ -584,7 +694,7 @@ function AttendanceTab() {
             </button>
             <button
               onClick={() => setActiveSubTab("attendance")}
-              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
+              className={`px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
                 activeSubTab === "attendance"
                   ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-md"
                   : "bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700"
@@ -593,32 +703,77 @@ function AttendanceTab() {
               Attendance
             </button>
           </div>
-
-          {/* Apply Leave Button */}
-          {activeSubTab === "leaves" && (
-            <button
-              onClick={() => setIsApplyLeaveModalOpen(true)}
-              className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-500 midnight:to-cyan-600 purple:from-pink-500 purple:to-pink-600 text-white hover:from-blue-700 hover:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 midnight:hover:from-cyan-600 midnight:hover:to-cyan-700 purple:hover:from-pink-600 purple:hover:to-pink-700 transition-all duration-200 font-semibold shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2"
-            >
-              <Calendar className="w-4 h-4" />
-              Apply Leave
-            </button>
-          )}
         </div>
 
         {/* Tab Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-5 lg:p-6">
           {activeSubTab === "leaves" ? (
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
-                Leaves
-              </h3>
-              <LeaveApplicationsTable />
+            <div className="space-y-4 sm:space-y-5 lg:space-y-6">
+              {/* Leave Stats Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <LeaveStatsCard
+                  title="Medical Leave"
+                  total={10}
+                  used={5}
+                  available={5}
+                  variant="medical"
+                />
+                <LeaveStatsCard
+                  title="Casual Leave"
+                  total={12}
+                  used={1}
+                  available={11}
+                  variant="casual"
+                />
+                <LeaveStatsCard
+                  title="Maternity Leave"
+                  total={10}
+                  used={0}
+                  available={10}
+                  variant="maternity"
+                />
+                <LeaveStatsCard
+                  title="Paternity Leave"
+                  total={0}
+                  used={0}
+                  available={0}
+                  variant="paternity"
+                />
+              </div>
+
+              {/* Leave Applications Section */}
+              <div className="space-y-3 sm:space-y-4">
+                {/* Header with Apply Leave Button */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    Leave Applications
+                  </h3>
+                  <AddButton
+                    label="Apply Leave"
+                    onClick={() => setIsApplyLeaveModalOpen(true)}
+                    className="w-full sm:w-auto"
+                  />
+                </div>
+
+                {/* DataTable */}
+                <DataTable<LeaveApplication>
+                  data={MOCK_LEAVE_APPLICATIONS}
+                  columns={leaveColumns}
+                  title="Leave Applications"
+                  searchPlaceholder="Search by leave type or status..."
+                  showSearch={true}
+                  defaultItemsPerPage={10}
+                  getRowKey={(item) => item.id}
+                  emptyMessage="No leave applications found"
+                  enablePagination={true}
+                  enableItemsPerPage={true}
+                />
+              </div>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-5 lg:space-y-6">
               {/* Attendance Stats Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <AttendanceStatsCard type="present" count={265} />
                 <AttendanceStatsCard type="absent" count={5} />
                 <AttendanceStatsCard type="halfday" count={1} />

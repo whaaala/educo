@@ -225,12 +225,28 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
   // Load custom config and user-specific events from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('customTimetableConfig');
+    console.log('🔍 [TimeTable] Loading configuration from localStorage...');
+    console.log('📦 [TimeTable] Raw localStorage data:', saved);
+
     if (saved) {
       try {
-        setCustomConfig(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        console.log('✅ [TimeTable] Custom config loaded successfully:', parsed);
+        console.log('📋 [TimeTable] Config details:', {
+          periodsPerDay: parsed.periodsPerDay,
+          periodDuration: parsed.periodDuration,
+          schoolStartTime: parsed.schoolStartTime,
+          schoolEndTime: parsed.schoolEndTime,
+          daysOfWeek: parsed.daysOfWeek,
+          includeBreaks: parsed.includeBreaks,
+          breakSchedule: parsed.breakSchedule
+        });
+        setCustomConfig(parsed);
       } catch (error) {
-        console.error('Failed to load custom config:', error);
+        console.error('❌ [TimeTable] Failed to load custom config:', error);
       }
+    } else {
+      console.log('ℹ️ [TimeTable] No custom config found in localStorage, using default');
     }
 
     // Load events for current user
@@ -249,15 +265,32 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
 
   // Always generate dynamic timetable based on selections and custom config
   const activeTimetable = useMemo(() => {
+    console.log('🔄 [TimeTable] Generating timetable...');
+    console.log('📝 [TimeTable] Current state:', {
+      hasCustomConfig: !!customConfig,
+      currentWeek,
+      selectedYear,
+      schoolId
+    });
+
     // Create a temporary config ID that includes custom settings
     const effectiveSchoolId = customConfig ? 'custom' : schoolId;
     const timetable = generateDynamicTimetable(currentWeek, selectedYear, effectiveSchoolId);
 
     // If using custom config, regenerate with custom days
     if (customConfig) {
-      return generateDynamicTimetableWithConfig(currentWeek, selectedYear, customConfig);
+      console.log('✅ [TimeTable] Using CUSTOM configuration');
+      const timeSlots = generateTimeSlots(customConfig);
+      console.log('🕐 [TimeTable] Generated time slots:', timeSlots);
+      const generatedTimetable = generateDynamicTimetableWithConfig(currentWeek, selectedYear, customConfig);
+      console.log('📅 [TimeTable] Generated timetable with', generatedTimetable.length, 'days');
+      if (generatedTimetable.length > 0) {
+        console.log('🔍 [TimeTable] First day periods:', generatedTimetable[0].periods.map(p => p.time));
+      }
+      return generatedTimetable;
     }
 
+    console.log('ℹ️ [TimeTable] Using DEFAULT school configuration');
     return timetable;
   }, [currentWeek, selectedYear, schoolId, customConfig]);
 
