@@ -295,9 +295,19 @@ export default function FeesManagement({
   const { countryConfig } = useCountry();
   const currencySymbol = countryConfig.currency.symbol;
 
-  // Read school type from localStorage, fallback to prop or default
+  // Read institution type from School Profile settings
   const [schoolType, setSchoolType] = useState<SchoolType>(() => {
     if (typeof window !== "undefined") {
+      // Read from new School Profile settings
+      const institutionType = localStorage.getItem("institutionType");
+      const educationLevelSetting = localStorage.getItem("educationLevel");
+
+      // Map institutionType to schoolType
+      if (institutionType === "public") return "public";
+      if (institutionType === "private") return "private";
+      if (educationLevelSetting === "tertiary") return "tertiary";
+
+      // Legacy fallback
       const saved = localStorage.getItem("schoolType") as SchoolType | null;
       return saved || propSchoolType || "private";
     }
@@ -308,21 +318,23 @@ export default function FeesManagement({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
 
-  // Update school type when settings change
+  // Listen for School Profile changes
   useEffect(() => {
-    const handleSchoolTypeChange = (event: Event) => {
-      const customEvent = event as CustomEvent<{ schoolType: SchoolType }>;
-      if (customEvent.detail?.schoolType) {
-        setSchoolType(customEvent.detail.schoolType);
+    const handleSchoolProfileChange = (event: CustomEvent<{ educationLevel: string; institutionType: string }>) => {
+      const { educationLevel: settingsEducationLevel, institutionType } = event.detail;
+
+      // Map institutionType to schoolType
+      if (institutionType === "public") {
+        setSchoolType("public");
+      } else if (institutionType === "private") {
+        setSchoolType("private");
+      } else if (settingsEducationLevel === "tertiary") {
+        setSchoolType("tertiary");
       }
     };
 
-    // Listen for custom event from settings page
-    window.addEventListener("schoolTypeChanged", handleSchoolTypeChange);
-
-    return () => {
-      window.removeEventListener("schoolTypeChanged", handleSchoolTypeChange);
-    };
+    window.addEventListener("schoolProfileChanged" as any, handleSchoolProfileChange);
+    return () => window.removeEventListener("schoolProfileChanged" as any, handleSchoolProfileChange);
   }, []);
 
   // Get categories applicable to the school type
@@ -562,7 +574,7 @@ export default function FeesManagement({
     const style = variants[status];
 
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${style.bg} ${style.text} ${style.border}`}>
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-semibold border ${style.bg} ${style.text} ${style.border}`}>
         <span className={`w-1.5 h-1.5 rounded-full ${style.dot} animate-pulse`}></span>
         {status}
       </span>
@@ -595,7 +607,7 @@ export default function FeesManagement({
     };
 
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${colorClasses[category.color]}`}>
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-medium border ${colorClasses[category.color]}`}>
         {Icon && <Icon className="w-3.5 h-3.5" />}
         {category.name}
       </span>
@@ -629,7 +641,7 @@ export default function FeesManagement({
 
     const badgeContent = (
       <span
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${colorClasses[category.color]} whitespace-nowrap max-w-[140px]`}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-medium border ${colorClasses[category.color]} whitespace-nowrap max-w-[140px]`}
       >
         {Icon && <Icon className="w-3.5 h-3.5 flex-shrink-0" />}
         <span className="truncate">{category.name}</span>
@@ -658,10 +670,10 @@ export default function FeesManagement({
       render: (row) => {
         const content = (
           <div className="flex flex-col gap-1 pr-4">
-            <span className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap">
+            <span className="text-[12px] font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap">
               {row.feeType}
             </span>
-            <span className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 font-mono">
+            <span className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 font-mono">
               {row.feeCode}
             </span>
           </div>
@@ -759,11 +771,11 @@ export default function FeesManagement({
       sortable: true,
       render: (row) => (
         row.paymentMode ? (
-          <span className="text-xs text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
+          <span className="text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
             {row.paymentMode}
           </span>
         ) : (
-          <span className="text-xs text-gray-400 dark:text-gray-500">-</span>
+          <span className="text-[12px] text-gray-400 dark:text-gray-500">-</span>
         )
       ),
     },
@@ -773,17 +785,17 @@ export default function FeesManagement({
       render: (row) => (
         <div className="flex items-center gap-1.5 justify-center">
           {row.discount > 0 && (
-            <span className="text-xs text-green-600 dark:text-green-400 font-medium whitespace-nowrap">
+            <span className="text-[12px] text-green-600 dark:text-green-400 font-medium whitespace-nowrap">
               -{currencySymbol}{row.discount}
             </span>
           )}
           {row.fine > 0 && (
-            <span className="text-xs text-red-600 dark:text-red-400 font-medium whitespace-nowrap">
+            <span className="text-[12px] text-red-600 dark:text-red-400 font-medium whitespace-nowrap">
               +{currencySymbol}{row.fine}
             </span>
           )}
           {row.discount === 0 && row.fine === 0 && (
-            <span className="text-xs text-gray-400">-</span>
+            <span className="text-[12px] text-gray-400">-</span>
           )}
         </div>
       ),

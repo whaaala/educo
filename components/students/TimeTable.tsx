@@ -9,18 +9,59 @@ import CustomDropdown from "@/components/shared/CustomDropdown";
 import MobileDropdown from "@/components/shared/MobileDropdown";
 import { getSchoolConfig, generateTimeSlots, getBreakPeriods, type CalendarEvent, type TimetableConfig } from "@/lib/timetableConfig";
 import { getCurrentUser, getUserEvents } from "@/lib/calendarPermissions";
+import type { EducationLevel } from "@/lib/educationLevelUtils";
 
 interface TimeTableProps {
   timetable?: TimetableEntry[];
   schoolId?: string; // Optional school ID to load specific config
 }
 
+// Subject lists by education level
+const SUBJECTS_BY_LEVEL: Record<EducationLevel, string[]> = {
+  primary: [
+    "English",
+    "Mathematics",
+    "Basic Science",
+    "Social Studies",
+    "Creative Arts",
+    "Physical Education",
+    "Religious Studies",
+    "Civic Education",
+    "Handwriting",
+    "Reading",
+  ],
+  secondary: [
+    "Mathematics",
+    "English",
+    "Physics",
+    "Chemistry",
+    "Biology",
+    "Computer Science",
+    "History",
+    "Geography",
+    "Economics",
+    "Literature",
+  ],
+  tertiary: [
+    "Advanced Programming",
+    "Data Structures",
+    "Database Systems",
+    "Web Development",
+    "Software Engineering",
+    "Operating Systems",
+    "Computer Networks",
+    "Artificial Intelligence",
+    "Machine Learning",
+    "Cybersecurity",
+  ],
+};
+
 // Helper function to generate timetable with custom config
-function generateDynamicTimetableWithConfig(week: number, year: string, config: TimetableConfig): TimetableEntry[] {
+function generateDynamicTimetableWithConfig(week: number, year: string, config: TimetableConfig, educationLevel: EducationLevel): TimetableEntry[] {
   const days = config.daysOfWeek;
   const timeSlots = generateTimeSlots(config);
 
-  const subjects = ["Maths", "Spanish", "Computer", "Physics", "English", "Science", "Chemistry", "History", "Geography", "Biology"];
+  const subjects = SUBJECTS_BY_LEVEL[educationLevel];
   const teachers = ["Jacquelin", "Erickson", "Daniel", "Teresa", "Hellana", "Morgan", "Aaron", "Sarah", "Michael", "Emma"];
   const teacherAvatars = [
     "https://i.pravatar.cc/150?img=11",
@@ -106,12 +147,12 @@ function generateDynamicTimetableWithConfig(week: number, year: string, config: 
 }
 
 // Helper function to generate dynamic timetable based on week, year, and school config
-function generateDynamicTimetable(week: number, year: string, schoolId: string = "school-1"): TimetableEntry[] {
+function generateDynamicTimetable(week: number, year: string, schoolId: string = "school-1", educationLevel: EducationLevel = "secondary"): TimetableEntry[] {
   const config = getSchoolConfig(schoolId);
   const days = config.daysOfWeek;
   const timeSlots = generateTimeSlots(config);
 
-  const subjects = ["Maths", "Spanish", "Computer", "Physics", "English", "Science", "Chemistry", "History", "Geography", "Biology"];
+  const subjects = SUBJECTS_BY_LEVEL[educationLevel];
   const teachers = ["Jacquelin", "Erickson", "Daniel", "Teresa", "Hellana", "Morgan", "Aaron", "Sarah", "Michael", "Emma"];
   const teacherAvatars = [
     "https://i.pravatar.cc/150?img=11",
@@ -222,6 +263,17 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
   const [customEvents, setCustomEvents] = useState<CalendarEvent[]>([]);
   const [selectedMobileDay, setSelectedMobileDay] = useState(0); // Index of selected day for mobile view
 
+  // Education level state - reads from School Profile settings
+  const [educationLevel, setEducationLevel] = useState<EducationLevel>(() => {
+    if (typeof window !== "undefined") {
+      const settingsEducationLevel = localStorage.getItem("educationLevel");
+      if (settingsEducationLevel === "tertiary") return "tertiary";
+      if (settingsEducationLevel === "primary") return "primary";
+      if (settingsEducationLevel === "multi-level") return "secondary"; // Default multi-level to secondary
+    }
+    return "secondary";
+  });
+
   // Load custom config and user-specific events from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('customTimetableConfig');
@@ -255,6 +307,21 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
     setCustomEvents(userEvents);
   }, []);
 
+  // Listen for School Profile changes
+  useEffect(() => {
+    const handleSchoolProfileChange = (event: CustomEvent<{ educationLevel: string; institutionType: string }>) => {
+      const { educationLevel: settingsEducationLevel } = event.detail;
+
+      if (settingsEducationLevel === "tertiary") setEducationLevel("tertiary");
+      else if (settingsEducationLevel === "secondary") setEducationLevel("secondary");
+      else if (settingsEducationLevel === "primary") setEducationLevel("primary");
+      else if (settingsEducationLevel === "multi-level") setEducationLevel("secondary"); // Default multi-level to secondary
+    };
+
+    window.addEventListener("schoolProfileChanged" as any, handleSchoolProfileChange);
+    return () => window.removeEventListener("schoolProfileChanged" as any, handleSchoolProfileChange);
+  }, []);
+
   // Get school config (use custom if available, otherwise use default)
   const schoolConfig = useMemo(() => {
     if (customConfig) {
@@ -270,19 +337,20 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
       hasCustomConfig: !!customConfig,
       currentWeek,
       selectedYear,
-      schoolId
+      schoolId,
+      educationLevel
     });
 
     // Create a temporary config ID that includes custom settings
     const effectiveSchoolId = customConfig ? 'custom' : schoolId;
-    const timetable = generateDynamicTimetable(currentWeek, selectedYear, effectiveSchoolId);
+    const timetable = generateDynamicTimetable(currentWeek, selectedYear, effectiveSchoolId, educationLevel);
 
     // If using custom config, regenerate with custom days
     if (customConfig) {
       console.log('✅ [TimeTable] Using CUSTOM configuration');
       const timeSlots = generateTimeSlots(customConfig);
       console.log('🕐 [TimeTable] Generated time slots:', timeSlots);
-      const generatedTimetable = generateDynamicTimetableWithConfig(currentWeek, selectedYear, customConfig);
+      const generatedTimetable = generateDynamicTimetableWithConfig(currentWeek, selectedYear, customConfig, educationLevel);
       console.log('📅 [TimeTable] Generated timetable with', generatedTimetable.length, 'days');
       if (generatedTimetable.length > 0) {
         console.log('🔍 [TimeTable] First day periods:', generatedTimetable[0].periods.map(p => p.time));
@@ -292,7 +360,7 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
 
     console.log('ℹ️ [TimeTable] Using DEFAULT school configuration');
     return timetable;
-  }, [currentWeek, selectedYear, schoolId, customConfig]);
+  }, [currentWeek, selectedYear, schoolId, customConfig, educationLevel]);
 
   const yearOptions = [
     { label: "This Year", value: "this-year" },
@@ -345,6 +413,11 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
 
   // Color palettes for different subjects
   const subjectColors: Record<string, { bg: string; text: string }> = {
+    // Secondary subjects
+    Mathematics: {
+      bg: "bg-pink-50 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30",
+      text: "text-pink-700 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400",
+    },
     Maths: {
       bg: "bg-pink-50 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30",
       text: "text-pink-700 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400",
@@ -354,6 +427,10 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
       text: "text-cyan-700 dark:text-cyan-400 midnight:text-cyan-400 purple:text-cyan-400",
     },
     Computer: {
+      bg: "bg-green-50 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30",
+      text: "text-green-700 dark:text-green-400 midnight:text-green-400 purple:text-green-400",
+    },
+    "Computer Science": {
       bg: "bg-green-50 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30",
       text: "text-green-700 dark:text-green-400 midnight:text-green-400 purple:text-green-400",
     },
@@ -384,6 +461,88 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
     Biology: {
       bg: "bg-lime-50 dark:bg-lime-900/30 midnight:bg-lime-900/30 purple:bg-lime-900/30",
       text: "text-lime-700 dark:text-lime-400 midnight:text-lime-400 purple:text-lime-400",
+    },
+    Economics: {
+      bg: "bg-emerald-50 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30",
+      text: "text-emerald-700 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400",
+    },
+    Literature: {
+      bg: "bg-violet-50 dark:bg-violet-900/30 midnight:bg-violet-900/30 purple:bg-violet-900/30",
+      text: "text-violet-700 dark:text-violet-400 midnight:text-violet-400 purple:text-violet-400",
+    },
+    // Primary subjects
+    "Basic Science": {
+      bg: "bg-sky-50 dark:bg-sky-900/30 midnight:bg-sky-900/30 purple:bg-sky-900/30",
+      text: "text-sky-700 dark:text-sky-400 midnight:text-sky-400 purple:text-sky-400",
+    },
+    "Social Studies": {
+      bg: "bg-amber-50 dark:bg-amber-900/30 midnight:bg-amber-900/30 purple:bg-amber-900/30",
+      text: "text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
+    },
+    "Creative Arts": {
+      bg: "bg-fuchsia-50 dark:bg-fuchsia-900/30 midnight:bg-fuchsia-900/30 purple:bg-fuchsia-900/30",
+      text: "text-fuchsia-700 dark:text-fuchsia-400 midnight:text-fuchsia-400 purple:text-fuchsia-400",
+    },
+    "Physical Education": {
+      bg: "bg-rose-50 dark:bg-rose-900/30 midnight:bg-rose-900/30 purple:bg-rose-900/30",
+      text: "text-rose-700 dark:text-rose-400 midnight:text-rose-400 purple:text-rose-400",
+    },
+    "Religious Studies": {
+      bg: "bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-indigo-900/30",
+      text: "text-indigo-700 dark:text-indigo-400 midnight:text-indigo-400 purple:text-indigo-400",
+    },
+    "Civic Education": {
+      bg: "bg-yellow-50 dark:bg-yellow-900/30 midnight:bg-yellow-900/30 purple:bg-yellow-900/30",
+      text: "text-yellow-700 dark:text-yellow-400 midnight:text-yellow-400 purple:text-yellow-400",
+    },
+    Handwriting: {
+      bg: "bg-slate-50 dark:bg-slate-900/30 midnight:bg-slate-900/30 purple:bg-slate-900/30",
+      text: "text-slate-700 dark:text-slate-400 midnight:text-slate-400 purple:text-slate-400",
+    },
+    Reading: {
+      bg: "bg-red-50 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30",
+      text: "text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
+    },
+    // Tertiary subjects
+    "Advanced Programming": {
+      bg: "bg-emerald-50 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30",
+      text: "text-emerald-700 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400",
+    },
+    "Data Structures": {
+      bg: "bg-cyan-50 dark:bg-cyan-900/30 midnight:bg-cyan-900/30 purple:bg-cyan-900/30",
+      text: "text-cyan-700 dark:text-cyan-400 midnight:text-cyan-400 purple:text-cyan-400",
+    },
+    "Database Systems": {
+      bg: "bg-blue-50 dark:bg-blue-900/30 midnight:bg-blue-900/30 purple:bg-blue-900/30",
+      text: "text-blue-700 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400",
+    },
+    "Web Development": {
+      bg: "bg-orange-50 dark:bg-orange-900/30 midnight:bg-orange-900/30 purple:bg-orange-900/30",
+      text: "text-orange-700 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400",
+    },
+    "Software Engineering": {
+      bg: "bg-purple-50 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-purple-900/30",
+      text: "text-purple-700 dark:text-purple-400 midnight:text-purple-400 purple:text-purple-400",
+    },
+    "Operating Systems": {
+      bg: "bg-gray-50 dark:bg-gray-800/30 midnight:bg-gray-800/30 purple:bg-gray-800/30",
+      text: "text-gray-700 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400",
+    },
+    "Computer Networks": {
+      bg: "bg-teal-50 dark:bg-teal-900/30 midnight:bg-teal-900/30 purple:bg-teal-900/30",
+      text: "text-teal-700 dark:text-teal-400 midnight:text-teal-400 purple:text-teal-400",
+    },
+    "Artificial Intelligence": {
+      bg: "bg-pink-50 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30",
+      text: "text-pink-700 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400",
+    },
+    "Machine Learning": {
+      bg: "bg-violet-50 dark:bg-violet-900/30 midnight:bg-violet-900/30 purple:bg-violet-900/30",
+      text: "text-violet-700 dark:text-violet-400 midnight:text-violet-400 purple:text-violet-400",
+    },
+    Cybersecurity: {
+      bg: "bg-red-50 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30",
+      text: "text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
     },
     // Special period types
     "Free Period": {

@@ -365,7 +365,7 @@ export default function DataTable<T>({
                       className={`px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 text-center align-middle ${getHiddenClasses(column.hidden)} ${column.className || ''}`}
                     >
                       {column.render ? column.render(item, index) : (
-                        <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 block truncate">
+                        <span className="text-[12px] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 block truncate">
                           {String((item as any)[column.key] || "")}
                         </span>
                       )}
