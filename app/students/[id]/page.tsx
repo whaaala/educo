@@ -46,7 +46,7 @@ import AddButton from "@/components/shared/AddButton";
 import AttendanceStatsCard from "@/components/students/AttendanceStatsCard";
 import AttendanceCalendar from "@/components/students/AttendanceCalendar";
 import AttendanceByClass from "@/components/students/AttendanceByClass";
-import FeesTable from "@/components/students/FeesTable";
+import FeesManagement from "@/components/students/FeesManagement";
 import MobileDropdown from "@/components/shared/MobileDropdown";
 import { getAttendanceMode } from "@/components/settings/AttendanceSettings";
 import { Edit, UserCheck, CheckCircle2 } from "lucide-react";
@@ -813,8 +813,8 @@ function AttendanceTab({ studentId }: { studentId: string }) {
 
 function FeesTab() {
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
-      <FeesTable />
+    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 lg:p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+      <FeesManagement educationLevel="primary" schoolType="private" />
     </div>
   );
 }
