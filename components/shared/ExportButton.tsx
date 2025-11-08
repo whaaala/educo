@@ -6,9 +6,10 @@ import { Download, ChevronDown } from "lucide-react";
 interface ExportButtonProps {
   onExportPDF?: () => void;
   onExportExcel?: () => void;
+  description?: string;
 }
 
-export default function ExportButton({ onExportPDF, onExportExcel }: ExportButtonProps) {
+export default function ExportButton({ onExportPDF, onExportExcel, description = "Download data" }: ExportButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
 
@@ -79,14 +80,14 @@ export default function ExportButton({ onExportPDF, onExportExcel }: ExportButto
 
       {/* Export Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 transition-all duration-200 animate-in fade-in slide-in-from-top-2">
+        <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-64 sm:w-56 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 transition-all duration-200 animate-in fade-in slide-in-from-top-2">
           {/* Header */}
           <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 midnight:from-cyan-500/10 midnight:to-blue-500/10 purple:from-pink-500/10 purple:to-purple-500/10 border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
               Export Options
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-200/70 purple:text-pink-200/70 mt-0.5">
-              Download student data
+              {description}
             </p>
           </div>
 

@@ -243,7 +243,7 @@ export default function ViewStudentPage() {
               )}
               {activeTab === "timetable" && <TimetableTab timetable={studentData.timetable} />}
               {activeTab === "attendance" && <AttendanceTab studentId={studentId} />}
-              {activeTab === "fees" && <FeesTab />}
+              {activeTab === "fees" && <FeesTab studentId={studentId} />}
               {activeTab === "exam" && <ExamResultsTab />}
               {activeTab === "library" && <LibraryTab />}
             </div>
@@ -811,10 +811,10 @@ function AttendanceTab({ studentId }: { studentId: string }) {
   );
 }
 
-function FeesTab() {
+function FeesTab({ studentId }: { studentId: string }) {
   return (
     <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 lg:p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
-      <FeesManagement educationLevel="primary" schoolType="private" />
+      <FeesManagement educationLevel="primary" schoolType="private" studentId={studentId} />
     </div>
   );
 }

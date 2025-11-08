@@ -378,37 +378,28 @@ export default function DataTable<T>({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-12 text-center"
+                  className="px-4 py-16 sm:py-20 text-center"
                 >
-                  <div className="flex flex-col items-center justify-center">
-                    {/* Icon with gradient background */}
-                    <div className="relative mb-4">
-                      {/* Gradient background circle */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className={`w-16 h-16 rounded-full ${
-                          searchQuery.trim()
-                            ? 'bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-500/10 dark:to-blue-600/10 midnight:from-cyan-500/10 midnight:to-cyan-600/10 purple:from-pink-500/10 purple:to-pink-600/10'
-                            : 'bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 midnight:from-cyan-500/5 midnight:to-cyan-600/5 purple:from-pink-500/5 purple:to-pink-600/5'
-                        } animate-pulse`} />
-                      </div>
-
-                      {/* Icon */}
-                      <div className="relative z-10 flex items-center justify-center w-16 h-16">
+                  <div className="flex flex-col items-center justify-center max-w-md mx-auto">
+                    {/* Icon with simple circular background */}
+                    <div className="relative mb-6">
+                      {/* Simple circular background */}
+                      <div className="flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-blue-50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10">
                         {searchQuery.trim() ? (
-                          <Search className="w-8 h-8 text-blue-400 dark:text-blue-500 midnight:text-cyan-400 purple:text-pink-400" strokeWidth={1.5} />
+                          <Search className="w-10 h-10 sm:w-12 sm:h-12 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" strokeWidth={2} />
                         ) : (
-                          <FileX className="w-8 h-8 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50" strokeWidth={1.5} />
+                          <FileX className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/60 purple:text-pink-400/60" strokeWidth={2} />
                         )}
                       </div>
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-2">
                       {searchQuery.trim() ? 'No results found' : 'No data available'}
                     </h3>
 
                     {/* Description */}
-                    <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
+                    <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 leading-relaxed">
                       {searchQuery.trim()
                         ? `No results match "${searchQuery}". Try a different search term.`
                         : hasActiveFilters
@@ -416,7 +407,7 @@ export default function DataTable<T>({
                         : emptyMessage}
                     </p>
 
-                    {/* Clear search/filters link */}
+                    {/* Clear search/filters button */}
                     {(searchQuery.trim() || (hasActiveFilters && onClearFilters)) && (
                       <button
                         onClick={() => {
@@ -428,7 +419,7 @@ export default function DataTable<T>({
                             onClearFilters();
                           }
                         }}
-                        className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer transition-colors duration-200"
+                        className="mt-6 px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 text-white text-sm font-semibold shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
                       >
                         {searchQuery.trim() ? 'Clear search' : 'Clear filters'}
                       </button>

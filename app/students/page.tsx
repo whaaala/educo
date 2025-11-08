@@ -938,6 +938,7 @@ export default function AllStudentsPage() {
         {/* Right Section - Action Buttons */}
         <PageActions
           addButtonLabel="Add Student"
+          exportDescription="Download student data"
           onAdd={handleAddStudent}
           onRefresh={handleRefresh}
           onPrint={handlePrint}
