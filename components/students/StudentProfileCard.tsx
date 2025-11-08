@@ -37,22 +37,22 @@ export default function StudentProfileCard({
         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/5 dark:bg-blue-400/5 midnight:bg-cyan-400/5 purple:bg-pink-400/5 rounded-full -mr-16 -mt-16"></div>
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-400/5 dark:bg-indigo-400/5 midnight:bg-blue-400/5 purple:bg-purple-400/5 rounded-full -ml-12 -mb-12"></div>
 
-        <div className="relative flex items-center gap-2.5 sm:gap-4">
+        <div className="relative flex items-center gap-2 sm:gap-3">
           {/* Profile Picture with enhanced styling */}
           <div className="relative flex-shrink-0">
             {profilePhotoUrl ? (
-              <div className="relative w-16 h-16 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden ring-2 sm:ring-4 ring-white/50 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg sm:shadow-xl">
+              <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-xl overflow-hidden ring-2 ring-white/50 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg">
                 <Image
                   src={profilePhotoUrl}
                   alt={fullName}
-                  width={96}
-                  height={96}
+                  width={80}
+                  height={80}
                   className="w-full h-full object-cover"
                 />
               </div>
             ) : (
-              <div className="relative w-16 h-16 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 flex items-center justify-center ring-2 sm:ring-4 ring-white/50 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg sm:shadow-xl">
-                <span className="text-xl sm:text-3xl font-bold text-white">
+              <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 flex items-center justify-center ring-2 ring-white/50 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg">
+                <span className="text-lg sm:text-2xl font-bold text-white">
                   {fullName.charAt(0).toUpperCase()}
                 </span>
               </div>
@@ -60,22 +60,22 @@ export default function StudentProfileCard({
           </div>
 
           {/* Name and Details */}
-          <div className="flex flex-col justify-center gap-1 sm:gap-1.5 flex-1 min-w-0">
+          <div className="flex flex-col justify-center gap-0.5 sm:gap-1 flex-1 min-w-0">
             {/* Status Badge */}
-            <div className="inline-flex items-center gap-1 sm:gap-1.5 w-fit px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30 rounded-md sm:rounded-lg border border-green-300/60 dark:border-green-700/50 midnight:border-green-600/50 purple:border-green-600/50 shadow-sm">
-              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-500 dark:bg-green-400 midnight:bg-green-400 purple:bg-green-400 animate-pulse"></div>
-              <span className="text-[10px] sm:text-xs font-semibold text-green-700 dark:text-green-300 midnight:text-green-300 purple:text-green-300 uppercase tracking-wide">
+            <div className="inline-flex items-center gap-1 w-fit px-1.5 sm:px-2 py-0.5 bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30 rounded-md border border-green-300/60 dark:border-green-700/50 midnight:border-green-600/50 purple:border-green-600/50 shadow-sm">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-green-400 midnight:bg-green-400 purple:bg-green-400 animate-pulse"></div>
+              <span className="text-[9px] sm:text-[10px] font-semibold text-green-700 dark:text-green-300 midnight:text-green-300 purple:text-green-300 uppercase tracking-wide">
                 {studentData.status || "Active"}
               </span>
             </div>
 
             {/* Name */}
-            <h2 className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 tracking-tight truncate leading-tight">
+            <h2 className="text-xs sm:text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 tracking-tight truncate leading-tight">
               {fullName}
             </h2>
 
             {/* Admission Number */}
-            <p className="text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 tracking-wide">
+            <p className="text-[10px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 tracking-wide truncate">
               {studentData.admissionNumber}
             </p>
           </div>

@@ -6,6 +6,7 @@ import RefreshButton from "@/components/shared/RefreshButton";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import WeekNavigator from "@/components/shared/WeekNavigator";
 import AttendanceStatusBadge from "@/components/shared/AttendanceStatusBadge";
+import Tooltip from "@/components/shared/Tooltip";
 import { Clock } from "lucide-react";
 import { getSchoolConfig, type TimetableConfig } from "@/lib/timetableConfig";
 import {
@@ -291,7 +292,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
     return (
       <div className="flex items-center justify-center">
         <div
-          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${colors[status]} flex items-center justify-center text-white font-bold text-xs shadow-sm transition-transform hover:scale-125`}
+          className={`w-8 h-8 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full ${colors[status]} flex items-center justify-center text-white font-bold text-xs md:text-[10px] lg:text-xs shadow-sm transition-transform hover:scale-125`}
         >
           {labels[status]}
         </div>
@@ -359,12 +360,12 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
         render: (row) => {
           const isDayBlocked = isBlockedDay(row.day);
           return (
-            <div className="flex flex-col">
-              <span className={`text-xs sm:text-sm font-bold ${isDayBlocked ? 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40' : 'text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100'}`}>
+            <div className="flex flex-col items-start justify-center min-w-[80px] md:min-w-[70px] h-full">
+              <span className={`text-xs md:text-[10px] lg:text-xs font-bold leading-tight ${isDayBlocked ? 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40' : 'text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100'}`}>
                 {row.date}
               </span>
-              <span className={`text-xs ${isDayBlocked ? 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40' : 'text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70'}`}>
-                {row.day} {isDayBlocked && '(No Classes)'}
+              <span className={`text-[10px] md:text-[9px] lg:text-[10px] leading-tight ${isDayBlocked ? 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40' : 'text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70'}`}>
+                {row.day}
               </span>
             </div>
           );
@@ -382,13 +383,15 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
           if (isDayBlocked) {
             // Show blocked indicator for days with no classes (regardless of date - past, present, or future)
             return (
-              <div className="flex flex-col items-center gap-1">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-300 dark:bg-gray-600 midnight:bg-gray-700 purple:bg-gray-700 flex items-center justify-center shadow-sm opacity-50">
-                  <span className="text-xs font-bold text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">—</span>
+              <div className="flex flex-col items-center justify-center gap-1.5 h-full min-h-[60px]">
+                <div className="w-8 h-8 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full bg-gray-300 dark:bg-gray-600 midnight:bg-gray-700 purple:bg-gray-700 flex items-center justify-center shadow-sm opacity-50 flex-shrink-0">
+                  <span className="text-xs md:text-[10px] font-bold text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">—</span>
                 </div>
-                <span className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 line-through">
-                  {subjects[index]}
-                </span>
+                <Tooltip content="No Class">
+                  <span className="text-[10px] md:text-[9px] lg:text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 leading-tight text-center max-w-[80px] truncate block">
+                    No Class
+                  </span>
+                </Tooltip>
               </div>
             );
           }
@@ -399,13 +402,15 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
           if (isInFuture) {
             // Show clock icon for future dates (not yet attended)
             return (
-              <div className="flex flex-col items-center gap-1">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-200 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 flex items-center justify-center shadow-sm">
-                  <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70" />
+              <div className="flex flex-col items-center justify-center gap-1.5 h-full min-h-[60px]">
+                <div className="w-8 h-8 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full bg-gray-200 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 flex items-center justify-center shadow-sm flex-shrink-0">
+                  <Clock className="w-4 h-4 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70" />
                 </div>
-                <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60">
-                  {subjects[index]}
-                </span>
+                <Tooltip content={subjects[index]}>
+                  <span className="text-[10px] md:text-[9px] lg:text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 leading-tight text-center max-w-[80px] truncate block">
+                    {subjects[index]}
+                  </span>
+                </Tooltip>
               </div>
             );
           }
@@ -414,11 +419,13 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
           const periodKey = `period${index + 1}` as keyof ClassAttendanceData;
           const status = row[periodKey] as AttendanceStatus;
           return (
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center justify-center gap-1.5 h-full min-h-[60px]">
               {getStatusIndicator(status)}
-              <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60">
-                {subjects[index]}
-              </span>
+              <Tooltip content={subjects[index]}>
+                <span className="text-[10px] md:text-[9px] lg:text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 leading-tight text-center max-w-[80px] truncate block">
+                  {subjects[index]}
+                </span>
+              </Tooltip>
             </div>
           );
         },
@@ -494,7 +501,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
           options={yearOptions}
           onChange={handleYearChange}
           variant="blue"
-          className="w-full sm:w-auto lg:w-48 xl:w-56 2xl:w-52"
+          className="w-full sm:w-48 lg:w-52 xl:w-56 2xl:w-52"
         />
 
         {/* Week Navigation */}
@@ -516,7 +523,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
         <AttendanceStatusBadge type="late" label="Late" size="sm" />
         <AttendanceStatusBadge type="excused" label="Excused" size="sm" />
         <AttendanceStatusBadge type="not-attended" label="Not Yet Attended" size="sm" />
-        <AttendanceStatusBadge type="blocked" label="No Classes" size="sm" />
+        <AttendanceStatusBadge type="blocked" label="No Class" size="sm" />
       </div>
 
       {/* Data Table */}

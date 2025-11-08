@@ -257,7 +257,7 @@ export default function DataTable<T>({
 
       {/* Table Body Container */}
       <div className="overflow-x-auto overflow-y-visible -mx-px smooth-scroll">
-        <table className="w-full min-w-[640px] border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
+        <table className="w-full border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
           {/* Table Header */}
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border-b border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
@@ -271,7 +271,7 @@ export default function DataTable<T>({
                 <th
                   key={column.key}
                   onClick={() => column.renderHeader ? undefined : handleSort(column.key)}
-                  className={`px-3 sm:px-5 md:px-6 py-3 sm:py-4 md:py-4.5 text-[11px] font-extrabold uppercase tracking-wider whitespace-nowrap transition-all duration-300 ease-in-out ${
+                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-[10px] md:text-[9px] lg:text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap align-middle transition-all duration-300 ease-in-out ${
                     sortedData.length === 0
                       ? 'cursor-not-allowed opacity-50'
                       : column.sortable !== false && !column.renderHeader ? 'cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-gray-600/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10' : ''
@@ -362,7 +362,7 @@ export default function DataTable<T>({
                   {columns.map((column) => (
                     <td
                       key={column.key}
-                      className={`px-3 sm:px-5 md:px-6 py-3 sm:py-5 md:py-6 text-center ${getHiddenClasses(column.hidden)} ${column.className || ''}`}
+                      className={`px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 text-center align-middle ${getHiddenClasses(column.hidden)} ${column.className || ''}`}
                     >
                       {column.render ? column.render(item, index) : (
                         <span className="text-xs font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 block truncate">

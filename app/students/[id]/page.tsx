@@ -695,7 +695,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
           <div className="flex gap-2">
             <button
               onClick={() => setActiveSubTab("leaves")}
-              className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
+              className={`cursor-pointer px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
                 activeSubTab === "leaves"
                   ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-md"
                   : "bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700"
@@ -705,7 +705,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
             </button>
             <button
               onClick={() => setActiveSubTab("attendance")}
-              className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
+              className={`cursor-pointer px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
                 activeSubTab === "attendance"
                   ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-md"
                   : "bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700"
@@ -717,7 +717,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
         </div>
 
         {/* Tab Content */}
-        <div className="p-4 sm:p-5 lg:p-6">
+        <div className="p-3 sm:p-4 lg:p-4">
           {activeSubTab === "leaves" ? (
             <div className="space-y-4 sm:space-y-5 lg:space-y-6">
               {/* Leave Stats Cards */}

@@ -67,7 +67,7 @@ export default function AttendanceStatsCard({ type, count }: AttendanceStatsCard
       className={`
         ${style.bg} ${style.border} ${style.hoverBorder} ${style.ring}
         relative overflow-hidden border-2 rounded-xl sm:rounded-2xl
-        p-5 sm:p-6 md:p-5 lg:p-6 xl:p-7 2xl:p-6
+        p-3 sm:p-4 md:p-3 lg:p-4 xl:p-4 2xl:p-4
         backdrop-blur-sm
         transition-all duration-500 ease-out
         hover:shadow-2xl hover:shadow-black/10 dark:hover:shadow-black/30
@@ -85,12 +85,12 @@ export default function AttendanceStatsCard({ type, count }: AttendanceStatsCard
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent dark:via-white/10 opacity-0 group-hover:opacity-100 translate-x-[-100%] group-hover:translate-x-[100%] transition-all duration-1000 pointer-events-none" />
 
       {/* Content */}
-      <div className="relative z-10 flex items-center gap-4 sm:gap-5 md:gap-4 lg:gap-5 xl:gap-6 2xl:gap-5">
+      <div className="relative z-10 flex items-center gap-2 sm:gap-3 md:gap-2 lg:gap-3 xl:gap-3 2xl:gap-3">
         {/* Icon Container with enhanced styling */}
         <div className={`
           ${style.iconBg}
-          w-14 h-14 sm:w-16 sm:h-16 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-20 xl:h-20 2xl:w-16 2xl:h-16
-          rounded-xl sm:rounded-2xl
+          w-10 h-10 sm:w-12 sm:h-12 md:w-10 md:h-10 lg:w-12 lg:h-12 xl:w-12 xl:h-12 2xl:w-12 2xl:h-12
+          rounded-lg sm:rounded-xl
           flex items-center justify-center flex-shrink-0
           shadow-lg shadow-black/10 dark:shadow-black/30 group-hover:shadow-xl
           transition-all duration-500
@@ -98,7 +98,7 @@ export default function AttendanceStatsCard({ type, count }: AttendanceStatsCard
           ring-2 ring-white/50 dark:ring-white/10
         `}>
           <Icon className={`
-            w-7 h-7 sm:w-8 sm:h-8 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10 2xl:w-8 2xl:h-8
+            w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 lg:w-6 lg:h-6 xl:w-6 xl:h-6 2xl:w-6 2xl:h-6
             ${style.iconColor}
             transition-transform duration-500
             group-hover:scale-110 group-hover:-rotate-3
@@ -109,12 +109,11 @@ export default function AttendanceStatsCard({ type, count }: AttendanceStatsCard
         {/* Text Content with improved typography */}
         <div className="flex-1 min-w-0">
           <p className={`
-            text-sm sm:text-base md:text-sm lg:text-base xl:text-lg 2xl:text-base
+            text-[10px] sm:text-xs md:text-[10px] lg:text-xs xl:text-xs 2xl:text-xs
             font-semibold sm:font-bold
             ${style.textColor}
-            mb-1 sm:mb-1.5 md:mb-1 lg:mb-2 xl:mb-2.5 2xl:mb-1.5
+            mb-0.5 sm:mb-1 md:mb-0.5 lg:mb-1 xl:mb-1 2xl:mb-1
             leading-tight
-            truncate
             tracking-wide
             uppercase text-opacity-90
           `}>
@@ -122,7 +121,7 @@ export default function AttendanceStatsCard({ type, count }: AttendanceStatsCard
           </p>
           <div className="flex items-baseline gap-1">
             <p className={`
-              text-3xl sm:text-4xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-4xl
+              text-xl sm:text-2xl md:text-xl lg:text-2xl xl:text-2xl 2xl:text-2xl
               font-extrabold
               ${style.countColor}
               leading-none
@@ -133,7 +132,7 @@ export default function AttendanceStatsCard({ type, count }: AttendanceStatsCard
               {count}
             </p>
             <span className={`
-              text-xs sm:text-sm md:text-xs lg:text-sm xl:text-base 2xl:text-sm
+              text-[10px] sm:text-xs md:text-[10px] lg:text-xs xl:text-xs 2xl:text-xs
               font-medium
               ${style.textColor}
               opacity-60
