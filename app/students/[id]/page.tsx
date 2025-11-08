@@ -48,6 +48,7 @@ import AttendanceCalendar from "@/components/students/AttendanceCalendar";
 import AttendanceByClass from "@/components/students/AttendanceByClass";
 import FeesManagement from "@/components/students/FeesManagement";
 import MobileDropdown from "@/components/shared/MobileDropdown";
+import ExamResults from "@/components/students/ExamResults";
 import { getAttendanceMode } from "@/components/settings/AttendanceSettings";
 import { Edit, UserCheck, CheckCircle2 } from "lucide-react";
 
@@ -244,7 +245,7 @@ export default function ViewStudentPage() {
               {activeTab === "timetable" && <TimetableTab timetable={studentData.timetable} />}
               {activeTab === "attendance" && <AttendanceTab studentId={studentId} />}
               {activeTab === "fees" && <FeesTab studentId={studentId} />}
-              {activeTab === "exam" && <ExamResultsTab />}
+              {activeTab === "exam" && <ExamResultsTab studentClass={studentData.class} />}
               {activeTab === "library" && <LibraryTab />}
             </div>
           </div>
@@ -819,20 +820,10 @@ function FeesTab({ studentId }: { studentId: string }) {
   );
 }
 
-function ExamResultsTab() {
+function ExamResultsTab({ studentClass }: { studentClass: string }) {
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
-      <div className="text-center py-16">
-        <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30 midnight:from-purple-950/30 midnight:to-violet-950/30 purple:from-pink-950/30 purple:to-purple-950/30 mb-6 mx-auto">
-          <FileText className="w-12 h-12 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400" />
-        </div>
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
-          Exam & Results Coming Soon
-        </h3>
-        <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 max-w-sm mx-auto">
-          Access student exam schedules, results, and performance analytics
-        </p>
-      </div>
+    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 lg:p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+      <ExamResults studentClass={studentClass} />
     </div>
   );
 }
