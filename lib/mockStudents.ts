@@ -25,6 +25,20 @@ export interface ExtendedStudentData {
   admissionDate?: string;
   rollNumber: string;
   status: "Active" | "Inactive";
+
+  // NEW: Education Level & Institution Type (PRD Requirements)
+  educationLevel?: "Primary" | "Secondary" | "Tertiary";
+  institutionType?: "Public" | "Private" | "International";
+  schoolType?: string; // For additional school type classification
+  branchId?: string; // Multi-campus support
+
+  // NEW: National Exam Numbers (PRD Requirements - varies by education level)
+  waecNumber?: string; // West African Examinations Council (Secondary)
+  necoNumber?: string; // National Examinations Council (Secondary - Nigeria)
+  jambNumber?: string; // Joint Admissions and Matriculation Board (Tertiary entrance - Nigeria)
+  matricNumber?: string; // Matriculation number (Tertiary)
+  nationalExamNumber?: string; // Generic national exam number (for other countries)
+
   firstName: string;
   lastName: string;
   middleName?: string;

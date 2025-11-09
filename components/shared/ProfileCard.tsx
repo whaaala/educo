@@ -10,17 +10,18 @@ import {
   Edit,
   TrendingUp,
   Trash2,
-  Plus,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import CollectFeesModal from "./CollectFeesModal";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import AddFeesButton from "./AddFeesButton";
 import NameLabel from "./NameLabel";
+import { getEducationLevelColor } from "@/utils/educationLevel";
 
 export interface ProfileDetail {
   label: string;
   value: string;
+  badge?: boolean; // If true, display value as a colored badge
 }
 
 export interface ProfileAction {
@@ -269,19 +270,32 @@ export default function ProfileCard({
 
         {/* Profile Details */}
         <div className="px-4 pb-1.5 space-y-1 relative z-0">
-          {details.map((detail, index) => (
-            <div
-              key={index}
-              className="group/detail flex items-center justify-between py-1.5 px-3 rounded-lg bg-white/70 backdrop-blur-sm dark:bg-gray-700/40 midnight:bg-cyan-500/10 purple:bg-pink-500/10 group-hover:bg-white/95 dark:group-hover:bg-gray-700/60 midnight:group-hover:bg-cyan-500/25 purple:group-hover:bg-pink-500/25 transition-all duration-200 border border-white/40 group-hover:border-white/60"
-            >
-              <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors uppercase tracking-wider truncate">
-                {detail.label}
-              </span>
-              <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 group-hover:text-black ml-3 flex-shrink-0">
-                {detail.value}
-              </span>
-            </div>
-          ))}
+          {details.map((detail, index) => {
+            // Get badge colors for education level if badge is true
+            const badgeColors = detail.badge && (detail.value === "Primary" || detail.value === "Secondary" || detail.value === "Tertiary")
+              ? getEducationLevelColor(detail.value as "Primary" | "Secondary" | "Tertiary")
+              : null;
+
+            return (
+              <div
+                key={index}
+                className="group/detail flex items-center justify-between py-1.5 px-3 rounded-lg bg-white/70 backdrop-blur-sm dark:bg-gray-700/40 midnight:bg-cyan-500/10 purple:bg-pink-500/10 group-hover:bg-white/95 dark:group-hover:bg-gray-700/60 midnight:group-hover:bg-cyan-500/25 purple:group-hover:bg-pink-500/25 transition-all duration-200 border border-white/40 group-hover:border-white/60"
+              >
+                <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors uppercase tracking-wider truncate">
+                  {detail.label}
+                </span>
+                {badgeColors ? (
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold border ${badgeColors.bg} ${badgeColors.text} ${badgeColors.border} ml-3 flex-shrink-0`}>
+                    {detail.value}
+                  </span>
+                ) : (
+                  <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 group-hover:text-black ml-3 flex-shrink-0">
+                    {detail.value}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Action Buttons */}

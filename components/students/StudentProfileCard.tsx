@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import { GraduationCap } from "lucide-react";
 import type { ExtendedStudentData } from "@/lib/mockStudents";
+import { getEducationLevelColor } from "@/utils/educationLevel";
 
 interface StudentProfileCardProps {
   studentData: ExtendedStudentData;
@@ -61,12 +63,31 @@ export default function StudentProfileCard({
 
           {/* Name and Details */}
           <div className="flex flex-col justify-center gap-0.5 sm:gap-1 flex-1 min-w-0">
-            {/* Status Badge */}
-            <div className="inline-flex items-center gap-1 w-fit px-1.5 sm:px-2 py-0.5 bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30 rounded-md border border-green-300/60 dark:border-green-700/50 midnight:border-green-600/50 purple:border-green-600/50 shadow-sm">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-green-400 midnight:bg-green-400 purple:bg-green-400 animate-pulse"></div>
-              <span className="text-[9px] sm:text-[10px] font-semibold text-green-700 dark:text-green-300 midnight:text-green-300 purple:text-green-300 uppercase tracking-wide">
-                {studentData.status || "Active"}
-              </span>
+            {/* Badges Row */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {/* Status Badge */}
+              <div className="inline-flex items-center gap-1 w-fit px-1.5 sm:px-2 py-0.5 bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30 rounded-md border border-green-300/60 dark:border-green-700/50 midnight:border-green-600/50 purple:border-green-600/50 shadow-sm">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-green-400 midnight:bg-green-400 purple:bg-green-400 animate-pulse"></div>
+                <span className="text-[9px] sm:text-[10px] font-semibold text-green-700 dark:text-green-300 midnight:text-green-300 purple:text-green-300 uppercase tracking-wide">
+                  {studentData.status || "Active"}
+                </span>
+              </div>
+
+              {/* Education Level Badge */}
+              {studentData.educationLevel && (
+                <div className={`inline-flex items-center gap-1 w-fit px-1.5 sm:px-2 py-0.5 rounded-md border shadow-sm ${
+                  getEducationLevelColor(studentData.educationLevel).bg
+                } ${
+                  getEducationLevelColor(studentData.educationLevel).border
+                }`}>
+                  <GraduationCap className={`w-2.5 h-2.5 ${getEducationLevelColor(studentData.educationLevel).icon}`} />
+                  <span className={`text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide ${
+                    getEducationLevelColor(studentData.educationLevel).text
+                  }`}>
+                    {studentData.educationLevel}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Name */}

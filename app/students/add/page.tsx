@@ -96,6 +96,20 @@ export default function AddStudentPage() {
     admissionDate: new Date().toISOString().split("T")[0],
     rollNumber: "",
     status: "Active",
+
+    // NEW: Education Level & Institution Type (PRD Requirements)
+    educationLevel: "" as "Primary" | "Secondary" | "Tertiary" | "",
+    institutionType: "" as "Public" | "Private" | "International" | "",
+    schoolType: "",
+    branchId: "",
+
+    // NEW: National Exam Numbers (PRD Requirements)
+    waecNumber: "",
+    necoNumber: "",
+    jambNumber: "",
+    matricNumber: "",
+    nationalExamNumber: "",
+
     firstName: "",
     lastName: "",
     middleName: "",

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import ProfileCard from "@/components/shared/ProfileCard";
+import { detectEducationLevelFromClass } from "@/utils/educationLevel";
 
 export interface Student {
   id: string;
@@ -13,6 +14,8 @@ export interface Student {
   leftOn?: string;
   status: "Active" | "Inactive";
   avatar?: string;
+  educationLevel?: "Primary" | "Secondary" | "Tertiary" | "";
+  institutionType?: "Public" | "Private" | "International" | "";
 }
 
 interface StudentCardProps {
@@ -33,6 +36,9 @@ export default function StudentCard({ student, colorIndex, isSelected, onSelecti
     router.push(`/students/${id}`);
   };
 
+  // Auto-detect education level from class if not already set
+  const educationLevel = student.educationLevel || detectEducationLevelFromClass(student.class);
+
   return (
     <ProfileCard
       id={student.id}
@@ -45,6 +51,7 @@ export default function StudentCard({ student, colorIndex, isSelected, onSelecti
         { label: "Roll No", value: student.rollNo },
         { label: "Gender", value: student.gender },
         { label: "Joined On", value: student.joinedOn },
+        ...(educationLevel ? [{ label: "Level", value: educationLevel, badge: true }] : []),
       ]}
       primaryAction={{ label: "Add Fees" }}
       isSelected={isSelected}

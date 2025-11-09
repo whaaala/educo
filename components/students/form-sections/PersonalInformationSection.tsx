@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   User,
   Calendar,
@@ -16,15 +16,19 @@ import {
   Mail,
   Languages,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Building2
 } from "lucide-react";
 import FileUpload from "@/components/shared/FileUpload";
 import TagInput from "@/components/shared/TagInput";
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
+import FormBadge from "@/components/shared/FormBadge";
 import { getLanguageOptions, getEducationalLevels, getBloodGroups, getReligions } from "@/config/countries";
 import { useCountry } from "@/contexts/CountryContext";
 import { useAcademicYear } from "@/contexts/AcademicYearContext";
+import { detectEducationLevelFromClass, getEducationLevelColor, getInstitutionTypeColor } from "@/utils/educationLevel";
+import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 
 interface PersonalInformationSectionProps {
   formData: any;
@@ -40,6 +44,33 @@ export default function PersonalInformationSection({
   const [isExpanded, setIsExpanded] = useState(true);
   const { countryCode } = useCountry();
   const { academicYears: academicYearsFromContext } = useAcademicYear();
+  const { settings: schoolSettings } = useSchoolSettings();
+
+  // Auto-set institution type from school settings on mount
+  useEffect(() => {
+    if (schoolSettings.institutionType && !formData.institutionType) {
+      onChange("institutionType", schoolSettings.institutionType);
+    }
+  }, [schoolSettings.institutionType]);
+
+  // Auto-detect education level when class changes
+  useEffect(() => {
+    if (formData.class) {
+      let educationLevel = "";
+
+      if (schoolSettings.supportsMultipleLevels) {
+        // Multi-level school: detect from class name
+        educationLevel = detectEducationLevelFromClass(formData.class);
+      } else {
+        // Single-level school: use school's default education level
+        educationLevel = schoolSettings.defaultEducationLevel;
+      }
+
+      if (educationLevel && educationLevel !== formData.educationLevel) {
+        onChange("educationLevel", educationLevel);
+      }
+    }
+  }, [formData.class, schoolSettings.defaultEducationLevel, schoolSettings.supportsMultipleLevels]);
   
   // Use academic years from context, formatted for dropdown
   const academicYears = academicYearsFromContext.map(year => ({ value: year, label: year }));
@@ -114,26 +145,50 @@ export default function PersonalInformationSection({
               </h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
-                              <FormDropdown
-                  label="Academic Year"
-                  icon={<Calendar className="w-full h-full" />}
-                  value={formData.academicYear || ""}
-                  onChange={(value) => onChange("academicYear", value)}
-                  options={academicYears}
-                  placeholder="Select year"
-                  required
-                  error={errors.academicYear}
-                />
-                              <FormInput
-                  label="Admission Number"
-                  icon={<Hash className="w-full h-full" />}
-                  value={formData.admissionNumber || ""}
-                  onChange={(value) => onChange("admissionNumber", value)}
-                  placeholder="System Generated"
-                  type="text"
-                  disabled={true}
-                  error={errors.admissionNumber}
-                />
+              <FormDropdown
+                label="Academic Year"
+                icon={<Calendar className="w-full h-full" />}
+                value={formData.academicYear || ""}
+                onChange={(value) => onChange("academicYear", value)}
+                options={academicYears}
+                placeholder="Select year"
+                required
+                error={errors.academicYear}
+              />
+
+              {/* NEW: Institution Type - From School Settings (Read-only Badge) */}
+              <FormBadge
+                label="Institution Type"
+                icon={<Building2 className="w-full h-full" />}
+                value={formData.institutionType || ""}
+                placeholder="Set in school settings"
+                helperText="School setting"
+                badgeColorClasses={formData.institutionType ? getInstitutionTypeColor(formData.institutionType) : undefined}
+                required
+                error={errors.institutionType}
+              />
+
+              {/* NEW: Education Level - Auto-detected from Class (Read-only Badge) */}
+              <FormBadge
+                label="Education Level"
+                icon={<GraduationCap className="w-full h-full" />}
+                value={formData.educationLevel || ""}
+                placeholder="Select a class to auto-detect"
+                helperText="Auto-detected"
+                badgeColorClasses={formData.educationLevel ? getEducationLevelColor(formData.educationLevel) : undefined}
+                error={errors.educationLevel}
+              />
+
+              <FormInput
+                label="Admission Number"
+                icon={<Hash className="w-full h-full" />}
+                value={formData.admissionNumber || ""}
+                onChange={(value) => onChange("admissionNumber", value)}
+                placeholder="System Generated"
+                type="text"
+                disabled={true}
+                error={errors.admissionNumber}
+              />
               <FormInput
                 label="Admission Date"
                 icon={<Calendar className="w-full h-full" />}
@@ -186,6 +241,81 @@ export default function PersonalInformationSection({
               />
             </div>
           </div>
+
+          {/* National Exam Numbers Section - Conditional based on Education Level */}
+          {formData.educationLevel && formData.educationLevel !== "Primary" && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
+                  <BadgeCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  National Exam Numbers
+                </h3>
+                <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+                  ({formData.educationLevel} Level)
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+                {formData.educationLevel === "Secondary" && (
+                  <>
+                    <FormInput
+                      label="WAEC Number"
+                      icon={<Hash className="w-full h-full" />}
+                      value={formData.waecNumber || ""}
+                      onChange={(value) => onChange("waecNumber", value)}
+                      placeholder="Enter WAEC number"
+                      type="text"
+                    />
+                    <FormInput
+                      label="NECO Number"
+                      icon={<Hash className="w-full h-full" />}
+                      value={formData.necoNumber || ""}
+                      onChange={(value) => onChange("necoNumber", value)}
+                      placeholder="Enter NECO number"
+                      type="text"
+                    />
+                    <FormInput
+                      label="National Exam Number"
+                      icon={<Hash className="w-full h-full" />}
+                      value={formData.nationalExamNumber || ""}
+                      onChange={(value) => onChange("nationalExamNumber", value)}
+                      placeholder="Enter national exam number"
+                      type="text"
+                    />
+                  </>
+                )}
+                {formData.educationLevel === "Tertiary" && (
+                  <>
+                    <FormInput
+                      label="JAMB Number"
+                      icon={<Hash className="w-full h-full" />}
+                      value={formData.jambNumber || ""}
+                      onChange={(value) => onChange("jambNumber", value)}
+                      placeholder="Enter JAMB number"
+                      type="text"
+                    />
+                    <FormInput
+                      label="Matriculation Number"
+                      icon={<Hash className="w-full h-full" />}
+                      value={formData.matricNumber || ""}
+                      onChange={(value) => onChange("matricNumber", value)}
+                      placeholder="Enter matric number"
+                      type="text"
+                    />
+                    <FormInput
+                      label="National Exam Number"
+                      icon={<Hash className="w-full h-full" />}
+                      value={formData.nationalExamNumber || ""}
+                      onChange={(value) => onChange("nationalExamNumber", value)}
+                      placeholder="Enter national exam number"
+                      type="text"
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Personal Details Section */}
           <div className="space-y-4">

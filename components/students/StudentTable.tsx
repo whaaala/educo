@@ -11,6 +11,7 @@ import Tooltip from "@/components/shared/Tooltip";
 import AddFeesButton from "@/components/shared/AddFeesButton";
 import NameLabel from "@/components/shared/NameLabel";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { detectEducationLevelFromClass, getEducationLevelColor } from "@/utils/educationLevel";
 
 interface StudentTableProps {
   students: Student[];
@@ -308,6 +309,25 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
         );
       },
       searchable: false,
+    },
+    {
+      key: "educationLevel",
+      label: "Level",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      className: "text-left w-[10%]",
+      sortValue: (student) => student.educationLevel || detectEducationLevelFromClass(student.class),
+      render: (student) => {
+        const educationLevel = student.educationLevel || detectEducationLevelFromClass(student.class);
+        if (!educationLevel) return null;
+
+        const colors = getEducationLevelColor(educationLevel as "Primary" | "Secondary" | "Tertiary");
+        return (
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold border ${colors.bg} ${colors.text} ${colors.border}`}>
+            {educationLevel}
+          </span>
+        );
+      },
     },
     {
       key: "gender",
