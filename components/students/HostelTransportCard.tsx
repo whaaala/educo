@@ -35,7 +35,7 @@ export default function HostelTransportCard({
   }
 
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-2 sm:p-3 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+    <div className="group bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 p-2 sm:p-3 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       {/* Tabs */}
       <div className="flex gap-1 mb-1.5 sm:mb-2 pb-1 sm:pb-1.5 border-b border-gray-100 dark:border-gray-800/50 midnight:border-gray-800/30 purple:border-gray-800/30">
         <button
@@ -67,8 +67,8 @@ export default function HostelTransportCard({
             {(hostelName || roomNumber) ? (
               <>
                 {hostelName && (
-                  <div className="flex items-center gap-2 py-1 px-2 rounded-lg bg-gray-50/50 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30">
-                    <div className="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
+                  <div className="flex items-center gap-2 py-1 px-2 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/40 dark:to-gray-800/20 midnight:from-gray-900/40 midnight:to-gray-900/20 purple:from-gray-900/40 purple:to-gray-900/20 border border-gray-200/30 dark:border-gray-700/30 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-md transition-all duration-300">
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-900/40 dark:to-indigo-900/20 midnight:from-indigo-900/40 midnight:to-indigo-900/20 purple:from-indigo-900/40 purple:to-indigo-900/20 flex items-center justify-center flex-shrink-0 shadow-sm">
                       <Building2 className="w-3 h-3 text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-indigo-400" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -82,8 +82,8 @@ export default function HostelTransportCard({
                   </div>
                 )}
                 {roomNumber && (
-                  <div className="flex items-center gap-2 py-1 px-2 rounded-lg bg-gray-50/50 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30">
-                    <div className="w-6 h-6 rounded-lg bg-orange-100 dark:bg-orange-900/30 midnight:bg-orange-900/30 purple:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
+                  <div className="flex items-center gap-2 py-1 px-2 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/40 dark:to-gray-800/20 midnight:from-gray-900/40 midnight:to-gray-900/20 purple:from-gray-900/40 purple:to-gray-900/20 border border-gray-200/30 dark:border-gray-700/30 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-md transition-all duration-300">
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/40 dark:to-orange-900/20 midnight:from-orange-900/40 midnight:to-orange-900/20 purple:from-orange-900/40 purple:to-orange-900/20 flex items-center justify-center flex-shrink-0 shadow-sm">
                       <Building2 className="w-3 h-3 text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -110,8 +110,8 @@ export default function HostelTransportCard({
             {(transportRoute || vehicleNumber) ? (
               <>
                 {transportRoute && (
-                  <div className="flex items-center gap-2 py-1 px-2 rounded-lg bg-gray-50/50 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30">
-                    <div className="w-6 h-6 rounded-lg bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                  <div className="flex items-center gap-2 py-1 px-2 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/40 dark:to-gray-800/20 midnight:from-gray-900/40 midnight:to-gray-900/20 purple:from-gray-900/40 purple:to-gray-900/20 border border-gray-200/30 dark:border-gray-700/30 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-md transition-all duration-300">
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/40 dark:to-green-900/20 midnight:from-green-900/40 midnight:to-green-900/20 purple:from-green-900/40 purple:to-green-900/20 flex items-center justify-center flex-shrink-0 shadow-sm">
                       <Bus className="w-3 h-3 text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -125,8 +125,8 @@ export default function HostelTransportCard({
                   </div>
                 )}
                 {vehicleNumber && (
-                  <div className="flex items-center gap-2 py-1 px-2 rounded-lg bg-gray-50/50 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30">
-                    <div className="w-6 h-6 rounded-lg bg-teal-100 dark:bg-teal-900/30 midnight:bg-teal-900/30 purple:bg-teal-900/30 flex items-center justify-center flex-shrink-0">
+                  <div className="flex items-center gap-2 py-1 px-2 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/40 dark:to-gray-800/20 midnight:from-gray-900/40 midnight:to-gray-900/20 purple:from-gray-900/40 purple:to-gray-900/20 border border-gray-200/30 dark:border-gray-700/30 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-md transition-all duration-300">
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-teal-100 to-teal-200 dark:from-teal-900/40 dark:to-teal-900/20 midnight:from-teal-900/40 midnight:to-teal-900/20 purple:from-teal-900/40 purple:to-teal-900/20 flex items-center justify-center flex-shrink-0 shadow-sm">
                       <Bus className="w-3 h-3 text-teal-600 dark:text-teal-400 midnight:text-teal-400 purple:text-teal-400" />
                     </div>
                     <div className="flex-1 min-w-0">

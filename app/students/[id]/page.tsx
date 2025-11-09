@@ -48,6 +48,7 @@ import AttendanceCalendar from "@/components/students/AttendanceCalendar";
 import AttendanceByClass from "@/components/students/AttendanceByClass";
 import FeesManagement from "@/components/students/FeesManagement";
 import MobileDropdown from "@/components/shared/MobileDropdown";
+import CustomDropdown from "@/components/shared/CustomDropdown";
 import ExamResults from "@/components/students/ExamResults";
 import { getAttendanceMode } from "@/components/settings/AttendanceSettings";
 import { Edit, UserCheck, CheckCircle2 } from "lucide-react";
@@ -268,16 +269,33 @@ export default function ViewStudentPage() {
           onClose={() => setIsLoginDetailsModalOpen(false)}
           studentName={fullName}
           studentPhoto={profilePhotoUrl}
+          canViewPasswords={true} // Set based on user role/permissions
           loginDetails={[
             {
               userType: "Parent",
               username: `parent${studentData.admissionNumber || "53"}`,
               password: `parent@${studentData.admissionNumber || "53"}`,
+              socialLogins: [
+                {
+                  provider: "google",
+                  email: "parent@example.com",
+                },
+              ],
             },
             {
               userType: "Student",
               username: `student${studentData.admissionNumber || "20"}`,
               password: `stdt@${studentData.admissionNumber || "53"}`,
+              socialLogins: [
+                {
+                  provider: "google",
+                  email: "student@example.com",
+                },
+                {
+                  provider: "microsoft",
+                  email: "student@school.edu",
+                },
+              ],
             },
           ]}
         />
@@ -829,18 +847,207 @@ function ExamResultsTab({ studentClass }: { studentClass: string }) {
 }
 
 function LibraryTab() {
+  const [selectedYear, setSelectedYear] = useState("2024 / 2025");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+
+  const yearOptions = [
+    { label: "This Year", value: "2024 / 2025" },
+    { label: "2023 / 2024", value: "2023 / 2024" },
+    { label: "2022 / 2023", value: "2022 / 2023" },
+  ];
+
+  // Mock library data
+  const libraryBooks = [
+    {
+      id: "1",
+      title: "The Small-Town Library",
+      coverGradient: "from-gray-300 via-gray-200 to-gray-100 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700",
+      coverText: "BOOK",
+      bookTakenOn: "25 Jan 2024",
+      lastDate: "25 Jan 2024",
+      status: "due-soon" as const,
+    },
+    {
+      id: "2",
+      title: "Apex Time",
+      coverGradient: "from-slate-700 via-slate-600 to-slate-700 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800",
+      coverText: "APEX",
+      bookTakenOn: "22 Jan 2024",
+      lastDate: "25 Jan 2024",
+      status: "active" as const,
+    },
+    {
+      id: "3",
+      title: "The Cobalt Guitar",
+      coverGradient: "from-teal-500 via-teal-400 to-teal-500 dark:from-teal-700 dark:via-teal-600 dark:to-teal-700",
+      coverText: "BOOK",
+      bookTakenOn: "30 Jan 2024",
+      lastDate: "10 Feb 2024",
+      status: "active" as const,
+    },
+    {
+      id: "4",
+      title: "Shard and the Tomb",
+      coverGradient: "from-orange-300 via-orange-200 to-orange-300 dark:from-orange-400 dark:via-orange-300 dark:to-orange-400",
+      coverText: "SHARD",
+      bookTakenOn: "10 Feb 2024",
+      lastDate: "20 Feb 2024",
+      status: "active" as const,
+    },
+    {
+      id: "5",
+      title: "Shard and the Tomb 2",
+      coverGradient: "from-teal-600 via-teal-500 to-teal-600 dark:from-teal-700 dark:via-teal-600 dark:to-teal-700",
+      coverText: "SHARD 2",
+      bookTakenOn: "12 Feb 2024",
+      lastDate: "22 Feb 2024",
+      status: "active" as const,
+    },
+    {
+      id: "6",
+      title: "Plague of Fear",
+      coverGradient: "from-gray-400 via-gray-300 to-gray-400 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700",
+      coverText: "PLAGUE",
+      bookTakenOn: "15 Feb 2024",
+      lastDate: "25 Feb 2024",
+      status: "active" as const,
+    },
+  ];
+
+  // Filter books based on search
+  const filteredBooks = libraryBooks.filter((book) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return book.title.toLowerCase().includes(query);
+  });
+
+  // Handle search with animation
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setIsSearching(true);
+    setTimeout(() => {
+      setIsSearching(false);
+    }, 500);
+  };
+
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
-      <div className="text-center py-16">
-        <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30 midnight:from-rose-950/30 midnight:to-pink-950/30 purple:from-pink-950/30 purple:to-rose-950/30 mb-6 mx-auto">
-          <BookOpen className="w-12 h-12 text-rose-600 dark:text-rose-400 midnight:text-rose-400 purple:text-pink-400" />
+    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2.5 sm:p-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-1.5">
+          <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+          Library
+          {searchQuery && (
+            <span className="text-xs font-normal text-gray-500 dark:text-gray-400">
+              ({filteredBooks.length})
+            </span>
+          )}
+        </h2>
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1 sm:flex-initial">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400 dark:text-gray-500" />
+            <input
+              type="text"
+              placeholder="Search books..."
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full sm:w-64 pl-8 pr-2.5 py-1 sm:py-1.5 text-xs bg-gray-50 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+            />
+          </div>
+          <CustomDropdown
+            value={selectedYear}
+            options={yearOptions}
+            onChange={(value) => setSelectedYear(value as string)}
+            variant="blue"
+            className="w-32 sm:w-40"
+          />
         </div>
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
-          Library Records Coming Soon
-        </h3>
-        <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 max-w-sm mx-auto">
-          View student's borrowed books, due dates, and library history
-        </p>
+      </div>
+
+      {/* Books Grid */}
+      <div className="p-4 sm:p-6">
+        {filteredBooks.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {filteredBooks.map((book, index) => (
+              <div
+                key={book.id}
+                style={{
+                  animation: isSearching
+                    ? `fadeSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.05}s both`
+                    : undefined,
+                }}
+                className="group bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-600 midnight:hover:border-cyan-400 purple:hover:border-pink-400"
+              >
+                {/* Book Cover */}
+                <div className="relative">
+                  <div className={`bg-gradient-to-br ${book.coverGradient} h-40 flex items-center justify-center relative overflow-hidden`}>
+                    {/* Decorative elements */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                    <div className="absolute top-2 right-2">
+                      {book.status === "due-soon" && (
+                        <span className="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-full shadow-lg">
+                          Due Soon
+                        </span>
+                      )}
+                    </div>
+                    <div className="relative z-10 text-center transform group-hover:scale-110 transition-transform duration-300">
+                      <BookOpen className="w-16 h-16 mx-auto mb-2 text-white drop-shadow-lg" />
+                      <span className="text-white font-bold text-sm tracking-wider drop-shadow-md">
+                        {book.coverText}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Book Details */}
+                <div className="p-4">
+                  {/* Book Title */}
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
+                    {book.title}
+                  </h3>
+
+                  {/* Dates */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60">
+                        Book taken on
+                      </p>
+                      <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 flex items-center gap-1">
+                        <Calendar className="w-3 h-3 text-blue-500 dark:text-blue-400" />
+                        {book.bookTakenOn}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60">
+                        Last Date
+                      </p>
+                      <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-orange-500 dark:text-orange-400" />
+                        {book.lastDate}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom gradient bar */}
+                <div className="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 dark:from-blue-600 dark:via-purple-600 dark:to-pink-600 midnight:from-cyan-500 midnight:via-blue-500 midnight:to-purple-500 purple:from-pink-500 purple:via-purple-500 purple:to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 mb-4">
+              <Search className="w-10 h-10 text-gray-400 dark:text-gray-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+              No books found
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
+              Try adjusting your search query
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

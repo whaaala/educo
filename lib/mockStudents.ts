@@ -518,9 +518,9 @@ function generateExtendedStudentData(student: Student, academicYear: string = "2
      immunizationCard: null,
      studentIdProof: null,
      documents: studentIndex % 5 === 0 ? [
-       { name: "Birth Certificate", type: "pdf", url: "#" },
-       { name: "Medical Certificate", type: "pdf", url: "#" },
-       { name: "Previous School Transcript", type: "pdf", url: "#" }
+       { name: "Birth Certificate", type: "pdf", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
+       { name: "Medical Certificate", type: "pdf", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
+       { name: "Previous School Transcript", type: "pdf", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }
      ] : ([] as any[]),
      
           // Medical History (ensure all array fields are always arrays)
