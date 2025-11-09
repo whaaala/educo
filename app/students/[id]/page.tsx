@@ -722,7 +722,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
           {activeSubTab === "leaves" ? (
             <div className="space-y-4 sm:space-y-5 lg:space-y-6">
               {/* Leave Stats Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                 <LeaveStatsCard
                   title="Medical Leave"
                   total={10}
@@ -785,7 +785,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
           ) : (
             <div className="space-y-4 sm:space-y-5 lg:space-y-6">
               {/* Attendance Stats Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                 <AttendanceStatsCard type="present" count={265} />
                 <AttendanceStatsCard type="absent" count={5} />
                 <AttendanceStatsCard type="halfday" count={1} />

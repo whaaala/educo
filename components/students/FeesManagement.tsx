@@ -973,14 +973,16 @@ export default function FeesManagement({
             badge={`${stats.totalFees > 0 ? ((stats.totalDiscount / stats.totalFees) * 100).toFixed(1) : '0'}%`}
           />
 
-          <StatCard
-            icon={AlertCircle}
-            label="Total Fine"
-            value={stats.totalFine.toLocaleString()}
-            color="orange"
-            currencySymbol={currencySymbol}
-            badge={`${stats.totalFees > 0 ? ((stats.totalFine / stats.totalFees) * 100).toFixed(1) : '0'}%`}
-          />
+          <div className="col-span-2 sm:col-span-1">
+            <StatCard
+              icon={AlertCircle}
+              label="Total Fine"
+              value={stats.totalFine.toLocaleString()}
+              color="orange"
+              currencySymbol={currencySymbol}
+              badge={`${stats.totalFees > 0 ? ((stats.totalFine / stats.totalFees) * 100).toFixed(1) : '0'}%`}
+            />
+          </div>
         </div>
 
       {/* Filters Section - Fully Responsive */}

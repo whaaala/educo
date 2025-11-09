@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, TrendingUp, Settings, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, TrendingUp, TrendingDown, Settings, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import SearchBar from "@/components/shared/SearchBar";
 import {
@@ -462,11 +462,25 @@ export default function ExamResults({
   ];
 
   const toggleSubject = (subjectId: string) => {
-    setExpandedSubjects(prev =>
-      prev.includes(subjectId)
-        ? prev.filter(id => id !== subjectId)
-        : [...prev, subjectId]
-    );
+    const isCurrentlyExpanded = expandedSubjects.includes(subjectId);
+
+    if (isCurrentlyExpanded) {
+      // Start collapse animation
+      setCollapsingSubjects(prev => new Set(prev).add(subjectId));
+
+      // Wait for animation to complete before removing from expanded
+      setTimeout(() => {
+        setExpandedSubjects(prev => prev.filter(id => id !== subjectId));
+        setCollapsingSubjects(prev => {
+          const next = new Set(prev);
+          next.delete(subjectId);
+          return next;
+        });
+      }, 250); // Match the collapse animation duration
+    } else {
+      // Expand immediately
+      setExpandedSubjects(prev => [...prev, subjectId]);
+    }
   };
 
   // Helper function to get grade color
@@ -498,6 +512,7 @@ export default function ExamResults({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [isSearching, setIsSearching] = useState(false);
   const [sortCounter, setSortCounter] = useState(0);
+  const [collapsingSubjects, setCollapsingSubjects] = useState<Set<string>>(new Set());
 
   // Calculate status counts
   const statusCounts = {
@@ -505,6 +520,50 @@ export default function ExamResults({
     Pass: subjectsData.filter(s => s.result === "Pass").length,
     Fail: subjectsData.filter(s => s.result === "Fail").length,
     "In Progress": subjectsData.filter(s => s.result === "In Progress").length,
+  };
+
+  // Subject color mapping (matching Timetable colors)
+  const getSubjectColor = (subjectName: string): string => {
+    const colorMap: Record<string, string> = {
+      // Secondary subjects
+      "Mathematics": "from-pink-500 to-pink-600 dark:from-pink-600 dark:to-pink-700",
+      "Maths": "from-pink-500 to-pink-600 dark:from-pink-600 dark:to-pink-700",
+      "Spanish": "from-cyan-500 to-cyan-600 dark:from-cyan-600 dark:to-cyan-700",
+      "Computer": "from-green-500 to-green-600 dark:from-green-600 dark:to-green-700",
+      "Computer Science": "from-green-500 to-green-600 dark:from-green-600 dark:to-green-700",
+      "Physics": "from-amber-500 to-amber-600 dark:from-amber-600 dark:to-amber-700",
+      "English": "from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700",
+      "English Language": "from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700",
+      "Science": "from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700",
+      "Chemistry": "from-gray-500 to-gray-600 dark:from-gray-600 dark:to-gray-700",
+      "History": "from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700",
+      "Geography": "from-teal-500 to-teal-600 dark:from-teal-600 dark:to-teal-700",
+      "Biology": "from-lime-500 to-lime-600 dark:from-lime-600 dark:to-lime-700",
+      "Economics": "from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700",
+      "Literature": "from-violet-500 to-violet-600 dark:from-violet-600 dark:to-violet-700",
+      // Primary subjects
+      "Basic Science": "from-sky-500 to-sky-600 dark:from-sky-600 dark:to-sky-700",
+      "Social Studies": "from-amber-500 to-amber-600 dark:from-amber-600 dark:to-amber-700",
+      "Creative Arts": "from-fuchsia-500 to-fuchsia-600 dark:from-fuchsia-600 dark:to-fuchsia-700",
+      "Physical Education": "from-rose-500 to-rose-600 dark:from-rose-600 dark:to-rose-700",
+      "Religious Studies": "from-indigo-500 to-indigo-600 dark:from-indigo-600 dark:to-indigo-700",
+      "Civic Education": "from-yellow-500 to-yellow-600 dark:from-yellow-600 dark:to-yellow-700",
+      "Handwriting": "from-slate-500 to-slate-600 dark:from-slate-600 dark:to-slate-700",
+      "Reading": "from-red-500 to-red-600 dark:from-red-600 dark:to-red-700",
+      // Tertiary subjects
+      "Advanced Programming": "from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700",
+      "Data Structures": "from-cyan-500 to-cyan-600 dark:from-cyan-600 dark:to-cyan-700",
+      "Database Systems": "from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700",
+      "Web Development": "from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700",
+      "Software Engineering": "from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700",
+      "Operating Systems": "from-gray-500 to-gray-600 dark:from-gray-600 dark:to-gray-700",
+      "Computer Networks": "from-teal-500 to-teal-600 dark:from-teal-600 dark:to-teal-700",
+      "Artificial Intelligence": "from-pink-500 to-pink-600 dark:from-pink-600 dark:to-pink-700",
+      "Machine Learning": "from-violet-500 to-violet-600 dark:from-violet-600 dark:to-violet-700",
+      "Cybersecurity": "from-red-500 to-red-600 dark:from-red-600 dark:to-red-700",
+    };
+
+    return colorMap[subjectName] || "from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700";
   };
 
   // Filter subjects based on search query and status filter
@@ -636,10 +695,22 @@ export default function ExamResults({
     }, 500);
   };
 
+  // Handle filter change with animation
+  const handleFilterChange = (filter: "all" | "Pass" | "Fail" | "In Progress") => {
+    setStatusFilter(filter);
+    setCurrentPage(1);
+    setIsSearching(true);
+
+    setTimeout(() => {
+      setIsSearching(false);
+    }, 500);
+  };
+
   // Calculate overall statistics
   const totalSubjects = subjectsData.length;
   const averagePercentage = subjectsData.reduce((sum, s) => sum + s.percentage, 0) / totalSubjects;
   const passedSubjects = subjectsData.filter(s => s.result === "Pass").length;
+  const failedSubjects = subjectsData.filter(s => s.result === "Fail").length;
   const averageGPA = isTertiary
     ? (subjectsData.reduce((sum, s) => sum + (s.gpa || 0), 0) / totalSubjects).toFixed(2)
     : null;
@@ -680,6 +751,23 @@ export default function ExamResults({
               </p>
               <p className="text-base sm:text-lg font-bold text-emerald-900 dark:text-emerald-100 truncate leading-none">
                 {passedSubjects}
+              </p>
+            </div>
+          </div>
+
+          {/* Failed Stat */}
+          <div className="bg-red-50/80 dark:bg-red-950/30 midnight:bg-red-950/30 purple:bg-red-950/30 rounded-xl p-3 sm:p-3.5 transition-all duration-200 hover:shadow-md h-[88px] sm:h-[92px] flex flex-col min-w-0">
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="bg-red-100 dark:bg-red-900/30 w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0">
+                <TrendingDown className="w-3.5 h-3.5 text-red-700 dark:text-red-300" />
+              </div>
+            </div>
+            <div className="flex-1 flex flex-col justify-end">
+              <p className="text-[9px] sm:text-[10px] font-semibold text-red-600 dark:text-red-400 uppercase tracking-wide mb-0.5">
+                Failed
+              </p>
+              <p className="text-base sm:text-lg font-bold text-red-900 dark:text-red-100 truncate leading-none">
+                {failedSubjects}
               </p>
             </div>
           </div>
@@ -739,8 +827,8 @@ export default function ExamResults({
             <div className="flex flex-wrap items-center gap-2">
               {/* All Button */}
               <button
-                onClick={() => setStatusFilter("all")}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 ${
+                onClick={() => handleFilterChange("all")}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "all"
                     ? "bg-blue-600 dark:bg-blue-500 text-white shadow-sm"
                     : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -760,8 +848,8 @@ export default function ExamResults({
 
               {/* Pass Button */}
               <button
-                onClick={() => setStatusFilter("Pass")}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 ${
+                onClick={() => handleFilterChange("Pass")}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "Pass"
                     ? "bg-emerald-600 dark:bg-emerald-500 text-white shadow-sm"
                     : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -782,8 +870,8 @@ export default function ExamResults({
 
               {/* Failed Button */}
               <button
-                onClick={() => setStatusFilter("Fail")}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 ${
+                onClick={() => handleFilterChange("Fail")}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "Fail"
                     ? "bg-red-600 dark:bg-red-500 text-white shadow-sm"
                     : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -804,8 +892,8 @@ export default function ExamResults({
 
               {/* In Progress Button */}
               <button
-                onClick={() => setStatusFilter("In Progress")}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 ${
+                onClick={() => handleFilterChange("In Progress")}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "In Progress"
                     ? "bg-amber-600 dark:bg-amber-500 text-white shadow-sm"
                     : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -844,7 +932,7 @@ export default function ExamResults({
           />
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto smooth-scroll">
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border-b border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
@@ -990,6 +1078,7 @@ export default function ExamResults({
               ) : (
                 paginatedSubjects.map((subject, index) => {
                 const isExpanded = expandedSubjects.includes(subject.id);
+                const isCollapsing = collapsingSubjects.has(subject.id);
                 const completedComponents = subject.gradingComponents.filter(c => c.status === "completed").length;
                 const totalComponents = subject.gradingComponents.length;
                 const progressPercentage = (completedComponents / totalComponents) * 100;
@@ -1009,7 +1098,7 @@ export default function ExamResults({
                       {/* Subject Code */}
                       <td className="px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 text-left align-middle whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 text-white font-bold text-[12px] flex-shrink-0 shadow-md">
+                          <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br ${getSubjectColor(subject.name)} text-white font-bold text-[12px] flex-shrink-0 shadow-md`}>
                             {subject.code.substring(0, 2).toUpperCase()}
                           </div>
                           <span className="text-[12px] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 truncate">
@@ -1109,24 +1198,26 @@ export default function ExamResults({
                               <Settings className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                             </button>
                           )}
-                          {isExpanded ? (
-                            <ChevronUp className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                          )}
+                          <ChevronDown
+                            className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
+                            style={{
+                              transitionDuration: isCollapsing ? '250ms' : '350ms',
+                              transitionTimingFunction: isCollapsing ? 'cubic-bezier(0.4, 0, 0.6, 1)' : 'cubic-bezier(0.4, 0, 0.2, 1)'
+                            }}
+                          />
                         </div>
                       </td>
                     </tr>
 
                     {/* Expanded Grading Breakdown Row */}
-                    {isExpanded && (
-                      <tr className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-800/30 midnight:from-gray-800/50 midnight:to-gray-800/30 purple:from-gray-800/50 purple:to-gray-800/30">
-                        <td colSpan={isTertiary ? 9 : 7} className="px-3 sm:px-4 py-3 sm:py-4">
-                          <div className="space-y-3">
+                    {(isExpanded || isCollapsing) && (
+                      <tr className={`bg-gradient-to-r from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-800/30 midnight:from-gray-800/50 midnight:to-gray-800/30 purple:from-gray-800/50 purple:to-gray-800/30 ${isCollapsing ? 'animate-collapseRow' : 'animate-expandRow'}`}>
+                        <td colSpan={isTertiary ? 9 : 7} className="px-3 sm:px-4 py-0 overflow-hidden">
+                          <div className={`space-y-3 py-3 sm:py-4 ${isCollapsing ? 'animate-fadeSlideUp' : 'animate-fadeSlideDown'}`}>
                             <div className="flex items-center gap-2 mb-2">
                               <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                               <h4 className="text-[12px] font-bold text-gray-800 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200">
-                                Assessment Components (Weighted Grading System)
+                                Assessment
                               </h4>
                             </div>
 

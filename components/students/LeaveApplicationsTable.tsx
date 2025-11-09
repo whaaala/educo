@@ -147,7 +147,7 @@ export default function LeaveApplicationsTable({
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="overflow-x-auto smooth-scroll rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <tr>

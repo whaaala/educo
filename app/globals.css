@@ -296,6 +296,72 @@ tbody tr.sorting-animate-desc {
   }
 }
 
+/* Expandable row animations */
+@keyframes expandRow {
+  0% {
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+}
+
+@keyframes collapseRow {
+  0% {
+    opacity: 1;
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  100% {
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+}
+
+@keyframes fadeSlideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeSlideUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.animate-expandRow {
+  animation: expandRow 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-collapseRow {
+  animation: collapseRow 0.25s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+.animate-fadeSlideDown {
+  animation: fadeSlideDown 0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.05s forwards;
+  opacity: 0;
+}
+
+.animate-fadeSlideUp {
+  animation: fadeSlideUp 0.2s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
 /* Smooth scroll for table containers */
 .smooth-scroll {
   scroll-behavior: smooth;
