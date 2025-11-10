@@ -8,7 +8,7 @@ interface IncidentStatusBadgeProps {
 
 export default function IncidentStatusBadge({ status, size = "md" }: IncidentStatusBadgeProps) {
   const sizeClasses = {
-    sm: "px-2 py-0.5 text-xs",
+    sm: "px-2 py-0.5",
     md: "px-2.5 py-1 text-sm",
     lg: "px-3 py-1.5 text-base",
   };
@@ -53,6 +53,7 @@ export default function IncidentStatusBadge({ status, size = "md" }: IncidentSta
   return (
     <span
       className={`inline-flex items-center gap-1.5 font-semibold rounded-full border ${sizeClasses[size]} ${config.className}`}
+      style={size === "sm" ? { fontSize: '11.8px' } : {}}
     >
       <Icon className={iconSizes[size]} />
       {config.label}

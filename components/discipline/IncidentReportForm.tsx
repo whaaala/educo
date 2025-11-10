@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { X, AlertTriangle, Calendar, Clock, MapPin, User, FileText, Search } from "lucide-react";
+import { useState, useMemo } from "react";
+import { AlertTriangle, Calendar, Clock, MapPin, User, FileText, AlertCircle } from "lucide-react";
 import {
   DisciplineIncident,
   IncidentCategory,
@@ -10,6 +10,10 @@ import {
 } from "@/types/discipline";
 import SearchableDropdown from "@/components/shared/SearchableDropdown";
 import { getAllStudents } from "@/lib/mockStudents";
+import Modal from "@/components/shared/Modal";
+import FormInput from "@/components/shared/FormInput";
+import FormDropdown from "@/components/shared/FormDropdown";
+import FormTextarea from "@/components/shared/FormTextarea";
 
 interface IncidentReportFormProps {
   isOpen: boolean;
@@ -59,7 +63,6 @@ export default function IncidentReportForm({
   // Get unique class levels from students
   const classLevels = useMemo(() => {
     const levels = new Set(students.map(student => {
-      // Extract level from "JSS 1, A" -> "JSS 1"
       const [level] = student.class.split(", ");
       return level;
     }));
@@ -75,7 +78,7 @@ export default function IncidentReportForm({
     });
   }, [students, selectedLevel]);
 
-  // Memoize student options to prevent re-creating array on every render
+  // Memoize student options
   const studentOptions = useMemo(() => {
     return filteredStudents.map(student => ({
       value: student.id,
@@ -83,10 +86,51 @@ export default function IncidentReportForm({
     }));
   }, [filteredStudents]);
 
+  // Category options
+  const categoryOptions = [
+    { value: "disruptive-behavior", label: "Disruptive Behavior" },
+    { value: "attendance", label: "Attendance" },
+    { value: "academic-dishonesty", label: "Academic Dishonesty" },
+    { value: "bullying", label: "Bullying" },
+    { value: "violence", label: "Violence" },
+    { value: "property-damage", label: "Property Damage" },
+    { value: "substance-abuse", label: "Substance Abuse" },
+    { value: "dress-code", label: "Dress Code Violation" },
+    { value: "technology-misuse", label: "Technology Misuse" },
+    { value: "other", label: "Other" },
+  ];
+
+  // Severity options
+  const severityOptions = [
+    { value: "minor", label: "Minor" },
+    { value: "moderate", label: "Moderate" },
+    { value: "major", label: "Major" },
+    { value: "critical", label: "Critical" },
+  ];
+
+  // Action type options
+  const actionTypeOptions = [
+    { value: "", label: "None" },
+    { value: "verbal-warning", label: "Verbal Warning" },
+    { value: "written-warning", label: "Written Warning" },
+    { value: "detention", label: "Detention" },
+    { value: "suspension", label: "Suspension" },
+    { value: "expulsion", label: "Expulsion" },
+    { value: "community-service", label: "Community Service" },
+    { value: "counseling", label: "Counseling" },
+    { value: "parent-conference", label: "Parent Conference" },
+    { value: "behavior-contract", label: "Behavior Contract" },
+    { value: "other", label: "Other" },
+  ];
+
+  const classLevelOptions = classLevels.map(level => ({
+    value: level,
+    label: level,
+  }));
+
   const handleStudentSelect = (studentId: string) => {
     const student = students.find(s => s.id === studentId);
     if (student) {
-      // Extract class and section from student.class (e.g., "JSS 1, A")
       const [classNum, section] = student.class.split(", ");
       setFormData({
         ...formData,
@@ -138,83 +182,118 @@ export default function IncidentReportForm({
     onClose();
   };
 
-  if (!isOpen) return null;
+  const footer = (
+    <div className="flex items-center justify-end gap-3">
+      <button
+        type="button"
+        onClick={onClose}
+        className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 font-medium hover:scale-105 active:scale-95 cursor-pointer"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        form="incident-report-form"
+        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 dark:from-red-500 dark:to-orange-500 dark:hover:from-red-600 dark:hover:to-orange-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+      >
+        Submit Report
+      </button>
+    </div>
+  );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="relative bg-gradient-to-r from-red-600 via-orange-600 to-red-600 dark:from-red-500 dark:via-orange-500 dark:to-red-500 midnight:from-red-600 midnight:via-orange-600 midnight:to-red-600 purple:from-red-600 purple:via-orange-600 purple:to-red-600 px-6 py-5 overflow-hidden">
-          {/* Animated background patterns */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-40 h-40 bg-white rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-0 right-0 w-32 h-32 bg-white rounded-full blur-2xl animate-pulse delay-700"></div>
-          </div>
-
-          <div className="relative flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-white">Report Incident</h2>
-                <p className="text-sm text-white/80 mt-0.5">Document behavioral incident</p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/20 transition-colors"
-            >
-              <X className="w-5 h-5 text-white" />
-            </button>
-          </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="3xl"
+      footer={footer}
+      showCloseButton={false}
+    >
+      {/* Custom Header with subtle background */}
+      <div className="bg-gradient-to-br from-red-50/50 via-orange-50/30 to-red-50/50 dark:from-red-900/10 dark:via-orange-900/5 dark:to-red-900/10 midnight:from-red-900/10 midnight:via-orange-900/5 midnight:to-red-900/10 purple:from-red-900/10 purple:via-orange-900/5 purple:to-red-900/10 -m-4 sm:-m-6 mb-4 sm:mb-6 p-4 sm:p-6 rounded-t-2xl border-b border-red-100/50 dark:border-red-800/20 midnight:border-red-800/20 purple:border-red-800/20 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 opacity-[0.03]">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-red-500 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500 rounded-full blur-3xl"></div>
         </div>
 
-        {/* Form Content */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+        <div className="relative flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-600 dark:from-red-600 dark:to-orange-700 flex items-center justify-center shadow-lg">
+              <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-white" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                Report Incident
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mt-0.5">
+                Document behavioral incident details
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-shrink-0 p-2 hover:bg-red-100/50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer group"
+            aria-label="Close"
+          >
+            <svg className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <form id="incident-report-form" onSubmit={handleSubmit} className="space-y-6">
+        {/* Student Selection Section */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <User className="w-4 h-4" />
+            Student Information
+          </h3>
+
           {/* Class/Level Selector - Only show if not preselected */}
           {!isPreselected && (
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                <User className="w-4 h-4 inline mr-1" />
-                Select Class/Level *
-              </label>
-              <select
-                value={selectedLevel}
-                onChange={(e) => {
-                  setSelectedLevel(e.target.value);
-                  // Reset selected student when level changes
-                  setFormData({
-                    ...formData,
-                    selectedStudentId: "",
-                    selectedStudentName: "",
-                    selectedStudentAdmissionNumber: "",
-                    selectedStudentClass: "",
-                    selectedStudentSection: "",
-                  });
-                }}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                required
-              >
-                <option value="">-- Select Class Level --</option>
-                {classLevels.map(level => (
-                  <option key={level} value={level}>{level}</option>
-                ))}
-              </select>
-            </div>
+            <FormDropdown
+              label="Class/Level"
+              icon={<User className="w-2.5 h-2.5" />}
+              iconBgColor="bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30"
+              iconColor="text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
+              value={selectedLevel}
+              onChange={(value) => {
+                setSelectedLevel(value);
+                setFormData({
+                  ...formData,
+                  selectedStudentId: "",
+                  selectedStudentName: "",
+                  selectedStudentAdmissionNumber: "",
+                  selectedStudentClass: "",
+                  selectedStudentSection: "",
+                });
+              }}
+              options={classLevelOptions}
+              placeholder="Select class level"
+              required
+            />
           )}
 
           {/* Student Selector */}
           {(isPreselected || selectedLevel) && (
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                <User className="w-4 h-4 inline mr-1" />
-                Select Student *
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
+                <div className="w-4 h-4 rounded bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+                  <User className="w-2.5 h-2.5 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
+                </div>
+                <span>Student</span>
+                <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>
               </label>
               {isPreselected ? (
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-xl border border-blue-200 dark:border-blue-800 midnight:border-cyan-800 purple:border-pink-800">
+                <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 midnight:from-cyan-900/20 midnight:to-blue-900/20 purple:from-pink-900/20 purple:to-purple-900/20 rounded-xl border border-blue-200 dark:border-blue-800 midnight:border-cyan-800 purple:border-pink-800">
                   <div className="flex items-center gap-3">
-                    <User className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                      {formData.selectedStudentName.charAt(0)}
+                    </div>
                     <div>
                       <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                         {formData.selectedStudentName}
@@ -226,261 +305,193 @@ export default function IncidentReportForm({
                   </div>
                 </div>
               ) : (
-                <SearchableDropdown
-                  options={studentOptions}
-                  value={formData.selectedStudentId}
-                  onChange={handleStudentSelect}
-                  placeholder="Search by student name or admission number..."
-                  className="w-full"
-                />
-              )}
-              {formData.selectedStudentId && !isPreselected && (
-                <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 rounded-lg">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                    {formData.selectedStudentName}
-                  </p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
-                    {formData.selectedStudentAdmissionNumber} • {formData.selectedStudentClass} {formData.selectedStudentSection}
-                  </p>
-                </div>
+                <>
+                  <SearchableDropdown
+                    options={studentOptions}
+                    value={formData.selectedStudentId}
+                    onChange={handleStudentSelect}
+                    placeholder="Search by student name or admission number..."
+                    className="w-full"
+                  />
+                  {formData.selectedStudentId && (
+                    <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 animate-in slide-in-from-top-2 duration-300">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        {formData.selectedStudentName}
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+                        {formData.selectedStudentAdmissionNumber} • {formData.selectedStudentClass} {formData.selectedStudentSection}
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
+        </div>
 
-          {/* Incident Details */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Incident Details
-            </h3>
+        {/* Incident Details */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <FileText className="w-4 h-4" />
+            Incident Details
+          </h3>
 
-            {/* Date and Time */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                  <Calendar className="w-4 h-4 inline mr-1" />
-                  Date *
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={formData.incidentDate}
-                  onChange={(e) => setFormData({ ...formData, incidentDate: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                />
-              </div>
+          {/* Date and Time */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormInput
+              label="Date"
+              icon={<Calendar className="w-2.5 h-2.5" />}
+              iconBgColor="bg-orange-100 dark:bg-orange-900/30 midnight:bg-orange-900/30 purple:bg-orange-900/30"
+              iconColor="text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400"
+              type="date"
+              value={formData.incidentDate}
+              onChange={(value) => setFormData({ ...formData, incidentDate: value })}
+              required
+            />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                  <Clock className="w-4 h-4 inline mr-1" />
-                  Time *
-                </label>
-                <input
-                  type="time"
-                  required
-                  value={formData.incidentTime}
-                  onChange={(e) => setFormData({ ...formData, incidentTime: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            {/* Location */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                <MapPin className="w-4 h-4 inline mr-1" />
-                Location *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="e.g., Classroom 3B, Cafeteria, Playground"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              />
-            </div>
-
-            {/* Category and Severity */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                  Category *
-                </label>
-                <select
-                  required
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value as IncidentCategory })}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                >
-                  <option value="disruptive-behavior">Disruptive Behavior</option>
-                  <option value="attendance">Attendance</option>
-                  <option value="academic-dishonesty">Academic Dishonesty</option>
-                  <option value="bullying">Bullying</option>
-                  <option value="violence">Violence</option>
-                  <option value="property-damage">Property Damage</option>
-                  <option value="substance-abuse">Substance Abuse</option>
-                  <option value="dress-code">Dress Code Violation</option>
-                  <option value="technology-misuse">Technology Misuse</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                  Severity *
-                </label>
-                <select
-                  required
-                  value={formData.severity}
-                  onChange={(e) => setFormData({ ...formData, severity: e.target.value as IncidentSeverity })}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                >
-                  <option value="minor">Minor</option>
-                  <option value="moderate">Moderate</option>
-                  <option value="major">Major</option>
-                  <option value="critical">Critical</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Title */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Incident Title *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="Brief title of the incident"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              />
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Description *
-              </label>
-              <textarea
-                required
-                rows={4}
-                placeholder="Detailed description of what happened..."
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              />
-            </div>
-
-            {/* Witnesses */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Witnesses (Optional)
-              </label>
-              <input
-                type="text"
-                placeholder="Comma-separated names"
-                value={formData.witnesses}
-                onChange={(e) => setFormData({ ...formData, witnesses: e.target.value })}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              />
-            </div>
-
-            {/* Disciplinary Action */}
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
-                Disciplinary Action (Optional)
-              </h3>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                    Action Type
-                  </label>
-                  <select
-                    value={formData.actionType}
-                    onChange={(e) => setFormData({ ...formData, actionType: e.target.value as DisciplinaryActionType })}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  >
-                    <option value="">None</option>
-                    <option value="verbal-warning">Verbal Warning</option>
-                    <option value="written-warning">Written Warning</option>
-                    <option value="detention">Detention</option>
-                    <option value="suspension">Suspension</option>
-                    <option value="expulsion">Expulsion</option>
-                    <option value="community-service">Community Service</option>
-                    <option value="counseling">Counseling</option>
-                    <option value="parent-conference">Parent Conference</option>
-                    <option value="behavior-contract">Behavior Contract</option>
-                    <option value="other">Other</option>
-                  </select>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
+                <div className="w-4 h-4 rounded bg-orange-100 dark:bg-orange-900/30 midnight:bg-orange-900/30 purple:bg-orange-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+                  <Clock className="w-2.5 h-2.5 text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400" />
                 </div>
-
-                {formData.actionType && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                      Action Details
-                    </label>
-                    <textarea
-                      rows={3}
-                      placeholder="Details about the disciplinary action..."
-                      value={formData.actionDetails}
-                      onChange={(e) => setFormData({ ...formData, actionDetails: e.target.value })}
-                      className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Checkboxes */}
-            <div className="space-y-3">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.parentNotified}
-                  onChange={(e) => setFormData({ ...formData, parentNotified: e.target.checked })}
-                  className="w-5 h-5 rounded border-gray-300 text-red-600 focus:ring-red-500"
-                />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                  Parent/Guardian has been notified
-                </span>
+                <span>Time</span>
+                <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>
               </label>
-
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.followUpRequired}
-                  onChange={(e) => setFormData({ ...formData, followUpRequired: e.target.checked })}
-                  className="w-5 h-5 rounded border-gray-300 text-red-600 focus:ring-red-500"
-                />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                  Follow-up required
-                </span>
-              </label>
+              <input
+                type="time"
+                required
+                value={formData.incidentTime}
+                onChange={(e) => setFormData({ ...formData, incidentTime: e.target.value })}
+                className="w-full h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer"
+              />
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-2 rounded-lg bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white font-medium shadow-lg transition-colors"
-            >
-              Submit Report
-            </button>
+          {/* Location */}
+          <FormInput
+            label="Location"
+            icon={<MapPin className="w-2.5 h-2.5" />}
+            iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+            iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+            value={formData.location}
+            onChange={(value) => setFormData({ ...formData, location: value })}
+            placeholder="e.g., Classroom 3B, Cafeteria, Playground"
+            required
+          />
+
+          {/* Category and Severity */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormDropdown
+              label="Category"
+              icon={<AlertCircle className="w-2.5 h-2.5" />}
+              iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+              iconColor="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+              value={formData.category}
+              onChange={(value) => setFormData({ ...formData, category: value as IncidentCategory })}
+              options={categoryOptions}
+              required
+            />
+
+            <FormDropdown
+              label="Severity"
+              icon={<AlertTriangle className="w-2.5 h-2.5" />}
+              iconBgColor="bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30"
+              iconColor="text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
+              value={formData.severity}
+              onChange={(value) => setFormData({ ...formData, severity: value as IncidentSeverity })}
+              options={severityOptions}
+              required
+            />
           </div>
-        </form>
-      </div>
-    </div>
+
+          {/* Title */}
+          <FormInput
+            label="Incident Title"
+            icon={<FileText className="w-2.5 h-2.5" />}
+            value={formData.title}
+            onChange={(value) => setFormData({ ...formData, title: value })}
+            placeholder="Brief title of the incident"
+            required
+          />
+
+          {/* Description */}
+          <FormTextarea
+            label="Description"
+            icon={<FileText className="w-2.5 h-2.5" />}
+            value={formData.description}
+            onChange={(value) => setFormData({ ...formData, description: value })}
+            placeholder="Detailed description of what happened..."
+            rows={4}
+            required
+          />
+
+          {/* Witnesses */}
+          <FormInput
+            label="Witnesses"
+            icon={<User className="w-2.5 h-2.5" />}
+            value={formData.witnesses}
+            onChange={(value) => setFormData({ ...formData, witnesses: value })}
+            placeholder="Comma-separated names"
+          />
+        </div>
+
+        {/* Disciplinary Action */}
+        <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            Disciplinary Action <span className="text-gray-400 text-xs font-normal">(Optional)</span>
+          </h3>
+
+          <FormDropdown
+            label="Action Type"
+            icon={<AlertCircle className="w-2.5 h-2.5" />}
+            value={formData.actionType}
+            onChange={(value) => setFormData({ ...formData, actionType: value as DisciplinaryActionType })}
+            options={actionTypeOptions}
+            placeholder="Select action type"
+          />
+
+          {formData.actionType && (
+            <div className="animate-in slide-in-from-top-2 duration-300">
+              <FormTextarea
+                label="Action Details"
+                icon={<FileText className="w-2.5 h-2.5" />}
+                value={formData.actionDetails}
+                onChange={(value) => setFormData({ ...formData, actionDetails: value })}
+                placeholder="Details about the disciplinary action..."
+                rows={3}
+                optional
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Checkboxes */}
+        <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={formData.parentNotified}
+              onChange={(e) => setFormData({ ...formData, parentNotified: e.target.checked })}
+              className="w-5 h-5 rounded border-gray-300 text-red-600 focus:ring-red-500 focus:ring-offset-0 cursor-pointer transition-all duration-200"
+            />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+              Parent/Guardian has been notified
+            </span>
+          </label>
+
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={formData.followUpRequired}
+              onChange={(e) => setFormData({ ...formData, followUpRequired: e.target.checked })}
+              className="w-5 h-5 rounded border-gray-300 text-red-600 focus:ring-red-500 focus:ring-offset-0 cursor-pointer transition-all duration-200"
+            />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+              Follow-up required
+            </span>
+          </label>
+        </div>
+      </form>
+    </Modal>
   );
 }

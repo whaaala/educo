@@ -1,20 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  GraduationCap,
+  FileText,
+  BookOpen,
+  Trophy,
+  Bus,
+  Users,
+  Calendar,
+  DollarSign
+} from "lucide-react";
 
 interface FeeRecord {
   id: string;
-  feesGroup: string;
-  feesCode: string;
-  dueDate: string;
+  feeDetails: string;
+  feeCode: string;
+  category: string;
   amount: number;
+  dueDate: string;
   status: "Paid" | "Unpaid" | "Partial";
-  refId: string;
-  mode: string;
-  datePaid: string;
-  discount: string;
-  fine: number;
+  paymentDate: string;
+  methodOfPayment: string;
 }
 
 interface FeesTableProps {
@@ -24,327 +34,400 @@ interface FeesTableProps {
 const MOCK_RECORDS: FeeRecord[] = [
   {
     id: "1",
-    feesGroup: "Class 1 General\n(Dec month Fees)",
-    feesCode: "dec-month-fees",
-    dueDate: "10 Jan 2024",
+    feeDetails: "Monthly Tuition Fee",
+    feeCode: "TUI-DEC-2024",
+    category: "Tuition Fees",
     amount: 2500,
+    dueDate: "Dec 10, 2024",
     status: "Paid",
-    refId: "#435443",
-    mode: "Cash",
-    datePaid: "05 Jan 2024",
-    discount: "10%",
-    fine: 0,
+    paymentDate: "Dec 05, 2024",
+    methodOfPayment: "Cash",
   },
   {
     id: "2",
-    feesGroup: "Class 1 General\n(Jan month Fees)",
-    feesCode: "jan-month-fees",
-    dueDate: "10 Feb 2024",
-    amount: 2000,
-    status: "Paid",
-    refId: "#435443",
-    mode: "Cash",
-    datePaid: "01 Feb 2024",
-    discount: "10%",
-    fine: 200,
+    feeDetails: "Monthly Tuition Fee",
+    feeCode: "TUI-JAN-2025",
+    category: "Tuition Fees",
+    amount: 2500,
+    dueDate: "Jan 10, 2025",
+    status: "Partial",
+    paymentDate: "Jan 08, 2025",
+    methodOfPayment: "Online",
   },
   {
     id: "3",
-    feesGroup: "Class 1 General\n(Jul month Fees)",
-    feesCode: "jul-month-fees",
-    dueDate: "10 Aug 2024",
-    amount: 2500,
+    feeDetails: "Admission Fee",
+    feeCode: "ADM-2024",
+    category: "Admission & Registration",
+    amount: 5000,
+    dueDate: "Mar 25, 2024",
     status: "Paid",
-    refId: "#435449",
-    mode: "Cash",
-    datePaid: "01 Aug 2024",
-    discount: "10%",
-    fine: 200,
+    paymentDate: "Mar 20, 2024",
+    methodOfPayment: "Card",
   },
   {
     id: "4",
-    feesGroup: "Class 1 General\n(Mar month fees)",
-    feesCode: "mar-month-fees",
-    dueDate: "10 Apr 2024",
-    amount: 2500,
+    feeDetails: "Library Fee",
+    feeCode: "LIB-2024",
+    category: "Academic Services",
+    amount: 1000,
+    dueDate: "Apr 15, 2024",
     status: "Paid",
-    refId: "#435453",
-    mode: "Cash",
-    datePaid: "03 Apr 2024",
-    discount: "10%",
-    fine: 0,
+    paymentDate: "Apr 10, 2024",
+    methodOfPayment: "Cash",
   },
   {
     id: "5",
-    feesGroup: "Class 1 General\n(Apr month Fees)",
-    feesCode: "apr-month-fees",
-    dueDate: "10 May 2024",
-    amount: 2500,
-    status: "Paid",
-    refId: "#435453",
-    mode: "Cash",
-    datePaid: "03 Apr 2024",
-    discount: "10%",
-    fine: 0,
+    feeDetails: "Computer Lab Fee",
+    feeCode: "LAB-S1-2024",
+    category: "Academic Services",
+    amount: 1500,
+    dueDate: "Jul 01, 2024",
+    status: "Unpaid",
+    paymentDate: "-",
+    methodOfPayment: "-",
   },
   {
     id: "6",
-    feesGroup: "Class 1 General\n(Jun month Fees)",
-    feesCode: "jun-month-fees",
-    dueDate: "10 Jul 2024",
-    amount: 2500,
+    feeDetails: "Examination Fee",
+    feeCode: "EXM-S1-2024",
+    category: "Examination & Assessment",
+    amount: 1200,
+    dueDate: "Nov 30, 2024",
     status: "Paid",
-    refId: "#435450",
-    mode: "Cash",
-    datePaid: "05 Jul 2024",
-    discount: "10%",
-    fine: 200,
+    paymentDate: "Nov 25, 2024",
+    methodOfPayment: "Online",
   },
   {
     id: "7",
-    feesGroup: "Class 1 General\n(May month Fees)",
-    feesCode: "may-month-fees",
-    dueDate: "10 Jun 2024",
-    amount: 2500,
+    feeDetails: "Sports Fee",
+    feeCode: "SPT-2024",
+    category: "Sports & Activities",
+    amount: 600,
+    dueDate: "Aug 10, 2024",
     status: "Paid",
-    refId: "#435451",
-    mode: "Cash",
-    datePaid: "02 Jun 2024",
-    discount: "10%",
-    fine: 200,
+    paymentDate: "Aug 05, 2024",
+    methodOfPayment: "Cash",
   },
   {
     id: "8",
-    feesGroup: "Class 1 General\n(Admission Fees)",
-    feesCode: "admission-fees",
-    dueDate: "25 Mar 2024",
-    amount: 2000,
+    feeDetails: "Monthly Transport Fee",
+    feeCode: "TRP-FEB-2025",
+    category: "Transportation",
+    amount: 800,
+    dueDate: "Feb 05, 2025",
+    status: "Unpaid",
+    paymentDate: "-",
+    methodOfPayment: "-",
+  },
+  {
+    id: "9",
+    feeDetails: "PTA Levy",
+    feeCode: "PTA-2024",
+    category: "PTA Fees",
+    amount: 500,
+    dueDate: "Apr 20, 2024",
     status: "Paid",
-    refId: "#435454",
-    mode: "Cash",
-    datePaid: "25 Jan 2024",
-    discount: "10%",
-    fine: 200,
+    paymentDate: "Apr 15, 2024",
+    methodOfPayment: "Cash",
   },
 ];
 
 export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedYear, setSelectedYear] = useState("2024");
 
-  // Calculate totals
-  const totalAmount = records.reduce((sum, record) => sum + record.amount, 0);
-  const totalDiscount = 200; // Based on mock data
-  const totalFine = records.reduce((sum, record) => sum + record.fine, 0);
+  const getCategoryBadge = (category: string) => {
+    const categoryConfig: Record<
+      string,
+      { icon: React.ReactNode; bgColor: string; textColor: string; borderColor: string }
+    > = {
+      "Tuition Fees": {
+        icon: <GraduationCap className="w-3.5 h-3.5" />,
+        bgColor: "bg-blue-50 dark:bg-blue-900/20 midnight:bg-blue-900/20 purple:bg-blue-900/20",
+        textColor: "text-blue-700 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400",
+        borderColor: "border-blue-200 dark:border-blue-800/30 midnight:border-blue-800/30 purple:border-blue-800/30",
+      },
+      "Admission & Registration": {
+        icon: <FileText className="w-3.5 h-3.5" />,
+        bgColor: "bg-green-50 dark:bg-green-900/20 midnight:bg-green-900/20 purple:bg-green-900/20",
+        textColor: "text-green-700 dark:text-green-400 midnight:text-green-400 purple:text-green-400",
+        borderColor: "border-green-200 dark:border-green-800/30 midnight:border-green-800/30 purple:border-green-800/30",
+      },
+      "Academic Services": {
+        icon: <BookOpen className="w-3.5 h-3.5" />,
+        bgColor: "bg-purple-50 dark:bg-purple-900/20 midnight:bg-purple-900/20 purple:bg-purple-900/20",
+        textColor: "text-purple-700 dark:text-purple-400 midnight:text-purple-400 purple:text-purple-400",
+        borderColor: "border-purple-200 dark:border-purple-800/30 midnight:border-purple-800/30 purple:border-purple-800/30",
+      },
+      "Examination & Assessment": {
+        icon: <FileText className="w-3.5 h-3.5" />,
+        bgColor: "bg-cyan-50 dark:bg-cyan-900/20 midnight:bg-cyan-900/20 purple:bg-cyan-900/20",
+        textColor: "text-cyan-700 dark:text-cyan-400 midnight:text-cyan-400 purple:text-cyan-400",
+        borderColor: "border-cyan-200 dark:border-cyan-800/30 midnight:border-cyan-800/30 purple:border-cyan-800/30",
+      },
+      "Sports & Activities": {
+        icon: <Trophy className="w-3.5 h-3.5" />,
+        bgColor: "bg-orange-50 dark:bg-orange-900/20 midnight:bg-orange-900/20 purple:bg-orange-900/20",
+        textColor: "text-orange-700 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400",
+        borderColor: "border-orange-200 dark:border-orange-800/30 midnight:border-orange-800/30 purple:border-orange-800/30",
+      },
+      "Transportation": {
+        icon: <Bus className="w-3.5 h-3.5" />,
+        bgColor: "bg-amber-50 dark:bg-amber-900/20 midnight:bg-amber-900/20 purple:bg-amber-900/20",
+        textColor: "text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
+        borderColor: "border-amber-200 dark:border-amber-800/30 midnight:border-amber-800/30 purple:border-amber-800/30",
+      },
+      "PTA Fees": {
+        icon: <Users className="w-3.5 h-3.5" />,
+        bgColor: "bg-lime-50 dark:bg-lime-900/20 midnight:bg-lime-900/20 purple:bg-lime-900/20",
+        textColor: "text-lime-700 dark:text-lime-400 midnight:text-lime-400 purple:text-lime-400",
+        borderColor: "border-lime-200 dark:border-lime-800/30 midnight:border-lime-800/30 purple:border-lime-800/30",
+      },
+    };
+
+    const config = categoryConfig[category] || categoryConfig["Tuition Fees"];
+
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${config.bgColor} ${config.textColor} ${config.borderColor}`}
+      >
+        {config.icon}
+        {category}
+      </span>
+    );
+  };
 
   const getStatusBadge = (status: FeeRecord["status"]) => {
     const variants = {
-      Paid: "bg-green-100 dark:bg-green-950/30 midnight:bg-green-950/30 purple:bg-green-950/30 text-green-700 dark:text-green-300 midnight:text-green-300 purple:text-green-300",
-      Unpaid: "bg-red-100 dark:bg-red-950/30 midnight:bg-red-950/30 purple:bg-red-950/30 text-red-700 dark:text-red-300 midnight:text-red-300 purple:text-red-300",
-      Partial: "bg-amber-100 dark:bg-amber-950/30 midnight:bg-amber-950/30 purple:bg-amber-950/30 text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300",
+      Paid: {
+        bg: "bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30",
+        text: "text-green-700 dark:text-green-300 midnight:text-green-300 purple:text-green-300",
+        dot: "bg-green-500",
+      },
+      Unpaid: {
+        bg: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30",
+        text: "text-red-700 dark:text-red-300 midnight:text-red-300 purple:text-red-300",
+        dot: "bg-red-500",
+      },
+      Partial: {
+        bg: "bg-amber-100 dark:bg-amber-900/30 midnight:bg-amber-900/30 purple:bg-amber-900/30",
+        text: "text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300",
+        dot: "bg-amber-500",
+      },
     };
 
+    const variant = variants[status];
+
     return (
-      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${variants[status]}`}>
-        <span className={`w-1.5 h-1.5 rounded-full ${status === "Paid" ? "bg-green-500" : status === "Unpaid" ? "bg-red-500" : "bg-amber-500"}`}></span>
+      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${variant.bg} ${variant.text}`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${variant.dot}`}></span>
         {status}
       </span>
     );
   };
 
   const filteredRecords = records.filter((record) =>
-    record.feesGroup.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    record.feesCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    record.feeDetails.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    record.feeCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    record.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
     record.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredRecords.length / rowsPerPage);
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const paginatedRecords = filteredRecords.slice(startIndex, endIndex);
+  if (filteredRecords.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl p-8 sm:p-12 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm text-center animate-in fade-in duration-300">
+        <div className="text-gray-400 dark:text-gray-500 mb-4">
+          <DollarSign className="mx-auto h-12 w-12" />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+          No Fee Records
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+          There are no fee records matching your search.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-          Fees
-        </h3>
-
-        <div className="flex items-center gap-3">
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="2024">Year : 2024 / 2025</option>
-            <option value="2023">Year : 2023 / 2024</option>
-            <option value="2022">Year : 2022 / 2023</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Table Controls */}
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Header with Search */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
-            Row Per Page
-          </span>
-          <select
-            value={rowsPerPage}
-            onChange={(e) => {
-              setRowsPerPage(Number(e.target.value));
-              setCurrentPage(1);
-            }}
-            className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-          </select>
-          <span className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
-            Entries
-          </span>
-        </div>
-
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          Records
+        </h3>
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search"
+            placeholder="Search..."
             value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
           />
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-            <tr>
-              <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                Fees Group
-              </th>
-              <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                Fees Code
-              </th>
-              <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                Due Date
-              </th>
-              <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                Amount $
-              </th>
-              <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                Status
-              </th>
-              <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                Ref ID
-              </th>
-              <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                Mode
-              </th>
-              <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                Date Paid
-              </th>
-              <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                Discount ($)
-              </th>
-              <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                Fine ($)
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* Totals Row */}
-            <tr className="bg-blue-900 dark:bg-blue-950 midnight:bg-blue-950 purple:bg-purple-950 text-white">
-              <td colSpan={3} className="py-3 px-4"></td>
-              <td className="py-3 px-4 text-sm font-bold">{totalAmount}</td>
-              <td colSpan={4} className="py-3 px-4"></td>
-              <td className="py-3 px-4 text-sm font-bold">{totalDiscount}</td>
-              <td className="py-3 px-4 text-sm font-bold">{totalFine}</td>
-            </tr>
+      {/* Mobile Cards View */}
+      <div className="block lg:hidden">
+        <div className="space-y-3">
+          {filteredRecords.map((record, index) => (
+            <div
+              key={record.id}
+              className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-200 animate-in slide-in-from-right duration-300"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              {/* Fee Details */}
+              <div className="mb-3">
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+                  {record.feeDetails}
+                </h4>
+                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+                  {record.feeCode}
+                </p>
+              </div>
 
-            {/* Data Rows */}
-            {paginatedRecords.map((record) => (
-              <tr
-                key={record.id}
-                className="border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/10 purple:border-pink-500/10 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/30 purple:hover:bg-gray-800/30 transition-colors"
-              >
-                <td className="py-3 px-4">
-                  <div className="text-sm">
-                    <div className="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium">
-                      {record.feesGroup.split('\n')[0]}
-                    </div>
-                    <div className="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 text-xs">
-                      {record.feesGroup.split('\n')[1]}
-                    </div>
+              {/* Category */}
+              <div className="mb-3">{getCategoryBadge(record.category)}</div>
+
+              {/* Amount and Due Date */}
+              <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mb-1">
+                    Amount
+                  </p>
+                  <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    ₦{record.amount.toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mb-1">
+                    Due Date
+                  </p>
+                  <div className="flex items-center gap-1 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                    <span className="text-xs">{record.dueDate}</span>
                   </div>
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">
-                  {record.feesCode}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">
-                  {record.dueDate}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 font-medium">
-                  {record.amount}
-                </td>
-                <td className="py-3 px-4">
-                  {getStatusBadge(record.status)}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">
-                  {record.refId}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">
-                  {record.mode}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">
-                  {record.datePaid}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">
-                  {record.discount}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">
-                  {record.fine}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className="mb-3">{getStatusBadge(record.status)}</div>
+
+              {/* Payment Details */}
+              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/10 purple:border-pink-500/10 text-xs">
+                <div>
+                  <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mb-0.5">
+                    Payment Date
+                  </p>
+                  <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-medium">
+                    {record.paymentDate}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mb-0.5">
+                    Method
+                  </p>
+                  <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-medium">
+                    {record.methodOfPayment}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
-          Showing {startIndex + 1} to {Math.min(endIndex, filteredRecords.length)} of {filteredRecords.length} entries
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-            className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-gray-50 dark:hover:bg-gray-800 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Prev
-          </button>
-          <button
-            className="px-4 py-2 rounded-lg bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white text-sm font-semibold"
-          >
-            {currentPage}
-          </button>
-          <button
-            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-            className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-gray-50 dark:hover:bg-gray-800 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Next
-          </button>
+      {/* Desktop Table View */}
+      <div className="hidden lg:block">
+        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 transition-colors duration-200">
+          <div className="inline-block min-w-full align-middle">
+            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 midnight:divide-cyan-500/10 purple:divide-pink-500/10">
+                <thead className="bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-gray-800 midnight:to-gray-800/50 purple:from-gray-800 purple:to-gray-800/50">
+                  <tr>
+                    <th scope="col" className="px-4 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider whitespace-nowrap">
+                      Fee Details
+                    </th>
+                    <th scope="col" className="px-4 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider whitespace-nowrap">
+                      Category
+                    </th>
+                    <th scope="col" className="px-4 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider whitespace-nowrap">
+                      Amount
+                    </th>
+                    <th scope="col" className="px-4 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider whitespace-nowrap">
+                      Due Date
+                    </th>
+                    <th scope="col" className="px-4 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider whitespace-nowrap">
+                      Status
+                    </th>
+                    <th scope="col" className="px-4 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider whitespace-nowrap">
+                      Payment Date
+                    </th>
+                    <th scope="col" className="px-4 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider whitespace-nowrap">
+                      Method of Payment
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700 midnight:divide-cyan-500/10 purple:divide-pink-500/10">
+                  {filteredRecords.map((record, index) => (
+                    <tr
+                      key={record.id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all duration-200 animate-in slide-in-from-bottom duration-300"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      {/* Fee Details */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                            {record.feeDetails}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+                            {record.feeCode}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Category */}
+                      <td className="px-4 py-4">{getCategoryBadge(record.category)}</td>
+
+                      {/* Amount */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                          ₦{record.amount.toLocaleString()}
+                        </span>
+                      </td>
+
+                      {/* Due Date */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5 text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                          <Calendar className="w-4 h-4 text-gray-400" />
+                          {record.dueDate}
+                        </div>
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-4 py-4 whitespace-nowrap">{getStatusBadge(record.status)}</td>
+
+                      {/* Payment Date */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                          {record.paymentDate}
+                        </span>
+                      </td>
+
+                      {/* Method of Payment */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                          {record.methodOfPayment}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>

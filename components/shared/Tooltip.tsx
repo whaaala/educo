@@ -23,7 +23,7 @@ export default function Tooltip({ content, children, delay = 300 }: TooltipProps
   }, []);
 
   const updatePosition = () => {
-    if (triggerRef.current) {
+    if (triggerRef.current && tooltipRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       const spaceAbove = rect.top;
       const spaceBelow = window.innerHeight - rect.bottom;
@@ -32,8 +32,26 @@ export default function Tooltip({ content, children, delay = 300 }: TooltipProps
       const newPosition = spaceAbove < 80 && spaceBelow > 80 ? 'bottom' : 'top';
       setPosition(newPosition);
 
-      // Calculate tooltip position
-      const left = rect.left + rect.width / 2;
+      // Get tooltip width (estimate if not rendered yet)
+      const tooltipWidth = tooltipRef.current.offsetWidth || 200;
+
+      // Calculate initial centered position
+      let left = rect.left + rect.width / 2;
+
+      // Check if tooltip would overflow on the left
+      const tooltipLeft = left - tooltipWidth / 2;
+      if (tooltipLeft < 8) {
+        // Align to left edge with padding
+        left = tooltipWidth / 2 + 8;
+      }
+
+      // Check if tooltip would overflow on the right
+      const tooltipRight = left + tooltipWidth / 2;
+      if (tooltipRight > window.innerWidth - 8) {
+        // Align to right edge with padding
+        left = window.innerWidth - tooltipWidth / 2 - 8;
+      }
+
       const top = newPosition === 'top'
         ? rect.top - 8  // 8px offset from top
         : rect.bottom + 8; // 8px offset from bottom
@@ -97,11 +115,7 @@ export default function Tooltip({ content, children, delay = 300 }: TooltipProps
             whitespace-nowrap pointer-events-none
             border border-gray-700 dark:border-gray-800 midnight:border-cyan-500/30 purple:border-pink-500/30
             backdrop-blur-sm
-            animate-in fade-in zoom-in-95 duration-200
-            ${position === 'top'
-              ? 'slide-in-from-bottom-2'
-              : 'slide-in-from-top-2'
-            }
+            transition-opacity duration-200
           `}
           style={{
             top: `${coords.top}px`,

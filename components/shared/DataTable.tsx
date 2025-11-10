@@ -235,43 +235,52 @@ export default function DataTable<T>({
   return (
     <div className="w-full bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 shadow-lg rounded-xl md:rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 transition-all duration-300 overflow-visible">
       {/* Table Header */}
-      <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-2 sm:gap-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-t-xl md:rounded-t-2xl">
-        <h2 className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-300 purple:text-pink-300 tracking-tight whitespace-nowrap">
-          {title} {searchQuery && `(${sortedData.length})`}
-        </h2>
+      {(title || showSearch) && (
+        <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-2 sm:gap-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-t-xl md:rounded-t-2xl">
+          <h2 className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-300 purple:text-pink-300 tracking-tight whitespace-nowrap">
+            {title} {searchQuery && `(${sortedData.length})`}
+          </h2>
 
-        {/* Right side actions */}
-        <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
-          {/* Search Bar */}
-          {showSearch && (
-            <SearchBar
-              value={searchQuery}
-              onChange={handleSearchChange}
-              placeholder={searchPlaceholder}
-              size="sm"
-              className="w-full sm:w-[45%] md:w-[35%]"
-            />
-          )}
+          {/* Right side actions */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
+            {/* Search Bar */}
+            {showSearch && (
+              <SearchBar
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder={searchPlaceholder}
+                size="sm"
+                className="w-full sm:w-[45%] md:w-[35%]"
+              />
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Table Body Container */}
-      <div className="overflow-x-auto overflow-y-visible -mx-px smooth-scroll">
+      <div className="overflow-x-auto overflow-y-visible -mx-px scroll-smooth snap-x snap-mandatory">
         <table className="w-full border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
           {/* Table Header */}
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border-b border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
-              {columns.map((column) => {
+              {columns.map((column, index) => {
                 // Determine alignment from className
                 const isLeftAligned = column.className?.includes('text-left');
                 const isCenterAligned = column.className?.includes('text-center') || !isLeftAligned;
                 const justifyClass = isLeftAligned ? 'justify-start' : 'justify-center';
 
+                // Make first two columns sticky on mobile
+                const stickyClass = index === 0
+                  ? 'md:relative md:left-auto sticky left-0 z-30 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800'
+                  : index === 1
+                  ? 'md:relative md:left-auto sticky left-[80px] z-30 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800'
+                  : '';
+
                 return (
                 <th
                   key={column.key}
                   onClick={() => column.renderHeader ? undefined : handleSort(column.key)}
-                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-[10px] md:text-[9px] lg:text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap align-middle transition-all duration-300 ease-in-out ${
+                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-[10px] md:text-[9px] lg:text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap align-middle transition-all duration-300 ease-in-out ${stickyClass} ${
                     sortedData.length === 0
                       ? 'cursor-not-allowed opacity-50'
                       : column.sortable !== false && !column.renderHeader ? 'cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-gray-600/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10' : ''
@@ -359,10 +368,18 @@ export default function DataTable<T>({
                   className={`border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 ${!isSorting ? 'transition-all duration-200' : ''} ${animationClass} ${onRowClick ? 'cursor-pointer' : ''}`}
                   onClick={() => onRowClick?.(item)}
                 >
-                  {columns.map((column) => (
+                  {columns.map((column, colIndex) => {
+                    // Make first two columns sticky on mobile with shadow to indicate more content
+                    const stickyClass = colIndex === 0
+                      ? 'md:relative md:left-auto sticky left-0 z-20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none'
+                      : colIndex === 1
+                      ? 'md:relative md:left-auto sticky left-[80px] z-20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none'
+                      : '';
+
+                    return (
                     <td
                       key={column.key}
-                      className={`px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 text-center align-middle ${getHiddenClasses(column.hidden)} ${column.className || ''}`}
+                      className={`px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 text-center align-middle transition-colors duration-200 ${stickyClass} ${getHiddenClasses(column.hidden)} ${column.className || ''}`}
                     >
                       {column.render ? column.render(item, index) : (
                         <span className="text-[12px] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 block truncate">
@@ -370,7 +387,8 @@ export default function DataTable<T>({
                         </span>
                       )}
                     </td>
-                  ))}
+                    );
+                  })}
                 </tr>
                 );
               })

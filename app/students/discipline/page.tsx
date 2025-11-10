@@ -10,6 +10,10 @@ import SearchFilterBar from "@/components/shared/SearchFilterBar";
 import DisciplineStatisticsCards from "@/components/discipline/DisciplineStatisticsCards";
 import DisciplineRecordsTable from "@/components/discipline/DisciplineRecordsTable";
 import IncidentReportForm from "@/components/discipline/IncidentReportForm";
+import IncidentDetailModal from "@/components/discipline/IncidentDetailModal";
+import DeleteIncidentModal from "@/components/discipline/DeleteIncidentModal";
+import { exportDisciplineToPDF } from "@/utils/disciplinePdfExport";
+import { exportDisciplineToExcel } from "@/utils/disciplineExcelExport";
 
 // Mock data - replace with actual API call
 const mockDisciplineIncidents: DisciplineIncident[] = [
@@ -20,6 +24,7 @@ const mockDisciplineIncidents: DisciplineIncident[] = [
     studentAdmissionNumber: "AD9892302",
     studentClass: "JSS 1",
     studentSection: "A",
+    profilePhoto: "https://i.pravatar.cc/150?img=1",
     incidentDate: "2025-01-08",
     incidentTime: "10:30",
     location: "Classroom 1A",
@@ -49,6 +54,7 @@ const mockDisciplineIncidents: DisciplineIncident[] = [
     studentAdmissionNumber: "AD9892303",
     studentClass: "JSS 2",
     studentSection: "B",
+    profilePhoto: "https://i.pravatar.cc/150?img=12",
     incidentDate: "2025-01-09",
     incidentTime: "14:15",
     location: "Playground",
@@ -80,6 +86,7 @@ const mockDisciplineIncidents: DisciplineIncident[] = [
     studentAdmissionNumber: "AD9892304",
     studentClass: "JSS 3",
     studentSection: "A",
+    profilePhoto: "https://i.pravatar.cc/150?img=5",
     incidentDate: "2025-01-07",
     incidentTime: "09:00",
     location: "Examination Hall",
@@ -111,6 +118,7 @@ const mockDisciplineIncidents: DisciplineIncident[] = [
     studentAdmissionNumber: "AD9892305",
     studentClass: "JSS 1",
     studentSection: "C",
+    profilePhoto: "https://i.pravatar.cc/150?img=13",
     incidentDate: "2025-01-10",
     incidentTime: "11:45",
     location: "Cafeteria",
@@ -140,6 +148,7 @@ const mockDisciplineIncidents: DisciplineIncident[] = [
     studentAdmissionNumber: "AD9892306",
     studentClass: "JSS 2",
     studentSection: "A",
+    profilePhoto: "https://i.pravatar.cc/150?img=9",
     incidentDate: "2025-01-06",
     incidentTime: "13:30",
     location: "Computer Lab",
@@ -167,10 +176,13 @@ export default function DisciplinePage() {
   const [incidents, setIncidents] = useState<DisciplineIncident[]>(mockDisciplineIncidents);
   const [showReportForm, setShowReportForm] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<DisciplineIncident | null>(null);
+  const [incidentToDelete, setIncidentToDelete] = useState<DisciplineIncident | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState<IncidentCategory | "all">("all");
   const [filterSeverity, setFilterSeverity] = useState<IncidentSeverity | "all">("all");
   const [filterStatus, setFilterStatus] = useState<IncidentStatus | "all">("all");
+  const [filterClass, setFilterClass] = useState<string>("all");
+  const [filterYear, setFilterYear] = useState<string>("all");
 
   // Filter incidents
   const filteredIncidents = incidents.filter(incident => {
@@ -183,8 +195,13 @@ export default function DisciplinePage() {
     const matchesCategory = filterCategory === "all" || incident.category === filterCategory;
     const matchesSeverity = filterSeverity === "all" || incident.severity === filterSeverity;
     const matchesStatus = filterStatus === "all" || incident.status === filterStatus;
+    const matchesClass = filterClass === "all" || incident.studentClass === filterClass;
 
-    return matchesSearch && matchesCategory && matchesSeverity && matchesStatus;
+    // Extract year from incident date
+    const incidentYear = new Date(incident.incidentDate).getFullYear().toString();
+    const matchesYear = filterYear === "all" || incidentYear === filterYear;
+
+    return matchesSearch && matchesCategory && matchesSeverity && matchesStatus && matchesClass && matchesYear;
   });
 
   const handleSubmitReport = (incident: Partial<DisciplineIncident>) => {
@@ -197,9 +214,24 @@ export default function DisciplinePage() {
   };
 
   const handleDeleteIncident = (incidentId: string) => {
-    if (confirm("Are you sure you want to delete this incident record?")) {
-      setIncidents(incidents.filter(i => i.id !== incidentId));
+    const incident = incidents.find(i => i.id === incidentId);
+    if (incident) {
+      setIncidentToDelete(incident);
     }
+  };
+
+  const confirmDeleteIncident = (incidentId: string) => {
+    setIncidents(incidents.filter(i => i.id !== incidentId));
+  };
+
+  const handleExportPDF = () => {
+    const timestamp = new Date().toISOString().split('T')[0];
+    exportDisciplineToPDF(filteredIncidents, `discipline-records-${timestamp}.pdf`);
+  };
+
+  const handleExportExcel = () => {
+    const timestamp = new Date().toISOString().split('T')[0];
+    exportDisciplineToExcel(filteredIncidents, `discipline-records-${timestamp}.xlsx`);
   };
 
   return (
@@ -218,8 +250,8 @@ export default function DisciplinePage() {
           <PageActions
             onRefresh={() => window.location.reload()}
             onAdd={() => setShowReportForm(true)}
-            onExportPDF={() => console.log("Export PDF clicked")}
-            onExportExcel={() => console.log("Export Excel clicked")}
+            onExportPDF={handleExportPDF}
+            onExportExcel={handleExportExcel}
             addButtonLabel="Report Incident"
             exportDescription="Export discipline records"
             showPrint={false}
@@ -235,6 +267,32 @@ export default function DisciplinePage() {
           onSearchChange={setSearchQuery}
           searchPlaceholder="Search by student name, admission number, or incident title..."
           filters={[
+            {
+              label: "Class Filter",
+              value: filterClass,
+              onChange: (value) => setFilterClass(value as string),
+              options: [
+                { label: "All Classes", value: "all" },
+                { label: "JSS 1", value: "JSS 1" },
+                { label: "JSS 2", value: "JSS 2" },
+                { label: "JSS 3", value: "JSS 3" },
+                { label: "SS 1", value: "SS 1" },
+                { label: "SS 2", value: "SS 2" },
+                { label: "SS 3", value: "SS 3" },
+              ],
+            },
+            {
+              label: "Year Filter",
+              value: filterYear,
+              onChange: (value) => setFilterYear(value as string),
+              options: [
+                { label: "All Years", value: "all" },
+                { label: "2025", value: "2025" },
+                { label: "2024", value: "2024" },
+                { label: "2023", value: "2023" },
+                { label: "2022", value: "2022" },
+              ],
+            },
             {
               label: "Category Filter",
               value: filterCategory,
@@ -286,6 +344,7 @@ export default function DisciplinePage() {
           incidents={filteredIncidents}
           onViewDetails={(incident) => setSelectedIncident(incident)}
           onDelete={handleDeleteIncident}
+          filterKey={`${searchQuery}-${filterClass}-${filterYear}-${filterCategory}-${filterSeverity}-${filterStatus}`}
         />
 
         {/* Incident Report Form Modal */}
@@ -295,7 +354,20 @@ export default function DisciplinePage() {
           onSubmit={handleSubmitReport}
         />
 
-        {/* TODO: Add Incident Detail Modal for viewing full incident details */}
+        {/* Incident Detail Modal */}
+        <IncidentDetailModal
+          incident={selectedIncident}
+          isOpen={selectedIncident !== null}
+          onClose={() => setSelectedIncident(null)}
+        />
+
+        {/* Delete Incident Modal */}
+        <DeleteIncidentModal
+          incident={incidentToDelete}
+          isOpen={incidentToDelete !== null}
+          onClose={() => setIncidentToDelete(null)}
+          onConfirmDelete={confirmDeleteIncident}
+        />
       </div>
     </MainLayout>
   );

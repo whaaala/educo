@@ -130,47 +130,59 @@ export default function StatCard({
   return (
     <div
       className={`
+        relative
         ${style.bg}
-        rounded-xl
-        p-3 sm:p-3.5
-        transition-all duration-200
-        hover:shadow-md
-        h-[88px] sm:h-[92px]
+        rounded-2xl
+        p-3 sm:p-4
+        transition-all duration-300
+        hover:shadow-xl hover:-translate-y-0.5
+        border border-white/20 dark:border-gray-700/30
+        backdrop-blur-sm
+        overflow-hidden
+        group
+        h-[100px] sm:h-[110px]
         flex flex-col
+        justify-between
         min-w-0
       `}
     >
-      <div className="flex items-center justify-between mb-1.5">
+      {/* Decorative gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+      <div className="relative z-10 flex items-center justify-between">
         <div className={`
           ${style.badgeBg}
-          w-7 h-7 rounded-lg
+          w-8 h-8 sm:w-9 sm:h-9 rounded-lg
           flex items-center justify-center flex-shrink-0
+          shadow-md shadow-black/5
+          ring-1 ring-white/10
+          transition-transform duration-300 group-hover:scale-110
         `}>
-          <Icon className={`w-3.5 h-3.5 ${style.badgeColor}`} />
+          <Icon className={`w-4 h-4 sm:w-4.5 sm:h-4.5 ${style.badgeColor}`} />
         </div>
         {badge && (
-          <div className={`flex-shrink-0 text-[10px] font-semibold ${style.badgeColor} ${style.badgeBg} px-1.5 py-0.5 rounded-full`}>
+          <div className={`flex-shrink-0 text-[9px] font-bold ${style.badgeColor} ${style.badgeBg} px-1.5 py-0.5 rounded-md ring-1 ring-white/10`}>
             {badge}
           </div>
         )}
       </div>
 
-      <div className="flex-1 flex flex-col justify-end">
-        <p className={`text-[9px] sm:text-[10px] font-semibold ${style.labelColor} uppercase tracking-wide mb-0.5`}>
+      <div className="relative z-10 flex flex-col gap-0.5 min-w-0">
+        <p className={`text-[9px] sm:text-[10px] font-semibold ${style.labelColor} uppercase tracking-wide opacity-80 whitespace-nowrap truncate`}>
           {label}
         </p>
-        <div className="flex items-baseline gap-0.5">
+        <div className="flex items-baseline gap-1">
           {currencySymbol && (
-            <span className={`text-sm sm:text-base font-bold ${style.valueColor}`}>
+            <span className={`text-base sm:text-lg font-bold ${style.valueColor}`}>
               {currencySymbol}
             </span>
           )}
-          <p className={`text-base sm:text-lg font-bold ${style.valueColor} truncate leading-none`}>
+          <p className={`text-xl sm:text-2xl font-bold ${style.valueColor} leading-none tracking-tight`}>
             {value}
           </p>
         </div>
         {subtitle && (
-          <p className="text-[9px] text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="text-[9px] text-gray-600 dark:text-gray-400 font-medium">
             {subtitle}
           </p>
         )}

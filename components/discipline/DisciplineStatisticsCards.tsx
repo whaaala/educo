@@ -72,7 +72,7 @@ export default function DisciplineStatisticsCards({ incidents }: DisciplineStati
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-3 sm:gap-4">
       {cards.map((card) => (
         <StatCard
           key={card.label}
