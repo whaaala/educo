@@ -12,15 +12,18 @@ import {
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
 import { getAvailableCountries } from "@/config/countries";
+import { ValidationErrors } from "@/lib/validation";
 
 interface AddressSectionProps {
   formData: any;
   onChange: (field: string, value: any) => void;
+  errors?: ValidationErrors;
 }
 
 export default function AddressSection({
   formData,
   onChange,
+  errors = {},
 }: AddressSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const countries = getAvailableCountries();

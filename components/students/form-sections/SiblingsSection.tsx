@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { Trash2, Users2, User, School, ChevronDown, ChevronUp, GraduationCap, MapPin, Plus } from "lucide-react";
 import FormInput from "@/components/shared/FormInput";
 import SearchableDropdown from "@/components/shared/SearchableDropdown";
+import { ValidationErrors } from "@/lib/validation";
 
 interface SiblingAtSchool {
   id: string;
@@ -31,12 +32,14 @@ interface SiblingsSectionProps {
   formData: any;
   onChange: (field: string, value: any) => void;
   currentStudentId?: string; // ID of the current student being edited (to exclude from sibling list)
+  errors?: ValidationErrors;
 }
 
 export default function SiblingsSection({
   formData,
   onChange,
   currentStudentId,
+  errors = {},
 }: SiblingsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [selectedStudentId, setSelectedStudentId] = useState("");

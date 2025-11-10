@@ -29,11 +29,12 @@ import { useCountry } from "@/contexts/CountryContext";
 import { useAcademicYear } from "@/contexts/AcademicYearContext";
 import { detectEducationLevelFromClass, getEducationLevelColor, getInstitutionTypeColor } from "@/utils/educationLevel";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { ValidationErrors } from "@/lib/validation";
 
 interface PersonalInformationSectionProps {
   formData: any;
   onChange: (field: string, value: any) => void;
-  errors?: Record<string, string>;
+  errors?: ValidationErrors;
 }
 
 export default function PersonalInformationSection({

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import FileUpload from "@/components/shared/FileUpload";
 import FormInput from "@/components/shared/FormInput";
+import { ValidationErrors } from "@/lib/validation";
 
 interface AdditionalDocument {
   id: string;
@@ -28,11 +29,13 @@ interface AdditionalDocument {
 interface DocumentsSectionProps {
   formData: any;
   onChange: (field: string, value: any) => void;
+  errors?: ValidationErrors;
 }
 
 export default function DocumentsSection({
   formData,
   onChange,
+  errors = {},
 }: DocumentsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [additionalDocuments, setAdditionalDocuments] = useState<

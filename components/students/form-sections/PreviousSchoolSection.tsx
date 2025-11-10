@@ -17,15 +17,18 @@ import {
 } from "lucide-react";
 import FormInput from "@/components/shared/FormInput";
 import FormTextarea from "@/components/shared/FormTextarea";
+import { ValidationErrors } from "@/lib/validation";
 
 interface PreviousSchoolSectionProps {
   formData: any;
   onChange: (field: string, value: any) => void;
+  errors?: ValidationErrors;
 }
 
 export default function PreviousSchoolSection({
   formData,
   onChange,
+  errors = {},
 }: PreviousSchoolSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 

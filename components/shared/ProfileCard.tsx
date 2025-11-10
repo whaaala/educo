@@ -16,7 +16,7 @@ import CollectFeesModal from "./CollectFeesModal";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import AddFeesButton from "./AddFeesButton";
 import NameLabel from "./NameLabel";
-import { getEducationLevelColor } from "@/utils/educationLevel";
+import { getEducationLevelColor, getInstitutionTypeColor } from "@/utils/educationLevel";
 
 export interface ProfileDetail {
   label: string;
@@ -46,6 +46,7 @@ export interface ProfileCardProps {
   onMenuClick?: () => void;
   onEdit?: (id: string) => void;
   onView?: (id: string) => void;
+  onDelete?: (id: string) => void;
   isSelected?: boolean;
   onSelectionChange?: (id: string, selected: boolean) => void;
 }
@@ -63,6 +64,7 @@ export default function ProfileCard({
   onMenuClick,
   onEdit,
   onView,
+  onDelete,
   isSelected = false,
   onSelectionChange,
 }: ProfileCardProps) {
@@ -73,8 +75,9 @@ export default function ProfileCard({
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleConfirmDelete = () => {
-    console.log('Deleting student:', id);
-    // Add your delete logic here
+    if (onDelete) {
+      onDelete(id);
+    }
     setIsDeleteModalOpen(false);
   };
 
@@ -271,10 +274,19 @@ export default function ProfileCard({
         {/* Profile Details */}
         <div className="px-4 pb-1.5 space-y-1 relative z-0">
           {details.map((detail, index) => {
-            // Get badge colors for education level if badge is true
-            const badgeColors = detail.badge && (detail.value === "Primary" || detail.value === "Secondary" || detail.value === "Tertiary")
-              ? getEducationLevelColor(detail.value as "Primary" | "Secondary" | "Tertiary")
-              : null;
+            // Get badge colors based on the value type
+            let badgeColors = null;
+
+            if (detail.badge) {
+              // Check for education level
+              if (detail.value === "Primary" || detail.value === "Secondary" || detail.value === "Tertiary") {
+                badgeColors = getEducationLevelColor(detail.value as "Primary" | "Secondary" | "Tertiary");
+              }
+              // Check for institution type
+              else if (detail.value === "Public" || detail.value === "Private" || detail.value === "International") {
+                badgeColors = getInstitutionTypeColor(detail.value as "Public" | "Private" | "International");
+              }
+            }
 
             return (
               <div

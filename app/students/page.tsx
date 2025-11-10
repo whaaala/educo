@@ -22,6 +22,9 @@ import { exportStudentsToPDF } from "@/utils/pdfExport";
 import { exportStudentsToExcel } from "@/utils/excelExport";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { getAllStudents } from "@/lib/mockStudents";
+import { detectEducationLevelFromClass } from "@/utils/educationLevel";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 
 // Use shared student data from mockStudents.ts
 // This ensures the students displayed match the data available in the edit page
@@ -29,6 +32,8 @@ import { getAllStudents } from "@/lib/mockStudents";
 export default function AllStudentsPage() {
   const academicYearContext = useAcademicYear();
   const { selectedYear } = academicYearContext;
+  const featureFlags = useFeatureFlags();
+  const { settings } = useSchoolSettings();
   const searchParams = useSearchParams();
   const router = useRouter();
   const isPageLoading = usePageLoad(600);
@@ -72,6 +77,12 @@ export default function AllStudentsPage() {
       label: "Section",
       options: ["A", "B"],
       width: "half",
+    },
+    {
+      id: "educationLevel",
+      label: "Education Level",
+      options: ["Primary", "Secondary", "Tertiary"],
+      width: "full",
     },
     {
       id: "name",
@@ -743,6 +754,11 @@ export default function AllStudentsPage() {
   };
 
   const handleExportPDF = () => {
+    // Feature flag check: Only allow exports if FF_Reports_Export is enabled
+    if (!featureFlags.canExportReports) {
+      alert(`Report export is not enabled for ${settings.institutionType} institutions`);
+      return;
+    }
     // Export all filtered students to PDF
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
@@ -752,6 +768,11 @@ export default function AllStudentsPage() {
   };
 
   const handleExportExcel = () => {
+    // Feature flag check: Only allow exports if FF_Reports_Export is enabled
+    if (!featureFlags.canExportReports) {
+      alert(`Report export is not enabled for ${settings.institutionType} institutions`);
+      return;
+    }
     // Export all filtered students to Excel
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
@@ -761,6 +782,11 @@ export default function AllStudentsPage() {
   };
 
   const handleAddStudent = () => {
+    // Feature flag check: Only allow adding students if FF_Student_Profile is enabled
+    if (!featureFlags.canManageProfile) {
+      alert(`Student profile management is not enabled for ${settings.institutionType} institutions in ${settings.region}`);
+      return;
+    }
     // Navigate to Add Student page
     router.push('/students/add');
   };
@@ -903,7 +929,12 @@ export default function AllStudentsPage() {
 
     const matchesStatus = !filters.status || filters.status.length === 0 || filters.status.includes(student.status);
 
-    return matchesClass && matchesSection && matchesName && matchesGender && matchesStatus;
+    const matchesEducationLevel = !filters.educationLevel || filters.educationLevel.length === 0 || filters.educationLevel.some((level) => {
+      const studentLevel = student.educationLevel || detectEducationLevelFromClass(student.class);
+      return studentLevel === level;
+    });
+
+    return matchesClass && matchesSection && matchesName && matchesGender && matchesStatus && matchesEducationLevel;
   });
 
   const displayedStudents = filteredStudents.slice(0, displayedCount);

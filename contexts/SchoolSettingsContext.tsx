@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { isFeatureEnabled, getEnabledFeatures, type FeatureFlagKey } from "@/lib/featureFlags";
 
 export type EducationLevel = "Primary" | "Secondary" | "Tertiary";
 export type InstitutionType = "Public" | "Private" | "International";
@@ -19,11 +20,19 @@ interface SchoolSettings {
 
   // Multi-level support
   supportsMultipleLevels: boolean; // If true, education level can be detected from class
+
+  // Multi-tenant & feature flags (Educo v4.0)
+  tenantId?: string; // Schema-per-tenant identifier
+  region?: string; // For regional feature rollout (Nigeria, Ghana, Kenya, etc.)
+  subdomain?: string; // Tenant subdomain (e.g., sunrise.educo.africa)
 }
 
 interface SchoolSettingsContextType {
   settings: SchoolSettings;
   updateSettings: (newSettings: Partial<SchoolSettings>) => void;
+  // Feature flag helpers
+  isFeatureEnabled: (flag: FeatureFlagKey) => boolean;
+  getEnabledFeatures: () => FeatureFlagKey[];
 }
 
 const defaultSettings: SchoolSettings = {
@@ -35,6 +44,10 @@ const defaultSettings: SchoolSettings = {
   tertiaryType: undefined,
   scheduleType: "full-time", // Default to full-time day school
   supportsMultipleLevels: true, // Allow class-based detection
+  // Multi-tenant fields
+  tenantId: "default",
+  region: "Nigeria", // Default region
+  subdomain: "demo.educo.africa",
 };
 
 const SchoolSettingsContext = createContext<SchoolSettingsContextType | undefined>(
@@ -149,8 +162,32 @@ export function SchoolSettingsProvider({ children }: { children: ReactNode }) {
     setSettings((prev) => ({ ...prev, ...newSettings }));
   };
 
+  // Feature flag helpers that use current school context
+  const checkFeatureEnabled = (flag: FeatureFlagKey): boolean => {
+    return isFeatureEnabled(flag, {
+      educationLevel: settings.defaultEducationLevel,
+      institutionType: settings.institutionType,
+      region: settings.region,
+    });
+  };
+
+  const getContextEnabledFeatures = (): FeatureFlagKey[] => {
+    return getEnabledFeatures({
+      educationLevel: settings.defaultEducationLevel,
+      institutionType: settings.institutionType,
+      region: settings.region,
+    });
+  };
+
   return (
-    <SchoolSettingsContext.Provider value={{ settings, updateSettings }}>
+    <SchoolSettingsContext.Provider
+      value={{
+        settings,
+        updateSettings,
+        isFeatureEnabled: checkFeatureEnabled,
+        getEnabledFeatures: getContextEnabledFeatures,
+      }}
+    >
       {children}
     </SchoolSettingsContext.Provider>
   );

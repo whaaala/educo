@@ -118,13 +118,13 @@ export default function DeleteConfirmationModal({
           <div className="flex items-center justify-end gap-3">
             <button
               onClick={onClose}
-              className="px-5 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-all duration-200 active:scale-95"
+              className="px-5 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-all duration-200 active:scale-95 cursor-pointer"
             >
               {cancelButtonText}
             </button>
             <button
               onClick={onConfirm}
-              className="px-5 py-2.5 rounded-lg font-semibold text-sm text-white bg-red-600 dark:bg-red-600 midnight:bg-red-600 purple:bg-red-600 hover:bg-red-700 dark:hover:bg-red-700 midnight:hover:bg-red-700 purple:hover:bg-red-700 transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl"
+              className="px-5 py-2.5 rounded-lg font-semibold text-sm text-white bg-red-600 dark:bg-red-600 midnight:bg-red-600 purple:bg-red-600 hover:bg-red-700 dark:hover:bg-red-700 midnight:hover:bg-red-700 purple:hover:bg-red-700 transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl cursor-pointer"
             >
               {confirmButtonText}
             </button>

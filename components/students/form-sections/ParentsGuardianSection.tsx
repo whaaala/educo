@@ -5,11 +5,12 @@ import { Users, ChevronDown, ChevronUp, User, Mail, Phone, Briefcase, MapPin, He
 import FileUpload from "@/components/shared/FileUpload";
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
+import { ValidationErrors } from "@/lib/validation";
 
 interface ParentsGuardianSectionProps {
   formData: any;
   onChange: (field: string, value: any) => void;
-  errors?: Record<string, string>;
+  errors?: ValidationErrors;
 }
 
 export default function ParentsGuardianSection({

@@ -11,7 +11,7 @@ import Tooltip from "@/components/shared/Tooltip";
 import AddFeesButton from "@/components/shared/AddFeesButton";
 import NameLabel from "@/components/shared/NameLabel";
 import { useSidebar } from "@/contexts/SidebarContext";
-import { detectEducationLevelFromClass, getEducationLevelColor } from "@/utils/educationLevel";
+import { detectEducationLevelFromClass, getEducationLevelColor, getInstitutionTypeColor } from "@/utils/educationLevel";
 
 interface StudentTableProps {
   students: Student[];
@@ -197,7 +197,13 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       hidden: { mobile: true, tablet: true },
       className: "text-left w-[10%]",
       render: (student) => (
-        <span className="text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 block cursor-pointer whitespace-nowrap">
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(`/students/${student.id}`);
+          }}
+          className="text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 block cursor-pointer whitespace-nowrap hover:underline transition-all duration-200"
+        >
           {student.id}
         </span>
       ),
@@ -325,6 +331,25 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
         return (
           <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold border ${colors.bg} ${colors.text} ${colors.border}`}>
             {educationLevel}
+          </span>
+        );
+      },
+    },
+    {
+      key: "institutionType",
+      label: "Type",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      className: "text-left w-[10%]",
+      sortValue: (student) => student.institutionType || "",
+      render: (student) => {
+        const institutionType = student.institutionType;
+        if (!institutionType) return null;
+
+        const colors = getInstitutionTypeColor(institutionType as "Public" | "Private" | "International");
+        return (
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold border ${colors.bg} ${colors.text} ${colors.border}`}>
+            {institutionType}
           </span>
         );
       },

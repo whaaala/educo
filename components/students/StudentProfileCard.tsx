@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Building2 } from "lucide-react";
 import type { ExtendedStudentData } from "@/lib/mockStudents";
-import { getEducationLevelColor } from "@/utils/educationLevel";
+import { getEducationLevelColor, getInstitutionTypeColor } from "@/utils/educationLevel";
 
 interface StudentProfileCardProps {
   studentData: ExtendedStudentData;
@@ -85,6 +85,22 @@ export default function StudentProfileCard({
                     getEducationLevelColor(studentData.educationLevel).text
                   }`}>
                     {studentData.educationLevel}
+                  </span>
+                </div>
+              )}
+
+              {/* Institution Type Badge */}
+              {studentData.institutionType && (
+                <div className={`inline-flex items-center gap-1 w-fit px-1.5 sm:px-2 py-0.5 rounded-md border shadow-sm ${
+                  getInstitutionTypeColor(studentData.institutionType).bg
+                } ${
+                  getInstitutionTypeColor(studentData.institutionType).border
+                }`}>
+                  <Building2 className={`w-2.5 h-2.5 ${getInstitutionTypeColor(studentData.institutionType).icon}`} />
+                  <span className={`text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide ${
+                    getInstitutionTypeColor(studentData.institutionType).text
+                  }`}>
+                    {studentData.institutionType}
                   </span>
                 </div>
               )}

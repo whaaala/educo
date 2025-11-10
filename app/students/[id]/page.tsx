@@ -20,6 +20,7 @@ import {
   KeyRound,
   Search,
   ExternalLink,
+  Trash2,
 } from "lucide-react";
 import type { ExtendedStudentData } from "@/lib/mockStudents";
 import StudentProfileCard from "@/components/students/StudentProfileCard";
@@ -34,6 +35,7 @@ import MedicalHistoryCard from "@/components/students/MedicalHistoryCard";
 import BankDetailsCard from "@/components/students/BankDetailsCard";
 import OtherInfoCard from "@/components/students/OtherInfoCard";
 import CollectFeesModal from "@/components/shared/CollectFeesModal";
+import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import ActionButton from "@/components/shared/ActionButton";
 import SecondaryButton from "@/components/shared/SecondaryButton";
 import CurrencyIcon from "@/components/shared/CurrencyIcon";
@@ -66,6 +68,7 @@ export default function ViewStudentPage() {
   const [activeTab, setActiveTab] = useState<TabType>("details");
   const [isFeesModalOpen, setIsFeesModalOpen] = useState(false);
   const [isLoginDetailsModalOpen, setIsLoginDetailsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     if (studentId) {
@@ -165,6 +168,15 @@ export default function ViewStudentPage() {
     setIsFeesModalOpen(true);
   };
 
+  const handleDeleteStudent = () => {
+    // This would typically call an API to delete the student
+    console.log('Deleting student:', studentId);
+    // After successful deletion, redirect to students list
+    // In a real implementation:
+    // await deleteStudent(studentId);
+    router.push('/students');
+  };
+
   const tabs = [
     { id: "details" as TabType, label: "Student Details", icon: GraduationCap },
     { id: "timetable" as TabType, label: "Time Table", icon: Clock },
@@ -211,6 +223,13 @@ export default function ViewStudentPage() {
                 icon={Edit}
                 onClick={() => router.push(`/students/edit/${studentId}`)}
               />
+              <button
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 border border-red-200 dark:border-red-800 midnight:border-red-700 purple:border-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 midnight:hover:bg-red-900/30 purple:hover:bg-red-900/30 transition-all duration-200 active:scale-95 cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Delete Student</span>
+              </button>
             </div>
           </div>
         </div>
@@ -298,6 +317,20 @@ export default function ViewStudentPage() {
               ],
             },
           ]}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {studentData && (
+        <DeleteConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleDeleteStudent}
+          title="Delete Student"
+          itemName={fullName}
+          itemId={studentData.admissionNumber || studentId}
+          warningMessage="This will permanently remove this student and all associated data including attendance records, fees, exam results, and documents. This action cannot be undone."
+          confirmButtonText="Delete Student"
         />
       )}
     </MainLayout>

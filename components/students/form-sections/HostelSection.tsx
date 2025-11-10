@@ -12,15 +12,18 @@ import {
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
 import { getHostels } from "@/lib/mockHostel";
+import { ValidationErrors } from "@/lib/validation";
 
 interface HostelSectionProps {
   formData: any;
   onChange: (field: string, value: any) => void;
+  errors?: ValidationErrors;
 }
 
 export default function HostelSection({
   formData,
   onChange,
+  errors = {},
 }: HostelSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 

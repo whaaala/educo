@@ -18,15 +18,18 @@ import {
 import TagInput from "@/components/shared/TagInput";
 import FormInput from "@/components/shared/FormInput";
 import FormTextarea from "@/components/shared/FormTextarea";
+import { ValidationErrors } from "@/lib/validation";
 
 interface MedicalHistorySectionProps {
   formData: any;
   onChange: (field: string, value: any) => void;
+  errors?: ValidationErrors;
 }
 
 export default function MedicalHistorySection({
   formData,
   onChange,
+  errors = {},
 }: MedicalHistorySectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 

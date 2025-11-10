@@ -17,15 +17,18 @@ import {
   getTransportVehicles,
   getPickupPoints,
 } from "@/lib/mockTransport";
+import { ValidationErrors } from "@/lib/validation";
 
 interface TransportSectionProps {
   formData: any;
   onChange: (field: string, value: any) => void;
+  errors?: ValidationErrors;
 }
 
 export default function TransportSection({
   formData,
   onChange,
+  errors = {},
 }: TransportSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 

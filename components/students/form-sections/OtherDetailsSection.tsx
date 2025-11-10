@@ -19,11 +19,12 @@ import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormTextarea from "@/components/shared/FormTextarea";
 import { getBanks, getIdTypes } from "@/lib/mockBanks";
+import { ValidationErrors } from "@/lib/validation";
 
 interface OtherDetailsSectionProps {
   formData: any;
   onChange: (field: string, value: any) => void;
-  errors?: Record<string, string>;
+  errors?: ValidationErrors;
 }
 
 export default function OtherDetailsSection({
