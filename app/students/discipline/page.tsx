@@ -177,6 +177,7 @@ export default function DisciplinePage() {
   const [showReportForm, setShowReportForm] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<DisciplineIncident | null>(null);
   const [incidentToDelete, setIncidentToDelete] = useState<DisciplineIncident | null>(null);
+  const [incidentToEdit, setIncidentToEdit] = useState<DisciplineIncident | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState<IncidentCategory | "all">("all");
   const [filterSeverity, setFilterSeverity] = useState<IncidentSeverity | "all">("all");
@@ -205,12 +206,33 @@ export default function DisciplinePage() {
   });
 
   const handleSubmitReport = (incident: Partial<DisciplineIncident>) => {
-    const newIncident: DisciplineIncident = {
-      id: `DI${String(incidents.length + 1).padStart(3, "0")}`,
-      ...incident,
-    } as DisciplineIncident;
+    if (incidentToEdit) {
+      // Update existing incident
+      setIncidents(incidents.map(i =>
+        i.id === incidentToEdit.id
+          ? { ...i, ...incident, updatedAt: new Date().toISOString() }
+          : i
+      ));
+      setIncidentToEdit(null);
+    } else {
+      // Create new incident
+      const newIncident: DisciplineIncident = {
+        id: `DI${String(incidents.length + 1).padStart(3, "0")}`,
+        ...incident,
+      } as DisciplineIncident;
 
-    setIncidents([newIncident, ...incidents]);
+      setIncidents([newIncident, ...incidents]);
+    }
+  };
+
+  const handleEditIncident = (incident: DisciplineIncident) => {
+    setIncidentToEdit(incident);
+    setShowReportForm(true);
+  };
+
+  const handleCloseReportForm = () => {
+    setShowReportForm(false);
+    setIncidentToEdit(null);
   };
 
   const handleDeleteIncident = (incidentId: string) => {
@@ -343,6 +365,7 @@ export default function DisciplinePage() {
         <DisciplineRecordsTable
           incidents={filteredIncidents}
           onViewDetails={(incident) => setSelectedIncident(incident)}
+          onEdit={handleEditIncident}
           onDelete={handleDeleteIncident}
           filterKey={`${searchQuery}-${filterClass}-${filterYear}-${filterCategory}-${filterSeverity}-${filterStatus}`}
         />
@@ -350,8 +373,9 @@ export default function DisciplinePage() {
         {/* Incident Report Form Modal */}
         <IncidentReportForm
           isOpen={showReportForm}
-          onClose={() => setShowReportForm(false)}
+          onClose={handleCloseReportForm}
           onSubmit={handleSubmitReport}
+          initialData={incidentToEdit}
         />
 
         {/* Incident Detail Modal */}

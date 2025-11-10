@@ -40,12 +40,6 @@ export default function DisciplineStatisticsCards({ incidents }: DisciplineStati
       color: "green",
     },
     {
-      label: "Students Involved",
-      value: stats.uniqueStudents,
-      icon: Users,
-      color: "purple",
-    },
-    {
       label: "Minor",
       value: stats.minor,
       icon: AlertCircle,
@@ -72,7 +66,7 @@ export default function DisciplineStatisticsCards({ incidents }: DisciplineStati
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
       {cards.map((card) => (
         <StatCard
           key={card.label}

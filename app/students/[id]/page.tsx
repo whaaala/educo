@@ -53,9 +53,10 @@ import MobileDropdown from "@/components/shared/MobileDropdown";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import ExamResults from "@/components/students/ExamResults";
 import { getAttendanceMode } from "@/components/settings/AttendanceSettings";
-import { Edit, UserCheck, CheckCircle2 } from "lucide-react";
+import { Edit, UserCheck, CheckCircle2, Shield } from "lucide-react";
+import StudentDisciplineManagement from "@/components/students/StudentDisciplineManagement";
 
-type TabType = "details" | "timetable" | "attendance" | "fees" | "exam" | "library";
+type TabType = "details" | "timetable" | "attendance" | "fees" | "exam" | "library" | "discipline";
 
 // CACHE BUSTER: 2025-11-07-16:03
 export default function ViewStudentPage() {
@@ -183,6 +184,7 @@ export default function ViewStudentPage() {
     { id: "attendance" as TabType, label: "Leave & Attendance", icon: Calendar },
     { id: "fees" as TabType, label: "Fees", icon: CurrencyIcon },
     { id: "exam" as TabType, label: "Exam & Results", icon: FileText },
+    { id: "discipline" as TabType, label: "Discipline", icon: Shield },
     { id: "library" as TabType, label: "Library", icon: BookOpen },
   ];
 
@@ -266,6 +268,14 @@ export default function ViewStudentPage() {
               {activeTab === "attendance" && <AttendanceTab studentId={studentId} />}
               {activeTab === "fees" && <FeesTab studentId={studentId} />}
               {activeTab === "exam" && <ExamResultsTab studentClass={studentData.class} />}
+              {activeTab === "discipline" && (
+                <StudentDisciplineManagement
+                  studentId={studentData.admissionNumber}
+                  studentName={fullName}
+                  studentClass={studentData.class}
+                  studentSection={studentData.section || "A"}
+                />
+              )}
               {activeTab === "library" && <LibraryTab />}
             </div>
           </div>

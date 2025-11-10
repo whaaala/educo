@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { DisciplineIncident } from "@/types/discipline";
-import { Eye, Trash2, MapPin, Tag } from "lucide-react";
+import { Eye, Trash2, Edit2, MapPin, Tag } from "lucide-react";
 import SeverityBadge from "./SeverityBadge";
 import IncidentStatusBadge from "./IncidentStatusBadge";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
@@ -14,6 +14,7 @@ interface DisciplineRecordsTableProps {
   onEdit?: (incident: DisciplineIncident) => void;
   onDelete?: (incidentId: string) => void;
   filterKey?: string;
+  hideStudentColumn?: boolean;
 }
 
 export default function DisciplineRecordsTable({
@@ -22,6 +23,7 @@ export default function DisciplineRecordsTable({
   onEdit,
   onDelete,
   filterKey = "",
+  hideStudentColumn = false,
 }: DisciplineRecordsTableProps) {
   const [animationTrigger, setAnimationTrigger] = useState(0);
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
@@ -54,7 +56,7 @@ export default function DisciplineRecordsTable({
   };
 
   // Define columns for DataTable
-  const columns: ColumnConfig<DisciplineIncident>[] = [
+  const allColumns: ColumnConfig<DisciplineIncident>[] = [
     {
       key: "incidentDate",
       label: "Date",
@@ -181,6 +183,20 @@ export default function DisciplineRecordsTable({
               <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 midnight:group-hover:text-cyan-300 purple:group-hover:text-pink-300 transition-colors" />
             </button>
           </Tooltip>
+          {onEdit && (
+            <Tooltip content="Edit">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(incident);
+                }}
+                className="group relative p-2 rounded-lg bg-gradient-to-br from-orange-50/50 to-orange-100/30 dark:from-orange-950/30 dark:to-orange-900/20 midnight:from-orange-950/30 midnight:to-orange-900/20 purple:from-orange-950/30 purple:to-orange-900/20 hover:from-orange-100 hover:to-orange-100 dark:hover:from-orange-900/40 dark:hover:to-orange-800/30 midnight:hover:from-orange-900/40 midnight:hover:to-orange-800/30 purple:hover:from-orange-900/40 purple:hover:to-orange-800/30 transition-all duration-200 cursor-pointer border border-orange-200/40 dark:border-orange-800/30 midnight:border-orange-700/30 purple:border-orange-700/30 hover:border-orange-400/60 dark:hover:border-orange-600/50 midnight:hover:border-orange-500/50 purple:hover:border-orange-500/50 active:scale-95"
+                aria-label="Edit"
+              >
+                <Edit2 className="w-4 h-4 text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400 group-hover:text-orange-700 dark:group-hover:text-orange-300 midnight:group-hover:text-orange-300 purple:group-hover:text-orange-300 transition-colors" />
+              </button>
+            </Tooltip>
+          )}
           {onDelete && (
             <Tooltip content="Delete">
               <button
@@ -199,6 +215,11 @@ export default function DisciplineRecordsTable({
       ),
     },
   ];
+
+  // Filter out student column if hideStudentColumn is true
+  const columns = hideStudentColumn
+    ? allColumns.filter(col => col.key !== "studentName")
+    : allColumns;
 
   // Add animation styles directly to each row when filter changes
   useEffect(() => {

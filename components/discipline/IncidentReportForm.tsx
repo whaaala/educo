@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { AlertTriangle, Calendar, Clock, MapPin, User, FileText, AlertCircle } from "lucide-react";
 import {
   DisciplineIncident,
@@ -15,10 +15,19 @@ import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormTextarea from "@/components/shared/FormTextarea";
 
+interface StudentInfo {
+  studentId: string;
+  studentName: string;
+  studentClass: string;
+  studentSection: string;
+}
+
 interface IncidentReportFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (incident: Partial<DisciplineIncident>) => void;
+  initialData?: DisciplineIncident | null;
+  studentInfo?: StudentInfo;
   studentId?: string;
   studentName?: string;
   studentAdmissionNumber?: string;
@@ -30,35 +39,71 @@ export default function IncidentReportForm({
   isOpen,
   onClose,
   onSubmit,
+  initialData,
+  studentInfo,
   studentId,
   studentName,
   studentAdmissionNumber,
   studentClass,
   studentSection,
 }: IncidentReportFormProps) {
+  // Support both old prop format and new studentInfo format
+  const effectiveStudentId = studentInfo?.studentId || studentId || initialData?.studentId || "";
+  const effectiveStudentName = studentInfo?.studentName || studentName || initialData?.studentName || "";
+  const effectiveStudentClass = studentInfo?.studentClass || studentClass || initialData?.studentClass || "";
+  const effectiveStudentSection = studentInfo?.studentSection || studentSection || initialData?.studentSection || "";
+
   const [formData, setFormData] = useState({
-    selectedStudentId: studentId || "",
-    selectedStudentName: studentName || "",
-    selectedStudentAdmissionNumber: studentAdmissionNumber || "",
-    selectedStudentClass: studentClass || "",
-    selectedStudentSection: studentSection || "",
-    incidentDate: new Date().toISOString().split("T")[0],
-    incidentTime: new Date().toTimeString().slice(0, 5),
-    location: "",
-    category: "disruptive-behavior" as IncidentCategory,
-    severity: "minor" as IncidentSeverity,
-    title: "",
-    description: "",
-    witnesses: "",
-    actionType: "" as DisciplinaryActionType | "",
-    actionDetails: "",
-    parentNotified: false,
-    followUpRequired: false,
+    selectedStudentId: effectiveStudentId,
+    selectedStudentName: effectiveStudentName,
+    selectedStudentAdmissionNumber: initialData?.studentAdmissionNumber || studentAdmissionNumber || effectiveStudentId,
+    selectedStudentClass: effectiveStudentClass,
+    selectedStudentSection: effectiveStudentSection,
+    selectedStudentProfilePhoto: initialData?.profilePhoto || "",
+    incidentDate: initialData?.incidentDate || new Date().toISOString().split("T")[0],
+    incidentTime: initialData?.incidentTime || new Date().toTimeString().slice(0, 5),
+    location: initialData?.location || "",
+    category: (initialData?.category || "disruptive-behavior") as IncidentCategory,
+    severity: (initialData?.severity || "minor") as IncidentSeverity,
+    title: initialData?.title || "",
+    description: initialData?.description || "",
+    witnesses: initialData?.witnesses?.join(", ") || "",
+    actionType: (initialData?.actionType || "") as DisciplinaryActionType | "",
+    actionDetails: initialData?.actionDetails || "",
+    parentNotified: initialData?.parentNotified || false,
+    followUpRequired: initialData?.followUpRequired || false,
   });
 
   const [students] = useState(getAllStudents());
-  const [isPreselected, setIsPreselected] = useState(!!studentId);
+  const [isPreselected, setIsPreselected] = useState(!!effectiveStudentId);
   const [selectedLevel, setSelectedLevel] = useState<string>("");
+
+  // Update form data when initialData changes (for edit mode)
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        selectedStudentId: initialData.studentId,
+        selectedStudentName: initialData.studentName,
+        selectedStudentAdmissionNumber: initialData.studentAdmissionNumber,
+        selectedStudentClass: initialData.studentClass,
+        selectedStudentSection: initialData.studentSection,
+        selectedStudentProfilePhoto: initialData.profilePhoto || "",
+        incidentDate: initialData.incidentDate,
+        incidentTime: initialData.incidentTime,
+        location: initialData.location,
+        category: initialData.category,
+        severity: initialData.severity,
+        title: initialData.title,
+        description: initialData.description,
+        witnesses: initialData.witnesses?.join(", ") || "",
+        actionType: (initialData.actionType || "") as DisciplinaryActionType | "",
+        actionDetails: initialData.actionDetails || "",
+        parentNotified: initialData.parentNotified || false,
+        followUpRequired: initialData.followUpRequired || false,
+      });
+      setIsPreselected(true);
+    }
+  }, [initialData]);
 
   // Get unique class levels from students
   const classLevels = useMemo(() => {
@@ -196,7 +241,7 @@ export default function IncidentReportForm({
         form="incident-report-form"
         className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 dark:from-red-500 dark:to-orange-500 dark:hover:from-red-600 dark:hover:to-orange-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
       >
-        Submit Report
+        {initialData ? "Update Incident" : "Submit Report"}
       </button>
     </div>
   );
@@ -209,96 +254,100 @@ export default function IncidentReportForm({
       footer={footer}
       showCloseButton={false}
     >
-      {/* Custom Header with subtle background */}
-      <div className="bg-gradient-to-br from-red-50/50 via-orange-50/30 to-red-50/50 dark:from-red-900/10 dark:via-orange-900/5 dark:to-red-900/10 midnight:from-red-900/10 midnight:via-orange-900/5 midnight:to-red-900/10 purple:from-red-900/10 purple:via-orange-900/5 purple:to-red-900/10 -m-4 sm:-m-6 mb-4 sm:mb-6 p-4 sm:p-6 rounded-t-2xl border-b border-red-100/50 dark:border-red-800/20 midnight:border-red-800/20 purple:border-red-800/20 relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 opacity-[0.03]">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-red-500 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-600 dark:from-red-600 dark:to-orange-700 flex items-center justify-center shadow-lg">
-              <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-white" strokeWidth={2.5} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
-                Report Incident
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mt-0.5">
-                Document behavioral incident details
-              </p>
-            </div>
+      {/* Fixed Header Area */}
+      <div className="sticky top-[-1rem] sm:top-[-1.5rem] z-20 -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 mb-0 rounded-t-2xl overflow-hidden">
+        {/* Custom Header with subtle background */}
+        <div className="bg-gradient-to-br from-red-50/50 via-orange-50/30 to-red-50/50 dark:from-red-900/10 dark:via-orange-900/5 dark:to-red-900/10 midnight:from-red-900/10 midnight:via-orange-900/5 midnight:to-red-900/10 purple:from-red-900/10 purple:via-orange-900/5 purple:to-red-900/10 px-4 sm:px-6 pt-4 sm:pt-6 pb-4 sm:pb-6 border-b border-red-100/50 dark:border-red-800/20 midnight:border-red-800/20 purple:border-red-800/20 relative backdrop-blur-sm bg-white/95 dark:bg-[#1a1d23]/95 midnight:bg-[#0f1729]/95 purple:bg-[#2a1a3e]/95">
+          {/* Background decoration */}
+          <div className="absolute inset-0 opacity-[0.03]">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500 rounded-full blur-3xl"></div>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-shrink-0 p-2 hover:bg-red-100/50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer group"
-            aria-label="Close"
-          >
-            <svg className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      </div>
+          <div className="relative flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3 flex-1 min-w-0">
+              <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-600 dark:from-red-600 dark:to-orange-700 flex items-center justify-center shadow-lg">
+                <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-white" strokeWidth={2.5} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                  {initialData ? "Edit Incident" : "Report Incident"}
+                </h2>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mt-0.5">
+                  {initialData ? "Update behavioral incident details" : "Document behavioral incident details"}
+                </p>
+              </div>
+            </div>
 
-      <form id="incident-report-form" onSubmit={handleSubmit} className="space-y-6">
-        {/* Student Selection Section */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-shrink-0 p-2 hover:bg-red-100/50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer group"
+              aria-label="Close"
+            >
+              <svg className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Student Information Section - Also Fixed */}
+        <div className="px-4 sm:px-6 pt-4 pb-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#1a1d23]/95 midnight:bg-[#0f1729]/95 purple:bg-[#2a1a3e]/95 backdrop-blur-sm">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
             <User className="w-4 h-4" />
             Student Information
           </h3>
 
           {/* Class/Level Selector - Only show if not preselected */}
           {!isPreselected && (
-            <FormDropdown
-              label="Class/Level"
-              icon={<User className="w-2.5 h-2.5" />}
-              iconBgColor="bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30"
-              iconColor="text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
-              value={selectedLevel}
-              onChange={(value) => {
-                setSelectedLevel(value);
-                setFormData({
-                  ...formData,
-                  selectedStudentId: "",
-                  selectedStudentName: "",
-                  selectedStudentAdmissionNumber: "",
-                  selectedStudentClass: "",
-                  selectedStudentSection: "",
-                });
-              }}
-              options={classLevelOptions}
-              placeholder="Select class level"
-              required
-            />
+            <div className="mt-3">
+              <FormDropdown
+                label="Class/Level"
+                icon={<User className="w-2.5 h-2.5" />}
+                iconBgColor="bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30"
+                iconColor="text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
+                value={selectedLevel}
+                onChange={(value) => {
+                  setSelectedLevel(value);
+                  setFormData({
+                    ...formData,
+                    selectedStudentId: "",
+                    selectedStudentName: "",
+                    selectedStudentAdmissionNumber: "",
+                    selectedStudentClass: "",
+                    selectedStudentSection: "",
+                  });
+                }}
+                options={classLevelOptions}
+                placeholder="Select class level"
+                required
+              />
+            </div>
           )}
 
-          {/* Student Selector */}
+          {/* Student Display/Selection */}
           {(isPreselected || selectedLevel) && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
-                  <User className="w-2.5 h-2.5 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
-                </div>
-                <span>Student</span>
-                <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>
-              </label>
+            <div className="mt-3">
               {isPreselected ? (
-                <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 midnight:from-cyan-900/20 midnight:to-blue-900/20 purple:from-pink-900/20 purple:to-purple-900/20 rounded-xl border border-blue-200 dark:border-blue-800 midnight:border-cyan-800 purple:border-pink-800">
+                <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 midnight:from-cyan-900/20 midnight:to-blue-900/20 purple:from-pink-900/20 purple:to-purple-900/20 rounded-xl border border-blue-200 dark:border-blue-800 midnight:border-cyan-800 purple:border-pink-800">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
-                      {formData.selectedStudentName.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    {formData.selectedStudentProfilePhoto ? (
+                      <img
+                        src={formData.selectedStudentProfilePhoto}
+                        alt={formData.selectedStudentName}
+                        className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        {formData.selectedStudentName.charAt(0)}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                         {formData.selectedStudentName}
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 truncate">
                         {formData.selectedStudentAdmissionNumber} • {formData.selectedStudentClass} {formData.selectedStudentSection}
                       </p>
                     </div>
@@ -306,6 +355,13 @@ export default function IncidentReportForm({
                 </div>
               ) : (
                 <>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
+                    <div className="w-4 h-4 rounded bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+                      <User className="w-2.5 h-2.5 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
+                    </div>
+                    <span>Student</span>
+                    <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>
+                  </label>
                   <SearchableDropdown
                     options={studentOptions}
                     value={formData.selectedStudentId}
@@ -314,7 +370,7 @@ export default function IncidentReportForm({
                     className="w-full"
                   />
                   {formData.selectedStudentId && (
-                    <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 animate-in slide-in-from-top-2 duration-300">
+                    <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20">
                       <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                         {formData.selectedStudentName}
                       </p>
@@ -328,6 +384,9 @@ export default function IncidentReportForm({
             </div>
           )}
         </div>
+      </div>
+
+      <form id="incident-report-form" onSubmit={handleSubmit} className="space-y-6 pt-6">
 
         {/* Incident Details */}
         <div className="space-y-4">
