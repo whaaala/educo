@@ -22,6 +22,8 @@ import {
   Boxes,
   Briefcase,
   Globe,
+  ArrowRight,
+  AlertTriangle,
 } from "lucide-react";
 
 // Custom Naira Icon Component
@@ -72,6 +74,8 @@ const menuItems: MenuItem[] = [
           { id: "student-list", label: "Student List", icon: <GraduationCap className="w-4 h-4" />, href: "/students?view=list" },
           { id: "student-details", label: "Student Details", icon: <GraduationCap className="w-4 h-4" />, href: "/students/details" },
           { id: "student-promotion", label: "Student Promotion", icon: <GraduationCap className="w-4 h-4" />, href: "/students/promotion" },
+          { id: "transfer-requests", label: "Transfer Requests", icon: <ArrowRight className="w-4 h-4" />, href: "/students/transfers" },
+          { id: "discipline", label: "Discipline", icon: <AlertTriangle className="w-4 h-4" />, href: "/students/discipline" },
         ]
       },
       { id: "parents", label: "Parents", icon: <Users className="w-4 h-4" />, href: "/parents" },

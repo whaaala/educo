@@ -106,7 +106,19 @@ export default function SearchableDropdown({
           option.label.toLowerCase().includes(searchQuery.toLowerCase()) &&
           !excludeIds.includes(option.value)
       );
-      setFilteredOptions(filtered);
+
+      // Only update if filtered results are different to prevent infinite loops
+      setFilteredOptions((prev) => {
+        if (prev.length !== filtered.length) {
+          return filtered;
+        }
+        // Check if the actual values are different
+        const prevIds = new Set(prev.map(opt => opt.value));
+        const filteredIds = new Set(filtered.map(opt => opt.value));
+        const isDifferent = prev.some(opt => !filteredIds.has(opt.value)) ||
+                           filtered.some(opt => !prevIds.has(opt.value));
+        return isDifferent ? filtered : prev;
+      });
     }
 
     return () => {
