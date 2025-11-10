@@ -30,6 +30,13 @@ export interface ProfileAction {
   onClick?: () => void;
 }
 
+export interface DropdownMenuItem {
+  icon: LucideIcon;
+  label: string;
+  onClick: () => void;
+  variant?: "default" | "danger";
+}
+
 export interface ProfileCardProps {
   id: string;
   name: string;
@@ -43,6 +50,7 @@ export interface ProfileCardProps {
     onClick?: () => void;
   };
   customActions?: ProfileAction[];
+  customDropdownItems?: DropdownMenuItem[];
   onMenuClick?: () => void;
   onEdit?: (id: string) => void;
   onView?: (id: string) => void;
@@ -61,6 +69,7 @@ export default function ProfileCard({
   colorIndex,
   primaryAction = { label: "Add Fees" },
   customActions,
+  customDropdownItems,
   onMenuClick,
   onEdit,
   onView,
@@ -311,18 +320,18 @@ export default function ProfileCard({
         </div>
 
         {/* Action Buttons */}
-        <div className="px-4 pb-2 pt-0 flex items-center justify-between border-t border-white/40 group-hover:border-white/60 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 mt-1.5 pt-2 relative z-10 transition-all duration-200">
-          <div className="flex items-center gap-2">
+        <div className="px-3 sm:px-4 pb-3 sm:pb-2.5 pt-0 flex items-center justify-between gap-2 sm:gap-3 border-t border-white/40 group-hover:border-white/60 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 mt-2 pt-2.5 sm:pt-2 relative z-10 transition-all duration-200">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
             {actions.map((action, index) => (
               <div key={index} className="relative group/action">
                 <button
                   onClick={action.onClick}
                   style={{ cursor: "pointer", zIndex: 11111 }}
-                  className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-white/60 group-hover:border-white/80 dark:border-gray-600/50 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white/70 backdrop-blur-sm group-hover:bg-white/95 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30 group-hover:shadow-md dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 shadow-sm"
+                  className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white/60 group-hover:border-white/80 dark:border-gray-600/50 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white/70 backdrop-blur-sm group-hover:bg-white/95 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30 group-hover:shadow-md dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 shadow-sm flex-shrink-0"
                 >
                   <action.icon
                     style={{ cursor: "pointer" }}
-                    className="w-3.5 h-3.5 text-gray-700 group-hover:text-gray-900 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 transition-colors"
+                    className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-700 group-hover:text-gray-900 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 transition-colors"
                   />
                 </button>
                 {/* Hover Label */}
@@ -333,7 +342,7 @@ export default function ProfileCard({
             ))}
           </div>
           {primaryAction && (
-            <div className="relative group/primaryaction">
+            <div className="relative group/primaryaction flex-shrink-0">
               <AddFeesButton
                 onClick={(e) => {
                   e.stopPropagation();
@@ -405,6 +414,30 @@ export default function ProfileCard({
               <TrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
               <span>Promote Student</span>
             </button>
+
+            {/* Custom Dropdown Items */}
+            {customDropdownItems?.map((item, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  item.onClick();
+                }}
+                className={`w-full px-4 py-2 text-left text-sm font-normal flex items-center gap-3 transition-all duration-200 ${
+                  item.variant === "danger"
+                    ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20"
+                    : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                }`}
+                style={{ cursor: "pointer" }}
+              >
+                <item.icon className={`w-4 h-4 ${
+                  item.variant === "danger"
+                    ? ""
+                    : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400"
+                }`} />
+                <span>{item.label}</span>
+              </button>
+            ))}
 
             <button
               onClick={() => {

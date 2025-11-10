@@ -3,15 +3,18 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Student } from "./StudentCard";
-import { MoreVertical, MessageCircle, Phone, Mail, Eye, Edit, Lock, TrendingUp, Trash2, Plus } from "lucide-react";
+import { MoreVertical, MessageCircle, Phone, Mail, Eye, Edit, Lock, TrendingUp, Trash2, Plus, ArrowRight } from "lucide-react";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import CollectFeesModal from "@/components/shared/CollectFeesModal";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
+import TransferRequestModal from "@/components/students/TransferRequestModal";
 import Tooltip from "@/components/shared/Tooltip";
 import AddFeesButton from "@/components/shared/AddFeesButton";
 import NameLabel from "@/components/shared/NameLabel";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { detectEducationLevelFromClass, getEducationLevelColor, getInstitutionTypeColor } from "@/utils/educationLevel";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { CreateTransferRequest } from "@/types/transfer";
 
 interface StudentTableProps {
   students: Student[];
@@ -27,12 +30,15 @@ interface StudentTableProps {
 export default function StudentTable({ students, isLoading = false, loadingMessage = "Loading...", onClearFilters, hasActiveFilters = false, totalStudentsCount, selectedIds: externalSelectedIds, onSelectionChange }: StudentTableProps) {
   const router = useRouter();
   const { isCollapsed } = useSidebar();
+  const { canTransferStudents, tenantContext } = useFeatureFlags();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
   const [openMenuStudentId, setOpenMenuStudentId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+  const [showTransferForm, setShowTransferForm] = useState(false);
+  const [studentToTransfer, setStudentToTransfer] = useState<Student | null>(null);
   const [menuPosition, setMenuPosition] = useState<'bottom' | 'top'>('bottom');
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -108,10 +114,52 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
     } else if (action === 'View Student') {
       router.push(`/students/${student.id}`);
       setOpenMenuStudentId(null);
+    } else if (action === 'Transfer Student') {
+      handleTransferClick(student);
     } else {
       console.log(`${action} clicked for student:`, student.id);
       setOpenMenuStudentId(null);
     }
+  };
+
+  const handleTransferClick = (student: Student) => {
+    // Feature flag check: Only allow transfer if FF_Student_Transfer is enabled
+    if (!canTransferStudents) {
+      console.warn(`Student transfer is not enabled for ${tenantContext.institutionType} institutions`);
+      alert(`Student transfer functionality is not enabled for ${tenantContext.institutionType} institutions`);
+      setOpenMenuStudentId(null);
+      return;
+    }
+    setStudentToTransfer(student);
+    setShowTransferForm(true);
+    setOpenMenuStudentId(null);
+  };
+
+  const handleTransferSubmit = async (request: CreateTransferRequest) => {
+    console.log('Transfer request submitted:', request);
+    // TODO: Submit to API
+    // await createTransferRequest(request);
+
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    alert('Transfer request submitted successfully! The request will be reviewed by the administration.');
+    setShowTransferForm(false);
+    setStudentToTransfer(null);
+  };
+
+  // Extract class from class field
+  const extractClassFromStudent = (classField: string): string => {
+    // Example: "JSS 1, A" -> "JSS 1"
+    const [classNum] = classField.split(", ");
+    return classNum;
+  };
+
+  // Extract section from class field
+  const extractSectionFromStudent = (classField: string): string => {
+    // Example: "JSS 1, A" -> "A"
+    const [, section] = classField.split(", ");
+    return section || "A";
   };
 
   const handleConfirmDelete = () => {
@@ -160,7 +208,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "index",
       label: "",
       sortable: false,
-      className: "text-center w-[5%] md:w-[2%]",
+      className: "text-center w-[5%] md:w-[3%]",
       render: (student) => (
         <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
           <input
@@ -213,7 +261,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Roll No",
       sortable: true,
       hidden: { mobile: true },
-      className: "text-left w-[8%]",
+      className: "text-left w-[9%]",
       render: (student) => (
         <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
           {student.rollNo}
@@ -224,7 +272,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "name",
       label: "Name",
       sortable: true,
-      className: "text-left w-[38%] md:w-[15%]",
+      className: "text-left w-[38%] md:w-[16%]",
       render: (student) => (
         <div className="flex items-center gap-1.5 md:gap-2.5 min-w-0">
           {student.avatar ? (
@@ -288,7 +336,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Class",
       sortable: true,
       hidden: { mobile: true },
-      className: "text-left w-[15%] md:w-[6%]",
+      className: "text-left w-[15%] md:w-[8%]",
       sortValue: (student) => student.class.split(", ")[0],
       render: (student) => {
         const [classNum] = student.class.split(", ");
@@ -300,28 +348,11 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       },
     },
     {
-      key: "section",
-      label: "Section",
-      sortable: true,
-      hidden: { mobile: true },
-      className: "text-left w-[6%]",
-      sortValue: (student) => student.class.split(", ")[1],
-      render: (student) => {
-        const [, section] = student.class.split(", ");
-        return (
-          <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
-            {section}
-          </span>
-        );
-      },
-      searchable: false,
-    },
-    {
       key: "educationLevel",
       label: "Level",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left w-[10%]",
+      className: "text-left w-[8%]",
       sortValue: (student) => student.educationLevel || detectEducationLevelFromClass(student.class),
       render: (student) => {
         const educationLevel = student.educationLevel || detectEducationLevelFromClass(student.class);
@@ -336,30 +367,11 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       },
     },
     {
-      key: "institutionType",
-      label: "Type",
-      sortable: true,
-      hidden: { mobile: true, tablet: true },
-      className: "text-left w-[10%]",
-      sortValue: (student) => student.institutionType || "",
-      render: (student) => {
-        const institutionType = student.institutionType;
-        if (!institutionType) return null;
-
-        const colors = getInstitutionTypeColor(institutionType as "Public" | "Private" | "International");
-        return (
-          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold border ${colors.bg} ${colors.text} ${colors.border}`}>
-            {institutionType}
-          </span>
-        );
-      },
-    },
-    {
       key: "gender",
       label: "Gender",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left w-[8%]",
+      className: "text-left w-[7%]",
       render: (student) => (
         <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
           {student.gender}
@@ -370,7 +382,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "status",
       label: "Status",
       sortable: true,
-      className: "text-left w-[18%] md:w-[8%]",
+      className: "text-left w-[18%] md:w-[7%]",
       render: (student) => (
         <div className="flex items-center justify-start">
           <span
@@ -390,7 +402,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       label: "Date of Join",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left w-[11%]",
+      className: "text-left w-[8%]",
       render: (student) => (
         <span className="text-sm font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 whitespace-nowrap">
           {student.joinedOn}
@@ -401,7 +413,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       key: "actions",
       label: "Action",
       sortable: false,
-      className: "text-left w-[39%] md:w-[25%] lg:w-[20%] !overflow-visible",
+      className: "text-left w-[39%] md:w-[20%] lg:w-[17%] !overflow-visible",
       render: (student) => (
         <div className="flex items-center justify-start gap-0.5 md:gap-1 lg:gap-1.5 xl:gap-2 pr-0.5 md:pr-2">
           <div className="relative group/msg flex-shrink-0">
@@ -520,6 +532,15 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
                   <TrendingUp className="w-4 h-4" />
                   <span>Promote Student</span>
                 </button>
+                {canTransferStudents && (
+                  <button
+                    onClick={() => handleMenuItemClick('Transfer Student', student)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                    <span>Transfer Student</span>
+                  </button>
+                )}
                 <button
                   onClick={() => handleMenuItemClick('Delete', student)}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-500/10 purple:hover:bg-red-500/10 transition-colors cursor-pointer"
@@ -592,6 +613,25 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
           itemId={studentToDelete.id}
           warningMessage="This will permanently remove this student and all associated data. This action cannot be undone."
           confirmButtonText="Delete Student"
+        />
+      )}
+
+      {/* Transfer Request Modal */}
+      {showTransferForm && studentToTransfer && (
+        <TransferRequestModal
+          isOpen={showTransferForm}
+          onClose={() => {
+            setShowTransferForm(false);
+            setStudentToTransfer(null);
+          }}
+          studentId={studentToTransfer.id}
+          studentName={studentToTransfer.name}
+          studentAdmissionNumber={studentToTransfer.id}
+          studentAvatar={studentToTransfer.avatar}
+          currentClass={extractClassFromStudent(studentToTransfer.class)}
+          currentSection={extractSectionFromStudent(studentToTransfer.class)}
+          currentBranchName="Main Campus"
+          onSubmit={handleTransferSubmit}
         />
       )}
     </>
