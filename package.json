@@ -13,6 +13,7 @@
     "clsx": "^2.1.1",
     "currency-symbol-map": "^5.1.0",
     "date-fns": "^4.1.0",
+    "html2canvas": "^1.4.1",
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.548.0",

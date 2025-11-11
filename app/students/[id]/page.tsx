@@ -21,6 +21,7 @@ import {
   Search,
   ExternalLink,
   Trash2,
+  FileSpreadsheet,
 } from "lucide-react";
 import type { ExtendedStudentData } from "@/lib/mockStudents";
 import StudentProfileCard from "@/components/students/StudentProfileCard";
@@ -55,6 +56,11 @@ import ExamResults from "@/components/students/ExamResults";
 import { getAttendanceMode } from "@/components/settings/AttendanceSettings";
 import { Edit, UserCheck, CheckCircle2, Shield } from "lucide-react";
 import StudentDisciplineManagement from "@/components/students/StudentDisciplineManagement";
+import RequestTranscriptButton from "@/components/shared/RequestTranscriptButton";
+import TranscriptPaymentModal from "@/components/transcript/TranscriptPaymentModal";
+import TranscriptAcknowledgmentModal from "@/components/transcript/TranscriptAcknowledgmentModal";
+import { generateTranscriptRequest, getEstimatedDeliveryDate } from "@/utils/transcriptRequestGenerator";
+import { TranscriptRequest } from "@/types/transcript";
 
 type TabType = "details" | "timetable" | "attendance" | "fees" | "exam" | "library" | "discipline";
 
@@ -70,6 +76,9 @@ export default function ViewStudentPage() {
   const [isFeesModalOpen, setIsFeesModalOpen] = useState(false);
   const [isLoginDetailsModalOpen, setIsLoginDetailsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isAcknowledgmentModalOpen, setIsAcknowledgmentModalOpen] = useState(false);
+  const [pendingTranscriptRequest, setPendingTranscriptRequest] = useState<TranscriptRequest | null>(null);
 
   useEffect(() => {
     if (studentId) {
@@ -88,6 +97,42 @@ export default function ViewStudentPage() {
       }
     }
   }, [studentId, router]);
+
+  // Handler for Request Transcript button click
+  const handleRequestTranscript = () => {
+    // Generate transcript request
+    const transcriptRequest = generateTranscriptRequest({
+      id: studentData?.admissionNumber || studentId,
+      name: `${studentData?.firstName || ""} ${studentData?.lastName || ""}`.trim(),
+      admissionNumber: studentData?.admissionNumber || "",
+      class: studentData?.classLevel || "",
+      email: studentData?.email,
+      phone: studentData?.phone,
+      profilePhoto: typeof studentData?.profilePhoto === "string" ? studentData.profilePhoto : undefined,
+    });
+
+    setPendingTranscriptRequest(transcriptRequest);
+    setIsPaymentModalOpen(true);
+  };
+
+  // Handler for payment completion
+  const handlePaymentComplete = () => {
+    setIsPaymentModalOpen(false);
+    setIsAcknowledgmentModalOpen(true);
+
+    // In a real application, you would save the request to the backend here
+    // For now, we'll just log it and show it in the console
+    console.log("Transcript Request Created:", pendingTranscriptRequest);
+
+    // TODO: Save to mock data or backend
+    // saveTranscriptRequest(pendingTranscriptRequest);
+  };
+
+  // Handler for closing acknowledgment modal
+  const handleAcknowledgmentClose = () => {
+    setIsAcknowledgmentModalOpen(false);
+    setPendingTranscriptRequest(null);
+  };
 
   if (isLoading || isLoadingData || !studentData) {
     return (
@@ -220,6 +265,9 @@ export default function ViewStudentPage() {
                 icon={KeyRound}
                 onClick={() => setIsLoginDetailsModalOpen(true)}
               />
+              <RequestTranscriptButton
+                onClick={handleRequestTranscript}
+              />
               <ActionButton
                 label="Edit Student"
                 icon={Edit}
@@ -341,6 +389,32 @@ export default function ViewStudentPage() {
           itemId={studentData.admissionNumber || studentId}
           warningMessage="This will permanently remove this student and all associated data including attendance records, fees, exam results, and documents. This action cannot be undone."
           confirmButtonText="Delete Student"
+        />
+      )}
+
+      {/* Transcript Payment Modal */}
+      {pendingTranscriptRequest && (
+        <TranscriptPaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          onPaymentComplete={handlePaymentComplete}
+          transcriptType={pendingTranscriptRequest.transcriptType}
+          amount={pendingTranscriptRequest.payment.amount}
+          currency={pendingTranscriptRequest.payment.currency}
+        />
+      )}
+
+      {/* Transcript Acknowledgment Modal */}
+      {pendingTranscriptRequest && (
+        <TranscriptAcknowledgmentModal
+          isOpen={isAcknowledgmentModalOpen}
+          onClose={handleAcknowledgmentClose}
+          requestNumber={pendingTranscriptRequest.requestNumber}
+          studentName={pendingTranscriptRequest.studentName}
+          transcriptType={pendingTranscriptRequest.transcriptType}
+          amount={pendingTranscriptRequest.payment.amount}
+          currency={pendingTranscriptRequest.payment.currency}
+          estimatedDelivery={getEstimatedDeliveryDate()}
         />
       )}
     </MainLayout>

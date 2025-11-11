@@ -258,7 +258,7 @@ export default function DataTable<T>({
       )}
 
       {/* Table Body Container */}
-      <div className="overflow-x-auto overflow-y-visible -mx-px scroll-smooth snap-x snap-mandatory">
+      <div className="overflow-x-auto overflow-y-visible -mx-px smooth-scroll snap-x snap-mandatory">
         <table className="w-full border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
           {/* Table Header */}
           <thead>
