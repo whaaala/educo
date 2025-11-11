@@ -89,38 +89,56 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
   // Calculate calendar position
   const updateCalendarPosition = useCallback(() => {
     if (!triggerRef?.current || typeof window === 'undefined') return;
-    
+
     const rect = triggerRef.current.getBoundingClientRect();
     const calendarWidth = 320; // min-w-[320px]
     const calendarHeight = calendarRef.current?.offsetHeight || 400; // Use actual height if available
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
     const spaceRight = window.innerWidth - rect.left;
+    const marginFromEdge = 16;
 
     // Position below by default
     let top = rect.bottom + 8; // mt-2 = 8px
     let left = rect.left;
+    let maxHeight = spaceBelow - marginFromEdge;
 
     // If not enough space below, position above
     if (spaceBelow < calendarHeight && spaceAbove > calendarHeight) {
       top = rect.top - calendarHeight - 8;
+      maxHeight = spaceAbove - marginFromEdge;
+    } else if (spaceBelow < calendarHeight && spaceAbove < calendarHeight) {
+      // If not enough space above or below, use the side with more space
+      if (spaceBelow > spaceAbove) {
+        top = rect.bottom + 8;
+        maxHeight = spaceBelow - marginFromEdge;
+      } else {
+        // Position at top of viewport with max available height
+        top = marginFromEdge;
+        maxHeight = rect.top - marginFromEdge - 8;
+      }
     }
 
     // If not enough space on right, align to right edge
     if (spaceRight < calendarWidth) {
-      left = window.innerWidth - calendarWidth - 16; // 16px margin from edge
+      left = window.innerWidth - calendarWidth - marginFromEdge;
     }
 
     // Ensure calendar doesn't go off left edge
-    if (left < 16) {
-      left = 16;
+    if (left < marginFromEdge) {
+      left = marginFromEdge;
     }
+
+    // Ensure calendar stays within viewport vertically
+    const maxTop = window.innerHeight - Math.min(calendarHeight, maxHeight) - marginFromEdge;
+    top = Math.max(marginFromEdge, Math.min(top, maxTop));
 
     setCalendarStyle({
       position: 'fixed',
-      top: `${Math.max(8, top)}px`, // Ensure at least 8px from top
+      top: `${top}px`,
       left: `${left}px`,
       width: `${calendarWidth}px`,
+      maxHeight: `${maxHeight}px`,
       zIndex: 10000, // Higher than modal z-index (9999) to appear above modals
     });
   }, [triggerRef]);
@@ -476,7 +494,7 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
     <div
       ref={calendarRef}
       style={calendarStyle}
-      className="fixed bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 animate-in fade-in slide-in-from-top-2 duration-200"
+      className="fixed bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">

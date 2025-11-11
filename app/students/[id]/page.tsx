@@ -6,6 +6,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import PageLoader from "@/components/shared/PageLoader";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { getExtendedStudentDataById } from "@/lib/mockStudents";
+import { useTranscripts } from "@/contexts/TranscriptContext";
 import Image from "next/image";
 import {
   GraduationCap,
@@ -61,15 +62,23 @@ import TranscriptPaymentModal from "@/components/transcript/TranscriptPaymentMod
 import TranscriptAcknowledgmentModal from "@/components/transcript/TranscriptAcknowledgmentModal";
 import { generateTranscriptRequest, getEstimatedDeliveryDate } from "@/utils/transcriptRequestGenerator";
 import { TranscriptRequest } from "@/types/transcript";
+import TransferRequestModal, { TransferFormData } from "@/components/student/TransferRequestModal";
+import TransferSuccessModal, { createTransferField } from "@/components/shared/TransferSuccessModal";
+import { TRANSFER_REASONS } from "@/types/transfer";
+import { ArrowRightLeft, School } from "lucide-react";
+import { useTransfers } from "@/contexts/TransferContext";
+import TransferHistoryCard from "@/components/students/TransferHistoryCard";
 
 type TabType = "details" | "timetable" | "attendance" | "fees" | "exam" | "library" | "discipline";
 
-// CACHE BUSTER: 2025-11-07-16:03
+// CACHE BUSTER: 2025-11-11-20:25
 export default function ViewStudentPage() {
   const params = useParams();
   const studentId = params?.id as string;
   const router = useRouter();
   const isLoading = usePageLoad(600);
+  const { addTransferRequest } = useTransfers();
+  const { addTranscriptRequest } = useTranscripts();
   const [studentData, setStudentData] = useState<ExtendedStudentData | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("details");
@@ -79,6 +88,9 @@ export default function ViewStudentPage() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isAcknowledgmentModalOpen, setIsAcknowledgmentModalOpen] = useState(false);
   const [pendingTranscriptRequest, setPendingTranscriptRequest] = useState<TranscriptRequest | null>(null);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [isTransferSuccessModalOpen, setIsTransferSuccessModalOpen] = useState(false);
+  const [transferSuccessData, setTransferSuccessData] = useState<TransferFormData | null>(null);
 
   useEffect(() => {
     if (studentId) {
@@ -120,18 +132,51 @@ export default function ViewStudentPage() {
     setIsPaymentModalOpen(false);
     setIsAcknowledgmentModalOpen(true);
 
-    // In a real application, you would save the request to the backend here
-    // For now, we'll just log it and show it in the console
-    console.log("Transcript Request Created:", pendingTranscriptRequest);
-
-    // TODO: Save to mock data or backend
-    // saveTranscriptRequest(pendingTranscriptRequest);
+    // Add transcript request to context (which syncs to localStorage)
+    if (pendingTranscriptRequest) {
+      console.log("Transcript Request Created:", pendingTranscriptRequest);
+      addTranscriptRequest(pendingTranscriptRequest);
+    }
   };
 
   // Handler for closing acknowledgment modal
   const handleAcknowledgmentClose = () => {
     setIsAcknowledgmentModalOpen(false);
     setPendingTranscriptRequest(null);
+  };
+
+  // Handler for transfer submit
+  const handleTransferSubmit = (transferData: TransferFormData) => {
+    if (!studentData) return;
+
+    console.log("=== TRANSFER REQUEST DEBUG ===");
+    console.log("Student Data:", {
+      studentId: studentData.admissionNumber || studentId,
+      studentName: `${studentData.firstName} ${studentData.lastName}`.trim(),
+      studentAdmissionNumber: studentData.admissionNumber || studentId,
+      studentClass: studentData.classLevel || "",
+      studentSection: studentData.section || "",
+    });
+    console.log("Transfer Data:", transferData);
+
+    // Add the transfer request to global state
+    addTransferRequest(
+      {
+        studentId: studentData.admissionNumber || studentId,
+        studentName: `${studentData.firstName} ${studentData.lastName}`.trim(),
+        studentAdmissionNumber: studentData.admissionNumber || studentId,
+        studentClass: studentData.classLevel || "",
+        studentSection: studentData.section || "",
+      },
+      transferData
+    );
+
+    console.log("Transfer request added to context");
+
+    // Show success modal
+    setTransferSuccessData(transferData);
+    setIsTransferModalOpen(false);
+    setIsTransferSuccessModalOpen(true);
   };
 
   if (isLoading || isLoadingData || !studentData) {
@@ -267,6 +312,11 @@ export default function ViewStudentPage() {
                   icon={Edit}
                   onClick={() => router.push(`/students/edit/${studentId}`)}
                 />
+                <SecondaryButton
+                  label="Transfer Student"
+                  icon={ArrowRightLeft}
+                  onClick={() => setIsTransferModalOpen(true)}
+                />
                 <RequestTranscriptButton
                   onClick={handleRequestTranscript}
                 />
@@ -314,6 +364,7 @@ export default function ViewStudentPage() {
               {activeTab === "details" && (
                 <StudentDetailsTab
                   studentData={studentData}
+                  studentId={studentData.admissionNumber || studentId}
                   fatherPhotoUrl={fatherPhotoUrl}
                   motherPhotoUrl={motherPhotoUrl}
                   guardianPhotoUrl={guardianPhotoUrl}
@@ -422,6 +473,83 @@ export default function ViewStudentPage() {
           amount={pendingTranscriptRequest.payment.amount}
           currency={pendingTranscriptRequest.payment.currency}
           estimatedDelivery={getEstimatedDeliveryDate()}
+        />
+      )}
+
+      {/* Transfer Request Modal */}
+      {studentData && (
+        <TransferRequestModal
+          isOpen={isTransferModalOpen}
+          onClose={() => setIsTransferModalOpen(false)}
+          onSubmit={handleTransferSubmit}
+          currentClass={studentData.class}
+          currentSection={studentData.section || "A"}
+          studentName={fullName}
+          admissionNumber={studentData.admissionNumber}
+        />
+      )}
+
+      {/* Transfer Success Modal */}
+      {transferSuccessData && (
+        <TransferSuccessModal
+          isOpen={isTransferSuccessModalOpen}
+          onClose={() => {
+            setIsTransferSuccessModalOpen(false);
+            setTransferSuccessData(null);
+          }}
+          title={
+            transferSuccessData.transferType === "external"
+              ? "External Transfer Submitted!"
+              : transferSuccessData.transferType === "promotion"
+              ? "Promotion Request Submitted!"
+              : "Transfer Request Submitted!"
+          }
+          subtitle="The request has been registered and is pending approval."
+          fields={[
+            createTransferField(
+              <ArrowRightLeft className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />,
+              "Transfer Type",
+              transferSuccessData.transferType === "external"
+                ? "External Transfer"
+                : transferSuccessData.transferType === "promotion"
+                ? "Promotion"
+                : transferSuccessData.transferType === "class-change"
+                ? "Class Change"
+                : transferSuccessData.transferType === "section-change"
+                ? "Section Change"
+                : "Internal Transfer"
+            ),
+            ...(transferSuccessData.transferType === "external"
+              ? [
+                  createTransferField(
+                    <School className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />,
+                    "Destination School",
+                    transferSuccessData.destinationSchoolName || ""
+                  ),
+                ]
+              : [
+                  createTransferField(
+                    <School className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />,
+                    "Destination Class",
+                    transferSuccessData.destinationClass
+                  ),
+                  createTransferField(
+                    <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />,
+                    "Destination Section",
+                    transferSuccessData.destinationSection
+                  ),
+                ]),
+            createTransferField(
+              <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />,
+              "Reason",
+              TRANSFER_REASONS.find((r) => r.value === transferSuccessData.reason)?.label || transferSuccessData.reason
+            ),
+            createTransferField(
+              <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />,
+              "Effective Date",
+              new Date(transferSuccessData.effectiveDate).toLocaleDateString()
+            ),
+          ]}
         />
       )}
     </MainLayout>
@@ -567,11 +695,13 @@ function StudentTabs({
 // Student Details Tab Component
 function StudentDetailsTab({
   studentData,
+  studentId,
   fatherPhotoUrl,
   motherPhotoUrl,
   guardianPhotoUrl,
 }: {
   studentData: ExtendedStudentData;
+  studentId: string;
   fatherPhotoUrl: string | null;
   motherPhotoUrl: string | null;
   guardianPhotoUrl: string | null;
@@ -663,6 +793,8 @@ function StudentDetailsTab({
         />
       </div>
 
+      {/* Transfer History */}
+      <TransferHistoryCard studentId={studentId} />
 
       {/* Other Info */}
       <OtherInfoCard />

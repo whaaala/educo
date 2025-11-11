@@ -7,6 +7,8 @@ import { AcademicYearProvider } from "@/contexts/AcademicYearContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { CountryProvider } from "@/contexts/CountryContext";
 import { SchoolSettingsProvider } from "@/contexts/SchoolSettingsContext";
+import { TransferProvider } from "@/contexts/TransferContext";
+import { TranscriptProvider } from "@/contexts/TranscriptContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,9 +34,13 @@ export default function RootLayout({
           <CountryProvider>
             <AcademicYearProvider>
               <SchoolSettingsProvider>
-                <SidebarProvider>
-                  {children}
-                </SidebarProvider>
+                <TransferProvider>
+                  <TranscriptProvider>
+                    <SidebarProvider>
+                      {children}
+                    </SidebarProvider>
+                  </TranscriptProvider>
+                </TransferProvider>
               </SchoolSettingsProvider>
             </AcademicYearProvider>
           </CountryProvider>

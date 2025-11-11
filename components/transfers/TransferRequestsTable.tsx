@@ -1,9 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { TransferRequest } from "@/types/transfer";
 import { Eye, CheckCircle, XCircle, Play } from "lucide-react";
 import TransferStatusBadge from "./TransferStatusBadge";
 import TransferTypeBadge from "./TransferTypeBadge";
+import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import Tooltip from "@/components/shared/Tooltip";
 
 interface TransferRequestsTableProps {
   requests: TransferRequest[];
@@ -11,6 +14,7 @@ interface TransferRequestsTableProps {
   onApprove: (requestId: string) => void;
   onReject: (requestId: string, reason: string) => void;
   onProcess: (requestId: string) => void;
+  filterKey?: string;
 }
 
 export default function TransferRequestsTable({
@@ -19,7 +23,23 @@ export default function TransferRequestsTable({
   onApprove,
   onReject,
   onProcess,
+  filterKey = "",
 }: TransferRequestsTableProps) {
+  const [animationTrigger, setAnimationTrigger] = useState(0);
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+
+  // Trigger animation when filterKey changes
+  useEffect(() => {
+    console.log('🔑 FilterKey changed from:', prevFilterKey, 'to:', filterKey);
+    if (filterKey !== prevFilterKey) {
+      console.log('✅ Triggering animation');
+      setAnimationTrigger(prev => prev + 1);
+      setPrevFilterKey(filterKey);
+    } else {
+      console.log('⏭️ FilterKey unchanged, skipping');
+    }
+  }, [filterKey]);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -48,173 +68,268 @@ export default function TransferRequestsTable({
     return "-";
   };
 
-  if (requests.length === 0) {
-    return (
-      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl p-12 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm text-center">
-        <div className="text-gray-400 dark:text-gray-500 mb-4">
-          <svg
-            className="mx-auto h-12 w-12"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
+  const getTransferTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      "promotion": "Promotion",
+      "section-change": "Section Change",
+      "class-change": "Class Change",
+      "internal": "Internal Transfer",
+      "cross-branch": "Cross-Branch",
+      "external": "External Transfer",
+    };
+    return labels[type] || type;
+  };
+
+  // Define columns for DataTable
+  const columns: ColumnConfig<TransferRequest>[] = [
+    {
+      key: "id",
+      label: "Request ID",
+      sortable: true,
+      className: "text-left",
+      render: (request) => {
+        return (
+          <Tooltip content={`Request ID: ${request.id}`}>
+            <div className="font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 whitespace-nowrap truncate max-w-[100px]" style={{ fontSize: '11.8px' }}>
+              {request.id}
+            </div>
+          </Tooltip>
+        );
+      },
+    },
+    {
+      key: "studentName",
+      label: "Student",
+      sortable: true,
+      className: "text-left",
+      render: (request) => {
+        const studentInfo = `${request.studentName} - ${request.studentAdmissionNumber}`;
+        return (
+          <Tooltip content={studentInfo}>
+            <div className="flex items-center gap-2.5">
+              {request.profilePhoto ? (
+                <img
+                  src={request.profilePhoto}
+                  alt={request.studentName}
+                  className="w-9 h-9 rounded-full ring-2 ring-gray-200 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 object-cover flex-shrink-0"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm ring-2 ring-blue-200 dark:ring-blue-900/30 flex-shrink-0" style={{ fontSize: '11.8px' }}>
+                  {request.studentName.charAt(0)}
+                </div>
+              )}
+              <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-[140px]" style={{ fontSize: '11.8px' }}>
+                {request.studentName}
+              </div>
+            </div>
+          </Tooltip>
+        );
+      },
+    },
+    {
+      key: "transferType",
+      label: "Type",
+      sortable: true,
+      className: "text-left",
+      render: (request) => <TransferTypeBadge type={request.transferType} size="sm" />,
+      sortValue: (request) => getTransferTypeLabel(request.transferType),
+    },
+    {
+      key: "source",
+      label: "From",
+      sortable: true,
+      className: "text-left",
+      render: (request) => {
+        const sourceInfo = request.sourceBranchName
+          ? `${request.sourceClass} ${request.sourceSection} - ${request.sourceBranchName}`
+          : `${request.sourceClass} ${request.sourceSection}`;
+        return (
+          <Tooltip content={sourceInfo}>
+            <div className="flex flex-col max-w-[150px]">
+              <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate" style={{ fontSize: '11.8px' }}>
+                {request.sourceClass} {request.sourceSection}
+              </div>
+              {request.sourceBranchName && (
+                <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 truncate" style={{ fontSize: '10px' }}>
+                  {request.sourceBranchName}
+                </div>
+              )}
+            </div>
+          </Tooltip>
+        );
+      },
+      sortValue: (request) => `${request.sourceClass} ${request.sourceSection}`,
+    },
+    {
+      key: "destination",
+      label: "To",
+      sortable: true,
+      className: "text-left",
+      render: (request) => {
+        const destination = getDestination(request);
+        return (
+          <Tooltip content={destination}>
+            <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-[150px]" style={{ fontSize: '11.8px' }}>
+              {destination}
+            </div>
+          </Tooltip>
+        );
+      },
+      sortValue: (request) => getDestination(request),
+    },
+    {
+      key: "status",
+      label: "Status",
+      sortable: true,
+      className: "text-left",
+      render: (request) => <TransferStatusBadge status={request.status} size="sm" />,
+    },
+    {
+      key: "requestedDate",
+      label: "Requested",
+      sortable: true,
+      className: "text-left",
+      sortValue: (request) => new Date(request.requestedDate).getTime(),
+      render: (request) => {
+        const fullDate = `${formatDate(request.requestedDate)} by ${request.requestedByName}`;
+        return (
+          <Tooltip content={fullDate}>
+            <div className="flex flex-col">
+              <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap" style={{ fontSize: '11.8px' }}>
+                {formatDate(request.requestedDate)}
+              </div>
+              <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 truncate max-w-[120px]" style={{ fontSize: '10px' }}>
+                by {request.requestedByName}
+              </div>
+            </div>
+          </Tooltip>
+        );
+      },
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      sortable: false,
+      className: "text-center",
+      render: (request) => (
+        <div className="flex items-center justify-center gap-2.5">
+          <Tooltip content="View Details">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewDetails(request);
+              }}
+              className="group relative p-2 rounded-lg bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/30 dark:to-blue-900/20 midnight:from-cyan-950/30 midnight:to-cyan-900/20 purple:from-pink-950/30 purple:to-pink-900/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-blue-900/40 dark:hover:to-blue-800/30 midnight:hover:from-cyan-900/40 midnight:hover:to-cyan-800/30 purple:hover:from-pink-900/40 purple:hover:to-pink-800/30 transition-all duration-200 cursor-pointer border border-blue-200/40 dark:border-blue-800/30 midnight:border-cyan-700/30 purple:border-pink-700/30 hover:border-blue-400/60 dark:hover:border-blue-600/50 midnight:hover:border-cyan-500/50 purple:hover:border-pink-500/50 active:scale-95"
+              aria-label="View Details"
+            >
+              <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 midnight:group-hover:text-cyan-300 purple:group-hover:text-pink-300 transition-colors" />
+            </button>
+          </Tooltip>
+          {request.status === "pending" && (
+            <>
+              <Tooltip content="Approve">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onApprove(request.id);
+                  }}
+                  className="group relative p-2 rounded-lg bg-gradient-to-br from-green-50/50 to-green-100/30 dark:from-green-950/30 dark:to-green-900/20 hover:from-green-100 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/30 transition-all duration-200 cursor-pointer border border-green-200/40 dark:border-green-800/30 hover:border-green-400/60 dark:hover:border-green-600/50 active:scale-95"
+                  aria-label="Approve"
+                >
+                  <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors" />
+                </button>
+              </Tooltip>
+              <Tooltip content="Reject">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onReject(request.id, "Rejected by admin");
+                  }}
+                  className="group relative p-2 rounded-lg bg-gradient-to-br from-red-50/50 to-red-100/30 dark:from-red-950/30 dark:to-red-900/20 hover:from-red-100 hover:to-red-100 dark:hover:from-red-900/40 dark:hover:to-red-800/30 transition-all duration-200 cursor-pointer border border-red-200/40 dark:border-red-800/30 hover:border-red-400/60 dark:hover:border-red-600/50 active:scale-95"
+                  aria-label="Reject"
+                >
+                  <XCircle className="w-4 h-4 text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors" />
+                </button>
+              </Tooltip>
+            </>
+          )}
+          {request.status === "approved" && (
+            <Tooltip content="Process Transfer">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onProcess(request.id);
+                }}
+                className="group relative p-2 rounded-lg bg-gradient-to-br from-emerald-50/50 to-emerald-100/30 dark:from-emerald-950/30 dark:to-emerald-900/20 hover:from-emerald-100 hover:to-emerald-100 dark:hover:from-emerald-900/40 dark:hover:to-emerald-800/30 transition-all duration-200 cursor-pointer border border-emerald-200/40 dark:border-emerald-800/30 hover:border-emerald-400/60 dark:hover:border-emerald-600/50 active:scale-95"
+                aria-label="Process Transfer"
+              >
+                <Play className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors" />
+              </button>
+            </Tooltip>
+          )}
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
-          No Transfer Requests
-        </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
-          There are no transfer requests matching your current filters.
-        </p>
-      </div>
-    );
-  }
+      ),
+    },
+  ];
+
+  // Add animation styles directly to each row when filter changes
+  useEffect(() => {
+    if (animationTrigger > 0) {
+      console.log('🎬 Animation trigger:', animationTrigger);
+
+      // Wait for DataTable to render
+      const timeoutId = setTimeout(() => {
+        // Target tbody rows more specifically
+        const tables = document.querySelectorAll('table');
+        console.log('📊 Found tables:', tables.length);
+
+        tables.forEach((table) => {
+          const rows = table.querySelectorAll('tbody tr');
+          console.log('📝 Found rows in table:', rows.length);
+
+          rows.forEach((row, index) => {
+            const htmlRow = row as HTMLElement;
+            const delay = index / 80;
+            // Apply the exact same animation as DataTable's isSearching state
+            htmlRow.style.animation = `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${delay}s both`;
+            console.log(`✨ Applied animation to row ${index} with delay ${delay}s`);
+          });
+        });
+
+        // Clear animations after they complete
+        setTimeout(() => {
+          tables.forEach((table) => {
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach((row) => {
+              const htmlRow = row as HTMLElement;
+              htmlRow.style.animation = '';
+            });
+          });
+          console.log('🧹 Cleared animations');
+        }, 500);
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [animationTrigger]);
 
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border-b border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
-                Request ID
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
-                Student
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
-                Type
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
-                From
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
-                To
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
-                Requested
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700 midnight:divide-cyan-500/10 purple:divide-pink-500/10">
-            {requests.map((request) => (
-              <tr
-                key={request.id}
-                className="hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors"
-              >
-                <td className="px-4 py-4 whitespace-nowrap">
-                  <span className="text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
-                    {request.id}
-                  </span>
-                </td>
-                <td className="px-4 py-4">
-                  <div className="flex items-center">
-                    {request.profilePhoto ? (
-                      <img
-                        src={request.profilePhoto}
-                        alt={request.studentName}
-                        className="w-8 h-8 rounded-full mr-3"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold mr-3">
-                        {request.studentName.charAt(0)}
-                      </div>
-                    )}
-                    <div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                        {request.studentName}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
-                        {request.studentAdmissionNumber}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap">
-                  <TransferTypeBadge type={request.transferType} />
-                </td>
-                <td className="px-4 py-4">
-                  <div className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                    {request.sourceClass} {request.sourceSection}
-                  </div>
-                  {request.sourceBranchName && (
-                    <div className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
-                      {request.sourceBranchName}
-                    </div>
-                  )}
-                </td>
-                <td className="px-4 py-4">
-                  <div className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                    {getDestination(request)}
-                  </div>
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap">
-                  <TransferStatusBadge status={request.status} />
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                    {formatDate(request.requestedDate)}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
-                    by {request.requestedByName}
-                  </div>
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => onViewDetails(request)}
-                      className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all"
-                      title="View Details"
-                    >
-                      <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-                    </button>
-                    {request.status === "pending" && (
-                      <>
-                        <button
-                          onClick={() => onApprove(request.id)}
-                          className="p-1.5 rounded-lg hover:bg-green-50 dark:hover:bg-green-500/20 transition-all"
-                          title="Approve"
-                        >
-                          <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                        </button>
-                        <button
-                          onClick={() => onReject(request.id, "Rejected by admin")}
-                          className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/20 transition-all"
-                          title="Reject"
-                        >
-                          <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
-                        </button>
-                      </>
-                    )}
-                    {request.status === "approved" && (
-                      <button
-                        onClick={() => onProcess(request.id)}
-                        className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-500/20 transition-all"
-                        title="Process Transfer"
-                      >
-                        <Play className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="relative">
+      {/* Mobile Scroll Indicator */}
+      <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none" />
+
+      <DataTable
+        data={requests}
+        columns={columns}
+        title=""
+        showSearch={false}
+        defaultItemsPerPage={10}
+        itemsPerPageOptions={[5, 10, 15, 20, 25]}
+        getRowKey={(request, index) => `${request.id}-${animationTrigger}-${index}`}
+        emptyMessage="No transfer requests found"
+        enablePagination={true}
+        enableItemsPerPage={true}
+      />
     </div>
   );
 }

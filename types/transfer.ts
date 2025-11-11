@@ -8,6 +8,7 @@ export type TransferType =
   | "class-change"      // Change class within same branch
   | "section-change"    // Change section within same class
   | "internal"          // Internal transfer (combined class/section)
+  | "promotion"         // Promotion to next level/higher school
   | "external";         // Transfer to different school
 
 export type TransferStatus =
@@ -179,3 +180,19 @@ export interface QuickClassChange {
   reason: string;
   notifyParent?: boolean;
 }
+
+// Transfer reason options
+export const TRANSFER_REASONS = [
+  { value: "academic_performance", label: "Academic Performance" },
+  { value: "behavioral_issues", label: "Behavioral Issues" },
+  { value: "parent_request", label: "Parent Request" },
+  { value: "class_size_balancing", label: "Class Size Balancing" },
+  { value: "special_needs", label: "Special Needs Accommodation" },
+  { value: "schedule_conflict", label: "Schedule Conflict" },
+  { value: "peer_relationship", label: "Peer Relationship Issues" },
+  { value: "teacher_recommendation", label: "Teacher Recommendation" },
+  { value: "promotion", label: "Promotion to Next Level" },
+  { value: "administrative", label: "Administrative Reasons" },
+  { value: "medical", label: "Medical Reasons" },
+  { value: "other", label: "Other" },
+] as const;

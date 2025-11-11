@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowRight,
   Clock,
@@ -20,6 +20,7 @@ import SearchFilterBar from "@/components/shared/SearchFilterBar";
 import TransferRequestsTable from "@/components/transfers/TransferRequestsTable";
 import TransferStatisticsCards from "@/components/transfers/TransferStatisticsCards";
 import TransferRequestDetailModal from "@/components/transfers/TransferRequestDetailModal";
+import { useTransfers } from "@/contexts/TransferContext";
 
 // Mock data - replace with actual API call
 const mockTransferRequests: TransferRequest[] = [
@@ -30,6 +31,7 @@ const mockTransferRequests: TransferRequest[] = [
     studentAdmissionNumber: "AD9892302",
     studentClass: "JSS 1",
     studentSection: "A",
+    profilePhoto: "https://i.pravatar.cc/150?img=1",
     transferType: "section-change",
     requestedDate: "2024-01-15",
     effectiveDate: "2024-02-01",
@@ -58,6 +60,7 @@ const mockTransferRequests: TransferRequest[] = [
     studentAdmissionNumber: "AD9892419",
     studentClass: "Primary 1",
     studentSection: "A",
+    profilePhoto: "https://i.pravatar.cc/150?img=5",
     transferType: "cross-branch",
     requestedDate: "2024-01-14",
     effectiveDate: "2024-02-01",
@@ -93,6 +96,7 @@ const mockTransferRequests: TransferRequest[] = [
     studentAdmissionNumber: "AD9892533",
     studentClass: "Primary 1",
     studentSection: "B",
+    profilePhoto: "https://i.pravatar.cc/150?img=9",
     transferType: "class-change",
     requestedDate: "2024-01-12",
     effectiveDate: "2024-01-20",
@@ -124,45 +128,114 @@ const mockTransferRequests: TransferRequest[] = [
 ];
 
 export default function TransferRequestsPage() {
+  const { requests: contextRequests, updateTransferRequest } = useTransfers();
   const [requests, setRequests] = useState<TransferRequest[]>(mockTransferRequests);
   const [selectedRequest, setSelectedRequest] = useState<TransferRequest | null>(null);
   const [filterStatus, setFilterStatus] = useState<TransferStatus | "all">("all");
   const [filterType, setFilterType] = useState<TransferType | "all">("all");
+  const [filterClass, setFilterClass] = useState<string>("all");
+  const [filterYear, setFilterYear] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Initialize with mock data and merge with context requests
+  useEffect(() => {
+    console.log("Transfer Requests Page: Context requests changed", contextRequests);
+    // Merge context requests with mock requests, avoiding duplicates
+    const merged = [
+      ...contextRequests,
+      ...mockTransferRequests.filter(
+        mock => !contextRequests.some(ctx => ctx.id === mock.id)
+      )
+    ];
+    console.log("Transfer Requests Page: Merged requests", merged);
+
+    // Only update if the merged array is different from current requests
+    setRequests(prev => {
+      // Don't reset if we're just getting the same context data
+      if (contextRequests.length === 0 && prev.length > 0) {
+        // Keep existing data if context is empty and we have local updates
+        return prev;
+      }
+      return merged;
+    });
+  }, [contextRequests]);
+
+  // Update selected request when requests change
+  useEffect(() => {
+    if (selectedRequest) {
+      const updated = requests.find(req => req.id === selectedRequest.id);
+      if (updated) {
+        setSelectedRequest(updated);
+      }
+    }
+  }, [requests]);
 
   // Filter requests
   const filteredRequests = requests.filter(request => {
     const matchesStatus = filterStatus === "all" || request.status === filterStatus;
     const matchesType = filterType === "all" || request.transferType === filterType;
+    const matchesClass = filterClass === "all" || request.studentClass === filterClass;
+
+    // Extract year from requested date
+    const requestYear = new Date(request.requestedDate).getFullYear().toString();
+    const matchesYear = filterYear === "all" || requestYear === filterYear;
+
     const matchesSearch = searchQuery === "" ||
       request.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.studentAdmissionNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.id.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return matchesStatus && matchesType && matchesSearch;
+    return matchesStatus && matchesType && matchesClass && matchesYear && matchesSearch;
   });
 
   const handleApprove = (requestId: string) => {
-    setRequests(prev => prev.map(req =>
-      req.id === requestId
-        ? {
-            ...req,
-            status: "approved",
-            approvedBy: "current-user",
-            approvedByName: "Current User",
-            approvedDate: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }
-        : req
-    ));
+    console.log("Page handleApprove called", { requestId });
+
+    // Update in context (which syncs to localStorage)
+    updateTransferRequest(requestId, {
+      status: "approved",
+      approvedBy: "current-user",
+      approvedByName: "Current User",
+      approvedDate: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    // Also update local state for immediate UI update
+    setRequests(prev => {
+      const updated = prev.map(req =>
+        req.id === requestId
+          ? {
+              ...req,
+              status: "approved" as const,
+              approvedBy: "current-user",
+              approvedByName: "Current User",
+              approvedDate: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            }
+          : req
+      );
+      console.log("Page handleApprove: Updated requests", updated);
+      return updated;
+    });
   };
 
   const handleReject = (requestId: string, reason: string) => {
+    // Update in context (which syncs to localStorage)
+    updateTransferRequest(requestId, {
+      status: "rejected",
+      rejectedBy: "current-user",
+      rejectedByName: "Current User",
+      rejectionReason: reason,
+      rejectionDate: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    // Also update local state for immediate UI update
     setRequests(prev => prev.map(req =>
       req.id === requestId
         ? {
             ...req,
-            status: "rejected",
+            status: "rejected" as const,
             rejectedBy: "current-user",
             rejectedByName: "Current User",
             rejectionReason: reason,
@@ -174,11 +247,23 @@ export default function TransferRequestsPage() {
   };
 
   const handleProcess = (requestId: string) => {
+    // Update in context (which syncs to localStorage)
+    updateTransferRequest(requestId, {
+      status: "completed",
+      processedBy: "current-user",
+      processedByName: "Current User",
+      processedDate: new Date().toISOString(),
+      completedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      documentsMigrated: true,
+    });
+
+    // Also update local state for immediate UI update
     setRequests(prev => prev.map(req =>
       req.id === requestId
         ? {
             ...req,
-            status: "completed",
+            status: "completed" as const,
             processedBy: "current-user",
             processedByName: "Current User",
             processedDate: new Date().toISOString(),
@@ -211,12 +296,6 @@ export default function TransferRequestsPage() {
                 onClick: () => console.log("Export clicked"),
                 variant: "secondary",
               },
-              {
-                label: "Refresh",
-                icon: RefreshCw,
-                onClick: () => window.location.reload(),
-                variant: "primary",
-              },
             ]}
           />
         </div>
@@ -231,6 +310,48 @@ export default function TransferRequestsPage() {
         searchPlaceholder="Search by student name, admission number, or request ID..."
         filters={[
           {
+            label: "Class Filter",
+            value: filterClass,
+            onChange: (value) => setFilterClass(value as string),
+            options: [
+              { label: "All Classes", value: "all" },
+              { label: "JSS 1", value: "JSS 1" },
+              { label: "JSS 2", value: "JSS 2" },
+              { label: "JSS 3", value: "JSS 3" },
+              { label: "Primary 1", value: "Primary 1" },
+              { label: "Primary 2", value: "Primary 2" },
+              { label: "SS 1", value: "SS 1" },
+              { label: "SS 2", value: "SS 2" },
+              { label: "SS 3", value: "SS 3" },
+            ],
+          },
+          {
+            label: "Year Filter",
+            value: filterYear,
+            onChange: (value) => setFilterYear(value as string),
+            options: [
+              { label: "All Years", value: "all" },
+              { label: "2025", value: "2025" },
+              { label: "2024", value: "2024" },
+              { label: "2023", value: "2023" },
+              { label: "2022", value: "2022" },
+            ],
+          },
+          {
+            label: "Type Filter",
+            value: filterType,
+            onChange: (value) => setFilterType(value as TransferType | "all"),
+            options: [
+              { label: "All Types", value: "all" },
+              { label: "Section Change", value: "section-change" },
+              { label: "Class Change", value: "class-change" },
+              { label: "Internal Transfer", value: "internal" },
+              { label: "Promotion", value: "promotion" },
+              { label: "Cross-Branch", value: "cross-branch" },
+              { label: "External Transfer", value: "external" },
+            ],
+          },
+          {
             label: "Status Filter",
             value: filterStatus,
             onChange: (value) => setFilterStatus(value as TransferStatus | "all"),
@@ -244,19 +365,6 @@ export default function TransferRequestsPage() {
               { label: "Cancelled", value: "cancelled" },
             ],
           },
-          {
-            label: "Type Filter",
-            value: filterType,
-            onChange: (value) => setFilterType(value as TransferType | "all"),
-            options: [
-              { label: "All Types", value: "all" },
-              { label: "Section Change", value: "section-change" },
-              { label: "Class Change", value: "class-change" },
-              { label: "Internal Transfer", value: "internal" },
-              { label: "Cross-Branch", value: "cross-branch" },
-              { label: "External Transfer", value: "external" },
-            ],
-          },
         ]}
       />
 
@@ -267,6 +375,7 @@ export default function TransferRequestsPage() {
         onApprove={handleApprove}
         onReject={handleReject}
         onProcess={handleProcess}
+        filterKey={`${filterStatus}-${filterType}-${searchQuery}`}
       />
 
       {/* Detail Modal */}
