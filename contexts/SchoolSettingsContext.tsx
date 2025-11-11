@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { isFeatureEnabled, getEnabledFeatures, type FeatureFlagKey } from "@/lib/featureFlags";
+import { BankAccountSettings } from "@/types/tenant";
 
 export type EducationLevel = "Primary" | "Secondary" | "Tertiary";
 export type InstitutionType = "Public" | "Private" | "International";
@@ -25,6 +26,10 @@ interface SchoolSettings {
   tenantId?: string; // Schema-per-tenant identifier
   region?: string; // For regional feature rollout (Nigeria, Ghana, Kenya, etc.)
   subdomain?: string; // Tenant subdomain (e.g., sunrise.educo.africa)
+
+  // Financial settings
+  currency: string; // School's default currency (e.g., NGN, USD, GHS)
+  bankAccount: BankAccountSettings; // Bank account details for payments
 }
 
 interface SchoolSettingsContextType {
@@ -48,6 +53,13 @@ const defaultSettings: SchoolSettings = {
   tenantId: "default",
   region: "Nigeria", // Default region
   subdomain: "demo.educo.africa",
+  // Financial settings
+  currency: "NGN",
+  bankAccount: {
+    bankName: "First Bank",
+    accountNumber: "1234567890",
+    accountName: "School Account",
+  },
 };
 
 const SchoolSettingsContext = createContext<SchoolSettingsContextType | undefined>(
@@ -92,6 +104,8 @@ export function SchoolSettingsProvider({ children }: { children: ReactNode }) {
       const savedInstitutionType = localStorage.getItem("institutionType");
       const savedTertiaryType = localStorage.getItem("tertiaryType");
       const savedScheduleType = localStorage.getItem("scheduleType");
+      const savedCurrency = localStorage.getItem("schoolCurrency");
+      const savedBankAccount = localStorage.getItem("schoolBankAccount");
 
       let supportedLevels: EducationLevel[] = defaultSettings.supportedLevels;
       let supportsMultipleLevels = defaultSettings.supportsMultipleLevels;
@@ -132,6 +146,17 @@ export function SchoolSettingsProvider({ children }: { children: ReactNode }) {
       // Determine default education level (first in the list or fallback)
       const defaultEducationLevel = supportedLevels[0] || defaultSettings.defaultEducationLevel;
 
+      // Load bank account settings
+      const currency = savedCurrency || defaultSettings.currency;
+      let bankAccount = defaultSettings.bankAccount;
+      if (savedBankAccount) {
+        try {
+          bankAccount = JSON.parse(savedBankAccount);
+        } catch (e) {
+          // Use default if parsing fails
+        }
+      }
+
       setSettings((prev) => ({
         ...prev,
         supportedLevels,
@@ -140,21 +165,29 @@ export function SchoolSettingsProvider({ children }: { children: ReactNode }) {
         tertiaryType,
         scheduleType,
         supportsMultipleLevels,
+        currency,
+        bankAccount,
       }));
     };
 
     // Load on mount
     loadSettings();
 
-    // Listen for changes from SchoolProfileSettings component
+    // Listen for changes from SchoolProfileSettings and BankAccountSettings components
     const handleSchoolProfileChange = () => {
       loadSettings();
     };
 
+    const handleBankAccountChange = () => {
+      loadSettings();
+    };
+
     window.addEventListener("schoolProfileChanged", handleSchoolProfileChange);
+    window.addEventListener("bankAccountChanged", handleBankAccountChange);
 
     return () => {
       window.removeEventListener("schoolProfileChanged", handleSchoolProfileChange);
+      window.removeEventListener("bankAccountChanged", handleBankAccountChange);
     };
   }, []);
 

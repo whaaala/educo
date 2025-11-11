@@ -44,6 +44,14 @@ export interface SignatureConfig {
   sealImage?: string;
 }
 
+export interface BankAccountSettings {
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
+  swiftCode?: string;
+  routingNumber?: string;
+}
+
 export interface TenantTranscriptConfig {
   tenantId: string;
   branding: SchoolBranding;
@@ -51,4 +59,12 @@ export interface TenantTranscriptConfig {
   signatures: SignatureConfig;
   verificationUrl?: string;
   customFields?: Record<string, any>;
+}
+
+export interface TenantSettings {
+  tenantId: string;
+  schoolName: string;
+  currency: string;
+  bankAccount: BankAccountSettings;
+  transcriptConfig?: TenantTranscriptConfig;
 }

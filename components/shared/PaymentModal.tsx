@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, CreditCard, DollarSign, CheckCircle, FileText } from "lucide-react";
 import FormInput from "./FormInput";
+import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export default function PaymentModal({
   amount,
   currency,
 }: PaymentModalProps) {
+  const { settings } = useSchoolSettings();
   const [paymentMethod, setPaymentMethod] = useState<"card" | "bank" | "cash">("card");
   const [isProcessing, setIsProcessing] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -249,15 +251,15 @@ export default function PaymentModal({
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-500 dark:text-gray-400">Bank Name:</span>
-                    <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">First Bank</span>
+                    <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{settings.bankAccount.bankName}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500 dark:text-gray-400">Account Number:</span>
-                    <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">1234567890</span>
+                    <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{settings.bankAccount.accountNumber}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500 dark:text-gray-400">Account Name:</span>
-                    <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">School Account</span>
+                    <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{settings.bankAccount.accountName}</span>
                   </div>
                 </div>
               </div>

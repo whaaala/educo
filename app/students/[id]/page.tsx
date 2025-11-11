@@ -259,27 +259,34 @@ export default function ViewStudentPage() {
                 </span>
               </div>
             </div>
-            <div className="flex flex-wrap sm:flex-nowrap gap-3">
-              <SecondaryButton
-                label="Login Details"
-                icon={KeyRound}
-                onClick={() => setIsLoginDetailsModalOpen(true)}
-              />
-              <RequestTranscriptButton
-                onClick={handleRequestTranscript}
-              />
-              <ActionButton
-                label="Edit Student"
-                icon={Edit}
-                onClick={() => router.push(`/students/edit/${studentId}`)}
-              />
-              <button
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 border border-red-200 dark:border-red-800 midnight:border-red-700 purple:border-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 midnight:hover:bg-red-900/30 purple:hover:bg-red-900/30 transition-all duration-200 active:scale-95 cursor-pointer"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>Delete Student</span>
-              </button>
+            <div className="flex flex-wrap gap-3">
+              {/* Primary Actions */}
+              <div className="flex flex-wrap sm:flex-nowrap gap-3">
+                <ActionButton
+                  label="Edit Student"
+                  icon={Edit}
+                  onClick={() => router.push(`/students/edit/${studentId}`)}
+                />
+                <RequestTranscriptButton
+                  onClick={handleRequestTranscript}
+                />
+                <SecondaryButton
+                  label="Login Details"
+                  icon={KeyRound}
+                  onClick={() => setIsLoginDetailsModalOpen(true)}
+                />
+              </div>
+
+              {/* Destructive Action - Separated */}
+              <div className="w-full sm:w-auto sm:ml-auto">
+                <button
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 border border-red-200 dark:border-red-800 midnight:border-red-700 purple:border-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 midnight:hover:bg-red-900/30 purple:hover:bg-red-900/30 transition-all duration-200 active:scale-95 cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Delete Student</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

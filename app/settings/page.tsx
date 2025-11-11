@@ -10,8 +10,9 @@ import UserPermissionManagement from "@/components/settings/UserPermissionManage
 import AttendanceSettings from "@/components/settings/AttendanceSettings";
 import FeeSettings from "@/components/settings/FeeSettings";
 import SchoolProfileSettings from "@/components/settings/SchoolProfileSettings";
+import BankAccountSettings from "@/components/settings/BankAccountSettings";
 import { usePageLoad } from "@/hooks/usePageLoad";
-import { Settings as SettingsIcon, Globe, Palette, Calendar, Bell, Languages, Clock, Shield, UserCheck, DollarSign, Building2, GraduationCap } from "lucide-react";
+import { Settings as SettingsIcon, Globe, Palette, Calendar, Bell, Languages, Clock, Shield, UserCheck, DollarSign, Building2, GraduationCap, Landmark } from "lucide-react";
 import Link from "next/link";
 
 export default function SettingsPage() {
@@ -150,6 +151,31 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* Bank Account Settings Section */}
+          <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+            {/* Section Header */}
+            <div className="bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 px-6 py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
+                  <Landmark className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    Bank Account Settings
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+                    Configure bank account details for payment collection
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Section Content */}
+            <div className="p-6">
+              <BankAccountSettings />
             </div>
           </section>
 
