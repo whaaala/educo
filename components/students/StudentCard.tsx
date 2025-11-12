@@ -21,6 +21,7 @@ export interface Student {
   avatar?: string;
   educationLevel?: "Primary" | "Secondary" | "Tertiary" | "";
   institutionType?: "Public" | "Private" | "International" | "";
+  tenantId?: string; // Schema-per-tenant identifier (Educo v4.0)
 }
 
 interface StudentCardProps {

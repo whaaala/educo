@@ -25,6 +25,7 @@ import {
   ArrowRight,
   AlertTriangle,
 } from "lucide-react";
+import TenantSwitcher from "@/components/admin/TenantSwitcher";
 
 // Custom Naira Icon Component
 const NairaIcon = ({ className }: { className?: string }) => (
@@ -120,6 +121,7 @@ const menuItems: MenuItem[] = [
       { id: "regional", label: "Regional Settings", icon: <Globe className="w-4 h-4" />, href: "/settings" },
       { id: "general", label: "General Settings", icon: <Settings className="w-4 h-4" />, href: "/settings/general" },
       { id: "schools", label: "Schools & Branches", icon: <Home className="w-4 h-4" />, href: "/settings/schools" },
+      { id: "tenants", label: "Tenant Management", icon: <Building2 className="w-4 h-4" />, href: "/admin/tenants" },
       { id: "users", label: "User Management", icon: <Users className="w-4 h-4" />, href: "/settings/users" },
     ],
   },
@@ -697,7 +699,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
 
           {/* Footer - Show based on mobile/collapsed state */}
           {(isMobile === true || (isMobile === false && !isCollapsed)) && (
-            <div className="p-4 border-t border-gray-200/80 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-500/5 dark:to-indigo-500/5 midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5">
+            <div className="p-4 border-t border-gray-200/80 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-500/5 dark:to-indigo-500/5 midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5 space-y-3">
+              {/* Tenant Switcher */}
+              <TenantSwitcher />
+
+              {/* Help Section */}
               <div className="px-4 py-3.5 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-blue-600/10 midnight:from-cyan-500/10 midnight:via-blue-500/10 midnight:to-cyan-600/10 purple:from-pink-500/10 purple:via-purple-500/10 purple:to-pink-600/10 rounded-xl border border-blue-200/50 dark:border-blue-500/20 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-200">
                 <p className="text-sm font-bold text-blue-900 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

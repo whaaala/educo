@@ -797,6 +797,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "10 Jan 2017",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=1",
+    tenantId: "educo-default", // Educo v4.0 Multi-Tenant
   },
   {
     id: "AD9892433",
@@ -807,6 +808,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "19 Aug 2014",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=2",
+    tenantId: "educo-default",
   },
   {
     id: "AD9892432",
@@ -817,6 +819,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "5 Dec 2017",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=3",
+    tenantId: "educo-default",
   },
   {
     id: "AD9892431",
@@ -828,6 +831,7 @@ export const sampleStudents: Student[] = [
     leftOn: "15 Jun 2019",
     status: "Inactive",
     avatar: "https://i.pravatar.cc/150?img=4",
+    tenantId: "greenfield-international",
   },
   {
     id: "AD9892430",

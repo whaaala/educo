@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { isFeatureEnabled, getEnabledFeatures, type FeatureFlagKey } from "@/lib/featureFlags";
 import { BankAccountSettings } from "@/types/tenant";
+import { getTenantById } from "@/lib/mockTenants";
+import { Tenant } from "@/types/school";
 
 export type EducationLevel = "Primary" | "Secondary" | "Tertiary";
 export type InstitutionType = "Public" | "Private" | "International";
@@ -38,6 +40,9 @@ interface SchoolSettingsContextType {
   // Feature flag helpers
   isFeatureEnabled: (flag: FeatureFlagKey) => boolean;
   getEnabledFeatures: () => FeatureFlagKey[];
+  // Tenant helpers (Educo v4.0)
+  currentTenant: Tenant | undefined;
+  switchTenant: (tenantId: string) => void;
 }
 
 const defaultSettings: SchoolSettings = {
@@ -96,10 +101,38 @@ function mapInstitutionType(type: string): InstitutionType {
 
 export function SchoolSettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<SchoolSettings>(defaultSettings);
+  const [currentTenant, setCurrentTenant] = useState<Tenant | undefined>(undefined);
+
+  // Load tenant data and sync with settings
+  useEffect(() => {
+    const tenantId = settings.tenantId || "educo-default";
+    const tenant = getTenantById(tenantId);
+    setCurrentTenant(tenant);
+
+    // Sync tenant config to settings if tenant exists
+    if (tenant) {
+      setSettings((prev) => ({
+        ...prev,
+        tenantId: tenant.id,
+        schoolName: tenant.name,
+        supportedLevels: tenant.config.supportedLevels,
+        defaultEducationLevel: tenant.config.defaultEducationLevel,
+        institutionType: tenant.config.institutionType,
+        tertiaryType: tenant.config.tertiaryType,
+        scheduleType: tenant.config.scheduleType,
+        supportsMultipleLevels: tenant.config.supportsMultipleLevels,
+        region: tenant.config.region,
+        subdomain: tenant.subdomain,
+        currency: tenant.config.currency,
+        bankAccount: tenant.config.bankAccount || prev.bankAccount,
+      }));
+    }
+  }, [settings.tenantId]);
 
   // Load settings from localStorage on mount and listen for changes
   useEffect(() => {
     const loadSettings = () => {
+      const savedTenantId = localStorage.getItem("currentTenantId");
       const savedLevels = localStorage.getItem("educationLevels");
       const savedInstitutionType = localStorage.getItem("institutionType");
       const savedTertiaryType = localStorage.getItem("tertiaryType");
@@ -157,8 +190,12 @@ export function SchoolSettingsProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      // Use saved tenant ID or default
+      const tenantId = savedTenantId || defaultSettings.tenantId;
+
       setSettings((prev) => ({
         ...prev,
+        tenantId,
         supportedLevels,
         defaultEducationLevel,
         institutionType,
@@ -195,6 +232,15 @@ export function SchoolSettingsProvider({ children }: { children: ReactNode }) {
     setSettings((prev) => ({ ...prev, ...newSettings }));
   };
 
+  // Switch to a different tenant (Educo v4.0)
+  const switchTenant = (tenantId: string) => {
+    localStorage.setItem("currentTenantId", tenantId);
+    setSettings((prev) => ({ ...prev, tenantId }));
+
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent("tenantChanged", { detail: { tenantId } }));
+  };
+
   // Feature flag helpers that use current school context
   const checkFeatureEnabled = (flag: FeatureFlagKey): boolean => {
     return isFeatureEnabled(flag, {
@@ -219,6 +265,8 @@ export function SchoolSettingsProvider({ children }: { children: ReactNode }) {
         updateSettings,
         isFeatureEnabled: checkFeatureEnabled,
         getEnabledFeatures: getContextEnabledFeatures,
+        currentTenant,
+        switchTenant,
       }}
     >
       {children}
