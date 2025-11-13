@@ -2,12 +2,30 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Download, Printer, Eye, FileText, CheckCircle2, ArrowLeft } from "lucide-react";
+import {
+  Download,
+  Printer,
+  Eye,
+  FileText,
+  CheckCircle2,
+  ArrowLeft,
+  GraduationCap,
+  Users,
+  Calendar,
+  BookOpen,
+  UserCheck,
+  Shield,
+  MessageSquare,
+  BarChart3
+} from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
 import Button from "@/components/shared/Button";
 import PageHeader from "@/components/shared/PageHeader";
+import FormDropdown from "@/components/shared/FormDropdown";
 import { Student } from "@/components/students/StudentCard";
+import StudentSelectionGrid from "@/components/students/StudentSelectionGrid";
 import { useStudentsByTenant } from "@/hooks/useStudentsByTenant";
+import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useReactToPrint } from "react-to-print";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -59,10 +77,32 @@ interface ReportCardData {
   principalRemarks: string;
 }
 
-const CLASSES = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+// Class options by education level
+const PRIMARY_CLASSES = ["I", "II", "III", "IV", "V", "VI"];
+const SECONDARY_CLASSES = ["JSS 1", "JSS 2", "JSS 3", "SSS 1", "SSS 2", "SSS 3"];
+const TERTIARY_CLASSES = ["100 Level", "200 Level", "300 Level", "400 Level", "500 Level"];
+
 const SECTIONS = ["A", "B", "C", "D", "E"];
 const PRIMARY_TERMS: Term[] = ["First Term", "Second Term", "Third Term"];
 const TERTIARY_TERMS: Term[] = ["First Semester", "Second Semester"];
+
+// Helper function to get classes based on education level
+const getClassesByLevel = (level: EducationLevel): string[] => {
+  switch (level) {
+    case "Primary":
+      return PRIMARY_CLASSES;
+    case "Secondary":
+      return SECONDARY_CLASSES;
+    case "Tertiary":
+      return TERTIARY_CLASSES;
+    default:
+      return SECONDARY_CLASSES;
+  }
+};
+
+// Generate academic years (current year - 5 to current year + 1)
+const currentYear = new Date().getFullYear();
+const ACADEMIC_YEARS = Array.from({ length: 7 }, (_, i) => (currentYear - 5 + i).toString());
 
 const generateMockSubjects = (educationLevel: EducationLevel): SubjectGrade[] => {
   if (educationLevel === "Primary") {
@@ -129,15 +169,16 @@ export default function ReportCardsPage() {
   const printRef = useRef<HTMLDivElement>(null);
   const [currentStep, setCurrentStep] = useState<"config" | "preview" | "generate">("config");
 
-  // Educo v4.0 Multi-Tenant: Get students for current tenant only
+  // Educo v4.0 Multi-Tenant: Get students and settings for current tenant
   const tenantStudents = useStudentsByTenant();
+  const { settings } = useSchoolSettings();
   const [students, setStudents] = useState<Student[]>([]);
 
   const [config, setConfig] = useState<ReportCardConfig>({
-    educationLevel: "Primary",
+    educationLevel: settings.defaultEducationLevel,
     class: "",
     section: "",
-    term: "First Term",
+    term: settings.defaultEducationLevel === "Tertiary" ? "First Semester" : "First Term",
     academicYear: "2024",
     includeRemarks: true,
     includeAttendance: true,
@@ -160,29 +201,18 @@ export default function ReportCardsPage() {
     }));
   }, [tenantStudents]);
 
-  const filteredStudents = students.filter(
-    (student) =>
-      (!config.class || student.class === config.class) &&
-      (!config.section || student.class.includes(config.section))
-  );
+  const filteredStudents = students.filter((student) => {
+    // Parse student class format: "JSS 1, A" -> class: "JSS 1", section: "A"
+    const [studentClass, studentSection] = student.class.split(", ").map((s) => s.trim());
 
-  const handleSelectAll = () => {
-    if (config.selectedStudents.size === filteredStudents.length) {
-      setConfig({ ...config, selectedStudents: new Set() });
-    } else {
-      setConfig({ ...config, selectedStudents: new Set(filteredStudents.map((s) => s.id)) });
-    }
-  };
+    // Filter by class: check if class matches (or no class filter set)
+    const classMatch = !config.class || studentClass === config.class;
 
-  const handleSelectStudent = (id: string) => {
-    const newSelected = new Set(config.selectedStudents);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    setConfig({ ...config, selectedStudents: newSelected });
-  };
+    // Filter by section: check if section matches (or no section filter set)
+    const sectionMatch = !config.section || studentSection === config.section;
+
+    return classMatch && sectionMatch;
+  });
 
   const generateReportCards = () => {
     const cards: ReportCardData[] = Array.from(config.selectedStudents).map((studentId, index) => {
@@ -290,199 +320,273 @@ export default function ReportCardsPage() {
       {/* Configuration Step */}
       {currentStep === "config" && (
         <div className="space-y-6">
+          {/* Quick Links Card */}
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                  <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+                    Term/Semester Report Cards
+                  </h3>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    Generate single term/semester report cards for multiple students in the same class
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => router.push("/students/cumulative-report")}
+                icon={<BarChart3 className="w-4 h-4" />}
+              >
+                Cumulative Reports
+              </Button>
+            </div>
+          </div>
           {/* Config Form */}
-          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm space-y-6">
-            <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-              Report Card Settings
-            </h3>
-
-            <div className="grid grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                  Education Level <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={config.educationLevel}
-                  onChange={(e) =>
-                    setConfig({
-                      ...config,
-                      educationLevel: e.target.value as EducationLevel,
-                      term: e.target.value === "Tertiary" ? "First Semester" : "First Term",
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="Primary">Primary</option>
-                  <option value="Secondary">Secondary</option>
-                  <option value="Tertiary">Tertiary</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                  Class <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={config.class}
-                  onChange={(e) => setConfig({ ...config, class: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="">Select class...</option>
-                  {CLASSES.map((cls) => (
-                    <option key={cls} value={cls}>
-                      Class {cls}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                  Section
-                </label>
-                <select
-                  value={config.section}
-                  onChange={(e) => setConfig({ ...config, section: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="">All sections</option>
-                  {SECTIONS.map((section) => (
-                    <option key={section} value={section}>
-                      Section {section}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                  Term/Semester <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={config.term}
-                  onChange={(e) => setConfig({ ...config, term: e.target.value as Term })}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  {(config.educationLevel === "Tertiary" ? TERTIARY_TERMS : PRIMARY_TERMS).map(
-                    (term) => (
-                      <option key={term} value={term}>
-                        {term}
-                      </option>
-                    )
-                  )}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                  Academic Year <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={config.academicYear}
-                  onChange={(e) => setConfig({ ...config, academicYear: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="2024"
-                />
+          <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                    Report Card Settings
+                  </h3>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    Configure report card parameters and options
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-                Include in Report Card
-              </h4>
-              <div className="flex gap-6">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={config.includeAttendance}
-                    onChange={(e) =>
-                      setConfig({ ...config, includeAttendance: e.target.checked })
+            {/* Form Content */}
+            <div className="p-6 space-y-8">
+              {/* Academic Configuration */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                    <GraduationCap className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                    Academic Configuration
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {/* Education Level */}
+                  <FormDropdown
+                    label="Education Level"
+                    icon={<GraduationCap className="w-full h-full" />}
+                    iconBgColor="bg-blue-100 dark:bg-blue-900/30"
+                    iconColor="text-blue-600 dark:text-blue-400"
+                    value={config.educationLevel}
+                    onChange={(value) =>
+                      setConfig({
+                        ...config,
+                        educationLevel: value as EducationLevel,
+                        term: value === "Tertiary" ? "First Semester" : "First Term",
+                      })
                     }
-                    className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-600"
+                    options={settings.supportedLevels.map((level) => ({
+                      value: level,
+                      label: level,
+                    }))}
+                    required
+                    disabled={settings.supportedLevels.length === 1}
                   />
-                  <span className="text-sm text-neutral-700 dark:text-neutral-300">
-                    Attendance
-                  </span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={config.includeConduct}
-                    onChange={(e) => setConfig({ ...config, includeConduct: e.target.checked })}
-                    className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-600"
+
+                  {/* Class */}
+                  <FormDropdown
+                    label="Class"
+                    icon={<BookOpen className="w-full h-full" />}
+                    iconBgColor="bg-green-100 dark:bg-green-900/30"
+                    iconColor="text-green-600 dark:text-green-400"
+                    value={config.class}
+                    onChange={(value) => setConfig({ ...config, class: value })}
+                    options={[
+                      { value: "", label: "Select class..." },
+                      ...getClassesByLevel(config.educationLevel).map((cls) => ({
+                        value: cls,
+                        label: cls,
+                      })),
+                    ]}
+                    placeholder="Select class..."
+                    required
                   />
-                  <span className="text-sm text-neutral-700 dark:text-neutral-300">
-                    Conduct & Behavior
-                  </span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={config.includeRemarks}
-                    onChange={(e) => setConfig({ ...config, includeRemarks: e.target.checked })}
-                    className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-600"
+
+                  {/* Section */}
+                  <FormDropdown
+                    label="Section"
+                    icon={<Users className="w-full h-full" />}
+                    iconBgColor="bg-purple-100 dark:bg-purple-900/30"
+                    iconColor="text-purple-600 dark:text-purple-400"
+                    value={config.section}
+                    onChange={(value) => setConfig({ ...config, section: value })}
+                    options={[
+                      { value: "", label: "All sections" },
+                      ...SECTIONS.map((section) => ({
+                        value: section,
+                        label: `Section ${section}`,
+                      })),
+                    ]}
+                    placeholder="All sections"
                   />
-                  <span className="text-sm text-neutral-700 dark:text-neutral-300">
-                    Teacher/Principal Remarks
-                  </span>
-                </label>
+                </div>
+              </div>
+
+              {/* Term & Year Configuration */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-1.5 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                    <Calendar className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                    Term & Academic Year
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Term/Semester */}
+                  <FormDropdown
+                    label="Term/Semester"
+                    icon={<Calendar className="w-full h-full" />}
+                    iconBgColor="bg-indigo-100 dark:bg-indigo-900/30"
+                    iconColor="text-indigo-600 dark:text-indigo-400"
+                    value={config.term}
+                    onChange={(value) => setConfig({ ...config, term: value as Term })}
+                    options={(config.educationLevel === "Tertiary" ? TERTIARY_TERMS : PRIMARY_TERMS).map(
+                      (term) => ({
+                        value: term,
+                        label: term,
+                      })
+                    )}
+                    required
+                  />
+
+                  {/* Academic Year */}
+                  <FormDropdown
+                    label="Academic Year"
+                    icon={<Calendar className="w-full h-full" />}
+                    iconBgColor="bg-orange-100 dark:bg-orange-900/30"
+                    iconColor="text-orange-600 dark:text-orange-400"
+                    value={config.academicYear}
+                    onChange={(value) => setConfig({ ...config, academicYear: value })}
+                    options={ACADEMIC_YEARS.map((year) => ({
+                      value: year,
+                      label: year,
+                    }))}
+                    placeholder="Select year"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Additional Options */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                    Include in Report Card
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Attendance */}
+                  <label className="group relative flex items-start gap-3 p-4 rounded-lg border-2 border-neutral-200 dark:border-neutral-700 cursor-pointer transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 has-[:checked]:border-blue-500 dark:has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 dark:has-[:checked]:bg-blue-900/20">
+                    <input
+                      type="checkbox"
+                      checked={config.includeAttendance}
+                      onChange={(e) =>
+                        setConfig({ ...config, includeAttendance: e.target.checked })
+                      }
+                      className="mt-0.5 w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-colors"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <UserCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <span className="font-medium text-sm text-neutral-900 dark:text-neutral-100">
+                          Attendance
+                        </span>
+                      </div>
+                      <p className="text-xs text-neutral-600 dark:text-neutral-400">
+                        Include attendance records
+                      </p>
+                    </div>
+                  </label>
+
+                  {/* Conduct & Behavior */}
+                  <label className="group relative flex items-start gap-3 p-4 rounded-lg border-2 border-neutral-200 dark:border-neutral-700 cursor-pointer transition-all duration-200 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50/50 dark:hover:bg-purple-900/10 has-[:checked]:border-purple-500 dark:has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50 dark:has-[:checked]:bg-purple-900/20">
+                    <input
+                      type="checkbox"
+                      checked={config.includeConduct}
+                      onChange={(e) => setConfig({ ...config, includeConduct: e.target.checked })}
+                      className="mt-0.5 w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-purple-600 focus:ring-2 focus:ring-purple-500 focus:ring-offset-0 cursor-pointer transition-colors"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        <span className="font-medium text-sm text-neutral-900 dark:text-neutral-100">
+                          Conduct & Behavior
+                        </span>
+                      </div>
+                      <p className="text-xs text-neutral-600 dark:text-neutral-400">
+                        Include behavioral assessment
+                      </p>
+                    </div>
+                  </label>
+
+                  {/* Teacher/Principal Remarks */}
+                  <label className="group relative flex items-start gap-3 p-4 rounded-lg border-2 border-neutral-200 dark:border-neutral-700 cursor-pointer transition-all duration-200 hover:border-green-300 dark:hover:border-green-600 hover:bg-green-50/50 dark:hover:bg-green-900/10 has-[:checked]:border-green-500 dark:has-[:checked]:border-green-500 has-[:checked]:bg-green-50 dark:has-[:checked]:bg-green-900/20">
+                    <input
+                      type="checkbox"
+                      checked={config.includeRemarks}
+                      onChange={(e) => setConfig({ ...config, includeRemarks: e.target.checked })}
+                      className="mt-0.5 w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-green-600 focus:ring-2 focus:ring-green-500 focus:ring-offset-0 cursor-pointer transition-colors"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <MessageSquare className="w-4 h-4 text-green-600 dark:text-green-400" />
+                        <span className="font-medium text-sm text-neutral-900 dark:text-neutral-100">
+                          Teacher/Principal Remarks
+                        </span>
+                      </div>
+                      <p className="text-xs text-neutral-600 dark:text-neutral-400">
+                        Include comments and feedback
+                      </p>
+                    </div>
+                  </label>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Student Selection */}
-          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-                Select Students
-              </h3>
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                  <span className="font-semibold text-purple-600 dark:text-purple-400">
-                    {config.selectedStudents.size}
-                  </span>{" "}
-                  of {filteredStudents.length} selected
-                </span>
-                <Button variant="outline" size="sm" onClick={handleSelectAll}>
-                  {config.selectedStudents.size === filteredStudents.length
-                    ? "Deselect All"
-                    : "Select All"}
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto">
-              {filteredStudents.map((student) => (
-                <label
-                  key={student.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors ${
-                    config.selectedStudents.has(student.id)
-                      ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
-                      : "border-neutral-200 dark:border-neutral-700 hover:border-purple-300 dark:hover:border-purple-700"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={config.selectedStudents.has(student.id)}
-                    onChange={() => handleSelectStudent(student.id)}
-                    className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-600"
-                  />
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
-                    {student.name.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
-                      {student.name}
-                    </p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                      {student.rollNo}
-                    </p>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
+          <StudentSelectionGrid
+            items={filteredStudents}
+            selectedItems={config.selectedStudents}
+            onSelectionChange={(selected) => setConfig({ ...config, selectedStudents: selected })}
+            title="Select Students"
+            searchPlaceholder="Search by name or admission number..."
+            displayFields={{
+              primaryField: "name",
+              secondaryField: "id",
+              avatarField: "avatar",
+            }}
+            searchFilter={(student, query) => {
+              const lowerQuery = query.toLowerCase();
+              return (
+                student.name.toLowerCase().includes(lowerQuery) ||
+                student.id.toLowerCase().includes(lowerQuery)
+              );
+            }}
+          />
 
           <div className="flex justify-end">
             <Button
