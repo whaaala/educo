@@ -1,0 +1,370 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import {
+  X,
+  Calendar,
+  Layers,
+  Clock,
+  CreditCard,
+  FileText,
+  Hash,
+} from "lucide-react";
+
+import FormInput from "./FormInput";
+import FormDropdown from "./FormDropdown";
+import FormTextarea from "./FormTextarea";
+import FormButton from "./FormButton";
+
+// Custom Naira Icon Component
+const NairaIcon = ({ className }: { className?: string }) => (
+  <span className={className}>₦</span>
+);
+
+interface Student {
+  id: string;
+  name: string;
+  class: string;
+  avatar?: string;
+  totalOutstanding: string;
+  lastDate: string;
+  dueDate?: string; // Optional due date for payment
+  status: "Paid" | "Unpaid" | "Balanced" | "Due" | "Overdue";
+}
+
+interface CollectFeesModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  student: Student;
+}
+
+export default function CollectFeesModal({
+  isOpen,
+  onClose,
+  student,
+}: CollectFeesModalProps) {
+  const [feesGroup, setFeesGroup] = useState("");
+  const [feesType, setFeesType] = useState("");
+  const [amount, setAmount] = useState("");
+  const [collectionDate, setCollectionDate] = useState("");
+  const [paymentType, setPaymentType] = useState("");
+  const [paymentReference, setPaymentReference] = useState("");
+  const [status, setStatus] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [mounted, setMounted] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Handle mounting for portal
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  // Scroll modal into view when it opens
+  useEffect(() => {
+    if (isOpen && modalRef.current) {
+      setTimeout(() => {
+        modalRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }, 100);
+    }
+  }, [isOpen]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle form submission
+    console.log({
+      feesGroup,
+      feesType,
+      amount,
+      collectionDate,
+      paymentType,
+      paymentReference,
+      status,
+      notes,
+    });
+    onClose();
+  };
+
+  if (!isOpen || !mounted) return null;
+
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/60 backdrop-blur-md pt-4 pb-4 px-4 sm:px-6 overflow-y-auto">
+      <div ref={modalRef} className="relative w-full max-w-3xl bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200">
+        {/* Header with Gradient */}
+        <div className="flex-shrink-0 relative bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 midnight:from-cyan-600 midnight:to-purple-600 purple:from-pink-600 purple:to-purple-600 px-4 sm:px-5 py-3 sm:py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <span className="text-xl">💰</span>
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">
+                  Collect Fees
+                </h2>
+                <p className="text-xs text-white/80 mt-0.5">Process fee payment for student</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-lg hover:bg-white/10 transition-colors group cursor-pointer"
+            >
+              <X className="w-5 h-5 text-white/80 group-hover:text-white transition-colors" />
+            </button>
+          </div>
+        </div>
+
+        {/* Student Info Card */}
+        <div className="px-4 sm:px-5 py-3 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 midnight:from-cyan-900/10 midnight:to-cyan-800/5 purple:from-pink-900/10 purple:to-pink-800/5">
+          <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-3 shadow-sm border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="flex items-center gap-3">
+              {student.avatar ? (
+                <div className="relative cursor-pointer flex-shrink-0">
+                  <img
+                    src={student.avatar}
+                    alt={student.name}
+                    className="w-12 h-12 rounded-lg object-cover ring-2 ring-blue-500/20 dark:ring-blue-400/20"
+                  />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 rounded-full flex items-center justify-center text-white text-[9px] font-bold shadow-lg">
+                    ✓
+                  </div>
+                </div>
+              ) : (
+                <div className="relative cursor-pointer flex-shrink-0">
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 midnight:from-cyan-600 midnight:to-purple-600 purple:from-pink-600 purple:to-purple-600 flex items-center justify-center text-white font-bold text-base shadow-lg ring-2 ring-blue-500/20">
+                    {student.name.split(" ").map((n) => n[0]).join("")}
+                  </div>
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                    {student.name}
+                  </h3>
+                  <span className="px-2 py-0.5 text-[11px] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 rounded">
+                    {student.id}
+                  </span>
+                </div>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2">
+                  Class: {student.class}
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-gray-100 dark:bg-gray-700/50 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-md p-1.5">
+                    <span className="text-[10px] font-bold text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide block mb-0.5">
+                      Outstanding
+                    </span>
+                    <p className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      ₦{student.totalOutstanding}
+                    </p>
+                  </div>
+                  <div className="bg-gray-100 dark:bg-gray-700/50 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-md p-1.5">
+                    <span className="text-[10px] font-bold text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide block mb-0.5">
+                      Last Date
+                    </span>
+                    <p className="text-[11px] font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight">
+                      {student.lastDate}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-bold shadow-sm ${
+                        student.status === "Paid" || student.status === "Balanced"
+                          ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 ring-1 ring-green-500/30"
+                          : student.status === "Due"
+                          ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 ring-1 ring-yellow-500/30"
+                          : student.status === "Overdue"
+                          ? "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 ring-1 ring-red-500/30"
+                          : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 ring-1 ring-red-500/30"
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          student.status === "Paid" || student.status === "Balanced"
+                            ? "bg-green-600 animate-pulse"
+                            : student.status === "Due"
+                            ? "bg-yellow-600 animate-pulse"
+                            : "bg-red-600 animate-pulse"
+                        }`}
+                      ></span>
+                      {student.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Form - Scrollable Content */}
+        <div className="flex-1 overflow-y-auto overflow-x-visible">
+          <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            {/* Fees Group */}
+            <FormDropdown
+              label="Fees Group"
+              icon={<Layers className="w-3.5 h-3.5" />}
+              iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+              iconColor="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+              value={feesGroup}
+              onChange={setFeesGroup}
+              options={[
+                { value: "tuition", label: "💼 Tuition Fees" },
+                { value: "transport", label: "🚌 Transport Fees" },
+                { value: "library", label: "📚 Library Fees" },
+                { value: "sports", label: "⚽ Sports Fees" },
+                { value: "exam", label: "📝 Examination Fees" },
+              ]}
+              placeholder="Select fees group"
+            />
+
+            {/* Fees Type */}
+            <FormDropdown
+              label="Fees Type"
+              icon={<Clock className="w-3.5 h-3.5" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30"
+              iconColor="text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400"
+              value={feesType}
+              onChange={setFeesType}
+              options={[
+                { value: "monthly", label: "📅 Monthly" },
+                { value: "quarterly", label: "📆 Quarterly" },
+                { value: "semester", label: "🗓️ Semester" },
+                { value: "annual", label: "📋 Annual" },
+                { value: "onetime", label: "⚡ One-time" },
+              ]}
+              placeholder="Select payment frequency"
+            />
+
+            {/* Amount */}
+            <FormInput
+              label="Amount"
+              icon={<NairaIcon className="w-3.5 h-3.5" />}
+              iconBgColor="bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30"
+              iconColor="text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400"
+              value={amount}
+              onChange={setAmount}
+              placeholder="0.00"
+              type="text"
+              leftIcon={<span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-bold text-sm">₦</span>}
+              leftIconBg="bg-gray-100 dark:bg-gray-700 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+            />
+
+            {/* Collection Date */}
+            <FormInput
+              label="Collection Date"
+              icon={<Calendar className="w-3.5 h-3.5" />}
+              iconBgColor="bg-orange-100 dark:bg-orange-900/30 midnight:bg-orange-900/30 purple:bg-orange-900/30"
+              iconColor="text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400"
+              value={collectionDate}
+              onChange={setCollectionDate}
+              placeholder="Select collection date"
+              type="date"
+            />
+
+            {/* Payment Type */}
+            <FormDropdown
+              label="Payment Type"
+              icon={<CreditCard className="w-3.5 h-3.5" />}
+              iconBgColor="bg-indigo-100 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-indigo-900/30"
+              iconColor="text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-indigo-400"
+              value={paymentType}
+              onChange={setPaymentType}
+              options={[
+                { value: "cash", label: "💵 Cash" },
+                { value: "card", label: "💳 Debit/Credit Card" },
+                { value: "bank", label: "🏦 Bank Transfer" },
+                { value: "cheque", label: "📝 Cheque" },
+                { value: "wallet", label: "📱 Digital Wallet" },
+                { value: "upi", label: "🔗 UPI" },
+              ]}
+              placeholder="Select payment method"
+            />
+
+            {/* Payment Reference No */}
+            <FormInput
+              label="Payment Reference No"
+              icon={<Hash className="w-3.5 h-3.5" />}
+              iconBgColor="bg-cyan-100 dark:bg-cyan-900/30 midnight:bg-cyan-900/30 purple:bg-cyan-900/30"
+              iconColor="text-cyan-600 dark:text-cyan-400 midnight:text-cyan-400 purple:text-cyan-400"
+              value={paymentReference}
+              onChange={setPaymentReference}
+              placeholder="REF-XXXXXX"
+              type="text"
+              leftIcon={<Hash className="w-4 h-4 text-gray-400 dark:text-gray-500" />}
+            />
+          </div>
+
+          {/* Status Toggle */}
+          <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10 midnight:from-cyan-900/10 midnight:to-purple-900/10 purple:from-pink-900/10 purple:to-purple-900/10 rounded-xl p-4 border border-blue-200/50 dark:border-blue-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <label className="flex items-center justify-between cursor-pointer">
+              <div>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 animate-pulse"></span>
+                  Payment Status
+                </span>
+                <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mt-1">
+                  Toggle to mark as {status ? "pending" : "completed"}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStatus(!status)}
+                className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all shadow-inner ${
+                  status
+                    ? "bg-gradient-to-r from-green-500 to-green-600 shadow-green-500/50"
+                    : "bg-gray-300 dark:bg-gray-600"
+                }`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform ${
+                    status ? "translate-x-8" : "translate-x-1"
+                  }`}
+                >
+                  {status && <span className="flex items-center justify-center text-green-600 text-xs">✓</span>}
+                </span>
+              </button>
+            </label>
+          </div>
+
+          {/* Notes */}
+          <FormTextarea
+            label="Notes"
+            icon={<FileText className="w-3.5 h-3.5" />}
+            iconBgColor="bg-gray-100 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50"
+            iconColor="text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400"
+            value={notes}
+            onChange={setNotes}
+            placeholder="Add any additional notes or comments..."
+            rows={4}
+            optional={true}
+          />
+        </form>
+        </div>
+
+        {/* Footer - Fixed */}
+        <div className="flex-shrink-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 px-4 sm:px-5 py-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 shadow-lg">
+          <FormButton
+            type="button"
+            onClick={onClose}
+            variant="secondary"
+          >
+            Cancel
+          </FormButton>
+          <FormButton
+            type="submit"
+            variant="primary"
+            icon={<span className="text-lg">→</span>}
+            className="px-6 sm:px-8"
+          >
+            Pay Fees
+          </FormButton>
+        </div>
+      </div>
+    </div>
+  );
+
+  return createPortal(modalContent, document.body);
+}

@@ -1,11 +1,20 @@
 "use client";
 
 import MainLayout from "@/components/layout/MainLayout";
+import PageLoader from "@/components/shared/PageLoader";
+import { usePageLoad } from "@/hooks/usePageLoad";
 
 export default function Home() {
+  const isLoading = usePageLoad(600);
+
   return (
     <MainLayout>
-      <div className="w-full">
+      {/* Loading Screen */}
+      <PageLoader isLoading={isLoading} loadingText="Loading Dashboard" />
+
+      {/* Main Content - Fades in after loading */}
+      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+        <div className="w-full">
         <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 mb-6 transition-colors duration-300">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
             Component Testing: Header & User Menu
@@ -92,6 +101,7 @@ export default function Home() {
               <li>Test quick switching between menu items</li>
             </ol>
           </div>
+        </div>
         </div>
       </div>
     </MainLayout>

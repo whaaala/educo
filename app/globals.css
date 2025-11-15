@@ -27,6 +27,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: 0.02em;
 }
 
 /* Modern Custom Scrollbar Styles */
@@ -171,4 +172,238 @@ nav::-webkit-scrollbar-thumb:hover {
 /* Override text-gray-900 for Purple Dream theme */
 .purple .text-gray-900 {
   color: lab(100 0 0) !important;
+}
+
+/* Table search filter animation styles */
+tbody tr {
+  transition: opacity 0.5s ease-in-out var(--delay, 0s),
+              transform 0.5s ease-in-out var(--delay, 0s),
+              background-color 0s,
+              height 0.2s ease-in-out 0.5s;
+}
+
+tbody tr.hide {
+  opacity: 0;
+  transform: translateX(100%);
+  height: 0 !important;
+  overflow: hidden;
+  display: table-row;
+}
+
+/* Animate table cells when row is hidden */
+tbody tr td {
+  transition: padding 0.2s ease-in-out,
+              font-size 0.2s ease-in-out,
+              line-height 0.2s ease-in-out,
+              border 0s;
+}
+
+tbody tr.hide td {
+  padding: 0 !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  height: 0 !important;
+  border: 0 !important;
+  overflow: hidden;
+  transition-delay: 0.5s;
+}
+
+tbody tr.hide td * {
+  display: none;
+}
+
+tbody tr.hide td span {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  display: none;
+}
+
+tbody tr.hide td div {
+  display: none;
+}
+
+/* Avatar in hidden rows */
+tbody tr.hide td .w-7,
+tbody tr.hide td .w-8,
+tbody tr.hide td img {
+  width: 0 !important;
+  height: 0 !important;
+  display: none;
+  transition: width 0.2s ease-in-out 0.5s, height 0.2s ease-in-out 0.5s;
+}
+
+/* Table sorting icon styles */
+.icon-arrow {
+  transform-origin: center;
+  will-change: transform, background-color, box-shadow;
+}
+
+/* Smooth rotation animation */
+@keyframes rotateArrow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(180deg);
+  }
+}
+
+/* Table sorting row animations */
+/* Ascending sort - rows slide UP from bottom */
+tbody tr.sorting-animate-asc {
+  animation: sortFadeSlideFromBottom 0.15s cubic-bezier(0.4, 0, 0.2, 1) var(--delay, 0s) both;
+}
+
+@keyframes sortFadeSlideFromBottom {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Descending sort - rows slide DOWN from top */
+tbody tr.sorting-animate-desc {
+  animation: sortFadeSlideFromTop 0.15s cubic-bezier(0.4, 0, 0.2, 1) var(--delay, 0s) both;
+}
+
+@keyframes sortFadeSlideFromTop {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Search result appearing animation - smooth fade and slide in from left */
+@keyframes fadeSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-15px) scale(0.98);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Expandable row animations */
+@keyframes expandRow {
+  0% {
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+}
+
+@keyframes collapseRow {
+  0% {
+    opacity: 1;
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  100% {
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+}
+
+@keyframes fadeSlideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeSlideUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.animate-expandRow {
+  animation: expandRow 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-collapseRow {
+  animation: collapseRow 0.25s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+.animate-fadeSlideDown {
+  animation: fadeSlideDown 0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.05s forwards;
+  opacity: 0;
+}
+
+.animate-fadeSlideUp {
+  animation: fadeSlideUp 0.2s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+/* Smooth scroll for table containers */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
+}
+
+/* Mobile table scrollbar visibility */
+@media (max-width: 640px) {
+  .smooth-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .smooth-scroll::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.5);
+    border-radius: 100px;
+  }
+
+  .smooth-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.7);
+  }
+
+  .dark .smooth-scroll::-webkit-scrollbar-thumb {
+    background: rgba(75, 85, 99, 0.6);
+  }
+
+  .dark .smooth-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(75, 85, 99, 0.8);
+  }
+
+  .midnight .smooth-scroll::-webkit-scrollbar-thumb {
+    background: rgba(6, 182, 212, 0.4);
+  }
+
+  .midnight .smooth-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(6, 182, 212, 0.6);
+  }
+
+  .purple .smooth-scroll::-webkit-scrollbar-thumb {
+    background: rgba(236, 72, 153, 0.4);
+  }
+
+  .purple .smooth-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(236, 72, 153, 0.6);
+  }
 }

@@ -1,10 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
-import { Search, Moon, Sun, Maximize2, MessageCircle, ChevronDown, Menu } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { Moon, Sun, Maximize2, MessageCircle, ChevronDown, Menu } from "lucide-react";
 import UserMenu from "./UserMenu";
 import NotificationDropdown from "./NotificationDropdown";
+import SearchBar from "@/components/shared/SearchBar";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAcademicYear } from "@/contexts/AcademicYearContext";
+import { useCountry } from "@/contexts/CountryContext";
 
 interface HeaderProps {
   isMobileSidebarOpen: boolean;
@@ -12,42 +16,74 @@ interface HeaderProps {
 }
 
 export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
+  const router = useRouter();
   const { theme, cycleTheme } = useTheme();
+  const academicYearContext = useAcademicYear();
+  const { selectedYear, setSelectedYear, academicYears } = academicYearContext;
+  const { countryConfig } = useCountry();
+
   const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [isAddNewOpen, setIsAddNewOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const yearDropdownRef = useRef<HTMLDivElement>(null);
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const addNewRef = useRef<HTMLDivElement>(null);
 
-  // Generate academic years (memoized to avoid recalculation)
-  const academicYears = useMemo(() => {
-    const currentYear = 2024; // Fixed year to avoid hydration issues
-    const years = [];
-    for (let i = 0; i <= 5; i++) {
-      const startYear = currentYear - i;
-      const endYear = startYear + 1;
-      years.push(`${startYear} / ${endYear}`);
-    }
-    return years;
-  }, []);
+  // Language icons mapping
+  const languageIcons: Record<string, string> = {
+    "English": "🌍",
+    "Nigerian Pidgin": "💬",
+    "Ghanaian Pidgin": "💬",
+    "Kenyan Pidgin": "💬",
+    "South African Pidgin": "💬",
+    "Tanzanian Pidgin": "💬",
+    "Ugandan Pidgin": "💬",
+    "Hausa": "🟡",
+    "Yoruba": "🟢",
+    "Igbo": "🔴",
+    "Swahili": "🔵",
+    "Zulu": "🟣",
+    "Xhosa": "🟠",
+    "Akan": "💚",
+    "Ewe": "💙",
+    "French": "🗼",
+    "Spanish": "🎭",
+    "German": "🎼",
+    "Italian": "🎨",
+    "Portuguese": "⚓",
+    "Dutch": "🌷",
+    "Swedish": "❄️",
+    "Polish": "🦅",
+    "Irish": "☘️",
+    "Afrikaans": "🦁",
+    "Arabic": "☪️",
+    "Amharic": "🟤",
+  };
 
-  const [selectedYear, setSelectedYear] = useState(academicYears[0]);
-
-  // Language options
-  const languages = [
-    { symbol: "🌐", name: "English", region: "Nationwide", note: "Official & educational language" },
-    { symbol: "💬", name: "Nigerian Pidgin", region: "Nationwide", note: "Informal lingua franca" },
-    { symbol: "🟡", name: "Hausa", region: "North", note: "Widely spoken trade language" },
-    { symbol: "🟢", name: "Yoruba", region: "Southwest", note: "Major cultural and urban language" },
-    { symbol: "🔴", name: "Igbo", region: "Southeast", note: "Vibrant regional and diaspora language" }
-  ];
+  // Generate language options dynamically from country config
+  const languages = countryConfig.languages.common.slice(0, 5).map((lang) => ({
+    symbol: languageIcons[lang] || "🌐",
+    name: lang,
+    region: countryConfig.languages.official.includes(lang) ? "Official" : "Common",
+    note: countryConfig.languages.official.includes(lang) ? "Official language" : "Widely spoken"
+  }));
 
   const [selectedLanguage, setSelectedLanguage] = useState({
-    symbol: "🌐",
-    name: "English",
-    region: "Nationwide"
+    symbol: languageIcons[countryConfig.languages.official[0]] || "🌐",
+    name: countryConfig.languages.official[0] || "English",
+    region: "Official"
   });
+
+  // Update selected language when country changes
+  useEffect(() => {
+    const firstOfficialLang = countryConfig.languages.official[0] || "English";
+    setSelectedLanguage({
+      symbol: languageIcons[firstOfficialLang] || "🌐",
+      name: firstOfficialLang,
+      region: "Official"
+    });
+  }, [countryConfig]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -81,7 +117,7 @@ export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: 
   };
 
   return (
-    <header className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-b border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 sticky top-0 z-30 transition-colors duration-300 backdrop-blur-xl dark:backdrop-blur-xl dark:bg-opacity-90 overflow-visible">
+    <header className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-b border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 sticky top-0 z-50 transition-colors duration-300 backdrop-blur-xl dark:backdrop-blur-xl dark:bg-opacity-90 overflow-visible">
       <div className="flex items-center justify-between gap-3 sm:gap-4 px-3 sm:px-6 py-2 sm:py-3 overflow-visible">
         {/* Left Section: Mobile Menu + Search Bar */}
         <div className="flex items-center gap-2 sm:gap-3 flex-1 max-w-2xl">
@@ -134,28 +170,13 @@ export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: 
 
           {/* Search Bar */}
           <div className="flex-1 hidden lg:block">
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/70 purple:text-pink-400/70 group-hover:text-gray-600 dark:group-hover:text-gray-300 midnight:group-hover:text-cyan-300 purple:group-hover:text-pink-300 transition-colors duration-200" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search for anything..."
-                className="w-full pl-10 pr-4 py-2.5
-                  bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33]
-                  border border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20
-                  text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50
-                  placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400/60 purple:placeholder-pink-400/60
-                  rounded-xl
-                  text-sm font-medium
-                  shadow-sm hover:shadow-md
-                  focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 midnight:focus:ring-cyan-400/40 purple:focus:ring-pink-400/40
-                  focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400
-                  hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-400/40 purple:hover:border-pink-400/40
-                  transition-all duration-200 ease-in-out
-                  backdrop-blur-sm"
-              />
-            </div>
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search for anything..."
+              size="md"
+              fullWidth
+            />
           </div>
         </div>
 
@@ -320,7 +341,7 @@ export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: 
                   <button
                     onClick={() => {
                       setIsAddNewOpen(false);
-                      console.log("Add Student");
+                      router.push("/students/add");
                     }}
                     className="group relative flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-br from-blue-100 via-indigo-50 to-blue-50 dark:from-blue-600/25 dark:via-indigo-600/20 dark:to-blue-500/15 midnight:from-blue-500/30 midnight:via-cyan-500/25 midnight:to-blue-400/20 purple:from-blue-500/25 purple:via-indigo-500/20 purple:to-blue-400/15 hover:shadow-lg hover:shadow-blue-500/20 dark:hover:shadow-blue-400/15 midnight:hover:shadow-cyan-400/20 purple:hover:shadow-indigo-400/15 hover:scale-105 transition-all duration-150 border border-blue-200/50 dark:border-blue-500/20 midnight:border-cyan-400/25 purple:border-indigo-400/25 hover:border-blue-400 dark:hover:border-blue-400/40 midnight:hover:border-cyan-300/40 purple:hover:border-indigo-300/40 cursor-pointer"
                   >

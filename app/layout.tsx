@@ -1,6 +1,16 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AcademicYearProvider } from "@/contexts/AcademicYearContext";
+import { SidebarProvider } from "@/contexts/SidebarContext";
+import { CountryProvider } from "@/contexts/CountryContext";
+import { SchoolSettingsProvider } from "@/contexts/SchoolSettingsContext";
+import { TransferProvider } from "@/contexts/TransferContext";
+import { TranscriptProvider } from "@/contexts/TranscriptContext";
+import { AttendanceProvider } from "@/contexts/AttendanceContext";
+import { GradingProvider } from "@/contexts/GradingContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,11 +22,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Educo - School ERP & Digital Management",
-  description: "Comprehensive school ERP and digital management platform",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +32,25 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] transition-colors duration-300`}
       >
-        {children}
+        <ThemeProvider>
+          <CountryProvider>
+            <AcademicYearProvider>
+              <SchoolSettingsProvider>
+                <GradingProvider>
+                  <TransferProvider>
+                    <TranscriptProvider>
+                      <AttendanceProvider>
+                        <SidebarProvider>
+                          {children}
+                        </SidebarProvider>
+                      </AttendanceProvider>
+                    </TranscriptProvider>
+                  </TransferProvider>
+                </GradingProvider>
+              </SchoolSettingsProvider>
+            </AcademicYearProvider>
+          </CountryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
   GraduationCap,
   BookOpen,
-  DollarSign,
   Bus,
   Home,
   Calendar,
@@ -20,7 +20,22 @@ import {
   Network,
   ClipboardList,
   Boxes,
+  Briefcase,
+  Globe,
+  ArrowRight,
+  AlertTriangle,
+  UserCheck,
+  ClipboardCheck,
+  Upload,
+  Award,
+  BarChart3,
 } from "lucide-react";
+import TenantSwitcher from "@/components/admin/TenantSwitcher";
+
+// Custom Naira Icon Component
+const NairaIcon = ({ className }: { className?: string }) => (
+  <span className={className} style={{ fontSize: '1rem', fontWeight: 'bold' }}>₦</span>
+);
 import { cn } from "@/lib/utils";
 
 interface MenuItem {
@@ -56,7 +71,24 @@ const menuItems: MenuItem[] = [
     label: "Peoples",
     icon: <Users className="w-5 h-5" />,
     children: [
-      { id: "students", label: "Students", icon: <GraduationCap className="w-4 h-4" />, href: "/students" },
+      {
+        id: "students",
+        label: "Students",
+        icon: <GraduationCap className="w-4 h-4" />,
+        children: [
+          { id: "all-students", label: "All Students", icon: <GraduationCap className="w-4 h-4" />, href: "/students?view=grid" },
+          { id: "student-list", label: "Student List", icon: <GraduationCap className="w-4 h-4" />, href: "/students?view=list" },
+          { id: "attendance", label: "Attendance", icon: <UserCheck className="w-4 h-4" />, href: "/students/attendance" },
+          { id: "grading", label: "Grading", icon: <ClipboardCheck className="w-4 h-4" />, href: "/students/grading" },
+          { id: "report-cards", label: "Report Cards", icon: <FileText className="w-4 h-4" />, href: "/students/report-cards" },
+          { id: "cumulative-report", label: "Cumulative Report", icon: <BarChart3 className="w-4 h-4" />, href: "/students/cumulative-report" },
+          { id: "transcripts", label: "Transcripts", icon: <Award className="w-4 h-4" />, href: "/students/transcripts" },
+          { id: "student-promotion", label: "Student Promotion", icon: <GraduationCap className="w-4 h-4" />, href: "/students/promotion" },
+          { id: "transfer-requests", label: "Transfer Requests", icon: <ArrowRight className="w-4 h-4" />, href: "/students/transfers" },
+          { id: "discipline", label: "Discipline", icon: <AlertTriangle className="w-4 h-4" />, href: "/students/discipline" },
+          { id: "bulk-import", label: "Bulk Import", icon: <Upload className="w-4 h-4" />, href: "/students/bulk-import" },
+        ]
+      },
       { id: "parents", label: "Parents", icon: <Users className="w-4 h-4" />, href: "/parents" },
       { id: "teachers", label: "Teachers", icon: <Users className="w-4 h-4" />, href: "/teachers" },
       { id: "staff", label: "Staff", icon: <Users className="w-4 h-4" />, href: "/staff" },
@@ -76,9 +108,9 @@ const menuItems: MenuItem[] = [
   {
     id: "management",
     label: "Management",
-    icon: <Settings className="w-5 h-5" />,
+    icon: <Briefcase className="w-5 h-5" />,
     children: [
-      { id: "fees", label: "Fees", icon: <DollarSign className="w-4 h-4" />, href: "/fees" },
+      { id: "fees", label: "Fees", icon: <NairaIcon className="w-4 h-4" />, href: "/fees" },
       { id: "library", label: "Library", icon: <BookOpen className="w-4 h-4" />, href: "/library" },
       { id: "dormitory", label: "Dormitory", icon: <Home className="w-4 h-4" />, href: "/dormitory" },
       { id: "transport", label: "Transport", icon: <Bus className="w-4 h-4" />, href: "/transport" },
@@ -95,8 +127,11 @@ const menuItems: MenuItem[] = [
     label: "Settings",
     icon: <Settings className="w-5 h-5" />,
     children: [
+      { id: "overview", label: "Settings Overview", icon: <Settings className="w-4 h-4" />, href: "/settings" },
+      { id: "regional", label: "Regional Settings", icon: <Globe className="w-4 h-4" />, href: "/settings" },
       { id: "general", label: "General Settings", icon: <Settings className="w-4 h-4" />, href: "/settings/general" },
       { id: "schools", label: "Schools & Branches", icon: <Home className="w-4 h-4" />, href: "/settings/schools" },
+      { id: "tenants", label: "Tenant Management", icon: <Building2 className="w-4 h-4" />, href: "/admin/tenants" },
       { id: "users", label: "User Management", icon: <Users className="w-4 h-4" />, href: "/settings/users" },
     ],
   },
@@ -110,10 +145,52 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen }: SidebarProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState<boolean | null>(null); // null on server, boolean on client
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [hoveredSubmenuItem, setHoveredSubmenuItem] = useState<string | null>(null);
   const [hideTimeout, setHideTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [submenuHideTimeout, setSubmenuHideTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [showLogoText, setShowLogoText] = useState(false);
+  const logoTextTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Helper function to check if a link is active
+  const isLinkActive = (href: string) => {
+    if (!href || href === "#") return false;
+
+    // Parse the href to get pathname and search params
+    // Use typeof window check to prevent SSR errors
+    const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+    const url = new URL(href, origin);
+    const linkPathname = url.pathname;
+    const linkSearch = url.search;
+
+    // Check if pathname matches
+    if (pathname !== linkPathname) return false;
+
+    // If there are search params in the link, check them too
+    if (linkSearch) {
+      const currentSearch = searchParams.toString();
+      return linkSearch === `?${currentSearch}`;
+    }
+
+    // If no search params in link, it's active if pathname matches
+    return true;
+  };
+
+  // Helper function to check if a parent item has any active children
+  const hasActiveChild = (item: MenuItem): boolean => {
+    if (!item.children) return false;
+
+    for (const child of item.children) {
+      if (child.href && isLinkActive(child.href)) return true;
+      if (child.children && hasActiveChild(child)) return true;
+    }
+
+    return false;
+  };
 
   // Handle delayed hide
   const handleMouseEnterItem = (itemId: string) => {
@@ -137,6 +214,27 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
     setHideTimeout(timeout);
   };
 
+  const handleMouseEnterSubmenuItem = (itemId: string) => {
+    // Clear any existing timeout
+    if (submenuHideTimeout) {
+      clearTimeout(submenuHideTimeout);
+      setSubmenuHideTimeout(null);
+    }
+    // Immediately show the new submenu
+    setHoveredSubmenuItem(itemId);
+  };
+
+  const handleMouseLeaveSubmenuItem = (itemId: string) => {
+    // Only hide if we're leaving the currently hovered submenu item
+    const timeout = setTimeout(() => {
+      setHoveredSubmenuItem((current) => {
+        // Only clear if we're still on the same item
+        return current === itemId ? null : current;
+      });
+    }, 150); // 150ms delay
+    setSubmenuHideTimeout(timeout);
+  };
+
   // Detect if we're on mobile and close menu when resized to desktop
   useEffect(() => {
     const checkMobile = () => {
@@ -152,6 +250,31 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Handle delayed logo text visibility
+  useEffect(() => {
+    // Clear any existing timeout
+    if (logoTextTimeoutRef.current) {
+      clearTimeout(logoTextTimeoutRef.current);
+      logoTextTimeoutRef.current = null;
+    }
+
+    if (isMobile === true || (isMobile === false && !isCollapsed)) {
+      // Show logo text after 500ms delay
+      logoTextTimeoutRef.current = setTimeout(() => {
+        setShowLogoText(true);
+      }, 500);
+    } else {
+      // Hide immediately when collapsing
+      setShowLogoText(false);
+    }
+
+    return () => {
+      if (logoTextTimeoutRef.current) {
+        clearTimeout(logoTextTimeoutRef.current);
+      }
+    };
+  }, [isCollapsed, isMobile]);
 
   const toggleExpanded = (id: string) => {
     setExpandedItems((prev) =>
@@ -184,44 +307,54 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
             <button
               onClick={() => !isCollapsedDesktop && toggleExpanded(item.id)}
               className={cn(
-                "w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm",
-                "text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100",
-                "hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50",
-                "dark:hover:from-blue-500/10 dark:hover:to-indigo-500/10",
-                "midnight:hover:from-cyan-500/10 midnight:hover:to-blue-500/10",
-                "purple:hover:from-pink-500/10 purple:hover:to-purple-500/10",
-                "hover:text-blue-700 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300",
-                "hover:shadow-sm hover:scale-[1.02]",
-                "transition-all duration-200 ease-in-out",
-                "border border-transparent hover:border-blue-200/50 dark:hover:border-blue-500/20",
-                "midnight:hover:border-cyan-500/20 purple:hover:border-pink-500/20",
-                level > 0 && "pl-8 ml-2"
+                "w-full flex items-center gap-3 px-3 py-2.5 pr-3 rounded-xl font-medium text-sm cursor-pointer",
+                "transition-all duration-200 ease-out",
+                "border",
+                hasActiveChild(item)
+                  ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border-blue-200/30 dark:border-blue-700/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
+                  : "text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border-transparent",
+                level > 0 && "pl-3"
               )}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className={cn(
-                  "flex items-center justify-center w-8 h-8 rounded-lg",
-                  "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10",
-                  "group-hover:bg-blue-100 dark:group-hover:bg-blue-500/20",
-                  "midnight:group-hover:bg-cyan-500/20 purple:group-hover:bg-pink-500/20",
-                  "transition-colors duration-200"
+                  "flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0",
+                  "transition-all duration-200",
+                  hasActiveChild(item)
+                    ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
+                    : "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
                 )}>
                   {item.icon}
                 </div>
                 {/* Show label based on mobile/collapsed state */}
-                {(isMobile === true || (isMobile === false && !isCollapsed)) && (
-                  <span className="flex-1 text-left">{item.label}</span>
-                )}
+                <span
+                  className="text-left transition-all ease-in-out"
+                  style={{
+                    width: (isMobile === true || (isMobile === false && !isCollapsed)) ? 'auto' : '0px',
+                    overflow: (isMobile === true || (isMobile === false && !isCollapsed)) ? 'visible' : 'hidden',
+                    transitionDuration: '300ms'
+                  }}
+                >
+                  <span
+                    className="whitespace-nowrap transition-opacity ease-in-out block"
+                    style={{
+                      opacity: (isMobile === true || (isMobile === false && !isCollapsed)) ? 1 : 0,
+                      transitionDuration: '200ms',
+                      transitionDelay: (isMobile === true || (isMobile === false && !isCollapsed)) ? '200ms' : '0ms'
+                    }}
+                  >
+                    {item.label}
+                  </span>
+                </span>
               </div>
-              {/* Show chevron based on mobile/collapsed state */}
-              {(isMobile === true || (isMobile === false && !isCollapsed)) && (
-                <div className={cn(
-                  "transition-transform duration-200",
-                  isExpanded && "rotate-180"
-                )}>
-                  <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                </div>
-              )}
+              {/* Show chevron based on mobile/collapsed state - with fixed width for rotation */}
+              <div className={cn(
+                "transition-transform duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)] flex-shrink-0 w-8 flex items-center justify-center ml-auto",
+                isExpanded && "rotate-180",
+                !(isMobile === true || (isMobile === false && !isCollapsed)) && "opacity-0"
+              )}>
+                <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              </div>
             </button>
 
             {/* Popover menu for collapsed sidebar */}
@@ -239,18 +372,99 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                   {item.label}
                 </div>
                 <div className="py-1">
-                  {item.children?.map((child) => (
-                    <Link
-                      key={child.id}
-                      href={child.href || "#"}
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300 transition-all duration-150 rounded-lg mx-2"
-                    >
-                      <div className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-700/50">
-                        {child.icon}
-                      </div>
-                      <span className="font-medium">{child.label}</span>
-                    </Link>
-                  ))}
+                  {item.children?.map((child) => {
+                    const childHasChildren = child.children && child.children.length > 0;
+
+                    if (childHasChildren) {
+                      // Render item with nested submenu on hover
+                      const childIsActive = hasActiveChild(child);
+                      return (
+                        <div
+                          key={child.id}
+                          className="relative mx-2"
+                          onMouseEnter={() => handleMouseEnterSubmenuItem(child.id)}
+                          onMouseLeave={() => handleMouseLeaveSubmenuItem(child.id)}
+                        >
+                          <div className={cn(
+                            "flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-all duration-200 rounded-xl cursor-pointer",
+                            childIsActive
+                              ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
+                              : "text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
+                          )}>
+                            <div className="flex items-center gap-3">
+                              <div className={cn(
+                                "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200",
+                                childIsActive
+                                  ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
+                                  : "bg-gray-100 dark:bg-gray-700/50"
+                              )}>
+                                {child.icon}
+                              </div>
+                              <span className={cn("font-medium")}>{child.label}</span>
+                            </div>
+                            <ChevronDown className={cn("w-4 h-4 -rotate-90 transition-transform duration-200")} />
+                          </div>
+
+                          {/* Nested submenu popup */}
+                          {hoveredSubmenuItem === child.id && (
+                            <div
+                              className="absolute left-full top-0 w-52 bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 backdrop-blur-sm animate-in fade-in slide-in-from-left-2 duration-200"
+                              style={{
+                                zIndex: 10000,
+                                marginLeft: '8px',
+                              }}
+                              onMouseEnter={() => handleMouseEnterSubmenuItem(child.id)}
+                              onMouseLeave={() => handleMouseLeaveSubmenuItem(child.id)}
+                            >
+                              <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide border-b border-gray-100 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                                {child.label}
+                              </div>
+                              <div className="py-1">
+                                {child.children?.map((grandchild) => {
+                                  const isActive = isLinkActive(grandchild.href || "");
+                                  return (
+                                    <Link
+                                      key={grandchild.id}
+                                      href={grandchild.href || "#"}
+                                      className={cn(
+                                        "flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 rounded-xl mx-2 cursor-pointer",
+                                        isActive
+                                          ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
+                                          : "text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/80 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
+                                      )}
+                                    >
+                                      <div className={cn(
+                                        "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200",
+                                        isActive
+                                          ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
+                                          : "bg-gray-100 dark:bg-gray-700/50"
+                                      )}>
+                                        {grandchild.icon}
+                                      </div>
+                                      <span className="font-medium">{grandchild.label}</span>
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <Link
+                        key={child.id}
+                        href={child.href || "#"}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300 transition-all duration-150 rounded-lg mx-2 cursor-pointer"
+                      >
+                        <div className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-700/50">
+                          {child.icon}
+                        </div>
+                        <span className="font-medium">{child.label}</span>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -260,7 +474,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
             <Link
               href={item.href || "#"}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm",
+                "w-full flex items-center gap-3 px-3 py-2.5 pr-3 rounded-xl font-medium text-sm cursor-pointer",
                 "text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100",
                 "hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50",
                 "dark:hover:from-blue-500/10 dark:hover:to-indigo-500/10",
@@ -271,22 +485,42 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                 "transition-all duration-200 ease-in-out",
                 "border border-transparent hover:border-blue-200/50 dark:hover:border-blue-500/20",
                 "midnight:hover:border-cyan-500/20 purple:hover:border-pink-500/20",
-                level > 0 && "pl-8 ml-2"
+                level > 0 && "pl-3"
               )}
             >
-              <div className={cn(
-                "flex items-center justify-center w-8 h-8 rounded-lg",
-                "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10",
-                "group-hover:bg-blue-100 dark:group-hover:bg-blue-500/20",
-                "midnight:group-hover:bg-cyan-500/20 purple:group-hover:bg-pink-500/20",
-                "transition-colors duration-200"
-              )}>
-                {item.icon}
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className={cn(
+                  "flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0",
+                  "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10",
+                  "group-hover:bg-blue-100 dark:group-hover:bg-blue-500/20",
+                  "midnight:group-hover:bg-cyan-500/20 purple:group-hover:bg-pink-500/20",
+                  "transition-colors duration-200"
+                )}>
+                  {item.icon}
+                </div>
+                {/* Show label based on mobile/collapsed state */}
+                <span
+                  className="text-left transition-all ease-in-out"
+                  style={{
+                    width: (isMobile === true || (isMobile === false && !isCollapsed)) ? 'auto' : '0px',
+                    overflow: (isMobile === true || (isMobile === false && !isCollapsed)) ? 'visible' : 'hidden',
+                    transitionDuration: '300ms'
+                  }}
+                >
+                  <span
+                    className="whitespace-nowrap transition-opacity ease-in-out block"
+                    style={{
+                      opacity: (isMobile === true || (isMobile === false && !isCollapsed)) ? 1 : 0,
+                      transitionDuration: '200ms',
+                      transitionDelay: (isMobile === true || (isMobile === false && !isCollapsed)) ? '200ms' : '0ms'
+                    }}
+                  >
+                    {item.label}
+                  </span>
+                </span>
               </div>
-              {/* Show label based on mobile/collapsed state */}
-              {(isMobile === true || (isMobile === false && !isCollapsed)) && (
-                <span className="flex-1">{item.label}</span>
-              )}
+              {/* Spacer to match chevron width and maintain alignment */}
+              <div className="flex-shrink-0 w-8 ml-auto"></div>
             </Link>
 
             {/* Tooltip for collapsed sidebar */}
@@ -308,54 +542,56 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
         )}
 
         {/* Show children based on mobile/collapsed state */}
-        {hasChildren && isExpanded && (isMobile === true || (isMobile === false && !isCollapsed)) && (
-          <div className="mt-2 ml-2 space-y-1 pl-4 border-l-2 border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20">
-            {item.children?.map((child) => (
-              <Link
-                key={child.id}
-                href={child.href || "#"}
-                className={cn(
-                  "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium group",
-                  "text-gray-600 dark:text-gray-400 midnight:text-cyan-200 purple:text-pink-200",
-                  "hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50/50",
-                  "dark:hover:from-blue-500/5 dark:hover:to-indigo-500/5",
-                  "midnight:hover:from-cyan-500/5 midnight:hover:to-blue-500/5",
-                  "purple:hover:from-pink-500/5 purple:hover:to-purple-500/5",
-                  "hover:text-blue-700 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300",
-                  "hover:translate-x-1 hover:shadow-sm",
-                  "transition-all duration-200 ease-out",
-                  "border border-transparent hover:border-blue-200/30 dark:hover:border-blue-500/10",
-                  "midnight:hover:border-cyan-500/10 purple:hover:border-pink-500/10"
-                )}
-              >
-                <div className={cn(
-                  "flex items-center justify-center w-7 h-7 rounded-lg shrink-0",
-                  "bg-gradient-to-br from-gray-100 to-gray-50",
-                  "dark:from-gray-800/50 dark:to-gray-700/30",
-                  "midnight:from-cyan-500/10 midnight:to-blue-500/5",
-                  "purple:from-pink-500/10 purple:to-purple-500/5",
-                  "group-hover:from-blue-100 group-hover:to-indigo-50",
-                  "dark:group-hover:from-blue-500/15 dark:group-hover:to-indigo-500/10",
-                  "midnight:group-hover:from-cyan-500/20 midnight:group-hover:to-blue-500/15",
-                  "purple:group-hover:from-pink-500/20 purple:group-hover:to-purple-500/15",
-                  "group-hover:scale-110 group-hover:rotate-3",
-                  "transition-all duration-200 shadow-sm"
-                )}>
-                  <div className="scale-90">
-                    {child.icon}
-                  </div>
-                </div>
-                <span className="flex-1 tracking-wide">{child.label}</span>
-                <svg
-                  className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+        {hasChildren && (isMobile === true || (isMobile === false && !isCollapsed)) && (
+          <div
+            className={cn(
+              "overflow-hidden transition-all duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
+              isExpanded ? "max-h-[2000px] opacity-100 mt-2" : "max-h-0 opacity-0 mt-0"
+            )}
+          >
+            <div className={cn(
+              "space-y-1 pl-6 transition-all duration-[500ms] ease-out delay-[80ms]",
+              isExpanded ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
+            )}>
+            {item.children?.map((child) => {
+              const childHasChildren = child.children && child.children.length > 0;
+
+              // If child has children, render it recursively
+              if (childHasChildren) {
+                return renderMenuItem(child, level + 1);
+              }
+
+              // Otherwise render as a simple link
+              const childIsActive = isLinkActive(child.href || "");
+              return (
+                <Link
+                  key={child.id}
+                  href={child.href || "#"}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 pr-3 rounded-xl text-sm font-medium cursor-pointer",
+                    "transition-all duration-200",
+                    childIsActive
+                      ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
+                      : "text-gray-600 dark:text-gray-400 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
+                  )}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-            ))}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className={cn(
+                      "flex items-center justify-center w-7 h-7 rounded-lg shrink-0 transition-all duration-200",
+                      childIsActive
+                        ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
+                        : "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
+                    )}>
+                      {child.icon}
+                    </div>
+                    <span className="tracking-wide">{child.label}</span>
+                  </div>
+                  {/* Spacer to match parent items' chevron width and maintain alignment */}
+                  <div className="flex-shrink-0 w-8 ml-auto"></div>
+                </Link>
+              );
+            })}
+            </div>
           </div>
         )}
       </div>
@@ -384,11 +620,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
           "border-r border-gray-200/80 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20",
           "shadow-xl shadow-gray-200/50 dark:shadow-black/20",
           "backdrop-blur-xl",
-          "transition-all duration-300 z-40",
-          // On mobile: always full width (w-64) when open
-          // On desktop: w-20 when collapsed, w-64 when expanded
-          "w-64 lg:w-auto",
-          isCollapsed ? "lg:w-20" : "lg:w-64",
+          "transition-all duration-500 ease-in-out z-40",
+          // On mobile: always full width (w-72) when open
+          // On desktop: w-20 when collapsed, w-72 when expanded
+          "w-72 lg:w-auto",
+          isCollapsed ? "lg:w-20" : "lg:w-72",
           // Mobile visibility
           isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
@@ -400,12 +636,13 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
             "flex items-center px-4 py-5 border-b border-gray-200/80 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20",
             "bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-500/5 dark:to-indigo-500/5",
             "midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5",
+            "transition-all duration-500 ease-in-out",
             isCollapsed ? "justify-center" : "justify-between"
           )}>
             {isCollapsed ? (
               // Collapsed state: Show only logo icon centered with expand button below
               <div className="flex flex-col items-center gap-3">
-                <Link href="/" className="flex items-center justify-center group">
+                <Link href="/" className="flex items-center justify-center group cursor-pointer">
                   <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 dark:shadow-blue-400/20 group-hover:scale-110 transition-transform duration-200">
                     <GraduationCap className="w-6 h-6 text-white" />
                   </div>
@@ -414,7 +651,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                 {isMobile === false && (
                   <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="hidden lg:flex items-center justify-center p-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 hover:scale-110"
+                    className="hidden lg:flex items-center justify-center p-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 hover:scale-110 cursor-pointer"
                     title="Expand sidebar"
                   >
                     <ChevronsRight className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
@@ -424,23 +661,33 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
             ) : (
               // Expanded state: Show logo and text with collapse button on the right
               <>
-                <Link href="/" className="flex items-center gap-3 group">
+                <Link href="/" className="flex items-center gap-3 group cursor-pointer">
                   <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 dark:shadow-blue-400/20 group-hover:scale-110 transition-transform duration-200">
                     <GraduationCap className="w-6 h-6 text-white" />
                   </div>
-                  {/* Show logo text when expanded */}
-                  {(isMobile === true || (isMobile === false && !isCollapsed)) && (
-                    <div>
+                  {/* Show logo text when expanded - only render after delay */}
+                  {showLogoText && (
+                    <div className="ml-3 animate-in fade-in slide-in-from-left-2 duration-200">
                       <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 midnight:from-cyan-50 midnight:to-cyan-200 purple:from-pink-50 purple:to-pink-200 bg-clip-text text-transparent">Educo</h1>
                       <p className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">School ERP System</p>
                     </div>
                   )}
                 </Link>
+                {/* Close button for mobile */}
+                {isMobile === true && (
+                  <button
+                    onClick={() => setIsMobileSidebarOpen(false)}
+                    className="lg:hidden flex items-center justify-center p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/10 midnight:hover:bg-red-500/10 purple:hover:bg-red-500/10 transition-all duration-200 hover:scale-110 cursor-pointer"
+                    title="Close sidebar"
+                  >
+                    <ChevronsLeft className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
+                  </button>
+                )}
                 {/* Collapse button - only show on desktop */}
                 {isMobile === false && (
                   <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="hidden lg:flex items-center justify-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 hover:scale-110"
+                    className="hidden lg:flex items-center justify-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 hover:scale-110 cursor-pointer"
                     title="Collapse sidebar"
                   >
                     <ChevronsLeft className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
@@ -462,7 +709,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
 
           {/* Footer - Show based on mobile/collapsed state */}
           {(isMobile === true || (isMobile === false && !isCollapsed)) && (
-            <div className="p-4 border-t border-gray-200/80 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-500/5 dark:to-indigo-500/5 midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5">
+            <div className="p-4 border-t border-gray-200/80 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-500/5 dark:to-indigo-500/5 midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5 space-y-3">
+              {/* Tenant Switcher */}
+              <TenantSwitcher />
+
+              {/* Help Section */}
               <div className="px-4 py-3.5 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-blue-600/10 midnight:from-cyan-500/10 midnight:via-blue-500/10 midnight:to-cyan-600/10 purple:from-pink-500/10 purple:via-purple-500/10 purple:to-pink-600/10 rounded-xl border border-blue-200/50 dark:border-blue-500/20 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-200">
                 <p className="text-sm font-bold text-blue-900 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
