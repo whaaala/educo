@@ -1719,8 +1719,11 @@ export default function ReportCardsPage() {
           <div className="no-print bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-900 p-8 rounded-lg">
             <div
               ref={printRef}
-              className="print-content bg-white w-[210mm] mx-auto p-8 shadow-2xl print:shadow-none print:w-full print:p-0 rounded-2xl overflow-hidden"
-              style={{ minHeight: "297mm" }}
+              className="print-content bg-white w-[210mm] mx-auto shadow-2xl print:shadow-none print:w-full rounded-2xl overflow-hidden"
+              style={{
+                minHeight: "297mm",
+                padding: "15mm 12mm"
+              }}
             >
               {(() => {
                 // Get tenant branding colors for the entire document
@@ -1729,19 +1732,22 @@ export default function ReportCardsPage() {
 
                 return (
                 <>
-              {/* Vibrant Decorative Border with Gradient */}
+              {/* Decorative Border */}
               <div
-                className="border-8 border-double rounded-2xl p-6"
+                className="border-4 border-double rounded-xl"
                 style={{
                   borderColor: primaryColor,
-                  background: `linear-gradient(135deg, ${primaryColor}05, ${secondaryColor}05)`
+                  background: `linear-gradient(135deg, ${primaryColor}05, ${secondaryColor}05)`,
+                  padding: "8mm"
                 }}
               >
                 {/* School Header with Bold Gradient Background */}
                 <div
-                  className="text-center pb-6 mb-6 relative rounded-xl overflow-hidden"
+                  className="text-center relative rounded-xl overflow-hidden"
                   style={{
-                    background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
+                    background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                    padding: "5mm 0",
+                    marginBottom: "4mm"
                   }}
                 >
                   <div className="absolute inset-0 opacity-10">
@@ -1750,44 +1756,46 @@ export default function ReportCardsPage() {
                   </div>
 
                   {/* School Logo */}
-                  <div className="relative pt-8 pb-4">
+                  <div className="relative">
                     <div
-                      className="w-28 h-28 mx-auto mb-4 rounded-full flex items-center justify-center border-6 shadow-2xl"
+                      className="w-20 h-20 mx-auto mb-3 rounded-full flex items-center justify-center border-4 shadow-2xl"
                       style={{
                         background: 'linear-gradient(135deg, #ffffff, #f0f0f0)',
                         borderColor: '#ffffff'
                       }}
                     >
                       <GraduationCap
-                        className="w-14 h-14"
+                        className="w-10 h-10"
                         style={{ color: primaryColor }}
                       />
                     </div>
 
-                    <h1 className="text-5xl font-black text-white mb-3 tracking-wide uppercase drop-shadow-lg">
+                    <h1 className="text-4xl font-black text-white mb-2 tracking-wide uppercase drop-shadow-lg">
                       {currentTenant?.name || settings.schoolName}
                     </h1>
                     {currentTenant?.branding?.motto && (
-                      <p className="text-lg text-white font-bold italic mb-4 px-8 py-2 inline-block bg-white/20 rounded-full backdrop-blur-sm">
+                      <p className="text-base text-white font-bold italic mb-2 px-6 py-1.5 inline-block bg-white/20 rounded-full backdrop-blur-sm">
                         "{currentTenant.branding.motto}"
                       </p>
                     )}
-                    <div className="mt-4 space-y-1 pb-6">
-                      <p className="text-sm text-white font-semibold drop-shadow">
+                    <div className="mt-2 space-y-0.5">
+                      <p className="text-xs text-white font-semibold drop-shadow">
                         {currentTenant?.contact.address.line1}, {currentTenant?.contact.address.city}, {currentTenant?.contact.address.state}
                       </p>
-                      <p className="text-sm text-white font-medium drop-shadow">
+                      <p className="text-xs text-white font-medium drop-shadow">
                         <span className="font-bold">Email:</span> {currentTenant?.contact.email} | <span className="font-bold">Phone:</span> {currentTenant?.contact.phone}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Report Card Title Banner with Vibrant Gradient */}
+                {/* Report Card Title Banner */}
                 <div
-                  className="text-center mb-6 text-white py-6 px-6 rounded-2xl shadow-2xl relative overflow-hidden"
+                  className="text-center text-white rounded-xl shadow-lg relative overflow-hidden"
                   style={{
-                    background: `linear-gradient(120deg, ${primaryColor}, ${secondaryColor}, ${primaryColor})`
+                    background: `linear-gradient(120deg, ${primaryColor}, ${secondaryColor}, ${primaryColor})`,
+                    padding: "4mm",
+                    marginBottom: "4mm"
                   }}
                 >
                   <div className="absolute inset-0 opacity-20">
@@ -1795,66 +1803,68 @@ export default function ReportCardsPage() {
                     <div className="absolute bottom-0 left-0 w-40 h-40 bg-white rounded-full -translate-x-20 translate-y-20"></div>
                   </div>
                   <div className="relative">
-                    <h2 className="text-6xl font-black tracking-wider uppercase mb-2 drop-shadow-lg">
+                    <h2 className="text-4xl font-black tracking-wider uppercase mb-1 drop-shadow-lg">
                       Progress Report Card
                     </h2>
-                    <p className="text-2xl font-bold opacity-95 drop-shadow">
+                    <p className="text-lg font-bold opacity-95 drop-shadow">
                       {config.term} - Academic Year {config.academicYear}
                     </p>
                   </div>
                 </div>
 
-                {/* Student Info - Vibrant Gradient Card */}
+                {/* Student Info */}
                 <div
-                  className="mb-6 rounded-2xl p-6 shadow-xl border-4"
+                  className="rounded-xl shadow-md border-2"
                   style={{
                     background: `linear-gradient(135deg, ${primaryColor}15, ${secondaryColor}10)`,
-                    borderColor: primaryColor + '40'
+                    borderColor: primaryColor + '40',
+                    padding: "4mm",
+                    marginBottom: "4mm"
                   }}
                 >
-                  <div className="grid grid-cols-2 gap-6 text-lg student-info-section">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 p-3 bg-white/80 rounded-xl">
-                        <span className="font-bold text-neutral-700 w-40">Student Name:</span>
+                  <div className="grid grid-cols-2 gap-3 text-sm student-info-section">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 p-2 bg-white/80 rounded-lg">
+                        <span className="font-bold text-neutral-700 w-32 text-xs">Student Name:</span>
                         <span
-                          className="font-black text-xl"
+                          className="font-black text-base"
                           style={{ color: primaryColor }}
                         >
                           {currentReportCard.student.name}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 p-3 bg-white/80 rounded-xl">
-                        <span className="font-bold text-neutral-700 w-40">Admission No:</span>
+                      <div className="flex items-center gap-2 p-2 bg-white/80 rounded-lg">
+                        <span className="font-bold text-neutral-700 w-32 text-xs">Admission No:</span>
                         <span className="text-neutral-900 font-bold">{currentReportCard.student.rollNo}</span>
                       </div>
-                      <div className="flex items-center gap-2 p-3 bg-white/80 rounded-xl">
-                        <span className="font-bold text-neutral-700 w-40">Class:</span>
+                      <div className="flex items-center gap-2 p-2 bg-white/80 rounded-lg">
+                        <span className="font-bold text-neutral-700 w-32 text-xs">Class:</span>
                         <span className="text-neutral-900 font-bold">
                           {config.class}{config.section && ` - Section ${config.section}`}
                         </span>
                       </div>
                     </div>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 p-3 bg-white/80 rounded-xl">
-                        <span className="font-bold text-neutral-700 w-40">Gender:</span>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 p-2 bg-white/80 rounded-lg">
+                        <span className="font-bold text-neutral-700 w-32 text-xs">Gender:</span>
                         <span className="text-neutral-900 font-bold">{currentReportCard.student.gender}</span>
                       </div>
                       {config.includeAttendance && (
-                        <div className="flex items-center gap-2 p-3 bg-white/80 rounded-xl">
-                          <span className="font-bold text-neutral-700 w-40">Attendance:</span>
+                        <div className="flex items-center gap-2 p-2 bg-white/80 rounded-lg">
+                          <span className="font-bold text-neutral-700 w-32 text-xs">Attendance:</span>
                           <span className="text-neutral-900 font-bold">
                             {currentReportCard.attendance.present}/{currentReportCard.attendance.total} Days
                           </span>
                         </div>
                       )}
                       <div
-                        className="flex items-center gap-2 p-3 rounded-xl shadow-lg"
+                        className="flex items-center gap-2 p-2 rounded-lg shadow-md"
                         style={{
                           background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
                         }}
                       >
-                        <span className="font-bold text-white w-40">Class Rank:</span>
-                        <span className="font-black text-2xl text-white drop-shadow">
+                        <span className="font-bold text-white w-32 text-xs">Class Rank:</span>
+                        <span className="font-black text-lg text-white drop-shadow">
                           {currentReportCard.rank} of {currentReportCard.totalStudents}
                         </span>
                       </div>
@@ -1862,24 +1872,28 @@ export default function ReportCardsPage() {
                   </div>
                 </div>
 
-                {/* Academic Performance Header with Gradient */}
-                <div className="mb-4">
+                {/* Academic Performance Header */}
+                <div style={{ marginBottom: "3mm" }}>
                   <div
-                    className="text-xl font-black text-white px-6 py-3 rounded-xl shadow-lg"
+                    className="text-base font-black text-white rounded-lg shadow-md"
                     style={{
-                      background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`
+                      background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`,
+                      padding: "2mm 3mm"
                     }}
                   >
-                    <div className="flex items-center gap-3">
-                      <BookOpen className="w-6 h-6" />
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="w-4 h-4" />
                       <span>Academic Performance</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Grades Table - Modern Gradient Design */}
-                <div className="mb-6 rounded-2xl overflow-hidden shadow-2xl border-4" style={{ borderColor: primaryColor + '30' }}>
-                  <table className="w-full border-collapse text-sm">
+                {/* Grades Table */}
+                <div className="rounded-lg overflow-hidden shadow-md border-2" style={{
+                  borderColor: primaryColor + '30',
+                  marginBottom: "3mm"
+                }}>
+                  <table className="w-full border-collapse text-xs">
                     <thead>
                       <tr
                         className="text-white"
@@ -1887,12 +1901,12 @@ export default function ReportCardsPage() {
                           background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`
                         }}
                       >
-                        <th className="p-4 text-left font-black text-base">Subject</th>
-                        <th className="p-4 text-center font-black text-base">Max Marks</th>
-                        <th className="p-4 text-center font-black text-base">Marks Obtained</th>
-                        <th className="p-4 text-center font-black text-base">Grade</th>
+                        <th className="p-2 text-left font-black text-sm">Subject</th>
+                        <th className="p-2 text-center font-black text-sm">Max Marks</th>
+                        <th className="p-2 text-center font-black text-sm">Marks Obtained</th>
+                        <th className="p-2 text-center font-black text-sm">Grade</th>
                         {config.includeRemarks && (
-                          <th className="p-4 text-left font-black text-base">Remarks</th>
+                          <th className="p-2 text-left font-black text-sm">Remarks</th>
                         )}
                       </tr>
                     </thead>
@@ -1900,7 +1914,7 @@ export default function ReportCardsPage() {
                       {currentReportCard.subjects.map((subject, index) => (
                         <tr
                           key={index}
-                          className="border-b-2 transition-all hover:shadow-md"
+                          className="border-b transition-all"
                           style={{
                             background: index % 2 === 0
                               ? `linear-gradient(90deg, ${primaryColor}05, ${secondaryColor}03)`
@@ -1908,16 +1922,16 @@ export default function ReportCardsPage() {
                             borderColor: primaryColor + '15'
                           }}
                         >
-                          <td className="p-4 font-bold text-neutral-900 text-base">{subject.subject}</td>
-                          <td className="p-4 text-center text-neutral-700 font-semibold">
+                          <td className="p-2 font-bold text-neutral-900 text-sm">{subject.subject}</td>
+                          <td className="p-2 text-center text-neutral-700 font-semibold text-xs">
                             {subject.maxScore}
                           </td>
-                          <td className="p-4 text-center font-black text-lg" style={{ color: secondaryColor }}>
+                          <td className="p-2 text-center font-black text-sm" style={{ color: secondaryColor }}>
                             {subject.score}
                           </td>
-                          <td className="p-4 text-center">
+                          <td className="p-2 text-center">
                             <span
-                              className="font-black text-xl px-4 py-2 rounded-full text-white shadow-lg inline-block"
+                              className="font-black text-sm px-2 py-1 rounded-full text-white shadow-sm inline-block"
                               style={{
                                 background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
                               }}
@@ -1926,27 +1940,27 @@ export default function ReportCardsPage() {
                             </span>
                           </td>
                           {config.includeRemarks && (
-                            <td className="p-4 text-xs italic text-neutral-600 font-medium">
+                            <td className="p-2 text-xs italic text-neutral-600 font-medium">
                               {subject.remarks}
                             </td>
                           )}
                         </tr>
                       ))}
                       <tr
-                        className="font-bold border-t-4"
+                        className="font-bold border-t-2"
                         style={{
                           background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`,
                           borderColor: primaryColor
                         }}
                       >
-                        <td className="p-4 text-lg uppercase text-white font-black">Grand Total</td>
-                        <td className="p-4 text-center text-base text-white font-bold">
+                        <td className="p-2 text-sm uppercase text-white font-black">Grand Total</td>
+                        <td className="p-2 text-center text-xs text-white font-bold">
                           {currentReportCard.subjects.reduce((sum, s) => sum + s.maxScore, 0)}
                         </td>
-                        <td className="p-4 text-center text-2xl text-white font-black">
+                        <td className="p-2 text-center text-base text-white font-black">
                           {currentReportCard.totalMarks}
                         </td>
-                        <td className="p-4 text-center text-2xl text-white font-black" colSpan={config.includeRemarks ? 2 : 1}>
+                        <td className="p-2 text-center text-base text-white font-black" colSpan={config.includeRemarks ? 2 : 1}>
                           {currentReportCard.percentage.toFixed(2)}%
                         </td>
                       </tr>
@@ -1954,53 +1968,48 @@ export default function ReportCardsPage() {
                   </table>
                 </div>
 
-                {/* Overall Performance Summary - Ultra Modern Gradient Design */}
+                {/* Overall Performance Summary */}
                 <div
-                  className="mb-6 rounded-3xl overflow-hidden shadow-2xl border-4"
+                  className="rounded-lg overflow-hidden shadow-md border-2"
                   style={{
                     borderColor: primaryColor,
-                    background: `linear-gradient(135deg, ${primaryColor}10, ${secondaryColor}10)`
+                    background: `linear-gradient(135deg, ${primaryColor}10, ${secondaryColor}10)`,
+                    marginBottom: "3mm"
                   }}
                 >
-                  {/* Header with Bold Gradient */}
+                  {/* Header */}
                   <div
-                    className="px-8 py-5 relative overflow-hidden"
+                    className="relative overflow-hidden"
                     style={{
-                      background: `linear-gradient(120deg, ${primaryColor}, ${secondaryColor}, ${primaryColor})`
+                      background: `linear-gradient(120deg, ${primaryColor}, ${secondaryColor}, ${primaryColor})`,
+                      padding: "2mm 3mm"
                     }}
                   >
                     <div className="absolute inset-0 opacity-20">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full translate-x-16 -translate-y-16"></div>
                     </div>
-                    <h3 className="text-2xl font-black text-white uppercase tracking-wide text-center relative drop-shadow-lg">
+                    <h3 className="text-base font-black text-white uppercase tracking-wide text-center relative drop-shadow-lg">
                       Overall Performance Summary
                     </h3>
                   </div>
 
                   {/* Content Grid */}
-                  <div className="p-10">
-                    <div className="grid grid-cols-3 gap-10">
-                      {/* Large Circular Grade Badge with Vibrant Gradient */}
+                  <div style={{ padding: "3mm" }}>
+                    <div className="grid grid-cols-3 gap-3">
+                      {/* Circular Grade Badge */}
                       <div className="col-span-1 flex items-center justify-center">
                         <div className="relative">
-                          {/* Outer glow ring */}
                           <div
-                            className="absolute inset-0 w-48 h-48 rounded-full blur-2xl opacity-40 -m-4"
-                            style={{
-                              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
-                            }}
-                          ></div>
-                          <div
-                            className="w-40 h-40 rounded-full flex items-center justify-center shadow-2xl border-6 border-white relative"
+                            className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg border-2 border-white relative"
                             style={{
                               background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
                             }}
                           >
                             <div className="text-center">
-                              <div className="text-8xl font-black text-white drop-shadow-2xl">
+                              <div className="text-3xl font-black text-white drop-shadow-lg">
                                 {currentReportCard.overallGrade}
                               </div>
-                              <div className="text-sm font-black text-white/90 uppercase tracking-widest mt-2">
+                              <div className="text-xs font-black text-white/90 uppercase">
                                 Grade
                               </div>
                             </div>
@@ -2009,57 +2018,45 @@ export default function ReportCardsPage() {
                       </div>
 
                       {/* Performance Stats */}
-                      <div className="col-span-2 space-y-8">
+                      <div className="col-span-2 space-y-2">
                         {/* Percentage Score with Gradient Bar */}
                         <div>
-                          <div className="flex justify-between items-baseline mb-4">
-                            <span className="text-lg font-black text-neutral-800 uppercase tracking-wide">Percentage Score</span>
+                          <div className="flex justify-between items-baseline mb-1">
+                            <span className="text-xs font-black text-neutral-800 uppercase">Percentage Score</span>
                             <span
-                              className="text-5xl font-black drop-shadow-lg"
+                              className="text-2xl font-black"
                               style={{ color: primaryColor }}
                             >
                               {currentReportCard.percentage.toFixed(1)}%
                             </span>
                           </div>
-                          <div className="relative">
-                            {/* Glow effect */}
+                          <div className="w-full bg-neutral-200 rounded-full h-3 overflow-hidden shadow-inner">
                             <div
-                              className="absolute inset-0 blur-md opacity-50"
+                              className="h-3 rounded-full shadow-sm"
                               style={{
+                                width: `${currentReportCard.percentage}%`,
                                 background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`
                               }}
                             ></div>
-                            <div className="w-full bg-neutral-200 rounded-full h-6 overflow-hidden shadow-inner relative">
-                              <div
-                                className="h-6 rounded-full shadow-lg transition-all duration-500 relative"
-                                style={{
-                                  width: `${currentReportCard.percentage}%`,
-                                  background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`
-                                }}
-                              >
-                                <div className="absolute inset-0 bg-white/30 animate-pulse"></div>
-                              </div>
-                            </div>
                           </div>
                         </div>
 
                         {/* Stats Grid */}
-                        <div className="grid grid-cols-2 gap-6">
+                        <div className="grid grid-cols-2 gap-2">
                           {/* Total Marks Card */}
                           <div
-                            className="rounded-2xl p-6 shadow-xl border-4 relative overflow-hidden"
+                            className="rounded-lg p-2 shadow-sm border relative overflow-hidden"
                             style={{
                               background: `linear-gradient(135deg, ${primaryColor}15, #ffffff)`,
                               borderColor: primaryColor + '40'
                             }}
                           >
-                            <div className="absolute top-0 right-0 w-20 h-20 bg-white/50 rounded-full -translate-y-10 translate-x-10"></div>
-                            <p className="text-xs font-black text-neutral-600 uppercase tracking-wider mb-3 relative">
+                            <p className="text-xs font-black text-neutral-600 uppercase mb-1">
                               Total Marks
                             </p>
-                            <p className="text-4xl font-black relative" style={{ color: primaryColor }}>
+                            <p className="text-lg font-black" style={{ color: primaryColor }}>
                               {currentReportCard.totalMarks}
-                              <span className="text-xl font-bold text-neutral-500">
+                              <span className="text-xs font-bold text-neutral-500">
                                 /{currentReportCard.subjects.reduce((sum, s) => sum + s.maxScore, 0)}
                               </span>
                             </p>
@@ -2067,17 +2064,15 @@ export default function ReportCardsPage() {
 
                           {/* Performance Status Card */}
                           <div
-                            className="rounded-2xl p-6 shadow-xl text-white relative overflow-hidden"
+                            className="rounded-lg p-2 shadow-sm text-white relative overflow-hidden"
                             style={{
                               background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
                             }}
                           >
-                            <div className="absolute top-0 right-0 w-24 h-24 bg-white/20 rounded-full -translate-y-12 translate-x-12"></div>
-                            <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/10 rounded-full translate-y-10 -translate-x-10"></div>
-                            <p className="text-xs font-black uppercase tracking-wider mb-3 relative drop-shadow">
+                            <p className="text-xs font-black uppercase mb-1">
                               Performance Status
                             </p>
-                            <p className="text-2xl font-black relative drop-shadow-lg">
+                            <p className="text-sm font-black">
                               {currentReportCard.percentage >= 90 ? "Outstanding" :
                                currentReportCard.percentage >= 75 ? "Excellent" :
                                currentReportCard.percentage >= 60 ? "Good" :
@@ -2090,110 +2085,110 @@ export default function ReportCardsPage() {
                   </div>
                 </div>
 
-                {/* Conduct & Behavior - Modern Gradient Cards */}
+                {/* Conduct & Behavior */}
                 {config.includeConduct && (
-                  <div className="mb-6 page-break">
-                    <div className="mb-4">
+                  <div style={{ marginBottom: "3mm" }}>
+                    <div style={{ marginBottom: "2mm" }}>
                       <div
-                        className="text-xl font-black text-white px-6 py-3 rounded-xl shadow-lg"
+                        className="text-base font-black text-white rounded-lg shadow-md"
                         style={{
-                          background: `linear-gradient(90deg, #10b981, #059669)`
+                          background: `linear-gradient(90deg, #10b981, #059669)`,
+                          padding: "2mm 3mm"
                         }}
                       >
-                        <div className="flex items-center gap-3">
-                          <Shield className="w-6 h-6" />
+                        <div className="flex items-center gap-2">
+                          <Shield className="w-4 h-4" />
                           <span>Conduct & Behavior Assessment</span>
                         </div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-6 text-sm">
+                    <div className="grid grid-cols-3 gap-2 text-xs">
                       {/* Behavior Card */}
-                      <div className="rounded-2xl shadow-2xl p-6 text-center relative overflow-hidden" style={{
+                      <div className="rounded-lg shadow-md p-2 text-center relative overflow-hidden" style={{
                         background: 'linear-gradient(135deg, #10b981, #059669)'
                       }}>
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/20 rounded-full -translate-y-12 translate-x-12"></div>
-                        <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg relative">
-                          <Shield className="w-8 h-8 text-green-600" />
+                        <div className="w-8 h-8 mx-auto mb-1 bg-white rounded-full flex items-center justify-center shadow-sm">
+                          <Shield className="w-4 h-4 text-green-600" />
                         </div>
-                        <p className="text-white mb-3 font-black uppercase text-xs tracking-wide drop-shadow relative">Behavior</p>
-                        <p className="font-black text-2xl text-white drop-shadow-lg relative">{currentReportCard.conduct.behavior}</p>
+                        <p className="text-white mb-1 font-black uppercase text-xs">Behavior</p>
+                        <p className="font-black text-base text-white">{currentReportCard.conduct.behavior}</p>
                       </div>
 
                       {/* Discipline Card */}
-                      <div className="rounded-2xl shadow-2xl p-6 text-center relative overflow-hidden" style={{
+                      <div className="rounded-lg shadow-md p-2 text-center relative overflow-hidden" style={{
                         background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
                       }}>
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/20 rounded-full -translate-y-12 translate-x-12"></div>
-                        <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg relative">
-                          <UserCheck className="w-8 h-8" style={{ color: primaryColor }} />
+                        <div className="w-8 h-8 mx-auto mb-1 bg-white rounded-full flex items-center justify-center shadow-sm">
+                          <UserCheck className="w-4 h-4" style={{ color: primaryColor }} />
                         </div>
-                        <p className="text-white mb-3 font-black uppercase text-xs tracking-wide drop-shadow relative">Discipline</p>
-                        <p className="font-black text-2xl text-white drop-shadow-lg relative">{currentReportCard.conduct.discipline}</p>
+                        <p className="text-white mb-1 font-black uppercase text-xs">Discipline</p>
+                        <p className="font-black text-base text-white">{currentReportCard.conduct.discipline}</p>
                       </div>
 
                       {/* Participation Card */}
-                      <div className="rounded-2xl shadow-2xl p-6 text-center relative overflow-hidden" style={{
+                      <div className="rounded-lg shadow-md p-2 text-center relative overflow-hidden" style={{
                         background: 'linear-gradient(135deg, #a855f7, #9333ea)'
                       }}>
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/20 rounded-full -translate-y-12 translate-x-12"></div>
-                        <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg relative">
-                          <Users className="w-8 h-8 text-purple-600" />
+                        <div className="w-8 h-8 mx-auto mb-1 bg-white rounded-full flex items-center justify-center shadow-sm">
+                          <Users className="w-4 h-4 text-purple-600" />
                         </div>
-                        <p className="text-white mb-3 font-black uppercase text-xs tracking-wide drop-shadow relative">Participation</p>
-                        <p className="font-black text-2xl text-white drop-shadow-lg relative">{currentReportCard.conduct.participation}</p>
+                        <p className="text-white mb-1 font-black uppercase text-xs">Participation</p>
+                        <p className="font-black text-base text-white">{currentReportCard.conduct.participation}</p>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Remarks - Modern Gradient Design */}
+                {/* Remarks */}
                 {config.includeRemarks && (
-                  <div className="space-y-6 mb-6 text-sm">
+                  <div className="space-y-2 text-xs" style={{ marginBottom: "3mm" }}>
                     {/* Teacher's Remarks */}
-                    <div className="rounded-2xl overflow-hidden shadow-2xl border-4" style={{ borderColor: primaryColor + '40' }}>
+                    <div className="rounded-lg overflow-hidden shadow-md border" style={{ borderColor: primaryColor + '40' }}>
                       <div
-                        className="text-white px-6 py-4 font-black flex items-center gap-3 text-base"
+                        className="text-white font-black flex items-center gap-2 text-sm"
                         style={{
-                          background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`
+                          background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`,
+                          padding: "2mm 3mm"
                         }}
                       >
-                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                          <MessageSquare className="w-5 h-5" style={{ color: primaryColor }} />
+                        <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                          <MessageSquare className="w-3 h-3" style={{ color: primaryColor }} />
                         </div>
                         <span>Class Teacher's Remarks</span>
                       </div>
                       <div
-                        className="p-6"
                         style={{
-                          background: `linear-gradient(135deg, ${primaryColor}08, #ffffff)`
+                          background: `linear-gradient(135deg, ${primaryColor}08, #ffffff)`,
+                          padding: "2mm 3mm"
                         }}
                       >
-                        <p className="text-neutral-800 italic font-medium text-base leading-relaxed">
+                        <p className="text-neutral-800 italic font-medium text-xs leading-relaxed">
                           {currentReportCard.teacherRemarks}
                         </p>
                       </div>
                     </div>
 
                     {/* Principal's Remarks */}
-                    <div className="rounded-2xl overflow-hidden shadow-2xl border-4" style={{ borderColor: '#a855f740' }}>
+                    <div className="rounded-lg overflow-hidden shadow-md border" style={{ borderColor: '#a855f740' }}>
                       <div
-                        className="text-white px-6 py-4 font-black flex items-center gap-3 text-base"
+                        className="text-white font-black flex items-center gap-2 text-sm"
                         style={{
-                          background: 'linear-gradient(90deg, #a855f7, #9333ea)'
+                          background: 'linear-gradient(90deg, #a855f7, #9333ea)',
+                          padding: "2mm 3mm"
                         }}
                       >
-                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                          <GraduationCap className="w-5 h-5 text-purple-600" />
+                        <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                          <GraduationCap className="w-3 h-3 text-purple-600" />
                         </div>
                         <span>Principal's Remarks</span>
                       </div>
                       <div
-                        className="p-6"
                         style={{
-                          background: 'linear-gradient(135deg, #a855f708, #ffffff)'
+                          background: 'linear-gradient(135deg, #a855f708, #ffffff)',
+                          padding: "2mm 3mm"
                         }}
                       >
-                        <p className="text-neutral-800 italic font-medium text-base leading-relaxed">
+                        <p className="text-neutral-800 italic font-medium text-xs leading-relaxed">
                           {currentReportCard.principalRemarks}
                         </p>
                       </div>
@@ -2202,43 +2197,43 @@ export default function ReportCardsPage() {
                 )}
 
                 {/* Signatures Section */}
-                <div className="mt-12 pt-8">
-                  <div className="mb-8">
-                    <h3 className="text-xl font-bold text-center uppercase tracking-wide text-neutral-900">
+                <div style={{ marginTop: "5mm", paddingTop: "3mm" }}>
+                  <div style={{ marginBottom: "3mm" }}>
+                    <h3 className="text-base font-bold text-center uppercase tracking-wide text-neutral-900">
                       Official Signatures & Authentication
                     </h3>
                   </div>
 
                   {/* Dotted separator */}
-                  <div className="border-t-2 border-dotted border-neutral-300 mb-8"></div>
+                  <div className="border-t-2 border-dotted border-neutral-300" style={{ marginBottom: "3mm" }}></div>
 
-                  <div className="grid grid-cols-3 gap-6 text-base mb-8">
+                  <div className="grid grid-cols-3 gap-3 text-sm" style={{ marginBottom: "3mm" }}>
                     {/* Class Teacher */}
                     <div className="text-center">
-                      <div className="h-20 mb-3 bg-neutral-100 rounded"></div>
-                      <div className="py-3">
-                        <p className="font-bold text-neutral-900 text-base">Class Teacher</p>
-                        <p className="text-xs text-neutral-600 mt-1">Signature & Date</p>
+                      <div className="h-12 mb-2 bg-neutral-100 rounded"></div>
+                      <div className="py-2">
+                        <p className="font-bold text-neutral-900 text-sm">Class Teacher</p>
+                        <p className="text-xs text-neutral-600 mt-0.5">Signature & Date</p>
                       </div>
                     </div>
 
                     {/* Parent/Guardian */}
                     <div className="text-center">
-                      <div className="h-20 mb-3 bg-neutral-100 rounded"></div>
-                      <div className="py-3">
-                        <p className="font-bold text-neutral-900 text-base">Parent/Guardian</p>
-                        <p className="text-xs text-neutral-600 mt-1">Signature & Date</p>
+                      <div className="h-12 mb-2 bg-neutral-100 rounded"></div>
+                      <div className="py-2">
+                        <p className="font-bold text-neutral-900 text-sm">Parent/Guardian</p>
+                        <p className="text-xs text-neutral-600 mt-0.5">Signature & Date</p>
                       </div>
                     </div>
 
                     {/* Principal */}
                     <div className="text-center">
-                      <div className="h-20 mb-3 bg-neutral-100 rounded"></div>
-                      <div className="py-3">
-                        <p className="font-bold text-neutral-900 text-base">
+                      <div className="h-12 mb-2 bg-neutral-100 rounded"></div>
+                      <div className="py-2">
+                        <p className="font-bold text-neutral-900 text-sm">
                           {currentTenant?.branding?.signatures?.principalName || "Prof. Chioma Okonkwo"}
                         </p>
-                        <p className="text-xs text-neutral-600 mt-1">
+                        <p className="text-xs text-neutral-600 mt-0.5">
                           {currentTenant?.branding?.signatures?.principalTitle || "Principal"}
                         </p>
                       </div>
@@ -2246,18 +2241,18 @@ export default function ReportCardsPage() {
                   </div>
 
                   {/* Dotted separator */}
-                  <div className="border-t-2 border-dotted border-neutral-300 mb-6"></div>
+                  <div className="border-t-2 border-dotted border-neutral-300" style={{ marginBottom: "2mm" }}></div>
                 </div>
 
                 {/* Footer */}
-                <div className="mt-6 pt-6 text-center">
-                  <p className="text-sm font-bold text-neutral-900 mb-2 uppercase tracking-wide">
+                <div style={{ marginTop: "2mm", paddingTop: "2mm" }} className="text-center">
+                  <p className="text-xs font-bold text-neutral-900 mb-1 uppercase tracking-wide">
                     ⭕ Official Document ⭕
                   </p>
                   <p className="text-xs text-neutral-700">
                     This is an official academic document issued by {currentTenant?.name || settings.schoolName}
                   </p>
-                  <p className="text-xs text-neutral-600 mt-2">
+                  <p className="text-xs text-neutral-600 mt-1">
                     Generated on: {new Date().toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
