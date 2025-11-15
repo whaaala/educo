@@ -24,6 +24,11 @@ import {
   Globe,
   ArrowRight,
   AlertTriangle,
+  UserCheck,
+  ClipboardCheck,
+  Upload,
+  Award,
+  BarChart3,
 } from "lucide-react";
 import TenantSwitcher from "@/components/admin/TenantSwitcher";
 
@@ -74,10 +79,15 @@ const menuItems: MenuItem[] = [
           { id: "all-students", label: "All Students", icon: <GraduationCap className="w-4 h-4" />, href: "/students?view=grid" },
           { id: "student-list", label: "Student List", icon: <GraduationCap className="w-4 h-4" />, href: "/students?view=list" },
           { id: "student-details", label: "Student Details", icon: <GraduationCap className="w-4 h-4" />, href: "/students/details" },
+          { id: "attendance", label: "Attendance", icon: <UserCheck className="w-4 h-4" />, href: "/students/attendance" },
+          { id: "grading", label: "Grading", icon: <ClipboardCheck className="w-4 h-4" />, href: "/students/grading" },
           { id: "report-cards", label: "Report Cards", icon: <FileText className="w-4 h-4" />, href: "/students/report-cards" },
+          { id: "cumulative-report", label: "Cumulative Report", icon: <BarChart3 className="w-4 h-4" />, href: "/students/cumulative-report" },
+          { id: "transcripts", label: "Transcripts", icon: <Award className="w-4 h-4" />, href: "/students/transcripts" },
           { id: "student-promotion", label: "Student Promotion", icon: <GraduationCap className="w-4 h-4" />, href: "/students/promotion" },
           { id: "transfer-requests", label: "Transfer Requests", icon: <ArrowRight className="w-4 h-4" />, href: "/students/transfers" },
           { id: "discipline", label: "Discipline", icon: <AlertTriangle className="w-4 h-4" />, href: "/students/discipline" },
+          { id: "bulk-import", label: "Bulk Import", icon: <Upload className="w-4 h-4" />, href: "/students/bulk-import" },
         ]
       },
       { id: "parents", label: "Parents", icon: <Users className="w-4 h-4" />, href: "/parents" },
