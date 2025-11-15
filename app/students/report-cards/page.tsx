@@ -1144,79 +1144,79 @@ export default function ReportCardsPage() {
           }
         }
 
-      if (!canvas || canvas.width === 0 || canvas.height === 0) {
-        throw new Error(`Canvas generation failed for card ${i + 1} - canvas is empty or has no dimensions`);
-      }
-
-      console.log(`Canvas created successfully: ${canvas.width}x${canvas.height}px`);
-
-      const imgData = canvas.toDataURL("image/png", 1.0);
-
-      // A4 page dimensions
-      const pageWidth = 210; // mm
-      const pageHeight = 297; // mm
-
-      if (i > 0) pdf.addPage();
-
-      // Calculate image dimensions to maintain aspect ratio at full page width
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * pageWidth) / canvas.width;
-
-      console.log(`Canvas: ${canvas.width}x${canvas.height}px, Image will be: ${imgWidth}x${imgHeight.toFixed(2)}mm`);
-
-      // Calculate how many pixels represent one page height
-      const pxPerMm = canvas.width / pageWidth;
-      const pageHeightPx = pageHeight * pxPerMm;
-
-      console.log(`Pixels per mm: ${pxPerMm.toFixed(2)}, One page = ${pageHeightPx.toFixed(0)}px`);
-
-      // Split across multiple pages if needed
-      if (canvas.height > pageHeightPx) {
-        const totalPages = Math.ceil(canvas.height / pageHeightPx);
-        console.log(`Splitting ${canvas.height}px into ${totalPages} pages`);
-
-        for (let page = 0; page < totalPages; page++) {
-          if (page > 0) {
-            pdf.addPage();
-          }
-
-          // Calculate slice in pixels
-          const srcY = page * pageHeightPx;
-          const srcHeight = Math.min(pageHeightPx, canvas.height - srcY);
-
-          // Create temp canvas
-          const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = canvas.width;
-          tempCanvas.height = srcHeight;
-          const ctx = tempCanvas.getContext('2d');
-
-          if (ctx) {
-            // Fill white background
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
-            // Draw slice
-            ctx.drawImage(canvas, 0, srcY, canvas.width, srcHeight, 0, 0, canvas.width, srcHeight);
-
-            // Add to PDF
-            const pageImg = tempCanvas.toDataURL("image/png", 1.0);
-            const destHeight = srcHeight / pxPerMm;
-            pdf.addImage(pageImg, "PNG", 0, 0, pageWidth, destHeight);
-            console.log(`Page ${page + 1}/${totalPages}: height=${destHeight.toFixed(1)}mm`);
-          }
+        if (!canvas || canvas.width === 0 || canvas.height === 0) {
+          throw new Error(`Canvas generation failed for card ${i + 1} - canvas is empty or has no dimensions`);
         }
-      } else {
-        // Fits on one page
-        pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-        console.log(`Single page: ${imgWidth}x${imgHeight.toFixed(2)}mm`);
-      }
-    }
 
-    console.log(`Saving PDF with ${totalCards} page(s)...`);
-    pdf.save(`report-cards-${config.class}-${config.term}-${config.academicYear}.pdf`);
-    setIsGenerating(false);
-    setCurrentPreviewIndex(0);
-    alert(`Successfully generated PDF with ${totalCards} report card(s)!`);
+        console.log(`Canvas created successfully: ${canvas.width}x${canvas.height}px`);
+
+        const imgData = canvas.toDataURL("image/png", 1.0);
+
+        // A4 page dimensions
+        const pageWidth = 210; // mm
+        const pageHeight = 297; // mm
+
+        if (i > 0) pdf.addPage();
+
+        // Calculate image dimensions to maintain aspect ratio at full page width
+        const imgWidth = pageWidth;
+        const imgHeight = (canvas.height * pageWidth) / canvas.width;
+
+        console.log(`Canvas: ${canvas.width}x${canvas.height}px, Image will be: ${imgWidth}x${imgHeight.toFixed(2)}mm`);
+
+        // Calculate how many pixels represent one page height
+        const pxPerMm = canvas.width / pageWidth;
+        const pageHeightPx = pageHeight * pxPerMm;
+
+        console.log(`Pixels per mm: ${pxPerMm.toFixed(2)}, One page = ${pageHeightPx.toFixed(0)}px`);
+
+        // Split across multiple pages if needed
+        if (canvas.height > pageHeightPx) {
+          const totalPages = Math.ceil(canvas.height / pageHeightPx);
+          console.log(`Splitting ${canvas.height}px into ${totalPages} pages`);
+
+          for (let page = 0; page < totalPages; page++) {
+            if (page > 0) {
+              pdf.addPage();
+            }
+
+            // Calculate slice in pixels
+            const srcY = page * pageHeightPx;
+            const srcHeight = Math.min(pageHeightPx, canvas.height - srcY);
+
+            // Create temp canvas
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = srcHeight;
+            const ctx = tempCanvas.getContext('2d');
+
+            if (ctx) {
+              // Fill white background
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+              // Draw slice
+              ctx.drawImage(canvas, 0, srcY, canvas.width, srcHeight, 0, 0, canvas.width, srcHeight);
+
+              // Add to PDF
+              const pageImg = tempCanvas.toDataURL("image/png", 1.0);
+              const destHeight = srcHeight / pxPerMm;
+              pdf.addImage(pageImg, "PNG", 0, 0, pageWidth, destHeight);
+              console.log(`Page ${page + 1}/${totalPages}: height=${destHeight.toFixed(1)}mm`);
+            }
+          }
+        } else {
+          // Fits on one page
+          pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+          console.log(`Single page: ${imgWidth}x${imgHeight.toFixed(2)}mm`);
+        }
+      }
+
+      console.log(`Saving PDF with ${totalCards} page(s)...`);
+      pdf.save(`report-cards-${config.class}-${config.term}-${config.academicYear}.pdf`);
+      setIsGenerating(false);
+      setCurrentPreviewIndex(0);
+      alert(`Successfully generated PDF with ${totalCards} report card(s)!`);
     } catch (error) {
       console.error("Error generating PDF:", error);
       setIsGenerating(false);

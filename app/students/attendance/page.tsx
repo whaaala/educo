@@ -30,6 +30,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  User,
+  BookMarked,
 } from "lucide-react";
 // Education level types and data
 type EducationLevel = "Primary" | "Secondary" | "Tertiary";
@@ -62,6 +64,32 @@ const getClassesByLevel = (level: EducationLevel): string[] => {
 };
 
 const SECTIONS = ["A", "B", "C", "D", "E"];
+
+// Mock teachers data
+const MOCK_TEACHERS = [
+  "Mr. Johnson",
+  "Mrs. Smith",
+  "Dr. Williams",
+  "Ms. Davis",
+  "Mr. Anderson",
+  "Mrs. Wilson",
+  "Dr. Martinez",
+  "Ms. Garcia",
+];
+
+// Mock subjects data
+const MOCK_SUBJECTS = [
+  "Mathematics",
+  "English Language",
+  "Biology",
+  "Chemistry",
+  "Physics",
+  "History",
+  "Geography",
+  "Computer Science",
+  "Physical Education",
+  "Art & Design",
+];
 
 const ATTENDANCE_STATUS = {
   PRESENT: "present",
@@ -113,6 +141,8 @@ export default function AttendancePage() {
   );
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSection, setSelectedSection] = useState("");
+  const [selectedTeacher, setSelectedTeacher] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -277,6 +307,8 @@ export default function AttendancePage() {
         remarks: record.remarks,
         class: student?.class || selectedClass,
         section: student?.section || selectedSection,
+        teacher: selectedTeacher || undefined,
+        subject: selectedSubject || undefined,
       };
     });
 
@@ -387,14 +419,8 @@ export default function AttendancePage() {
             </div>
 
             <div className="p-4 sm:p-6">
-              <div
-                className={`grid grid-cols-1 ${
-                  settings.supportsMultipleLevels
-                    ? "sm:grid-cols-2 lg:grid-cols-4"
-                    : "sm:grid-cols-3"
-                } gap-4 sm:gap-5`}
-              >
-                {/* Education Level - Only for multi-level schools */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                {/* Row 1: Education Level, Class, Section */}
                 {settings.supportsMultipleLevels && (
                   <FormDropdown
                     label="Education Level"
@@ -415,7 +441,6 @@ export default function AttendancePage() {
                   />
                 )}
 
-                {/* Class */}
                 <FormDropdown
                   label="Class"
                   icon={<BookOpen className="w-full h-full" />}
@@ -434,7 +459,6 @@ export default function AttendancePage() {
                   required
                 />
 
-                {/* Section */}
                 <FormDropdown
                   label="Section"
                   icon={<Users className="w-full h-full" />}
@@ -452,7 +476,41 @@ export default function AttendancePage() {
                   placeholder="All sections"
                 />
 
-                {/* Date */}
+                {/* Row 2: Teacher, Subject, Date */}
+                <FormDropdown
+                  label="Teacher"
+                  icon={<User className="w-full h-full" />}
+                  iconBgColor="bg-cyan-100 dark:bg-cyan-900/30"
+                  iconColor="text-cyan-600 dark:text-cyan-400"
+                  value={selectedTeacher}
+                  onChange={setSelectedTeacher}
+                  options={[
+                    { value: "", label: "Select teacher..." },
+                    ...MOCK_TEACHERS.map((teacher) => ({
+                      value: teacher,
+                      label: teacher,
+                    })),
+                  ]}
+                  placeholder="Select teacher..."
+                />
+
+                <FormDropdown
+                  label="Subject"
+                  icon={<BookMarked className="w-full h-full" />}
+                  iconBgColor="bg-rose-100 dark:bg-rose-900/30"
+                  iconColor="text-rose-600 dark:text-rose-400"
+                  value={selectedSubject}
+                  onChange={setSelectedSubject}
+                  options={[
+                    { value: "", label: "Select subject..." },
+                    ...MOCK_SUBJECTS.map((subject) => ({
+                      value: subject,
+                      label: subject,
+                    })),
+                  ]}
+                  placeholder="Select subject..."
+                />
+
                 <FormInput
                   label="Date"
                   icon={<Calendar className="w-full h-full" />}

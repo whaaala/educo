@@ -89,11 +89,11 @@ export default function AttendanceCalendar({ year = 2024, onYearChange, studentI
       date: record.date,
       day: new Date(record.date).toLocaleDateString("en-US", { weekday: "long" }),
       class: `${record.class} ${record.section}`,
-      subject: "General", // In real app, this would come from the record
+      subject: record.subject || "General",
       period: "Full Day",
       status: record.status,
       lateMinutes: record.lateMinutes,
-      teacher: "N/A",
+      teacher: record.teacher || "N/A",
     }));
 
     return classRecords;
@@ -470,30 +470,6 @@ export default function AttendanceCalendar({ year = 2024, onYearChange, studentI
             variant="blue"
             className="w-48"
           />
-        </div>
-      </div>
-
-      {/* Legend */}
-      <div className="flex flex-wrap items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/30 midnight:bg-gray-800/30 purple:bg-gray-800/30 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 backdrop-blur-sm">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-green-500 shadow-sm"></div>
-          <span className="text-[10px] sm:text-xs font-medium sm:font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Present</span>
-        </div>
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-red-500 shadow-sm"></div>
-          <span className="text-[10px] sm:text-xs font-medium sm:font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Absent</span>
-        </div>
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-cyan-500 shadow-sm"></div>
-          <span className="text-[10px] sm:text-xs font-medium sm:font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Late</span>
-        </div>
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-gray-800 dark:bg-gray-600 shadow-sm"></div>
-          <span className="text-[10px] sm:text-xs font-medium sm:font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Halfday</span>
-        </div>
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-blue-500 shadow-sm"></div>
-          <span className="text-[10px] sm:text-xs font-medium sm:font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Holiday</span>
         </div>
       </div>
 

@@ -14,6 +14,8 @@ export interface AttendanceRecord {
   remarks?: string;
   class: string;
   section: string;
+  teacher?: string;
+  subject?: string;
 }
 
 // Attendance context state
