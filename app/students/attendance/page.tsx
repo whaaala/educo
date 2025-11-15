@@ -127,6 +127,9 @@ export default function AttendancePage() {
   const [selectedLateStudent, setSelectedLateStudent] = useState<string | null>(null);
   const [lateMinutes, setLateMinutes] = useState<number>(15);
 
+  // Search animation state
+  const [isSearching, setIsSearching] = useState(false);
+
   // Filter students based on class and section
   const filteredStudents = MOCK_STUDENTS.filter((student) => {
     const matchesClass = !selectedClass || student.class === selectedClass;
@@ -158,6 +161,10 @@ export default function AttendancePage() {
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     setCurrentPage(1);
+    setIsSearching(true);
+    setTimeout(() => {
+      setIsSearching(false);
+    }, 500);
   };
 
   const handleAttendanceChange = (
@@ -605,7 +612,9 @@ export default function AttendancePage() {
                         key={student.id}
                         className="group relative bg-gradient-to-r from-white to-neutral-50 dark:from-neutral-800 dark:to-neutral-800/50 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-300 hover:shadow-md overflow-hidden"
                         style={{
-                          animation: `slideIn 0.3s ease-out ${index * 0.05}s both`
+                          animation: isSearching
+                            ? `fadeSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.05}s both`
+                            : `slideIn 0.3s ease-out ${index * 0.05}s both`
                         }}
                       >
                         {/* Gradient overlay on hover */}
@@ -756,6 +765,17 @@ export default function AttendancePage() {
                   to {
                     opacity: 1;
                     transform: translateY(0);
+                  }
+                }
+
+                @keyframes fadeSlideIn {
+                  from {
+                    opacity: 0;
+                    transform: translateY(20px) scale(0.95);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
                   }
                 }
               `}</style>
