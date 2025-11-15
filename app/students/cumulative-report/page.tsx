@@ -367,51 +367,20 @@ export default function CumulativeReportPage() {
     contentRef: printRef,
   });
 
-  const handleDownloadPDF = async () => {
-    if (!printRef.current) return;
+  const handleDownloadPDF = () => {
+    // Show instruction modal/alert
+    const confirmed = window.confirm(
+      'Click OK to open the print dialog.\n\n' +
+      'In the print dialog:\n' +
+      '1. Select "Save as PDF" or "Microsoft Print to PDF" as the destination\n' +
+      '2. Click Save/Print\n' +
+      '3. Choose where to save your PDF file\n\n' +
+      'Note: Browser print dialog handles all modern color formats correctly.'
+    );
 
-    const element = printRef.current;
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      ignoreElements: (element) => {
-        // Skip elements that might have unsupported CSS
-        return element.tagName === 'SCRIPT' || element.tagName === 'STYLE';
-      },
-      onclone: (clonedDoc) => {
-        // Convert any oklch colors to rgb equivalents in the cloned document
-        const allElements = clonedDoc.querySelectorAll('*');
-        allElements.forEach((el: Element) => {
-          const htmlEl = el as HTMLElement;
-          const computedStyle = window.getComputedStyle(el);
-          if (computedStyle.color && computedStyle.color.includes('oklch')) {
-            htmlEl.style.color = 'rgb(0, 0, 0)'; // fallback
-          }
-          if (computedStyle.backgroundColor && computedStyle.backgroundColor.includes('oklch')) {
-            htmlEl.style.backgroundColor = 'transparent'; // fallback
-          }
-        });
-      },
-    }).catch((error) => {
-      // Suppress oklch color parsing errors
-      if (!error.message?.includes('oklch')) {
-        throw error;
-      }
-      // Return empty canvas on oklch error
-      const fallbackCanvas = document.createElement('canvas');
-      fallbackCanvas.width = printRef.current?.offsetWidth || 800;
-      fallbackCanvas.height = printRef.current?.offsetHeight || 1100;
-      return fallbackCanvas;
-    });
-
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "mm", "a4");
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`cumulative-report-${cumulativeReport?.student.name}.pdf`);
+    if (confirmed) {
+      handlePrint();
+    }
   };
 
   return (
@@ -637,8 +606,9 @@ export default function CumulativeReportPage() {
                   Print
                 </Button>
                 <Button
-                  onClick={handleDownloadPDF}
+                  onClick={handlePrint}
                   icon={<Download className="w-4 h-4" />}
+                  title="Open print dialog to save as PDF"
                 >
                   Download PDF
                 </Button>
@@ -646,7 +616,7 @@ export default function CumulativeReportPage() {
             </div>
 
             {/* Report Preview */}
-            <div ref={printRef} className="bg-white p-8 rounded-xl shadow-lg">
+            <div ref={printRef} data-print-target className="bg-white p-8 rounded-xl shadow-lg">
               {/* Header */}
               <div className="text-center mb-8 pb-6 border-b-2 border-neutral-200">
                 <h1 className="text-3xl font-bold text-neutral-900 mb-2">

@@ -793,13 +793,13 @@ export default function ReportCardsPage() {
             // Reset all positioning and sizing - let it render naturally
             printContent.style.position = 'relative';
             printContent.style.margin = '0';
-            printContent.style.padding = '10mm'; // Optimized margin for full page use
+            printContent.style.padding = '24px'; // 1.5rem = p-6
             printContent.style.width = '100%';
             printContent.style.maxWidth = 'none';
             printContent.style.backgroundColor = '#ffffff';
             printContent.style.boxShadow = 'none';
             printContent.style.borderRadius = '0';
-            printContent.style.fontSize = '16px'; // Optimized base font for better fit
+            printContent.style.fontSize = '14px'; // Compact base font
 
             // CRITICAL: Replace ALL oklch colors with RGB before html2canvas parses
             const allElements = clonedDoc.querySelectorAll('*');
