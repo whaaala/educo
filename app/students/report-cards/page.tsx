@@ -16,7 +16,9 @@ import {
   UserCheck,
   Shield,
   MessageSquare,
-  BarChart3
+  BarChart3,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
 import Button from "@/components/shared/Button";
@@ -171,7 +173,7 @@ export default function ReportCardsPage() {
 
   // Educo v4.0 Multi-Tenant: Get students and settings for current tenant
   const tenantStudents = useStudentsByTenant();
-  const { settings } = useSchoolSettings();
+  const { settings, currentTenant } = useSchoolSettings();
   const [students, setStudents] = useState<Student[]>([]);
 
   const [config, setConfig] = useState<ReportCardConfig>({
@@ -213,6 +215,9 @@ export default function ReportCardsPage() {
 
     return classMatch && sectionMatch;
   });
+
+  // Define currentReportCard before using it in handlePrint
+  const currentReportCard = reportCards[currentPreviewIndex];
 
   const generateReportCards = () => {
     const cards: ReportCardData[] = Array.from(config.selectedStudents).map((studentId, index) => {
@@ -264,11 +269,456 @@ export default function ReportCardsPage() {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
+    documentTitle: currentReportCard
+      ? `Report-Card-${currentReportCard.student.name}-${config.term}-${config.academicYear}`
+      : `Report-Card-${config.term}-${config.academicYear}`,
+    pageStyle: `
+      @page {
+        size: A4;
+        margin: 0;
+      }
+      @media print {
+        body {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .no-print {
+          display: none !important;
+        }
+      }
+    `,
   });
 
   const handleDownloadPDF = async () => {
-    if (!printRef.current) return;
+    setIsGenerating(true);
+    setGenerationProgress(0);
+
+    const pdf = new jsPDF("p", "mm", "a4");
+    const totalCards = reportCards.length;
+
+    try {
+      for (let i = 0; i < totalCards; i++) {
+        const card = reportCards[i];
+        setCurrentPreviewIndex(i);
+        setGenerationProgress(((i + 1) / totalCards) * 100);
+
+        console.log(`Generating PDF for card ${i + 1}/${totalCards}...`);
+
+        // Get tenant branding colors
+        const primaryColor = currentTenant?.branding?.primaryColor || '#2563eb';
+
+        // Convert hex to RGB for jsPDF
+        const hexToRgb = (hex: string) => {
+          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+          return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+          } : { r: 37, g: 99, b: 235 };
+        };
+
+        const primaryRgb = hexToRgb(primaryColor);
+
+        if (i > 0) pdf.addPage();
+
+        let yPos = 15; // Start position
+
+        // ===== SCHOOL HEADER =====
+        // Logo circle
+        pdf.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+        pdf.circle(105, yPos + 10, 8, 'F');
+
+        // School name
+        pdf.setFontSize(22);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(currentTenant?.name || settings.schoolName, 105, yPos + 25, { align: 'center' });
+
+        // Motto
+        if (currentTenant?.branding?.motto) {
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'italic');
+          pdf.setTextColor(100, 100, 100);
+          pdf.text(`"${currentTenant.branding.motto}"`, 105, yPos + 32, { align: 'center' });
+        }
+
+        // Address and contact
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(80, 80, 80);
+        const addressLine = `${currentTenant?.contact.address.line1}, ${currentTenant?.contact.address.city}, ${currentTenant?.contact.address.state}`;
+        const contactLine = `Email: ${currentTenant?.contact.email} | Phone: ${currentTenant?.contact.phone}`;
+        pdf.text(addressLine, 105, yPos + 37, { align: 'center' });
+        pdf.text(contactLine, 105, yPos + 41, { align: 'center' });
+
+        yPos += 50;
+
+        // ===== REPORT CARD TITLE =====
+        pdf.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+        pdf.rect(15, yPos, 180, 18, 'F');
+        pdf.setFontSize(18);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(255, 255, 255);
+        pdf.text('PROGRESS REPORT CARD', 105, yPos + 8, { align: 'center' });
+        pdf.setFontSize(11);
+        pdf.text(`${config.term} - Academic Year ${config.academicYear}`, 105, yPos + 14, { align: 'center' });
+
+        yPos += 25;
+
+        // ===== STUDENT INFORMATION BOX =====
+        pdf.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+        pdf.setLineWidth(0.5);
+        pdf.rect(15, yPos, 180, 35);
+
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(0, 0, 0);
+
+        const infoY = yPos + 7;
+        const col1X = 20;
+        const col2X = 110;
+        const lineHeight = 8;
+
+        // Left column
+        pdf.text('Student Name:', col1X, infoY);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(card.student.name, col1X + 35, infoY);
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Admission No:', col1X, infoY + lineHeight);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(card.student.rollNo, col1X + 35, infoY + lineHeight);
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Class:', col1X, infoY + lineHeight * 2);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`${config.class}${config.section ? ` - Section ${config.section}` : ''}`, col1X + 35, infoY + lineHeight * 2);
+
+        // Right column
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Gender:', col2X, infoY);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(card.student.gender, col2X + 25, infoY);
+
+        if (config.includeAttendance) {
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('Attendance:', col2X, infoY + lineHeight);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(`${card.attendance.present}/${card.attendance.total} Days`, col2X + 25, infoY + lineHeight);
+        }
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Class Rank:', col2X, infoY + lineHeight * 2);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+        pdf.text(`${card.rank} of ${card.totalStudents}`, col2X + 25, infoY + lineHeight * 2);
+
+        yPos += 42;
+
+        // ===== ACADEMIC PERFORMANCE TABLE =====
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('Academic Performance', 15, yPos);
+
+        yPos += 7;
+
+        // Table header
+        const tableX = 15;
+        const tableWidth = 180;
+        const colWidths = config.includeRemarks
+          ? [60, 25, 30, 20, 45]  // With remarks
+          : [70, 30, 35, 25];      // Without remarks
+
+        pdf.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+        pdf.rect(tableX, yPos, tableWidth, 8, 'F');
+
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(255, 255, 255);
+
+        let currentX = tableX + 2;
+        pdf.text('Subject', currentX, yPos + 5.5);
+        currentX += colWidths[0];
+        pdf.text('Max Marks', currentX, yPos + 5.5);
+        currentX += colWidths[1];
+        pdf.text('Marks Obtained', currentX, yPos + 5.5);
+        currentX += colWidths[2];
+        pdf.text('Grade', currentX, yPos + 5.5);
+        if (config.includeRemarks) {
+          currentX += colWidths[3];
+          pdf.text('Remarks', currentX, yPos + 5.5);
+        }
+
+        yPos += 8;
+
+        // Table rows
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(0, 0, 0);
+
+        card.subjects.forEach((subject, idx) => {
+          const rowHeight = 7;
+
+          // Alternating row colors
+          if (idx % 2 === 0) {
+            pdf.setFillColor(245, 245, 245);
+            pdf.rect(tableX, yPos, tableWidth, rowHeight, 'F');
+          }
+
+          pdf.setDrawColor(200, 200, 200);
+          pdf.setLineWidth(0.1);
+          pdf.line(tableX, yPos + rowHeight, tableX + tableWidth, yPos + rowHeight);
+
+          currentX = tableX + 2;
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(subject.subject, currentX, yPos + 5);
+
+          currentX += colWidths[0];
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(subject.maxScore.toString(), currentX, yPos + 5);
+
+          currentX += colWidths[1];
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+          pdf.text(subject.score.toString(), currentX, yPos + 5);
+
+          currentX += colWidths[2];
+          pdf.setTextColor(255, 255, 255);
+          pdf.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+          pdf.roundedRect(currentX - 1, yPos + 1.5, 15, 5, 2, 2, 'F');
+          pdf.text(subject.grade, currentX + 3, yPos + 5);
+
+          if (config.includeRemarks) {
+            currentX += colWidths[3];
+            pdf.setFont('helvetica', 'italic');
+            pdf.setFontSize(7);
+            pdf.setTextColor(100, 100, 100);
+            pdf.text(subject.remarks, currentX, yPos + 5, { maxWidth: colWidths[4] - 4 });
+            pdf.setFontSize(9);
+          }
+
+          pdf.setTextColor(0, 0, 0);
+          yPos += rowHeight;
+        });
+
+        // Grand total row
+        pdf.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+        pdf.rect(tableX, yPos, tableWidth, 8, 'F');
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(10);
+        pdf.setTextColor(255, 255, 255);
+
+        currentX = tableX + 2;
+        pdf.text('GRAND TOTAL', currentX, yPos + 5.5);
+
+        currentX += colWidths[0];
+        pdf.text(card.subjects.reduce((sum, s) => sum + s.maxScore, 0).toString(), currentX, yPos + 5.5);
+
+        currentX += colWidths[1];
+        pdf.text(card.totalMarks.toString(), currentX, yPos + 5.5);
+
+        currentX += colWidths[2];
+        pdf.text(`${card.percentage.toFixed(2)}%`, currentX, yPos + 5.5);
+
+        yPos += 15;
+
+        // ===== OVERALL PERFORMANCE =====
+        pdf.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+        pdf.setLineWidth(0.5);
+        pdf.rect(15, yPos, 180, 30);
+
+        pdf.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+        pdf.rect(15, yPos, 180, 8, 'F');
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(255, 255, 255);
+        pdf.text('Overall Performance Summary', 105, yPos + 5.5, { align: 'center' });
+
+        // Grade circle
+        pdf.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+        pdf.circle(40, yPos + 19, 10, 'F');
+        pdf.setFontSize(24);
+        pdf.setTextColor(255, 255, 255);
+        pdf.text(card.overallGrade, 40, yPos + 22, { align: 'center' });
+        pdf.setFontSize(7);
+        pdf.text('Grade', 40, yPos + 27, { align: 'center' });
+
+        // Stats
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('Percentage Score:', 65, yPos + 15);
+        pdf.setFontSize(16);
+        pdf.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+        pdf.text(`${card.percentage.toFixed(1)}%`, 120, yPos + 15);
+
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('Total Marks:', 65, yPos + 23);
+        pdf.setFontSize(12);
+        pdf.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+        pdf.text(`${card.totalMarks}/${card.subjects.reduce((sum, s) => sum + s.maxScore, 0)}`, 95, yPos + 23);
+
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('Performance Status:', 130, yPos + 23);
+        pdf.setFont('helvetica', 'normal');
+        const status = card.percentage >= 90 ? "Outstanding" :
+                      card.percentage >= 75 ? "Excellent" :
+                      card.percentage >= 60 ? "Good" :
+                      card.percentage >= 50 ? "Satisfactory" : "Needs Improvement";
+        pdf.text(status, 165, yPos + 23);
+
+        yPos += 37;
+
+        // ===== CONDUCT (if enabled) =====
+        if (config.includeConduct && yPos < 240) {
+          pdf.setFontSize(11);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(0, 0, 0);
+          pdf.text('Conduct & Behavior Assessment', 15, yPos);
+          yPos += 7;
+
+          const conductWidth = 58;
+          pdf.setFontSize(8);
+
+          // Behavior
+          pdf.setDrawColor(34, 197, 94);
+          pdf.setLineWidth(0.5);
+          pdf.rect(15, yPos, conductWidth, 12);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('BEHAVIOR', 15 + conductWidth/2, yPos + 5, { align: 'center' });
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(card.conduct.behavior, 15 + conductWidth/2, yPos + 9, { align: 'center' });
+
+          // Discipline
+          pdf.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+          pdf.rect(78, yPos, conductWidth, 12);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('DISCIPLINE', 78 + conductWidth/2, yPos + 5, { align: 'center' });
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(card.conduct.discipline, 78 + conductWidth/2, yPos + 9, { align: 'center' });
+
+          // Participation
+          pdf.setDrawColor(168, 85, 247);
+          pdf.rect(141, yPos, conductWidth, 12);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('PARTICIPATION', 141 + conductWidth/2, yPos + 5, { align: 'center' });
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(card.conduct.participation, 141 + conductWidth/2, yPos + 9, { align: 'center' });
+
+          yPos += 18;
+        }
+
+        // ===== REMARKS (if enabled) =====
+        if (config.includeRemarks && yPos < 230) {
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(0, 0, 0);
+
+          // Teacher's Remarks
+          pdf.text("Class Teacher's Remarks", 15, yPos);
+          yPos += 5;
+          pdf.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+          pdf.setLineWidth(0.3);
+          pdf.rect(15, yPos, 180, 12);
+          pdf.setFont('helvetica', 'italic');
+          pdf.setFontSize(8);
+          pdf.setTextColor(60, 60, 60);
+          pdf.text(card.teacherRemarks, 17, yPos + 4, { maxWidth: 176 });
+          yPos += 17;
+
+          // Principal's Remarks
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(9);
+          pdf.setTextColor(0, 0, 0);
+          pdf.text("Principal's Remarks", 15, yPos);
+          yPos += 5;
+          pdf.rect(15, yPos, 180, 12);
+          pdf.setFont('helvetica', 'italic');
+          pdf.setFontSize(8);
+          pdf.setTextColor(60, 60, 60);
+          pdf.text(card.principalRemarks, 17, yPos + 4, { maxWidth: 176 });
+          yPos += 17;
+        }
+
+        // ===== SIGNATURES =====
+        if (yPos < 260) {
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(0, 0, 0);
+          pdf.text('OFFICIAL SIGNATURES & AUTHENTICATION', 105, yPos, { align: 'center' });
+          yPos += 8;
+
+          const sigWidth = 55;
+          const sigHeight = 20;
+          const sigY = yPos;
+
+          // Class Teacher
+          pdf.setDrawColor(200, 200, 200);
+          pdf.setLineWidth(0.3);
+          pdf.rect(15, sigY, sigWidth, sigHeight);
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('Class Teacher', 15 + sigWidth/2, sigY + sigHeight - 8, { align: 'center' });
+          pdf.setFontSize(7);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text('Signature & Date', 15 + sigWidth/2, sigY + sigHeight - 4, { align: 'center' });
+
+          // Parent/Guardian
+          pdf.rect(77.5, sigY, sigWidth, sigHeight);
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('Parent/Guardian', 77.5 + sigWidth/2, sigY + sigHeight - 8, { align: 'center' });
+          pdf.setFontSize(7);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text('Signature & Date', 77.5 + sigWidth/2, sigY + sigHeight - 4, { align: 'center' });
+
+          // Principal
+          pdf.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+          pdf.rect(140, sigY, sigWidth, sigHeight, 'FD');
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(255, 255, 255);
+          const principalName = currentTenant?.branding?.signatures?.principalName || "Principal";
+          pdf.text(principalName, 140 + sigWidth/2, sigY + sigHeight - 8, { align: 'center' });
+          pdf.setFontSize(7);
+          pdf.setFont('helvetica', 'normal');
+          const principalTitle = currentTenant?.branding?.signatures?.principalTitle || "Principal";
+          pdf.text(principalTitle, 140 + sigWidth/2, sigY + sigHeight - 4, { align: 'center' });
+        }
+
+        // ===== FOOTER =====
+        pdf.setFontSize(7);
+        pdf.setFont('helvetica', 'italic');
+        pdf.setTextColor(100, 100, 100);
+        pdf.text('This is an official academic document issued by ' + (currentTenant?.name || settings.schoolName), 105, 287, { align: 'center' });
+        pdf.text('Generated on: ' + new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), 105, 291, { align: 'center' });
+      }
+
+      console.log(`Saving PDF with ${totalCards} page(s)...`);
+      pdf.save(`report-cards-${config.class}-${config.term}-${config.academicYear}.pdf`);
+      setIsGenerating(false);
+      setCurrentPreviewIndex(0);
+      alert(`Successfully generated PDF with ${totalCards} report card(s)!`);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      setIsGenerating(false);
+      setCurrentPreviewIndex(0);
+      alert(`Error generating PDF: ${error instanceof Error ? error.message : 'Unknown error'}. Please try using the Print button instead.`);
+    }
+  };
+
+  // Dummy function to maintain old code structure - we'll remove html2canvas code below
+  const handleDownloadPDF_OLD = async () => {
+    if (!printRef.current) {
+      alert("Print reference not found. Please try again.");
+      return;
+    }
 
     setIsGenerating(true);
     setGenerationProgress(0);
@@ -276,35 +726,587 @@ export default function ReportCardsPage() {
     const pdf = new jsPDF("p", "mm", "a4");
     const totalCards = reportCards.length;
 
-    for (let i = 0; i < totalCards; i++) {
-      setCurrentPreviewIndex(i);
-      setGenerationProgress(((i + 1) / totalCards) * 100);
+    try {
+      for (let i = 0; i < totalCards; i++) {
+        setCurrentPreviewIndex(i);
+        setGenerationProgress(((i + 1) / totalCards) * 100);
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
+        // Wait for DOM to update and render
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const canvas = await html2canvas(printRef.current, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      });
+        if (!printRef.current) {
+          console.warn(`Print ref not available for card ${i}`);
+          continue;
+        }
 
-      const imgData = canvas.toDataURL("image/png");
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        console.log(`Generating PDF for card ${i + 1}/${totalCards}...`);
+
+        // Scroll to the element to ensure it's visible
+        printRef.current.scrollIntoView({ behavior: 'instant', block: 'start' });
+
+        // Wait for scroll and rendering
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        let canvas;
+        try {
+          canvas = await html2canvas(printRef.current, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            onclone: (clonedDoc) => {
+            // Find the print content element first
+            const printContent = clonedDoc.querySelector('.print-content') as HTMLElement;
+            if (!printContent) {
+              console.error('Print content element not found');
+              return;
+            }
+
+            // Get tenant branding colors (use defaults if not available)
+            const primaryColor = currentTenant?.branding?.primaryColor || '#2563eb';
+            const secondaryColor = currentTenant?.branding?.secondaryColor || '#1e40af';
+
+            // Reset all positioning and sizing - let it render naturally
+            printContent.style.position = 'relative';
+            printContent.style.margin = '0';
+            printContent.style.padding = '3mm'; // Ultra minimal margin to maximize both width and height
+            printContent.style.width = '100%';
+            printContent.style.maxWidth = 'none';
+            printContent.style.backgroundColor = '#ffffff';
+            printContent.style.boxShadow = 'none';
+            printContent.style.fontSize = '20px'; // Much larger base font for maximum visibility
+
+            // CRITICAL: Replace ALL oklch colors with RGB before html2canvas parses
+            const allElements = clonedDoc.querySelectorAll('*');
+            allElements.forEach((el: Element) => {
+              const htmlEl = el as HTMLElement;
+
+              // Make everything visible first
+              htmlEl.style.visibility = 'visible';
+
+              // Get the current styles but don't force colors on everything
+              // Only override when necessary to prevent oklch issues
+
+              // Handle specific elements with proper styling
+              if (htmlEl.tagName === 'TABLE') {
+                htmlEl.style.borderCollapse = 'collapse';
+                htmlEl.style.width = '100%';
+                htmlEl.style.backgroundColor = '#ffffff';
+              }
+
+              if (htmlEl.tagName === 'THEAD') {
+                htmlEl.style.backgroundColor = '#f3f4f6';
+              }
+
+              if (htmlEl.tagName === 'TD' || htmlEl.tagName === 'TH') {
+                htmlEl.style.border = '1px solid #333333';
+                htmlEl.style.padding = '12px'; // Maximum padding for readability
+                htmlEl.style.color = '#000000';
+                htmlEl.style.fontSize = '20px'; // Maximum text size in tables
+                htmlEl.style.lineHeight = '1.5';
+              }
+
+              // Headers - maximum size for visibility
+              if (htmlEl.tagName === 'H1') {
+                htmlEl.style.color = '#000000';
+                htmlEl.style.fontSize = '42px'; // Maximum school name size - increased from 34px
+                htmlEl.style.fontWeight = 'bold';
+                htmlEl.style.marginBottom = '8px';
+                htmlEl.style.marginTop = '0';
+                htmlEl.style.lineHeight = '1.3';
+              }
+
+              if (htmlEl.tagName === 'H2') {
+                htmlEl.style.color = '#000000';
+                htmlEl.style.fontSize = '48px'; // Maximum title banner size - increased from 32px
+                htmlEl.style.fontWeight = 'bold';
+                htmlEl.style.marginBottom = '8px';
+                htmlEl.style.marginTop = '0';
+                htmlEl.style.lineHeight = '1.3';
+              }
+
+              if (htmlEl.tagName === 'H3') {
+                htmlEl.style.color = '#000000';
+                // Check if this is the signatures heading
+                if (htmlEl.textContent?.includes('Official Signatures')) {
+                  htmlEl.style.fontSize = '28px'; // Larger for signatures heading
+                } else {
+                  htmlEl.style.fontSize = '22px'; // Maximum section headers size - increased from 18px
+                }
+                htmlEl.style.fontWeight = '600';
+                htmlEl.style.marginBottom = '5px';
+                htmlEl.style.marginTop = '0';
+                htmlEl.style.lineHeight = '1.3';
+              }
+
+              // Better paragraph spacing for readability
+              if (htmlEl.tagName === 'P') {
+                htmlEl.style.marginBottom = '8px';
+                htmlEl.style.marginTop = '5px';
+                htmlEl.style.lineHeight = '1.5';
+
+                // Larger font for signature labels
+                const classList = Array.from(htmlEl.classList);
+                if (classList.includes('text-lg')) {
+                  htmlEl.style.fontSize = '22px'; // Signature role labels (Class Teacher, Parent/Guardian, Principal name)
+                }
+                if (classList.includes('text-sm') && (htmlEl.textContent?.includes('Signature') || htmlEl.textContent?.includes('Date'))) {
+                  htmlEl.style.fontSize = '18px'; // "Signature & Date" text
+                }
+                if (classList.includes('text-xl')) {
+                  htmlEl.style.fontSize = '24px'; // Term/Academic year in title banner and class rank
+                }
+              }
+
+              // SPAN elements - handle student info section
+              if (htmlEl.tagName === 'SPAN') {
+                const classList = Array.from(htmlEl.classList);
+                // Check if this span is in the student info section
+                const isInStudentInfo = htmlEl.closest('.student-info-section');
+                if (isInStudentInfo) {
+                  htmlEl.style.fontSize = '22px'; // Larger text for student info
+                  htmlEl.style.lineHeight = '1.6';
+                }
+              }
+
+              // Improved div padding and margins to use full page height
+              if (htmlEl.tagName === 'DIV') {
+                const classList = Array.from(htmlEl.classList);
+                // Better spacing for sections to utilize full height
+                if (classList.includes('mb-6')) {
+                  htmlEl.style.marginBottom = '12px';
+                }
+                if (classList.includes('mb-3')) {
+                  htmlEl.style.marginBottom = '8px';
+                }
+                if (classList.includes('mb-4')) {
+                  htmlEl.style.marginBottom = '10px';
+                }
+                if (classList.includes('mt-12')) {
+                  htmlEl.style.marginTop = '20px';
+                }
+                if (classList.includes('mt-8')) {
+                  htmlEl.style.marginTop = '15px';
+                }
+                if (classList.includes('mt-6')) {
+                  htmlEl.style.marginTop = '12px';
+                }
+                if (classList.includes('mt-3')) {
+                  htmlEl.style.marginTop = '8px';
+                }
+                if (classList.includes('pb-6')) {
+                  htmlEl.style.paddingBottom = '12px';
+                }
+                if (classList.includes('pt-6')) {
+                  htmlEl.style.paddingTop = '12px';
+                }
+                if (classList.includes('pt-4')) {
+                  htmlEl.style.paddingTop = '10px';
+                }
+                if (classList.includes('py-4')) {
+                  htmlEl.style.paddingTop = '10px';
+                  htmlEl.style.paddingBottom = '10px';
+                }
+                if (classList.includes('px-6')) {
+                  htmlEl.style.paddingLeft = '12px';
+                  htmlEl.style.paddingRight = '12px';
+                }
+                if (classList.includes('p-6')) {
+                  htmlEl.style.padding = '12px';
+                }
+                if (classList.includes('p-4')) {
+                  htmlEl.style.padding = '10px';
+                }
+                if (classList.includes('p-3')) {
+                  htmlEl.style.padding = '8px';
+                }
+                if (classList.includes('p-5')) {
+                  htmlEl.style.padding = '11px';
+                }
+                // Better gap spacing
+                if (classList.includes('gap-6')) {
+                  htmlEl.style.gap = '12px';
+                }
+                if (classList.includes('gap-4')) {
+                  htmlEl.style.gap = '10px';
+                }
+                if (classList.includes('gap-8')) {
+                  htmlEl.style.gap = '15px';
+                }
+                // Signature spacing - good functional space
+                if (classList.includes('pt-8') && !htmlEl.parentElement?.classList.contains('grid-cols-3')) {
+                  htmlEl.style.paddingTop = '15px';
+                } else if (classList.includes('pt-8')) {
+                  htmlEl.style.paddingTop = '30px'; // Good space for signatures
+                }
+                // Better border padding for the main decorative border
+                if (classList.includes('border-4') && classList.includes('border-double')) {
+                  htmlEl.style.padding = '15mm';
+                }
+              }
+
+              // Handle text colors more selectively
+              if (htmlEl.classList.contains('text-neutral-600')) {
+                htmlEl.style.color = '#525252';
+              }
+              if (htmlEl.classList.contains('text-neutral-900')) {
+                htmlEl.style.color = '#171717';
+              }
+              if (htmlEl.classList.contains('text-neutral-500')) {
+                htmlEl.style.color = '#737373';
+              }
+              if (htmlEl.classList.contains('text-neutral-800')) {
+                htmlEl.style.color = '#262626';
+              }
+              if (htmlEl.classList.contains('text-neutral-700')) {
+                htmlEl.style.color = '#404040';
+              }
+              // Use tenant's branding colors for accents
+              if (htmlEl.classList.contains('text-purple-600')) {
+                htmlEl.style.color = primaryColor; // Tenant primary color
+              }
+              if (htmlEl.classList.contains('text-purple-700')) {
+                htmlEl.style.color = secondaryColor; // Tenant secondary color
+              }
+              // Blue colors - use tenant colors
+              if (htmlEl.classList.contains('text-blue-600')) {
+                htmlEl.style.color = primaryColor; // Tenant primary color
+              }
+              if (htmlEl.classList.contains('text-blue-700')) {
+                htmlEl.style.color = secondaryColor; // Tenant secondary color
+              }
+              // Green colors
+              if (htmlEl.classList.contains('text-green-700')) {
+                htmlEl.style.color = '#15803d';
+              }
+              // White text
+              if (htmlEl.classList.contains('text-white')) {
+                htmlEl.style.color = '#ffffff';
+              }
+
+              // Handle borders
+              if (htmlEl.classList.contains('border-neutral-800')) {
+                htmlEl.style.borderColor = '#262626';
+              }
+              if (htmlEl.classList.contains('border-neutral-300')) {
+                htmlEl.style.borderColor = '#d4d4d4';
+              }
+              if (htmlEl.classList.contains('border-neutral-200')) {
+                htmlEl.style.borderColor = '#e5e5e5';
+              }
+              if (htmlEl.classList.contains('border-neutral-400')) {
+                htmlEl.style.borderColor = '#a3a3a3';
+              }
+              if (htmlEl.classList.contains('border-purple-300')) {
+                htmlEl.style.borderColor = primaryColor + '80'; // Tenant primary with transparency
+              }
+              if (htmlEl.classList.contains('border-purple-700')) {
+                htmlEl.style.borderColor = secondaryColor; // Tenant secondary color
+              }
+              if (htmlEl.classList.contains('border-blue-200')) {
+                htmlEl.style.borderColor = primaryColor + '60'; // Tenant primary lighter
+              }
+              if (htmlEl.classList.contains('border-blue-300')) {
+                htmlEl.style.borderColor = primaryColor + '80'; // Tenant primary medium
+              }
+              if (htmlEl.classList.contains('border-green-300')) {
+                htmlEl.style.borderColor = '#86efac';
+              }
+
+              // Handle background colors - preserve gradients by setting solid fallbacks
+              if (htmlEl.classList.contains('bg-white')) {
+                htmlEl.style.backgroundColor = '#ffffff';
+              }
+              if (htmlEl.classList.contains('bg-neutral-50')) {
+                htmlEl.style.backgroundColor = '#fafafa';
+              }
+              if (htmlEl.classList.contains('bg-neutral-100')) {
+                htmlEl.style.backgroundColor = '#f5f5f5';
+              }
+              if (htmlEl.classList.contains('bg-blue-50')) {
+                htmlEl.style.backgroundColor = '#eff6ff';
+              }
+              if (htmlEl.classList.contains('bg-blue-600')) {
+                htmlEl.style.backgroundColor = '#2563eb';
+              }
+              if (htmlEl.classList.contains('bg-purple-50')) {
+                htmlEl.style.backgroundColor = primaryColor + '15'; // Tenant primary very light
+              }
+              if (htmlEl.classList.contains('bg-purple-600')) {
+                htmlEl.style.backgroundColor = secondaryColor; // Tenant secondary color
+              }
+              if (htmlEl.classList.contains('bg-purple-500')) {
+                htmlEl.style.backgroundColor = primaryColor; // Tenant primary color
+              }
+              if (htmlEl.classList.contains('bg-green-50')) {
+                htmlEl.style.backgroundColor = '#f0fdf4';
+              }
+              if (htmlEl.classList.contains('bg-green-500')) {
+                htmlEl.style.backgroundColor = '#22c55e';
+              }
+
+              // Keep gradient backgrounds intact - don't replace them
+
+              // ONLY replace oklch colors - KEEP gradients intact
+              try {
+                const computedStyle = window.getComputedStyle(htmlEl)
+
+                // Check and replace background color ONLY if it contains oklch
+                if (computedStyle.backgroundColor) {
+                  const bgColor = computedStyle.backgroundColor;
+                  if (bgColor.includes('oklch')) {
+                    htmlEl.style.backgroundColor = '#ffffff';
+                  }
+                }
+
+                // Check and replace text color ONLY if it contains oklch
+                if (computedStyle.color) {
+                  const textColor = computedStyle.color;
+                  if (textColor.includes('oklch')) {
+                    htmlEl.style.color = '#000000';
+                  }
+                }
+
+                // Check and replace border colors ONLY if it contains oklch
+                if (computedStyle.borderColor) {
+                  const borderColor = computedStyle.borderColor;
+                  if (borderColor.includes('oklch')) {
+                    htmlEl.style.borderColor = '#000000';
+                  }
+                }
+              } catch (e) {
+                // Silently continue if getComputedStyle fails
+                console.warn('Failed to get computed style for element', e);
+              }
+            });
+
+            // Specifically target the print content area - final cleanup for oklch ONLY
+            const printElements = printContent.querySelectorAll('*');
+            printElements.forEach((el: Element) => {
+              const htmlEl = el as HTMLElement;
+
+              // SURGICALLY replace only oklch colors, preserve everything else including gradients
+              // Check individual style properties instead of replacing entire cssText
+              if (htmlEl.style.backgroundColor && htmlEl.style.backgroundColor.includes('oklch')) {
+                htmlEl.style.backgroundColor = htmlEl.style.backgroundColor.replace(/oklch\([^)]+\)/g, '#ffffff');
+              }
+              if (htmlEl.style.color && htmlEl.style.color.includes('oklch')) {
+                htmlEl.style.color = htmlEl.style.color.replace(/oklch\([^)]+\)/g, '#000000');
+              }
+              if (htmlEl.style.borderColor && htmlEl.style.borderColor.includes('oklch')) {
+                htmlEl.style.borderColor = htmlEl.style.borderColor.replace(/oklch\([^)]+\)/g, '#000000');
+              }
+              // Note: We intentionally do NOT touch background or backgroundImage properties
+              // as these may contain linear-gradient() which we want to preserve
+            });
+          },
+          });
+        } catch (canvasError: any) {
+          // Log color errors but don't fail the PDF generation
+          // html2canvas can usually work around color issues
+          if (canvasError.message?.includes('oklch') || canvasError.message?.includes('color')) {
+            console.warn('Color parsing warning during PDF generation (continuing):', canvasError.message);
+            // Don't throw - let the process continue
+          } else {
+            // Re-throw non-color errors
+            throw canvasError;
+          }
+        }
+
+      if (!canvas || canvas.width === 0 || canvas.height === 0) {
+        throw new Error(`Canvas generation failed for card ${i + 1} - canvas is empty or has no dimensions`);
+      }
+
+      console.log(`Canvas created successfully: ${canvas.width}x${canvas.height}px`);
+
+      const imgData = canvas.toDataURL("image/png", 1.0);
+
+      // A4 page dimensions
+      const pageWidth = 210; // mm
+      const pageHeight = 297; // mm
 
       if (i > 0) pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+
+      // Calculate image height to maintain aspect ratio at full page width
+      const imgHeight = (canvas.height * pageWidth) / canvas.width;
+
+      console.log(`Canvas: ${canvas.width}x${canvas.height}px, PDF: ${pageWidth}x${imgHeight.toFixed(2)}mm`);
+
+      // Add image at full page width (210mm) with NO margins - starts at 0,0
+      // If taller than page, it will overflow but we'll scale it to fit
+      if (imgHeight > pageHeight) {
+        // Scale down to fit one page
+        const scale = pageHeight / imgHeight;
+        const scaledWidth = pageWidth * scale;
+        const scaledHeight = pageHeight;
+
+        // Center horizontally if scaled
+        const xOffset = (pageWidth - scaledWidth) / 2;
+        pdf.addImage(imgData, "PNG", xOffset, 0, scaledWidth, scaledHeight);
+        console.log(`Scaled to fit: ${scaledWidth.toFixed(2)}x${scaledHeight}mm`);
+      } else {
+        // Add at full width, no offset
+        pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
+        console.log(`Full width: ${pageWidth}x${imgHeight.toFixed(2)}mm`);
+      }
     }
 
+    console.log(`Saving PDF with ${totalCards} page(s)...`);
     pdf.save(`report-cards-${config.class}-${config.term}-${config.academicYear}.pdf`);
     setIsGenerating(false);
     setCurrentPreviewIndex(0);
+    alert(`Successfully generated PDF with ${totalCards} report card(s)!`);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      setIsGenerating(false);
+      setCurrentPreviewIndex(0);
+      alert(`Error generating PDF: ${error instanceof Error ? error.message : 'Unknown error'}. Please check the browser console for details or try using the Print button instead.`);
+    }
   };
-
-  const currentReportCard = reportCards[currentPreviewIndex];
 
   return (
     <MainLayout>
+      {/* Print Styles */}
+      <style jsx global>{`
+        @media print {
+          /* Hide everything except the report card */
+          body * {
+            visibility: hidden;
+          }
+
+          .print-content, .print-content * {
+            visibility: visible;
+          }
+
+          .print-content {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            max-width: 210mm;
+            padding: 20mm !important;
+          }
+
+          /* Hide elements with no-print class */
+          .no-print {
+            display: none !important;
+          }
+
+          /* Page setup */
+          @page {
+            size: A4;
+            margin: 0;
+          }
+
+          /* Ensure colors print correctly */
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+          }
+
+          /* Remove shadows and ensure clean printing */
+          .print-content {
+            box-shadow: none !important;
+            background: white !important;
+          }
+
+          /* Ensure tables print correctly with borders */
+          table {
+            page-break-inside: avoid;
+            border-collapse: collapse !important;
+            width: 100% !important;
+          }
+
+          table th,
+          table td {
+            border: 1px solid #333 !important;
+            padding: 8px !important;
+          }
+
+          table thead {
+            background-color: #f3f4f6 !important;
+          }
+
+          tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+          }
+
+          /* Prevent content from being cut off */
+          thead {
+            display: table-header-group;
+          }
+
+          tfoot {
+            display: table-footer-group;
+          }
+
+          /* Optimize text for printing */
+          body {
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #000;
+          }
+
+          h1 {
+            font-size: 22pt;
+            color: #000;
+            margin-bottom: 8pt;
+          }
+
+          h2 {
+            font-size: 18pt;
+            color: #000;
+            margin-bottom: 6pt;
+          }
+
+          h3 {
+            font-size: 14pt;
+            color: #000;
+          }
+
+          p {
+            color: #333;
+            margin-bottom: 4pt;
+          }
+
+          /* Ensure all text colors are print-friendly */
+          .text-neutral-900,
+          .text-neutral-800,
+          .text-neutral-700 {
+            color: #000 !important;
+          }
+
+          .text-neutral-600 {
+            color: #333 !important;
+          }
+
+          /* Ensure borders are visible */
+          .border-neutral-800,
+          .border-neutral-300 {
+            border-color: #333 !important;
+          }
+
+          /* Page breaks */
+          .page-break {
+            page-break-before: always;
+          }
+
+          .avoid-break {
+            page-break-inside: avoid;
+          }
+        }
+
+        /* Screen-only styles for preview */
+        @media screen {
+          .print-content {
+            min-height: 297mm;
+          }
+        }
+      `}</style>
+
       <div className="p-6 space-y-6">
         {/* Header */}
       <PageHeader
@@ -377,28 +1379,29 @@ export default function ReportCardsPage() {
                   </h4>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  {/* Education Level */}
-                  <FormDropdown
-                    label="Education Level"
-                    icon={<GraduationCap className="w-full h-full" />}
-                    iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-                    iconColor="text-blue-600 dark:text-blue-400"
-                    value={config.educationLevel}
-                    onChange={(value) =>
-                      setConfig({
-                        ...config,
-                        educationLevel: value as EducationLevel,
-                        term: value === "Tertiary" ? "First Semester" : "First Term",
-                      })
-                    }
-                    options={settings.supportedLevels.map((level) => ({
-                      value: level,
-                      label: level,
-                    }))}
-                    required
-                    disabled={settings.supportedLevels.length === 1}
-                  />
+                <div className={`grid grid-cols-1 ${settings.supportsMultipleLevels ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-5`}>
+                  {/* Education Level - Only show for multi-level schools */}
+                  {settings.supportsMultipleLevels && (
+                    <FormDropdown
+                      label="Education Level"
+                      icon={<GraduationCap className="w-full h-full" />}
+                      iconBgColor="bg-blue-100 dark:bg-blue-900/30"
+                      iconColor="text-blue-600 dark:text-blue-400"
+                      value={config.educationLevel}
+                      onChange={(value) =>
+                        setConfig({
+                          ...config,
+                          educationLevel: value as EducationLevel,
+                          term: value === "Tertiary" ? "First Semester" : "First Term",
+                        })
+                      }
+                      options={settings.supportedLevels.map((level) => ({
+                        value: level,
+                        label: level,
+                      }))}
+                      required
+                    />
+                  )}
 
                   {/* Class */}
                   <FormDropdown
@@ -602,225 +1605,677 @@ export default function ReportCardsPage() {
       {/* Preview Step */}
       {(currentStep === "preview" || currentStep === "generate") && currentReportCard && (
         <div className="space-y-6">
-          {/* Actions */}
-          <div className="bg-white dark:bg-neutral-800 rounded-lg p-4 shadow-sm flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" onClick={() => setCurrentStep("config")}>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Config
-              </Button>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPreviewIndex(Math.max(0, currentPreviewIndex - 1))}
-                  disabled={currentPreviewIndex === 0 || isGenerating}
-                  className="px-3 py-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          {/* Actions - Print Control Bar */}
+          <div className="no-print bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-6 shadow-lg sticky top-0 z-10">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              {/* Left: Navigation */}
+              <div className="flex items-center gap-4">
+                <Button variant="outline" size="sm" onClick={() => setCurrentStep("config")}>
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Config
+                </Button>
+                <div className="flex items-center gap-3 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 border border-neutral-200 dark:border-neutral-700">
+                  <button
+                    onClick={() => setCurrentPreviewIndex(Math.max(0, currentPreviewIndex - 1))}
+                    disabled={currentPreviewIndex === 0 || isGenerating}
+                    className="p-1.5 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 min-w-[80px] text-center">
+                    {currentPreviewIndex + 1} of {reportCards.length}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setCurrentPreviewIndex(Math.min(reportCards.length - 1, currentPreviewIndex + 1))
+                    }
+                    disabled={currentPreviewIndex === reportCards.length - 1 || isGenerating}
+                    className="p-1.5 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Right: Print Actions */}
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={handlePrint}
+                  disabled={isGenerating}
+                  icon={<Printer className="w-4 h-4" />}
                 >
-                  Previous
-                </button>
-                <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                  {currentPreviewIndex + 1} of {reportCards.length}
-                </span>
-                <button
-                  onClick={() =>
-                    setCurrentPreviewIndex(Math.min(reportCards.length - 1, currentPreviewIndex + 1))
-                  }
-                  disabled={currentPreviewIndex === reportCards.length - 1 || isGenerating}
-                  className="px-3 py-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                  Print Current
+                </Button>
+                <Button
+                  onClick={handleDownloadPDF}
+                  disabled={isGenerating}
+                  icon={<Download className="w-4 h-4" />}
                 >
-                  Next
-                </button>
+                  {isGenerating ? `Generating... ${Math.round(generationProgress)}%` : "Download All as PDF"}
+                </Button>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={handlePrint} disabled={isGenerating}>
-                <Printer className="w-4 h-4 mr-2" />
-                Print Current
-              </Button>
-              <Button onClick={handleDownloadPDF} disabled={isGenerating}>
-                <Download className="w-4 h-4 mr-2" />
-                {isGenerating ? `Generating... ${Math.round(generationProgress)}%` : "Download All as PDF"}
-              </Button>
+            {/* Student Info Bar */}
+            <div className="mt-4 pt-4 border-t border-purple-200 dark:border-purple-700">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                    <UserCheck className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                      {currentReportCard.student.name}
+                    </p>
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400">
+                      {currentReportCard.student.class} • Admission No: {currentReportCard.student.admissionNo}
+                    </p>
+                  </div>
+                </div>
+                <div className="h-8 w-px bg-neutral-300 dark:bg-neutral-600" />
+                <div className="flex items-center gap-6 text-sm">
+                  <div>
+                    <span className="text-neutral-600 dark:text-neutral-400">Term:</span>
+                    <span className="ml-2 font-medium text-neutral-900 dark:text-neutral-100">{config.term}</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-600 dark:text-neutral-400">Year:</span>
+                    <span className="ml-2 font-medium text-neutral-900 dark:text-neutral-100">{config.academicYear}</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-600 dark:text-neutral-400">Overall Grade:</span>
+                    <span className="ml-2 font-bold text-purple-600 dark:text-purple-400">{currentReportCard.overallGrade}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Report Card Preview */}
-          <div className="bg-neutral-100 dark:bg-neutral-900 p-8 rounded-lg">
+          <div className="no-print bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-900 p-8 rounded-lg">
             <div
               ref={printRef}
-              className="bg-white w-[210mm] mx-auto p-8 shadow-lg"
+              className="print-content bg-white w-[210mm] mx-auto p-8 shadow-2xl print:shadow-none print:w-full print:p-0 rounded-2xl overflow-hidden"
               style={{ minHeight: "297mm" }}
             >
-              {/* School Header */}
-              <div className="text-center border-b-2 border-neutral-800 pb-6 mb-6">
-                <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-                  Educo International School
-                </h1>
-                <p className="text-sm text-neutral-600">
-                  Excellence in Education Since 2000
-                </p>
-                <p className="text-sm text-neutral-600">
-                  123 Education Lane, Knowledge City, State - 123456
-                </p>
-              </div>
+              {(() => {
+                // Get tenant branding colors for the entire document
+                const primaryColor = currentTenant?.branding?.primaryColor || '#2563eb';
+                const secondaryColor = currentTenant?.branding?.secondaryColor || '#1e40af';
 
-              {/* Report Card Title */}
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-neutral-900 mb-2">
-                  PROGRESS REPORT CARD
-                </h2>
-                <p className="text-sm text-neutral-600">
-                  {config.term} - Academic Year {config.academicYear}
-                </p>
-              </div>
+                return (
+                <>
+              {/* Vibrant Decorative Border with Gradient */}
+              <div
+                className="border-8 border-double rounded-2xl p-6"
+                style={{
+                  borderColor: primaryColor,
+                  background: `linear-gradient(135deg, ${primaryColor}05, ${secondaryColor}05)`
+                }}
+              >
+                {/* School Header with Bold Gradient Background */}
+                <div
+                  className="text-center pb-6 mb-6 relative rounded-xl overflow-hidden"
+                  style={{
+                    background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
+                  }}
+                >
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-0 left-0 w-40 h-40 bg-white rounded-full -translate-x-20 -translate-y-20"></div>
+                    <div className="absolute bottom-0 right-0 w-60 h-60 bg-white rounded-full translate-x-30 translate-y-30"></div>
+                  </div>
 
-              {/* Student Info */}
-              <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
-                <div className="space-y-2">
-                  <p>
-                    <span className="font-semibold">Student Name:</span>{" "}
-                    {currentReportCard.student.name}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Admission No:</span>{" "}
-                    {currentReportCard.student.rollNo}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Class:</span> {config.class}
-                    {config.section && ` - Section ${config.section}`}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <p>
-                    <span className="font-semibold">Gender:</span>{" "}
-                    {currentReportCard.student.gender}
-                  </p>
-                  {config.includeAttendance && (
-                    <p>
-                      <span className="font-semibold">Attendance:</span>{" "}
-                      {currentReportCard.attendance.present}/{currentReportCard.attendance.total}
-                    </p>
-                  )}
-                  <p>
-                    <span className="font-semibold">Rank:</span> {currentReportCard.rank} of{" "}
-                    {currentReportCard.totalStudents}
-                  </p>
-                </div>
-              </div>
+                  {/* School Logo */}
+                  <div className="relative pt-8 pb-4">
+                    <div
+                      className="w-28 h-28 mx-auto mb-4 rounded-full flex items-center justify-center border-6 shadow-2xl"
+                      style={{
+                        background: 'linear-gradient(135deg, #ffffff, #f0f0f0)',
+                        borderColor: '#ffffff'
+                      }}
+                    >
+                      <GraduationCap
+                        className="w-14 h-14"
+                        style={{ color: primaryColor }}
+                      />
+                    </div>
 
-              {/* Grades Table */}
-              <table className="w-full border-collapse mb-6 text-sm">
-                <thead>
-                  <tr className="bg-neutral-100">
-                    <th className="border border-neutral-300 p-2 text-left">Subject</th>
-                    <th className="border border-neutral-300 p-2 text-center">Max Marks</th>
-                    <th className="border border-neutral-300 p-2 text-center">Marks Obtained</th>
-                    <th className="border border-neutral-300 p-2 text-center">Grade</th>
-                    {config.includeRemarks && (
-                      <th className="border border-neutral-300 p-2 text-left">Remarks</th>
+                    <h1 className="text-5xl font-black text-white mb-3 tracking-wide uppercase drop-shadow-lg">
+                      {currentTenant?.name || settings.schoolName}
+                    </h1>
+                    {currentTenant?.branding?.motto && (
+                      <p className="text-lg text-white font-bold italic mb-4 px-8 py-2 inline-block bg-white/20 rounded-full backdrop-blur-sm">
+                        "{currentTenant.branding.motto}"
+                      </p>
                     )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentReportCard.subjects.map((subject, index) => (
-                    <tr key={index}>
-                      <td className="border border-neutral-300 p-2">{subject.subject}</td>
-                      <td className="border border-neutral-300 p-2 text-center">
-                        {subject.maxScore}
-                      </td>
-                      <td className="border border-neutral-300 p-2 text-center font-semibold">
-                        {subject.score}
-                      </td>
-                      <td className="border border-neutral-300 p-2 text-center font-semibold">
-                        {subject.grade}
-                      </td>
-                      {config.includeRemarks && (
-                        <td className="border border-neutral-300 p-2 text-sm">
-                          {subject.remarks}
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                  <tr className="bg-neutral-100 font-bold">
-                    <td className="border border-neutral-300 p-2">TOTAL</td>
-                    <td className="border border-neutral-300 p-2 text-center">
-                      {currentReportCard.subjects.reduce((sum, s) => sum + s.maxScore, 0)}
-                    </td>
-                    <td className="border border-neutral-300 p-2 text-center">
-                      {currentReportCard.totalMarks}
-                    </td>
-                    <td className="border border-neutral-300 p-2 text-center" colSpan={config.includeRemarks ? 2 : 1}>
-                      {currentReportCard.percentage.toFixed(2)}%
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-
-              {/* Overall Grade */}
-              <div className="mb-6 p-4 bg-purple-50 rounded-lg">
-                <p className="text-center text-lg">
-                  <span className="font-semibold">Overall Grade:</span>{" "}
-                  <span className="text-2xl font-bold text-purple-600">
-                    {currentReportCard.overallGrade}
-                  </span>
-                </p>
-              </div>
-
-              {/* Conduct */}
-              {config.includeConduct && (
-                <div className="mb-6">
-                  <h3 className="font-semibold text-neutral-900 mb-3">Conduct & Behavior</h3>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div className="p-3 bg-neutral-50 rounded">
-                      <p className="text-neutral-600 mb-1">Behavior</p>
-                      <p className="font-semibold">{currentReportCard.conduct.behavior}</p>
-                    </div>
-                    <div className="p-3 bg-neutral-50 rounded">
-                      <p className="text-neutral-600 mb-1">Discipline</p>
-                      <p className="font-semibold">{currentReportCard.conduct.discipline}</p>
-                    </div>
-                    <div className="p-3 bg-neutral-50 rounded">
-                      <p className="text-neutral-600 mb-1">Participation</p>
-                      <p className="font-semibold">{currentReportCard.conduct.participation}</p>
+                    <div className="mt-4 space-y-1 pb-6">
+                      <p className="text-sm text-white font-semibold drop-shadow">
+                        {currentTenant?.contact.address.line1}, {currentTenant?.contact.address.city}, {currentTenant?.contact.address.state}
+                      </p>
+                      <p className="text-sm text-white font-medium drop-shadow">
+                        <span className="font-bold">Email:</span> {currentTenant?.contact.email} | <span className="font-bold">Phone:</span> {currentTenant?.contact.phone}
+                      </p>
                     </div>
                   </div>
                 </div>
-              )}
 
-              {/* Remarks */}
-              {config.includeRemarks && (
-                <div className="space-y-4 mb-6 text-sm">
-                  <div>
-                    <p className="font-semibold mb-2">Class Teacher's Remarks:</p>
-                    <p className="p-3 bg-neutral-50 rounded">{currentReportCard.teacherRemarks}</p>
+                {/* Report Card Title Banner with Vibrant Gradient */}
+                <div
+                  className="text-center mb-6 text-white py-6 px-6 rounded-2xl shadow-2xl relative overflow-hidden"
+                  style={{
+                    background: `linear-gradient(120deg, ${primaryColor}, ${secondaryColor}, ${primaryColor})`
+                  }}
+                >
+                  <div className="absolute inset-0 opacity-20">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full translate-x-16 -translate-y-16"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-white rounded-full -translate-x-20 translate-y-20"></div>
                   </div>
-                  <div>
-                    <p className="font-semibold mb-2">Principal's Remarks:</p>
-                    <p className="p-3 bg-neutral-50 rounded">
-                      {currentReportCard.principalRemarks}
+                  <div className="relative">
+                    <h2 className="text-6xl font-black tracking-wider uppercase mb-2 drop-shadow-lg">
+                      Progress Report Card
+                    </h2>
+                    <p className="text-2xl font-bold opacity-95 drop-shadow">
+                      {config.term} - Academic Year {config.academicYear}
                     </p>
                   </div>
                 </div>
-              )}
 
-              {/* Signatures */}
-              <div className="grid grid-cols-3 gap-8 mt-12 text-sm text-center">
-                <div>
-                  <div className="border-t-2 border-neutral-800 pt-2">
-                    <p className="font-semibold">Class Teacher</p>
+                {/* Student Info - Vibrant Gradient Card */}
+                <div
+                  className="mb-6 rounded-2xl p-6 shadow-xl border-4"
+                  style={{
+                    background: `linear-gradient(135deg, ${primaryColor}15, ${secondaryColor}10)`,
+                    borderColor: primaryColor + '40'
+                  }}
+                >
+                  <div className="grid grid-cols-2 gap-6 text-lg student-info-section">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 p-3 bg-white/80 rounded-xl">
+                        <span className="font-bold text-neutral-700 w-40">Student Name:</span>
+                        <span
+                          className="font-black text-xl"
+                          style={{ color: primaryColor }}
+                        >
+                          {currentReportCard.student.name}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 p-3 bg-white/80 rounded-xl">
+                        <span className="font-bold text-neutral-700 w-40">Admission No:</span>
+                        <span className="text-neutral-900 font-bold">{currentReportCard.student.rollNo}</span>
+                      </div>
+                      <div className="flex items-center gap-2 p-3 bg-white/80 rounded-xl">
+                        <span className="font-bold text-neutral-700 w-40">Class:</span>
+                        <span className="text-neutral-900 font-bold">
+                          {config.class}{config.section && ` - Section ${config.section}`}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 p-3 bg-white/80 rounded-xl">
+                        <span className="font-bold text-neutral-700 w-40">Gender:</span>
+                        <span className="text-neutral-900 font-bold">{currentReportCard.student.gender}</span>
+                      </div>
+                      {config.includeAttendance && (
+                        <div className="flex items-center gap-2 p-3 bg-white/80 rounded-xl">
+                          <span className="font-bold text-neutral-700 w-40">Attendance:</span>
+                          <span className="text-neutral-900 font-bold">
+                            {currentReportCard.attendance.present}/{currentReportCard.attendance.total} Days
+                          </span>
+                        </div>
+                      )}
+                      <div
+                        className="flex items-center gap-2 p-3 rounded-xl shadow-lg"
+                        style={{
+                          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
+                        }}
+                      >
+                        <span className="font-bold text-white w-40">Class Rank:</span>
+                        <span className="font-black text-2xl text-white drop-shadow">
+                          {currentReportCard.rank} of {currentReportCard.totalStudents}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div className="border-t-2 border-neutral-800 pt-2">
-                    <p className="font-semibold">Parent/Guardian</p>
+
+                {/* Academic Performance Header with Gradient */}
+                <div className="mb-4">
+                  <div
+                    className="text-xl font-black text-white px-6 py-3 rounded-xl shadow-lg"
+                    style={{
+                      background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <BookOpen className="w-6 h-6" />
+                      <span>Academic Performance</span>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div className="border-t-2 border-neutral-800 pt-2">
-                    <p className="font-semibold">Principal</p>
+
+                {/* Grades Table - Modern Gradient Design */}
+                <div className="mb-6 rounded-2xl overflow-hidden shadow-2xl border-4" style={{ borderColor: primaryColor + '30' }}>
+                  <table className="w-full border-collapse text-sm">
+                    <thead>
+                      <tr
+                        className="text-white"
+                        style={{
+                          background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`
+                        }}
+                      >
+                        <th className="p-4 text-left font-black text-base">Subject</th>
+                        <th className="p-4 text-center font-black text-base">Max Marks</th>
+                        <th className="p-4 text-center font-black text-base">Marks Obtained</th>
+                        <th className="p-4 text-center font-black text-base">Grade</th>
+                        {config.includeRemarks && (
+                          <th className="p-4 text-left font-black text-base">Remarks</th>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentReportCard.subjects.map((subject, index) => (
+                        <tr
+                          key={index}
+                          className="border-b-2 transition-all hover:shadow-md"
+                          style={{
+                            background: index % 2 === 0
+                              ? `linear-gradient(90deg, ${primaryColor}05, ${secondaryColor}03)`
+                              : '#ffffff',
+                            borderColor: primaryColor + '15'
+                          }}
+                        >
+                          <td className="p-4 font-bold text-neutral-900 text-base">{subject.subject}</td>
+                          <td className="p-4 text-center text-neutral-700 font-semibold">
+                            {subject.maxScore}
+                          </td>
+                          <td className="p-4 text-center font-black text-lg" style={{ color: secondaryColor }}>
+                            {subject.score}
+                          </td>
+                          <td className="p-4 text-center">
+                            <span
+                              className="font-black text-xl px-4 py-2 rounded-full text-white shadow-lg inline-block"
+                              style={{
+                                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
+                              }}
+                            >
+                              {subject.grade}
+                            </span>
+                          </td>
+                          {config.includeRemarks && (
+                            <td className="p-4 text-xs italic text-neutral-600 font-medium">
+                              {subject.remarks}
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                      <tr
+                        className="font-bold border-t-4"
+                        style={{
+                          background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`,
+                          borderColor: primaryColor
+                        }}
+                      >
+                        <td className="p-4 text-lg uppercase text-white font-black">Grand Total</td>
+                        <td className="p-4 text-center text-base text-white font-bold">
+                          {currentReportCard.subjects.reduce((sum, s) => sum + s.maxScore, 0)}
+                        </td>
+                        <td className="p-4 text-center text-2xl text-white font-black">
+                          {currentReportCard.totalMarks}
+                        </td>
+                        <td className="p-4 text-center text-2xl text-white font-black" colSpan={config.includeRemarks ? 2 : 1}>
+                          {currentReportCard.percentage.toFixed(2)}%
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Overall Performance Summary - Ultra Modern Gradient Design */}
+                <div
+                  className="mb-6 rounded-3xl overflow-hidden shadow-2xl border-4"
+                  style={{
+                    borderColor: primaryColor,
+                    background: `linear-gradient(135deg, ${primaryColor}10, ${secondaryColor}10)`
+                  }}
+                >
+                  {/* Header with Bold Gradient */}
+                  <div
+                    className="px-8 py-5 relative overflow-hidden"
+                    style={{
+                      background: `linear-gradient(120deg, ${primaryColor}, ${secondaryColor}, ${primaryColor})`
+                    }}
+                  >
+                    <div className="absolute inset-0 opacity-20">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full translate-x-16 -translate-y-16"></div>
+                    </div>
+                    <h3 className="text-2xl font-black text-white uppercase tracking-wide text-center relative drop-shadow-lg">
+                      Overall Performance Summary
+                    </h3>
+                  </div>
+
+                  {/* Content Grid */}
+                  <div className="p-10">
+                    <div className="grid grid-cols-3 gap-10">
+                      {/* Large Circular Grade Badge with Vibrant Gradient */}
+                      <div className="col-span-1 flex items-center justify-center">
+                        <div className="relative">
+                          {/* Outer glow ring */}
+                          <div
+                            className="absolute inset-0 w-48 h-48 rounded-full blur-2xl opacity-40 -m-4"
+                            style={{
+                              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
+                            }}
+                          ></div>
+                          <div
+                            className="w-40 h-40 rounded-full flex items-center justify-center shadow-2xl border-6 border-white relative"
+                            style={{
+                              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
+                            }}
+                          >
+                            <div className="text-center">
+                              <div className="text-8xl font-black text-white drop-shadow-2xl">
+                                {currentReportCard.overallGrade}
+                              </div>
+                              <div className="text-sm font-black text-white/90 uppercase tracking-widest mt-2">
+                                Grade
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Performance Stats */}
+                      <div className="col-span-2 space-y-8">
+                        {/* Percentage Score with Gradient Bar */}
+                        <div>
+                          <div className="flex justify-between items-baseline mb-4">
+                            <span className="text-lg font-black text-neutral-800 uppercase tracking-wide">Percentage Score</span>
+                            <span
+                              className="text-5xl font-black drop-shadow-lg"
+                              style={{ color: primaryColor }}
+                            >
+                              {currentReportCard.percentage.toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="relative">
+                            {/* Glow effect */}
+                            <div
+                              className="absolute inset-0 blur-md opacity-50"
+                              style={{
+                                background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`
+                              }}
+                            ></div>
+                            <div className="w-full bg-neutral-200 rounded-full h-6 overflow-hidden shadow-inner relative">
+                              <div
+                                className="h-6 rounded-full shadow-lg transition-all duration-500 relative"
+                                style={{
+                                  width: `${currentReportCard.percentage}%`,
+                                  background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`
+                                }}
+                              >
+                                <div className="absolute inset-0 bg-white/30 animate-pulse"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-2 gap-6">
+                          {/* Total Marks Card */}
+                          <div
+                            className="rounded-2xl p-6 shadow-xl border-4 relative overflow-hidden"
+                            style={{
+                              background: `linear-gradient(135deg, ${primaryColor}15, #ffffff)`,
+                              borderColor: primaryColor + '40'
+                            }}
+                          >
+                            <div className="absolute top-0 right-0 w-20 h-20 bg-white/50 rounded-full -translate-y-10 translate-x-10"></div>
+                            <p className="text-xs font-black text-neutral-600 uppercase tracking-wider mb-3 relative">
+                              Total Marks
+                            </p>
+                            <p className="text-4xl font-black relative" style={{ color: primaryColor }}>
+                              {currentReportCard.totalMarks}
+                              <span className="text-xl font-bold text-neutral-500">
+                                /{currentReportCard.subjects.reduce((sum, s) => sum + s.maxScore, 0)}
+                              </span>
+                            </p>
+                          </div>
+
+                          {/* Performance Status Card */}
+                          <div
+                            className="rounded-2xl p-6 shadow-xl text-white relative overflow-hidden"
+                            style={{
+                              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
+                            }}
+                          >
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-white/20 rounded-full -translate-y-12 translate-x-12"></div>
+                            <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/10 rounded-full translate-y-10 -translate-x-10"></div>
+                            <p className="text-xs font-black uppercase tracking-wider mb-3 relative drop-shadow">
+                              Performance Status
+                            </p>
+                            <p className="text-2xl font-black relative drop-shadow-lg">
+                              {currentReportCard.percentage >= 90 ? "Outstanding" :
+                               currentReportCard.percentage >= 75 ? "Excellent" :
+                               currentReportCard.percentage >= 60 ? "Good" :
+                               currentReportCard.percentage >= 50 ? "Satisfactory" : "Needs Improvement"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Conduct & Behavior - Modern Gradient Cards */}
+                {config.includeConduct && (
+                  <div className="mb-6 page-break">
+                    <div className="mb-4">
+                      <div
+                        className="text-xl font-black text-white px-6 py-3 rounded-xl shadow-lg"
+                        style={{
+                          background: `linear-gradient(90deg, #10b981, #059669)`
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Shield className="w-6 h-6" />
+                          <span>Conduct & Behavior Assessment</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-6 text-sm">
+                      {/* Behavior Card */}
+                      <div className="rounded-2xl shadow-2xl p-6 text-center relative overflow-hidden" style={{
+                        background: 'linear-gradient(135deg, #10b981, #059669)'
+                      }}>
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/20 rounded-full -translate-y-12 translate-x-12"></div>
+                        <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg relative">
+                          <Shield className="w-8 h-8 text-green-600" />
+                        </div>
+                        <p className="text-white mb-3 font-black uppercase text-xs tracking-wide drop-shadow relative">Behavior</p>
+                        <p className="font-black text-2xl text-white drop-shadow-lg relative">{currentReportCard.conduct.behavior}</p>
+                      </div>
+
+                      {/* Discipline Card */}
+                      <div className="rounded-2xl shadow-2xl p-6 text-center relative overflow-hidden" style={{
+                        background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
+                      }}>
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/20 rounded-full -translate-y-12 translate-x-12"></div>
+                        <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg relative">
+                          <UserCheck className="w-8 h-8" style={{ color: primaryColor }} />
+                        </div>
+                        <p className="text-white mb-3 font-black uppercase text-xs tracking-wide drop-shadow relative">Discipline</p>
+                        <p className="font-black text-2xl text-white drop-shadow-lg relative">{currentReportCard.conduct.discipline}</p>
+                      </div>
+
+                      {/* Participation Card */}
+                      <div className="rounded-2xl shadow-2xl p-6 text-center relative overflow-hidden" style={{
+                        background: 'linear-gradient(135deg, #a855f7, #9333ea)'
+                      }}>
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/20 rounded-full -translate-y-12 translate-x-12"></div>
+                        <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg relative">
+                          <Users className="w-8 h-8 text-purple-600" />
+                        </div>
+                        <p className="text-white mb-3 font-black uppercase text-xs tracking-wide drop-shadow relative">Participation</p>
+                        <p className="font-black text-2xl text-white drop-shadow-lg relative">{currentReportCard.conduct.participation}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Remarks - Modern Gradient Design */}
+                {config.includeRemarks && (
+                  <div className="space-y-6 mb-6 text-sm">
+                    {/* Teacher's Remarks */}
+                    <div className="rounded-2xl overflow-hidden shadow-2xl border-4" style={{ borderColor: primaryColor + '40' }}>
+                      <div
+                        className="text-white px-6 py-4 font-black flex items-center gap-3 text-base"
+                        style={{
+                          background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`
+                        }}
+                      >
+                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                          <MessageSquare className="w-5 h-5" style={{ color: primaryColor }} />
+                        </div>
+                        <span>Class Teacher's Remarks</span>
+                      </div>
+                      <div
+                        className="p-6"
+                        style={{
+                          background: `linear-gradient(135deg, ${primaryColor}08, #ffffff)`
+                        }}
+                      >
+                        <p className="text-neutral-800 italic font-medium text-base leading-relaxed">
+                          {currentReportCard.teacherRemarks}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Principal's Remarks */}
+                    <div className="rounded-2xl overflow-hidden shadow-2xl border-4" style={{ borderColor: '#a855f740' }}>
+                      <div
+                        className="text-white px-6 py-4 font-black flex items-center gap-3 text-base"
+                        style={{
+                          background: 'linear-gradient(90deg, #a855f7, #9333ea)'
+                        }}
+                      >
+                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                          <GraduationCap className="w-5 h-5 text-purple-600" />
+                        </div>
+                        <span>Principal's Remarks</span>
+                      </div>
+                      <div
+                        className="p-6"
+                        style={{
+                          background: 'linear-gradient(135deg, #a855f708, #ffffff)'
+                        }}
+                      >
+                        <p className="text-neutral-800 italic font-medium text-base leading-relaxed">
+                          {currentReportCard.principalRemarks}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Signatures Section - Modern Gradient Design */}
+                <div
+                  className="mt-12 pt-6 border-t-4 border-double rounded-t-xl"
+                  style={{ borderColor: primaryColor }}
+                >
+                  <div className="mb-6">
+                    <div
+                      className="text-2xl font-black text-white text-center uppercase tracking-wide px-6 py-4 rounded-xl shadow-lg"
+                      style={{
+                        background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`
+                      }}
+                    >
+                      Official Signatures & Authentication
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-8 text-base">
+                    {/* Class Teacher */}
+                    <div className="text-center">
+                      <div className="h-24 mb-4 border-b-3 border-neutral-300 border-dashed rounded-lg bg-neutral-50"></div>
+                      <div
+                        className="p-4 rounded-xl shadow-lg"
+                        style={{
+                          background: `linear-gradient(135deg, ${primaryColor}10, #ffffff)`
+                        }}
+                      >
+                        <p className="font-black text-neutral-900 text-lg">Class Teacher</p>
+                        <p className="text-sm text-neutral-600 mt-2 font-semibold">Signature & Date</p>
+                      </div>
+                    </div>
+
+                    {/* Parent/Guardian */}
+                    <div className="text-center">
+                      <div className="h-24 mb-4 border-b-3 border-neutral-300 border-dashed rounded-lg bg-neutral-50"></div>
+                      <div
+                        className="p-4 rounded-xl shadow-lg"
+                        style={{
+                          background: `linear-gradient(135deg, ${secondaryColor}10, #ffffff)`
+                        }}
+                      >
+                        <p className="font-black text-neutral-900 text-lg">Parent/Guardian</p>
+                        <p className="text-sm text-neutral-600 mt-2 font-semibold">Signature & Date</p>
+                      </div>
+                    </div>
+
+                    {/* Principal */}
+                    <div className="text-center">
+                      <div className="h-24 mb-4 border-b-3 border-neutral-300 border-dashed rounded-lg bg-neutral-50"></div>
+                      <div
+                        className="p-4 rounded-xl shadow-lg text-white"
+                        style={{
+                          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
+                        }}
+                      >
+                        <p className="font-black text-lg drop-shadow">
+                          {currentTenant?.branding?.signatures?.principalName || "Principal"}
+                        </p>
+                        <p className="text-sm mt-2 font-semibold drop-shadow">
+                          {currentTenant?.branding?.signatures?.principalTitle || "Principal"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Enhanced Footer with Gradient */}
+                <div className="mt-10 pt-4">
+                  <div
+                    className="p-6 rounded-2xl text-center shadow-xl relative overflow-hidden"
+                    style={{
+                      background: `linear-gradient(135deg, ${primaryColor}15, ${secondaryColor}10, ${primaryColor}15)`
+                    }}
+                  >
+                    <div className="absolute top-0 left-0 w-32 h-32 bg-white/30 rounded-full -translate-x-16 -translate-y-16"></div>
+                    <div className="absolute bottom-0 right-0 w-40 h-40 bg-white/20 rounded-full translate-x-20 translate-y-20"></div>
+
+                    <div className="flex items-center justify-center gap-3 mb-3 relative">
+                      <Shield className="w-6 h-6" style={{ color: primaryColor }} />
+                      <p className="text-base font-black uppercase tracking-wider" style={{ color: primaryColor }}>
+                        Official Document
+                      </p>
+                      <Shield className="w-6 h-6" style={{ color: primaryColor }} />
+                    </div>
+                    <p className="text-sm text-neutral-700 font-bold relative">
+                      This is an official academic document issued by {currentTenant?.name || settings.schoolName}
+                    </p>
+                    <p className="text-xs text-neutral-600 mt-3 font-semibold relative">
+                      <span className="font-black">Generated on:</span> {new Date().toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
                   </div>
                 </div>
               </div>
+              </>
+                );
+              })()}
             </div>
           </div>
         </div>

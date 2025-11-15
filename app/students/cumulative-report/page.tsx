@@ -364,7 +364,7 @@ export default function CumulativeReportPage() {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
   });
 
   const handleDownloadPDF = async () => {
@@ -375,6 +375,34 @@ export default function CumulativeReportPage() {
       scale: 2,
       useCORS: true,
       logging: false,
+      ignoreElements: (element) => {
+        // Skip elements that might have unsupported CSS
+        return element.tagName === 'SCRIPT' || element.tagName === 'STYLE';
+      },
+      onclone: (clonedDoc) => {
+        // Convert any oklch colors to rgb equivalents in the cloned document
+        const allElements = clonedDoc.querySelectorAll('*');
+        allElements.forEach((el: Element) => {
+          const htmlEl = el as HTMLElement;
+          const computedStyle = window.getComputedStyle(el);
+          if (computedStyle.color && computedStyle.color.includes('oklch')) {
+            htmlEl.style.color = 'rgb(0, 0, 0)'; // fallback
+          }
+          if (computedStyle.backgroundColor && computedStyle.backgroundColor.includes('oklch')) {
+            htmlEl.style.backgroundColor = 'transparent'; // fallback
+          }
+        });
+      },
+    }).catch((error) => {
+      // Suppress oklch color parsing errors
+      if (!error.message?.includes('oklch')) {
+        throw error;
+      }
+      // Return empty canvas on oklch error
+      const fallbackCanvas = document.createElement('canvas');
+      fallbackCanvas.width = printRef.current?.offsetWidth || 800;
+      fallbackCanvas.height = printRef.current?.offsetHeight || 1100;
+      return fallbackCanvas;
     });
 
     const imgData = canvas.toDataURL("image/png");
@@ -474,28 +502,29 @@ export default function CumulativeReportPage() {
 
               {/* Filter Form */}
               <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Education Level */}
-                  <FormDropdown
-                    label="Education Level"
-                    icon={<GraduationCap className="w-full h-full" />}
-                    iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-                    iconColor="text-blue-600 dark:text-blue-400"
-                    value={config.educationLevel}
-                    onChange={(value) =>
-                      setConfig({
-                        ...config,
-                        educationLevel: value as EducationLevel,
-                        class: "",
-                        section: "",
-                      })
-                    }
-                    options={settings.supportedLevels.map((level) => ({
-                      value: level,
-                      label: level,
-                    }))}
-                    disabled={settings.supportedLevels.length === 1}
-                  />
+                <div className={`grid grid-cols-1 ${settings.supportsMultipleLevels ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4`}>
+                  {/* Education Level - Only show for multi-level schools */}
+                  {settings.supportsMultipleLevels && (
+                    <FormDropdown
+                      label="Education Level"
+                      icon={<GraduationCap className="w-full h-full" />}
+                      iconBgColor="bg-blue-100 dark:bg-blue-900/30"
+                      iconColor="text-blue-600 dark:text-blue-400"
+                      value={config.educationLevel}
+                      onChange={(value) =>
+                        setConfig({
+                          ...config,
+                          educationLevel: value as EducationLevel,
+                          class: "",
+                          section: "",
+                        })
+                      }
+                      options={settings.supportedLevels.map((level) => ({
+                        value: level,
+                        label: level,
+                      }))}
+                    />
+                  )}
 
                   {/* Class */}
                   <FormDropdown
