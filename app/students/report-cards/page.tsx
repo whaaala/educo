@@ -29,12 +29,11 @@ import { Student } from "@/components/students/StudentCard";
 import StudentSelectionGrid from "@/components/students/StudentSelectionGrid";
 import { useStudentsByTenant } from "@/hooks/useStudentsByTenant";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { useGrading, EducationLevel } from "@/contexts/GradingContext";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useReactToPrint } from "react-to-print";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-
-type EducationLevel = "Primary" | "Secondary" | "Tertiary";
 type Term = "First Term" | "Second Term" | "Third Term" | "First Semester" | "Second Semester";
 
 interface ReportCardConfig {
@@ -140,7 +139,9 @@ const generateMockSubjects = (educationLevel: EducationLevel): SubjectGrade[] =>
   }
 };
 
-const calculateGrade = (percentage: number, educationLevel: EducationLevel): string => {
+// This function will be replaced with context-based grading
+// Kept here as fallback for old code
+const calculateGradeFallback = (percentage: number, educationLevel: EducationLevel): string => {
   if (educationLevel === "Primary") {
     if (percentage >= 90) return "A+ (Excellent)";
     if (percentage >= 80) return "A (Very Good)";
@@ -177,6 +178,7 @@ export default function ReportCardsPage() {
   // Educo v4.0 Multi-Tenant: Get students and settings for current tenant
   const tenantStudents = useStudentsByTenant();
   const { settings, currentTenant } = useSchoolSettings();
+  const { getGradeForScore } = useGrading();
   const [students, setStudents] = useState<Student[]>([]);
 
   const [config, setConfig] = useState<ReportCardConfig>({
@@ -227,20 +229,43 @@ export default function ReportCardsPage() {
       const student = students.find((s) => s.id === studentId)!;
       const subjects = generateMockSubjects(config.educationLevel);
 
-      // Calculate grades for each subject
+      // Parse student class to get just the class level (e.g., "JSS 1, A" -> "JSS 1")
+      const [studentClass] = student.class.split(", ").map((s) => s.trim());
+      const classLevel = config.class || studentClass;
+
+      // Calculate grades for each subject using the grading context
       const gradedSubjects = subjects.map((subject) => {
         const percentage = (subject.score / subject.maxScore) * 100;
-        const grade = calculateGrade(percentage, config.educationLevel);
+        const score = subject.score;
+
+        // Get grade from grading context based on education level, class, subject, and score
+        const gradeScheme = getGradeForScore(config.educationLevel, classLevel, subject.subject, score);
+
+        const grade = gradeScheme
+          ? gradeScheme.gradeName
+          : calculateGradeFallback(percentage, config.educationLevel).split(" ")[0];
+
+        const remarks = gradeScheme
+          ? gradeScheme.remark
+          : (percentage >= 70 ? "Excellent" : percentage >= 60 ? "Good" : "Needs Improvement");
+
         return {
           ...subject,
-          grade: grade.split(" ")[0],
-          remarks: percentage >= 70 ? "Excellent" : percentage >= 60 ? "Good" : "Needs Improvement",
+          grade,
+          remarks,
         };
       });
 
       const totalMarks = gradedSubjects.reduce((sum, s) => sum + s.score, 0);
       const maxTotalMarks = gradedSubjects.reduce((sum, s) => sum + s.maxScore, 0);
       const percentage = (totalMarks / maxTotalMarks) * 100;
+
+      // Calculate overall grade using weighted average
+      const overallScore = percentage; // Could use totalMarks if grading scheme uses raw scores
+      const overallGradeScheme = getGradeForScore(config.educationLevel, classLevel, "All", overallScore);
+      const overallGrade = overallGradeScheme
+        ? `${overallGradeScheme.gradeName} (${overallGradeScheme.remark})`
+        : calculateGradeFallback(percentage, config.educationLevel);
 
       return {
         student,
@@ -249,7 +274,7 @@ export default function ReportCardsPage() {
         subjects: gradedSubjects,
         totalMarks,
         percentage,
-        overallGrade: calculateGrade(percentage, config.educationLevel),
+        overallGrade,
         rank: index + 1,
         totalStudents: config.selectedStudents.size,
         attendance: {
