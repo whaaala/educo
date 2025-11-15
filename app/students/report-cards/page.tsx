@@ -1131,8 +1131,8 @@ export default function ReportCardsPage() {
               // as these may contain linear-gradient() which we want to preserve
             });
           },
-          });
-        } catch (canvasError: any) {
+        });
+      } catch (canvasError: any) {
           // Log color errors but don't fail the PDF generation
           // html2canvas can usually work around color issues
           if (canvasError.message?.includes('oklch') || canvasError.message?.includes('color')) {
