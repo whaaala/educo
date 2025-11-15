@@ -648,48 +648,71 @@ export default function ReportCardsPage() {
 
         // ===== SIGNATURES =====
         if (yPos < 260) {
-          pdf.setFontSize(10);
+          pdf.setFontSize(11);
           pdf.setFont('helvetica', 'bold');
           pdf.setTextColor(0, 0, 0);
           pdf.text('OFFICIAL SIGNATURES & AUTHENTICATION', 105, yPos, { align: 'center' });
-          yPos += 8;
+          yPos += 10;
 
-          const sigWidth = 55;
-          const sigHeight = 20;
+          const sigWidth = 56;
+          const sigHeight = 18;
           const sigY = yPos;
+          const spacing = 6;
+
+          // Calculate x positions for three equal boxes
+          const totalWidth = (sigWidth * 3) + (spacing * 2);
+          const startX = (210 - totalWidth) / 2; // Center the boxes
 
           // Class Teacher
-          pdf.setDrawColor(200, 200, 200);
+          pdf.setDrawColor(220, 220, 220);
+          pdf.setFillColor(250, 250, 250);
           pdf.setLineWidth(0.3);
-          pdf.rect(15, sigY, sigWidth, sigHeight);
+          pdf.rect(startX, sigY, sigWidth, sigHeight, 'FD');
           pdf.setFontSize(9);
           pdf.setFont('helvetica', 'bold');
-          pdf.text('Class Teacher', 15 + sigWidth/2, sigY + sigHeight - 8, { align: 'center' });
+          pdf.setTextColor(0, 0, 0);
+          pdf.text('Class Teacher', startX + sigWidth/2, sigY + sigHeight/2 - 1, { align: 'center' });
           pdf.setFontSize(7);
           pdf.setFont('helvetica', 'normal');
-          pdf.text('Signature & Date', 15 + sigWidth/2, sigY + sigHeight - 4, { align: 'center' });
+          pdf.setTextColor(100, 100, 100);
+          pdf.text('Signature & Date', startX + sigWidth/2, sigY + sigHeight/2 + 3, { align: 'center' });
 
           // Parent/Guardian
-          pdf.rect(77.5, sigY, sigWidth, sigHeight);
+          pdf.setDrawColor(220, 220, 220);
+          pdf.setFillColor(250, 250, 250);
+          pdf.rect(startX + sigWidth + spacing, sigY, sigWidth, sigHeight, 'FD');
           pdf.setFontSize(9);
           pdf.setFont('helvetica', 'bold');
-          pdf.text('Parent/Guardian', 77.5 + sigWidth/2, sigY + sigHeight - 8, { align: 'center' });
+          pdf.setTextColor(0, 0, 0);
+          pdf.text('Parent/Guardian', startX + sigWidth + spacing + sigWidth/2, sigY + sigHeight/2 - 1, { align: 'center' });
           pdf.setFontSize(7);
           pdf.setFont('helvetica', 'normal');
-          pdf.text('Signature & Date', 77.5 + sigWidth/2, sigY + sigHeight - 4, { align: 'center' });
+          pdf.setTextColor(100, 100, 100);
+          pdf.text('Signature & Date', startX + sigWidth + spacing + sigWidth/2, sigY + sigHeight/2 + 3, { align: 'center' });
 
           // Principal
-          pdf.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-          pdf.rect(140, sigY, sigWidth, sigHeight, 'FD');
+          pdf.setDrawColor(220, 220, 220);
+          pdf.setFillColor(250, 250, 250);
+          pdf.rect(startX + (sigWidth * 2) + (spacing * 2), sigY, sigWidth, sigHeight, 'FD');
           pdf.setFontSize(9);
           pdf.setFont('helvetica', 'bold');
-          pdf.setTextColor(255, 255, 255);
+          pdf.setTextColor(0, 0, 0);
           const principalName = currentTenant?.branding?.signatures?.principalName || "Principal";
-          pdf.text(principalName, 140 + sigWidth/2, sigY + sigHeight - 8, { align: 'center' });
+          pdf.text(principalName, startX + (sigWidth * 2) + (spacing * 2) + sigWidth/2, sigY + sigHeight/2 - 1, { align: 'center' });
           pdf.setFontSize(7);
           pdf.setFont('helvetica', 'normal');
+          pdf.setTextColor(100, 100, 100);
           const principalTitle = currentTenant?.branding?.signatures?.principalTitle || "Principal";
-          pdf.text(principalTitle, 140 + sigWidth/2, sigY + sigHeight - 4, { align: 'center' });
+          pdf.text(principalTitle, startX + (sigWidth * 2) + (spacing * 2) + sigWidth/2, sigY + sigHeight/2 + 3, { align: 'center' });
+
+          yPos += sigHeight + 10;
+
+          // Official document icon and text
+          pdf.setFontSize(7);
+          pdf.setFont('helvetica', 'italic');
+          pdf.setTextColor(120, 120, 120);
+          pdf.text('O OFFICIAL DOCUMENT O', 105, yPos, { align: 'center' });
+          yPos += 4;
         }
 
         // ===== FOOTER =====
@@ -1606,7 +1629,7 @@ export default function ReportCardsPage() {
       {(currentStep === "preview" || currentStep === "generate") && currentReportCard && (
         <div className="space-y-6">
           {/* Actions - Print Control Bar */}
-          <div className="no-print bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-6 shadow-lg sticky top-0 z-10">
+          <div className="no-print bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-6 shadow-lg sticky top-0 z-50 before:absolute before:inset-x-0 before:-top-6 before:h-6 before:bg-white dark:before:bg-neutral-900 before:-z-10">
             <div className="flex items-center justify-between flex-wrap gap-4">
               {/* Left: Navigation */}
               <div className="flex items-center gap-4">
