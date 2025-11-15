@@ -21,7 +21,7 @@ export default function Button({
   className = "",
   type = "button",
 }: ButtonProps) {
-  const baseClasses = "inline-flex items-center justify-center font-medium transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseClasses = "inline-flex items-center justify-center font-medium transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer";
 
   const variantClasses = {
     primary: "bg-purple-600 hover:bg-purple-700 text-white shadow-sm focus:ring-purple-500 dark:bg-purple-500 dark:hover:bg-purple-600",

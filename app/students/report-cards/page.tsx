@@ -2201,99 +2201,69 @@ export default function ReportCardsPage() {
                   </div>
                 )}
 
-                {/* Signatures Section - Modern Gradient Design */}
-                <div
-                  className="mt-12 pt-6 border-t-4 border-double rounded-t-xl"
-                  style={{ borderColor: primaryColor }}
-                >
-                  <div className="mb-6">
-                    <div
-                      className="text-2xl font-black text-white text-center uppercase tracking-wide px-6 py-4 rounded-xl shadow-lg"
-                      style={{
-                        background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`
-                      }}
-                    >
+                {/* Signatures Section */}
+                <div className="mt-12 pt-8">
+                  <div className="mb-8">
+                    <h3 className="text-xl font-bold text-center uppercase tracking-wide text-neutral-900">
                       Official Signatures & Authentication
-                    </div>
+                    </h3>
                   </div>
-                  <div className="grid grid-cols-3 gap-8 text-base">
+
+                  {/* Dotted separator */}
+                  <div className="border-t-2 border-dotted border-neutral-300 mb-8"></div>
+
+                  <div className="grid grid-cols-3 gap-6 text-base mb-8">
                     {/* Class Teacher */}
                     <div className="text-center">
-                      <div className="h-24 mb-4 border-b-3 border-neutral-300 border-dashed rounded-lg bg-neutral-50"></div>
-                      <div
-                        className="p-4 rounded-xl shadow-lg"
-                        style={{
-                          background: `linear-gradient(135deg, ${primaryColor}10, #ffffff)`
-                        }}
-                      >
-                        <p className="font-black text-neutral-900 text-lg">Class Teacher</p>
-                        <p className="text-sm text-neutral-600 mt-2 font-semibold">Signature & Date</p>
+                      <div className="h-20 mb-3 bg-neutral-100 rounded"></div>
+                      <div className="py-3">
+                        <p className="font-bold text-neutral-900 text-base">Class Teacher</p>
+                        <p className="text-xs text-neutral-600 mt-1">Signature & Date</p>
                       </div>
                     </div>
 
                     {/* Parent/Guardian */}
                     <div className="text-center">
-                      <div className="h-24 mb-4 border-b-3 border-neutral-300 border-dashed rounded-lg bg-neutral-50"></div>
-                      <div
-                        className="p-4 rounded-xl shadow-lg"
-                        style={{
-                          background: `linear-gradient(135deg, ${secondaryColor}10, #ffffff)`
-                        }}
-                      >
-                        <p className="font-black text-neutral-900 text-lg">Parent/Guardian</p>
-                        <p className="text-sm text-neutral-600 mt-2 font-semibold">Signature & Date</p>
+                      <div className="h-20 mb-3 bg-neutral-100 rounded"></div>
+                      <div className="py-3">
+                        <p className="font-bold text-neutral-900 text-base">Parent/Guardian</p>
+                        <p className="text-xs text-neutral-600 mt-1">Signature & Date</p>
                       </div>
                     </div>
 
                     {/* Principal */}
                     <div className="text-center">
-                      <div className="h-24 mb-4 border-b-3 border-neutral-300 border-dashed rounded-lg bg-neutral-50"></div>
-                      <div
-                        className="p-4 rounded-xl shadow-lg text-white"
-                        style={{
-                          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
-                        }}
-                      >
-                        <p className="font-black text-lg drop-shadow">
-                          {currentTenant?.branding?.signatures?.principalName || "Principal"}
+                      <div className="h-20 mb-3 bg-neutral-100 rounded"></div>
+                      <div className="py-3">
+                        <p className="font-bold text-neutral-900 text-base">
+                          {currentTenant?.branding?.signatures?.principalName || "Prof. Chioma Okonkwo"}
                         </p>
-                        <p className="text-sm mt-2 font-semibold drop-shadow">
+                        <p className="text-xs text-neutral-600 mt-1">
                           {currentTenant?.branding?.signatures?.principalTitle || "Principal"}
                         </p>
                       </div>
                     </div>
                   </div>
+
+                  {/* Dotted separator */}
+                  <div className="border-t-2 border-dotted border-neutral-300 mb-6"></div>
                 </div>
 
-                {/* Enhanced Footer with Gradient */}
-                <div className="mt-10 pt-4">
-                  <div
-                    className="p-6 rounded-2xl text-center shadow-xl relative overflow-hidden"
-                    style={{
-                      background: `linear-gradient(135deg, ${primaryColor}15, ${secondaryColor}10, ${primaryColor}15)`
-                    }}
-                  >
-                    <div className="absolute top-0 left-0 w-32 h-32 bg-white/30 rounded-full -translate-x-16 -translate-y-16"></div>
-                    <div className="absolute bottom-0 right-0 w-40 h-40 bg-white/20 rounded-full translate-x-20 translate-y-20"></div>
-
-                    <div className="flex items-center justify-center gap-3 mb-3 relative">
-                      <Shield className="w-6 h-6" style={{ color: primaryColor }} />
-                      <p className="text-base font-black uppercase tracking-wider" style={{ color: primaryColor }}>
-                        Official Document
-                      </p>
-                      <Shield className="w-6 h-6" style={{ color: primaryColor }} />
-                    </div>
-                    <p className="text-sm text-neutral-700 font-bold relative">
-                      This is an official academic document issued by {currentTenant?.name || settings.schoolName}
-                    </p>
-                    <p className="text-xs text-neutral-600 mt-3 font-semibold relative">
-                      <span className="font-black">Generated on:</span> {new Date().toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </p>
-                  </div>
+                {/* Footer */}
+                <div className="mt-6 pt-6 text-center">
+                  <p className="text-sm font-bold text-neutral-900 mb-2 uppercase tracking-wide">
+                    ⭕ Official Document ⭕
+                  </p>
+                  <p className="text-xs text-neutral-700">
+                    This is an official academic document issued by {currentTenant?.name || settings.schoolName}
+                  </p>
+                  <p className="text-xs text-neutral-600 mt-2">
+                    Generated on: {new Date().toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
                 </div>
               </div>
               </>
