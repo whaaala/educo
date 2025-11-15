@@ -9,6 +9,8 @@ import FormDropdown from "@/components/shared/FormDropdown";
 import FormInput from "@/components/shared/FormInput";
 import SearchBar from "@/components/shared/SearchBar";
 import PageLoader from "@/components/shared/PageLoader";
+import Tooltip from "@/components/shared/Tooltip";
+import Modal from "@/components/shared/Modal";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import {
@@ -25,6 +27,8 @@ import {
   RefreshCcw,
   Check,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 // Education level types and data
 type EducationLevel = "Primary" | "Secondary" | "Tertiary";
@@ -80,6 +84,7 @@ interface AttendanceRecord {
   studentId: string;
   status: AttendanceStatus;
   remarks?: string;
+  lateMinutes?: number; // How many minutes late
 }
 
 // Mock student data
@@ -113,6 +118,15 @@ export default function AttendancePage() {
   );
   const [isSaving, setIsSaving] = useState(false);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Late duration modal state
+  const [lateModalOpen, setLateModalOpen] = useState(false);
+  const [selectedLateStudent, setSelectedLateStudent] = useState<string | null>(null);
+  const [lateMinutes, setLateMinutes] = useState<number>(15);
+
   // Filter students based on class and section
   const filteredStudents = MOCK_STUDENTS.filter((student) => {
     const matchesClass = !selectedClass || student.class === selectedClass;
@@ -124,15 +138,68 @@ export default function AttendancePage() {
     return matchesClass && matchesSection && matchesSearch;
   });
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedStudents = filteredStudents.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  const handleClassChange = (value: string) => {
+    setSelectedClass(value);
+    setCurrentPage(1);
+  };
+
+  const handleSectionChange = (value: string) => {
+    setSelectedSection(value);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
+
   const handleAttendanceChange = (
     studentId: string,
     status: AttendanceStatus
   ) => {
+    // If marking as late, open modal to get duration
+    if (status === ATTENDANCE_STATUS.LATE) {
+      setSelectedLateStudent(studentId);
+      setLateModalOpen(true);
+      return;
+    }
+
+    // For other statuses, set directly
     setAttendance((prev) => {
       const newAttendance = new Map(prev);
       newAttendance.set(studentId, { studentId, status });
       return newAttendance;
     });
+  };
+
+  const handleConfirmLate = () => {
+    if (selectedLateStudent) {
+      setAttendance((prev) => {
+        const newAttendance = new Map(prev);
+        newAttendance.set(selectedLateStudent, {
+          studentId: selectedLateStudent,
+          status: ATTENDANCE_STATUS.LATE,
+          lateMinutes,
+        });
+        return newAttendance;
+      });
+      setLateModalOpen(false);
+      setSelectedLateStudent(null);
+      setLateMinutes(15); // Reset to default
+    }
+  };
+
+  const handleCancelLate = () => {
+    setLateModalOpen(false);
+    setSelectedLateStudent(null);
+    setLateMinutes(15); // Reset to default
   };
 
   const handleMarkAllPresent = () => {
@@ -176,10 +243,13 @@ export default function AttendancePage() {
     }
 
     // Create CSV content
-    const headers = ["Student ID", "Name", "Roll No", "Class", "Section", "Status", "Date"];
+    const headers = ["Student ID", "Name", "Roll No", "Class", "Section", "Status", "Late Duration (min)", "Date"];
     const rows = filteredStudents.map((student) => {
       const record = attendance.get(student.id);
       const status = record?.status || "Unmarked";
+      const lateInfo = record?.status === ATTENDANCE_STATUS.LATE && record?.lateMinutes
+        ? record.lateMinutes.toString()
+        : "";
       return [
         student.id,
         student.name,
@@ -187,6 +257,7 @@ export default function AttendancePage() {
         selectedClass,
         selectedSection || "N/A",
         status.charAt(0).toUpperCase() + status.slice(1),
+        lateInfo,
         new Date(selectedDate).toLocaleDateString(),
       ];
     });
@@ -297,7 +368,7 @@ export default function AttendancePage() {
                   iconBgColor="bg-green-100 dark:bg-green-900/30"
                   iconColor="text-green-600 dark:text-green-400"
                   value={selectedClass}
-                  onChange={(value) => setSelectedClass(value)}
+                  onChange={handleClassChange}
                   options={[
                     { value: "", label: "Select class..." },
                     ...getClassesByLevel(educationLevel).map((cls) => ({
@@ -316,7 +387,7 @@ export default function AttendancePage() {
                   iconBgColor="bg-purple-100 dark:bg-purple-900/30"
                   iconColor="text-purple-600 dark:text-purple-400"
                   value={selectedSection}
-                  onChange={(value) => setSelectedSection(value)}
+                  onChange={handleSectionChange}
                   options={[
                     { value: "", label: "All sections" },
                     ...SECTIONS.map((section) => ({
@@ -344,7 +415,7 @@ export default function AttendancePage() {
                 <div className="mt-4">
                   <SearchBar
                     value={searchQuery}
-                    onChange={setSearchQuery}
+                    onChange={handleSearchChange}
                     placeholder="Search by name or roll number..."
                     size="md"
                     fullWidth
@@ -486,40 +557,46 @@ export default function AttendancePage() {
                   </div>
 
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleMarkAllPresent}
-                      className="flex-1 sm:flex-none gap-2"
-                    >
-                      <Check className="w-4 h-4" />
-                      All Present
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleMarkAllAbsent}
-                      className="flex-1 sm:flex-none gap-2"
-                    >
-                      <X className="w-4 h-4" />
-                      All Absent
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleReset}
-                      className="flex-1 sm:flex-none gap-2"
-                    >
-                      <RefreshCcw className="w-4 h-4" />
-                      Reset
-                    </Button>
+                    <Tooltip content="Mark all students as present">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleMarkAllPresent}
+                        className="flex-1 sm:flex-none gap-2"
+                      >
+                        <Check className="w-4 h-4" />
+                        All Present
+                      </Button>
+                    </Tooltip>
+                    <Tooltip content="Mark all students as absent">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleMarkAllAbsent}
+                        className="flex-1 sm:flex-none gap-2"
+                      >
+                        <X className="w-4 h-4" />
+                        All Absent
+                      </Button>
+                    </Tooltip>
+                    <Tooltip content="Clear all attendance marks">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleReset}
+                        className="flex-1 sm:flex-none gap-2"
+                      >
+                        <RefreshCcw className="w-4 h-4" />
+                        Reset
+                      </Button>
+                    </Tooltip>
                   </div>
                 </div>
               </div>
 
               <div className="p-4 sm:p-6">
                 <div className="space-y-3">
-                  {filteredStudents.map((student, index) => {
+                  {paginatedStudents.map((student, index) => {
                     const record = attendance.get(student.id);
                     const currentStatus = record?.status;
 
@@ -574,9 +651,17 @@ export default function AttendancePage() {
                                 <p className="font-semibold text-sm sm:text-base text-neutral-900 dark:text-neutral-100 truncate group-hover:text-purple-700 dark:group-hover:text-purple-400 transition-colors">
                                   {student.name}
                                 </p>
-                                <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                                  Roll No: <span className="font-medium">{student.rollNo}</span>
-                                </p>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                                    Roll No: <span className="font-medium">{student.rollNo}</span>
+                                  </p>
+                                  {currentStatus === ATTENDANCE_STATUS.LATE && record?.lateMinutes && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-medium">
+                                      <Clock className="w-3 h-3" />
+                                      {record.lateMinutes} min late
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -584,73 +669,76 @@ export default function AttendancePage() {
                           {/* Attendance Buttons */}
                           <div className="flex gap-2">
                             {/* Present Button */}
-                            <button
-                              onClick={() =>
-                                handleAttendanceChange(
-                                  student.id,
-                                  ATTENDANCE_STATUS.PRESENT
-                                )
-                              }
-                              className={`group/btn relative p-2.5 sm:p-3 rounded-lg transition-all duration-300 cursor-pointer ${
-                                currentStatus === ATTENDANCE_STATUS.PRESENT
-                                  ? "bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30 scale-110"
-                                  : "bg-white dark:bg-neutral-700 border-2 border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 hover:scale-105"
-                              }`}
-                              title="Mark Present"
-                            >
-                              <CircleCheckBig className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${
-                                currentStatus === ATTENDANCE_STATUS.PRESENT ? "scale-110" : "group-hover/btn:scale-110"
-                              }`} />
-                              {currentStatus === ATTENDANCE_STATUS.PRESENT && (
-                                <div className="absolute inset-0 rounded-lg bg-white/20 animate-ping"></div>
-                              )}
-                            </button>
+                            <Tooltip content="Mark as Present">
+                              <button
+                                onClick={() =>
+                                  handleAttendanceChange(
+                                    student.id,
+                                    ATTENDANCE_STATUS.PRESENT
+                                  )
+                                }
+                                className={`group/btn relative p-2.5 sm:p-3 rounded-lg transition-all duration-300 cursor-pointer ${
+                                  currentStatus === ATTENDANCE_STATUS.PRESENT
+                                    ? "bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30 scale-110"
+                                    : "bg-white dark:bg-neutral-700 border-2 border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 hover:scale-105"
+                                }`}
+                              >
+                                <CircleCheckBig className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${
+                                  currentStatus === ATTENDANCE_STATUS.PRESENT ? "scale-110" : "group-hover/btn:scale-110"
+                                }`} />
+                                {currentStatus === ATTENDANCE_STATUS.PRESENT && (
+                                  <div className="absolute inset-0 rounded-lg bg-white/20 animate-ping"></div>
+                                )}
+                              </button>
+                            </Tooltip>
 
                             {/* Absent Button */}
-                            <button
-                              onClick={() =>
-                                handleAttendanceChange(
-                                  student.id,
-                                  ATTENDANCE_STATUS.ABSENT
-                                )
-                              }
-                              className={`group/btn relative p-2.5 sm:p-3 rounded-lg transition-all duration-300 cursor-pointer ${
-                                currentStatus === ATTENDANCE_STATUS.ABSENT
-                                  ? "bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/30 scale-110"
-                                  : "bg-white dark:bg-neutral-700 border-2 border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 hover:scale-105"
-                              }`}
-                              title="Mark Absent"
-                            >
-                              <CircleX className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${
-                                currentStatus === ATTENDANCE_STATUS.ABSENT ? "scale-110" : "group-hover/btn:scale-110"
-                              }`} />
-                              {currentStatus === ATTENDANCE_STATUS.ABSENT && (
-                                <div className="absolute inset-0 rounded-lg bg-white/20 animate-ping"></div>
-                              )}
-                            </button>
+                            <Tooltip content="Mark as Absent">
+                              <button
+                                onClick={() =>
+                                  handleAttendanceChange(
+                                    student.id,
+                                    ATTENDANCE_STATUS.ABSENT
+                                  )
+                                }
+                                className={`group/btn relative p-2.5 sm:p-3 rounded-lg transition-all duration-300 cursor-pointer ${
+                                  currentStatus === ATTENDANCE_STATUS.ABSENT
+                                    ? "bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/30 scale-110"
+                                    : "bg-white dark:bg-neutral-700 border-2 border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 hover:scale-105"
+                                }`}
+                              >
+                                <CircleX className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${
+                                  currentStatus === ATTENDANCE_STATUS.ABSENT ? "scale-110" : "group-hover/btn:scale-110"
+                                }`} />
+                                {currentStatus === ATTENDANCE_STATUS.ABSENT && (
+                                  <div className="absolute inset-0 rounded-lg bg-white/20 animate-ping"></div>
+                                )}
+                              </button>
+                            </Tooltip>
 
                             {/* Late Button */}
-                            <button
-                              onClick={() =>
-                                handleAttendanceChange(
-                                  student.id,
-                                  ATTENDANCE_STATUS.LATE
-                                )
-                              }
-                              className={`group/btn relative p-2.5 sm:p-3 rounded-lg transition-all duration-300 cursor-pointer ${
-                                currentStatus === ATTENDANCE_STATUS.LATE
-                                  ? "bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30 scale-110"
-                                  : "bg-white dark:bg-neutral-700 border-2 border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-600 hover:scale-105"
-                              }`}
-                              title="Mark Late"
-                            >
-                              <Clock className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${
-                                currentStatus === ATTENDANCE_STATUS.LATE ? "scale-110" : "group-hover/btn:scale-110"
-                              }`} />
-                              {currentStatus === ATTENDANCE_STATUS.LATE && (
-                                <div className="absolute inset-0 rounded-lg bg-white/20 animate-ping"></div>
-                              )}
-                            </button>
+                            <Tooltip content="Mark as Late">
+                              <button
+                                onClick={() =>
+                                  handleAttendanceChange(
+                                    student.id,
+                                    ATTENDANCE_STATUS.LATE
+                                  )
+                                }
+                                className={`group/btn relative p-2.5 sm:p-3 rounded-lg transition-all duration-300 cursor-pointer ${
+                                  currentStatus === ATTENDANCE_STATUS.LATE
+                                    ? "bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30 scale-110"
+                                    : "bg-white dark:bg-neutral-700 border-2 border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-600 hover:scale-105"
+                                }`}
+                              >
+                                <Clock className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${
+                                  currentStatus === ATTENDANCE_STATUS.LATE ? "scale-110" : "group-hover/btn:scale-110"
+                                }`} />
+                                {currentStatus === ATTENDANCE_STATUS.LATE && (
+                                  <div className="absolute inset-0 rounded-lg bg-white/20 animate-ping"></div>
+                                )}
+                              </button>
+                            </Tooltip>
                           </div>
                         </div>
                       </div>
@@ -671,6 +759,62 @@ export default function AttendancePage() {
                   }
                 }
               `}</style>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="px-4 sm:px-6 py-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/30">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400">
+                      Showing {startIndex + 1} to {Math.min(endIndex, filteredStudents.length)} of {filteredStudents.length} students
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-600 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-colors"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        <span className="hidden md:inline">Previous</span>
+                      </button>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                          // Show first page, last page, current page, and pages around current
+                          if (
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 && page <= currentPage + 1)
+                          ) {
+                            return (
+                              <button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                className={`px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors ${
+                                  currentPage === page
+                                    ? "bg-purple-600 text-white shadow-md"
+                                    : "text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-600"
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            );
+                          } else if (page === currentPage - 2 || page === currentPage + 2) {
+                            return <span key={page} className="px-2 text-neutral-400">...</span>;
+                          }
+                          return null;
+                        })}
+                      </div>
+                      <button
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-600 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-colors"
+                      >
+                        <span className="hidden md:inline">Next</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="bg-neutral-50 dark:bg-neutral-900/50 px-4 sm:px-6 py-4 border-t border-neutral-200 dark:border-neutral-700">
@@ -711,6 +855,76 @@ export default function AttendancePage() {
           )}
         </div>
       </div>
+
+      {/* Late Duration Modal */}
+      <Modal isOpen={lateModalOpen} onClose={handleCancelLate}>
+        <div className="p-6">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0">
+              <Clock className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
+                Mark Student as Late
+              </h3>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                {selectedLateStudent && MOCK_STUDENTS.find(s => s.id === selectedLateStudent)?.name}
+              </p>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              How many minutes late?
+            </label>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {[5, 10, 15, 20, 30, 45].map((minutes) => (
+                <button
+                  key={minutes}
+                  onClick={() => setLateMinutes(minutes)}
+                  className={`px-4 py-3 rounded-lg font-medium text-sm transition-all duration-200 ${
+                    lateMinutes === minutes
+                      ? "bg-amber-500 text-white shadow-lg shadow-amber-500/30"
+                      : "bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600"
+                  }`}
+                >
+                  {minutes} min
+                </button>
+              ))}
+            </div>
+            <div className="relative">
+              <input
+                type="number"
+                min="1"
+                max="180"
+                value={lateMinutes}
+                onChange={(e) => setLateMinutes(parseInt(e.target.value) || 0)}
+                className="w-full px-4 py-3 rounded-lg border-2 border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all"
+                placeholder="Enter custom minutes"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-neutral-500 dark:text-neutral-400">
+                minutes
+              </span>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={handleCancelLate}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmLate}
+              className="flex-1 bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
+            >
+              Confirm Late
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </MainLayout>
   );
 }
