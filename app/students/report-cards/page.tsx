@@ -1155,27 +1155,57 @@ export default function ReportCardsPage() {
 
       if (i > 0) pdf.addPage();
 
-      // Calculate image height to maintain aspect ratio at full page width
+      // Calculate image dimensions to maintain aspect ratio at full page width
+      const imgWidth = pageWidth;
       const imgHeight = (canvas.height * pageWidth) / canvas.width;
 
-      console.log(`Canvas: ${canvas.width}x${canvas.height}px, PDF: ${pageWidth}x${imgHeight.toFixed(2)}mm`);
+      console.log(`Canvas: ${canvas.width}x${canvas.height}px, Image will be: ${imgWidth}x${imgHeight.toFixed(2)}mm`);
 
-      // Add image at full page width (210mm) with NO margins - starts at 0,0
-      // If taller than page, it will overflow but we'll scale it to fit
-      if (imgHeight > pageHeight) {
-        // Scale down to fit one page
-        const scale = pageHeight / imgHeight;
-        const scaledWidth = pageWidth * scale;
-        const scaledHeight = pageHeight;
+      // Calculate how many pixels represent one page height
+      const pxPerMm = canvas.width / pageWidth;
+      const pageHeightPx = pageHeight * pxPerMm;
 
-        // Center horizontally if scaled
-        const xOffset = (pageWidth - scaledWidth) / 2;
-        pdf.addImage(imgData, "PNG", xOffset, 0, scaledWidth, scaledHeight);
-        console.log(`Scaled to fit: ${scaledWidth.toFixed(2)}x${scaledHeight}mm`);
+      console.log(`Pixels per mm: ${pxPerMm.toFixed(2)}, One page = ${pageHeightPx.toFixed(0)}px`);
+
+      // Split across multiple pages if needed
+      if (canvas.height > pageHeightPx) {
+        const totalPages = Math.ceil(canvas.height / pageHeightPx);
+        console.log(`Splitting ${canvas.height}px into ${totalPages} pages`);
+
+        for (let page = 0; page < totalPages; page++) {
+          if (page > 0) {
+            pdf.addPage();
+          }
+
+          // Calculate slice in pixels
+          const srcY = page * pageHeightPx;
+          const srcHeight = Math.min(pageHeightPx, canvas.height - srcY);
+
+          // Create temp canvas
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = srcHeight;
+          const ctx = tempCanvas.getContext('2d');
+
+          if (ctx) {
+            // Fill white background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+            // Draw slice
+            ctx.drawImage(canvas, 0, srcY, canvas.width, srcHeight, 0, 0, canvas.width, srcHeight);
+
+            // Add to PDF
+            const pageImg = tempCanvas.toDataURL("image/png", 1.0);
+            const destHeight = srcHeight / pxPerMm;
+            pdf.addImage(pageImg, "PNG", 0, 0, pageWidth, destHeight);
+            console.log(`Page ${page + 1}/${totalPages}: height=${destHeight.toFixed(1)}mm`);
+          }
+        }
       } else {
-        // Add at full width, no offset
-        pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
-        console.log(`Full width: ${pageWidth}x${imgHeight.toFixed(2)}mm`);
+        // Fits on one page
+        pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+        console.log(`Single page: ${imgWidth}x${imgHeight.toFixed(2)}mm`);
       }
     }
 
@@ -1321,8 +1351,24 @@ export default function ReportCardsPage() {
             page-break-before: always;
           }
 
+          .page-break-before {
+            page-break-before: always;
+            margin-top: 0 !important;
+            padding-top: 8mm !important;
+          }
+
+          .page-break-avoid {
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+
           .avoid-break {
             page-break-inside: avoid;
+          }
+
+          /* Ensure proper spacing at top of new pages */
+          @page {
+            margin: 8mm 10mm;
           }
         }
 
@@ -1723,11 +1769,7 @@ export default function ReportCardsPage() {
           <div className="no-print bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-900 p-8 rounded-lg">
             <div
               ref={printRef}
-              className="print-content bg-white w-[210mm] mx-auto shadow-2xl print:shadow-none print:w-full print:max-w-full rounded-2xl print:rounded-none overflow-hidden"
-              style={{
-                minHeight: "297mm",
-                padding: "10mm"
-              }}
+              className="print-content bg-white w-[210mm] mx-auto shadow-2xl print:shadow-none print:w-full print:max-w-full rounded-2xl print:rounded-none p-6"
             >
               {(() => {
                 // Get tenant branding colors for the entire document
@@ -1744,11 +1786,9 @@ export default function ReportCardsPage() {
               >
                 {/* School Header with Bold Gradient Background */}
                 <div
-                  className="text-center relative rounded-xl overflow-hidden"
+                  className="text-center relative rounded-xl overflow-hidden page-break-avoid py-4 mb-3"
                   style={{
-                    background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
-                    padding: "5mm 0",
-                    marginBottom: "4mm"
+                    background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
                   }}
                 >
                   <div className="absolute inset-0 opacity-10">
@@ -1792,11 +1832,9 @@ export default function ReportCardsPage() {
 
                 {/* Report Card Title Banner */}
                 <div
-                  className="text-center text-white rounded-xl shadow-lg relative overflow-hidden"
+                  className="text-center text-white rounded-xl shadow-lg relative overflow-hidden page-break-avoid p-3 mb-3"
                   style={{
-                    background: `linear-gradient(120deg, ${primaryColor}, ${secondaryColor}, ${primaryColor})`,
-                    padding: "4mm",
-                    marginBottom: "4mm"
+                    background: `linear-gradient(120deg, ${primaryColor}, ${secondaryColor}, ${primaryColor})`
                   }}
                 >
                   <div className="absolute inset-0 opacity-20">
@@ -1815,12 +1853,10 @@ export default function ReportCardsPage() {
 
                 {/* Student Info */}
                 <div
-                  className="rounded-xl shadow-md border-2"
+                  className="rounded-xl shadow-md border-2 page-break-avoid p-3 mb-4"
                   style={{
                     background: `linear-gradient(135deg, ${primaryColor}15, ${secondaryColor}10)`,
-                    borderColor: primaryColor + '40',
-                    padding: "4mm",
-                    marginBottom: "4mm"
+                    borderColor: primaryColor + '40'
                   }}
                 >
                   <div className="grid grid-cols-2 gap-3 text-sm student-info-section">
@@ -1874,12 +1910,11 @@ export default function ReportCardsPage() {
                 </div>
 
                 {/* Academic Performance Header */}
-                <div style={{ marginBottom: "3mm" }}>
+                <div className="page-break-before mb-2">
                   <div
-                    className="text-base font-black text-white rounded-lg shadow-md"
+                    className="text-base font-black text-white rounded-lg shadow-md px-3 py-2"
                     style={{
-                      background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`,
-                      padding: "2mm 3mm"
+                      background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`
                     }}
                   >
                     <div className="flex items-center gap-2">
@@ -1890,9 +1925,8 @@ export default function ReportCardsPage() {
                 </div>
 
                 {/* Grades Table */}
-                <div className="rounded-lg overflow-hidden shadow-md border-2" style={{
-                  borderColor: primaryColor + '30',
-                  marginBottom: "3mm"
+                <div className="rounded-lg overflow-hidden shadow-md border-2 page-break-avoid mb-3" style={{
+                  borderColor: primaryColor + '30'
                 }}>
                   <table className="w-full border-collapse text-xs">
                     <thead>
@@ -1971,11 +2005,10 @@ export default function ReportCardsPage() {
 
                 {/* Overall Performance Summary */}
                 <div
-                  className="rounded-lg overflow-hidden shadow-md border-2"
+                  className="rounded-lg overflow-hidden shadow-md border-2 page-break-avoid mb-3"
                   style={{
                     borderColor: primaryColor,
-                    background: `linear-gradient(135deg, ${primaryColor}10, ${secondaryColor}10)`,
-                    marginBottom: "3mm"
+                    background: `linear-gradient(135deg, ${primaryColor}10, ${secondaryColor}10)`
                   }}
                 >
                   {/* Header */}
@@ -2088,13 +2121,12 @@ export default function ReportCardsPage() {
 
                 {/* Conduct & Behavior */}
                 {config.includeConduct && (
-                  <div style={{ marginBottom: "3mm" }}>
-                    <div style={{ marginBottom: "2mm" }}>
+                  <div className="page-break-avoid mb-3">
+                    <div className="mb-2">
                       <div
-                        className="text-base font-black text-white rounded-lg shadow-md"
+                        className="text-base font-black text-white rounded-lg shadow-md px-3 py-2"
                         style={{
-                          background: `linear-gradient(90deg, #10b981, #059669)`,
-                          padding: "2mm 3mm"
+                          background: `linear-gradient(90deg, #10b981, #059669)`
                         }}
                       >
                         <div className="flex items-center gap-2">
@@ -2142,7 +2174,7 @@ export default function ReportCardsPage() {
 
                 {/* Remarks */}
                 {config.includeRemarks && (
-                  <div className="space-y-2 text-xs" style={{ marginBottom: "3mm" }}>
+                  <div className="space-y-2 text-xs page-break-avoid mb-3">
                     {/* Teacher's Remarks */}
                     <div className="rounded-lg overflow-hidden shadow-md border" style={{ borderColor: primaryColor + '40' }}>
                       <div
@@ -2198,17 +2230,17 @@ export default function ReportCardsPage() {
                 )}
 
                 {/* Signatures Section */}
-                <div style={{ marginTop: "5mm", paddingTop: "3mm" }}>
-                  <div style={{ marginBottom: "3mm" }}>
+                <div className="page-break-before mt-5 pt-3">
+                  <div className="mb-3">
                     <h3 className="text-base font-bold text-center uppercase tracking-wide text-neutral-900">
                       Official Signatures & Authentication
                     </h3>
                   </div>
 
                   {/* Dotted separator */}
-                  <div className="border-t-2 border-dotted border-neutral-300" style={{ marginBottom: "3mm" }}></div>
+                  <div className="border-t-2 border-dotted border-neutral-300 mb-3"></div>
 
-                  <div className="grid grid-cols-3 gap-3 text-sm" style={{ marginBottom: "3mm" }}>
+                  <div className="grid grid-cols-3 gap-3 text-sm mb-3">
                     {/* Class Teacher */}
                     <div className="text-center">
                       <div className="h-12 mb-2 bg-neutral-100 rounded"></div>
