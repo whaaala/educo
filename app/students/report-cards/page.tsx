@@ -1404,25 +1404,27 @@ export default function ReportCardsPage() {
       {currentStep === "config" && (
         <div className="space-y-6">
           {/* Quick Links Card */}
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                  <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3 sm:gap-4 flex-1">
+                <div className="p-2 sm:p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0">
+                  <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
                     Term/Semester Report Cards
                   </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400">
                     Generate single term/semester report cards for multiple students in the same class
                   </p>
                 </div>
               </div>
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => router.push("/students/cumulative-report")}
                 icon={<BarChart3 className="w-4 h-4" />}
+                className="w-full sm:w-auto"
               >
                 Cumulative Reports
               </Button>
@@ -1431,16 +1433,16 @@ export default function ReportCardsPage() {
           {/* Config Form */}
           <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                  <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 px-4 sm:px-6 py-3 sm:py-4 border-b border-neutral-200 dark:border-neutral-700">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
+                  <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100">
                     Report Card Settings
                   </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 hidden sm:block">
                     Configure report card parameters and options
                   </p>
                 </div>
@@ -1448,7 +1450,7 @@ export default function ReportCardsPage() {
             </div>
 
             {/* Form Content */}
-            <div className="p-6 space-y-8">
+            <div className="p-4 sm:p-6 space-y-6 sm:space-y-8">
               {/* Academic Configuration */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
@@ -1460,7 +1462,7 @@ export default function ReportCardsPage() {
                   </h4>
                 </div>
 
-                <div className={`grid grid-cols-1 ${settings.supportsMultipleLevels ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-5`}>
+                <div className={`grid grid-cols-1 ${settings.supportsMultipleLevels ? 'sm:grid-cols-2 lg:grid-cols-3' : 'sm:grid-cols-2'} gap-4 sm:gap-5`}>
                   {/* Education Level - Only show for multi-level schools */}
                   {settings.supportsMultipleLevels && (
                     <FormDropdown
@@ -1534,7 +1536,7 @@ export default function ReportCardsPage() {
                   </h4>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   {/* Term/Semester */}
                   <FormDropdown
                     label="Term/Semester"
@@ -1581,7 +1583,7 @@ export default function ReportCardsPage() {
                   </h4>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Attendance */}
                   <label className="group relative flex items-start gap-3 p-4 rounded-lg border-2 border-neutral-200 dark:border-neutral-700 cursor-pointer transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 has-[:checked]:border-blue-500 dark:has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 dark:has-[:checked]:bg-blue-900/20">
                     <input
@@ -1676,6 +1678,7 @@ export default function ReportCardsPage() {
             <Button
               onClick={generateReportCards}
               disabled={config.selectedStudents.size === 0 || !config.class}
+              className="w-full sm:w-auto"
             >
               Generate Report Cards ({config.selectedStudents.size})
             </Button>
@@ -1687,15 +1690,15 @@ export default function ReportCardsPage() {
       {(currentStep === "preview" || currentStep === "generate") && currentReportCard && (
         <div className="space-y-6">
           {/* Actions - Print Control Bar */}
-          <div className="no-print bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-6 shadow-lg sticky top-0 z-50 before:absolute before:inset-x-0 before:-top-6 before:h-6 before:bg-white dark:before:bg-neutral-900 before:-z-10">
-            <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="no-print bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 sm:p-6 shadow-lg sticky top-0 z-50 before:absolute before:inset-x-0 before:-top-6 before:h-6 before:bg-white dark:before:bg-neutral-900 before:-z-10">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
               {/* Left: Navigation */}
-              <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" onClick={() => setCurrentStep("config")}>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                <Button variant="outline" size="sm" onClick={() => setCurrentStep("config")} className="w-full sm:w-auto">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Config
                 </Button>
-                <div className="flex items-center gap-3 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 border border-neutral-200 dark:border-neutral-700">
+                <div className="flex items-center justify-center gap-3 bg-white dark:bg-neutral-800 rounded-lg px-3 sm:px-4 py-2 border border-neutral-200 dark:border-neutral-700">
                   <button
                     onClick={() => setCurrentPreviewIndex(Math.max(0, currentPreviewIndex - 1))}
                     disabled={currentPreviewIndex === 0 || isGenerating}
@@ -1703,7 +1706,7 @@ export default function ReportCardsPage() {
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 min-w-[80px] text-center">
+                  <span className="text-xs sm:text-sm font-medium text-neutral-900 dark:text-neutral-100 min-w-[60px] sm:min-w-[80px] text-center">
                     {currentPreviewIndex + 1} of {reportCards.length}
                   </span>
                   <button
@@ -1719,7 +1722,7 @@ export default function ReportCardsPage() {
               </div>
 
               {/* Right: Print Actions */}
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                 <Button
                   variant="outline"
                   onClick={handlePrint}

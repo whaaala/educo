@@ -279,9 +279,64 @@ export default function StudentSelectionGrid<T extends SelectionGridItem>({
 
       {/* Pagination */}
       {totalPages > 1 && filteredItems.length > 0 && (
-        <div className="px-6 py-4 border-t border-neutral-200 dark:border-neutral-700">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-neutral-600 dark:text-neutral-400">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-neutral-200 dark:border-neutral-700">
+          {/* Mobile Layout - Stacked */}
+          <div className="flex flex-col gap-3 sm:hidden">
+            {/* Page Info */}
+            <div className="text-center">
+              <div className="text-xs text-neutral-600 dark:text-neutral-400 mb-2">
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredItems.length)} of {filteredItems.length}
+              </div>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/20 rounded-full">
+                <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
+                  Page {currentPage} of {totalPages}
+                </span>
+              </div>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-600 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-colors active:scale-95"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Previous</span>
+              </button>
+              <button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-600 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-colors active:scale-95"
+              >
+                <span>Next</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Quick Page Numbers - Mobile Compact */}
+            {totalPages <= 5 && (
+              <div className="flex items-center justify-center gap-1.5">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`min-w-[36px] h-9 px-2 text-sm font-medium rounded-lg cursor-pointer transition-all active:scale-95 ${
+                      currentPage === page
+                        ? "bg-purple-600 text-white shadow-md"
+                        : "text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-600"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Layout - Horizontal */}
+          <div className="hidden sm:flex items-center justify-between">
+            <div className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400">
               Showing {startIndex + 1} to {Math.min(endIndex, filteredItems.length)} of {filteredItems.length} items
             </div>
             <div className="flex items-center gap-2">
@@ -291,7 +346,7 @@ export default function StudentSelectionGrid<T extends SelectionGridItem>({
                 className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-600 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
-                Previous
+                <span className="hidden md:inline">Previous</span>
               </button>
               <div className="flex items-center gap-1">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
@@ -329,7 +384,7 @@ export default function StudentSelectionGrid<T extends SelectionGridItem>({
                 disabled={currentPage === totalPages}
                 className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-600 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-colors"
               >
-                Next
+                <span className="hidden md:inline">Next</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>

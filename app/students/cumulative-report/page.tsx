@@ -408,25 +408,27 @@ export default function CumulativeReportPage() {
         {currentStep === "config" && (
           <div className="space-y-6">
             {/* Quick Links Card */}
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                    <BarChart3 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3 sm:gap-4 flex-1">
+                  <div className="p-2 sm:p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0">
+                    <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400" />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
                       Cumulative Academic Reports
                     </h3>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400">
                       Generate comprehensive reports showing all completed terms/semesters for individual students
                     </p>
                   </div>
                 </div>
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => router.push("/students/report-cards")}
                   icon={<FileText className="w-4 h-4" />}
+                  className="w-full sm:w-auto"
                 >
                   Term Reports (Bulk)
                 </Button>
@@ -434,19 +436,19 @@ export default function CumulativeReportPage() {
             </div>
 
             {/* Instructions Card */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 sm:p-6">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
+                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
                     What's Included in This Report
                   </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+                  <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-3">
                     This comprehensive report shows a student's complete academic journey including:
                   </p>
-                  <ul className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1 ml-4">
+                  <ul className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 space-y-1 ml-4">
                     <li>• All completed terms/semesters with detailed subject performance</li>
                     <li>• Cumulative statistics and subject averages across all terms</li>
                     <li>• Academic progression timeline showing year-by-year performance</li>
@@ -461,16 +463,16 @@ export default function CumulativeReportPage() {
             {/* Filter Configuration */}
             <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700">
               {/* Header */}
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                    <Users className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 px-4 sm:px-6 py-3 sm:py-4 border-b border-neutral-200 dark:border-neutral-700">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="p-1.5 sm:p-2 bg-green-100 dark:bg-green-900/30 rounded-lg flex-shrink-0">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400" />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100">
                       Filter Students
                     </h3>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 hidden sm:block">
                       Narrow down student list by class and section
                     </p>
                   </div>
@@ -478,8 +480,8 @@ export default function CumulativeReportPage() {
               </div>
 
               {/* Filter Form */}
-              <div className="p-6">
-                <div className={`grid grid-cols-1 ${settings.supportsMultipleLevels ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4`}>
+              <div className="p-4 sm:p-6">
+                <div className={`grid grid-cols-1 ${settings.supportsMultipleLevels ? 'sm:grid-cols-2 lg:grid-cols-3' : 'sm:grid-cols-2'} gap-4`}>
                   {/* Education Level - Only show for multi-level schools */}
                   {settings.supportsMultipleLevels && (
                     <FormDropdown
@@ -542,8 +544,8 @@ export default function CumulativeReportPage() {
                 </div>
 
                 {/* Results Summary */}
-                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                <div className="mt-4 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <p className="text-xs sm:text-sm text-neutral-700 dark:text-neutral-300">
                     <span className="font-semibold text-blue-600 dark:text-blue-400">
                       {filteredStudents.length}
                     </span>{" "}
@@ -586,6 +588,7 @@ export default function CumulativeReportPage() {
                 onClick={generateCumulativeReport}
                 disabled={!selectedStudent}
                 icon={<FileText className="w-4 h-4" />}
+                className="w-full sm:w-auto"
               >
                 Generate Cumulative Report
               </Button>
@@ -597,19 +600,21 @@ export default function CumulativeReportPage() {
         {currentStep === "preview" && cumulativeReport && (
           <div className="space-y-6">
             {/* Action Buttons */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
               <Button
                 variant="outline"
                 onClick={() => setCurrentStep("config")}
                 icon={<ArrowLeft className="w-4 h-4" />}
+                className="w-full sm:w-auto"
               >
                 Back to Selection
               </Button>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   variant="outline"
                   onClick={handlePrint}
                   icon={<Printer className="w-4 h-4" />}
+                  className="w-full sm:w-auto"
                 >
                   Print
                 </Button>
@@ -617,6 +622,7 @@ export default function CumulativeReportPage() {
                   onClick={handlePrint}
                   icon={<Download className="w-4 h-4" />}
                   title="Open print dialog to save as PDF"
+                  className="w-full sm:w-auto"
                 >
                   Download PDF
                 </Button>
@@ -624,25 +630,25 @@ export default function CumulativeReportPage() {
             </div>
 
             {/* Report Preview */}
-            <div ref={printRef} data-print-target className="bg-white p-8 rounded-xl shadow-lg">
+            <div ref={printRef} data-print-target className="bg-white p-4 sm:p-6 md:p-8 rounded-xl shadow-lg">
               {/* Header */}
-              <div className="text-center mb-8 pb-6 border-b-2 border-neutral-200">
-                <h1 className="text-3xl font-bold text-neutral-900 mb-2">
+              <div className="text-center mb-6 sm:mb-8 pb-4 sm:pb-6 border-b-2 border-neutral-200">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900 mb-2">
                   {settings.schoolName}
                 </h1>
-                <p className="text-sm text-neutral-600 mb-4">
+                <p className="text-xs sm:text-sm text-neutral-600 mb-3 sm:mb-4">
                   {settings.institutionType} • {settings.region || "Nigeria"}
                 </p>
-                <h2 className="text-2xl font-semibold text-blue-600 mb-1">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-blue-600 mb-1">
                   Cumulative Academic Report
                 </h2>
-                <p className="text-sm text-neutral-600">
+                <p className="text-xs sm:text-sm text-neutral-600">
                   Complete Academic Transcript
                 </p>
               </div>
 
               {/* Student Information */}
-              <div className="grid grid-cols-2 gap-4 mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
                 <div>
                   <p className="text-sm text-neutral-600 mb-1">Student Name</p>
                   <p className="font-semibold text-neutral-900">{cumulativeReport.student.name}</p>
@@ -662,50 +668,50 @@ export default function CumulativeReportPage() {
               </div>
 
               {/* Cumulative Statistics */}
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-                  <Award className="w-5 h-5 text-blue-600" />
+              <div className="mb-6 sm:mb-8">
+                <h3 className="text-base sm:text-lg md:text-xl font-semibold text-neutral-900 mb-3 sm:mb-4 flex items-center gap-2">
+                  <Award className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                   Cumulative Performance Summary
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                  <div className="p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
                     <p className="text-xs text-neutral-600 mb-1">Overall Average</p>
-                    <p className="text-2xl font-bold text-blue-600">
+                    <p className="text-xl sm:text-2xl font-bold text-blue-600">
                       {cumulativeReport.cumulativeStats.averagePercentage.toFixed(1)}%
                     </p>
-                    <p className="text-sm text-neutral-700 font-medium mt-1">
+                    <p className="text-xs sm:text-sm text-neutral-700 font-medium mt-1">
                       Grade: {cumulativeReport.cumulativeStats.overallGrade}
                     </p>
                   </div>
 
                   {cumulativeReport.cumulativeStats.cgpa && (
-                    <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+                    <div className="p-3 sm:p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
                       <p className="text-xs text-neutral-600 mb-1">CGPA</p>
-                      <p className="text-2xl font-bold text-purple-600">
+                      <p className="text-xl sm:text-2xl font-bold text-purple-600">
                         {cumulativeReport.cumulativeStats.cgpa.toFixed(2)}
                       </p>
-                      <p className="text-sm text-neutral-700 font-medium mt-1">
+                      <p className="text-xs sm:text-sm text-neutral-700 font-medium mt-1">
                         Out of 4.0
                       </p>
                     </div>
                   )}
 
-                  <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
+                  <div className="p-3 sm:p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
                     <p className="text-xs text-neutral-600 mb-1">Terms Completed</p>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-xl sm:text-2xl font-bold text-green-600">
                       {cumulativeReport.cumulativeStats.totalTermsCompleted}
                     </p>
-                    <p className="text-sm text-neutral-700 font-medium mt-1">
+                    <p className="text-xs sm:text-sm text-neutral-700 font-medium mt-1">
                       {cumulativeReport.educationLevel === "Tertiary" ? "Semesters" : "Terms"}
                     </p>
                   </div>
 
-                  <div className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border border-amber-200">
+                  <div className="p-3 sm:p-4 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border border-amber-200">
                     <p className="text-xs text-neutral-600 mb-1">Best Performance</p>
-                    <p className="text-2xl font-bold text-amber-600">
+                    <p className="text-xl sm:text-2xl font-bold text-amber-600">
                       {cumulativeReport.cumulativeStats.bestTerm.percentage.toFixed(1)}%
                     </p>
-                    <p className="text-sm text-neutral-700 font-medium mt-1">
+                    <p className="text-xs sm:text-sm text-neutral-700 font-medium mt-1 truncate">
                       {cumulativeReport.cumulativeStats.bestTerm.term}, {cumulativeReport.cumulativeStats.bestTerm.year}
                     </p>
                   </div>
@@ -713,22 +719,22 @@ export default function CumulativeReportPage() {
               </div>
 
               {/* Subject Averages */}
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-blue-600" />
+              <div className="mb-6 sm:mb-8">
+                <h3 className="text-base sm:text-lg md:text-xl font-semibold text-neutral-900 mb-3 sm:mb-4 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                   Subject-wise Performance
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                   {cumulativeReport.cumulativeStats.subjectAverages.map((subject, index) => (
                     <div
                       key={index}
-                      className="p-3 bg-neutral-50 rounded-lg border border-neutral-200"
+                      className="p-2 sm:p-3 bg-neutral-50 rounded-lg border border-neutral-200"
                     >
-                      <p className="text-sm font-medium text-neutral-900 mb-1">
+                      <p className="text-xs sm:text-sm font-medium text-neutral-900 mb-1 truncate">
                         {subject.subject}
                       </p>
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-blue-600">
+                        <span className="text-base sm:text-lg font-bold text-blue-600">
                           {subject.average.toFixed(1)}%
                         </span>
                         <span className="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded">
@@ -741,24 +747,24 @@ export default function CumulativeReportPage() {
               </div>
 
               {/* Progression Timeline */}
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-blue-600" />
+              <div className="mb-6 sm:mb-8">
+                <h3 className="text-base sm:text-lg md:text-xl font-semibold text-neutral-900 mb-3 sm:mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                   Academic Progression
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {cumulativeReport.progressionTimeline.map((timeline, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-4 p-4 bg-gradient-to-r from-neutral-50 to-neutral-100 rounded-lg border border-neutral-200"
+                      className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-neutral-50 to-neutral-100 rounded-lg border border-neutral-200"
                     >
                       <div className="flex-shrink-0">
-                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                          <GraduationCap className="w-6 h-6 text-blue-600" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                          <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                         </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-neutral-900">
+                      <div className="flex-1 min-w-0 w-full">
+                        <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
                           {timeline.class} - {timeline.year}
                         </p>
                         <div className="mt-2 bg-neutral-200 rounded-full h-2">
@@ -768,8 +774,8 @@ export default function CumulativeReportPage() {
                           />
                         </div>
                       </div>
-                      <div className="flex-shrink-0 text-right">
-                        <p className="text-2xl font-bold text-blue-600">
+                      <div className="flex-shrink-0 text-left sm:text-right">
+                        <p className="text-xl sm:text-2xl font-bold text-blue-600">
                           {timeline.averagePercentage.toFixed(1)}%
                         </p>
                         <p className="text-xs text-neutral-600">
@@ -782,45 +788,45 @@ export default function CumulativeReportPage() {
               </div>
 
               {/* Detailed Term Reports */}
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-blue-600" />
+              <div className="mb-6 sm:mb-8">
+                <h3 className="text-base sm:text-lg md:text-xl font-semibold text-neutral-900 mb-3 sm:mb-4 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                   Detailed Term/Semester Reports
                 </h3>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {cumulativeReport.termReports.map((report, index) => (
-                    <div key={index} className="border-2 border-neutral-200 rounded-lg p-5">
+                    <div key={index} className="border-2 border-neutral-200 rounded-lg p-3 sm:p-4 md:p-5">
                       {/* Term Header */}
-                      <div className="flex items-center justify-between mb-4 pb-3 border-b border-neutral-200">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 sm:mb-4 pb-3 border-b border-neutral-200 gap-2">
                         <div>
-                          <h4 className="text-lg font-semibold text-neutral-900">
+                          <h4 className="text-base sm:text-lg font-semibold text-neutral-900">
                             {report.term} - {report.academicYear}
                           </h4>
                           <p className="text-sm text-neutral-600">
                             Class: {report.class} | Rank: {report.rank}/{report.totalStudents}
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-blue-600">
+                        <div className="text-left sm:text-right">
+                          <p className="text-xl sm:text-2xl font-bold text-blue-600">
                             {report.percentage.toFixed(1)}%
                           </p>
-                          <p className="text-sm font-semibold text-neutral-700">
+                          <p className="text-xs sm:text-sm font-semibold text-neutral-700">
                             Grade: {report.overallGrade}
                           </p>
                         </div>
                       </div>
 
                       {/* Subjects Table */}
-                      <div className="overflow-x-auto mb-4">
-                        <table className="w-full text-sm">
+                      <div className="overflow-x-auto mb-3 sm:mb-4 -mx-3 sm:mx-0">
+                        <table className="w-full text-xs sm:text-sm">
                           <thead>
                             <tr className="bg-neutral-50">
-                              <th className="text-left p-2 font-semibold text-neutral-700">Subject</th>
-                              <th className="text-center p-2 font-semibold text-neutral-700">Score</th>
-                              <th className="text-center p-2 font-semibold text-neutral-700">Max</th>
-                              <th className="text-center p-2 font-semibold text-neutral-700">%</th>
-                              <th className="text-center p-2 font-semibold text-neutral-700">Grade</th>
-                              <th className="text-left p-2 font-semibold text-neutral-700">Remarks</th>
+                              <th className="text-left p-1.5 sm:p-2 font-semibold text-neutral-700">Subject</th>
+                              <th className="text-center p-1.5 sm:p-2 font-semibold text-neutral-700">Score</th>
+                              <th className="text-center p-1.5 sm:p-2 font-semibold text-neutral-700 hidden sm:table-cell">Max</th>
+                              <th className="text-center p-1.5 sm:p-2 font-semibold text-neutral-700">%</th>
+                              <th className="text-center p-1.5 sm:p-2 font-semibold text-neutral-700">Grade</th>
+                              <th className="text-left p-1.5 sm:p-2 font-semibold text-neutral-700 hidden md:table-cell">Remarks</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -828,20 +834,20 @@ export default function CumulativeReportPage() {
                               const percentage = (subject.score / subject.maxScore) * 100;
                               return (
                                 <tr key={subIndex} className="border-t border-neutral-200">
-                                  <td className="p-2 text-neutral-900">{subject.subject}</td>
-                                  <td className="p-2 text-center font-semibold text-neutral-900">
+                                  <td className="p-1.5 sm:p-2 text-neutral-900 text-xs sm:text-sm">{subject.subject}</td>
+                                  <td className="p-1.5 sm:p-2 text-center font-semibold text-neutral-900">
                                     {subject.score}
                                   </td>
-                                  <td className="p-2 text-center text-neutral-600">{subject.maxScore}</td>
-                                  <td className="p-2 text-center text-neutral-900">
+                                  <td className="p-1.5 sm:p-2 text-center text-neutral-600 hidden sm:table-cell">{subject.maxScore}</td>
+                                  <td className="p-1.5 sm:p-2 text-center text-neutral-900">
                                     {percentage.toFixed(0)}%
                                   </td>
-                                  <td className="p-2 text-center">
-                                    <span className="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded">
+                                  <td className="p-1.5 sm:p-2 text-center">
+                                    <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded">
                                       {subject.grade}
                                     </span>
                                   </td>
-                                  <td className="p-2 text-neutral-600">{subject.remarks}</td>
+                                  <td className="p-1.5 sm:p-2 text-neutral-600 text-xs sm:text-sm hidden md:table-cell">{subject.remarks}</td>
                                 </tr>
                               );
                             })}
