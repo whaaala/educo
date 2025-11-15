@@ -376,10 +376,14 @@ export default function DataTable<T>({
                       ? 'md:relative md:left-auto sticky left-[80px] z-20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none'
                       : '';
 
+                    // Determine alignment from className - check if explicitly set, otherwise use center as default
+                    const hasTextAlignment = column.className?.includes('text-left') || column.className?.includes('text-center') || column.className?.includes('text-right');
+                    const defaultAlignment = hasTextAlignment ? '' : 'text-center';
+
                     return (
                     <td
                       key={column.key}
-                      className={`px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 text-center align-middle transition-colors duration-200 ${stickyClass} ${getHiddenClasses(column.hidden)} ${column.className || ''}`}
+                      className={`px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 ${defaultAlignment} align-middle transition-colors duration-200 ${stickyClass} ${getHiddenClasses(column.hidden)} ${column.className || ''}`}
                     >
                       {column.render ? column.render(item, index) : (
                         <span className="text-[12px] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 block truncate">

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useAttendance } from "@/contexts/AttendanceContext";
 import MainLayout from "@/components/layout/MainLayout";
 import PageLoader from "@/components/shared/PageLoader";
 import { usePageLoad } from "@/hooks/usePageLoad";
@@ -879,14 +880,35 @@ const MOCK_LEAVE_APPLICATIONS: LeaveApplication[] = [
 function AttendanceTab({ studentId }: { studentId: string }) {
   const [activeSubTab, setActiveSubTab] = useState<"leaves" | "attendance">("leaves");
   const [isApplyLeaveModalOpen, setIsApplyLeaveModalOpen] = useState(false);
+  const { getStudentAttendance } = useAttendance();
 
   // Attendance mode state - load directly from localStorage with fallback
-  const [attendanceMode, setAttendanceMode] = useState<"by-class" | "by-day">(() => {
+  const [attendanceMode] = useState<"by-class" | "by-day">(() => {
     if (typeof window !== "undefined") {
       return getAttendanceMode();
     }
     return "by-day";
   });
+
+  // Calculate real attendance stats from context
+  const attendanceStats = useMemo(() => {
+    const records = getStudentAttendance(studentId);
+    const stats = {
+      present: 0,
+      absent: 0,
+      halfday: 0,
+      late: 0,
+    };
+
+    records.forEach((record) => {
+      if (record.status === "present") stats.present++;
+      else if (record.status === "absent") stats.absent++;
+      else if (record.status === "halfday") stats.halfday++;
+      else if (record.status === "late") stats.late++;
+    });
+
+    return stats;
+  }, [studentId, getStudentAttendance]);
 
   // Status Badge Component
   const getStatusBadge = (status: LeaveApplication["status"]) => {
@@ -1060,17 +1082,17 @@ function AttendanceTab({ studentId }: { studentId: string }) {
             <div className="space-y-4 sm:space-y-5 lg:space-y-6">
               {/* Attendance Stats Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                <AttendanceStatsCard type="present" count={265} />
-                <AttendanceStatsCard type="absent" count={5} />
-                <AttendanceStatsCard type="halfday" count={1} />
-                <AttendanceStatsCard type="late" count={12} />
+                <AttendanceStatsCard type="present" count={attendanceStats.present} />
+                <AttendanceStatsCard type="absent" count={attendanceStats.absent} />
+                <AttendanceStatsCard type="halfday" count={attendanceStats.halfday} />
+                <AttendanceStatsCard type="late" count={attendanceStats.late} />
               </div>
 
               {/* Attendance Display - Shows by-class or by-day based on settings */}
               {attendanceMode === "by-class" ? (
                 <AttendanceByClass studentId={studentId} />
               ) : (
-                <AttendanceCalendar />
+                <AttendanceCalendar studentId={studentId} />
               )}
             </div>
           )}

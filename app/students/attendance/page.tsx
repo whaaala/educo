@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import MainLayout from "@/components/layout/MainLayout";
 import PageHeader from "@/components/shared/PageHeader";
@@ -13,6 +13,7 @@ import Tooltip from "@/components/shared/Tooltip";
 import Modal from "@/components/shared/Modal";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { useAttendance } from "@/contexts/AttendanceContext";
 import {
   UserCheck,
   Calendar,
@@ -66,7 +67,8 @@ const ATTENDANCE_STATUS = {
   PRESENT: "present",
   ABSENT: "absent",
   LATE: "late",
-  EXCUSED: "excused",
+  HALFDAY: "halfday",
+  HOLIDAY: "holiday",
 } as const;
 
 type AttendanceStatus = (typeof ATTENDANCE_STATUS)[keyof typeof ATTENDANCE_STATUS];
@@ -87,21 +89,24 @@ interface AttendanceRecord {
   lateMinutes?: number; // How many minutes late
 }
 
-// Mock student data
+// Mock student data - Using real student IDs from the system
 const MOCK_STUDENTS: Student[] = [
-  { id: "STD001", name: "Alice Johnson", class: "JSS 1", section: "A", rollNo: "001", avatar: "https://i.pravatar.cc/150?img=1" },
-  { id: "STD002", name: "Bob Williams", class: "JSS 1", section: "A", rollNo: "002", avatar: "https://i.pravatar.cc/150?img=2" },
-  { id: "STD003", name: "Carol Davis", class: "JSS 1", section: "A", rollNo: "003", avatar: "https://i.pravatar.cc/150?img=3" },
-  { id: "STD004", name: "David Miller", class: "JSS 1", section: "A", rollNo: "004", avatar: "https://i.pravatar.cc/150?img=4" },
-  { id: "STD005", name: "Emma Wilson", class: "JSS 1", section: "A", rollNo: "005", avatar: "https://i.pravatar.cc/150?img=5" },
-  { id: "STD006", name: "Frank Moore", class: "JSS 1", section: "A", rollNo: "006", avatar: "https://i.pravatar.cc/150?img=6" },
-  { id: "STD007", name: "Grace Taylor", class: "JSS 1", section: "A", rollNo: "007", avatar: "https://i.pravatar.cc/150?img=7" },
-  { id: "STD008", name: "Henry Anderson", class: "JSS 1", section: "A", rollNo: "008", avatar: "https://i.pravatar.cc/150?img=8" },
+  { id: "AD9892302", name: "Aaliyah Griffin", class: "JSS 1", section: "A", rollNo: "35020", avatar: "https://i.pravatar.cc/150?img=1" },
+  { id: "AD9892434", name: "Janet Daniel", class: "JSS 1", section: "A", rollNo: "35013", avatar: "https://i.pravatar.cc/150?img=2" },
+  { id: "AD9892433", name: "Joann Michael", class: "JSS 2", section: "B", rollNo: "35012", avatar: "https://i.pravatar.cc/150?img=3" },
+  { id: "AD9892432", name: "Carol Davis", class: "JSS 1", section: "A", rollNo: "35011", avatar: "https://i.pravatar.cc/150?img=4" },
+  { id: "AD9892431", name: "David Miller", class: "JSS 1", section: "A", rollNo: "35010", avatar: "https://i.pravatar.cc/150?img=5" },
+  { id: "AD9892430", name: "Emma Wilson", class: "JSS 1", section: "A", rollNo: "35009", avatar: "https://i.pravatar.cc/150?img=6" },
+  { id: "AD9892429", name: "Frank Moore", class: "JSS 1", section: "A", rollNo: "35008", avatar: "https://i.pravatar.cc/150?img=7" },
+  { id: "AD9892428", name: "Grace Taylor", class: "JSS 1", section: "A", rollNo: "35007", avatar: "https://i.pravatar.cc/150?img=8" },
+  { id: "AD9892427", name: "Henry Anderson", class: "JSS 1", section: "A", rollNo: "35006", avatar: "https://i.pravatar.cc/150?img=9" },
+  { id: "AD9892426", name: "Isabella Martinez", class: "JSS 1", section: "A", rollNo: "35005", avatar: "https://i.pravatar.cc/150?img=10" },
 ];
 
 export default function AttendancePage() {
   const { settings } = useSchoolSettings();
   const isPageLoading = usePageLoad(600);
+  const { saveAttendance: saveToContext, getAttendanceByDate } = useAttendance();
 
   const [educationLevel, setEducationLevel] = useState<EducationLevel>(
     settings.supportedLevels[0] || "Secondary"
@@ -117,6 +122,29 @@ export default function AttendancePage() {
     new Map()
   );
   const [isSaving, setIsSaving] = useState(false);
+
+  // Load attendance data when date, class, or section changes
+  useEffect(() => {
+    if (selectedDate && selectedClass) {
+      const savedRecords = getAttendanceByDate(selectedDate);
+      const relevantRecords = savedRecords.filter(
+        (record) =>
+          record.class === selectedClass &&
+          (!selectedSection || record.section === selectedSection)
+      );
+
+      const recordsMap = new Map<string, AttendanceRecord>();
+      relevantRecords.forEach((record) => {
+        recordsMap.set(record.studentId, {
+          studentId: record.studentId,
+          status: record.status,
+          lateMinutes: record.lateMinutes,
+          remarks: record.remarks,
+        });
+      });
+      setAttendance(recordsMap);
+    }
+  }, [selectedDate, selectedClass, selectedSection, getAttendanceByDate]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -237,6 +265,24 @@ export default function AttendancePage() {
 
   const handleSaveAttendance = async () => {
     setIsSaving(true);
+
+    // Prepare attendance records with full information
+    const recordsToSave = Array.from(attendance.values()).map((record) => {
+      const student = MOCK_STUDENTS.find((s) => s.id === record.studentId);
+      return {
+        studentId: record.studentId,
+        status: record.status,
+        date: selectedDate,
+        lateMinutes: record.lateMinutes,
+        remarks: record.remarks,
+        class: student?.class || selectedClass,
+        section: student?.section || selectedSection,
+      };
+    });
+
+    // Save to context (which syncs to localStorage)
+    saveToContext(recordsToSave);
+
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1500));
     setIsSaving(false);
@@ -293,7 +339,8 @@ export default function AttendancePage() {
       present: 0,
       absent: 0,
       late: 0,
-      excused: 0,
+      halfday: 0,
+      holiday: 0,
       unmarked: filteredStudents.length,
     };
 

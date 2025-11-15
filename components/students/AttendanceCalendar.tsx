@@ -1,54 +1,131 @@
 "use client";
 
-import { useState } from "react";
-import DataTable, { Column } from "@/components/shared/DataTable";
+import { useState, useMemo, useEffect } from "react";
+import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import RefreshButton from "@/components/shared/RefreshButton";
 import CustomDropdown from "@/components/shared/CustomDropdown";
+import { useAttendance } from "@/contexts/AttendanceContext";
 
 type AttendanceStatus = "present" | "absent" | "late" | "halfday" | "holiday";
 
-interface AttendanceDayData {
-  date: number;
-  [month: string]: AttendanceStatus | number;
+interface ClassAttendanceRecord {
+  id: string;
+  date: string;
+  day: string;
+  class: string;
+  subject: string;
+  period: string;
+  status: AttendanceStatus;
+  lateMinutes?: number;
+  teacher: string;
 }
 
 interface AttendanceCalendarProps {
   year?: number;
   onYearChange?: (year: number) => void;
+  studentId?: string;
 }
 
-const MONTHS = ["Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May"];
+type ViewMode = "day" | "week" | "month";
 
-// Generate mock attendance data
-const generateMockAttendance = (): AttendanceDayData[] => {
-  const data: AttendanceDayData[] = [];
-  const statuses: AttendanceStatus[] = ["present", "absent", "late", "halfday", "holiday"];
-
-  for (let date = 1; date <= 31; date++) {
-    const row: AttendanceDayData = { date };
-
-    MONTHS.forEach((month) => {
-      const rand = Math.random();
-      let status: AttendanceStatus;
-      if (rand > 0.9) status = "absent";
-      else if (rand > 0.85) status = "late";
-      else if (rand > 0.82) status = "halfday";
-      else if (rand > 0.78) status = "holiday";
-      else status = "present";
-
-      row[month] = status;
-    });
-
-    data.push(row);
-  }
-
-  return data;
+// Helper function to get week start and end dates
+const getWeekRange = (date: Date) => {
+  const start = new Date(date);
+  start.setDate(date.getDate() - date.getDay()); // Start of week (Sunday)
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6); // End of week (Saturday)
+  return { start, end };
 };
 
-export default function AttendanceCalendar({ year = 2024, onYearChange }: AttendanceCalendarProps) {
+// Helper function to get month start and end dates
+const getMonthRange = (date: Date) => {
+  const start = new Date(date.getFullYear(), date.getMonth(), 1);
+  const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  return { start, end };
+};
+
+export default function AttendanceCalendar({ year = 2024, onYearChange, studentId }: AttendanceCalendarProps) {
   const [selectedYear, setSelectedYear] = useState(year);
-  const [attendanceData] = useState(generateMockAttendance());
-  const [lastUpdated, setLastUpdated] = useState("25 May 2024");
+  const { getStudentAttendance } = useAttendance();
+  const [lastUpdated, setLastUpdated] = useState(new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }));
+  const [viewMode, setViewMode] = useState<ViewMode>("day");
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // Get attendance data from context and transform to class-based records
+  const classAttendanceData = useMemo(() => {
+    if (!studentId) {
+      // Generate mock data for demonstration
+      const mockData: ClassAttendanceRecord[] = [
+        {
+          id: "1",
+          date: "2025-11-15",
+          day: "Friday",
+          class: "JSS 1 A",
+          subject: "Mathematics",
+          period: "1st Period (8:00 AM - 9:00 AM)",
+          status: "present",
+          teacher: "Mr. Johnson",
+        },
+        {
+          id: "2",
+          date: "2025-11-15",
+          day: "Friday",
+          class: "JSS 1 A",
+          subject: "English",
+          period: "2nd Period (9:00 AM - 10:00 AM)",
+          status: "present",
+          teacher: "Mrs. Smith",
+        },
+      ];
+      return mockData;
+    }
+
+    // Get all attendance records for this student
+    const records = getStudentAttendance(studentId);
+
+    // Transform to class-based records
+    const classRecords: ClassAttendanceRecord[] = records.map((record, index) => ({
+      id: `${record.studentId}-${record.date}-${index}`,
+      date: record.date,
+      day: new Date(record.date).toLocaleDateString("en-US", { weekday: "long" }),
+      class: `${record.class} ${record.section}`,
+      subject: "General", // In real app, this would come from the record
+      period: "Full Day",
+      status: record.status,
+      lateMinutes: record.lateMinutes,
+      teacher: "N/A",
+    }));
+
+    return classRecords;
+  }, [studentId, getStudentAttendance]);
+
+  // Filter data based on view mode
+  const filteredData = useMemo(() => {
+    const now = selectedDate;
+
+    switch (viewMode) {
+      case "day": {
+        const todayStr = now.toISOString().split("T")[0];
+        return classAttendanceData.filter((record) => record.date === todayStr);
+      }
+      case "week": {
+        const { start, end } = getWeekRange(now);
+        return classAttendanceData.filter((record) => {
+          const recordDate = new Date(record.date);
+          return recordDate >= start && recordDate <= end;
+        });
+      }
+      case "month": {
+        const { start, end } = getMonthRange(now);
+        return classAttendanceData.filter((record) => {
+          const recordDate = new Date(record.date);
+          return recordDate >= start && recordDate <= end;
+        });
+      }
+      default:
+        return classAttendanceData;
+    }
+  }, [viewMode, selectedDate, classAttendanceData]);
 
   const handleYearChange = (value: string | number) => {
     const newYear = Number(value);
@@ -57,55 +134,189 @@ export default function AttendanceCalendar({ year = 2024, onYearChange }: Attend
   };
 
   const handleRefresh = async () => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
     const now = new Date();
     setLastUpdated(now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }));
   };
 
-  const getStatusIndicator = (status: AttendanceStatus | number) => {
-    if (typeof status === "number" || !status) return null;
+  // Handle scroll indicators and animations for horizontal scrolling
+  useEffect(() => {
+    const handleScrollIndicators = () => {
+      const tableContainer = document.querySelector('.overflow-x-auto');
+      const leftIndicator = document.getElementById('scroll-left-indicator');
+      const rightIndicator = document.getElementById('scroll-right-indicator');
+      const table = tableContainer?.querySelector('table');
 
-    const colors = {
-      present: "bg-green-500 dark:bg-green-600 midnight:bg-green-500 purple:bg-green-500",
-      absent: "bg-red-500 dark:bg-red-600 midnight:bg-red-500 purple:bg-red-500",
-      late: "bg-cyan-500 dark:bg-cyan-600 midnight:bg-cyan-400 purple:bg-cyan-500",
-      halfday: "bg-gray-800 dark:bg-gray-600 midnight:bg-gray-700 purple:bg-gray-700",
-      holiday: "bg-blue-500 dark:bg-blue-600 midnight:bg-cyan-600 purple:bg-pink-500",
+      if (!tableContainer || !leftIndicator || !rightIndicator || !table) return;
+
+      let scrollTimeout: NodeJS.Timeout;
+      let isScrolling = false;
+
+      const handleScroll = () => {
+        const scrollLeft = tableContainer.scrollLeft;
+        const scrollWidth = tableContainer.scrollWidth;
+        const clientWidth = tableContainer.clientWidth;
+        const maxScroll = scrollWidth - clientWidth;
+
+        // Add scrolling class for animation
+        if (!isScrolling) {
+          table.classList.add('is-scrolling');
+          isScrolling = true;
+        }
+
+        // Clear previous timeout
+        clearTimeout(scrollTimeout);
+
+        // Show left indicator when scrolled right
+        if (scrollLeft > 10) {
+          leftIndicator.style.opacity = '1';
+        } else {
+          leftIndicator.style.opacity = '0';
+        }
+
+        // Hide right indicator when scrolled to end
+        if (scrollLeft >= maxScroll - 10) {
+          rightIndicator.style.opacity = '0';
+        } else if (scrollWidth > clientWidth) {
+          rightIndicator.style.opacity = '1';
+        }
+
+        // Add smooth scale effect to non-sticky columns
+        const scrollProgress = scrollLeft / maxScroll;
+        const nonStickyHeaders = table.querySelectorAll('th:not(.sticky)');
+
+        nonStickyHeaders.forEach((header: Element) => {
+          const htmlHeader = header as HTMLElement;
+          htmlHeader.style.transform = `scale(${0.98 + (0.02 * Math.abs(Math.sin(scrollProgress * Math.PI)))})`;
+        });
+
+        // Remove scrolling class after scrolling stops
+        scrollTimeout = setTimeout(() => {
+          table.classList.remove('is-scrolling');
+          isScrolling = false;
+
+          // Reset transforms
+          nonStickyHeaders.forEach((header: Element) => {
+            const htmlHeader = header as HTMLElement;
+            htmlHeader.style.transform = 'scale(1)';
+          });
+        }, 150);
+      };
+
+      tableContainer.addEventListener('scroll', handleScroll);
+      // Check initial state
+      handleScroll();
+
+      return () => {
+        tableContainer.removeEventListener('scroll', handleScroll);
+        clearTimeout(scrollTimeout);
+      };
+    };
+
+    // Delay to ensure DOM is ready
+    const timer = setTimeout(handleScrollIndicators, 100);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, []);
+
+  const getStatusBadge = (status: AttendanceStatus, lateMinutes?: number) => {
+    const variants = {
+      present: "bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800",
+      absent: "bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800",
+      late: "bg-cyan-100 dark:bg-cyan-950/30 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800",
+      halfday: "bg-gray-100 dark:bg-gray-800/30 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700",
+      holiday: "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+    };
+
+    const icons = {
+      present: "✓",
+      absent: "✗",
+      late: "🕒",
+      halfday: "◐",
+      holiday: "🏖",
     };
 
     return (
-      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-2.5 md:h-2.5 lg:w-3 lg:h-3 xl:w-3.5 xl:h-3.5 2xl:w-3 2xl:h-3 rounded-full shadow-sm transition-transform hover:scale-150"
-        style={{ backgroundColor: colors[status as AttendanceStatus]?.replace(/bg-(\w+)-(\d+)/, (_, color, shade) => `var(--${color}-${shade})`) }}>
-        <div className={`w-full h-full ${colors[status as AttendanceStatus]} rounded-full`}></div>
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <span className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-bold border ${variants[status]}`}>
+          <span className="text-[11px] sm:text-xs">{icons[status]}</span>
+          <span className="capitalize">{status}</span>
+        </span>
+        {status === "late" && lateMinutes && (
+          <span className="text-[9px] sm:text-[10px] md:text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">({lateMinutes} min)</span>
+        )}
       </div>
     );
   };
 
-  // Define columns for DataTable
-  const columns: Column<AttendanceDayData>[] = [
+  // Define columns for DataTable with mobile optimization
+  const columns: ColumnConfig<ClassAttendanceRecord>[] = [
     {
       key: "date",
-      label: "Date | Month",
+      label: "Date",
       sortable: true,
-      className: "text-left sticky left-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 z-10",
-      render: (row) => (
-        <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
-          {String(row.date).padStart(2, "0")}
+      className: "text-left min-w-[80px]",
+      render: (item) => (
+        <div className="flex flex-col">
+          <span className="text-[11px] sm:text-xs md:text-sm font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
+            {new Date(item.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+          </span>
+          <span className="text-[9px] sm:text-[10px] md:text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">{item.day}</span>
+        </div>
+      ),
+    },
+    {
+      key: "class",
+      label: "Class",
+      sortable: true,
+      className: "text-left min-w-[90px]",
+      render: (item) => (
+        <span className="text-[11px] sm:text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
+          {item.class}
         </span>
       ),
     },
-    ...MONTHS.map((month) => ({
-      key: month,
-      label: month,
-      sortable: false,
-      className: "text-center",
-      render: (row: AttendanceDayData) => (
-        <div className="flex items-center justify-center">
-          {getStatusIndicator(row[month])}
-        </div>
+    {
+      key: "subject",
+      label: "Subject",
+      sortable: true,
+      className: "text-left min-w-[120px]",
+      render: (item) => (
+        <span className="text-[11px] sm:text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
+          {item.subject}
+        </span>
       ),
-    })),
+    },
+    {
+      key: "period",
+      label: "Period / Time",
+      sortable: false,
+      className: "text-left min-w-[140px]",
+      render: (item) => (
+        <span className="text-[10px] sm:text-[11px] md:text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+          {item.period}
+        </span>
+      ),
+    },
+    {
+      key: "teacher",
+      label: "Teacher",
+      sortable: true,
+      className: "text-left min-w-[100px]",
+      render: (item) => (
+        <span className="text-[11px] sm:text-xs md:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
+          {item.teacher}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      label: "Status",
+      sortable: true,
+      className: "text-center min-w-[120px]",
+      render: (item) => getStatusBadge(item.status, item.lateMinutes),
+    },
   ];
 
   const yearOptions = [
@@ -114,68 +325,198 @@ export default function AttendanceCalendar({ year = 2024, onYearChange }: Attend
     { label: "Year : 2022 / 2023", value: 2022 },
   ];
 
+  const viewModeOptions = [
+    { label: "Day", value: "day" },
+    { label: "Week", value: "week" },
+    { label: "Month", value: "month" },
+  ];
+
   return (
-    <div className="space-y-4 sm:space-y-5 md:space-y-4 lg:space-y-6 xl:space-y-7 2xl:space-y-6">
+    <>
+      {/* Smooth scrolling styles */}
+      <style jsx>{`
+        .overflow-x-auto {
+          scroll-behavior: smooth;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+          scroll-snap-type: x proximity;
+        }
+
+        .overflow-x-auto::-webkit-scrollbar {
+          height: 6px;
+        }
+
+        .overflow-x-auto::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .overflow-x-auto::-webkit-scrollbar-thumb {
+          background-color: rgba(156, 163, 175, 0.5);
+          border-radius: 3px;
+          transition: background-color 0.2s ease;
+        }
+
+        .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(156, 163, 175, 0.7);
+        }
+
+        .overflow-x-auto::-webkit-scrollbar-thumb:active {
+          background-color: rgba(59, 130, 246, 0.8);
+        }
+
+        @media (prefers-color-scheme: dark) {
+          .overflow-x-auto::-webkit-scrollbar-thumb {
+            background-color: rgba(75, 85, 99, 0.5);
+          }
+
+          .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(75, 85, 99, 0.7);
+          }
+
+          .overflow-x-auto::-webkit-scrollbar-thumb:active {
+            background-color: rgba(59, 130, 246, 0.6);
+          }
+        }
+
+        /* Table scroll animations */
+        table {
+          transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        table.is-scrolling {
+          filter: brightness(0.98);
+        }
+
+        table th,
+        table td {
+          transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        table.is-scrolling th:not(.sticky),
+        table.is-scrolling td:not(.sticky) {
+          opacity: 0.95;
+        }
+
+        /* Sticky column enhanced shadow on scroll */
+        table.is-scrolling th.sticky,
+        table.is-scrolling td.sticky {
+          box-shadow: 2px 0 8px -2px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (prefers-color-scheme: dark) {
+          table.is-scrolling {
+            filter: brightness(1.02);
+          }
+
+          table.is-scrolling th.sticky,
+          table.is-scrolling td.sticky {
+            box-shadow: 2px 0 8px -2px rgba(0, 0, 0, 0.4);
+          }
+        }
+
+        /* Smooth fade for scroll indicators */
+        #scroll-left-indicator,
+        #scroll-right-indicator {
+          transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Add subtle pulse animation to scroll indicators */
+        @keyframes pulse-indicator {
+          0%, 100% {
+            opacity: 0.8;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+
+        #scroll-right-indicator {
+          animation: pulse-indicator 2s ease-in-out infinite;
+        }
+
+        /* Smooth momentum scrolling for iOS */
+        .overflow-x-auto {
+          -webkit-overflow-scrolling: touch;
+        }
+      `}</style>
+
+    <div className="space-y-4 sm:space-y-5 md:space-y-4 lg:space-y-6">
       {/* Header Section */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4 md:gap-3 lg:gap-4 xl:gap-5 2xl:gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
         <div className="flex-1">
-          <h3 className="text-lg sm:text-xl md:text-lg lg:text-2xl xl:text-3xl 2xl:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1 sm:mb-2 md:mb-1 lg:mb-2">
+          <h3 className="text-lg sm:text-xl md:text-lg lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1 sm:mb-2">
             Attendance
           </h3>
           <div className="flex items-center gap-2">
-            <p className="text-xs sm:text-sm md:text-xs lg:text-sm xl:text-base 2xl:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+            <p className="text-xs sm:text-sm md:text-xs lg:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
               Last Updated on : {lastUpdated}
             </p>
             <RefreshButton onRefresh={handleRefresh} size="sm" />
           </div>
         </div>
 
-        <CustomDropdown
-          value={selectedYear}
-          options={yearOptions}
-          onChange={handleYearChange}
-          variant="blue"
-          className="w-full sm:w-auto lg:w-48 xl:w-56 2xl:w-52"
-        />
+        <div className="flex flex-wrap gap-2">
+          <CustomDropdown
+            value={viewMode}
+            options={viewModeOptions}
+            onChange={(value) => setViewMode(value as ViewMode)}
+            variant="blue"
+            className="w-32"
+          />
+          <CustomDropdown
+            value={selectedYear}
+            options={yearOptions}
+            onChange={handleYearChange}
+            variant="blue"
+            className="w-48"
+          />
+        </div>
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-3 lg:gap-5 xl:gap-6 2xl:gap-5 p-3 sm:p-4 md:p-3 lg:p-4 xl:p-5 2xl:p-4 bg-gray-50 dark:bg-gray-800/30 midnight:bg-gray-800/30 purple:bg-gray-800/30 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 backdrop-blur-sm">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/30 midnight:bg-gray-800/30 purple:bg-gray-800/30 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 backdrop-blur-sm">
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-3 md:h-3 lg:w-4 lg:h-4 xl:w-5 xl:h-5 2xl:w-4 2xl:h-4 rounded bg-green-500 shadow-sm"></div>
-          <span className="text-[10px] sm:text-xs md:text-[10px] lg:text-sm xl:text-base 2xl:text-sm font-medium sm:font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Present</span>
+          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-green-500 shadow-sm"></div>
+          <span className="text-[10px] sm:text-xs font-medium sm:font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Present</span>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-3 md:h-3 lg:w-4 lg:h-4 xl:w-5 xl:h-5 2xl:w-4 2xl:h-4 rounded bg-red-500 shadow-sm"></div>
-          <span className="text-[10px] sm:text-xs md:text-[10px] lg:text-sm xl:text-base 2xl:text-sm font-medium sm:font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Absent</span>
+          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-red-500 shadow-sm"></div>
+          <span className="text-[10px] sm:text-xs font-medium sm:font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Absent</span>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-3 md:h-3 lg:w-4 lg:h-4 xl:w-5 xl:h-5 2xl:w-4 2xl:h-4 rounded bg-cyan-500 shadow-sm"></div>
-          <span className="text-[10px] sm:text-xs md:text-[10px] lg:text-sm xl:text-base 2xl:text-sm font-medium sm:font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Late</span>
+          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-cyan-500 shadow-sm"></div>
+          <span className="text-[10px] sm:text-xs font-medium sm:font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Late</span>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-3 md:h-3 lg:w-4 lg:h-4 xl:w-5 xl:h-5 2xl:w-4 2xl:h-4 rounded bg-gray-800 dark:bg-gray-600 shadow-sm"></div>
-          <span className="text-[10px] sm:text-xs md:text-[10px] lg:text-sm xl:text-base 2xl:text-sm font-medium sm:font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Halfday</span>
+          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-gray-800 dark:bg-gray-600 shadow-sm"></div>
+          <span className="text-[10px] sm:text-xs font-medium sm:font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Halfday</span>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-3 md:h-3 lg:w-4 lg:h-4 xl:w-5 xl:h-5 2xl:w-4 2xl:h-4 rounded bg-blue-500 shadow-sm"></div>
-          <span className="text-[10px] sm:text-xs md:text-[10px] lg:text-sm xl:text-base 2xl:text-sm font-medium sm:font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Holiday</span>
+          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-blue-500 shadow-sm"></div>
+          <span className="text-[10px] sm:text-xs font-medium sm:font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Holiday</span>
         </div>
       </div>
 
-      {/* Data Table */}
-      <DataTable<AttendanceDayData>
-        data={attendanceData}
-        columns={columns}
-        getRowKey={(item, index) => `date-${item.date}-${index}`}
-        enablePagination={true}
-        enableSearch={false}
-        enableItemsPerPage={true}
-        itemsPerPageOptions={[10, 25, 31]}
-        defaultItemsPerPage={10}
-        searchPlaceholder="Search by date..."
-        emptyMessage="No attendance data available"
-      />
+      {/* Data Table - Responsive with smooth horizontal scrolling */}
+      <div className="relative">
+        {/* Scroll indicator gradients for better UX */}
+        <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-gray-100/80 to-transparent dark:from-gray-800/80 pointer-events-none z-20 rounded-l-xl opacity-0 transition-opacity duration-300" id="scroll-left-indicator"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-100/80 to-transparent dark:from-gray-800/80 pointer-events-none z-20 rounded-r-xl opacity-100 transition-opacity duration-300 lg:opacity-0" id="scroll-right-indicator"></div>
+
+        <DataTable<ClassAttendanceRecord>
+          data={filteredData}
+          columns={columns}
+          getRowKey={(item) => item.id}
+          showSearch={true}
+          searchPlaceholder="Search by subject, teacher, or class..."
+          enablePagination={true}
+          enableItemsPerPage={true}
+          itemsPerPageOptions={[10, 25, 50]}
+          defaultItemsPerPage={10}
+          emptyMessage={`No attendance records found for this ${viewMode}`}
+        />
+      </div>
     </div>
+    </>
   );
 }
