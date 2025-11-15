@@ -793,12 +793,13 @@ export default function ReportCardsPage() {
             // Reset all positioning and sizing - let it render naturally
             printContent.style.position = 'relative';
             printContent.style.margin = '0';
-            printContent.style.padding = '3mm'; // Ultra minimal margin to maximize both width and height
+            printContent.style.padding = '10mm'; // Optimized margin for full page use
             printContent.style.width = '100%';
             printContent.style.maxWidth = 'none';
             printContent.style.backgroundColor = '#ffffff';
             printContent.style.boxShadow = 'none';
-            printContent.style.fontSize = '20px'; // Much larger base font for maximum visibility
+            printContent.style.borderRadius = '0';
+            printContent.style.fontSize = '16px'; // Optimized base font for better fit
 
             // CRITICAL: Replace ALL oklch colors with RGB before html2canvas parses
             const allElements = clonedDoc.querySelectorAll('*');
@@ -824,27 +825,27 @@ export default function ReportCardsPage() {
 
               if (htmlEl.tagName === 'TD' || htmlEl.tagName === 'TH') {
                 htmlEl.style.border = '1px solid #333333';
-                htmlEl.style.padding = '12px'; // Maximum padding for readability
+                htmlEl.style.padding = '8px'; // Optimized padding
                 htmlEl.style.color = '#000000';
-                htmlEl.style.fontSize = '20px'; // Maximum text size in tables
-                htmlEl.style.lineHeight = '1.5';
+                htmlEl.style.fontSize = '14px'; // Optimized text size in tables
+                htmlEl.style.lineHeight = '1.4';
               }
 
-              // Headers - maximum size for visibility
+              // Headers - optimized sizes
               if (htmlEl.tagName === 'H1') {
                 htmlEl.style.color = '#000000';
-                htmlEl.style.fontSize = '42px'; // Maximum school name size - increased from 34px
+                htmlEl.style.fontSize = '28px'; // Optimized school name size
                 htmlEl.style.fontWeight = 'bold';
-                htmlEl.style.marginBottom = '8px';
+                htmlEl.style.marginBottom = '6px';
                 htmlEl.style.marginTop = '0';
                 htmlEl.style.lineHeight = '1.3';
               }
 
               if (htmlEl.tagName === 'H2') {
                 htmlEl.style.color = '#000000';
-                htmlEl.style.fontSize = '48px'; // Maximum title banner size - increased from 32px
+                htmlEl.style.fontSize = '32px'; // Optimized title banner size
                 htmlEl.style.fontWeight = 'bold';
-                htmlEl.style.marginBottom = '8px';
+                htmlEl.style.marginBottom = '6px';
                 htmlEl.style.marginTop = '0';
                 htmlEl.style.lineHeight = '1.3';
               }
@@ -853,32 +854,35 @@ export default function ReportCardsPage() {
                 htmlEl.style.color = '#000000';
                 // Check if this is the signatures heading
                 if (htmlEl.textContent?.includes('Official Signatures')) {
-                  htmlEl.style.fontSize = '28px'; // Larger for signatures heading
+                  htmlEl.style.fontSize = '18px'; // Signatures heading
                 } else {
-                  htmlEl.style.fontSize = '22px'; // Maximum section headers size - increased from 18px
+                  htmlEl.style.fontSize = '16px'; // Section headers
                 }
                 htmlEl.style.fontWeight = '600';
-                htmlEl.style.marginBottom = '5px';
+                htmlEl.style.marginBottom = '4px';
                 htmlEl.style.marginTop = '0';
                 htmlEl.style.lineHeight = '1.3';
               }
 
               // Better paragraph spacing for readability
               if (htmlEl.tagName === 'P') {
-                htmlEl.style.marginBottom = '8px';
-                htmlEl.style.marginTop = '5px';
-                htmlEl.style.lineHeight = '1.5';
+                htmlEl.style.marginBottom = '6px';
+                htmlEl.style.marginTop = '3px';
+                htmlEl.style.lineHeight = '1.4';
 
-                // Larger font for signature labels
+                // Optimized font sizes
                 const classList = Array.from(htmlEl.classList);
                 if (classList.includes('text-lg')) {
-                  htmlEl.style.fontSize = '22px'; // Signature role labels (Class Teacher, Parent/Guardian, Principal name)
+                  htmlEl.style.fontSize = '16px'; // Signature role labels
                 }
                 if (classList.includes('text-sm') && (htmlEl.textContent?.includes('Signature') || htmlEl.textContent?.includes('Date'))) {
-                  htmlEl.style.fontSize = '18px'; // "Signature & Date" text
+                  htmlEl.style.fontSize = '12px'; // "Signature & Date" text
                 }
                 if (classList.includes('text-xl')) {
-                  htmlEl.style.fontSize = '24px'; // Term/Academic year in title banner and class rank
+                  htmlEl.style.fontSize = '18px'; // Term/Academic year
+                }
+                if (classList.includes('text-base')) {
+                  htmlEl.style.fontSize = '14px';
                 }
               }
 
@@ -888,8 +892,8 @@ export default function ReportCardsPage() {
                 // Check if this span is in the student info section
                 const isInStudentInfo = htmlEl.closest('.student-info-section');
                 if (isInStudentInfo) {
-                  htmlEl.style.fontSize = '22px'; // Larger text for student info
-                  htmlEl.style.lineHeight = '1.6';
+                  htmlEl.style.fontSize = '14px'; // Optimized text for student info
+                  htmlEl.style.lineHeight = '1.5';
                 }
               }
 
@@ -1719,10 +1723,10 @@ export default function ReportCardsPage() {
           <div className="no-print bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-900 p-8 rounded-lg">
             <div
               ref={printRef}
-              className="print-content bg-white w-[210mm] mx-auto shadow-2xl print:shadow-none print:w-full rounded-2xl overflow-hidden"
+              className="print-content bg-white w-[210mm] mx-auto shadow-2xl print:shadow-none print:w-full print:max-w-full rounded-2xl print:rounded-none overflow-hidden"
               style={{
                 minHeight: "297mm",
-                padding: "15mm 12mm"
+                padding: "10mm"
               }}
             >
               {(() => {
@@ -1732,13 +1736,10 @@ export default function ReportCardsPage() {
 
                 return (
                 <>
-              {/* Decorative Border */}
+              {/* Content Container */}
               <div
-                className="border-4 border-double rounded-xl"
                 style={{
-                  borderColor: primaryColor,
-                  background: `linear-gradient(135deg, ${primaryColor}05, ${secondaryColor}05)`,
-                  padding: "8mm"
+                  background: `linear-gradient(135deg, ${primaryColor}05, ${secondaryColor}05)`
                 }}
               >
                 {/* School Header with Bold Gradient Background */}
