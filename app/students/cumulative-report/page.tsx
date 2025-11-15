@@ -18,11 +18,13 @@ import {
 import MainLayout from "@/components/layout/MainLayout";
 import Button from "@/components/shared/Button";
 import PageHeader from "@/components/shared/PageHeader";
+import PageLoader from "@/components/shared/PageLoader";
 import FormDropdown from "@/components/shared/FormDropdown";
 import { Student } from "@/components/students/StudentCard";
 import StudentSelectionGrid from "@/components/students/StudentSelectionGrid";
 import { useStudentsByTenant } from "@/hooks/useStudentsByTenant";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { usePageLoad } from "@/hooks/usePageLoad";
 import { useReactToPrint } from "react-to-print";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -178,6 +180,7 @@ const calculateGPA = (percentage: number): number => {
 export default function CumulativeReportPage() {
   const router = useRouter();
   const printRef = useRef<HTMLDivElement>(null);
+  const isPageLoading = usePageLoad(600);
   const [currentStep, setCurrentStep] = useState<"config" | "preview">("config");
 
   const tenantStudents = useStudentsByTenant();
@@ -385,6 +388,11 @@ export default function CumulativeReportPage() {
 
   return (
     <MainLayout>
+      {/* Loading Screen */}
+      <PageLoader isLoading={isPageLoading} loadingText="Loading Cumulative Reports" />
+
+      {/* Main Content - Fades in after loading */}
+      <div className={`transition-opacity duration-500 ${isPageLoading ? 'opacity-0' : 'opacity-100'}`}>
       <div className="p-6 space-y-6">
         <PageHeader
           title="Cumulative Report Cards"
@@ -889,6 +897,7 @@ export default function CumulativeReportPage() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </MainLayout>
   );

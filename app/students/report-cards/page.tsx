@@ -23,11 +23,13 @@ import {
 import MainLayout from "@/components/layout/MainLayout";
 import Button from "@/components/shared/Button";
 import PageHeader from "@/components/shared/PageHeader";
+import PageLoader from "@/components/shared/PageLoader";
 import FormDropdown from "@/components/shared/FormDropdown";
 import { Student } from "@/components/students/StudentCard";
 import StudentSelectionGrid from "@/components/students/StudentSelectionGrid";
 import { useStudentsByTenant } from "@/hooks/useStudentsByTenant";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { usePageLoad } from "@/hooks/usePageLoad";
 import { useReactToPrint } from "react-to-print";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -169,6 +171,7 @@ const calculateGrade = (percentage: number, educationLevel: EducationLevel): str
 export default function ReportCardsPage() {
   const router = useRouter();
   const printRef = useRef<HTMLDivElement>(null);
+  const isPageLoading = usePageLoad(600);
   const [currentStep, setCurrentStep] = useState<"config" | "preview" | "generate">("config");
 
   // Educo v4.0 Multi-Tenant: Get students and settings for current tenant
@@ -1224,6 +1227,9 @@ export default function ReportCardsPage() {
 
   return (
     <MainLayout>
+      {/* Loading Screen */}
+      <PageLoader isLoading={isPageLoading} loadingText="Loading Report Cards" />
+
       {/* Print Styles */}
       <style jsx global>{`
         @media print {
@@ -1380,6 +1386,8 @@ export default function ReportCardsPage() {
         }
       `}</style>
 
+      {/* Main Content - Fades in after loading */}
+      <div className={`transition-opacity duration-500 ${isPageLoading ? 'opacity-0' : 'opacity-100'}`}>
       <div className="p-6 space-y-6">
         {/* Header */}
       <PageHeader
@@ -1691,7 +1699,7 @@ export default function ReportCardsPage() {
                   <button
                     onClick={() => setCurrentPreviewIndex(Math.max(0, currentPreviewIndex - 1))}
                     disabled={currentPreviewIndex === 0 || isGenerating}
-                    className="p-1.5 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-1.5 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -1703,7 +1711,7 @@ export default function ReportCardsPage() {
                       setCurrentPreviewIndex(Math.min(reportCards.length - 1, currentPreviewIndex + 1))
                     }
                     disabled={currentPreviewIndex === reportCards.length - 1 || isGenerating}
-                    className="p-1.5 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-1.5 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -2301,6 +2309,7 @@ export default function ReportCardsPage() {
           </div>
         </div>
       )}
+      </div>
       </div>
     </MainLayout>
   );
