@@ -24,6 +24,7 @@ import { Student } from "@/components/students/StudentCard";
 import StudentSelectionGrid from "@/components/students/StudentSelectionGrid";
 import { useStudentsByTenant } from "@/hooks/useStudentsByTenant";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { useGrading } from "@/contexts/GradingContext";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useReactToPrint } from "react-to-print";
 import jsPDF from "jspdf";
@@ -185,6 +186,7 @@ export default function CumulativeReportPage() {
 
   const tenantStudents = useStudentsByTenant();
   const { settings } = useSchoolSettings();
+  const { getGradeForScore } = useGrading();
   const [students, setStudents] = useState<Student[]>([]);
 
   const [config, setConfig] = useState({
@@ -249,19 +251,23 @@ export default function CumulativeReportPage() {
         terms.forEach((term) => {
           const subjects = generateMockSubjects(educationLevel, classLevel);
 
-          // Calculate grades for each subject
+          // Calculate grades for each subject using Grading Context
           const gradedSubjects = subjects.map((subject) => {
             const percentage = (subject.score / subject.maxScore) * 100;
+            const gradeScheme = getGradeForScore(educationLevel, classLevel, subject.subject, subject.score);
+
             return {
               ...subject,
-              grade: calculateGrade(percentage),
-              remarks: percentage >= 70 ? "Excellent" : percentage >= 50 ? "Good" : "Needs Improvement",
+              grade: gradeScheme?.gradeName || calculateGrade(percentage),
+              remarks: gradeScheme?.remark || (percentage >= 70 ? "Excellent" : percentage >= 50 ? "Good" : "Needs Improvement"),
             };
           });
 
           const totalMarks = gradedSubjects.reduce((sum, s) => sum + s.score, 0);
           const maxMarks = gradedSubjects.reduce((sum, s) => sum + s.maxScore, 0);
           const percentage = (totalMarks / maxMarks) * 100;
+          const overallScore = totalMarks / gradedSubjects.length;
+          const overallGradeScheme = getGradeForScore(educationLevel, classLevel, "All", overallScore);
 
           termReports.push({
             term,
@@ -270,7 +276,7 @@ export default function CumulativeReportPage() {
             subjects: gradedSubjects,
             totalMarks,
             percentage,
-            overallGrade: calculateGrade(percentage),
+            overallGrade: overallGradeScheme?.gradeName || calculateGrade(percentage),
             rank: Math.floor(Math.random() * 20) + 1,
             totalStudents: 45,
             attendance: {
@@ -306,10 +312,12 @@ export default function CumulativeReportPage() {
 
     const subjectAverages = Array.from(subjectMap.entries()).map(([subject, scores]) => {
       const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+      const gradeScheme = getGradeForScore(educationLevel, studentClass, subject, average);
+
       return {
         subject,
         average,
-        grade: calculateGrade(average),
+        grade: gradeScheme?.gradeName || calculateGrade(average),
       };
     });
 

@@ -78,7 +78,6 @@ const menuItems: MenuItem[] = [
         children: [
           { id: "all-students", label: "All Students", icon: <GraduationCap className="w-4 h-4" />, href: "/students?view=grid" },
           { id: "student-list", label: "Student List", icon: <GraduationCap className="w-4 h-4" />, href: "/students?view=list" },
-          { id: "student-details", label: "Student Details", icon: <GraduationCap className="w-4 h-4" />, href: "/students/details" },
           { id: "attendance", label: "Attendance", icon: <UserCheck className="w-4 h-4" />, href: "/students/attendance" },
           { id: "grading", label: "Grading", icon: <ClipboardCheck className="w-4 h-4" />, href: "/students/grading" },
           { id: "report-cards", label: "Report Cards", icon: <FileText className="w-4 h-4" />, href: "/students/report-cards" },
