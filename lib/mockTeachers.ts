@@ -5,6 +5,19 @@ export type StaffRole = "Teacher" | "Lecturer" | "Admin" | "Support" | "Manageme
 export type EmploymentType = "Full-Time" | "Part-Time" | "Contract" | "Temporary";
 export type EmploymentStatus = "Active" | "On Leave" | "Suspended" | "Terminated";
 
+export interface TeacherTimetableEntry {
+  day: string;
+  periods: TeacherPeriod[];
+}
+
+export interface TeacherPeriod {
+  time: string;
+  subject: string;
+  className: string; // The class they're teaching
+  room?: string;
+  type: "class" | "break" | "free";
+}
+
 export interface Teacher {
   id: string;
   staffId: string;
@@ -28,6 +41,7 @@ export interface Teacher {
   imageUrl?: string;
   branch?: string;
   specialization?: string;
+  timetable?: TeacherTimetableEntry[];
 }
 
 // Mock teachers data
