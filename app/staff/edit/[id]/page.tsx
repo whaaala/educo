@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import PageLoader from "@/components/shared/PageLoader";
@@ -17,10 +17,13 @@ import DocumentsSection from "@/components/teachers/form-sections/DocumentsSecti
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
 
-export default function AddStaffPage() {
+export default function EditStaffPage() {
+  const params = useParams();
+  const staffId = params?.id as string;
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const isLoading = usePageLoad(800);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
@@ -78,7 +81,7 @@ export default function AddStaffPage() {
     institutionType: "" as "Public" | "Private" | "International" | "",
 
     // Personal Information
-    profilePhoto: null as File | null,
+    profilePhoto: null as File | string | null,
     staffId: "",
     employeeNumber: "",
     firstName: "",
@@ -184,16 +187,82 @@ export default function AddStaffPage() {
     otherDocuments: null as File | null,
   });
 
-  // Set mounted state and joinDate after component mounts to avoid hydration issues
+  // Load staff data when component mounts or staffId changes
+  useEffect(() => {
+    if (!staffId) {
+      console.error("No staff ID provided in URL");
+      router.push("/staff?view=grid");
+      return;
+    }
+
+    // Fetch staff data
+    const fetchStaffData = async () => {
+      setIsLoadingData(true);
+
+      try {
+        // Simulate API delay
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        // TODO: Replace with actual API call to get staff data
+        // For now, using mock data
+        console.log(`Loading staff data for ID: ${staffId}`);
+
+        // Mock staff data - replace with actual API call
+        const mockStaffData = {
+          profilePhoto: `https://randomuser.me/api/portraits/men/${staffId}.jpg`,
+          staffId: staffId,
+          employeeNumber: "EMP-2024-12345",
+          firstName: "John",
+          middleName: "Michael",
+          lastName: "Doe",
+          gender: "Male",
+          dateOfBirth: "1985-05-15",
+          bloodGroup: "O+",
+          religion: "Christianity",
+          maritalStatus: "Married",
+          nationality: "Nigeria",
+          stateOfOrigin: "Lagos",
+          lga: "Ikeja",
+          phone: "08012345678",
+          secondaryPhone: "08087654321",
+          email: "john.doe@school.edu",
+          residentialAddress: "123 Main Street, Lagos",
+          permanentAddress: "123 Main Street, Lagos",
+          emergencyContactName: "Jane Doe",
+          emergencyContactPhone: "08098765432",
+          emergencyContactRelationship: "Spouse",
+          jobCategory: "Academic Staff",
+          role: "Class Teacher",
+          department: "Mathematics",
+          employmentType: "Full-Time",
+          employmentStatus: "Active",
+          joinDate: "2020-09-01",
+          highestQualification: "B.Ed",
+          educationLevel: "Secondary" as "Primary" | "Secondary" | "Tertiary",
+          institutionType: "Private" as "Public" | "Private" | "International",
+        };
+
+        setFormData(prev => ({
+          ...prev,
+          ...mockStaffData,
+        }));
+
+        setIsLoadingData(false);
+      } catch (error) {
+        console.error("Error fetching staff data:", error);
+        alert("Error loading staff data. Please try again.");
+        router.push("/staff?view=grid");
+        setIsLoadingData(false);
+      }
+    };
+
+    fetchStaffData();
+  }, [staffId, router]);
+
+  // Set mounted state
   useEffect(() => {
     setIsMounted(true);
-    if (!formData.joinDate) {
-      setFormData(prev => ({
-        ...prev,
-        joinDate: new Date().toISOString().split("T")[0]
-      }));
-    }
-  }, [formData.joinDate]);
+  }, []);
 
   // Don't render form sections until mounted to avoid hydration errors
   if (!isMounted) {
@@ -204,39 +273,11 @@ export default function AddStaffPage() {
     );
   }
 
-  // Generate staff ID
-  const generateStaffID = (): string => {
-    const year = new Date().getFullYear();
-    const randomNum = Math.floor(Math.random() * 9000) + 1000;
-    return `STF-${randomNum.toString().padStart(4, '0')}`;
-  };
-
-  // Generate employee number
-  const generateEmployeeNumber = (): string => {
-    const year = new Date().getFullYear();
-    const randomNum = Math.floor(Math.random() * 90000) + 10000;
-    return `EMP-${year}-${randomNum.toString().padStart(5, '0')}`;
-  };
-
   const handleChange = (field: string, value: any) => {
-    setFormData((prev) => {
-      const updated = {
-        ...prev,
-        [field]: value,
-      };
-
-      // Auto-generate staff ID if not already set
-      if (!updated.staffId && (field === "firstName" || field === "lastName")) {
-        updated.staffId = generateStaffID();
-      }
-
-      // Auto-generate employee number if not already set
-      if (!updated.employeeNumber && (field === "firstName" || field === "lastName")) {
-        updated.employeeNumber = generateEmployeeNumber();
-      }
-
-      return updated;
-    });
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
 
     // Clear error for this field when user starts typing
     if (errors[field]) {
@@ -279,21 +320,8 @@ export default function AddStaffPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Prepare form data with auto-generated fields
+    // Prepare form data
     const updatedFormData = { ...formData };
-
-    // Generate staff ID if not set
-    if (!updatedFormData.staffId) {
-      updatedFormData.staffId = generateStaffID();
-    }
-
-    // Generate employee number if not set
-    if (!updatedFormData.employeeNumber) {
-      updatedFormData.employeeNumber = generateEmployeeNumber();
-    }
-
-    // Update form data state
-    setFormData(updatedFormData);
 
     // Validate form
     if (!validateFormData()) {
@@ -311,13 +339,14 @@ export default function AddStaffPage() {
 
     try {
       console.log("✅ Form validation passed!");
+      console.log("Updating staff with ID:", staffId);
       console.log("Form data:", JSON.parse(JSON.stringify(updatedFormData)));
 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Navigate back to staff list
-      router.push("/staff");
+      router.push("/staff?view=grid");
     } catch (error) {
       console.error("Error submitting form:", error);
     } finally {
@@ -326,32 +355,31 @@ export default function AddStaffPage() {
   };
 
   const handleCancel = () => {
-    router.push("/staff");
+    router.push("/staff?view=grid");
   };
 
   return (
     <MainLayout>
       {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Form" />
+      <PageLoader isLoading={isLoading || isLoadingData} loadingText={isLoadingData ? "Loading Staff Data" : "Loading Form"} />
 
       {/* Main Content - Fades in after loading */}
       <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
         {/* Header */}
         <div className="py-4 mb-2">
           <PageHeader
-            title="Add Personnel"
-            subtitle="Add teaching and non-teaching staff members to your institution"
+            title="Edit Personnel"
             breadcrumbs={[
               { label: "Dashboard", href: "/" },
-              { label: "Staff", href: "/staff" },
-              { label: "Add Personnel", isActive: true },
+              { label: "Staff", href: "/staff?view=grid" },
+              { label: "Edit Personnel", isActive: true },
             ]}
           />
         </div>
 
         {/* Form */}
         <form
-          id="add-staff-form"
+          id="edit-staff-form"
           ref={formRef}
           onSubmit={handleSubmit}
           className="space-y-6 pb-32 md:pb-36 lg:pb-16 xl:pb-20"
@@ -440,11 +468,11 @@ export default function AddStaffPage() {
             </button>
             <button
               type="submit"
-              form="add-staff-form"
+              form="edit-staff-form"
               disabled={isSubmitting}
               className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl cursor-pointer"
             >
-              {isSubmitting ? "Adding Personnel..." : "Add Personnel"}
+              {isSubmitting ? "Updating Personnel..." : "Update Personnel"}
             </button>
           </div>
         </div>
