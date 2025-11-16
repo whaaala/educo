@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import PageLoader from "@/components/shared/PageLoader";
@@ -17,6 +18,19 @@ import Link from "next/link";
 
 export default function SettingsPage() {
   const isLoading = usePageLoad(800);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <MainLayout>
+        <PageLoader isLoading={true} loadingText="Loading Settings" />
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>

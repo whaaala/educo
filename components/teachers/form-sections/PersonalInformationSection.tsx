@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   User,
   Calendar,
@@ -10,12 +10,23 @@ import {
   Mail,
   ChevronUp,
   Users,
-  Briefcase,
+  MapPin,
+  Globe,
+  Heart,
+  BookOpen,
+  Home,
+  Building2,
+  GraduationCap,
 } from "lucide-react";
 import FileUpload from "@/components/shared/FileUpload";
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
+import FormTextarea from "@/components/shared/FormTextarea";
+import FormBadge from "@/components/shared/FormBadge";
 import { ValidationErrors } from "@/lib/validation";
+import { getAvailableCountries, getReligions } from "@/config/countries";
+import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { getInstitutionTypeColor, getEducationLevelColor } from "@/utils/educationLevel";
 
 interface PersonalInformationSectionProps {
   formData: any;
@@ -29,9 +40,57 @@ export default function PersonalInformationSection({
   errors = {},
 }: PersonalInformationSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const { settings: schoolSettings } = useSchoolSettings();
+
+  // Auto-set institution type from school settings on mount
+  useEffect(() => {
+    if (schoolSettings.institutionType && !formData.institutionType) {
+      onChange("institutionType", schoolSettings.institutionType);
+    }
+  }, [schoolSettings.institutionType]);
+
+  // Auto-set education level from school settings on mount (only for single-level schools)
+  useEffect(() => {
+    if (!schoolSettings.supportsMultipleLevels && schoolSettings.defaultEducationLevel && !formData.educationLevel) {
+      onChange("educationLevel", schoolSettings.defaultEducationLevel);
+    }
+  }, [schoolSettings.defaultEducationLevel, schoolSettings.supportsMultipleLevels]);
 
   const genders = ["Male", "Female"].map(g => ({ value: g, label: g }));
+  const educationLevelOptions = schoolSettings.supportedLevels?.map(level => ({
+    value: level,
+    label: level
+  })) || [];
   const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(b => ({ value: b, label: b }));
+  const countries = getAvailableCountries();
+  const religions = getReligions();
+
+  // Nigeria-specific data
+  const nigerianStates = [
+    "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue",
+    "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu",
+    "FCT", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi",
+    "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun",
+    "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
+  ].map(s => ({ value: s, label: s }));
+
+  const maritalStatuses = [
+    "Single",
+    "Married",
+    "Divorced",
+    "Widowed",
+    "Separated"
+  ].map(s => ({ value: s, label: s }));
+
+  const relationships = [
+    "Spouse",
+    "Parent",
+    "Sibling",
+    "Child",
+    "Friend",
+    "Colleague",
+    "Other"
+  ].map(r => ({ value: r, label: r }));
 
   return (
     <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
@@ -68,8 +127,9 @@ export default function PersonalInformationSection({
         className={`grid transition-[grid-template-rows,opacity] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
           isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
         }`}
+        style={{ overflow: isExpanded ? 'visible' : 'hidden' }}
       >
-        <div className="overflow-hidden">
+        <div style={{ overflow: 'visible' }}>
           <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10">
             {/* Profile Photo Upload */}
             <div>
@@ -92,24 +152,59 @@ export default function PersonalInformationSection({
                   Staff ID Information
                 </h3>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+                {/* Institution Type - From School Settings (Read-only Badge) */}
+                <FormBadge
+                  label="Institution Type"
+                  icon={<Building2 className="w-full h-full" />}
+                  value={formData.institutionType || ""}
+                  placeholder="Set in school settings"
+                  helperText="School setting"
+                  badgeColorClasses={formData.institutionType ? getInstitutionTypeColor(formData.institutionType) : undefined}
+                  required
+                  error={errors.institutionType}
+                />
+
+                {/* Education Level - Dropdown for multi-level, Badge for single-level */}
+                {schoolSettings.supportsMultipleLevels ? (
+                  <FormDropdown
+                    label="Education Level"
+                    icon={<GraduationCap className="w-full h-full" />}
+                    value={formData.educationLevel || ""}
+                    onChange={(value) => onChange("educationLevel", value)}
+                    options={educationLevelOptions}
+                    placeholder="Select education level"
+                    required
+                    error={errors.educationLevel}
+                  />
+                ) : (
+                  <FormBadge
+                    label="Education Level"
+                    icon={<GraduationCap className="w-full h-full" />}
+                    value={formData.educationLevel || ""}
+                    placeholder="Auto-detected from school"
+                    helperText="Auto-detected"
+                    badgeColorClasses={formData.educationLevel ? getEducationLevelColor(formData.educationLevel) : undefined}
+                    error={errors.educationLevel}
+                  />
+                )}
+
                 <FormInput
                   label="Staff ID"
-                  name="staffId"
-                  value={formData.staffId}
-                  onChange={(e) => onChange("staffId", e.target.value)}
-                  placeholder="Enter staff ID"
-                  icon={Hash}
-                  required
-                  error={errors.staffId}
+                  icon={<Hash className="w-full h-full" />}
+                  value={formData.staffId || ""}
+                  onChange={(value) => onChange("staffId", value)}
+                  placeholder="System Generated"
+                  type="text"
+                  disabled
                 />
                 <FormInput
                   label="Employee Number"
-                  name="employeeNumber"
-                  value={formData.employeeNumber}
-                  onChange={(e) => onChange("employeeNumber", e.target.value)}
-                  placeholder="Auto-generated"
-                  icon={Hash}
+                  icon={<Hash className="w-full h-full" />}
+                  value={formData.employeeNumber || ""}
+                  onChange={(value) => onChange("employeeNumber", value)}
+                  placeholder="System Generated"
+                  type="text"
                   disabled
                 />
               </div>
@@ -125,64 +220,118 @@ export default function PersonalInformationSection({
                   Personal Details
                 </h3>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
                 <FormInput
                   label="First Name"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={(e) => onChange("firstName", e.target.value)}
+                  icon={<User className="w-full h-full" />}
+                  value={formData.firstName || ""}
+                  onChange={(value) => onChange("firstName", value)}
                   placeholder="Enter first name"
-                  icon={User}
+                  type="text"
                   required
                   error={errors.firstName}
                 />
                 <FormInput
                   label="Middle Name"
-                  name="middleName"
-                  value={formData.middleName}
-                  onChange={(e) => onChange("middleName", e.target.value)}
+                  icon={<User className="w-full h-full" />}
+                  value={formData.middleName || ""}
+                  onChange={(value) => onChange("middleName", value)}
                   placeholder="Enter middle name"
-                  icon={User}
+                  type="text"
                 />
                 <FormInput
                   label="Last Name"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={(e) => onChange("lastName", e.target.value)}
+                  icon={<User className="w-full h-full" />}
+                  value={formData.lastName || ""}
+                  onChange={(value) => onChange("lastName", value)}
                   placeholder="Enter last name"
-                  icon={User}
+                  type="text"
                   required
                   error={errors.lastName}
                 />
                 <FormDropdown
                   label="Gender"
-                  name="gender"
-                  value={formData.gender}
+                  icon={<Users className="w-full h-full" />}
+                  value={formData.gender || ""}
                   onChange={(value) => onChange("gender", value)}
                   options={genders}
                   placeholder="Select gender"
-                  icon={Users}
                   required
                   error={errors.gender}
                 />
                 <FormInput
                   label="Date of Birth"
-                  name="dateOfBirth"
+                  icon={<Calendar className="w-full h-full" />}
+                  value={formData.dateOfBirth || ""}
+                  onChange={(value) => onChange("dateOfBirth", value)}
                   type="date"
-                  value={formData.dateOfBirth}
-                  onChange={(e) => onChange("dateOfBirth", e.target.value)}
-                  icon={Calendar}
+                  placeholder="YYYY-MM-DD"
                   required
                   error={errors.dateOfBirth}
                 />
                 <FormDropdown
                   label="Blood Group"
-                  name="bloodGroup"
-                  value={formData.bloodGroup}
+                  icon={<Heart className="w-full h-full" />}
+                  value={formData.bloodGroup || ""}
                   onChange={(value) => onChange("bloodGroup", value)}
                   options={bloodGroups}
                   placeholder="Select blood group"
-                  icon={Users}
+                />
+                <FormDropdown
+                  label="Religion"
+                  icon={<BookOpen className="w-full h-full" />}
+                  value={formData.religion || ""}
+                  onChange={(value) => onChange("religion", value)}
+                  options={religions}
+                  placeholder="Select religion"
+                />
+                <FormDropdown
+                  label="Marital Status"
+                  icon={<Heart className="w-full h-full" />}
+                  value={formData.maritalStatus || ""}
+                  onChange={(value) => onChange("maritalStatus", value)}
+                  options={maritalStatuses}
+                  placeholder="Select marital status"
+                />
+              </div>
+            </div>
+
+            {/* Nationality & Origin Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
+                  <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  Nationality & Origin
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+                <FormDropdown
+                  label="Nationality"
+                  icon={<Globe className="w-full h-full" />}
+                  value={formData.nationality || "NG"}
+                  onChange={(value) => onChange("nationality", value)}
+                  options={countries}
+                  placeholder="Select nationality"
+                  required
+                  error={errors.nationality}
+                />
+                <FormDropdown
+                  label="State of Origin"
+                  icon={<MapPin className="w-full h-full" />}
+                  value={formData.stateOfOrigin || ""}
+                  onChange={(value) => onChange("stateOfOrigin", value)}
+                  options={nigerianStates}
+                  placeholder="Select state"
+                />
+                <FormInput
+                  label="Local Government Area (LGA)"
+                  icon={<MapPin className="w-full h-full" />}
+                  value={formData.lga || ""}
+                  onChange={(value) => onChange("lga", value)}
+                  placeholder="Enter LGA"
+                  type="text"
                 />
               </div>
             </div>
@@ -197,37 +346,34 @@ export default function PersonalInformationSection({
                   Contact Information
                 </h3>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
                 <FormInput
-                  label="Phone Number"
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => onChange("phone", e.target.value)}
+                  label="Primary Phone Number"
+                  icon={<Phone className="w-full h-full" />}
+                  value={formData.phone || ""}
+                  onChange={(value) => onChange("phone", value)}
                   placeholder="+234 XXX XXX XXXX"
-                  icon={Phone}
+                  type="text"
                   required
                   error={errors.phone}
                 />
                 <FormInput
-                  label="Email Address"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => onChange("email", e.target.value)}
-                  placeholder="email@example.com"
-                  icon={Mail}
-                  required
-                  error={errors.email}
+                  label="Secondary Phone Number"
+                  icon={<Phone className="w-full h-full" />}
+                  value={formData.secondaryPhone || ""}
+                  onChange={(value) => onChange("secondaryPhone", value)}
+                  placeholder="+234 XXX XXX XXXX"
+                  type="text"
                 />
                 <FormInput
-                  label="Emergency Contact"
-                  name="emergencyContact"
-                  type="tel"
-                  value={formData.emergencyContact}
-                  onChange={(e) => onChange("emergencyContact", e.target.value)}
-                  placeholder="+234 XXX XXX XXXX"
-                  icon={Phone}
+                  label="Email Address"
+                  icon={<Mail className="w-full h-full" />}
+                  value={formData.email || ""}
+                  onChange={(value) => onChange("email", value)}
+                  placeholder="email@example.com"
+                  type="email"
+                  required
+                  error={errors.email}
                 />
               </div>
             </div>
@@ -236,21 +382,74 @@ export default function PersonalInformationSection({
             <div className="space-y-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
-                  <Briefcase className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+                  <Home className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                   Address
                 </h3>
               </div>
-              <div className="grid grid-cols-1 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
-                <FormInput
-                  label="Full Address"
-                  name="address"
-                  value={formData.address}
-                  onChange={(e) => onChange("address", e.target.value)}
-                  placeholder="Enter full address"
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+                <FormTextarea
+                  label="Residential Address"
+                  icon={<Home className="w-full h-full" />}
+                  value={formData.residentialAddress || ""}
+                  onChange={(value) => onChange("residentialAddress", value)}
+                  placeholder="Enter current residential address"
+                  rows={3}
                   required
-                  error={errors.address}
+                  error={errors.residentialAddress}
+                />
+                <FormTextarea
+                  label="Permanent Address"
+                  icon={<Home className="w-full h-full" />}
+                  value={formData.permanentAddress || ""}
+                  onChange={(value) => onChange("permanentAddress", value)}
+                  placeholder="Enter permanent home address"
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            {/* Emergency Contact Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
+                  <Phone className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  Emergency Contact
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-5 lg:gap-y-7 pl-2">
+                <FormInput
+                  label="Emergency Contact Name"
+                  icon={<User className="w-full h-full" />}
+                  value={formData.emergencyContactName || ""}
+                  onChange={(value) => onChange("emergencyContactName", value)}
+                  placeholder="Enter contact name"
+                  type="text"
+                  required
+                  error={errors.emergencyContactName}
+                />
+                <FormInput
+                  label="Emergency Contact Phone"
+                  icon={<Phone className="w-full h-full" />}
+                  value={formData.emergencyContactPhone || ""}
+                  onChange={(value) => onChange("emergencyContactPhone", value)}
+                  placeholder="+234 XXX XXX XXXX"
+                  type="text"
+                  required
+                  error={errors.emergencyContactPhone}
+                />
+                <FormDropdown
+                  label="Relationship"
+                  icon={<Users className="w-full h-full" />}
+                  value={formData.emergencyContactRelationship || ""}
+                  onChange={(value) => onChange("emergencyContactRelationship", value)}
+                  options={relationships}
+                  placeholder="Select relationship"
+                  required
+                  error={errors.emergencyContactRelationship}
                 />
               </div>
             </div>

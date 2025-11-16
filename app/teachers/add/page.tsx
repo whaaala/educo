@@ -7,17 +7,31 @@ import PageHeader from "@/components/shared/PageHeader";
 import PageLoader from "@/components/shared/PageLoader";
 import PersonalInformationSection from "@/components/teachers/form-sections/PersonalInformationSection";
 import EmploymentInformationSection from "@/components/teachers/form-sections/EmploymentInformationSection";
+import QualificationsSection from "@/components/teachers/form-sections/QualificationsSection";
 import SubjectsClassesSection from "@/components/teachers/form-sections/SubjectsClassesSection";
+import FamilyInformationSection from "@/components/teachers/form-sections/FamilyInformationSection";
+import MedicalInformationSection from "@/components/teachers/form-sections/MedicalInformationSection";
+import PayrollSection from "@/components/teachers/form-sections/PayrollSection";
+import RolePermissionsSection from "@/components/teachers/form-sections/RolePermissionsSection";
 import DocumentsSection from "@/components/teachers/form-sections/DocumentsSection";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { validateForm, ValidationErrors } from "@/lib/validation";
+import dynamic from "next/dynamic";
+
+const ValidationErrorsModal = dynamic(
+  () => import("@/components/shared/ValidationErrorsModal"),
+  { ssr: false }
+);
 
 export default function AddTeacherPage() {
   const router = useRouter();
   const { settings } = useSchoolSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  const [showValidationModal, setShowValidationModal] = useState(false);
   const isLoading = usePageLoad(800);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
@@ -82,41 +96,107 @@ export default function AddTeacherPage() {
     gender: "",
     dateOfBirth: "",
     bloodGroup: "",
+    religion: "",
+    maritalStatus: "",
+    nationality: "Nigeria",
+    stateOfOrigin: "",
+    lga: "",
     phone: "",
+    secondaryPhone: "",
     email: "",
-    emergencyContact: "",
-    address: "",
+    residentialAddress: "",
+    permanentAddress: "",
+    emergencyContactName: "",
+    emergencyContactPhone: "",
+    emergencyContactRelationship: "",
 
     // Employment Information
+    jobCategory: "",
     role: "",
+    position: "",
     department: "",
     branch: "",
+    reportingManager: "",
     employmentType: "",
     employmentStatus: "Active",
     joinDate: new Date().toISOString().split("T")[0],
-    experience: "",
-    salary: "",
-    qualification: "",
-    specialization: "",
+    confirmationDate: "",
+    previousEmployer: "",
+    trcnNumber: "",
+    licenseExpiryDate: "",
+    baseSalary: "",
 
-    // Subjects & Classes
+    // Qualifications & Professional Data
+    highestQualification: "",
+    discipline: "",
+    institution: "",
+    graduationYear: "",
+    professionalCertifications: [] as string[],
+    yearsOfExperience: "",
+    resumeCV: null as File | null,
+    degreeCertificate: null as File | null,
+
+    // Teaching-Specific Data
     subjects: [] as string[],
     classes: [] as string[],
+    isHomeroomTeacher: false,
+    hasLMSAccess: false,
+    canEnterCA: false,
+    canInvigilateExams: false,
+
+    // Family Information
+    spouseName: "",
+    spousePhone: "",
+    dependents: [] as Array<{ name: string; age: string; school: string }>,
+
+    // Medical Information
+    medicalConditions: [] as string[],
+    allergies: [] as string[],
+    disabilityInfo: "",
+    doctorsNote: null as File | null,
+
+    // Payroll & Financial Details
+    salaryStructure: "",
+    housingAllowance: "",
+    transportAllowance: "",
+    otherAllowances: "",
+    pensionDeduction: "",
+    taxDeduction: "",
+    pensionNumber: "",
+    taxId: "",
+    bankName: "",
+    accountName: "",
+    accountNumber: "",
+    sortCode: "",
+
+    // Role & Permissions
+    systemRole: "",
+    moduleAccess: [] as string[],
+    dataAccessLevel: "",
+    mobileAppAccess: false,
+    allowApprovals: false,
 
     // Documents
-    cvDocument: null as File | null,
-    degreeCertificate: null as File | null,
-    teachingCertificate: null as File | null,
-    idProof: null as File | null,
+    appointmentLetter: null as File | null,
+    acceptanceLetter: null as File | null,
+    offerLetter: null as File | null,
+    nationalId: null as File | null,
+    passportPhoto: null as File | null,
+    otherCertificates: null as File | null,
+    trcnCertificate: null as File | null,
+    teachingLicense: null as File | null,
     policeClearance: null as File | null,
+    medicalCertificate: null as File | null,
+    referenceLetters: null as File | null,
+    bankStatement: null as File | null,
     otherDocuments: null as File | null,
   });
 
   // Generate staff ID
   const generateStaffID = (): string => {
-    const year = new Date().getFullYear();
+    const prefix = settings?.supportedLevels?.includes("Tertiary") ? "LEC" : "TCH";
     const randomNum = Math.floor(Math.random() * 9000) + 1000;
-    return `TCH-${randomNum.toString().padStart(4, '0')}`;
+    return `${prefix}-${randomNum.toString().padStart(4, '0')}`;
   };
 
   // Generate employee number
@@ -154,39 +234,26 @@ export default function AddTeacherPage() {
         return newErrors;
       });
     }
+
+    // Mark field as touched
+    setTouchedFields((prev) => new Set(prev).add(field));
   };
 
-  const validateFormData = (): boolean => {
-    const newErrors: Record<string, string> = {};
+  const validateFormData = (): ValidationErrors => {
+    const validationErrors = validateForm(formData, teacherFormValidationRules);
+    setErrors(validationErrors);
 
-    // Required field validation
-    if (!formData.firstName) newErrors.firstName = "First name is required";
-    if (!formData.lastName) newErrors.lastName = "Last name is required";
-    if (!formData.gender) newErrors.gender = "Gender is required";
-    if (!formData.dateOfBirth) newErrors.dateOfBirth = "Date of birth is required";
-    if (!formData.phone) newErrors.phone = "Phone number is required";
-    if (!formData.email) newErrors.email = "Email is required";
-    if (!formData.address) newErrors.address = "Address is required";
-    if (!formData.role) newErrors.role = "Role is required";
-    if (!formData.department) newErrors.department = "Department is required";
-    if (!formData.employmentType) newErrors.employmentType = "Employment type is required";
-    if (!formData.employmentStatus) newErrors.employmentStatus = "Employment status is required";
-    if (!formData.joinDate) newErrors.joinDate = "Join date is required";
-    if (!formData.qualification) newErrors.qualification = "Qualification is required";
+    // Mark all fields as touched
+    const allFields = Object.keys(teacherFormValidationRules);
+    setTouchedFields(new Set(allFields));
 
-    // Email validation
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Invalid email format";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return validationErrors;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Prepare form data with auto-generated fields
+    // Prepare form data with auto-generated system fields
     const updatedFormData = { ...formData };
 
     // Generate staff ID if not set
@@ -202,13 +269,53 @@ export default function AddTeacherPage() {
     // Update form data state
     setFormData(updatedFormData);
 
-    // Validate form
-    if (!validateFormData()) {
-      // Scroll to first error
+    // Validate form before submission using updated data
+    const validationErrors = validateForm(updatedFormData, teacherFormValidationRules);
+    setErrors(validationErrors);
+
+    // Mark all fields as touched
+    const allFields = Object.keys(teacherFormValidationRules);
+    setTouchedFields(new Set(allFields));
+    const errorKeys = Object.keys(validationErrors);
+    const errorCount = errorKeys.length;
+
+    if (errorCount > 0) {
+      // Log validation errors with explicit details
+      console.log("❌ Form validation failed!");
+      console.log("Error count:", errorCount);
+      console.log("Error keys:", errorKeys);
+      console.log("Errors object:", JSON.parse(JSON.stringify(validationErrors)));
+      console.log("Form data:", JSON.parse(JSON.stringify(updatedFormData)));
+
+      // Show validation errors modal
+      setShowValidationModal(true);
+
+      // Scroll to first error after DOM updates
       setTimeout(() => {
-        const firstErrorElement = document.querySelector('[class*="error"]');
-        if (firstErrorElement) {
-          firstErrorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        const firstErrorField = errorKeys[0];
+        if (firstErrorField) {
+          // Try to find the error field using multiple strategies
+          let errorElement = document.querySelector(`[data-field="${firstErrorField}"]`);
+
+          if (!errorElement) {
+            // Look for input/select with name or id matching the field
+            errorElement = document.querySelector(`input[name="${firstErrorField}"], select[name="${firstErrorField}"], [name="${firstErrorField}"]`);
+          }
+
+          if (!errorElement) {
+            // Look for the form section containing this field
+            errorElement = document.querySelector(`[id*="${firstErrorField}"]`);
+          }
+
+          if (errorElement) {
+            errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          } else {
+            // Fallback: scroll to first error message element
+            const errorMsg = document.querySelector('[class*="error"]');
+            if (errorMsg) {
+              errorMsg.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }
         }
       }, 100);
       return;
@@ -217,14 +324,16 @@ export default function AddTeacherPage() {
     setIsSubmitting(true);
 
     try {
+      // TODO: Implement form submission logic
       console.log("✅ Form validation passed!");
       console.log("Form data:", JSON.parse(JSON.stringify(updatedFormData)));
+      console.log("Form data (JSON):", JSON.stringify(updatedFormData, null, 2));
 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Navigate back to teachers list
-      router.push("/teachers");
+      router.push("/teachers?view=grid");
     } catch (error) {
       console.error("Error submitting form:", error);
     } finally {
@@ -233,7 +342,7 @@ export default function AddTeacherPage() {
   };
 
   const handleCancel = () => {
-    router.push("/teachers");
+    router.push("/teachers?view=grid");
   };
 
   return (
@@ -249,7 +358,7 @@ export default function AddTeacherPage() {
             title={`Add ${singularRole}`}
             breadcrumbs={[
               { label: "Dashboard", href: "/" },
-              { label: settings?.supportedLevels?.includes("Tertiary") ? "Lecturers" : "Teachers", href: "/teachers" },
+              { label: settings?.supportedLevels?.includes("Tertiary") ? "Lecturers" : "Teachers", href: "/teachers?view=grid" },
               { label: `Add ${singularRole}`, isActive: true },
             ]}
           />
@@ -276,8 +385,43 @@ export default function AddTeacherPage() {
             errors={errors}
           />
 
+          {/* Qualifications & Professional Data */}
+          <QualificationsSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
           {/* Subjects & Classes */}
           <SubjectsClassesSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* Family Information */}
+          <FamilyInformationSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* Medical Information */}
+          <MedicalInformationSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* Payroll & Financial Details */}
+          <PayrollSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* Role & Permissions */}
+          <RolePermissionsSection
             formData={formData}
             onChange={handleChange}
             errors={errors}
@@ -320,6 +464,13 @@ export default function AddTeacherPage() {
           </div>
         </div>
       </div>
+
+      {/* Validation Errors Modal */}
+      <ValidationErrorsModal
+        isOpen={showValidationModal}
+        onClose={() => setShowValidationModal(false)}
+        errors={errors}
+      />
     </MainLayout>
   );
 }

@@ -7,9 +7,10 @@ interface TooltipProps {
   content: string;
   children: ReactNode;
   delay?: number;
+  block?: boolean;
 }
 
-export default function Tooltip({ content, children, delay = 300 }: TooltipProps) {
+export default function Tooltip({ content, children, delay = 300, block = false }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState<'top' | 'bottom'>('top');
   const [coords, setCoords] = useState({ top: 0, left: 0 });
@@ -99,7 +100,7 @@ export default function Tooltip({ content, children, delay = 300 }: TooltipProps
     <>
       <div
         ref={triggerRef}
-        className="relative inline-block"
+        className={block ? "relative block" : "relative inline-block"}
         onMouseEnter={showTooltip}
         onMouseLeave={hideTooltip}
       >

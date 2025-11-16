@@ -30,6 +30,7 @@ const SCHOOL_SCHEDULE_OPTIONS = [
 ];
 
 export default function SchoolProfileSettings() {
+  const [isMounted, setIsMounted] = useState(false);
   const [selectedLevels, setSelectedLevels] = useState<EducationLevelOption[]>(["Secondary"]);
   const [institutionType, setInstitutionType] = useState<InstitutionType>("private");
   const [tertiaryType, setTertiaryType] = useState<TertiaryType>("university");
@@ -37,6 +38,7 @@ export default function SchoolProfileSettings() {
 
   // Load settings from localStorage on component mount
   useEffect(() => {
+    setIsMounted(true);
     const savedLevels = localStorage.getItem("educationLevels");
     const savedInstitutionType = localStorage.getItem("institutionType") as InstitutionType;
     const savedTertiaryType = localStorage.getItem("tertiaryType") as TertiaryType;
@@ -65,6 +67,17 @@ export default function SchoolProfileSettings() {
       setScheduleType(savedScheduleType);
     }
   }, []);
+
+  // Don't render until mounted to avoid hydration errors
+  if (!isMounted) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+        <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+        <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+      </div>
+    );
+  }
 
   const toggleEducationLevel = (level: EducationLevelOption) => {
     const newLevels = selectedLevels.includes(level)

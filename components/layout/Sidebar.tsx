@@ -90,8 +90,15 @@ const menuItems: MenuItem[] = [
         ]
       },
       { id: "parents", label: "Parents", icon: <Users className="w-4 h-4" />, href: "/parents" },
-      { id: "teachers", label: "Teachers", icon: <Users className="w-4 h-4" />, href: "/teachers" },
-      { id: "staff", label: "Staff", icon: <Users className="w-4 h-4" />, href: "/staff" },
+      {
+        id: "personnel",
+        label: "Personnel",
+        icon: <Users className="w-4 h-4" />,
+        children: [
+          { id: "all-personnel", label: "All Personnel", icon: <Users className="w-4 h-4" />, href: "/staff?view=grid" },
+          { id: "personnel-list", label: "Personnel List", icon: <Users className="w-4 h-4" />, href: "/staff?view=list" },
+        ]
+      },
     ],
   },
   {

@@ -33,10 +33,12 @@ export default function StaffPage() {
   const searchParams = useSearchParams();
   const isPageLoading = usePageLoad(600);
 
-  // Filter for non-teaching staff (Admin, Support, Management)
-  const [staff] = useState<Teacher[]>(
-    getAllTeachers().filter((t) => ["Admin", "Support", "Management"].includes(t.role))
-  );
+  // Get all staff (teaching and non-teaching)
+  const [staff] = useState<Teacher[]>(getAllTeachers());
+
+  // Category filter state
+  const urlCategory = searchParams.get("category");
+  const [selectedCategory, setSelectedCategory] = useState<string>(urlCategory || "all");
 
   // Get view mode from URL, default to grid
   const urlView = searchParams.get("view");
@@ -47,8 +49,20 @@ export default function StaffPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSwitchingView, setIsSwitchingView] = useState(false);
+  const [isViewChangeLoading, setIsViewChangeLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const gridRef = useRef<HTMLDivElement>(null);
+  const isButtonClick = useRef(false);
+
+  // Staff categories for filtering
+  const staffCategories = [
+    { value: "all", label: "All Personnel", count: staff.length },
+    { value: "Academic Staff", label: "Academic Staff", count: staff.filter(s => s.jobCategory === "Academic Staff").length },
+    { value: "Non-Academic Staff", label: "Administrative", count: staff.filter(s => s.jobCategory === "Non-Academic Staff").length },
+    { value: "Finance & Accounting", label: "Finance", count: staff.filter(s => s.jobCategory === "Finance & Accounting").length },
+    { value: "Technical & ICT", label: "ICT", count: staff.filter(s => s.jobCategory === "Technical & ICT").length },
+    { value: "Operations & Facility", label: "Operations", count: staff.filter(s => s.jobCategory === "Operations & Facility").length },
+  ];
 
   // Filter fields
   const filterFields: FilterField[] = [
@@ -99,24 +113,44 @@ export default function StaffPage() {
     { label: "Recently Added", value: "recently_added" },
   ];
 
-  // Handler to update view mode and URL
+  // Handler to update view mode and URL (for button clicks)
   const handleViewModeChange = (newMode: "grid" | "list") => {
+    // Mark this as a button click to prevent useEffect from triggering
+    isButtonClick.current = true;
     setIsSwitchingView(true);
+
     setTimeout(() => {
       setViewMode(newMode);
       router.push(`/staff?view=${newMode}`);
+
       setTimeout(() => {
         setIsSwitchingView(false);
       }, 100);
     }, 300);
   };
 
-  // Sync view mode with URL changes
+  // Sync view mode with URL changes (only for menu link navigation, not button clicks)
   useEffect(() => {
     const urlView = searchParams.get("view");
     const newViewMode = urlView === "list" ? "list" : "grid";
-    setViewMode(newViewMode);
-  }, [searchParams, setViewMode]);
+
+    // Only trigger page loading if view mode changes AND it's not from button click
+    if (newViewMode !== viewMode) {
+      if (!isButtonClick.current) {
+        // Menu link navigation - show full page loading
+        setIsViewChangeLoading(true);
+        setTimeout(() => {
+          setViewMode(newViewMode);
+          setTimeout(() => {
+            setIsViewChangeLoading(false);
+          }, 600);
+        }, 100);
+      } else {
+        // Button click - reset the flag after the view mode has been set
+        isButtonClick.current = false;
+      }
+    }
+  }, [searchParams, viewMode]);
 
   const handleDateRangeChange = (startDate: string, endDate: string) => {
     setIsFiltering(true);
@@ -298,8 +332,13 @@ export default function StaffPage() {
     }
   });
 
+  // Apply category filter first
+  const categoryFilteredStaff = selectedCategory === "all"
+    ? sortedStaff
+    : sortedStaff.filter(s => s.jobCategory === selectedCategory);
+
   // Apply filters
-  const filteredStaff = sortedStaff.filter((staffMember) => {
+  const filteredStaff = categoryFilteredStaff.filter((staffMember) => {
     // Check date range filter
     if (dateRange) {
       const joinedDate = new Date(staffMember.joinDate);
@@ -327,28 +366,31 @@ export default function StaffPage() {
   const displayedStaff = filteredStaff.slice(0, displayedCount);
   const hasMore = displayedCount < filteredStaff.length;
 
+  const combinedLoading = isPageLoading || isViewChangeLoading;
+
   return (
     <MainLayout>
       {/* Loading Screen */}
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Staff" />
+      <PageLoader isLoading={combinedLoading} loadingText={isViewChangeLoading ? "Switching view..." : "Loading Staff"} />
 
       {/* Main Content - Fades in after loading */}
-      <div className={`transition-opacity duration-500 ${isPageLoading ? 'opacity-0' : 'opacity-100'}`}>
+      <div className={`transition-opacity duration-500 ${combinedLoading ? 'opacity-0' : 'opacity-100'}`}>
         {/* Header */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-0 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
         {/* Left Section - Title and Breadcrumb */}
         <PageHeader
-          title="Staff"
+          title="Personnel Management"
+          subtitle="Manage all teaching and non-teaching staff"
           breadcrumbs={[
             { label: "Dashboard", href: "/" },
             { label: "Peoples" },
-            { label: viewMode === "grid" ? "Staff Grid" : "Staff Table", isActive: true },
+            { label: viewMode === "grid" ? "Personnel Grid" : "Personnel Table", isActive: true },
           ]}
         />
 
         {/* Right Section - Action Buttons */}
         <PageActions
-          addButtonLabel="Add Staff"
+          addButtonLabel="Add Personnel"
           exportDescription="Download staff data"
           onAdd={() => router.push("/staff/add")}
           onRefresh={handleRefresh}
@@ -357,6 +399,40 @@ export default function StaffPage() {
           onExportExcel={handleExportExcel}
         />
       </div>
+
+        {/* Category Tabs */}
+        <div className="animate-in fade-in slide-in-from-top-2 duration-700 delay-100 ease-out mb-4">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+            {staffCategories.map((category) => (
+              <button
+                key={category.value}
+                onClick={() => {
+                  setSelectedCategory(category.value);
+                  router.push(`/staff?category=${category.value}${urlView ? `&view=${urlView}` : ''}`);
+                  setDisplayedCount(viewMode === "grid" ? 8 : 10);
+                }}
+                className={`
+                  flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200
+                  ${selectedCategory === category.value
+                    ? 'bg-blue-600 text-white dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 shadow-lg'
+                    : 'bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800'
+                  }
+                `}
+              >
+                {category.label}
+                <span className={`
+                  px-2 py-0.5 rounded-full text-xs font-semibold
+                  ${selectedCategory === category.value
+                    ? 'bg-white/20 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400'
+                  }
+                `}>
+                  {category.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Filters Bar */}
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out mb-6">

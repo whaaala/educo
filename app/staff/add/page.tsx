@@ -7,6 +7,12 @@ import PageHeader from "@/components/shared/PageHeader";
 import PageLoader from "@/components/shared/PageLoader";
 import PersonalInformationSection from "@/components/teachers/form-sections/PersonalInformationSection";
 import EmploymentInformationSection from "@/components/teachers/form-sections/EmploymentInformationSection";
+import QualificationsSection from "@/components/teachers/form-sections/QualificationsSection";
+import SubjectsClassesSection from "@/components/teachers/form-sections/SubjectsClassesSection";
+import FamilyInformationSection from "@/components/teachers/form-sections/FamilyInformationSection";
+import MedicalInformationSection from "@/components/teachers/form-sections/MedicalInformationSection";
+import PayrollSection from "@/components/teachers/form-sections/PayrollSection";
+import RolePermissionsSection from "@/components/teachers/form-sections/RolePermissionsSection";
 import DocumentsSection from "@/components/teachers/form-sections/DocumentsSection";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
@@ -19,6 +25,7 @@ export default function AddStaffPage() {
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [isSticky, setIsSticky] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
   const formRef = useRef<HTMLFormElement | null>(null);
   const buttonsRef = useRef<HTMLDivElement | null>(null);
 
@@ -66,6 +73,10 @@ export default function AddStaffPage() {
 
   // Form state
   const [formData, setFormData] = useState({
+    // School Level Information
+    educationLevel: "" as "Primary" | "Secondary" | "Tertiary" | "",
+    institutionType: "" as "Public" | "Private" | "International" | "",
+
     // Personal Information
     profilePhoto: null as File | null,
     staffId: "",
@@ -76,31 +87,122 @@ export default function AddStaffPage() {
     gender: "",
     dateOfBirth: "",
     bloodGroup: "",
+    religion: "",
+    maritalStatus: "",
+    nationality: "Nigeria",
+    stateOfOrigin: "",
+    lga: "",
     phone: "",
+    secondaryPhone: "",
     email: "",
-    emergencyContact: "",
-    address: "",
+    residentialAddress: "",
+    permanentAddress: "",
+    emergencyContactName: "",
+    emergencyContactPhone: "",
+    emergencyContactRelationship: "",
 
-    // Employment Information - Default to non-teaching roles
+    // Employment Information
+    jobCategory: "",
     role: "",
+    position: "",
     department: "",
     branch: "",
+    reportingManager: "",
     employmentType: "",
     employmentStatus: "Active",
-    joinDate: new Date().toISOString().split("T")[0],
-    experience: "",
-    salary: "",
-    qualification: "",
-    specialization: "",
+    joinDate: "",
+    confirmationDate: "",
+    previousEmployer: "",
+    trcnNumber: "",
+    licenseExpiryDate: "",
+    baseSalary: "",
+
+    // Qualifications & Professional Data
+    highestQualification: "",
+    discipline: "",
+    institution: "",
+    graduationYear: "",
+    professionalCertifications: [] as string[],
+    yearsOfExperience: "",
+    resumeCV: null as File | null,
+    degreeCertificate: null as File | null,
+
+    // Teaching-Specific Data (for Academic Staff)
+    subjects: [] as string[],
+    classes: [] as string[],
+    isHomeroomTeacher: false,
+    hasLMSAccess: false,
+    canEnterCA: false,
+    canInvigilateExams: false,
+
+    // Family Information
+    spouseName: "",
+    spousePhone: "",
+    dependents: [] as Array<{ name: string; age: string; school: string }>,
+
+    // Medical Information
+    medicalConditions: [] as string[],
+    allergies: [] as string[],
+    disabilityInfo: "",
+    doctorsNote: null as File | null,
+
+    // Payroll & Financial Details
+    salaryStructure: "",
+    housingAllowance: "",
+    transportAllowance: "",
+    otherAllowances: "",
+    pensionDeduction: "",
+    taxDeduction: "",
+    pensionNumber: "",
+    taxId: "",
+    bankName: "",
+    accountName: "",
+    accountNumber: "",
+    sortCode: "",
+
+    // Role & Permissions
+    systemRole: "",
+    moduleAccess: [] as string[],
+    dataAccessLevel: "",
+    mobileAppAccess: false,
+    allowApprovals: false,
 
     // Documents
-    cvDocument: null as File | null,
-    degreeCertificate: null as File | null,
-    teachingCertificate: null as File | null,
-    idProof: null as File | null,
+    appointmentLetter: null as File | null,
+    acceptanceLetter: null as File | null,
+    offerLetter: null as File | null,
+    nationalId: null as File | null,
+    passportPhoto: null as File | null,
+    otherCertificates: null as File | null,
+    trcnCertificate: null as File | null,
+    teachingLicense: null as File | null,
     policeClearance: null as File | null,
+    medicalCertificate: null as File | null,
+    cvDocument: null as File | null,
+    referenceLetters: null as File | null,
+    bankStatement: null as File | null,
     otherDocuments: null as File | null,
   });
+
+  // Set mounted state and joinDate after component mounts to avoid hydration issues
+  useEffect(() => {
+    setIsMounted(true);
+    if (!formData.joinDate) {
+      setFormData(prev => ({
+        ...prev,
+        joinDate: new Date().toISOString().split("T")[0]
+      }));
+    }
+  }, [formData.joinDate]);
+
+  // Don't render form sections until mounted to avoid hydration errors
+  if (!isMounted) {
+    return (
+      <MainLayout>
+        <PageLoader isLoading={true} loadingText="Loading Form" />
+      </MainLayout>
+    );
+  }
 
   // Generate staff ID
   const generateStaffID = (): string => {
@@ -156,18 +258,14 @@ export default function AddStaffPage() {
     if (!formData.dateOfBirth) newErrors.dateOfBirth = "Date of birth is required";
     if (!formData.phone) newErrors.phone = "Phone number is required";
     if (!formData.email) newErrors.email = "Email is required";
-    if (!formData.address) newErrors.address = "Address is required";
+    if (!formData.residentialAddress) newErrors.residentialAddress = "Residential address is required";
+    if (!formData.jobCategory) newErrors.jobCategory = "Job category is required";
     if (!formData.role) newErrors.role = "Role is required";
     if (!formData.department) newErrors.department = "Department is required";
     if (!formData.employmentType) newErrors.employmentType = "Employment type is required";
     if (!formData.employmentStatus) newErrors.employmentStatus = "Employment status is required";
     if (!formData.joinDate) newErrors.joinDate = "Join date is required";
-    if (!formData.qualification) newErrors.qualification = "Qualification is required";
-
-    // Validate that role is non-teaching
-    if (formData.role && !["Admin", "Support", "Management"].includes(formData.role)) {
-      newErrors.role = "Please select a non-teaching staff role (Admin, Support, or Management)";
-    }
+    if (!formData.highestQualification) newErrors.highestQualification = "Qualification is required";
 
     // Email validation
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -241,11 +339,12 @@ export default function AddStaffPage() {
         {/* Header */}
         <div className="py-4 mb-2">
           <PageHeader
-            title="Add Staff Member"
+            title="Add Personnel"
+            subtitle="Add teaching and non-teaching staff members to your institution"
             breadcrumbs={[
               { label: "Dashboard", href: "/" },
               { label: "Staff", href: "/staff" },
-              { label: "Add Staff Member", isActive: true },
+              { label: "Add Personnel", isActive: true },
             ]}
           />
         </div>
@@ -266,6 +365,48 @@ export default function AddStaffPage() {
 
           {/* Employment Information */}
           <EmploymentInformationSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* Qualifications & Professional Data */}
+          <QualificationsSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* Subjects & Classes (for Academic Staff) */}
+          <SubjectsClassesSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* Family Information */}
+          <FamilyInformationSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* Medical Information */}
+          <MedicalInformationSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* Payroll & Financial Details */}
+          <PayrollSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* System Access & Permissions */}
+          <RolePermissionsSection
             formData={formData}
             onChange={handleChange}
             errors={errors}
@@ -303,7 +444,7 @@ export default function AddStaffPage() {
               disabled={isSubmitting}
               className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl cursor-pointer"
             >
-              {isSubmitting ? "Adding Staff Member..." : "Add Staff Member"}
+              {isSubmitting ? "Adding Personnel..." : "Add Personnel"}
             </button>
           </div>
         </div>
