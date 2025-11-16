@@ -46,6 +46,7 @@ export default function StaffPage() {
   const [displayedCount, setDisplayedCount] = useState(8);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSwitchingView, setIsSwitchingView] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -100,8 +101,14 @@ export default function StaffPage() {
 
   // Handler to update view mode and URL
   const handleViewModeChange = (newMode: "grid" | "list") => {
-    setViewMode(newMode);
-    router.push(`/staff?view=${newMode}`);
+    setIsSwitchingView(true);
+    setTimeout(() => {
+      setViewMode(newMode);
+      router.push(`/staff?view=${newMode}`);
+      setTimeout(() => {
+        setIsSwitchingView(false);
+      }, 100);
+    }, 300);
   };
 
   // Sync view mode with URL changes
@@ -322,10 +329,13 @@ export default function StaffPage() {
 
   return (
     <MainLayout>
-      <PageLoader isPageLoading={isPageLoading} loadingText="Loading Staff" />
+      {/* Loading Screen */}
+      <PageLoader isLoading={isPageLoading} loadingText="Loading Staff" />
 
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-0 gap-4">
+      {/* Main Content - Fades in after loading */}
+      <div className={`transition-opacity duration-500 ${isPageLoading ? 'opacity-0' : 'opacity-100'}`}>
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-0 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
         {/* Left Section - Title and Breadcrumb */}
         <PageHeader
           title="Staff"
@@ -348,9 +358,9 @@ export default function StaffPage() {
         />
       </div>
 
-      {/* Filters Bar */}
-      <div className="mb-6">
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
+        {/* Filters Bar */}
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out mb-6">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
           {/* Left Section - Date and Filter */}
           <div className="flex items-center gap-2 sm:gap-3 lg:flex-1">
             {/* Date Range Picker */}
@@ -442,63 +452,100 @@ export default function StaffPage() {
         </div>
       </div>
 
-      <div className="space-y-5 sm:space-y-6">
-
-        {/* Grid View */}
-        {viewMode === "grid" && (
-          <>
+        {/* Content */}
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out" style={{ overflow: 'visible' }}>
+          {/* Staff Grid or Table */}
+          <div className="relative min-h-[400px]" style={{ overflow: 'visible' }}>
+          {/* Grid View */}
+          {viewMode === "grid" && (
             <div
-              ref={gridRef}
-              className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 transition-all duration-300 ${
-                isRefreshing ? "opacity-50" : "opacity-100"
-              }`}
+              key={`grid-view-${isFiltering ? 'filtering' : 'filtered'}-${isSorting ? 'sorting' : 'sorted'}-${isRefreshing ? 'refreshing' : 'refreshed'}-${sortOption}`}
+              className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+              style={{ overflow: 'visible' }}
             >
-              {displayedStaff.map((staffMember, index) => (
-                <StaffCard
-                  key={staffMember.id}
-                  staff={staffMember}
-                  colorIndex={index}
-                  isSelected={selectedIds.has(staffMember.id)}
-                  onSelectionChange={(id, selected) => {
-                    const newIds = new Set(selectedIds);
-                    if (selected) {
-                      newIds.add(id);
-                    } else {
-                      newIds.delete(id);
-                    }
-                    setSelectedIds(newIds);
-                  }}
-                />
-              ))}
+              {(isFiltering || isSorting || isRefreshing || isSwitchingView) ? (
+                <PageSpinner message={isSwitchingView ? "Switching view..." : isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."} size="md" />
+              ) : displayedStaff.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16">
+                  {/* Icon with gradient background */}
+                  <div className="relative mb-4">
+                    {/* Gradient background circle */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 midnight:from-cyan-500/5 midnight:to-cyan-600/5 purple:from-pink-500/5 purple:to-pink-600/5 animate-pulse" />
+                    </div>
+
+                    {/* Icon */}
+                    <div className="relative z-10 flex items-center justify-center w-16 h-16">
+                      <svg className="w-8 h-8 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1">
+                    No data available
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
+                    No staff found
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5" style={{ overflow: 'visible' }}>
+                    {displayedStaff.map((staffMember, index) => (
+                      <StaffCard
+                        key={staffMember.id}
+                        staff={staffMember}
+                        colorIndex={index}
+                        isSelected={selectedIds.has(staffMember.id)}
+                        onSelectionChange={(id, selected) => {
+                          const newIds = new Set(selectedIds);
+                          if (selected) {
+                            newIds.add(id);
+                          } else {
+                            newIds.delete(id);
+                          }
+                          setSelectedIds(newIds);
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  {hasMore && (
+                    <div className="flex justify-center pt-4">
+                      <LoadMoreButton onClick={handleLoadMore} isLoading={isLoadingMore} />
+                    </div>
+                  )}
+                </>
+              )}
             </div>
+          )}
 
-            {hasMore && (
-              <div className="flex justify-center pt-4">
-                <LoadMoreButton onClick={handleLoadMore} isLoading={isLoadingMore} />
-              </div>
-            )}
-          </>
-        )}
-
-        {/* List View */}
-        {viewMode === "list" && (
-          <div className={`transition-opacity duration-300 ${isRefreshing ? "opacity-50" : "opacity-100"}`}>
-            <StaffTable
-              staff={displayedStaff}
-              isLoading={isRefreshing}
-              loadingMessage="Loading Staff..."
-              totalStaffCount={staff.length}
-              selectedIds={selectedIds}
-              onSelectionChange={setSelectedIds}
-            />
-
-            {hasMore && (
-              <div className="flex justify-center pt-4">
-                <LoadMoreButton onClick={handleLoadMore} isLoading={isLoadingMore} />
-              </div>
-            )}
+          {/* List View */}
+          {viewMode === "list" && (
+            <div
+              key={`list-view-${isFiltering ? 'filtering' : 'filtered'}-${isSorting ? 'sorting' : 'sorted'}-${isRefreshing ? 'refreshing' : 'refreshed'}-${sortOption}`}
+              className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+            >
+              {isSwitchingView ? (
+                <PageSpinner message="Switching view..." size="md" />
+              ) : (
+                <StaffTable
+                  staff={filteredStaff}
+                  isLoading={isFiltering || isSorting || isRefreshing}
+                  loadingMessage={isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."}
+                  totalStaffCount={staff.length}
+                  selectedIds={selectedIds}
+                  onSelectionChange={setSelectedIds}
+                />
+              )}
+            </div>
+          )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Bulk Delete Modal */}
