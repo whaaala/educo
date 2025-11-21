@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { DisciplinaryAction } from "@/types/discipline";
-import { Eye } from "lucide-react";
+import { Eye, Edit, Trash2 } from "lucide-react";
 import DisciplineStatusBadge from "./DisciplineStatusBadge";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import Tooltip from "@/components/shared/Tooltip";
@@ -10,12 +10,16 @@ import Tooltip from "@/components/shared/Tooltip";
 interface DisciplinaryActionsTableProps {
   actions: DisciplinaryAction[];
   onViewDetails: (action: DisciplinaryAction) => void;
+  onEdit?: (action: DisciplinaryAction) => void;
+  onDelete?: (action: DisciplinaryAction) => void;
   filterKey?: string;
 }
 
 export default function DisciplinaryActionsTable({
   actions,
   onViewDetails,
+  onEdit,
+  onDelete,
   filterKey = "",
 }: DisciplinaryActionsTableProps) {
   const [animationTrigger, setAnimationTrigger] = useState(0);
@@ -170,6 +174,34 @@ export default function DisciplinaryActionsTable({
               <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 midnight:group-hover:text-cyan-300 purple:group-hover:text-pink-300 transition-colors" />
             </button>
           </Tooltip>
+          {onEdit && action.status !== "resolved" && action.status !== "closed" && (
+            <Tooltip content="Edit Action">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(action);
+                }}
+                className="group relative p-2 rounded-lg bg-gradient-to-br from-orange-50/50 to-orange-100/30 dark:from-orange-950/30 dark:to-orange-900/20 midnight:from-orange-950/30 midnight:to-orange-900/20 purple:from-orange-950/30 purple:to-orange-900/20 hover:from-orange-100 hover:to-orange-100 dark:hover:from-orange-900/40 dark:hover:to-orange-800/30 midnight:hover:from-orange-900/40 midnight:hover:to-orange-800/30 purple:hover:from-orange-900/40 purple:hover:to-orange-800/30 transition-all duration-200 cursor-pointer border border-orange-200/40 dark:border-orange-800/30 midnight:border-orange-700/30 purple:border-orange-700/30 hover:border-orange-400/60 dark:hover:border-orange-600/50 midnight:hover:border-orange-500/50 purple:hover:border-orange-500/50 active:scale-95"
+                aria-label="Edit Action"
+              >
+                <Edit className="w-4 h-4 text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400 group-hover:text-orange-700 dark:group-hover:text-orange-300 midnight:group-hover:text-orange-300 purple:group-hover:text-orange-300 transition-colors" />
+              </button>
+            </Tooltip>
+          )}
+          {onDelete && action.status !== "resolved" && action.status !== "closed" && (
+            <Tooltip content="Delete Action">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(action);
+                }}
+                className="group relative p-2 rounded-lg bg-gradient-to-br from-red-50/50 to-red-100/30 dark:from-red-950/30 dark:to-red-900/20 midnight:from-red-950/30 midnight:to-red-900/20 purple:from-red-950/30 purple:to-red-900/20 hover:from-red-100 hover:to-red-100 dark:hover:from-red-900/40 dark:hover:to-red-800/30 midnight:hover:from-red-900/40 midnight:hover:to-red-800/30 purple:hover:from-red-900/40 purple:hover:to-red-800/30 transition-all duration-200 cursor-pointer border border-red-200/40 dark:border-red-800/30 midnight:border-red-700/30 purple:border-red-700/30 hover:border-red-400/60 dark:hover:border-red-600/50 midnight:hover:border-red-500/50 purple:hover:border-red-500/50 active:scale-95"
+                aria-label="Delete Action"
+              >
+                <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 midnight:group-hover:text-red-300 purple:group-hover:text-red-300 transition-colors" />
+              </button>
+            </Tooltip>
+          )}
         </div>
       ),
     },

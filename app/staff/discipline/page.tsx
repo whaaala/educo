@@ -12,9 +12,13 @@ import DisciplineStatisticsCards from "@/components/discipline/DisciplineStatist
 import ComplaintStatisticsCards from "@/components/discipline/ComplaintStatisticsCards";
 import DisciplinaryActionsTable from "@/components/discipline/DisciplinaryActionsTable";
 import ComplaintsTable from "@/components/discipline/ComplaintsTable";
+import NewIncidentReportModal from "@/components/discipline/NewIncidentReportModal";
+import ViewDisciplinaryActionModal from "@/components/discipline/ViewDisciplinaryActionModal";
+import EditDisciplinaryActionModal from "@/components/discipline/EditDisciplinaryActionModal";
+import ConfirmationModal from "@/components/shared/ConfirmationModal";
 // Import will be added when needed for export functionality
 
-// Mock data for disciplinary actions
+// Mock data for disciplinary actions - covering all status types
 const mockDisciplinaryActions: DisciplinaryAction[] = [
   {
     id: "DA001",
@@ -26,7 +30,7 @@ const mockDisciplinaryActions: DisciplinaryAction[] = [
     profilePhoto: "https://i.pravatar.cc/150?img=12",
     incidentType: "tardiness",
     incidentDate: "2024-11-15",
-    incidentTime: "08:45",
+    incidentTime: "08:45 AM",
     incidentLocation: "Main Gate",
     severity: "minor",
     status: "reported",
@@ -51,7 +55,7 @@ const mockDisciplinaryActions: DisciplinaryAction[] = [
     profilePhoto: "https://i.pravatar.cc/150?img=5",
     incidentType: "misconduct",
     incidentDate: "2024-10-20",
-    incidentTime: "14:30",
+    incidentTime: "02:30 PM",
     incidentLocation: "Classroom 2B",
     severity: "serious",
     status: "resolved",
@@ -83,6 +87,112 @@ const mockDisciplinaryActions: DisciplinaryAction[] = [
     createdAt: "2024-10-20T15:00:00Z",
     updatedAt: "2024-10-30T16:00:00Z",
     closedAt: "2024-10-30T16:00:00Z",
+  },
+  {
+    id: "DA003",
+    staffId: "STF007",
+    staffName: "Mr. David Chen",
+    staffEmail: "david.chen@school.com",
+    staffDepartment: "Science",
+    staffPosition: "Lab Assistant",
+    profilePhoto: "https://i.pravatar.cc/150?img=14",
+    incidentType: "policy-violation",
+    incidentDate: "2024-11-10",
+    incidentTime: "11:00 AM",
+    incidentLocation: "Science Laboratory",
+    severity: "moderate",
+    status: "under-investigation",
+    incidentDescription: "Violation of laboratory safety protocols. Failed to wear protective equipment and allowed students to handle chemicals without supervision.",
+    witnessNames: ["Dr. Patricia Jones", "Lab Technician"],
+    reportedBy: "MGR003",
+    reportedByName: "Dr. Patricia Jones",
+    reportedByRole: "VP Administration",
+    reportedDate: "2024-11-10",
+    investigatorId: "HR001",
+    investigatorName: "Ms. Okonkwo",
+    investigationStartDate: "2024-11-11",
+    followUpRequired: true,
+    employeeAcknowledged: false,
+    hrReviewed: false,
+    createdAt: "2024-11-10T12:00:00Z",
+    updatedAt: "2024-11-11T09:00:00Z",
+  },
+  {
+    id: "DA004",
+    staffId: "STF010",
+    staffName: "Ms. Rachel Adams",
+    staffEmail: "rachel.adams@school.com",
+    staffDepartment: "Administration",
+    staffPosition: "Office Manager",
+    profilePhoto: "https://i.pravatar.cc/150?img=25",
+    incidentType: "absenteeism",
+    incidentDate: "2024-09-15",
+    incidentTime: "N/A",
+    incidentLocation: "Administrative Office",
+    severity: "serious",
+    status: "closed",
+    incidentDescription: "Unexplained absence for 5 consecutive days without notification or valid reason.",
+    reportedBy: "MGR003",
+    reportedByName: "Dr. Patricia Jones",
+    reportedByRole: "VP Administration",
+    reportedDate: "2024-09-20",
+    investigatorId: "HR001",
+    investigatorName: "Ms. Okonkwo",
+    investigationStartDate: "2024-09-21",
+    investigationEndDate: "2024-09-25",
+    investigationFindings: "Staff member had family emergency but failed to communicate. Provided documentation after investigation.",
+    actionTaken: "verbal-warning",
+    actionDetails: "Verbal warning issued. Staff member counseled on proper communication procedures for emergencies.",
+    actionDate: "2024-09-26",
+    actionBy: "HR001",
+    actionByName: "Ms. Okonkwo",
+    followUpRequired: false,
+    employeeStatement: "I apologize for not communicating. I was dealing with a family emergency and should have informed the school.",
+    employeeAcknowledged: true,
+    employeeAcknowledgedDate: "2024-09-26",
+    hrReviewed: true,
+    hrReviewedBy: "HR001",
+    hrReviewedDate: "2024-09-27",
+    hrComments: "Case closed. Employee has been cooperative and remorseful.",
+    createdAt: "2024-09-20T10:00:00Z",
+    updatedAt: "2024-09-27T14:00:00Z",
+    closedAt: "2024-09-27T14:00:00Z",
+  },
+  {
+    id: "DA005",
+    staffId: "STF015",
+    staffName: "Mr. Kevin Martinez",
+    staffEmail: "kevin.martinez@school.com",
+    staffDepartment: "Sports",
+    staffPosition: "Coach",
+    profilePhoto: "https://i.pravatar.cc/150?img=33",
+    incidentType: "safety-violation",
+    incidentDate: "2024-11-18",
+    incidentTime: "03:45 PM",
+    incidentLocation: "Sports Field",
+    severity: "critical",
+    status: "escalated",
+    incidentDescription: "Failed to conduct safety checks before sports practice. Equipment malfunction led to student injury.",
+    witnessNames: ["Assistant Coach", "Medical Officer", "Student witnesses"],
+    reportedBy: "MGR001",
+    reportedByName: "Dr. Adeyemi",
+    reportedByRole: "Principal",
+    reportedDate: "2024-11-18",
+    investigatorId: "HR001",
+    investigatorName: "Ms. Okonkwo",
+    investigationStartDate: "2024-11-19",
+    investigationFindings: "Preliminary findings indicate negligence in safety protocols. Student suffered minor injury requiring medical attention.",
+    followUpRequired: true,
+    followUpDate: "2024-12-18",
+    employeeStatement: "I take full responsibility for not conducting the equipment check. I deeply regret this oversight.",
+    employeeAcknowledged: true,
+    employeeAcknowledgedDate: "2024-11-19",
+    hrReviewed: true,
+    hrReviewedBy: "HR001",
+    hrReviewedDate: "2024-11-19",
+    hrComments: "Case escalated to board of directors due to student injury. Pending disciplinary committee review.",
+    createdAt: "2024-11-18T16:00:00Z",
+    updatedAt: "2024-11-19T15:00:00Z",
   },
 ];
 
@@ -181,6 +291,13 @@ export default function DisciplinePage() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterSeverity, setFilterSeverity] = useState<string>("all");
   const [filterPriority, setFilterPriority] = useState<string>("all");
+  const [isNewIncidentModalOpen, setIsNewIncidentModalOpen] = useState(false);
+  const [selectedAction, setSelectedAction] = useState<DisciplinaryAction | null>(null);
+  const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [actionToDelete, setActionToDelete] = useState<DisciplinaryAction | null>(null);
 
   // Initialize with mock data and merge with context data
   useEffect(() => {
@@ -274,6 +391,30 @@ export default function DisciplinePage() {
     console.log(`Export ${activeTab} to PDF clicked`);
   };
 
+  const handleViewAction = (action: DisciplinaryAction) => {
+    setSelectedAction(action);
+    setIsViewModalOpen(true);
+  };
+
+  const handleEditAction = (action: DisciplinaryAction) => {
+    setSelectedAction(action);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteAction = (action: DisciplinaryAction) => {
+    setActionToDelete(action);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (actionToDelete) {
+      // Remove from local state
+      setDisciplinaryActions(prev => prev.filter(a => a.id !== actionToDelete.id));
+      setIsDeleteModalOpen(false);
+      setActionToDelete(null);
+    }
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -292,7 +433,13 @@ export default function DisciplinePage() {
               {
                 label: activeTab === "discipline" ? "Report Incident" : "New Complaint",
                 icon: Plus,
-                onClick: () => console.log("New item clicked"),
+                onClick: () => {
+                  if (activeTab === "discipline") {
+                    setIsNewIncidentModalOpen(true);
+                  } else {
+                    console.log("New Complaint clicked");
+                  }
+                },
                 variant: "primary",
               },
             ]}
@@ -422,7 +569,9 @@ export default function DisciplinePage() {
         {activeTab === "discipline" ? (
           <DisciplinaryActionsTable
             actions={filteredActions}
-            onViewDetails={(action) => setSelectedAction(action)}
+            onViewDetails={handleViewAction}
+            onEdit={handleEditAction}
+            onDelete={handleDeleteAction}
             filterKey={`${filterStatus}-${filterSeverity}-${searchQuery}`}
           />
         ) : (
@@ -433,6 +582,55 @@ export default function DisciplinePage() {
           />
         )}
       </div>
+
+      {/* New Incident Report Modal */}
+      <NewIncidentReportModal
+        isOpen={isNewIncidentModalOpen}
+        onClose={() => setIsNewIncidentModalOpen(false)}
+      />
+
+      {/* View Disciplinary Action Modal */}
+      {selectedAction && (
+        <ViewDisciplinaryActionModal
+          isOpen={isViewModalOpen}
+          onClose={() => {
+            setIsViewModalOpen(false);
+            setSelectedAction(null);
+          }}
+          action={selectedAction}
+          onEdit={() => {
+            setIsViewModalOpen(false);
+            setIsEditModalOpen(true);
+          }}
+        />
+      )}
+
+      {/* Edit Disciplinary Action Modal */}
+      {selectedAction && (
+        <EditDisciplinaryActionModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedAction(null);
+          }}
+          action={selectedAction}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setActionToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Delete Disciplinary Action"
+        message={`Are you sure you want to delete this disciplinary action for ${actionToDelete?.staffName}? This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+      />
     </MainLayout>
   );
 }
