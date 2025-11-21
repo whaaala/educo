@@ -40,6 +40,8 @@ import TaxInformationCard from "@/components/staff/TaxInformationCard";
 import BankDetailsCard from "@/components/staff/BankDetailsCard";
 import PayslipsTable, { Payslip } from "@/components/staff/PayslipsTable";
 import StaffPerformanceReviews from "@/components/staff/StaffPerformanceReviews";
+import ApplyLeaveModal from "@/components/students/ApplyLeaveModal";
+import { useLeaves } from "@/contexts/LeaveContext";
 
 type TabType = "details" | "timetable" | "attendance" | "payroll" | "performance";
 
@@ -495,6 +497,51 @@ const MOCK_STAFF_LEAVE_APPLICATIONS: StaffLeaveApplication[] = [
 function AttendanceTab({ staffData }: { staffData: Teacher }) {
   const [activeSubTab, setActiveSubTab] = useState<"leaves" | "attendance">("leaves");
   const [isApplyLeaveModalOpen, setIsApplyLeaveModalOpen] = useState(false);
+  const { getStaffLeaves } = useLeaves();
+
+  // Get leave requests for this staff member from LeaveContext
+  const staffLeaveRequests = useMemo(() => getStaffLeaves(staffData.staffId), [staffData.staffId, getStaffLeaves]);
+
+  // Transform leave requests to StaffLeaveApplication format
+  const leaveApplications: StaffLeaveApplication[] = useMemo(() => {
+    return staffLeaveRequests.map(request => ({
+      id: request.id,
+      leaveType: request.leaveType,
+      startDate: request.startDate,
+      endDate: request.endDate,
+      numberOfDays: request.numberOfDays,
+      appliedOn: request.requestedDate,
+      status: request.status === "approved" ? "Approved" :
+              request.status === "rejected" ? "Rejected" : "Pending",
+      reason: request.reason,
+    }));
+  }, [staffLeaveRequests]);
+
+  // Calculate leave stats from real data
+  const leaveStats = useMemo(() => {
+    const annualUsed = staffLeaveRequests
+      .filter(req => req.leaveType === "Annual Leave" && req.status === "approved")
+      .reduce((sum, req) => sum + req.numberOfDays, 0);
+
+    const medicalUsed = staffLeaveRequests
+      .filter(req => req.leaveType === "Medical Leave" && req.status === "approved")
+      .reduce((sum, req) => sum + req.numberOfDays, 0);
+
+    const casualUsed = staffLeaveRequests
+      .filter(req => req.leaveType === "Casual Leave" && req.status === "approved")
+      .reduce((sum, req) => sum + req.numberOfDays, 0);
+
+    const specialUsed = staffLeaveRequests
+      .filter(req => req.leaveType === "Special Leave" && req.status === "approved")
+      .reduce((sum, req) => sum + req.numberOfDays, 0);
+
+    return {
+      annual: { total: 20, used: annualUsed, available: 20 - annualUsed },
+      medical: { total: 10, used: medicalUsed, available: 10 - medicalUsed },
+      casual: { total: 12, used: casualUsed, available: 12 - casualUsed },
+      special: { total: 5, used: specialUsed, available: 5 - specialUsed },
+    };
+  }, [staffLeaveRequests]);
 
   // Mock attendance stats - in production, this would come from the attendance context
   const attendanceStats = useMemo(() => ({
@@ -615,30 +662,30 @@ function AttendanceTab({ staffData }: { staffData: Teacher }) {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                 <StaffLeaveStatsCard
                   title="Annual Leave"
-                  total={20}
-                  used={5}
-                  available={15}
+                  total={leaveStats.annual.total}
+                  used={leaveStats.annual.used}
+                  available={leaveStats.annual.available}
                   variant="annual"
                 />
                 <StaffLeaveStatsCard
                   title="Medical Leave"
-                  total={10}
-                  used={2}
-                  available={8}
+                  total={leaveStats.medical.total}
+                  used={leaveStats.medical.used}
+                  available={leaveStats.medical.available}
                   variant="medical"
                 />
                 <StaffLeaveStatsCard
                   title="Casual Leave"
-                  total={12}
-                  used={1}
-                  available={11}
+                  total={leaveStats.casual.total}
+                  used={leaveStats.casual.used}
+                  available={leaveStats.casual.available}
                   variant="casual"
                 />
                 <StaffLeaveStatsCard
                   title="Special Leave"
-                  total={5}
-                  used={0}
-                  available={5}
+                  total={leaveStats.special.total}
+                  used={leaveStats.special.used}
+                  available={leaveStats.special.available}
                   variant="special"
                 />
               </div>
@@ -659,7 +706,7 @@ function AttendanceTab({ staffData }: { staffData: Teacher }) {
 
                 {/* DataTable */}
                 <DataTable<StaffLeaveApplication>
-                  data={MOCK_STAFF_LEAVE_APPLICATIONS}
+                  data={leaveApplications}
                   columns={leaveColumns}
                   title="Leave Applications"
                   searchPlaceholder="Search by leave type or status..."
@@ -688,6 +735,19 @@ function AttendanceTab({ staffData }: { staffData: Teacher }) {
           )}
         </div>
       </div>
+
+      {/* Apply Leave Modal */}
+      <ApplyLeaveModal
+        isOpen={isApplyLeaveModalOpen}
+        onClose={() => setIsApplyLeaveModalOpen(false)}
+        staffData={{
+          staffId: staffData.staffId,
+          staffName: `${staffData.firstName} ${staffData.lastName}`,
+          staffEmail: staffData.email,
+          staffDepartment: staffData.subject || "General",
+          staffPosition: `${staffData.subject} Teacher`,
+        }}
+      />
     </div>
   );
 }

@@ -1,119 +1,227 @@
-// Discipline Tracking System Types
+// Discipline and Complaints Types
 
-export type IncidentSeverity = "minor" | "moderate" | "major" | "critical";
-export type IncidentCategory =
-  | "attendance"
-  | "academic-dishonesty"
-  | "disruptive-behavior"
-  | "bullying"
-  | "violence"
-  | "property-damage"
-  | "substance-abuse"
-  | "dress-code"
-  | "technology-misuse"
+export type IncidentType =
+  | "misconduct"
+  | "insubordination"
+  | "absenteeism"
+  | "tardiness"
+  | "policy-violation"
+  | "safety-violation"
+  | "harassment"
+  | "theft"
+  | "fraud"
   | "other";
 
-export type DisciplinaryActionType =
+export type IncidentSeverity = "minor" | "moderate" | "serious" | "critical";
+export type IncidentStatus = "reported" | "under-investigation" | "resolved" | "closed" | "escalated";
+export type ActionTaken =
   | "verbal-warning"
   | "written-warning"
-  | "detention"
+  | "final-warning"
   | "suspension"
-  | "expulsion"
-  | "community-service"
+  | "demotion"
+  | "termination"
   | "counseling"
-  | "parent-conference"
-  | "behavior-contract"
+  | "training"
+  | "no-action"
   | "other";
 
-export type IncidentStatus = "reported" | "under-review" | "resolved" | "appealed" | "closed";
+export type ComplaintType =
+  | "workplace-harassment"
+  | "discrimination"
+  | "unfair-treatment"
+  | "working-conditions"
+  | "safety-concerns"
+  | "grievance"
+  | "suggestion"
+  | "other";
 
-export interface DisciplineIncident {
+export type ComplaintStatus = "submitted" | "reviewing" | "investigating" | "resolved" | "closed" | "rejected";
+
+export interface DisciplinaryAction {
   id: string;
-  studentId: string;
-  studentName: string;
-  studentAdmissionNumber: string;
-  studentClass: string;
-  studentSection: string;
+  staffId: string;
+  staffName: string;
+  staffEmail: string;
+  staffDepartment: string;
+  staffPosition: string;
   profilePhoto?: string;
 
   // Incident Details
+  incidentType: IncidentType;
   incidentDate: string;
-  incidentTime: string;
-  location: string;
-  category: IncidentCategory;
+  incidentTime?: string;
+  incidentLocation: string;
   severity: IncidentSeverity;
-  title: string;
-  description: string;
-  witnesses?: string[]; // Array of witness names or IDs
+  status: IncidentStatus;
 
-  // Reporting Information
+  // Description
+  incidentDescription: string;
+  witnessNames?: string[];
+  evidenceAttachments?: string[];
+
+  // Reporter Information
   reportedBy: string;
   reportedByName: string;
-  reportedByRole: string; // "Teacher", "Administrator", "Staff", etc.
+  reportedByRole: string;
   reportedDate: string;
 
-  // Action Taken
-  actionType?: DisciplinaryActionType;
+  // Investigation
+  investigatorId?: string;
+  investigatorName?: string;
+  investigationStartDate?: string;
+  investigationEndDate?: string;
+  investigationFindings?: string;
+
+  // Action
+  actionTaken?: ActionTaken;
   actionDetails?: string;
-  actionStartDate?: string;
-  actionEndDate?: string;
-  actionCompletedDate?: string;
+  actionDate?: string;
+  actionBy?: string;
+  actionByName?: string;
 
   // Follow-up
-  status: IncidentStatus;
   followUpRequired: boolean;
   followUpDate?: string;
   followUpNotes?: string;
 
-  // Parent Communication
-  parentNotified: boolean;
-  parentNotifiedDate?: string;
-  parentResponse?: string;
+  // Employee Response
+  employeeStatement?: string;
+  employeeAcknowledged: boolean;
+  employeeAcknowledgedDate?: string;
 
-  // Additional Information
-  attachments?: string[]; // URLs or file paths
-  notes?: string;
-  resolutionNotes?: string;
+  // HR Review
+  hrReviewed: boolean;
+  hrReviewedBy?: string;
+  hrReviewedDate?: string;
+  hrComments?: string;
 
-  // Timestamps
+  // Metadata
   createdAt: string;
   updatedAt: string;
-  resolvedAt?: string;
+  closedAt?: string;
 }
 
-export interface BehaviorPoint {
+export interface Complaint {
   id: string;
-  studentId: string;
-  points: number; // Positive for good behavior, negative for bad
-  reason: string;
-  category: "academic" | "behavior" | "attendance" | "participation" | "other";
-  awardedBy: string;
-  awardedByName: string;
-  awardedDate: string;
+
+  // Complainant Information (can be anonymous)
+  isAnonymous: boolean;
+  complainantId?: string;
+  complainantName?: string;
+  complainantEmail?: string;
+  complainantDepartment?: string;
+  complainantPosition?: string;
+
+  // Against (if applicable)
+  againstStaffId?: string;
+  againstStaffName?: string;
+  againstStaffPosition?: string;
+
+  // Complaint Details
+  complaintType: ComplaintType;
+  complaintDate: string;
+  status: ComplaintStatus;
+  priority: "low" | "medium" | "high" | "urgent";
+
+  // Description
+  subject: string;
+  description: string;
+  incidentDate?: string;
+  location?: string;
+  witnesses?: string[];
+  evidenceAttachments?: string[];
+
+  // Assignment
+  assignedTo?: string;
+  assignedToName?: string;
+  assignedDate?: string;
+
+  // Investigation
+  investigationNotes?: string;
+  investigationStartDate?: string;
+  investigationEndDate?: string;
+
+  // Resolution
+  resolution?: string;
+  resolutionDate?: string;
+  resolvedBy?: string;
+  resolvedByName?: string;
+  actionsTaken?: string[];
+
+  // Feedback
+  complainantSatisfied?: boolean;
+  complainantFeedback?: string;
+
+  // Metadata
   createdAt: string;
+  updatedAt: string;
+  closedAt?: string;
 }
 
-export interface DisciplineStatistics {
-  totalIncidents: number;
-  incidentsByCategory: Record<IncidentCategory, number>;
-  incidentsBySeverity: Record<IncidentSeverity, number>;
-  incidentsByStatus: Record<IncidentStatus, number>;
-  activeActions: number;
-  studentsWithIncidents: number;
-  repeatOffenders: number;
-  averageResolutionTime: number; // in days
+export interface CreateDisciplinaryAction {
+  staffId: string;
+  incidentType: IncidentType;
+  incidentDate: string;
+  incidentTime?: string;
+  incidentLocation: string;
+  severity: IncidentSeverity;
+  incidentDescription: string;
+  witnessNames?: string[];
+  reportedBy: string;
+  reportedByName: string;
+  reportedByRole: string;
 }
 
-export interface StudentDisciplineRecord {
-  studentId: string;
-  studentName: string;
-  totalIncidents: number;
-  minorIncidents: number;
-  moderateIncidents: number;
-  majorIncidents: number;
-  criticalIncidents: number;
-  activeActions: number;
-  behaviorScore: number; // 0-100
-  lastIncidentDate?: string;
-  incidents: DisciplineIncident[];
+export interface CreateComplaint {
+  isAnonymous: boolean;
+  complainantId?: string;
+  complainantName?: string;
+  complainantEmail?: string;
+  againstStaffId?: string;
+  againstStaffName?: string;
+  complaintType: ComplaintType;
+  priority: "low" | "medium" | "high" | "urgent";
+  subject: string;
+  description: string;
+  incidentDate?: string;
+  location?: string;
+  witnesses?: string[];
 }
+
+export const INCIDENT_TYPES = [
+  { value: "misconduct", label: "Misconduct" },
+  { value: "insubordination", label: "Insubordination" },
+  { value: "absenteeism", label: "Absenteeism" },
+  { value: "tardiness", label: "Tardiness" },
+  { value: "policy-violation", label: "Policy Violation" },
+  { value: "safety-violation", label: "Safety Violation" },
+  { value: "harassment", label: "Harassment" },
+  { value: "theft", label: "Theft" },
+  { value: "fraud", label: "Fraud" },
+  { value: "other", label: "Other" },
+];
+
+export const COMPLAINT_TYPES = [
+  { value: "workplace-harassment", label: "Workplace Harassment" },
+  { value: "discrimination", label: "Discrimination" },
+  { value: "unfair-treatment", label: "Unfair Treatment" },
+  { value: "working-conditions", label: "Working Conditions" },
+  { value: "safety-concerns", label: "Safety Concerns" },
+  { value: "grievance", label: "Grievance" },
+  { value: "suggestion", label: "Suggestion" },
+  { value: "other", label: "Other" },
+];
+
+export const ACTION_TYPES = [
+  { value: "verbal-warning", label: "Verbal Warning" },
+  { value: "written-warning", label: "Written Warning" },
+  { value: "final-warning", label: "Final Warning" },
+  { value: "suspension", label: "Suspension" },
+  { value: "demotion", label: "Demotion" },
+  { value: "termination", label: "Termination" },
+  { value: "counseling", label: "Counseling" },
+  { value: "training", label: "Training" },
+  { value: "no-action", label: "No Action Required" },
+  { value: "other", label: "Other" },
+];

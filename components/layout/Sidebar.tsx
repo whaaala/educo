@@ -29,6 +29,9 @@ import {
   Upload,
   Award,
   BarChart3,
+  CalendarClock,
+  Star,
+  MessageSquare,
 } from "lucide-react";
 import TenantSwitcher from "@/components/admin/TenantSwitcher";
 
@@ -97,6 +100,9 @@ const menuItems: MenuItem[] = [
         children: [
           { id: "all-personnel", label: "All Personnel", icon: <Users className="w-4 h-4" />, href: "/staff?view=grid" },
           { id: "personnel-list", label: "Personnel List", icon: <Users className="w-4 h-4" />, href: "/staff?view=list" },
+          { id: "leave-requests", label: "Leave Requests", icon: <CalendarClock className="w-4 h-4" />, href: "/staff/leave-requests" },
+          { id: "performance-reviews", label: "Performance Reviews", icon: <Star className="w-4 h-4" />, href: "/staff/performance-reviews" },
+          { id: "staff-discipline", label: "Discipline & Complaints", icon: <MessageSquare className="w-4 h-4" />, href: "/staff/discipline" },
         ]
       },
     ],

@@ -6,11 +6,20 @@ import FormDropdown from "@/components/shared/FormDropdown";
 import FormInput from "@/components/shared/FormInput";
 import FormTextarea from "@/components/shared/FormTextarea";
 import FormButton from "@/components/shared/FormButton";
+import { useLeaves } from "@/contexts/LeaveContext";
+import { LeaveType } from "@/types/leave";
 
 interface ApplyLeaveModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit?: (leaveData: LeaveFormData) => void;
+  staffData?: {
+    staffId: string;
+    staffName: string;
+    staffEmail: string;
+    staffDepartment: string;
+    staffPosition: string;
+  };
 }
 
 interface LeaveFormData {
@@ -24,6 +33,7 @@ export default function ApplyLeaveModal({
   isOpen,
   onClose,
   onSubmit,
+  staffData,
 }: ApplyLeaveModalProps) {
   const [formData, setFormData] = useState<LeaveFormData>({
     leaveType: "",
@@ -31,14 +41,29 @@ export default function ApplyLeaveModal({
     endDate: "",
     reason: "",
   });
+  const { addLeaveRequest } = useLeaves();
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // If staffData is provided, submit to leave context (staff leave request)
+    if (staffData) {
+      addLeaveRequest(staffData, {
+        leaveType: formData.leaveType as LeaveType,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        reason: formData.reason,
+        priority: "normal",
+      });
+    }
+
+    // Call optional onSubmit callback
     if (onSubmit) {
       onSubmit(formData);
     }
+
     // Reset form
     setFormData({
       leaveType: "",

@@ -11,6 +11,9 @@ import { TransferProvider } from "@/contexts/TransferContext";
 import { TranscriptProvider } from "@/contexts/TranscriptContext";
 import { AttendanceProvider } from "@/contexts/AttendanceContext";
 import { GradingProvider } from "@/contexts/GradingContext";
+import { LeaveProvider } from "@/contexts/LeaveContext";
+import { PerformanceProvider } from "@/contexts/PerformanceContext";
+import { DisciplineProvider } from "@/contexts/DisciplineContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,13 +41,19 @@ export default function RootLayout({
               <SchoolSettingsProvider>
                 <GradingProvider>
                   <TransferProvider>
-                    <TranscriptProvider>
-                      <AttendanceProvider>
-                        <SidebarProvider>
-                          {children}
-                        </SidebarProvider>
-                      </AttendanceProvider>
-                    </TranscriptProvider>
+                    <LeaveProvider>
+                      <PerformanceProvider>
+                        <DisciplineProvider>
+                          <TranscriptProvider>
+                            <AttendanceProvider>
+                              <SidebarProvider>
+                                {children}
+                              </SidebarProvider>
+                            </AttendanceProvider>
+                          </TranscriptProvider>
+                        </DisciplineProvider>
+                      </PerformanceProvider>
+                    </LeaveProvider>
                   </TransferProvider>
                 </GradingProvider>
               </SchoolSettingsProvider>

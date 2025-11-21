@@ -21,6 +21,7 @@ import TransferRequestsTable from "@/components/transfers/TransferRequestsTable"
 import TransferStatisticsCards from "@/components/transfers/TransferStatisticsCards";
 import TransferRequestDetailModal from "@/components/transfers/TransferRequestDetailModal";
 import { useTransfers } from "@/contexts/TransferContext";
+import { exportTransfersToExcel, exportTransfersToPDF } from "@/lib/export-utils";
 
 // Mock data - replace with actual API call
 const mockTransferRequests: TransferRequest[] = [
@@ -297,6 +298,9 @@ export default function TransferRequestsPage() {
                 variant: "secondary",
               },
             ]}
+            onExportPDF={() => exportTransfersToPDF(filteredRequests, "transfer-requests")}
+            onExportExcel={() => exportTransfersToExcel(filteredRequests, "transfer-requests")}
+            exportDescription="Download transfer requests data"
           />
         </div>
 

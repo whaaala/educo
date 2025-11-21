@@ -1,72 +1,64 @@
 "use client";
 
-import { DisciplineIncident } from "@/types/discipline";
+import { AlertTriangle, Clock, Search, CheckCircle, AlertOctagon, AlertCircle } from "lucide-react";
+import { DisciplinaryAction } from "@/types/discipline";
 import StatCard, { StatCardColor } from "@/components/shared/StatCard";
-import { FileText, AlertCircle, AlertTriangle, ShieldAlert, Users, TrendingUp } from "lucide-react";
 
 interface DisciplineStatisticsCardsProps {
-  incidents: DisciplineIncident[];
+  actions: DisciplinaryAction[];
 }
 
-export default function DisciplineStatisticsCards({ incidents }: DisciplineStatisticsCardsProps) {
+export default function DisciplineStatisticsCards({ actions }: DisciplineStatisticsCardsProps) {
   const stats = {
-    total: incidents.length,
-    minor: incidents.filter(i => i.severity === "minor").length,
-    moderate: incidents.filter(i => i.severity === "moderate").length,
-    major: incidents.filter(i => i.severity === "major").length,
-    critical: incidents.filter(i => i.severity === "critical").length,
-    active: incidents.filter(i => i.status === "reported" || i.status === "under-review").length,
-    resolved: incidents.filter(i => i.status === "resolved" || i.status === "closed").length,
-    uniqueStudents: new Set(incidents.map(i => i.studentId)).size,
+    total: actions.length,
+    reported: actions.filter(a => a.status === "reported").length,
+    investigating: actions.filter(a => a.status === "under-investigation").length,
+    resolved: actions.filter(a => a.status === "resolved").length,
+    critical: actions.filter(a => a.severity === "critical").length,
+    serious: actions.filter(a => a.severity === "serious").length,
   };
 
-  const cards: Array<{ label: string; value: number; icon: typeof FileText; color: StatCardColor }> = [
+  const cards: Array<{ label: string; value: number; icon: typeof AlertTriangle; color: StatCardColor }> = [
     {
-      label: "Total Incidents",
+      label: "Total Cases",
       value: stats.total,
-      icon: FileText,
+      icon: AlertTriangle,
       color: "blue",
     },
     {
-      label: "Active Cases",
-      value: stats.active,
-      icon: TrendingUp,
-      color: "orange",
+      label: "Reported",
+      value: stats.reported,
+      icon: Clock,
+      color: "amber",
+    },
+    {
+      label: "Investigating",
+      value: stats.investigating,
+      icon: Search,
+      color: "blue",
     },
     {
       label: "Resolved",
       value: stats.resolved,
-      icon: ShieldAlert,
+      icon: CheckCircle,
       color: "green",
-    },
-    {
-      label: "Minor",
-      value: stats.minor,
-      icon: AlertCircle,
-      color: "amber",
-    },
-    {
-      label: "Moderate",
-      value: stats.moderate,
-      icon: AlertTriangle,
-      color: "orange",
-    },
-    {
-      label: "Major",
-      value: stats.major,
-      icon: ShieldAlert,
-      color: "red",
     },
     {
       label: "Critical",
       value: stats.critical,
-      icon: ShieldAlert,
-      color: "purple",
+      icon: AlertOctagon,
+      color: "red",
+    },
+    {
+      label: "Serious",
+      value: stats.serious,
+      icon: AlertCircle,
+      color: "orange",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
       {cards.map((card) => (
         <StatCard
           key={card.label}
