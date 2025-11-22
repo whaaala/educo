@@ -8,7 +8,7 @@ interface ComplaintStatisticsCardsProps {
   complaints: Complaint[];
 }
 
-export default function ComplaintStatisticsCards({ complaints }: ComplaintStatisticsCardsProps) {
+export default function ComplaintStatisticsCards({ complaints = [] }: ComplaintStatisticsCardsProps) {
   const stats = {
     total: complaints.length,
     submitted: complaints.filter(c => c.status === "submitted").length,

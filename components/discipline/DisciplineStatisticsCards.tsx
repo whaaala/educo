@@ -8,7 +8,7 @@ interface DisciplineStatisticsCardsProps {
   actions: DisciplinaryAction[];
 }
 
-export default function DisciplineStatisticsCards({ actions }: DisciplineStatisticsCardsProps) {
+export default function DisciplineStatisticsCards({ actions = [] }: DisciplineStatisticsCardsProps) {
   const stats = {
     total: actions.length,
     reported: actions.filter(a => a.status === "reported").length,
