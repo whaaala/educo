@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { StaffTransferRequest } from "@/types/staffTransfer";
-import { Eye, CheckCircle, XCircle, Play, FileText } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Play, FileText, AlertTriangle } from "lucide-react";
 import StaffTransferStatusBadge from "./StaffTransferStatusBadge";
 import StaffTransferTypeBadge from "./StaffTransferTypeBadge";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import Tooltip from "@/components/shared/Tooltip";
 import EditableTransferLetterModal from "./EditableTransferLetterModal";
+import EditableTerminationLetterModal from "./EditableTerminationLetterModal";
+import TransferDetailsModal from "./TransferDetailsModal";
 
 interface StaffTransferTableProps {
   requests: StaffTransferRequest[];
@@ -30,6 +32,10 @@ export default function StaffTransferTable({
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
   const [selectedTransferForLetter, setSelectedTransferForLetter] = useState<StaffTransferRequest | null>(null);
   const [isLetterModalOpen, setIsLetterModalOpen] = useState(false);
+  const [selectedTermination, setSelectedTermination] = useState<StaffTransferRequest | null>(null);
+  const [isTerminationModalOpen, setIsTerminationModalOpen] = useState(false);
+  const [selectedTransferForDetails, setSelectedTransferForDetails] = useState<StaffTransferRequest | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   // Trigger animation when filterKey changes
   useEffect(() => {
@@ -66,13 +72,28 @@ export default function StaffTransferTable({
     if (request.transferType === "location") {
       return `${request.currentLocation} → ${request.newLocation}`;
     }
+    if (request.transferType === "termination") {
+      const typeMap: Record<string, string> = {
+        resignation: "Resignation",
+        dismissal: "Dismissal",
+        retirement: "Retirement",
+        "contract-end": "Contract End",
+        "mutual-agreement": "Mutual Agreement",
+      };
+      return typeMap[request.terminationType || "dismissal"] || "Termination";
+    }
     return "-";
   };
 
   // Handler for opening letter modal
   const handleGenerateLetter = (request: StaffTransferRequest) => {
-    setSelectedTransferForLetter(request);
-    setIsLetterModalOpen(true);
+    if (request.transferType === "termination") {
+      setSelectedTermination(request);
+      setIsTerminationModalOpen(true);
+    } else {
+      setSelectedTransferForLetter(request);
+      setIsLetterModalOpen(true);
+    }
   };
 
   // Define columns for DataTable
@@ -197,7 +218,8 @@ export default function StaffTransferTable({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onViewDetails(request);
+                setSelectedTransferForDetails(request);
+                setIsDetailsModalOpen(true);
               }}
               className="group relative p-2 rounded-lg bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/30 dark:to-blue-900/20 midnight:from-cyan-950/30 midnight:to-cyan-900/20 purple:from-pink-950/30 purple:to-pink-900/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-blue-900/40 dark:hover:to-blue-800/30 midnight:hover:from-cyan-900/40 midnight:hover:to-cyan-800/30 purple:hover:from-pink-900/40 purple:hover:to-pink-800/30 transition-all duration-200 cursor-pointer border border-blue-200/40 dark:border-blue-800/30 midnight:border-cyan-700/30 purple:border-pink-700/30 hover:border-blue-400/60 dark:hover:border-blue-600/50 midnight:hover:border-cyan-500/50 purple:hover:border-pink-500/50 active:scale-95"
               aria-label="View Details"
@@ -338,6 +360,33 @@ export default function StaffTransferTable({
             setSelectedTransferForLetter(null);
           }}
           transfer={selectedTransferForLetter}
+        />
+      )}
+
+      {/* Editable Termination Letter Modal */}
+      {selectedTermination && (
+        <EditableTerminationLetterModal
+          isOpen={isTerminationModalOpen}
+          onClose={() => {
+            setIsTerminationModalOpen(false);
+            setSelectedTermination(null);
+          }}
+          termination={selectedTermination}
+        />
+      )}
+
+      {/* Transfer Details Modal */}
+      {selectedTransferForDetails && (
+        <TransferDetailsModal
+          isOpen={isDetailsModalOpen}
+          onClose={() => {
+            setIsDetailsModalOpen(false);
+            setSelectedTransferForDetails(null);
+          }}
+          transfer={selectedTransferForDetails}
+          onApprove={onApprove}
+          onReject={onReject}
+          onProcess={onProcess}
         />
       )}
     </div>

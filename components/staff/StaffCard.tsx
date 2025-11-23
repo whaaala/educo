@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MessageCircle, Phone, Mail } from "lucide-react";
 import ProfileCard from "@/components/shared/ProfileCard";
 import { Teacher } from "@/lib/mockTeachers";
+import CheckSalaryModal from "@/components/staff/CheckSalaryModal";
 
 interface StaffCardProps {
   staff: Teacher;
@@ -14,6 +16,7 @@ interface StaffCardProps {
 
 export default function StaffCard({ staff, colorIndex, isSelected, onSelectionChange }: StaffCardProps) {
   const router = useRouter();
+  const [isCheckSalaryModalOpen, setIsCheckSalaryModalOpen] = useState(false);
 
   const handleEdit = (id: string) => {
     router.push(`/staff/edit/${id}`);
@@ -59,31 +62,44 @@ export default function StaffCard({ staff, colorIndex, isSelected, onSelectionCh
   };
 
   return (
-    <ProfileCard
-      id={staff.id}
-      name={`${staff.firstName} ${staff.lastName}`}
-      subtitle={staff.staffId}
-      status={getCardStatus()}
-      avatar={staff.imageUrl}
-      colorIndex={colorIndex}
-      details={[
-        { label: "Staff ID", value: staff.staffId },
-        { label: "Department", value: staff.department },
-        { label: "Employment", value: staff.employmentType },
-        { label: "Join Date", value: new Date(staff.joinDate).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }) },
-      ]}
-      primaryAction={{ label: "Add Fees" }}
-      customActions={buildCustomActions()}
-      customDropdownItems={buildCustomDropdownItems()}
-      isSelected={isSelected}
-      onSelectionChange={onSelectionChange}
-      onEdit={handleEdit}
-      onView={handleView}
-      onDelete={handleDelete}
-    />
+    <>
+      <ProfileCard
+        id={staff.id}
+        name={`${staff.firstName} ${staff.lastName}`}
+        subtitle={staff.staffId}
+        status={getCardStatus()}
+        avatar={staff.imageUrl}
+        colorIndex={colorIndex}
+        details={[
+          { label: "Staff ID", value: staff.staffId },
+          { label: "Department", value: staff.department },
+          { label: "Employment", value: staff.employmentType },
+          { label: "Join Date", value: new Date(staff.joinDate).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          }) },
+        ]}
+        primaryAction={{
+          label: "Check Salary",
+          onClick: () => setIsCheckSalaryModalOpen(true)
+        }}
+        customActions={buildCustomActions()}
+        customDropdownItems={buildCustomDropdownItems()}
+        showDetailsInDropdown={true}
+        isSelected={isSelected}
+        onSelectionChange={onSelectionChange}
+        onEdit={handleEdit}
+        onView={handleView}
+        onDelete={handleDelete}
+      />
+
+      {/* Check Salary Modal */}
+      <CheckSalaryModal
+        isOpen={isCheckSalaryModalOpen}
+        onClose={() => setIsCheckSalaryModalOpen(false)}
+        staff={staff}
+      />
+    </>
   );
 }

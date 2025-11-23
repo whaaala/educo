@@ -12,6 +12,7 @@ import StaffTransferStatisticsCards from "@/components/staff/transfers/StaffTran
 import NewTransferRequestModal from "@/components/staff/transfers/NewTransferRequestModal";
 import PageLoader from "@/components/shared/PageLoader";
 import { usePageLoad } from "@/hooks/usePageLoad";
+import { exportStaffTransfersToPDF, exportStaffTransfersToExcel } from "@/utils/exportStaffTransfers";
 
 // Mock data
 const mockTransferRequests: StaffTransferRequest[] = [
@@ -20,6 +21,7 @@ const mockTransferRequests: StaffTransferRequest[] = [
     staffId: "STF001",
     staffName: "John Doe",
     staffEmail: "john.doe@school.com",
+    profilePhoto: "https://randomuser.me/api/portraits/men/32.jpg",
     currentDepartment: "Mathematics",
     currentDesignation: "Senior Teacher",
     currentBranch: "Main Campus",
@@ -29,16 +31,21 @@ const mockTransferRequests: StaffTransferRequest[] = [
     transferDate: "2025-01-15",
     effectiveDate: "2025-02-01",
     reason: "Need for science teachers in new campus expansion",
-    status: "pending",
+    status: "approved",
     requestedBy: "ADMIN001",
     requestedByName: "HR Manager",
     requestedAt: "2025-01-10T09:00:00Z",
+    approvedBy: "ADMIN002",
+    approvedByName: "Principal",
+    approvedAt: "2025-01-12T14:00:00Z",
+    approvalComments: "Approved to support campus expansion initiative",
   },
   {
     id: "TRN002",
     staffId: "STF002",
     staffName: "Jane Smith",
     staffEmail: "jane.smith@school.com",
+    profilePhoto: "https://randomuser.me/api/portraits/women/44.jpg",
     currentDepartment: "English",
     currentDesignation: "Teacher",
     currentBranch: "Main Campus",
@@ -64,6 +71,7 @@ const mockTransferRequests: StaffTransferRequest[] = [
     staffId: "STF003",
     staffName: "Michael Johnson",
     staffEmail: "michael.johnson@school.com",
+    profilePhoto: "https://randomuser.me/api/portraits/men/17.jpg",
     currentDepartment: "ICT",
     currentDesignation: "ICT Coordinator",
     currentBranch: "Main Campus",
@@ -73,7 +81,7 @@ const mockTransferRequests: StaffTransferRequest[] = [
     transferDate: "2025-01-05",
     effectiveDate: "2025-01-15",
     reason: "Promotion to Head of Department",
-    status: "in-progress",
+    status: "approved",
     requestedBy: "ADMIN001",
     requestedByName: "HR Manager",
     requestedAt: "2025-01-02T11:00:00Z",
@@ -87,6 +95,7 @@ const mockTransferRequests: StaffTransferRequest[] = [
     staffId: "STF004",
     staffName: "Sarah Williams",
     staffEmail: "sarah.williams@school.com",
+    profilePhoto: "https://randomuser.me/api/portraits/women/68.jpg",
     currentDepartment: "Biology",
     currentDesignation: "Teacher",
     currentBranch: "Annex Campus",
@@ -110,6 +119,7 @@ const mockTransferRequests: StaffTransferRequest[] = [
     staffId: "STF005",
     staffName: "David Brown",
     staffEmail: "david.brown@school.com",
+    profilePhoto: "https://randomuser.me/api/portraits/men/52.jpg",
     currentDepartment: "Sports",
     currentDesignation: "Sports Coordinator",
     currentBranch: "Main Campus",
@@ -238,8 +248,8 @@ export default function StaffTransfersPage() {
                   variant: "secondary",
                 },
               ]}
-              onExportPDF={() => console.log("Export PDF")}
-              onExportExcel={() => console.log("Export Excel")}
+              onExportPDF={() => exportStaffTransfersToPDF(filteredRequests)}
+              onExportExcel={() => exportStaffTransfersToExcel(filteredRequests)}
               exportDescription="Download staff transfer requests data"
             />
           </div>

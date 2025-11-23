@@ -13,7 +13,8 @@ export type TransferType =
   | "branch"
   | "designation"
   | "promotion"
-  | "location";
+  | "location"
+  | "termination";
 
 export interface StaffTransferRequest {
   id: string;
@@ -42,6 +43,14 @@ export interface StaffTransferRequest {
   salaryIncrease?: number;
   salaryIncreasePercentage?: number;
   newResponsibilities?: string;
+
+  // Termination-specific fields
+  terminationType?: "resignation" | "dismissal" | "retirement" | "contract-end" | "mutual-agreement";
+  terminationReason?: string;
+  lastWorkingDay?: string;
+  severancePackage?: number;
+  exitInterviewCompleted?: boolean;
+  assetsReturned?: boolean;
 
   // Transfer Details
   transferDate: string; // YYYY-MM-DD

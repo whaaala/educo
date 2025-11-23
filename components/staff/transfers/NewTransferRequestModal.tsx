@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Building2, MapPin, Briefcase, Calendar, User, FileText, ArrowRight, TrendingUp, DollarSign } from "lucide-react";
+import { X, Building2, MapPin, Briefcase, Calendar, User, FileText, ArrowRight, TrendingUp, DollarSign, AlertTriangle } from "lucide-react";
 import { TransferType } from "@/types/staffTransfer";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormInput from "@/components/shared/FormInput";
@@ -77,6 +77,11 @@ export default function NewTransferRequestModal({
     currentSalary: "",
     newSalary: "",
     newResponsibilities: "",
+    // Termination fields
+    terminationType: "dismissal" as "resignation" | "dismissal" | "retirement" | "contract-end" | "mutual-agreement",
+    terminationReason: "",
+    lastWorkingDay: "",
+    severancePackage: "",
   });
 
   const [filters, setFilters] = useState({
@@ -259,13 +264,14 @@ export default function NewTransferRequestModal({
               </h4>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               {[
                 { value: "department", label: "Department", icon: Building2, color: "blue" },
                 { value: "branch", label: "Branch", icon: MapPin, color: "purple" },
                 { value: "designation", label: "Designation", icon: Briefcase, color: "emerald" },
                 { value: "promotion", label: "Promotion", icon: TrendingUp, color: "amber", special: true },
                 { value: "location", label: "Location", icon: MapPin, color: "orange" },
+                { value: "termination", label: "Termination", icon: AlertTriangle, color: "red", special: true },
               ].map((type) => {
                 const Icon = type.icon;
                 const isSelected = formData.transferType === type.value;
@@ -276,7 +282,7 @@ export default function NewTransferRequestModal({
                     onClick={() =>
                       setFormData({ ...formData, transferType: type.value as TransferType })
                     }
-                    className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all hover:scale-105 ${
+                    className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all hover:scale-105 cursor-pointer ${
                       isSelected
                         ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 shadow-md"
                         : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
@@ -480,6 +486,82 @@ export default function NewTransferRequestModal({
                   required
                 />
               )}
+
+              {formData.transferType === "termination" && (
+                <>
+                  {/* Termination Type Warning */}
+                  <div className="col-span-1 sm:col-span-2 p-4 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/10 dark:to-rose-900/10 midnight:from-red-900/10 midnight:to-rose-900/10 purple:from-red-900/10 purple:to-rose-900/10 rounded-lg border border-red-200 dark:border-red-800/30 midnight:border-red-700/30 purple:border-red-700/30">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-red-900 dark:text-red-100">
+                          Staff Termination Process
+                        </p>
+                        <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                          This is a sensitive operation. Please ensure all required documentation and approvals are in place before proceeding.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Termination Type */}
+                  <div className="col-span-1 sm:col-span-2">
+                    <FormDropdown
+                      label="Termination Type"
+                      icon={<AlertTriangle className="w-4 h-4" />}
+                      value={formData.terminationType}
+                      onChange={(value) => setFormData({ ...formData, terminationType: value as any })}
+                      options={[
+                        { label: "Resignation", value: "resignation" },
+                        { label: "Dismissal", value: "dismissal" },
+                        { label: "Retirement", value: "retirement" },
+                        { label: "Contract End", value: "contract-end" },
+                        { label: "Mutual Agreement", value: "mutual-agreement" },
+                      ]}
+                      placeholder="Select termination type"
+                      required
+                    />
+                  </div>
+
+                  {/* Last Working Day */}
+                  <div className="col-span-1 sm:col-span-2">
+                    <FormInput
+                      label="Last Working Day"
+                      icon={<Calendar className="w-4 h-4" />}
+                      type="date"
+                      value={formData.lastWorkingDay}
+                      onChange={(value) => setFormData({ ...formData, lastWorkingDay: value })}
+                      placeholder="Select last working day"
+                      required
+                    />
+                  </div>
+
+                  {/* Termination Reason */}
+                  <div className="col-span-1 sm:col-span-2">
+                    <FormTextarea
+                      label="Termination Reason"
+                      icon={<FileText className="w-4 h-4" />}
+                      value={formData.terminationReason}
+                      onChange={(value) => setFormData({ ...formData, terminationReason: value })}
+                      placeholder="Provide detailed reason for termination..."
+                      rows={4}
+                      required
+                    />
+                  </div>
+
+                  {/* Severance Package (Optional) */}
+                  <div className="col-span-1 sm:col-span-2">
+                    <FormInput
+                      label="Severance Package (Optional)"
+                      icon={<DollarSign className="w-4 h-4" />}
+                      type="number"
+                      value={formData.severancePackage}
+                      onChange={(value) => setFormData({ ...formData, severancePackage: value })}
+                      placeholder="0.00"
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -546,14 +628,14 @@ export default function NewTransferRequestModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
+            className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="submit"
             onClick={handleSubmit}
-            className="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+            className="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg cursor-pointer"
           >
             Submit Request
           </button>

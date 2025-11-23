@@ -47,6 +47,11 @@ export default function StaffTransferTypeBadge({ type, size = "md" }: StaffTrans
       icon: MapPin,
       className: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 midnight:bg-orange-900/20 midnight:text-orange-400 purple:bg-orange-900/20 purple:text-orange-400 border border-orange-200 dark:border-orange-800/50 midnight:border-orange-700/30 purple:border-orange-700/30",
     },
+    termination: {
+      label: "Termination",
+      icon: Briefcase,
+      className: "bg-gradient-to-r from-red-100 to-rose-100 text-red-900 dark:from-red-900/30 dark:to-rose-900/30 dark:text-red-200 midnight:from-red-900/20 midnight:to-rose-900/20 midnight:text-red-300 purple:from-red-900/20 purple:to-rose-900/20 purple:text-red-300 border border-red-300 dark:border-red-700/50 midnight:border-red-600/30 purple:border-red-600/30 shadow-sm",
+    },
   };
 
   const config = typeConfig[type];

@@ -211,7 +211,7 @@ export default function StaffTable({
             e.stopPropagation();
             router.push(`/staff/${staffMember.id}`);
           }}
-          className="text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 block cursor-pointer whitespace-nowrap hover:underline transition-all duration-200"
+          className="text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 block cursor-pointer whitespace-nowrap transition-all duration-200"
         >
           {staffMember.staffId}
         </span>
