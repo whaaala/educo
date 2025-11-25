@@ -64,7 +64,6 @@ const menuItems: MenuItem[] = [
       { id: "school-info", label: "School Information", icon: <Building2 className="w-4 h-4" />, href: "/school/info" },
       { id: "branches", label: "Branches", icon: <Network className="w-4 h-4" />, href: "/school/branches" },
       { id: "academic-years", label: "Academic Years", icon: <Calendar className="w-4 h-4" />, href: "/school/academic-years" },
-      { id: "classes", label: "Classes", icon: <Boxes className="w-4 h-4" />, href: "/school/classes" },
       { id: "sections", label: "Sections", icon: <ClipboardList className="w-4 h-4" />, href: "/school/sections" },
       { id: "departments", label: "Departments", icon: <Network className="w-4 h-4" />, href: "/school/departments" },
     ],
@@ -112,6 +111,7 @@ const menuItems: MenuItem[] = [
     label: "Academic",
     icon: <BookOpen className="w-5 h-5" />,
     children: [
+      { id: "classes", label: "Classes", icon: <Boxes className="w-4 h-4" />, href: "/classes?view=grid" },
       { id: "subjects", label: "Subjects", icon: <BookOpen className="w-4 h-4" />, href: "/subjects" },
       { id: "exams", label: "Exams", icon: <FileText className="w-4 h-4" />, href: "/exams" },
       { id: "syllabus", label: "Syllabus", icon: <FileText className="w-4 h-4" />, href: "/syllabus" },

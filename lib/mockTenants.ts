@@ -18,9 +18,10 @@ export const mockTenants: Tenant[] = [
     updatedAt: "2025-01-10T00:00:00Z",
 
     config: {
-      supportedLevels: ["Primary", "Secondary"],
+      supportedLevels: ["Secondary", "Tertiary"],
       defaultEducationLevel: "Secondary",
       institutionType: "Private",
+      tertiaryType: "University",
       scheduleType: "full-time",
       supportsMultipleLevels: true,
       academicYearStart: "September",
