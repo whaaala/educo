@@ -118,7 +118,7 @@ export default function ClassCard({
   return (
     <>
       <div className="relative group/card">
-        <div className="group relative bg-white dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 hover:bg-gradient-to-br hover:from-blue-100 hover:via-purple-100 hover:to-pink-100 dark:hover:bg-gray-800/90 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 dark:hover:shadow-blue-400/30 midnight:hover:shadow-cyan-400/30 purple:hover:shadow-pink-400/30 hover:border-purple-300/60 dark:hover:border-blue-400/50 midnight:hover:border-cyan-400/50 purple:hover:border-pink-400/50 h-[420px] flex flex-col">
+        <div className="group relative bg-white dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 hover:bg-gradient-to-br hover:from-blue-100 hover:via-purple-100 hover:to-pink-100 dark:hover:bg-gray-800/90 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 dark:hover:shadow-blue-400/30 midnight:hover:shadow-cyan-400/30 purple:hover:shadow-pink-400/30 hover:border-purple-300/60 dark:hover:border-blue-400/50 midnight:hover:border-cyan-400/50 purple:hover:border-pink-400/50 h-[420px] flex flex-col group-has-[:hover.group\\/avatar]:blur-[6px]">
           {/* Gradient Overlay Effect */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/3 to-pink-500/5 dark:from-blue-400/15 dark:via-purple-400/8 dark:to-pink-400/15 midnight:from-cyan-400/15 midnight:via-purple-400/8 midnight:to-cyan-400/15 purple:from-pink-400/15 purple:via-purple-400/8 purple:to-pink-400/15 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
 
@@ -197,26 +197,33 @@ export default function ClassCard({
           <div className="px-6 pt-6 pb-4 flex flex-col h-full">
             <div className="flex items-start gap-3 mb-4">
               {/* Avatar */}
-              <div className="relative group/avatar flex-shrink-0">
-                {/* Avatar Image */}
-                <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-purple-200/60 dark:border-purple-400/30 midnight:border-cyan-400/30 purple:border-pink-400/30 group-hover/card:border-purple-400/80 dark:group-hover/card:border-purple-400/60 midnight:group-hover/card:border-cyan-400/60 purple:group-hover/card:border-pink-400/60 transition-all duration-300 group-hover/card:shadow-lg group-hover/card:shadow-purple-500/30 dark:group-hover/card:shadow-purple-400/40 midnight:group-hover/card:shadow-cyan-400/40 purple:group-hover/card:shadow-pink-400/40">
-                  {adviserImage ? (
-                    <img
-                      src={adviserImage}
-                      alt={primaryTeacher?.name || 'Adviser'}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover/card:scale-110"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 dark:from-blue-500 dark:via-purple-500 dark:to-pink-500 midnight:from-cyan-400 midnight:via-purple-400 midnight:to-cyan-500 purple:from-pink-400 purple:via-purple-500 purple:to-pink-600 flex items-center justify-center">
-                      <span className="text-white text-base font-semibold">
-                        {getInitials(primaryTeacher?.name || classData.name)}
-                      </span>
-                    </div>
-                  )}
-                </div>
+              <div
+                className="relative cursor-pointer group/avatar flex-shrink-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log("Avatar clicked", classData.id);
+                }}
+              >
+                {adviserImage ? (
+                  <img
+                    src={adviserImage}
+                    alt={primaryTeacher?.name || 'Adviser'}
+                    className="w-12 h-12 rounded-full object-cover shrink-0 ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
+                    style={{ position: 'relative', transformOrigin: 'center center' }}
+                  />
+                ) : (
+                  <div
+                    className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 dark:from-blue-500 dark:via-purple-500 dark:to-pink-500 midnight:from-cyan-400 midnight:via-purple-400 midnight:to-cyan-500 purple:from-pink-400 purple:via-purple-500 purple:to-pink-600 flex items-center justify-center shrink-0 shadow-lg ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
+                    style={{ position: 'relative', transformOrigin: 'center center' }}
+                  >
+                    <span className="text-white text-base font-semibold">
+                      {getInitials(primaryTeacher?.name || classData.name)}
+                    </span>
+                  </div>
+                )}
 
                 {/* Hover Glow Effect */}
-                <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-purple-400/40 via-pink-400/40 to-blue-400/40 dark:from-purple-400/60 dark:via-pink-400/60 dark:to-blue-400/60 midnight:from-cyan-400/60 midnight:via-purple-400/60 midnight:to-cyan-500/60 purple:from-pink-400/60 purple:via-purple-400/60 purple:to-pink-500/60 opacity-0 group-hover/card:opacity-100 blur-md transition-opacity duration-300 -z-10" />
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 midnight:from-cyan-400 midnight:via-purple-400 midnight:to-cyan-400 purple:from-pink-400 purple:via-purple-400 purple:to-pink-400 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
               </div>
 
               {/* Class Name */}
