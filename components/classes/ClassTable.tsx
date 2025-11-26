@@ -35,7 +35,7 @@ export interface ClassData {
   schedule?: string;
   academicYear: string;
   term?: string;
-  status: "Active" | "Inactive";
+  status: "Active" | "Inactive" | "Archived";
   averageGrade?: number;
   attendanceRate?: number;
   stream?: string;
@@ -45,6 +45,22 @@ export interface ClassData {
   programme?: string;
   courseLevel?: string;
   semester?: string;
+  // New fields from master list
+  branch?: string;
+  classTeacher?: Teacher;
+  maxStudents?: number;
+  enabledFeatures?: {
+    lms?: boolean;
+    digitalDiary?: boolean;
+    transport?: boolean;
+    hostel?: boolean;
+    rfid?: boolean;
+    onlineClasses?: boolean;
+    library?: boolean;
+    gradebook?: boolean;
+  };
+  transportZone?: string;
+  hostelEligibility?: boolean;
 }
 
 interface ClassTableProps {
@@ -253,6 +269,51 @@ export default function ClassTable({
       ),
     },
     {
+      key: "branch",
+      label: "Branch",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      className: "text-left w-[12%]",
+      render: (classData) => (
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
+          {classData.branch || "—"}
+        </span>
+      ),
+    },
+    {
+      key: "classTeacher",
+      label: "Class Teacher",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      className: "text-left w-[15%]",
+      render: (classData) => {
+        const isTertiary = classData.level === "Tertiary";
+        const teacherCount = classData.teachers?.length || 0;
+
+        if (isTertiary) {
+          return (
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
+              {teacherCount} Lecturer{teacherCount !== 1 ? "s" : ""}
+            </span>
+          );
+        }
+
+        if (classData.classTeacher) {
+          return (
+            <Tooltip content={classData.classTeacher.name}>
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 truncate block">
+                {classData.classTeacher.name}
+              </span>
+            </Tooltip>
+          );
+        }
+
+        return (
+          <span className="text-sm text-gray-400 dark:text-gray-500">Not assigned</span>
+        );
+      },
+    },
+    {
       key: "level",
       label: "Level",
       sortable: true,
@@ -279,6 +340,25 @@ export default function ClassTable({
             <Users className="w-4 h-4 text-gray-400" />
             <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
               {isTertiary ? classData.students : `${classData.students}/${classData.capacity}`}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      key: "subjects",
+      label: "Subjects",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      className: "text-left w-[10%]",
+      render: (classData) => {
+        const isTertiary = classData.level === "Tertiary";
+        const subjectCount = classData.subjects?.length || 0;
+        return (
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-gray-400" />
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
+              {subjectCount} {isTertiary ? "Course" : "Subject"}{subjectCount !== 1 ? "s" : ""}
             </span>
           </div>
         );

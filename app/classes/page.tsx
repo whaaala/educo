@@ -51,6 +51,7 @@ const mockClasses = [
     teachers: [
       { id: "TCH-001", name: "John Adebayo", image: "https://randomuser.me/api/portraits/men/1.jpg", subject: "Mathematics" },
     ],
+    classTeacher: { id: "TCH-001", name: "John Adebayo", image: "https://randomuser.me/api/portraits/men/1.jpg" },
     students: 35,
     capacity: 40,
     room: "Room 204",
@@ -61,6 +62,18 @@ const mockClasses = [
     averageGrade: 78,
     attendanceRate: 92,
     stream: "Science",
+    branch: "Main Campus",
+    maxStudents: 40,
+    enabledFeatures: {
+      lms: true,
+      digitalDiary: true,
+      transport: false,
+      hostel: false,
+      rfid: true,
+      onlineClasses: false,
+      library: true,
+      gradebook: true,
+    },
   },
   {
     id: "SSS2-ART-B", // Senior Secondary 2, Arts track, Section B
@@ -78,6 +91,7 @@ const mockClasses = [
       { id: "TCH-009", name: "Peter Adamu", image: "https://randomuser.me/api/portraits/men/9.jpg" },
       { id: "TCH-010", name: "Ruth Kamau", image: "https://randomuser.me/api/portraits/women/10.jpg" },
     ],
+    classTeacher: { id: "TCH-002", name: "Mary Okonkwo", image: "https://randomuser.me/api/portraits/women/2.jpg" },
     students: 28,
     capacity: 40,
     room: "Room 205",
@@ -88,6 +102,19 @@ const mockClasses = [
     averageGrade: 85,
     attendanceRate: 88,
     stream: "Arts",
+    branch: "Main Campus",
+    maxStudents: 40,
+    enabledFeatures: {
+      lms: true,
+      digitalDiary: false,
+      transport: true,
+      hostel: false,
+      rfid: false,
+      onlineClasses: true,
+      library: true,
+      gradebook: false,
+    },
+    transportZone: "Zone A",
   },
   {
     id: "SSS3-SCI-A", // Senior Secondary 3, Science track, Section A
@@ -272,7 +299,12 @@ const mockClasses = [
       { name: "CSC 205 - Database Systems", teacher: { id: "LEC-003", name: "Prof. Babatunde Olowo", image: "https://randomuser.me/api/portraits/men/21.jpg" } },
       { name: "CSC 207 - Web Development", teacher: { id: "LEC-004", name: "Dr. Zainab Ahmed", image: "https://randomuser.me/api/portraits/women/21.jpg" } },
     ],
-    teachers: [],
+    teachers: [
+      { id: "LEC-001", name: "Dr. Kwame Nkrumah", image: "https://randomuser.me/api/portraits/men/20.jpg" },
+      { id: "LEC-002", name: "Dr. Amara Diop", image: "https://randomuser.me/api/portraits/women/20.jpg" },
+      { id: "LEC-003", name: "Prof. Babatunde Olowo", image: "https://randomuser.me/api/portraits/men/21.jpg" },
+      { id: "LEC-004", name: "Dr. Zainab Ahmed", image: "https://randomuser.me/api/portraits/women/21.jpg" },
+    ],
     students: 45,
     capacity: 50,
     room: "LT 102",
@@ -288,6 +320,19 @@ const mockClasses = [
     programme: "B.Sc",
     courseLevel: "200 Level",
     semester: "First Semester",
+    branch: "Main Campus",
+    maxStudents: 50,
+    enabledFeatures: {
+      lms: true,
+      digitalDiary: true,
+      transport: false,
+      hostel: true,
+      rfid: true,
+      onlineClasses: true,
+      library: true,
+      gradebook: true,
+    },
+    hostelEligibility: true,
   },
   {
     id: "ND2-CS-SEM2", // ND2 (Polytechnic), Computer Science, Semester 2
@@ -430,7 +475,7 @@ const mockClasses = [
 ];
 
 export default function ClassesPage() {
-  const isPageLoading = usePageLoad(600);
+  const basePageLoading = usePageLoad(600);
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlView = searchParams.get("view");
@@ -452,6 +497,9 @@ export default function ClassesPage() {
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const [itemsToDelete, setItemsToDelete] = useState<BulkDeleteItem[]>([]);
   const gridRef = useRef<HTMLDivElement>(null);
+
+  // Only show full-screen loader if not switching view with toggle button
+  const isPageLoading = basePageLoading && !isSwitchingView;
 
   // Filter fields - dynamically set based on tenant's supported levels
   const filterFields: FilterField[] = [
@@ -524,13 +572,13 @@ export default function ClassesPage() {
   // Handle view mode change
   const handleViewModeChange = (newMode: "grid" | "list") => {
     setIsSwitchingView(true);
+    setViewMode(newMode);
+    router.push(`/classes?view=${newMode}`);
+
+    // Keep isSwitchingView true for longer to prevent PageLoader from showing
     setTimeout(() => {
-      setViewMode(newMode);
-      router.push(`/classes?view=${newMode}`);
-      setTimeout(() => {
-        setIsSwitchingView(false);
-      }, 100);
-    }, 300);
+      setIsSwitchingView(false);
+    }, 700); // Longer than PageLoader delay (600ms)
   };
 
   // Sync view mode with URL

@@ -1,563 +1,447 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import MainLayout from "@/components/layout/MainLayout";
+import PageHeader from "@/components/shared/PageHeader";
+import PageLoader from "@/components/shared/PageLoader";
+import BasicInformationSection from "@/components/classes/form-sections/BasicInformationSection";
+import TertiaryDetailsSection from "@/components/classes/form-sections/TertiaryDetailsSection";
+import SecondaryTrackSection from "@/components/classes/form-sections/SecondaryTrackSection";
+import LogisticsSection from "@/components/classes/form-sections/LogisticsSection";
+import TeacherAssignmentSection from "@/components/classes/form-sections/TeacherAssignmentSection";
+import SubjectCourseSection from "@/components/classes/form-sections/SubjectCourseSection";
+import FeaturesSettingsSection from "@/components/classes/form-sections/FeaturesSettingsSection";
+import { usePageLoad } from "@/hooks/usePageLoad";
+import { useSidebar } from "@/contexts/SidebarContext";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
-import {
-  ArrowLeft,
-  Save,
-  Users,
-  MapPin,
-  BookOpen,
-  GraduationCap,
-  Building2,
-  Calendar,
-} from "lucide-react";
-import Link from "next/link";
-
-type EducationLevel = "Primary" | "Junior Secondary" | "Secondary" | "Tertiary";
-type AcademicTrack = "Science" | "Arts" | "Commercial" | "Technical";
-type TertiaryProgramme = "B.Sc" | "B.Eng" | "B.A" | "ND" | "HND" | "NCE" | "MBBS";
-type Semester = "First Semester" | "Second Semester" | "SIWES";
 
 export default function AddClassPage() {
   const router = useRouter();
   const { settings } = useSchoolSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<any>({});
+  const isLoading = usePageLoad(800);
+  const { isCollapsed } = useSidebar();
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+  const [isSticky, setIsSticky] = useState(true);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const buttonsRef = useRef<HTMLDivElement | null>(null);
+
+  // Handle responsive layout
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsLargeScreen(window.innerWidth >= 1024);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Handle sticky behavior based on scroll position
+  useEffect(() => {
+    const mainElement = document.querySelector('main');
+
+    const handleScroll = () => {
+      if (!formRef.current || !buttonsRef.current || !mainElement) return;
+
+      const formRect = formRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const buttonsHeight = buttonsRef.current.offsetHeight;
+
+      if (formRect.bottom <= viewportHeight - buttonsHeight + 16) {
+        setIsSticky(false);
+      } else {
+        setIsSticky(true);
+      }
+    };
+
+    if (mainElement) {
+      mainElement.addEventListener('scroll', handleScroll);
+      handleScroll();
+    }
+
+    return () => {
+      if (mainElement) {
+        mainElement.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, []);
 
   // Form state
-  const [educationLevel, setEducationLevel] = useState<EducationLevel | "">("Secondary");
-  const [className, setClassName] = useState("");
-  const [level, setLevel] = useState("");
-  const [section, setSection] = useState("A");
-  const [stream, setStream] = useState("");
+  const [formData, setFormData] = useState({
+    // Basic Information
+    educationLevel: "" as "Primary" | "Junior Secondary" | "Secondary" | "Tertiary" | "",
+    className: "",
+    level: "",
+    section: "A",
+    stream: "",
+    academicYear: "2024/2025",
+    term: "First Term",
+    status: "Active",
 
-  // Secondary-specific
-  const [academicTrack, setAcademicTrack] = useState<AcademicTrack | "">("");
+    // Secondary-specific
+    academicTrack: "" as "Science" | "Arts" | "Commercial" | "Technical" | "",
+    streamName: "",
 
-  // Tertiary-specific
-  const [faculty, setFaculty] = useState("");
-  const [department, setDepartment] = useState("");
-  const [programme, setProgramme] = useState<TertiaryProgramme | "">("");
-  const [courseLevel, setCourseLevel] = useState("");
-  const [semester, setSemester] = useState<Semester | "">("First Semester");
+    // Tertiary-specific
+    faculty: "",
+    department: "",
+    programme: "" as "B.Sc" | "B.Eng" | "B.A" | "ND" | "HND" | "NCE" | "MBBS" | "",
+    courseLevel: "",
+    semester: "First Semester",
 
-  // Common fields
-  const [room, setRoom] = useState("");
-  const [capacity, setCapacity] = useState("");
-  const [term, setTerm] = useState("First Term");
-  const [academicYear, setAcademicYear] = useState("2024/2025");
+    // Logistics
+    room: "",
+    capacity: "",
+    schedule: "",
 
-  const isTertiary = educationLevel === "Tertiary";
-  const isSecondary = educationLevel === "Secondary";
-  const isPrimary = educationLevel === "Primary";
-  const isJuniorSecondary = educationLevel === "Junior Secondary";
+    // Teacher Assignment
+    classTeacher: "",
+    assistantTeacher: "", // For Nursery/Kindergarten
+    subjectTeacherAssignments: [] as Array<{ subject: string; teacher: string }>,
 
-  // Generate class code based on education level
+    // Subjects/Courses
+    subjects: [] as Array<{
+      name: string;
+      code: string;
+      category: string;
+      creditUnits?: string;
+    }>,
+
+    // Features & Settings
+    branch: "",
+    maxStudents: "",
+    enabledFeatures: {
+      lms: false,
+      digitalDiary: false,
+      transport: false,
+      hostel: false,
+      rfid: false,
+      onlineClasses: false,
+      library: false,
+      gradebook: false,
+    },
+    transportZone: "",
+    hostelEligibility: false,
+    behaviorPolicy: "",
+    feeTemplate: "",
+  });
+
+  // Generate class code based on form data
   const generatedClassCode = useMemo(() => {
-    if (!educationLevel || !level) return "";
+    if (!formData.educationLevel || !formData.level) return "";
+
+    const isNursery = formData.educationLevel === "Nursery" || formData.educationLevel === "Kindergarten";
+    const isPrimary = formData.educationLevel === "Primary";
+    const isJuniorSecondary = formData.educationLevel === "Junior Secondary";
+    const isSecondary = formData.educationLevel === "Secondary";
+    const isTertiary = formData.educationLevel === "Tertiary";
+
+    if (isNursery) {
+      // e.g., NUR1-A, KG2-B, PG-A (Playgroup)
+      const levelCode = formData.level === "Playgroup"
+        ? "PG"
+        : formData.level.replace(" ", "").substring(0, 4).toUpperCase(); // NUR1, NUR2, KG1, KG2
+      return formData.section
+        ? `${levelCode}-${formData.section}`
+        : levelCode;
+    }
 
     if (isPrimary) {
-      // PRY1-A, PRY6-B
-      return `PRY${level}-${section}`;
+      return `PRY${formData.level}-${formData.section}`;
     }
 
     if (isJuniorSecondary) {
-      // JSS1-A, JSS3-B
-      return `JSS${level}-${section}`;
+      return `JSS${formData.level}-${formData.section}`;
     }
 
     if (isSecondary) {
-      // SSS1-SCI-A, SSS2-COM-B
-      const trackCode = academicTrack
-        ? academicTrack.substring(0, 3).toUpperCase()
+      const trackCode = formData.academicTrack
+        ? formData.academicTrack.substring(0, 3).toUpperCase()
         : "";
       return trackCode
-        ? `SSS${level}-${trackCode}-${section}`
-        : `SSS${level}-${section}`;
+        ? `SSS${formData.level}-${trackCode}-${formData.section}`
+        : `SSS${formData.level}-${formData.section}`;
     }
 
-    if (isTertiary && programme) {
-      // 200L-CSC-SEM1, ND2-CS-SEM2
-      const deptCode = department
+    if (isTertiary && formData.programme && formData.courseLevel) {
+      const deptCode = formData.department
         .split(" ")
         .map(w => w.charAt(0))
         .join("")
         .toUpperCase();
 
-      const semCode = semester === "First Semester"
+      const semCode = formData.semester === "First Semester"
         ? "SEM1"
-        : semester === "Second Semester"
+        : formData.semester === "Second Semester"
         ? "SEM2"
         : "SIWES";
 
-      if (programme === "ND" || programme === "HND") {
-        return `${programme}${courseLevel}-${deptCode}-${semCode}`;
+      if (formData.programme === "ND" || formData.programme === "HND") {
+        return `${formData.programme}${formData.courseLevel}-${deptCode}-${semCode}`;
       }
 
-      return `${courseLevel}-${deptCode}-${semCode}`;
+      return `${formData.courseLevel}-${deptCode}-${semCode}`;
     }
 
     return "";
-  }, [
-    educationLevel,
-    level,
-    section,
-    academicTrack,
-    department,
-    programme,
-    courseLevel,
-    semester,
-    isPrimary,
-    isJuniorSecondary,
-    isSecondary,
-    isTertiary,
-  ]);
+  }, [formData]);
 
-  // Level options based on education level
-  const levelOptions = useMemo(() => {
-    if (isPrimary) return ["1", "2", "3", "4", "5", "6"];
-    if (isJuniorSecondary) return ["1", "2", "3"];
-    if (isSecondary) return ["1", "2", "3"];
-    if (isTertiary && programme) {
-      if (programme === "ND") return ["1", "2"];
-      if (programme === "HND") return ["1", "2"];
-      if (programme === "NCE") return ["1", "2", "3"];
-      if (programme === "MBBS") return ["100L", "200L", "300L", "400L", "500L", "600L"];
-      return ["100L", "200L", "300L", "400L", "500L"];
+  const handleChange = (field: string, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+
+    // Clear error for this field
+    if (errors[field]) {
+      setErrors((prev: any) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
-    return [];
-  }, [educationLevel, programme, isPrimary, isJuniorSecondary, isSecondary, isTertiary]);
+  };
+
+  const validateFormData = (): boolean => {
+    const newErrors: any = {};
+
+    // Basic validation
+    if (!formData.educationLevel) newErrors.educationLevel = "Education level is required";
+    if (!formData.className) newErrors.className = "Class name is required";
+    if (!formData.academicYear) newErrors.academicYear = "Academic year is required";
+    if (!formData.status) newErrors.status = "Status is required";
+    if (!formData.room) newErrors.room = "Room/Hall is required";
+    if (!formData.capacity) newErrors.capacity = "Capacity is required";
+
+    // Level-specific validation
+    const isTertiary = formData.educationLevel === "Tertiary";
+    const isSecondary = formData.educationLevel === "Secondary";
+    const isNursery = formData.educationLevel === "Nursery" || formData.educationLevel === "Kindergarten";
+
+    if (!isTertiary) {
+      if (!formData.level) newErrors.level = "Level is required";
+      // Section is optional for Nursery
+      if (!isNursery && !formData.section) newErrors.section = "Section is required";
+      if (!formData.term) newErrors.term = "Term is required";
+      if (!formData.classTeacher) newErrors.classTeacher = isSecondary ? "Class tutor is required" : "Class teacher is required";
+    }
+
+    if (isSecondary) {
+      if (!formData.academicTrack) newErrors.academicTrack = "Academic track is required";
+    }
+
+    if (isTertiary) {
+      if (!formData.faculty) newErrors.faculty = "Faculty is required";
+      if (!formData.department) newErrors.department = "Department is required";
+      if (!formData.programme) newErrors.programme = "Programme is required";
+      if (!formData.courseLevel) newErrors.courseLevel = "Course level is required";
+      if (!formData.semester) newErrors.semester = "Semester is required";
+    }
+
+    // Teacher/Subject validation (Nursery doesn't need subject teachers - activity-based)
+    if (!isNursery) {
+      if (!formData.subjectTeacherAssignments || formData.subjectTeacherAssignments.length === 0) {
+        newErrors.subjectTeacherAssignments = isTertiary
+          ? "At least one course lecturer is required"
+          : "At least one subject teacher is required";
+      }
+
+      // Subjects validation (Nursery uses activity-based learning, not subjects)
+      if (!formData.subjects || formData.subjects.length === 0) {
+        newErrors.subjects = isTertiary
+          ? "At least one course is required"
+          : "At least one subject is required";
+      }
+    }
+
+    // Features & Settings validation
+    if (!formData.branch) newErrors.branch = "Branch is required";
+    if (!formData.maxStudents) newErrors.maxStudents = "Maximum students is required";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateFormData()) {
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const classData = {
+        id: generatedClassCode,
+        name: formData.className,
+        level: formData.educationLevel,
+        section: formData.section,
+        stream: formData.stream,
+        academicTrack: formData.academicTrack,
+        faculty: formData.faculty,
+        department: formData.department,
+        programme: formData.programme,
+        courseLevel: formData.courseLevel,
+        semester: formData.semester,
+        room: formData.room,
+        capacity: parseInt(formData.capacity),
+        schedule: formData.schedule,
+        term: formData.term,
+        academicYear: formData.academicYear,
+        status: formData.status,
+      };
 
-    const classData = {
-      id: generatedClassCode,
-      name: className,
-      level: educationLevel,
-      section,
-      stream: !isTertiary ? stream : undefined,
-      academicTrack: isSecondary ? academicTrack : undefined,
-      faculty: isTertiary ? faculty : undefined,
-      department: isTertiary ? department : undefined,
-      programme: isTertiary ? programme : undefined,
-      courseLevel: isTertiary ? courseLevel : undefined,
-      semester: isTertiary ? semester : undefined,
-      room,
-      capacity: parseInt(capacity),
-      term: !isTertiary ? term : undefined,
-      academicYear,
-      status: "Active",
-    };
+      console.log("Creating class:", classData);
 
-    console.log("Creating class:", classData);
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    // TODO: Send to API
-    router.push("/classes");
+      // Navigate back to classes list
+      router.push("/classes?view=grid");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
+  const handleCancel = () => {
+    router.push("/classes?view=grid");
+  };
+
+  const classLabel = settings.supportedLevels.includes("Tertiary") ? "Course" : "Class";
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 midnight:bg-gray-950 purple:bg-gray-950">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/classes"
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
-                  Add New Class
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Create a new class or course for {settings.tenantName}
-                </p>
+    <MainLayout>
+      {/* Loading Screen */}
+      <PageLoader isLoading={isLoading} loadingText="Loading Form" />
+
+      {/* Main Content */}
+      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`} suppressHydrationWarning>
+        {/* Header */}
+        <div className="py-4 mb-2">
+          <PageHeader
+            title={`Add ${classLabel}`}
+            breadcrumbs={[
+              { label: "Dashboard", href: "/" },
+              { label: "Academic" },
+              { label: "Classes", href: "/classes?view=grid" },
+              { label: `Add ${classLabel}`, isActive: true },
+            ]}
+          />
+        </div>
+
+        {/* Class Code Preview */}
+        {generatedClassCode && (
+          <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-500/10 purple:bg-pink-500/10 border border-blue-200 dark:border-blue-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
               </div>
-            </div>
-            {generatedClassCode && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-500/10 purple:bg-pink-500/10 px-4 py-2 rounded-lg">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Class Code</p>
-                <p className="text-lg font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
+              <div>
+                <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Generated Class Code</p>
+                <p className="text-lg font-bold text-blue-700 dark:text-blue-300">
                   {generatedClassCode}
                 </p>
               </div>
-            )}
+            </div>
+          </div>
+        )}
+
+        {/* Form */}
+        <form
+          id="add-class-form"
+          ref={formRef}
+          onSubmit={handleSubmit}
+          className="space-y-6 pb-32 md:pb-36 lg:pb-16 xl:pb-20"
+          suppressHydrationWarning
+        >
+          {/* Basic Information */}
+          <BasicInformationSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* Secondary Track (only for SSS) */}
+          <SecondaryTrackSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* Tertiary Details (only for Tertiary) */}
+          <TertiaryDetailsSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* Logistics */}
+          <LogisticsSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* Teacher Assignment */}
+          <TeacherAssignmentSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* Subjects/Courses */}
+          <SubjectCourseSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+
+          {/* Features & Settings */}
+          <FeaturesSettingsSection
+            formData={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+        </form>
+
+        {/* Action Buttons - Sticky to bottom until form ends */}
+        <div
+          ref={buttonsRef}
+          className={`${isSticky ? 'fixed' : 'relative'} bottom-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-t-xl shadow-lg backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 py-4 px-6 z-50`}
+          style={isSticky ? {
+            left: isLargeScreen ? `calc(${isCollapsed ? '5rem' : '18rem'} + 2rem)` : '1rem',
+            right: isLargeScreen ? '2rem' : '1rem',
+            transition: 'left 500ms, right 0ms'
+          } : undefined}
+        >
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-all duration-200 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="add-class-form"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl cursor-pointer"
+            >
+              {isSubmitting ? `Adding ${classLabel}...` : `Add ${classLabel}`}
+            </button>
           </div>
         </div>
       </div>
-
-      {/* Form */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
-          <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-500/20 purple:bg-pink-500/20 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-              </div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Basic Information
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Education Level */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Education Level <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={educationLevel}
-                  onChange={(e) => {
-                    setEducationLevel(e.target.value as EducationLevel);
-                    setLevel("");
-                    setAcademicTrack("");
-                    setFaculty("");
-                    setDepartment("");
-                    setProgramme("");
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  required
-                >
-                  <option value="">Select level</option>
-                  {settings.supportedLevels.map((level) => (
-                    <option key={level} value={level}>
-                      {level}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Class Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Class Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={className}
-                  onChange={(e) => setClassName(e.target.value)}
-                  placeholder={isTertiary ? "e.g., Computer Science 201" : "e.g., SSS 1A"}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  required
-                />
-              </div>
-
-              {/* Level/Year */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {isTertiary ? "Course Level" : "Level"} <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={isTertiary ? courseLevel : level}
-                  onChange={(e) => isTertiary ? setCourseLevel(e.target.value) : setLevel(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  required
-                  disabled={!educationLevel || (isTertiary && !programme)}
-                >
-                  <option value="">Select level</option>
-                  {levelOptions.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Section */}
-              {!isTertiary && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Section <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={section}
-                    onChange={(e) => setSection(e.target.value.toUpperCase())}
-                    placeholder="A, B, C..."
-                    maxLength={1}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    required
-                  />
-                </div>
-              )}
-
-              {/* Stream (for Primary/Junior Secondary) */}
-              {(isPrimary || isJuniorSecondary) && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Stream (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={stream}
-                    onChange={(e) => setStream(e.target.value)}
-                    placeholder="e.g., Gold, Diamond"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Secondary-Specific Fields */}
-          {isSecondary && (
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                  <GraduationCap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                </div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Academic Track
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Track <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={academicTrack}
-                    onChange={(e) => setAcademicTrack(e.target.value as AcademicTrack)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    required
-                  >
-                    <option value="">Select track</option>
-                    <option value="Science">Science</option>
-                    <option value="Arts">Arts</option>
-                    <option value="Commercial">Commercial</option>
-                    <option value="Technical">Technical</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Stream (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={stream}
-                    onChange={(e) => setStream(e.target.value)}
-                    placeholder="e.g., Science A, Science B"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Tertiary-Specific Fields */}
-          {isTertiary && (
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                  <Building2 className="w-5 h-5 text-green-600 dark:text-green-400" />
-                </div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Faculty & Programme Details
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Faculty */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Faculty <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={faculty}
-                    onChange={(e) => setFaculty(e.target.value)}
-                    placeholder="e.g., Engineering, Sciences"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    required
-                  />
-                </div>
-
-                {/* Department */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Department <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
-                    placeholder="e.g., Computer Science"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    required
-                  />
-                </div>
-
-                {/* Programme */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Programme <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={programme}
-                    onChange={(e) => {
-                      setProgramme(e.target.value as TertiaryProgramme);
-                      setCourseLevel("");
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    required
-                  >
-                    <option value="">Select programme</option>
-                    <option value="B.Sc">B.Sc (Bachelor of Science)</option>
-                    <option value="B.Eng">B.Eng (Bachelor of Engineering)</option>
-                    <option value="B.A">B.A (Bachelor of Arts)</option>
-                    <option value="ND">ND (National Diploma)</option>
-                    <option value="HND">HND (Higher National Diploma)</option>
-                    <option value="NCE">NCE (Nigeria Certificate in Education)</option>
-                    <option value="MBBS">MBBS (Bachelor of Medicine)</option>
-                  </select>
-                </div>
-
-                {/* Semester */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Semester <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={semester}
-                    onChange={(e) => setSemester(e.target.value as Semester)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    required
-                  >
-                    <option value="First Semester">First Semester</option>
-                    <option value="Second Semester">Second Semester</option>
-                    {(programme === "ND" || programme === "HND") && (
-                      <option value="SIWES">SIWES (Industrial Training)</option>
-                    )}
-                  </select>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Logistics Information */}
-          <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-              </div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Logistics & Capacity
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Room */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {isTertiary ? "Hall/Lab" : "Room"} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={room}
-                  onChange={(e) => setRoom(e.target.value)}
-                  placeholder={isTertiary ? "e.g., LT 101, Lab 3" : "e.g., Room 101"}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  required
-                />
-              </div>
-
-              {/* Capacity */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {isTertiary ? "Expected Enrollment" : "Capacity"} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  value={capacity}
-                  onChange={(e) => setCapacity(e.target.value)}
-                  placeholder="e.g., 50"
-                  min="1"
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Academic Calendar */}
-          <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-              </div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Academic Calendar
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Term (for non-tertiary) */}
-              {!isTertiary && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Term <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={term}
-                    onChange={(e) => setTerm(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    required
-                  >
-                    <option value="First Term">First Term</option>
-                    <option value="Second Term">Second Term</option>
-                    <option value="Third Term">Third Term</option>
-                  </select>
-                </div>
-              )}
-
-              {/* Academic Year */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Academic Year <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={academicYear}
-                  onChange={(e) => setAcademicYear(e.target.value)}
-                  placeholder="e.g., 2024/2025"
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <div className="flex items-center justify-end gap-4">
-            <Link
-              href="/classes"
-              className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Save className="w-4 h-4" />
-              {isSubmitting ? "Creating..." : "Create Class"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    </MainLayout>
   );
 }

@@ -36,7 +36,7 @@ export default function AllStudentsPage() {
   const { settings } = useSchoolSettings();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const isPageLoading = usePageLoad(600);
+  const basePageLoading = usePageLoad(600);
 
   // Get view mode from URL, default to grid
   const urlView = searchParams.get("view");
@@ -48,13 +48,23 @@ export default function AllStudentsPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [displayedCount, setDisplayedCount] = useState(8); // 8 for grid, 10 for table
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isSwitchingView, setIsSwitchingView] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const previousCountRef = useRef(8);
 
+  // Only show full-screen loader if not switching view with toggle button
+  const isPageLoading = basePageLoading && !isSwitchingView;
+
   // Handler to update view mode and URL
   const handleViewModeChange = (newMode: "grid" | "list") => {
+    setIsSwitchingView(true);
     setViewMode(newMode);
     router.push(`/students?view=${newMode}`);
+
+    // Keep isSwitchingView true for longer to prevent PageLoader from showing
+    setTimeout(() => {
+      setIsSwitchingView(false);
+    }, 700); // Longer than PageLoader delay (600ms)
   };
 
   // Sync view mode with URL changes
@@ -62,7 +72,7 @@ export default function AllStudentsPage() {
     const urlView = searchParams.get("view");
     const newViewMode = urlView === "list" ? "list" : "grid";
     setViewMode(newViewMode);
-  }, [searchParams, setViewMode]);
+  }, [searchParams]);
 
   // Filter fields configuration
   const filterFields: FilterField[] = [
@@ -941,7 +951,7 @@ export default function AllStudentsPage() {
   const hasMore = displayedCount < filteredStudents.length;
 
   // Check if we're in a loading state
-  const isLoading = isFiltering || isSorting || isRefreshing;
+  const isLoading = isFiltering || isSorting || isRefreshing || isSwitchingView;
 
   if (!isMounted) {
     return null;
@@ -1082,7 +1092,7 @@ export default function AllStudentsPage() {
               style={{ overflow: 'visible' }}
             >
               {isLoading ? (
-                <PageSpinner message={isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."} size="md" />
+                <PageSpinner message={isSwitchingView ? "Switching view..." : isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."} size="md" />
               ) : displayedStudents.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16">
                   {/* Icon with gradient background */}
@@ -1185,7 +1195,7 @@ export default function AllStudentsPage() {
               <StudentTable
                 students={filteredStudents}
                 isLoading={isLoading}
-                loadingMessage={isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."}
+                loadingMessage={isSwitchingView ? "Switching view..." : isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."}
                 onClearFilters={handleClearFilters}
                 hasActiveFilters={hasActiveFilters}
                 totalStudentsCount={students.length}

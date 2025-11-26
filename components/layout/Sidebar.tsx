@@ -111,7 +111,15 @@ const menuItems: MenuItem[] = [
     label: "Academic",
     icon: <BookOpen className="w-5 h-5" />,
     children: [
-      { id: "classes", label: "Classes", icon: <Boxes className="w-4 h-4" />, href: "/classes?view=grid" },
+      {
+        id: "classes",
+        label: "Classes",
+        icon: <Boxes className="w-4 h-4" />,
+        children: [
+          { id: "all-classes", label: "All Classes", icon: <Boxes className="w-4 h-4" />, href: "/classes?view=grid" },
+          { id: "class-list", label: "Class List", icon: <Boxes className="w-4 h-4" />, href: "/classes?view=list" },
+        ]
+      },
       { id: "subjects", label: "Subjects", icon: <BookOpen className="w-4 h-4" />, href: "/subjects" },
       { id: "exams", label: "Exams", icon: <FileText className="w-4 h-4" />, href: "/exams" },
       { id: "syllabus", label: "Syllabus", icon: <FileText className="w-4 h-4" />, href: "/syllabus" },
