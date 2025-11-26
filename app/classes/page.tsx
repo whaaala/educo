@@ -844,6 +844,7 @@ export default function ClassesPage() {
                               return newIds;
                             });
                           }}
+                          adviserImage={cls.classTeacher?.image || cls.teachers?.[0]?.image}
                         />
                       ))}
                     </div>

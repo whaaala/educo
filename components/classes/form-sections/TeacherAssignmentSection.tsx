@@ -126,9 +126,21 @@ export default function TeacherAssignmentSection({
       {/* Content */}
       {isExpanded && (
         <div className="p-6 space-y-6">
-          {/* Class Teacher (for non-tertiary) */}
-          {!isTertiary && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Level/Class Adviser (for tertiary) or Class Teacher (for non-tertiary) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {isTertiary ? (
+              <FormDropdown
+                label="Level Adviser (Class Adviser)"
+                value={formData.levelAdviser}
+                onChange={(value) => onChange("levelAdviser", value)}
+                options={mockLecturers}
+                icon={<Users className="w-2.5 h-2.5" />}
+                placeholder="Select level adviser"
+                required
+                error={errors.levelAdviser}
+                helpText="Assigned to help students with course registration and academic guidance"
+              />
+            ) : (
               <FormDropdown
                 label={isSecondary ? "Class Tutor" : "Class Teacher"}
                 value={formData.classTeacher}
@@ -139,21 +151,21 @@ export default function TeacherAssignmentSection({
                 required
                 error={errors.classTeacher}
               />
+            )}
 
-              {/* Assistant Teacher (only for Nursery) */}
-              {canHaveAssistant && (
-                <FormDropdown
-                  label="Assistant Teacher (Optional)"
-                  value={formData.assistantTeacher}
-                  onChange={(value) => onChange("assistantTeacher", value)}
-                  options={mockTeachers}
-                  icon={<Users className="w-2.5 h-2.5" />}
-                  placeholder="Select assistant teacher"
-                  error={errors.assistantTeacher}
-                />
-              )}
-            </div>
-          )}
+            {/* Assistant Teacher (only for Nursery) */}
+            {canHaveAssistant && (
+              <FormDropdown
+                label="Assistant Teacher (Optional)"
+                value={formData.assistantTeacher}
+                onChange={(value) => onChange("assistantTeacher", value)}
+                options={mockTeachers}
+                icon={<Users className="w-2.5 h-2.5" />}
+                placeholder="Select assistant teacher"
+                error={errors.assistantTeacher}
+              />
+            )}
+          </div>
 
           {/* Subject/Course Teacher Assignments */}
           <div className="space-y-4">

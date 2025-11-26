@@ -99,7 +99,8 @@ export default function AddClassPage() {
     schedule: "",
 
     // Teacher Assignment
-    classTeacher: "",
+    classTeacher: "", // For Primary/Secondary
+    levelAdviser: "", // For Tertiary (University/College)
     assistantTeacher: "", // For Nursery/Kindergarten
     subjectTeacherAssignments: [] as Array<{ subject: string; teacher: string }>,
 
@@ -227,7 +228,14 @@ export default function AddClassPage() {
       // Section is optional for Nursery
       if (!isNursery && !formData.section) newErrors.section = "Section is required";
       if (!formData.term) newErrors.term = "Term is required";
+
+      // Class Teacher required for non-tertiary
       if (!formData.classTeacher) newErrors.classTeacher = isSecondary ? "Class tutor is required" : "Class teacher is required";
+    }
+
+    // Level Adviser required for Tertiary
+    if (isTertiary) {
+      if (!formData.levelAdviser) newErrors.levelAdviser = "Level adviser is required";
     }
 
     if (isSecondary) {
