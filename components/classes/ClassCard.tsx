@@ -126,8 +126,8 @@ export default function ClassCard({
           <div className="absolute -inset-[1px] rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-blue-400/30 via-purple-400/30 to-pink-400/30 dark:from-blue-400/40 dark:via-purple-400/40 dark:to-pink-400/40 midnight:from-cyan-400/40 midnight:via-purple-400/40 midnight:to-cyan-400/40 purple:from-pink-400/40 purple:via-purple-400/40 purple:to-pink-400/40 blur-md -z-10" />
 
           {/* Card Header */}
-          <div className="relative px-4 pt-2 pb-0.5 flex items-center justify-between z-10">
-            <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="relative px-4 pt-2 pb-0.5 flex items-center justify-between gap-4 z-10">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
               {onSelectionChange && (
                 <input
                   type="checkbox"
@@ -149,7 +149,7 @@ export default function ClassCard({
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3 flex-shrink-0">
               <div
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-300 ${
                   classData.status === "Active"
