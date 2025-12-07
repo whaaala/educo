@@ -168,7 +168,7 @@ export default function AddClassPage() {
         : `SSS${formData.level}-${formData.section}`;
     }
 
-    if (isTertiary && formData.programme && formData.courseLevel) {
+    if (isTertiary && formData.programme && formData.courseLevel && formData.department) {
       const deptCode = formData.department
         .split(" ")
         .map(w => w.charAt(0))

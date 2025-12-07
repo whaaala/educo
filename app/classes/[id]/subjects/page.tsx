@@ -441,7 +441,15 @@ export default function SubjectsManagementPage() {
               </h2>
             </div>
             <div className="p-6">
-              <form className="space-y-4">
+              <form 
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  // Handle form submission here
+                  console.log("Form submitted");
+                  setShowAddModal(false);
+                }}
+              >
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Subject Name <span className="text-red-500">*</span>
@@ -518,21 +526,23 @@ export default function SubjectsManagementPage() {
                     <option value="TCH-003">Mr. Ibrahim Musa</option>
                   </select>
                 </div>
+
+                <div className="flex items-center justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddModal(false)}
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                  >
+                    Add Subject
+                  </button>
+                </div>
               </form>
-            </div>
-            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end gap-3">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-              >
-                Add Subject
-              </button>
             </div>
           </div>
         </div>

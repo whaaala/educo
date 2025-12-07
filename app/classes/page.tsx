@@ -644,11 +644,18 @@ export default function ClassesPage() {
         selectedIds.has(cls.id)
       );
 
-      const items: BulkDeleteItem[] = selectedClasses.map((cls) => ({
-        id: cls.id,
-        name: cls.name,
-        subtitle: `${cls.students} students • ${cls.classTeacher}`,
-      }));
+      const items: BulkDeleteItem[] = selectedClasses.map((cls) => {
+        // Safely get teacher name: prefer classTeacher, fallback to first teacher in teachers array
+        const teacherName = cls.classTeacher?.name || 
+                           (cls.teachers && cls.teachers.length > 0 ? cls.teachers[0]?.name : null) || 
+                           "No teacher assigned";
+        
+        return {
+          id: cls.id,
+          name: cls.name,
+          subtitle: `${cls.students} students • ${teacherName}`,
+        };
+      });
 
       setItemsToDelete(items);
       setIsBulkDeleteModalOpen(true);

@@ -69,8 +69,49 @@ export interface SchoolConfiguration {
   // Academic Settings
   gradingSystem?: GradingSystemConfig;
 
+  // Timetable Settings (for lesson-level attendance)
+  timetable?: TimetableConfig;
+
+  // Subjects/Courses offered by the school
+  subjects?: SubjectConfig[];
+
   // Additional Settings
   customSettings?: Record<string, any>; // For school-specific configurations
+}
+
+/**
+ * Timetable Configuration - Defines periods/sessions for the school
+ */
+export interface TimetableConfig {
+  // Regular day periods
+  periods?: PeriodConfig[];
+  // Evening program sessions (for after-school schedule)
+  eveningPeriods?: PeriodConfig[];
+  // Weekend program sessions
+  weekendPeriods?: PeriodConfig[];
+}
+
+/**
+ * Period/Session Configuration
+ */
+export interface PeriodConfig {
+  id: string;
+  label: string;
+  startTime: string; // Format: "HH:MM" (24-hour)
+  endTime: string;   // Format: "HH:MM" (24-hour)
+  type?: "regular" | "break" | "lunch" | "assembly";
+}
+
+/**
+ * Subject/Course Configuration
+ */
+export interface SubjectConfig {
+  id: string;
+  name: string;
+  code?: string; // e.g., "MTH101" for tertiary
+  level?: EducationLevel; // Which education level this subject is for
+  department?: string; // For tertiary - which department offers this
+  isCore?: boolean; // Core vs elective subject
 }
 
 /**

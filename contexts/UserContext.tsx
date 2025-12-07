@@ -24,6 +24,9 @@ export type UserRole =
   | "parent"         // Linked Students - Monitor progress, make payments
   | "custom";        // Configurable - Vendors, franchise partners
 
+// Staff types for teachers/lecturers
+export type StaffType = "lecturer" | "teaching_assistant";
+
 export interface User {
   id: string;
   email: string;
@@ -33,9 +36,12 @@ export interface User {
   role: UserRole;
   tenantId: string; // Which tenant this user belongs to
   branchId?: string; // For branch admins
-  // For teachers
+  // For teachers/lecturers
+  staffType?: StaffType; // Whether lecturer or teaching assistant
+  department?: string; // Department for staff
   assignedClasses?: string[];
-  assignedSubjects?: string[];
+  assignedSubjects?: string[]; // For primary/secondary teachers - subject names
+  assignedCourses?: string[]; // For tertiary lecturers - course IDs (e.g., "csc101", "mth101")
   // For students/parents
   linkedStudentIds?: string[];
   // Custom role permissions
@@ -63,6 +69,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Mock user for development (Super Admin by default for testing)
+// When role is "teacher", staffType determines if lecturer or TA
 const MOCK_USER: User = {
   id: "user-001",
   email: "admin@educo.africa",
@@ -71,6 +78,13 @@ const MOCK_USER: User = {
   avatar: "https://i.pravatar.cc/150?img=68",
   role: "super_admin",
   tenantId: "educo-default",
+  // Staff fields (used when role is "teacher")
+  staffType: "lecturer",
+  department: "Administration",
+  // Classes and subjects assigned to this teacher/TA
+  assignedClasses: ["JSS 1", "JSS 2", "SSS 1", "100 Level", "200 Level"], // Classes they can take attendance for
+  assignedSubjects: ["Mathematics", "English Language"], // For primary/secondary
+  assignedCourses: ["csc101", "csc201", "mth101"], // For tertiary - matches course IDs in tenant config
 };
 
 export function UserProvider({ children }: { children: ReactNode }) {

@@ -5,17 +5,51 @@ import { createContext, useContext, useState, ReactNode, useEffect } from "react
 // Attendance status types
 export type AttendanceStatus = "present" | "absent" | "late" | "halfday" | "holiday";
 
+// Absence reason types - categorized for reporting and analytics
+export type AbsenceReason =
+  | "sick"              // Illness or medical condition
+  | "medical_appointment" // Doctor/hospital visit
+  | "family_emergency"  // Family-related emergency
+  | "bereavement"       // Death in the family
+  | "religious_holiday" // Religious observance
+  | "travel"            // Family travel
+  | "suspension"        // Disciplinary suspension
+  | "truancy"           // Unexcused/skipping
+  | "weather"           // Severe weather conditions
+  | "transport_issue"   // Transportation problems
+  | "unknown"           // No reason provided
+  | "other";            // Other reason with notes
+
+// Predefined absence reasons for dropdown
+export const ABSENCE_REASONS = [
+  { value: "sick", label: "Sick / Illness" },
+  { value: "medical_appointment", label: "Medical Appointment" },
+  { value: "family_emergency", label: "Family Emergency" },
+  { value: "bereavement", label: "Bereavement" },
+  { value: "religious_holiday", label: "Religious Holiday" },
+  { value: "travel", label: "Family Travel" },
+  { value: "suspension", label: "Suspension" },
+  { value: "truancy", label: "Truancy / Unexcused" },
+  { value: "weather", label: "Severe Weather" },
+  { value: "transport_issue", label: "Transportation Issue" },
+  { value: "unknown", label: "Unknown / Not Specified" },
+  { value: "other", label: "Other (See Notes)" },
+] as const;
+
 // Attendance record for a student on a specific date
 export interface AttendanceRecord {
   studentId: string;
   status: AttendanceStatus;
   date: string; // Format: YYYY-MM-DD
   lateMinutes?: number;
+  absenceReason?: AbsenceReason; // Reason for absence
+  absenceExcused?: boolean; // Whether absence is excused (with documentation)
   remarks?: string;
   class: string;
   section: string;
   teacher?: string;
   subject?: string;
+  period?: number; // For lesson-level attendance
 }
 
 // Attendance context state
