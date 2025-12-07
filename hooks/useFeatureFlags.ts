@@ -53,6 +53,10 @@ export function useFeatureFlags() {
     // Attendance
     canTrackEveningWeekend: isFeatureEnabled('FF_Attendance_Evening_Weekend'),
 
+    // School Management
+    canUseBranchHierarchy: isFeatureEnabled('FF_Branch_Hierarchy'),
+    canManageSchool: isFeatureEnabled('FF_School_Management'),
+
     // Current tenant context
     tenantContext: {
       tenantId: settings.tenantId,

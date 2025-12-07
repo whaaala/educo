@@ -16,6 +16,9 @@ import PageSpinner from "@/components/shared/PageSpinner";
 import PageLoader from "@/components/shared/PageLoader";
 import DeleteAllButton from "@/components/shared/DeleteAllButton";
 import BulkDeleteModal, { BulkDeleteItem } from "@/components/shared/BulkDeleteModal";
+import BulkTransferButton from "@/components/shared/BulkTransferButton";
+import BulkTransferModal, { BulkTransferStudent, BulkTransferFormData } from "@/components/shared/BulkTransferModal";
+import { useTransfers } from "@/contexts/TransferContext";
 import { useAcademicYear } from "@/contexts/AcademicYearContext";
 import { filterStudentsByAcademicYear } from "@/utils/academicYear";
 import { exportStudentsToPDF } from "@/utils/pdfExport";
@@ -25,6 +28,7 @@ import { getAllStudents } from "@/lib/mockStudents";
 import { detectEducationLevelFromClass } from "@/utils/educationLevel";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { useUser } from "@/contexts/UserContext";
 
 // Use shared student data from mockStudents.ts
 // This ensures the students displayed match the data available in the edit page
@@ -34,6 +38,8 @@ export default function AllStudentsPage() {
   const { selectedYear } = academicYearContext;
   const featureFlags = useFeatureFlags();
   const { settings } = useSchoolSettings();
+  const { isSuperAdmin } = useUser();
+  const { addTransferRequest } = useTransfers();
   const searchParams = useSearchParams();
   const router = useRouter();
   const basePageLoading = usePageLoad(600);
@@ -74,8 +80,19 @@ export default function AllStudentsPage() {
     setViewMode(newViewMode);
   }, [searchParams]);
 
-  // Filter fields configuration
+  // Check if school supports multiple education levels
+  const supportsMultipleLevels = settings.supportsMultipleLevels && settings.supportedLevels.length > 1;
+
+  // Filter fields configuration - dynamically built based on feature flags, settings, and user role
   const filterFields: FilterField[] = [
+    // Branch/Campus filter only shown when FF_Branch_Hierarchy is enabled
+    // Typically for: School Networks, Large Tertiary Institutions, International Schools
+    ...(featureFlags.canUseBranchHierarchy ? [{
+      id: "branch",
+      label: "Branch/Campus",
+      options: ["Main Campus", "North Campus", "South Campus", "East Campus", "West Campus"],
+      width: "full" as const,
+    }] : []),
     {
       id: "class",
       label: "Class",
@@ -88,12 +105,15 @@ export default function AllStudentsPage() {
       options: ["A", "B"],
       width: "half",
     },
-    {
+    // Education Level filter only shown for:
+    // 1. Multi-level schools (supports Primary, Secondary, Tertiary)
+    // 2. Super Admin users only (not visible to other user roles)
+    ...(supportsMultipleLevels && isSuperAdmin ? [{
       id: "educationLevel",
       label: "Education Level",
-      options: ["Primary", "Secondary", "Tertiary"],
-      width: "full",
-    },
+      options: settings.supportedLevels, // Only show supported levels
+      width: "full" as const,
+    }] : []),
     {
       id: "name",
       label: "Name",
@@ -131,6 +151,10 @@ export default function AllStudentsPage() {
   // Bulk delete modal state
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const [itemsToDelete, setItemsToDelete] = useState<BulkDeleteItem[]>([]);
+
+  // Bulk transfer modal state
+  const [isBulkTransferModalOpen, setIsBulkTransferModalOpen] = useState(false);
+  const [studentsToTransfer, setStudentsToTransfer] = useState<BulkTransferStudent[]>([]);
 
   // Sort options
   const sortOptions = [
@@ -295,6 +319,97 @@ export default function AllStudentsPage() {
     setSelectedIds(prevIds => {
       const newIds = new Set(prevIds);
       items.forEach(item => newIds.add(item.id));
+      return newIds;
+    });
+  };
+
+  // ============ Bulk Transfer Handlers ============
+
+  const handleBulkTransfer = () => {
+    if (selectedIds.size > 0) {
+      // Get the selected students' details
+      const selectedStudents = filteredStudents.filter(student =>
+        selectedIds.has(student.id)
+      );
+
+      // Convert to BulkTransferStudent format
+      const students: BulkTransferStudent[] = selectedStudents.map(student => {
+        const [classNum, section] = student.class.split(", ");
+        return {
+          id: student.id,
+          name: student.name,
+          admissionNumber: student.id,
+          class: classNum || student.class,
+          section: section || "A",
+          avatar: student.avatar,
+        };
+      });
+
+      setStudentsToTransfer(students);
+      setIsBulkTransferModalOpen(true);
+    }
+  };
+
+  const handleRemoveFromTransferList = (studentId: string) => {
+    setStudentsToTransfer(prevStudents => prevStudents.filter(s => s.id !== studentId));
+    setSelectedIds(prevIds => {
+      const newIds = new Set(prevIds);
+      newIds.delete(studentId);
+      return newIds;
+    });
+  };
+
+  const handleConfirmBulkTransfer = (students: BulkTransferStudent[], transferData: BulkTransferFormData) => {
+    // Create transfer requests for each student
+    students.forEach(student => {
+      addTransferRequest(
+        {
+          studentId: student.id,
+          studentName: student.name,
+          studentAdmissionNumber: student.admissionNumber,
+          studentClass: student.class,
+          studentSection: student.section,
+        },
+        {
+          transferType: transferData.transferType,
+          destinationClass: transferData.destinationClass,
+          destinationSection: transferData.destinationSection,
+          destinationSchoolName: transferData.destinationSchoolName,
+          destinationSchoolAddress: transferData.destinationSchoolAddress,
+          reason: transferData.reason,
+          effectiveDate: transferData.effectiveDate,
+          notes: transferData.notes,
+        }
+      );
+    });
+
+    // Clear the selection and close modal
+    setSelectedIds(new Set());
+    setIsBulkTransferModalOpen(false);
+    setStudentsToTransfer([]);
+
+    // Show success message (optional: you could add a toast notification here)
+    console.log(`Successfully created ${students.length} transfer request(s)`);
+  };
+
+  const handleCloseBulkTransferModal = () => {
+    setIsBulkTransferModalOpen(false);
+  };
+
+  const handleRestoreTransferStudent = (student: BulkTransferStudent) => {
+    setStudentsToTransfer(prevStudents => [...prevStudents, student]);
+    setSelectedIds(prevIds => {
+      const newIds = new Set(prevIds);
+      newIds.add(student.id);
+      return newIds;
+    });
+  };
+
+  const handleRestoreAllTransferStudents = (students: BulkTransferStudent[]) => {
+    setStudentsToTransfer(prevStudents => [...prevStudents, ...students]);
+    setSelectedIds(prevIds => {
+      const newIds = new Set(prevIds);
+      students.forEach(s => newIds.add(s.id));
       return newIds;
     });
   };
@@ -944,7 +1059,13 @@ export default function AllStudentsPage() {
       return studentLevel === level;
     });
 
-    return matchesClass && matchesSection && matchesName && matchesGender && matchesStatus && matchesEducationLevel;
+    // Branch/Campus filter - defaults to "Main Campus" if not set
+    const matchesBranch = !filters.branch || filters.branch.length === 0 || filters.branch.some((branch) => {
+      const studentBranch = student.branch || "Main Campus";
+      return studentBranch === branch;
+    });
+
+    return matchesClass && matchesSection && matchesName && matchesGender && matchesStatus && matchesEducationLevel && matchesBranch;
   });
 
   const displayedStudents = filteredStudents.slice(0, displayedCount);
@@ -999,12 +1120,18 @@ export default function AllStudentsPage() {
             {/* Filter */}
             <FilterButton fields={filterFields} onFilterChange={handleFilterChange} resetKey={resetKey} />
 
-            {/* Delete All Button - Only show in table view when items are selected */}
+            {/* Bulk Actions - Only show in table view when items are selected */}
             {viewMode === "list" && selectedIds.size > 0 && (
-              <DeleteAllButton
-                selectedCount={selectedIds.size}
-                onDeleteAll={handleDeleteAll}
-              />
+              <>
+                <BulkTransferButton
+                  selectedCount={selectedIds.size}
+                  onBulkTransfer={handleBulkTransfer}
+                />
+                <DeleteAllButton
+                  selectedCount={selectedIds.size}
+                  onDeleteAll={handleDeleteAll}
+                />
+              </>
             )}
 
             {/* Student Count Badge (Grid View Only) - Shown on all screens */}
@@ -1016,9 +1143,13 @@ export default function AllStudentsPage() {
               </div>
             )}
 
-            {/* Delete All Button - Grid view (desktop: after count badge, mobile: hidden here) */}
+            {/* Bulk Actions - Grid view (desktop: after count badge, mobile: hidden here) */}
             {viewMode === "grid" && selectedIds.size > 0 && (
-              <div className="hidden sm:block">
+              <div className="hidden sm:flex items-center gap-2">
+                <BulkTransferButton
+                  selectedCount={selectedIds.size}
+                  onBulkTransfer={handleBulkTransfer}
+                />
                 <DeleteAllButton
                   selectedCount={selectedIds.size}
                   onDeleteAll={handleDeleteAll}
@@ -1029,9 +1160,13 @@ export default function AllStudentsPage() {
 
           {/* Right Section - View Toggle and Sort */}
           <div className="flex items-center justify-end gap-3 lg:flex-1">
-            {/* Delete All Button - Grid view (mobile: before checkbox, far left) */}
+            {/* Bulk Actions - Grid view (mobile: before checkbox, far left) */}
             {viewMode === "grid" && selectedIds.size > 0 && (
-              <div className="block sm:hidden">
+              <div className="flex sm:hidden items-center gap-2">
+                <BulkTransferButton
+                  selectedCount={selectedIds.size}
+                  onBulkTransfer={handleBulkTransfer}
+                />
                 <DeleteAllButton
                   selectedCount={selectedIds.size}
                   onDeleteAll={handleDeleteAll}
@@ -1219,6 +1354,17 @@ export default function AllStudentsPage() {
           title="Delete Students"
           warningMessage="This will permanently remove these students and all associated data. This action cannot be undone."
           confirmButtonText="Delete Students"
+        />
+
+        {/* Bulk Transfer Modal */}
+        <BulkTransferModal
+          isOpen={isBulkTransferModalOpen}
+          onClose={handleCloseBulkTransferModal}
+          onConfirm={handleConfirmBulkTransfer}
+          students={studentsToTransfer}
+          onRemoveStudent={handleRemoveFromTransferList}
+          onRestoreStudent={handleRestoreTransferStudent}
+          onRestoreAll={handleRestoreAllTransferStudents}
         />
       </div>
     </MainLayout>

@@ -11,6 +11,7 @@ import {
   Building2,
 } from "lucide-react";
 import ClassDetailsModal from "./ClassDetailsModal";
+import TruncateTooltip from "@/components/shared/TruncateTooltip";
 
 interface Teacher {
   id: string;
@@ -140,9 +141,11 @@ export default function ClassCard({
                   onClick={(e) => e.stopPropagation()}
                 />
               )}
-              <span className="text-sm font-bold text-gray-800 group-hover:text-gray-900 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 transition-colors duration-200 truncate">
-                {classData.id}
-              </span>
+              <TruncateTooltip content={classData.id}>
+                <span className="text-sm font-bold text-gray-800 group-hover:text-gray-900 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 transition-colors duration-200 truncate">
+                  {classData.id}
+                </span>
+              </TruncateTooltip>
               {isTertiary && classData.semester && (
                 <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400 bg-white/70 dark:bg-gray-700/50 px-2 py-0.5 rounded-md border border-gray-200/50 dark:border-gray-600/50 whitespace-nowrap flex-shrink-0">
                   {classData.semester}
@@ -228,32 +231,40 @@ export default function ClassCard({
 
               {/* Class Name */}
               <div className="flex-1 min-w-0">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 group-hover:text-black truncate">
-                  {classData.name}
-                </h3>
+                <TruncateTooltip content={classData.name}>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 group-hover:text-black truncate">
+                    {classData.name}
+                  </h3>
+                </TruncateTooltip>
                 {isTertiary ? (
                   <div className="space-y-0.5 min-h-[34px]">
                     {classData.programme && (
-                      <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
-                        {classData.programme}
-                      </p>
+                      <TruncateTooltip content={classData.programme}>
+                        <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
+                          {classData.programme}
+                        </p>
+                      </TruncateTooltip>
                     )}
                     {(classData.faculty || classData.department) && (
                       <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400">
                         <Building2 className="w-3 h-3 flex-shrink-0 text-gray-400" />
-                        <span className="truncate">
-                          {classData.faculty}
-                          {classData.faculty && classData.department && " • "}
-                          {classData.department}
-                        </span>
+                        <TruncateTooltip content={`${classData.faculty}${classData.faculty && classData.department ? " • " : ""}${classData.department}`}>
+                          <span className="truncate">
+                            {classData.faculty}
+                            {classData.faculty && classData.department && " • "}
+                            {classData.department}
+                          </span>
+                        </TruncateTooltip>
                       </div>
                     )}
                   </div>
                 ) : (
                   <div className="min-h-[34px]">
-                    <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
-                      {classData.term} • {classData.academicYear}
-                    </p>
+                    <TruncateTooltip content={`${classData.term} • ${classData.academicYear}`}>
+                      <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
+                        {classData.term} • {classData.academicYear}
+                      </p>
+                    </TruncateTooltip>
                   </div>
                 )}
               </div>
@@ -266,16 +277,20 @@ export default function ClassCard({
               <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors uppercase tracking-wider flex-shrink-0">
                 {teacherLabel}
               </span>
-              <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 group-hover:text-black ml-3 truncate min-w-0">
-                {primaryTeacher?.name || "Not Assigned"}
-              </span>
+              <TruncateTooltip content={primaryTeacher?.name || "Not Assigned"}>
+                <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 group-hover:text-black ml-3 truncate min-w-0">
+                  {primaryTeacher?.name || "Not Assigned"}
+                </span>
+              </TruncateTooltip>
             </div>
 
             {/* Students */}
             <div className="group/detail flex items-center justify-between py-1.5 px-3 rounded-lg bg-white/70 backdrop-blur-sm dark:bg-gray-700/40 midnight:bg-cyan-500/10 purple:bg-pink-500/10 group-hover:bg-white/95 dark:group-hover:bg-gray-700/60 midnight:group-hover:bg-cyan-500/25 purple:group-hover:bg-pink-500/25 transition-all duration-200 border border-white/40 group-hover:border-white/60">
-              <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors uppercase tracking-wider truncate">
-                {studentsLabel}
-              </span>
+              <TruncateTooltip content={studentsLabel}>
+                <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors uppercase tracking-wider truncate">
+                  {studentsLabel}
+                </span>
+              </TruncateTooltip>
               <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 group-hover:text-black ml-3 flex-shrink-0">
                 {isTertiary ? classData.students : `${classData.students}/${classData.capacity}`}
               </span>
@@ -283,9 +298,11 @@ export default function ClassCard({
 
             {/* Room/Courses */}
             <div className="group/detail flex items-center justify-between py-1.5 px-3 rounded-lg bg-white/70 backdrop-blur-sm dark:bg-gray-700/40 midnight:bg-cyan-500/10 purple:bg-pink-500/10 group-hover:bg-white/95 dark:group-hover:bg-gray-700/60 midnight:group-hover:bg-cyan-500/25 purple:group-hover:bg-pink-500/25 transition-all duration-200 border border-white/40 group-hover:border-white/60">
-              <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors uppercase tracking-wider truncate">
-                {isTertiary ? coursesLabel : "ROOM"}
-              </span>
+              <TruncateTooltip content={isTertiary ? coursesLabel : "ROOM"}>
+                <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors uppercase tracking-wider truncate">
+                  {isTertiary ? coursesLabel : "ROOM"}
+                </span>
+              </TruncateTooltip>
               <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 group-hover:text-black ml-3 flex-shrink-0">
                 {isTertiary ? classData.subjects?.length || 0 : classData.room}
               </span>
@@ -318,9 +335,11 @@ export default function ClassCard({
                       {subject && (
                         <>
                           <BookOpen className="w-4 h-4 flex-shrink-0 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-purple-400/50" />
-                          <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300 truncate">
-                            {subject.name}
-                          </span>
+                          <TruncateTooltip content={subject.name}>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300 truncate">
+                              {subject.name}
+                            </span>
+                          </TruncateTooltip>
                         </>
                       )}
                     </div>

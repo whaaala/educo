@@ -14,6 +14,7 @@ import { GradingProvider } from "@/contexts/GradingContext";
 import { LeaveProvider } from "@/contexts/LeaveContext";
 import { PerformanceProvider } from "@/contexts/PerformanceContext";
 import { DisciplineProvider } from "@/contexts/DisciplineContext";
+import { UserProvider } from "@/contexts/UserContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,23 +40,25 @@ export default function RootLayout({
           <CountryProvider>
             <AcademicYearProvider>
               <SchoolSettingsProvider>
-                <GradingProvider>
-                  <TransferProvider>
-                    <LeaveProvider>
-                      <PerformanceProvider>
-                        <DisciplineProvider>
-                          <TranscriptProvider>
-                            <AttendanceProvider>
-                              <SidebarProvider>
-                                {children}
-                              </SidebarProvider>
-                            </AttendanceProvider>
-                          </TranscriptProvider>
-                        </DisciplineProvider>
-                      </PerformanceProvider>
-                    </LeaveProvider>
-                  </TransferProvider>
-                </GradingProvider>
+                <UserProvider>
+                  <GradingProvider>
+                    <TransferProvider>
+                      <LeaveProvider>
+                        <PerformanceProvider>
+                          <DisciplineProvider>
+                            <TranscriptProvider>
+                              <AttendanceProvider>
+                                <SidebarProvider>
+                                  {children}
+                                </SidebarProvider>
+                              </AttendanceProvider>
+                            </TranscriptProvider>
+                          </DisciplineProvider>
+                        </PerformanceProvider>
+                      </LeaveProvider>
+                    </TransferProvider>
+                  </GradingProvider>
+                </UserProvider>
               </SchoolSettingsProvider>
             </AcademicYearProvider>
           </CountryProvider>
