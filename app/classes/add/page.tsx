@@ -73,7 +73,7 @@ export default function AddClassPage() {
   // Form state
   const [formData, setFormData] = useState({
     // Basic Information
-    educationLevel: "" as "Primary" | "Junior Secondary" | "Secondary" | "Tertiary" | "",
+    educationLevel: "" as "Nursery" | "Kindergarten" | "Primary" | "Junior Secondary" | "Secondary" | "Tertiary" | "",
     className: "",
     level: "",
     section: "A",

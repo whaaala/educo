@@ -131,7 +131,15 @@ const menuItems: MenuItem[] = [
     label: "Management",
     icon: <Briefcase className="w-5 h-5" />,
     children: [
-      { id: "fees", label: "Fees", icon: <NairaIcon className="w-4 h-4" />, href: "/fees" },
+      {
+        id: "fees",
+        label: "Finance",
+        icon: <NairaIcon className="w-4 h-4" />,
+        children: [
+          { id: "fee-structure", label: "Fee Structure", icon: <FileText className="w-4 h-4" />, href: "/finance/fee-structure" },
+          { id: "installment-plans", label: "Installment Plans", icon: <Boxes className="w-4 h-4" />, href: "/finance/installments" },
+        ]
+      },
       { id: "library", label: "Library", icon: <BookOpen className="w-4 h-4" />, href: "/library" },
       { id: "dormitory", label: "Dormitory", icon: <Home className="w-4 h-4" />, href: "/dormitory" },
       { id: "transport", label: "Transport", icon: <Bus className="w-4 h-4" />, href: "/transport" },

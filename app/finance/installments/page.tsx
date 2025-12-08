@@ -1,0 +1,1059 @@
+"use client";
+
+import { useState, useMemo, useEffect } from "react";
+import MainLayout from "@/components/layout/MainLayout";
+import PageHeader from "@/components/shared/PageHeader";
+import PageLoader from "@/components/shared/PageLoader";
+import PageSpinner from "@/components/shared/PageSpinner";
+import { usePageLoad } from "@/hooks/usePageLoad";
+import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { useCountry } from "@/contexts/CountryContext";
+import { formatCurrency } from "@/config/countries";
+import Button from "@/components/shared/Button";
+import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import PageActions from "@/components/shared/PageActions";
+import SearchFilterBar from "@/components/shared/SearchFilterBar";
+import StatCard from "@/components/shared/StatCard";
+import InstallmentPlanModal from "@/components/finance/InstallmentPlanModal";
+import ConfirmationModal from "@/components/shared/ConfirmationModal";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  FileText,
+  Eye,
+  TrendingUp,
+  XCircle,
+  Layers,
+  Copy,
+} from "lucide-react";
+
+// Installment Plan Status
+type InstallmentPlanStatus = "active" | "completed" | "defaulted" | "cancelled";
+
+// Individual Installment Status
+type InstallmentStatus = "pending" | "paid" | "overdue" | "partially_paid" | "waived";
+
+// Individual Installment
+interface Installment {
+  id: string;
+  sequence: number;
+  dueDate: string;
+  amount: number;
+  paidAmount: number;
+  status: InstallmentStatus;
+  paidDate?: string;
+  paymentMethod?: string;
+  paymentReference?: string;
+  lateFeeApplied?: number;
+}
+
+// Installment Plan
+interface InstallmentPlan {
+  id: string;
+  studentId: string;
+  studentName: string;
+  studentNumber: string;
+  classLevel: string;
+  feeTypeName: string;
+  totalAmount: number;
+  paidAmount: number;
+  remainingAmount: number;
+  installmentCount: number;
+  frequency: "monthly" | "quarterly" | "custom";
+  startDate: string;
+  endDate: string;
+  status: InstallmentPlanStatus;
+  installments: Installment[];
+  academicYear: string;
+  term: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Mock data
+const MOCK_INSTALLMENT_PLANS: InstallmentPlan[] = [
+  {
+    id: "ip-001",
+    studentId: "std-001",
+    studentName: "John Adebayo",
+    studentNumber: "STU2024001",
+    classLevel: "SSS 1",
+    feeTypeName: "Tuition Fee",
+    totalAmount: 150000,
+    paidAmount: 100000,
+    remainingAmount: 50000,
+    installmentCount: 3,
+    frequency: "monthly",
+    startDate: "2024-01-15",
+    endDate: "2024-03-15",
+    status: "active",
+    academicYear: "2024-2025",
+    term: "first-term",
+    installments: [
+      { id: "ins-001", sequence: 1, dueDate: "2024-01-15", amount: 50000, paidAmount: 50000, status: "paid", paidDate: "2024-01-14", paymentMethod: "Bank Transfer", paymentReference: "TRF123456" },
+      { id: "ins-002", sequence: 2, dueDate: "2024-02-15", amount: 50000, paidAmount: 50000, status: "paid", paidDate: "2024-02-15", paymentMethod: "Online", paymentReference: "ONL789012" },
+      { id: "ins-003", sequence: 3, dueDate: "2024-03-15", amount: 50000, paidAmount: 0, status: "pending" },
+    ],
+    createdAt: "2024-01-10",
+    updatedAt: "2024-02-15",
+  },
+  {
+    id: "ip-002",
+    studentId: "std-002",
+    studentName: "Amina Bello",
+    studentNumber: "STU2024002",
+    classLevel: "SSS 2",
+    feeTypeName: "Tuition Fee",
+    totalAmount: 180000,
+    paidAmount: 60000,
+    remainingAmount: 120000,
+    installmentCount: 3,
+    frequency: "monthly",
+    startDate: "2024-01-20",
+    endDate: "2024-03-20",
+    status: "active",
+    academicYear: "2024-2025",
+    term: "first-term",
+    installments: [
+      { id: "ins-004", sequence: 1, dueDate: "2024-01-20", amount: 60000, paidAmount: 60000, status: "paid", paidDate: "2024-01-19", paymentMethod: "Cash", paymentReference: "CSH345678" },
+      { id: "ins-005", sequence: 2, dueDate: "2024-02-20", amount: 60000, paidAmount: 0, status: "overdue", lateFeeApplied: 3000 },
+      { id: "ins-006", sequence: 3, dueDate: "2024-03-20", amount: 60000, paidAmount: 0, status: "pending" },
+    ],
+    createdAt: "2024-01-15",
+    updatedAt: "2024-02-21",
+  },
+  {
+    id: "ip-003",
+    studentId: "std-003",
+    studentName: "Chukwuemeka Okonkwo",
+    studentNumber: "STU2024003",
+    classLevel: "JSS 3",
+    feeTypeName: "Tuition Fee",
+    totalAmount: 120000,
+    paidAmount: 120000,
+    remainingAmount: 0,
+    installmentCount: 4,
+    frequency: "monthly",
+    startDate: "2024-01-01",
+    endDate: "2024-04-01",
+    status: "completed",
+    academicYear: "2024-2025",
+    term: "first-term",
+    installments: [
+      { id: "ins-007", sequence: 1, dueDate: "2024-01-01", amount: 30000, paidAmount: 30000, status: "paid", paidDate: "2024-01-01", paymentMethod: "Online" },
+      { id: "ins-008", sequence: 2, dueDate: "2024-02-01", amount: 30000, paidAmount: 30000, status: "paid", paidDate: "2024-01-30", paymentMethod: "Online" },
+      { id: "ins-009", sequence: 3, dueDate: "2024-03-01", amount: 30000, paidAmount: 30000, status: "paid", paidDate: "2024-03-01", paymentMethod: "Online" },
+      { id: "ins-010", sequence: 4, dueDate: "2024-04-01", amount: 30000, paidAmount: 30000, status: "paid", paidDate: "2024-03-28", paymentMethod: "Bank Transfer" },
+    ],
+    createdAt: "2023-12-20",
+    updatedAt: "2024-03-28",
+  },
+  {
+    id: "ip-004",
+    studentId: "std-004",
+    studentName: "Fatima Yusuf",
+    studentNumber: "STU2024004",
+    classLevel: "SSS 3",
+    feeTypeName: "Examination Fee",
+    totalAmount: 45000,
+    paidAmount: 15000,
+    remainingAmount: 30000,
+    installmentCount: 3,
+    frequency: "monthly",
+    startDate: "2024-02-01",
+    endDate: "2024-04-01",
+    status: "defaulted",
+    academicYear: "2024-2025",
+    term: "second-term",
+    installments: [
+      { id: "ins-011", sequence: 1, dueDate: "2024-02-01", amount: 15000, paidAmount: 15000, status: "paid", paidDate: "2024-02-05", paymentMethod: "Cash", lateFeeApplied: 1500 },
+      { id: "ins-012", sequence: 2, dueDate: "2024-03-01", amount: 15000, paidAmount: 0, status: "overdue", lateFeeApplied: 1500 },
+      { id: "ins-013", sequence: 3, dueDate: "2024-04-01", amount: 15000, paidAmount: 0, status: "overdue", lateFeeApplied: 1500 },
+    ],
+    createdAt: "2024-01-25",
+    updatedAt: "2024-04-02",
+  },
+  {
+    id: "ip-005",
+    studentId: "std-005",
+    studentName: "David Okafor",
+    studentNumber: "STU2024005",
+    classLevel: "JSS 1",
+    feeTypeName: "Tuition Fee",
+    totalAmount: 100000,
+    paidAmount: 25000,
+    remainingAmount: 75000,
+    installmentCount: 4,
+    frequency: "monthly",
+    startDate: "2024-01-10",
+    endDate: "2024-04-10",
+    status: "active",
+    academicYear: "2024-2025",
+    term: "first-term",
+    installments: [
+      { id: "ins-014", sequence: 1, dueDate: "2024-01-10", amount: 25000, paidAmount: 25000, status: "paid", paidDate: "2024-01-10", paymentMethod: "Mobile Money" },
+      { id: "ins-015", sequence: 2, dueDate: "2024-02-10", amount: 25000, paidAmount: 10000, status: "partially_paid" },
+      { id: "ins-016", sequence: 3, dueDate: "2024-03-10", amount: 25000, paidAmount: 0, status: "pending" },
+      { id: "ins-017", sequence: 4, dueDate: "2024-04-10", amount: 25000, paidAmount: 0, status: "pending" },
+    ],
+    createdAt: "2024-01-05",
+    updatedAt: "2024-02-12",
+  },
+];
+
+const ACADEMIC_YEARS = [
+  { label: "2024/2025", value: "2024-2025" },
+  { label: "2025/2026", value: "2025-2026" },
+  { label: "2023/2024", value: "2023-2024" },
+];
+
+const TERMS = [
+  { label: "All Terms", value: "all" },
+  { label: "First Term", value: "first-term" },
+  { label: "Second Term", value: "second-term" },
+  { label: "Third Term", value: "third-term" },
+];
+
+const STATUS_OPTIONS = [
+  { label: "All Status", value: "all" },
+  { label: "Active", value: "active" },
+  { label: "Completed", value: "completed" },
+  { label: "Defaulted", value: "defaulted" },
+  { label: "Cancelled", value: "cancelled" },
+];
+
+const CLASS_OPTIONS = [
+  { label: "All Classes", value: "all" },
+  { label: "JSS 1", value: "JSS 1" },
+  { label: "JSS 2", value: "JSS 2" },
+  { label: "JSS 3", value: "JSS 3" },
+  { label: "SSS 1", value: "SSS 1" },
+  { label: "SSS 2", value: "SSS 2" },
+  { label: "SSS 3", value: "SSS 3" },
+];
+
+export default function InstallmentPlansPage() {
+  const isPageLoading = usePageLoad(600);
+  useSchoolSettings();
+  const { countryCode, countryConfig } = useCountry();
+  const currencySymbol = countryConfig.currency.symbol;
+
+  // State
+  const [installmentPlans, setInstallmentPlans] = useState<InstallmentPlan[]>(MOCK_INSTALLMENT_PLANS);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedYear, setSelectedYear] = useState("2024-2025");
+  const [selectedTerm, setSelectedTerm] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedClass, setSelectedClass] = useState("all");
+
+  // Modal states
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<InstallmentPlan | null>(null);
+  const [viewingPlan, setViewingPlan] = useState<InstallmentPlan | null>(null);
+  const [deletingPlan, setDeletingPlan] = useState<InstallmentPlan | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isFiltering, setIsFiltering] = useState(false);
+
+  // Animation trigger
+  const [animationTrigger, setAnimationTrigger] = useState(0);
+
+  // Create a filterKey to track filter/search changes
+  const filterKey = `${searchQuery}-${selectedYear}-${selectedTerm}-${selectedStatus}-${selectedClass}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+
+  // Filter data
+  const filteredData = useMemo(() => {
+    return installmentPlans.filter((plan) => {
+      const matchesSearch =
+        searchQuery === "" ||
+        plan.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        plan.studentNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        plan.feeTypeName.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesYear = plan.academicYear === selectedYear;
+      const matchesTerm = selectedTerm === "all" || plan.term === selectedTerm;
+      const matchesStatus = selectedStatus === "all" || plan.status === selectedStatus;
+      const matchesClass = selectedClass === "all" || plan.classLevel === selectedClass;
+
+      return matchesSearch && matchesYear && matchesTerm && matchesStatus && matchesClass;
+    });
+  }, [installmentPlans, searchQuery, selectedYear, selectedTerm, selectedStatus, selectedClass]);
+
+  // Stats calculations
+  const stats = useMemo(() => {
+    const totalAmount = filteredData.reduce((sum, p) => sum + p.totalAmount, 0);
+    const totalCollected = filteredData.reduce((sum, p) => sum + p.paidAmount, 0);
+    const totalPending = filteredData.reduce((sum, p) => sum + p.remainingAmount, 0);
+    const activePlans = filteredData.filter((p) => p.status === "active");
+    const completedPlans = filteredData.filter((p) => p.status === "completed");
+    const overduePlans = filteredData.filter((p) => p.installments.some((i) => i.status === "overdue"));
+
+    return {
+      totalAmount,
+      totalCollected,
+      totalPending,
+      activePlansCount: activePlans.length,
+      activePlansAmount: activePlans.reduce((sum, p) => sum + p.totalAmount, 0),
+      completedPlansCount: completedPlans.length,
+      completedPlansAmount: completedPlans.reduce((sum, p) => sum + p.totalAmount, 0),
+      overduePlansCount: overduePlans.length,
+      overduePlansAmount: overduePlans.reduce((sum, p) => sum + p.remainingAmount, 0),
+    };
+  }, [filteredData]);
+
+  // Trigger animation when filterKey changes
+  useEffect(() => {
+    if (filterKey !== prevFilterKey) {
+      setAnimationTrigger(prev => prev + 1);
+      setPrevFilterKey(filterKey);
+    }
+  }, [filterKey, prevFilterKey]);
+
+  // Apply row animation when filter/search changes
+  useEffect(() => {
+    if (animationTrigger > 0) {
+      const timeoutId = setTimeout(() => {
+        const tables = document.querySelectorAll('table');
+        tables.forEach((table) => {
+          const rows = table.querySelectorAll('tbody tr');
+          rows.forEach((row, index) => {
+            const htmlRow = row as HTMLElement;
+            const delay = index / 80;
+            htmlRow.style.animation = `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${delay}s both`;
+          });
+        });
+
+        // Cleanup after animation completes
+        setTimeout(() => {
+          tables.forEach((table) => {
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach((row) => {
+              const htmlRow = row as HTMLElement;
+              htmlRow.style.animation = '';
+            });
+          });
+        }, 600);
+      }, 50);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [animationTrigger]);
+
+  // Handle refresh
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setSearchQuery("");
+    setSelectedTerm("all");
+    setSelectedStatus("all");
+    setSelectedClass("all");
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 500);
+  };
+
+  // Handle filter changes with animation
+  const handleFilterChange = (setter: (val: string) => void, value: string) => {
+    setIsFiltering(true);
+    setTimeout(() => {
+      setter(value);
+      setTimeout(() => setIsFiltering(false), 100);
+    }, 200);
+  };
+
+  // Handle search change
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+  };
+
+  // Open add modal
+  const handleAddNew = () => {
+    setIsAddModalOpen(true);
+  };
+
+  // Open edit modal
+  const handleEdit = (plan: InstallmentPlan) => {
+    setEditingPlan(plan);
+    setIsEditModalOpen(true);
+  };
+
+  // Open view modal
+  const handleView = (plan: InstallmentPlan) => {
+    setViewingPlan(plan);
+    setIsViewModalOpen(true);
+  };
+
+  // Handle duplicate
+  const handleDuplicate = (plan: InstallmentPlan) => {
+    const duplicated: InstallmentPlan = {
+      ...plan,
+      id: `ip-${Date.now()}`,
+      status: "active",
+      paidAmount: 0,
+      remainingAmount: plan.totalAmount,
+      installments: plan.installments.map((inst, index) => ({
+        ...inst,
+        id: `ins-${Date.now()}-${index}`,
+        paidAmount: 0,
+        status: "pending" as InstallmentStatus,
+        paidDate: undefined,
+        paymentMethod: undefined,
+        paymentReference: undefined,
+        lateFeeApplied: undefined,
+      })),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setInstallmentPlans([...installmentPlans, duplicated]);
+  };
+
+  // Handle delete
+  const handleDelete = async () => {
+    if (!deletingPlan) return;
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    setInstallmentPlans((prev) => prev.filter((p) => p.id !== deletingPlan.id));
+    setIsDeleteModalOpen(false);
+    setDeletingPlan(null);
+  };
+
+  // Handle save (add/edit)
+  const handleSave = async (data: any) => {
+    setIsSaving(true);
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    if (editingPlan) {
+      setInstallmentPlans((prev) =>
+        prev.map((p) =>
+          p.id === editingPlan.id
+            ? { ...p, ...data, updatedAt: new Date().toISOString() }
+            : p
+        )
+      );
+      setIsEditModalOpen(false);
+      setEditingPlan(null);
+    } else {
+      const newPlan: InstallmentPlan = {
+        id: `ip-${Date.now()}`,
+        ...data,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      setInstallmentPlans([...installmentPlans, newPlan]);
+      setIsAddModalOpen(false);
+    }
+
+    setIsSaving(false);
+  };
+
+  // Status badge renderer
+  const getStatusBadge = (status: InstallmentPlanStatus) => {
+    const statusConfig = {
+      active: {
+        bg: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-blue-900/20 purple:bg-blue-900/20",
+        text: "text-blue-700 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400",
+        border: "border-blue-200 dark:border-blue-800",
+        icon: Clock,
+        label: "Active",
+      },
+      completed: {
+        bg: "bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/20 purple:bg-green-900/20",
+        text: "text-green-700 dark:text-green-400 midnight:text-green-400 purple:text-green-400",
+        border: "border-green-200 dark:border-green-800",
+        icon: CheckCircle2,
+        label: "Completed",
+      },
+      defaulted: {
+        bg: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/20 purple:bg-red-900/20",
+        text: "text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
+        border: "border-red-200 dark:border-red-800",
+        icon: AlertTriangle,
+        label: "Defaulted",
+      },
+      cancelled: {
+        bg: "bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800",
+        text: "text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400",
+        border: "border-gray-200 dark:border-gray-700",
+        icon: XCircle,
+        label: "Cancelled",
+      },
+    };
+
+    const config = statusConfig[status];
+    const Icon = config.icon;
+
+    return (
+      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border ${config.bg} ${config.text} ${config.border}`} style={{ fontSize: '11.8px' }}>
+        <Icon className="w-3 h-3" />
+        {config.label}
+      </span>
+    );
+  };
+
+  // Installment status badge
+  const getInstallmentStatusBadge = (status: InstallmentStatus) => {
+    const statusConfig = {
+      pending: { bg: "bg-gray-100 dark:bg-gray-700", text: "text-gray-600 dark:text-gray-300", label: "Pending" },
+      paid: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-300", label: "Paid" },
+      overdue: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-300", label: "Overdue" },
+      partially_paid: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-300", label: "Partial" },
+      waived: { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-300", label: "Waived" },
+    };
+
+    const config = statusConfig[status];
+
+    return (
+      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${config.bg} ${config.text}`}>
+        {config.label}
+      </span>
+    );
+  };
+
+  // Table columns
+  const columns: ColumnConfig<InstallmentPlan>[] = [
+    {
+      key: "studentName",
+      label: "Student",
+      sortable: true,
+      className: "text-left",
+      render: (plan) => (
+        <div>
+          <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50" style={{ fontSize: '11.8px' }}>
+            {plan.studentName}
+          </div>
+          <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60" style={{ fontSize: '10px' }}>
+            {plan.studentNumber}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "classLevel",
+      label: "Class",
+      sortable: true,
+      className: "text-left",
+      render: (plan) => (
+        <span className="inline-flex px-2.5 py-0.5 rounded-full font-semibold bg-blue-100 dark:bg-blue-900/30 midnight:bg-blue-900/20 purple:bg-blue-900/20 text-blue-700 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400 border border-blue-200 dark:border-blue-800" style={{ fontSize: '11.8px' }}>
+          {plan.classLevel}
+        </span>
+      ),
+    },
+    {
+      key: "feeTypeName",
+      label: "Fee Type",
+      sortable: true,
+      className: "text-left",
+      render: (plan) => (
+        <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50" style={{ fontSize: '11.8px' }}>
+          {plan.feeTypeName}
+        </div>
+      ),
+    },
+    {
+      key: "totalAmount",
+      label: "Total",
+      sortable: true,
+      className: "text-left",
+      render: (plan) => (
+        <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50" style={{ fontSize: '11.8px' }}>
+          {formatCurrency(plan.totalAmount, countryCode)}
+        </div>
+      ),
+    },
+    {
+      key: "paidAmount",
+      label: "Paid",
+      sortable: true,
+      className: "text-left",
+      render: (plan) => (
+        <div className="font-semibold text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" style={{ fontSize: '11.8px' }}>
+          {formatCurrency(plan.paidAmount, countryCode)}
+        </div>
+      ),
+    },
+    {
+      key: "remainingAmount",
+      label: "Balance",
+      sortable: true,
+      className: "text-left",
+      render: (plan) => (
+        <div className={`font-semibold ${plan.remainingAmount === 0 ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`} style={{ fontSize: '11.8px' }}>
+          {formatCurrency(plan.remainingAmount, countryCode)}
+        </div>
+      ),
+    },
+    {
+      key: "installmentCount",
+      label: "Installments",
+      className: "text-left",
+      render: (plan) => {
+        const paidCount = plan.installments.filter(i => i.status === "paid").length;
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/20 purple:bg-pink-900/20 text-purple-700 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400 border border-purple-200 dark:border-purple-800" style={{ fontSize: '11.8px' }}>
+            <Layers className="w-3 h-3" />
+            {paidCount}/{plan.installmentCount}
+          </span>
+        );
+      },
+    },
+    {
+      key: "status",
+      label: "Status",
+      className: "text-left",
+      render: (plan) => getStatusBadge(plan.status),
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      className: "text-center",
+      render: (plan) => (
+        <div className="flex items-center justify-center gap-2.5">
+          <button
+            onClick={() => handleView(plan)}
+            className="group relative p-2 rounded-lg bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/30 dark:to-blue-900/20 midnight:from-blue-950/30 midnight:to-blue-900/20 purple:from-blue-950/30 purple:to-blue-900/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-blue-900/40 dark:hover:to-blue-800/30 transition-all duration-200 cursor-pointer border border-blue-200/40 dark:border-blue-800/30 hover:border-blue-400/60 dark:hover:border-blue-600/50 active:scale-95"
+            title="View"
+          >
+            <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
+          </button>
+          <button
+            onClick={() => handleEdit(plan)}
+            className="group relative p-2 rounded-lg bg-gradient-to-br from-orange-50/50 to-orange-100/30 dark:from-orange-950/30 dark:to-orange-900/20 midnight:from-orange-950/30 midnight:to-orange-900/20 purple:from-orange-950/30 purple:to-orange-900/20 hover:from-orange-100 hover:to-orange-100 dark:hover:from-orange-900/40 dark:hover:to-orange-800/30 transition-all duration-200 cursor-pointer border border-orange-200/40 dark:border-orange-800/30 hover:border-orange-400/60 dark:hover:border-orange-600/50 active:scale-95"
+            title="Edit"
+          >
+            <Edit className="w-4 h-4 text-orange-600 dark:text-orange-400 group-hover:text-orange-700 dark:group-hover:text-orange-300 transition-colors" />
+          </button>
+          <button
+            onClick={() => handleDuplicate(plan)}
+            className="group relative p-2 rounded-lg bg-gradient-to-br from-purple-50/50 to-purple-100/30 dark:from-purple-950/30 dark:to-purple-900/20 midnight:from-purple-950/30 midnight:to-purple-900/20 purple:from-purple-950/30 purple:to-purple-900/20 hover:from-purple-100 hover:to-purple-100 dark:hover:from-purple-900/40 dark:hover:to-purple-800/30 transition-all duration-200 cursor-pointer border border-purple-200/40 dark:border-purple-800/30 hover:border-purple-400/60 dark:hover:border-purple-600/50 active:scale-95"
+            title="Duplicate"
+          >
+            <Copy className="w-4 h-4 text-purple-600 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors" />
+          </button>
+          <button
+            onClick={() => {
+              setDeletingPlan(plan);
+              setIsDeleteModalOpen(true);
+            }}
+            className="group relative p-2 rounded-lg bg-gradient-to-br from-red-50/50 to-red-100/30 dark:from-red-950/30 dark:to-red-900/20 midnight:from-red-950/30 midnight:to-red-900/20 purple:from-red-950/30 purple:to-red-900/20 hover:from-red-100 hover:to-red-100 dark:hover:from-red-900/40 dark:hover:to-red-800/30 transition-all duration-200 cursor-pointer border border-red-200/40 dark:border-red-800/30 hover:border-red-400/60 dark:hover:border-red-600/50 active:scale-95"
+            title="Delete"
+          >
+            <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  const isLoading = isRefreshing || isFiltering;
+
+  return (
+    <MainLayout>
+      <PageLoader isLoading={isPageLoading} loadingText="Loading Installment Plans" />
+
+      <div className={`space-y-6 transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
+        {/* Header Section */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <PageHeader
+            title="Installment Plans"
+            breadcrumbs={[
+              { label: "Finance", href: "/finance/fee-structure" },
+              { label: "Installment Plans" },
+            ]}
+          />
+          <PageActions
+            onRefresh={handleRefresh}
+            onExportPDF={() => {}}
+            onExportExcel={() => {}}
+            onAdd={handleAddNew}
+            addButtonLabel="Add Plan"
+            exportDescription="Export installment plan records"
+            showPrint={false}
+          />
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+          <StatCard
+            icon={FileText}
+            label="Total Plans"
+            value={formatCurrency(stats.totalAmount, countryCode)}
+            color="blue"
+            badge={`${filteredData.length}`}
+          />
+          <StatCard
+            icon={TrendingUp}
+            label="Collected"
+            value={formatCurrency(stats.totalCollected, countryCode)}
+            color="green"
+            badge={`${stats.totalAmount > 0 ? ((stats.totalCollected / stats.totalAmount) * 100).toFixed(0) : 0}%`}
+          />
+          <StatCard
+            icon={Clock}
+            label="Pending"
+            value={formatCurrency(stats.totalPending, countryCode)}
+            color="amber"
+            badge={`${stats.totalAmount > 0 ? ((stats.totalPending / stats.totalAmount) * 100).toFixed(0) : 0}%`}
+          />
+          <StatCard
+            icon={CheckCircle2}
+            label="Completed"
+            value={formatCurrency(stats.completedPlansAmount, countryCode)}
+            color="emerald"
+            badge={`${stats.completedPlansCount}`}
+          />
+          <StatCard
+            icon={AlertTriangle}
+            label="Overdue"
+            value={formatCurrency(stats.overduePlansAmount, countryCode)}
+            color="red"
+            badge={`${stats.overduePlansCount}`}
+          />
+        </div>
+
+        {/* Filters Bar */}
+        <SearchFilterBar
+          searchValue={searchQuery}
+          onSearchChange={handleSearchChange}
+          searchPlaceholder="Search by student name, ID, or fee type..."
+          filters={[
+            {
+              label: "Academic Year",
+              value: selectedYear,
+              onChange: (val) => handleFilterChange(setSelectedYear, String(val)),
+              options: ACADEMIC_YEARS,
+            },
+            {
+              label: "Term",
+              value: selectedTerm,
+              onChange: (val) => handleFilterChange(setSelectedTerm, String(val)),
+              options: TERMS,
+            },
+            {
+              label: "Class",
+              value: selectedClass,
+              onChange: (val) => handleFilterChange(setSelectedClass, String(val)),
+              options: CLASS_OPTIONS,
+            },
+            {
+              label: "Status",
+              value: selectedStatus,
+              onChange: (val) => handleFilterChange(setSelectedStatus, String(val)),
+              options: STATUS_OPTIONS,
+            },
+          ]}
+        />
+
+        {/* Table Section */}
+        <div>
+          {isLoading ? (
+            <PageSpinner message={isRefreshing ? "Refreshing..." : "Filtering..."} size="md" />
+          ) : filteredData.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-8 sm:p-12">
+              <div className="flex flex-col items-center justify-center">
+                <div className="relative mb-4">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 animate-pulse" />
+                  </div>
+                  <div className="relative z-10 flex items-center justify-center w-16 h-16">
+                    <Layers className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                  </div>
+                </div>
+                <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 mb-1 text-center">
+                  No installment plans found
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
+                  {searchQuery
+                    ? "No results match your search. Try adjusting your filters."
+                    : "Get started by adding your first installment plan."}
+                </p>
+                {!searchQuery && (
+                  <Button variant="primary" onClick={handleAddNew} className="flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    Add Plan
+                  </Button>
+                )}
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    Clear search
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="relative">
+              {/* Mobile Scroll Indicator */}
+              <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none" />
+
+              <div
+                key={`table-data-${filterKey}`}
+                className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden"
+              >
+                <DataTable
+                  columns={columns}
+                  data={filteredData}
+                  getRowKey={(item) => item.id}
+                  emptyMessage="No installment plans found. Click 'Add Plan' to create one."
+                  title=""
+                  showSearch={false}
+                  defaultItemsPerPage={10}
+                  itemsPerPageOptions={[5, 10, 15, 20, 25]}
+                  enablePagination={true}
+                  enableItemsPerPage={true}
+                  onRowClick={handleView}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Add/Edit Modal */}
+      <InstallmentPlanModal
+        isOpen={isAddModalOpen || isEditModalOpen}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setIsEditModalOpen(false);
+          setEditingPlan(null);
+        }}
+        onSave={handleSave}
+        isEditing={isEditModalOpen}
+        editingPlan={editingPlan}
+        isSaving={isSaving}
+        currencySymbol={currencySymbol}
+      />
+
+      {/* View Modal */}
+      {viewingPlan && (
+        <InstallmentPlanViewModal
+          isOpen={isViewModalOpen}
+          onClose={() => {
+            setIsViewModalOpen(false);
+            setViewingPlan(null);
+          }}
+          plan={viewingPlan}
+          countryCode={countryCode}
+          getInstallmentStatusBadge={getInstallmentStatusBadge}
+          getStatusBadge={getStatusBadge}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeletingPlan(null);
+        }}
+        onConfirm={handleDelete}
+        title="Delete Installment Plan"
+        message={`Are you sure you want to delete the installment plan for "${deletingPlan?.studentName}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+      />
+    </MainLayout>
+  );
+}
+
+// View Modal Component
+interface InstallmentPlanViewModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  plan: InstallmentPlan;
+  countryCode: string;
+  getInstallmentStatusBadge: (status: InstallmentStatus) => React.ReactNode;
+  getStatusBadge: (status: InstallmentPlanStatus) => React.ReactNode;
+}
+
+function InstallmentPlanViewModal({
+  isOpen,
+  onClose,
+  plan,
+  countryCode,
+  getInstallmentStatusBadge,
+  getStatusBadge,
+}: InstallmentPlanViewModalProps) {
+  const Modal = require("@/components/shared/Modal").default;
+
+  const percentage = (plan.paidAmount / plan.totalAmount) * 100;
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Installment Plan Details"
+      subtitle={`${plan.studentName} - ${plan.feeTypeName}`}
+      icon={<FileText className="w-5 h-5" />}
+      maxWidth="3xl"
+    >
+      <div className="space-y-6">
+        {/* Plan Overview */}
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 midnight:from-cyan-900/20 midnight:to-blue-900/20 purple:from-pink-900/20 purple:to-purple-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800 midnight:border-cyan-800 purple:border-pink-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                {plan.studentName}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+                {plan.studentNumber} | {plan.classLevel}
+              </p>
+            </div>
+            {getStatusBadge(plan.status)}
+          </div>
+
+          {/* Progress */}
+          <div className="mt-4">
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-gray-600 dark:text-gray-400">Payment Progress</span>
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {formatCurrency(plan.paidAmount, countryCode)} / {formatCurrency(plan.totalAmount, countryCode)}
+              </span>
+            </div>
+            <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  percentage === 100
+                    ? "bg-green-500"
+                    : percentage >= 50
+                    ? "bg-blue-500"
+                    : "bg-amber-500"
+                }`}
+                style={{ width: `${percentage}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-xs mt-1">
+              <span className="text-gray-500">{percentage.toFixed(0)}% Complete</span>
+              <span className="text-amber-600 dark:text-amber-400 font-medium">
+                {formatCurrency(plan.remainingAmount, countryCode)} remaining
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Plan Details Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Fee Type</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">{plan.feeTypeName}</p>
+          </div>
+          <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Installments</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">{plan.installmentCount} payments</p>
+          </div>
+          <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Start Date</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">
+              {new Date(plan.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+            </p>
+          </div>
+          <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400">End Date</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">
+              {new Date(plan.endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+            </p>
+          </div>
+        </div>
+
+        {/* Installments Timeline */}
+        <div>
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            Payment Schedule
+          </h4>
+          <div className="space-y-3">
+            {plan.installments.map((installment) => (
+              <div
+                key={installment.id}
+                className={`relative flex items-start gap-4 p-4 rounded-xl border transition-all ${
+                  installment.status === "paid"
+                    ? "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800"
+                    : installment.status === "overdue"
+                    ? "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"
+                    : installment.status === "partially_paid"
+                    ? "bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800"
+                    : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                }`}
+              >
+                {/* Sequence Number */}
+                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                  installment.status === "paid"
+                    ? "bg-green-500 text-white"
+                    : installment.status === "overdue"
+                    ? "bg-red-500 text-white"
+                    : installment.status === "partially_paid"
+                    ? "bg-amber-500 text-white"
+                    : "bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
+                }`}>
+                  {installment.sequence}
+                </div>
+
+                {/* Installment Details */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                        Installment {installment.sequence}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        Due: {new Date(installment.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      </p>
+                    </div>
+                    {getInstallmentStatusBadge(installment.status)}
+                  </div>
+
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Amount: </span>
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        {formatCurrency(installment.amount, countryCode)}
+                      </span>
+                    </div>
+                    {installment.paidAmount > 0 && (
+                      <div className="text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Paid: </span>
+                        <span className="font-semibold text-green-600 dark:text-green-400">
+                          {formatCurrency(installment.paidAmount, countryCode)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Payment Info */}
+                  {installment.paidDate && (
+                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                      <div className="flex flex-wrap gap-4 text-xs text-gray-500 dark:text-gray-400">
+                        <span>Paid: {new Date(installment.paidDate).toLocaleDateString()}</span>
+                        {installment.paymentMethod && <span>Via: {installment.paymentMethod}</span>}
+                        {installment.paymentReference && <span>Ref: {installment.paymentReference}</span>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Late Fee */}
+                  {installment.lateFeeApplied && installment.lateFeeApplied > 0 && (
+                    <div className="mt-2 text-xs text-red-600 dark:text-red-400">
+                      Late fee applied: {formatCurrency(installment.lateFeeApplied, countryCode)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Modal>
+  );
+}

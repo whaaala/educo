@@ -12,15 +12,14 @@ import { formatCurrency } from "@/config/countries";
 import { exportFeeStructureToExcel, exportFeeStructureToPDF } from "@/lib/export-utils";
 import Button from "@/components/shared/Button";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
-import Modal from "@/components/shared/Modal";
 import PageActions from "@/components/shared/PageActions";
 import SearchFilterBar from "@/components/shared/SearchFilterBar";
 import StatCard from "@/components/shared/StatCard";
+import FeeStructureModal from "@/components/finance/FeeStructureModal";
 import {
   Plus,
   Edit,
   Trash2,
-  Save,
   Layers,
   CheckCircle2,
   Copy,
@@ -372,75 +371,69 @@ export default function FeeStructurePage() {
     setIsEditModalOpen(true);
   };
 
-  // Save new fee structure
-  const handleSave = async () => {
+  // Handle modal save (for both add and edit)
+  const handleModalSave = async (modalFormData: typeof formData) => {
     setIsSaving(true);
 
-    const feeType = applicableFeeTypes.find((f) => f.id === formData.feeTypeId);
+    const feeType = applicableFeeTypes.find((f) => f.id === modalFormData.feeTypeId);
     const category = feeType ? FEE_CATEGORIES[feeType.categoryId] : null;
 
-    const newItem: FeeStructureItem = {
-      id: `fs-${Date.now()}`,
-      feeTypeId: formData.feeTypeId,
-      feeTypeName: feeType?.name || "",
-      categoryId: feeType?.categoryId || "",
-      categoryName: category?.name || "",
-      educationLevel: selectedLevel,
-      classLevel: formData.classLevel,
-      amount: parseFloat(formData.amount) || 0,
-      currency: settings?.currency || "NGN",
-      dueDate: formData.dueDate,
-      academicYear: selectedYear,
-      term: formData.term,
-      isActive: true,
-      allowInstallments: formData.allowInstallments,
-      installmentCount: formData.allowInstallments ? parseInt(formData.installmentCount) : undefined,
-      lateFee: formData.lateFee ? parseFloat(formData.lateFee) : undefined,
-      lateFeeType: formData.lateFee ? formData.lateFeeType : undefined,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    if (isEditModalOpen && editingItem) {
+      // Update existing
+      const updatedItem: FeeStructureItem = {
+        ...editingItem,
+        feeTypeId: modalFormData.feeTypeId,
+        feeTypeName: feeType?.name || editingItem.feeTypeName,
+        categoryId: feeType?.categoryId || editingItem.categoryId,
+        categoryName: category?.name || editingItem.categoryName,
+        classLevel: modalFormData.classLevel,
+        amount: parseFloat(modalFormData.amount) || 0,
+        dueDate: modalFormData.dueDate,
+        term: modalFormData.term,
+        allowInstallments: modalFormData.allowInstallments,
+        installmentCount: modalFormData.allowInstallments ? parseInt(modalFormData.installmentCount) : undefined,
+        lateFee: modalFormData.lateFee ? parseFloat(modalFormData.lateFee) : undefined,
+        lateFeeType: modalFormData.lateFee ? modalFormData.lateFeeType : undefined,
+        updatedAt: new Date().toISOString(),
+      };
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-    setFeeStructures([...feeStructures, newItem]);
-    setIsAddModalOpen(false);
-    resetForm();
-    setIsSaving(false);
-  };
+      setFeeStructures(feeStructures.map((item) =>
+        item.id === editingItem.id ? updatedItem : item
+      ));
+      setIsEditModalOpen(false);
+      setEditingItem(null);
+    } else {
+      // Create new
+      const newItem: FeeStructureItem = {
+        id: `fs-${Date.now()}`,
+        feeTypeId: modalFormData.feeTypeId,
+        feeTypeName: feeType?.name || "",
+        categoryId: feeType?.categoryId || "",
+        categoryName: category?.name || "",
+        educationLevel: selectedLevel,
+        classLevel: modalFormData.classLevel,
+        amount: parseFloat(modalFormData.amount) || 0,
+        currency: settings?.currency || "NGN",
+        dueDate: modalFormData.dueDate,
+        academicYear: selectedYear,
+        term: modalFormData.term,
+        isActive: true,
+        allowInstallments: modalFormData.allowInstallments,
+        installmentCount: modalFormData.allowInstallments ? parseInt(modalFormData.installmentCount) : undefined,
+        lateFee: modalFormData.lateFee ? parseFloat(modalFormData.lateFee) : undefined,
+        lateFeeType: modalFormData.lateFee ? modalFormData.lateFeeType : undefined,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-  // Update existing fee structure
-  const handleUpdate = async () => {
-    if (!editingItem) return;
-    setIsSaving(true);
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-    const feeType = applicableFeeTypes.find((f) => f.id === formData.feeTypeId);
-    const category = feeType ? FEE_CATEGORIES[feeType.categoryId] : null;
+      setFeeStructures([...feeStructures, newItem]);
+      setIsAddModalOpen(false);
+    }
 
-    const updatedItem: FeeStructureItem = {
-      ...editingItem,
-      feeTypeId: formData.feeTypeId,
-      feeTypeName: feeType?.name || editingItem.feeTypeName,
-      categoryId: feeType?.categoryId || editingItem.categoryId,
-      categoryName: category?.name || editingItem.categoryName,
-      classLevel: formData.classLevel,
-      amount: parseFloat(formData.amount) || 0,
-      dueDate: formData.dueDate,
-      term: formData.term,
-      allowInstallments: formData.allowInstallments,
-      installmentCount: formData.allowInstallments ? parseInt(formData.installmentCount) : undefined,
-      lateFee: formData.lateFee ? parseFloat(formData.lateFee) : undefined,
-      lateFeeType: formData.lateFee ? formData.lateFeeType : undefined,
-      updatedAt: new Date().toISOString(),
-    };
-
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    setFeeStructures(feeStructures.map((item) =>
-      item.id === editingItem.id ? updatedItem : item
-    ));
-    setIsEditModalOpen(false);
-    setEditingItem(null);
     resetForm();
     setIsSaving(false);
   };
@@ -795,205 +788,24 @@ export default function FeeStructurePage() {
       </div>
 
       {/* Add/Edit Modal */}
-      {(isAddModalOpen || isEditModalOpen) && (
-        <Modal
-          isOpen={isAddModalOpen || isEditModalOpen}
-          onClose={() => {
-            setIsAddModalOpen(false);
-            setIsEditModalOpen(false);
-            setEditingItem(null);
-            resetForm();
-          }}
-          title={isEditModalOpen ? "Edit Fee Structure" : "Add Fee Structure"}
-          maxWidth="lg"
-        >
-          <div className="space-y-4">
-            {/* Fee Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Fee Type <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={formData.feeTypeId}
-                onChange={(e) => setFormData({ ...formData, feeTypeId: e.target.value })}
-                className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              >
-                <option value="">Select fee type...</option>
-                {applicableFeeTypes.map((fee) => (
-                  <option key={fee.id} value={fee.id}>
-                    {fee.name} ({FEE_CATEGORIES[fee.categoryId]?.name})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Class Level */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Class/Level <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={formData.classLevel}
-                onChange={(e) => setFormData({ ...formData, classLevel: e.target.value })}
-                className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              >
-                <option value="">Select class...</option>
-                {getClassesForLevel(selectedLevel).map((cls) => (
-                  <option key={cls} value={cls}>{cls}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Amount and Due Date */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Amount ({currencySymbol}) <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  placeholder="0.00"
-                  className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Due Date <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                  className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                />
-              </div>
-            </div>
-
-            {/* Term */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Term/Semester
-              </label>
-              <select
-                value={formData.term}
-                onChange={(e) => setFormData({ ...formData, term: e.target.value })}
-                className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              >
-                {TERMS.map((term) => (
-                  <option key={term.value} value={term.value}>{term.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Installments Toggle */}
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
-              <div>
-                <p className="font-medium text-gray-900 dark:text-white">Allow Installments</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Enable students to pay this fee in multiple installments
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, allowInstallments: !formData.allowInstallments })}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  formData.allowInstallments ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    formData.allowInstallments ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </div>
-
-            {/* Installment Count */}
-            {formData.allowInstallments && (
-              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Number of Installments
-                </label>
-                <select
-                  value={formData.installmentCount}
-                  onChange={(e) => setFormData({ ...formData, installmentCount: e.target.value })}
-                  className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                >
-                  <option value="2">2 Installments</option>
-                  <option value="3">3 Installments</option>
-                  <option value="4">4 Installments</option>
-                  <option value="6">6 Installments</option>
-                  <option value="12">12 Installments (Monthly)</option>
-                </select>
-              </div>
-            )}
-
-            {/* Late Fee */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Late Fee (Optional)
-                </label>
-                <input
-                  type="number"
-                  value={formData.lateFee}
-                  onChange={(e) => setFormData({ ...formData, lateFee: e.target.value })}
-                  placeholder="0"
-                  className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Late Fee Type
-                </label>
-                <select
-                  value={formData.lateFeeType}
-                  onChange={(e) => setFormData({ ...formData, lateFeeType: e.target.value as "fixed" | "percentage" })}
-                  className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                >
-                  <option value="fixed">Fixed Amount ({currencySymbol})</option>
-                  <option value="percentage">Percentage (%)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Modal Footer */}
-          <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setIsAddModalOpen(false);
-                setIsEditModalOpen(false);
-                setEditingItem(null);
-                resetForm();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              onClick={isEditModalOpen ? handleUpdate : handleSave}
-              disabled={isSaving || !formData.feeTypeId || !formData.classLevel || !formData.amount || !formData.dueDate}
-              className="flex items-center gap-2"
-            >
-              {isSaving ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  {isEditModalOpen ? "Update" : "Save"}
-                </>
-              )}
-            </Button>
-          </div>
-        </Modal>
-      )}
+      <FeeStructureModal
+        isOpen={isAddModalOpen || isEditModalOpen}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setIsEditModalOpen(false);
+          setEditingItem(null);
+          resetForm();
+        }}
+        onSave={handleModalSave}
+        isEditing={isEditModalOpen}
+        editingItem={editingItem}
+        isSaving={isSaving}
+        applicableFeeTypes={applicableFeeTypes}
+        feeCategories={FEE_CATEGORIES}
+        classOptions={getClassesForLevel(selectedLevel)}
+        termOptions={TERMS}
+        currencySymbol={currencySymbol}
+      />
     </MainLayout>
   );
 }
