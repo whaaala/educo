@@ -2,6 +2,29 @@ import * as XLSX from "xlsx";
 import { LeaveRequest } from "@/types/leave";
 import { TransferRequest } from "@/types/transfer";
 
+// Fee Structure Item interface (matching the page's interface)
+interface FeeStructureItem {
+  id: string;
+  feeTypeId: string;
+  feeTypeName: string;
+  categoryId: string;
+  categoryName: string;
+  educationLevel: string;
+  classLevel: string;
+  amount: number;
+  currency: string;
+  dueDate: string;
+  academicYear: string;
+  term: string;
+  isActive: boolean;
+  allowInstallments: boolean;
+  installmentCount?: number;
+  lateFee?: number;
+  lateFeeType?: "fixed" | "percentage";
+  createdAt: string;
+  updatedAt: string;
+}
+
 /**
  * Export leave requests data to Excel format
  */
@@ -555,6 +578,352 @@ export function exportTransfersToPDF(transfers: TransferRequest[], filename: str
         <div class="footer">
           <p>This is a computer-generated document. No signature is required.</p>
           <p>&copy; ${new Date().getFullYear()} School Management System. All rights reserved.</p>
+        </div>
+      </body>
+    </html>
+  `;
+
+  // Create a new window for printing
+  const printWindow = window.open("", "_blank");
+  if (printWindow) {
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+
+    // Wait for content to load then print
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      // Close window after printing (user can cancel)
+      setTimeout(() => {
+        printWindow.close();
+      }, 100);
+    };
+  } else {
+    alert("Please allow popups to export to PDF");
+  }
+}
+
+/**
+ * Export fee structure data to Excel format
+ */
+export function exportFeeStructureToExcel(
+  fees: FeeStructureItem[],
+  filename: string = "fee-structure",
+  formatCurrency?: (amount: number) => string
+) {
+  // Transform data for Excel
+  const excelData = fees.map((fee) => ({
+    "Fee ID": fee.id,
+    "Fee Type": fee.feeTypeName,
+    "Category": fee.categoryName,
+    "Education Level": fee.educationLevel.charAt(0).toUpperCase() + fee.educationLevel.slice(1),
+    "Class/Level": fee.classLevel,
+    "Amount": formatCurrency ? formatCurrency(fee.amount) : fee.amount,
+    "Currency": fee.currency,
+    "Due Date": fee.dueDate,
+    "Academic Year": fee.academicYear,
+    "Term/Semester": fee.term.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
+    "Status": fee.isActive ? "Active" : "Inactive",
+    "Installments Allowed": fee.allowInstallments ? "Yes" : "No",
+    "Installment Count": fee.installmentCount || "N/A",
+    "Late Fee": fee.lateFee ? (fee.lateFeeType === "percentage" ? `${fee.lateFee}%` : fee.lateFee) : "N/A",
+    "Late Fee Type": fee.lateFeeType ? fee.lateFeeType.charAt(0).toUpperCase() + fee.lateFeeType.slice(1) : "N/A",
+    "Created Date": fee.createdAt,
+    "Last Updated": fee.updatedAt,
+  }));
+
+  // Create worksheet
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+  // Set column widths
+  const columnWidths = [
+    { wch: 12 }, // Fee ID
+    { wch: 25 }, // Fee Type
+    { wch: 25 }, // Category
+    { wch: 15 }, // Education Level
+    { wch: 15 }, // Class/Level
+    { wch: 15 }, // Amount
+    { wch: 10 }, // Currency
+    { wch: 12 }, // Due Date
+    { wch: 12 }, // Academic Year
+    { wch: 18 }, // Term/Semester
+    { wch: 10 }, // Status
+    { wch: 18 }, // Installments Allowed
+    { wch: 15 }, // Installment Count
+    { wch: 12 }, // Late Fee
+    { wch: 12 }, // Late Fee Type
+    { wch: 15 }, // Created Date
+    { wch: 15 }, // Last Updated
+  ];
+  worksheet["!cols"] = columnWidths;
+
+  // Create workbook
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Fee Structure");
+
+  // Generate Excel file
+  const timestamp = new Date().toISOString().split("T")[0];
+  XLSX.writeFile(workbook, `${filename}_${timestamp}.xlsx`);
+}
+
+/**
+ * Export fee structure data to PDF format (using print)
+ */
+export function exportFeeStructureToPDF(
+  fees: FeeStructureItem[],
+  filename: string = "fee-structure",
+  formatCurrency?: (amount: number) => string,
+  schoolName: string = "School Management System"
+) {
+  // Calculate summary statistics
+  const totalFees = fees.reduce((sum, fee) => sum + fee.amount, 0);
+  const activeFees = fees.filter(f => f.isActive).length;
+  const inactiveFees = fees.filter(f => !f.isActive).length;
+  const withInstallments = fees.filter(f => f.allowInstallments).length;
+
+  // Group by category for summary
+  const categoryTotals = fees.reduce((acc, fee) => {
+    if (!acc[fee.categoryName]) {
+      acc[fee.categoryName] = { count: 0, total: 0 };
+    }
+    acc[fee.categoryName].count++;
+    acc[fee.categoryName].total += fee.amount;
+    return acc;
+  }, {} as Record<string, { count: number; total: number }>);
+
+  const formatAmount = (amount: number) => formatCurrency ? formatCurrency(amount) : `${fees[0]?.currency || 'NGN'} ${amount.toLocaleString()}`;
+
+  // Create a printable HTML structure
+  const printContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Fee Structure Report</title>
+        <style>
+          @media print {
+            @page {
+              size: A4 landscape;
+              margin: 15mm;
+            }
+          }
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #7c3aed;
+            padding-bottom: 15px;
+          }
+          .header h1 {
+            margin: 0 0 5px 0;
+            color: #7c3aed;
+            font-size: 22pt;
+          }
+          .header .school-name {
+            font-size: 12pt;
+            color: #6b7280;
+            margin-bottom: 5px;
+          }
+          .header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 10pt;
+          }
+          .summary {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f3e8ff 0%, #e0e7ff 100%);
+            border-radius: 10px;
+            border: 1px solid #ddd6fe;
+          }
+          .summary-item {
+            text-align: center;
+          }
+          .summary-item .label {
+            font-size: 9pt;
+            color: #6b7280;
+            margin-bottom: 5px;
+          }
+          .summary-item .value {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #7c3aed;
+          }
+          .category-summary {
+            margin-bottom: 20px;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+          }
+          .category-summary h3 {
+            margin: 0 0 10px 0;
+            font-size: 11pt;
+            color: #374151;
+          }
+          .category-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+          }
+          .category-item {
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+          }
+          .category-item .name {
+            font-size: 9pt;
+            color: #6b7280;
+          }
+          .category-item .count {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #374151;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+          }
+          th {
+            background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
+            color: white;
+            padding: 10px 6px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 8pt;
+            border: 1px solid #6366f1;
+          }
+          td {
+            padding: 8px 6px;
+            border: 1px solid #e5e7eb;
+            font-size: 8pt;
+          }
+          tr:nth-child(even) {
+            background-color: #f9fafb;
+          }
+          tr:hover {
+            background-color: #f3e8ff;
+          }
+          .status {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 7pt;
+            text-transform: uppercase;
+            display: inline-block;
+          }
+          .status.active {
+            background-color: #d1fae5;
+            color: #065f46;
+          }
+          .status.inactive {
+            background-color: #fee2e2;
+            color: #991b1b;
+          }
+          .amount {
+            font-weight: 600;
+            color: #059669;
+          }
+          .footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 8pt;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 15px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="school-name">${schoolName}</div>
+          <h1>Fee Structure Report</h1>
+          <p>Generated on ${new Date().toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+          })}</p>
+        </div>
+
+        <div class="summary">
+          <div class="summary-item">
+            <div class="label">Total Fee Items</div>
+            <div class="value">${fees.length}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Active Fees</div>
+            <div class="value">${activeFees}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Inactive Fees</div>
+            <div class="value">${inactiveFees}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">With Installments</div>
+            <div class="value">${withInstallments}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Total Amount</div>
+            <div class="value">${formatAmount(totalFees)}</div>
+          </div>
+        </div>
+
+        <div class="category-summary">
+          <h3>Category Breakdown</h3>
+          <div class="category-grid">
+            ${Object.entries(categoryTotals).map(([name, data]) => `
+              <div class="category-item">
+                <div class="name">${name}</div>
+                <div class="count">${data.count} items · ${formatAmount(data.total)}</div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Fee Type</th>
+              <th>Category</th>
+              <th>Level</th>
+              <th>Class</th>
+              <th>Amount</th>
+              <th>Due Date</th>
+              <th>Term</th>
+              <th>Status</th>
+              <th>Installments</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${fees.map(fee => `
+              <tr>
+                <td>${fee.feeTypeName}</td>
+                <td>${fee.categoryName}</td>
+                <td>${fee.educationLevel.charAt(0).toUpperCase() + fee.educationLevel.slice(1)}</td>
+                <td>${fee.classLevel}</td>
+                <td class="amount">${formatAmount(fee.amount)}</td>
+                <td>${fee.dueDate}</td>
+                <td>${fee.term.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}</td>
+                <td><span class="status ${fee.isActive ? 'active' : 'inactive'}">${fee.isActive ? 'Active' : 'Inactive'}</span></td>
+                <td>${fee.allowInstallments ? `Yes (${fee.installmentCount || 'N/A'})` : 'No'}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p>This is a computer-generated document. No signature is required.</p>
+          <p>&copy; ${new Date().getFullYear()} ${schoolName}. All rights reserved.</p>
         </div>
       </body>
     </html>
