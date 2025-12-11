@@ -15,6 +15,8 @@ import TranscriptRequestForm from "@/components/transcript/TranscriptRequestForm
 import TranscriptTemplate from "@/components/transcript/TranscriptTemplate";
 import TranscriptTemplatePrintable from "@/components/transcript/TranscriptTemplatePrintable";
 import { generateTranscriptPDF } from "@/utils/transcriptPdfExport";
+import { exportTranscriptRequestsToPDF } from "@/utils/transcriptRequestsPdfExport";
+import { exportTranscriptRequestsToExcel } from "@/utils/transcriptRequestsExcelExport";
 
 export default function TranscriptsPage() {
   const [requests, setRequests] = useState<TranscriptRequest[]>(mockTranscriptRequests);
@@ -96,13 +98,13 @@ export default function TranscriptsPage() {
   };
 
   const handleExportPDF = () => {
-    console.log("Export to PDF");
-    // TODO: Export filtered requests to PDF
+    const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+    exportTranscriptRequestsToPDF(filteredRequests, `transcript-requests_${dateStr}.pdf`);
   };
 
   const handleExportExcel = () => {
-    console.log("Export to Excel");
-    // TODO: Export filtered requests to Excel
+    const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+    exportTranscriptRequestsToExcel(filteredRequests, `transcript-requests_${dateStr}.xlsx`);
   };
 
   return (

@@ -68,6 +68,12 @@ export interface TermConfig {
   installmentDueDates: InstallmentDueDate[]; // Individual due dates for each installment
 }
 
+// Override for individual installment amounts in the schedule preview
+export interface InstallmentAmountOverride {
+  sequence: number;
+  amount: string; // User-entered amount (string for form input)
+}
+
 export interface InstallmentPlanFormData {
   planType: PlanType;
   // For Per-Term/Semester (bulk - all students)
@@ -78,6 +84,7 @@ export interface InstallmentPlanFormData {
   // For Per-Course/Subject (bulk - all students)
   selectedCourse: string;
   // For Custom (per student)
+  selectedCourseForCustom: string; // Course/Subject selection for custom plan (before student)
   studentId: string;
   studentName: string;
   studentNumber: string;
@@ -90,6 +97,8 @@ export interface InstallmentPlanFormData {
   startDate: string;
   academicYear: string;
   customInstallments: { dueDate: string; amount: string; description: string }[];
+  // Manual overrides for schedule preview amounts (for per-term and per-course plans)
+  scheduleAmountOverrides: InstallmentAmountOverride[];
 }
 
 interface InstallmentPlanModalProps {
@@ -102,16 +111,22 @@ interface InstallmentPlanModalProps {
   currencySymbol: string;
 }
 
-// Mock students for dropdown (for custom plan)
+// Mock students for dropdown (for custom plan) - with course/subject enrollment
 const MOCK_STUDENTS = [
-  { value: "std-001", label: "John Adebayo (STU2024001) - SSS 1", name: "John Adebayo", number: "STU2024001", class: "SSS 1" },
-  { value: "std-002", label: "Amina Bello (STU2024002) - SSS 2", name: "Amina Bello", number: "STU2024002", class: "SSS 2" },
-  { value: "std-003", label: "Chukwuemeka Okonkwo (STU2024003) - JSS 3", name: "Chukwuemeka Okonkwo", number: "STU2024003", class: "JSS 3" },
-  { value: "std-004", label: "Fatima Yusuf (STU2024004) - SSS 3", name: "Fatima Yusuf", number: "STU2024004", class: "SSS 3" },
-  { value: "std-005", label: "David Okafor (STU2024005) - JSS 1", name: "David Okafor", number: "STU2024005", class: "JSS 1" },
-  { value: "std-006", label: "Grace Eze (STU2024006) - JSS 2", name: "Grace Eze", number: "STU2024006", class: "JSS 2" },
-  { value: "std-007", label: "Ibrahim Musa (STU2024007) - SSS 1", name: "Ibrahim Musa", number: "STU2024007", class: "SSS 1" },
-  { value: "std-008", label: "Jennifer Obi (STU2024008) - SSS 2", name: "Jennifer Obi", number: "STU2024008", class: "SSS 2" },
+  // Secondary school students with subjects
+  { value: "std-001", label: "John Adebayo (STU2024001) - SSS 1", name: "John Adebayo", number: "STU2024001", class: "SSS 1", subjects: ["math", "english", "physics", "chemistry"] },
+  { value: "std-002", label: "Amina Bello (STU2024002) - SSS 2", name: "Amina Bello", number: "STU2024002", class: "SSS 2", subjects: ["math", "english", "biology", "economics"] },
+  { value: "std-003", label: "Chukwuemeka Okonkwo (STU2024003) - JSS 3", name: "Chukwuemeka Okonkwo", number: "STU2024003", class: "JSS 3", subjects: ["math", "english", "economics", "government"] },
+  { value: "std-004", label: "Fatima Yusuf (STU2024004) - SSS 3", name: "Fatima Yusuf", number: "STU2024004", class: "SSS 3", subjects: ["math", "english", "physics", "literature"] },
+  { value: "std-005", label: "David Okafor (STU2024005) - JSS 1", name: "David Okafor", number: "STU2024005", class: "JSS 1", subjects: ["math", "english", "biology", "government"] },
+  { value: "std-006", label: "Grace Eze (STU2024006) - JSS 2", name: "Grace Eze", number: "STU2024006", class: "JSS 2", subjects: ["math", "english", "chemistry", "literature"] },
+  { value: "std-007", label: "Ibrahim Musa (STU2024007) - SSS 1", name: "Ibrahim Musa", number: "STU2024007", class: "SSS 1", subjects: ["math", "english", "economics", "government"] },
+  { value: "std-008", label: "Jennifer Obi (STU2024008) - SSS 2", name: "Jennifer Obi", number: "STU2024008", class: "SSS 2", subjects: ["math", "english", "physics", "biology"] },
+  // University students with courses
+  { value: "std-101", label: "Oluwaseun Adeleke (UNI2024001) - 100 Level", name: "Oluwaseun Adeleke", number: "UNI2024001", class: "100 Level", courses: ["csc101", "mth101", "phy101", "gns101"] },
+  { value: "std-102", label: "Ngozi Okoro (UNI2024002) - 100 Level", name: "Ngozi Okoro", number: "UNI2024002", class: "100 Level", courses: ["csc101", "mth101", "chm101", "bio101"] },
+  { value: "std-103", label: "Yusuf Balogun (UNI2024003) - 200 Level", name: "Yusuf Balogun", number: "UNI2024003", class: "200 Level", courses: ["csc101", "phy101", "chm101", "gns101"] },
+  { value: "std-104", label: "Chidinma Nwosu (UNI2024004) - 200 Level", name: "Chidinma Nwosu", number: "UNI2024004", class: "200 Level", courses: ["mth101", "phy101", "bio101", "gns101"] },
 ];
 
 // Fee types
@@ -140,10 +155,11 @@ const TERMS = [
   { value: "third-term", label: "Third Term", shortLabel: "Term 3" },
 ];
 
-// Semesters for Tertiary (2-semester system)
+// Semesters for Tertiary (3-semester system)
 const SEMESTERS = [
   { value: "first-semester", label: "First Semester", shortLabel: "Sem 1" },
   { value: "second-semester", label: "Second Semester", shortLabel: "Sem 2" },
+  { value: "third-semester", label: "Third Semester", shortLabel: "Sem 3" },
 ];
 
 // Class levels for Primary/Secondary
@@ -208,6 +224,7 @@ const initialFormData: InstallmentPlanFormData = {
   classLevel: "",
   termConfigs: [], // Will be initialized based on school type (terms/semesters)
   selectedCourse: "",
+  selectedCourseForCustom: "", // Course/Subject for custom plan
   studentId: "",
   studentName: "",
   studentNumber: "",
@@ -219,6 +236,7 @@ const initialFormData: InstallmentPlanFormData = {
   startDate: "",
   academicYear: "2024-2025",
   customInstallments: [{ dueDate: "", amount: "", description: "Installment 1" }],
+  scheduleAmountOverrides: [], // Manual overrides for schedule preview amounts
 };
 
 export default function InstallmentPlanModal({
@@ -254,12 +272,23 @@ export default function InstallmentPlanModal({
     ),
   }), [isTertiary, settings.supportedLevels]);
 
-  // Get students filtered by selected period/class for custom plan
+  // Get students filtered by selected course/subject for custom plan
   const filteredStudents = useMemo(() => {
-    if (formData.planType !== "custom" || !formData.selectedPeriod) return [];
-    // In real app, filter students by the selected period/term
-    return MOCK_STUDENTS;
-  }, [formData.planType, formData.selectedPeriod]);
+    if (formData.planType !== "custom" || !formData.selectedPeriod || !formData.selectedCourseForCustom) return [];
+
+    // Filter students by the selected course/subject
+    const selectedCourseValue = formData.selectedCourseForCustom;
+
+    return MOCK_STUDENTS.filter((student) => {
+      if (isTertiary) {
+        // University: filter by courses array
+        return student.courses?.includes(selectedCourseValue);
+      } else {
+        // Secondary/Primary: filter by subjects array
+        return student.subjects?.includes(selectedCourseValue);
+      }
+    });
+  }, [formData.planType, formData.selectedPeriod, formData.selectedCourseForCustom, isTertiary]);
 
   // Calculate affected students count (mock)
   const affectedStudentsCount = useMemo(() => {
@@ -328,6 +357,7 @@ export default function InstallmentPlanModal({
       planType,
       academicYear: formData.academicYear,
       termConfigs: planType === "per-term" ? initializeTermConfigs() : [],
+      scheduleAmountOverrides: [], // Clear overrides when plan type changes
     });
     setErrors({});
   };
@@ -339,6 +369,7 @@ export default function InstallmentPlanModal({
       termConfigMode: mode,
       termConfigs: mode === "individual" ? initializeTermConfigs() : [],
       selectedPeriod: mode === "single" ? formData.selectedPeriod : "",
+      scheduleAmountOverrides: [], // Clear overrides when mode changes
     });
     setErrors({});
   };
@@ -446,6 +477,113 @@ export default function InstallmentPlanModal({
     });
   };
 
+  // Get the total amount for the plan (course price or entered amount)
+  const getTotalPlanAmount = (): number => {
+    return parseFloat(formData.totalAmount) || 0;
+  };
+
+  // Update schedule amount override for a specific installment
+  // Redistributes remaining amount across other installments
+  // IMPORTANT: Total of all installments must NEVER exceed the plan total
+  const updateScheduleAmountOverride = (sequence: number, amount: string) => {
+    const totalPlanAmount = getTotalPlanAmount();
+
+    // If empty or invalid, reset this override
+    if (amount === "" || isNaN(parseFloat(amount))) {
+      // Remove override for this sequence
+      const newOverrides = formData.scheduleAmountOverrides.filter(o => o.sequence !== sequence);
+      setFormData({
+        ...formData,
+        scheduleAmountOverrides: newOverrides,
+      });
+      return;
+    }
+
+    // Parse the new amount
+    let newAmount = parseFloat(amount);
+
+    // Get all current overrides except the one being edited
+    const otherOverrides = formData.scheduleAmountOverrides.filter(o => o.sequence !== sequence);
+
+    // Calculate total already allocated to OTHER overridden installments
+    let allocatedToOthers = 0;
+    const overriddenSequences = new Set<number>();
+    otherOverrides.forEach(o => {
+      if (o.amount !== "") {
+        const amt = parseFloat(o.amount);
+        if (!isNaN(amt)) {
+          allocatedToOthers += amt;
+          overriddenSequences.add(o.sequence);
+        }
+      }
+    });
+
+    // Calculate the maximum this installment can be:
+    // It cannot exceed (totalPlanAmount - allocatedToOthers)
+    // This ensures total never exceeds the plan amount
+    const maxAllowedForThis = Math.max(0, totalPlanAmount - allocatedToOthers);
+
+    // Cap the amount at the maximum allowed
+    newAmount = Math.min(Math.max(0, newAmount), maxAllowedForThis);
+
+    // Build new overrides array with the capped amount
+    const newOverrides: InstallmentAmountOverride[] = [
+      ...otherOverrides,
+      { sequence, amount: newAmount.toString() },
+    ];
+
+    setFormData({
+      ...formData,
+      scheduleAmountOverrides: newOverrides,
+    });
+  };
+
+  // Get the override amount for a specific installment (if any)
+  // Now also considers redistribution of remaining amounts
+  const getOverrideAmount = (sequence: number, defaultAmount: number, allSequences: number[]): number => {
+    const totalPlanAmount = getTotalPlanAmount();
+    const installmentCount = allSequences.length;
+
+    // Check if this sequence has an explicit override
+    const override = formData.scheduleAmountOverrides.find(o => o.sequence === sequence);
+    if (override && override.amount !== "") {
+      const parsedAmount = parseFloat(override.amount);
+      if (!isNaN(parsedAmount)) {
+        return parsedAmount;
+      }
+    }
+
+    // If no override for this sequence, calculate based on remaining amount
+    // after accounting for all overridden installments
+    let allocatedToOverrides = 0;
+    const overriddenSequences = new Set<number>();
+
+    formData.scheduleAmountOverrides.forEach(o => {
+      if (o.amount !== "" && allSequences.includes(o.sequence)) {
+        const amt = parseFloat(o.amount);
+        if (!isNaN(amt)) {
+          allocatedToOverrides += amt;
+          overriddenSequences.add(o.sequence);
+        }
+      }
+    });
+
+    // If no overrides at all, return default
+    if (overriddenSequences.size === 0) {
+      return defaultAmount;
+    }
+
+    // Calculate remaining amount to distribute among non-overridden installments
+    const remaining = totalPlanAmount - allocatedToOverrides;
+    const nonOverriddenCount = installmentCount - overriddenSequences.size;
+
+    if (nonOverriddenCount > 0 && !overriddenSequences.has(sequence)) {
+      return Math.max(0, remaining / nonOverriddenCount);
+    }
+
+    return defaultAmount;
+  };
+
   // Validate form
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -491,6 +629,9 @@ export default function InstallmentPlanModal({
       if (!formData.selectedPeriod) {
         newErrors.selectedPeriod = `Please select a ${labels.termOrSemester.toLowerCase()} first`;
       }
+      if (!formData.selectedCourseForCustom) {
+        newErrors.selectedCourseForCustom = `Please select a ${labels.subjectOrCourse.toLowerCase()} first`;
+      }
       if (!formData.studentId) {
         newErrors.studentId = "Please select a student";
       }
@@ -534,9 +675,18 @@ export default function InstallmentPlanModal({
         });
 
         // Sort by due date and reassign sequence numbers
-        return allInstallments
+        const sortedInstallments = allInstallments
           .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
           .map((inst, idx) => ({ ...inst, sequence: idx + 1 }));
+
+        // Get all sequences for redistribution calculation
+        const allSequences = sortedInstallments.map(inst => inst.sequence);
+
+        // Apply overrides with redistribution
+        return sortedInstallments.map((inst) => ({
+          ...inst,
+          amount: getOverrideAmount(inst.sequence, inst.amount, allSequences),
+        }));
       } else {
         // Single term/semester mode
         const total = parseFloat(formData.totalAmount) || 0;
@@ -544,15 +694,19 @@ export default function InstallmentPlanModal({
         const amountPerInstallment = total / count;
         const startDate = new Date(formData.startDate || new Date());
 
+        // Generate all sequences first
+        const allSequences = Array.from({ length: count }, (_, i) => i + 1);
+
         return Array.from({ length: count }, (_, index) => {
           const dueDate = new Date(startDate);
           dueDate.setMonth(dueDate.getMonth() + index);
+          const sequence = index + 1;
 
           return {
-            sequence: index + 1,
+            sequence,
             dueDate: dueDate.toISOString().split("T")[0],
-            amount: amountPerInstallment,
-            description: `Installment ${index + 1}`,
+            amount: getOverrideAmount(sequence, amountPerInstallment, allSequences),
+            description: `Installment ${sequence}`,
           };
         });
       }
@@ -562,15 +716,19 @@ export default function InstallmentPlanModal({
       const amountPerInstallment = total / count;
       const startDate = new Date(formData.startDate || new Date());
 
+      // Generate all sequences first
+      const allSequences = Array.from({ length: count }, (_, i) => i + 1);
+
       return Array.from({ length: count }, (_, index) => {
         const dueDate = new Date(startDate);
         dueDate.setMonth(dueDate.getMonth() + index);
+        const sequence = index + 1;
 
         return {
-          sequence: index + 1,
+          sequence,
           dueDate: dueDate.toISOString().split("T")[0],
-          amount: amountPerInstallment,
-          description: `Installment ${index + 1}`,
+          amount: getOverrideAmount(sequence, amountPerInstallment, allSequences),
+          description: `Installment ${sequence}`,
         };
       });
     } else if (formData.planType === "custom") {
@@ -986,7 +1144,7 @@ export default function InstallmentPlanModal({
                       label="Installments"
                       icon={<Layers className="w-2.5 h-2.5" />}
                       value={formData.installmentCount}
-                      onChange={(value) => setFormData({ ...formData, installmentCount: value })}
+                      onChange={(value) => setFormData({ ...formData, installmentCount: value, scheduleAmountOverrides: [] })}
                       options={INSTALLMENT_OPTIONS}
                       placeholder="Select count"
                     />
@@ -1212,12 +1370,27 @@ export default function InstallmentPlanModal({
                 </div>
               )}
 
+              {/* Amount per Student - Editable */}
+              <FormInput
+                label={`Amount per Student (${currencySymbol})`}
+                icon={<DollarSign className="w-2.5 h-2.5" />}
+                type="number"
+                value={formData.totalAmount}
+                onChange={(value) => {
+                  setFormData({ ...formData, totalAmount: value });
+                  if (errors.totalAmount) setErrors({ ...errors, totalAmount: "" });
+                }}
+                placeholder="Enter amount"
+                required
+                error={errors.totalAmount}
+              />
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <FormDropdown
                   label="Number of Installments"
                   icon={<Layers className="w-2.5 h-2.5" />}
                   value={formData.installmentCount}
-                  onChange={(value) => setFormData({ ...formData, installmentCount: value })}
+                  onChange={(value) => setFormData({ ...formData, installmentCount: value, scheduleAmountOverrides: [] })}
                   options={INSTALLMENT_OPTIONS}
                   placeholder="Select count"
                 />
@@ -1246,7 +1419,7 @@ export default function InstallmentPlanModal({
             {/* Step 1: Select Term/Semester First */}
             <FormSection
               title={`Step 1: Select ${labels.termOrSemester}`}
-              description={`Select the ${labels.termOrSemester.toLowerCase()} first for better performance`}
+              description={`Select the ${labels.termOrSemester.toLowerCase()} first`}
               icon={<Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
             >
               <div className="flex flex-wrap gap-3">
@@ -1257,7 +1430,7 @@ export default function InstallmentPlanModal({
                       key={period.value}
                       type="button"
                       onClick={() => {
-                        setFormData({ ...formData, selectedPeriod: period.value, studentId: "", studentName: "", studentNumber: "", studentClassLevel: "" });
+                        setFormData({ ...formData, selectedPeriod: period.value, selectedCourseForCustom: "", studentId: "", studentName: "", studentNumber: "", studentClassLevel: "" });
                         if (errors.selectedPeriod) setErrors({ ...errors, selectedPeriod: "" });
                       }}
                       className={`px-4 py-2.5 rounded-lg border-2 font-medium text-sm transition-all cursor-pointer ${
@@ -1277,25 +1450,91 @@ export default function InstallmentPlanModal({
               )}
             </FormSection>
 
-            {/* Step 2: Select Student (only after term is selected) */}
+            {/* Step 2: Select Course/Subject (only after term is selected) */}
             {formData.selectedPeriod && (
               <FormSection
-                title="Step 2: Select Student"
-                description={`Select the student for ${labels.periodsData.find(p => p.value === formData.selectedPeriod)?.label}`}
+                title={`Step 2: Select ${labels.subjectOrCourse}`}
+                description={`Select the ${labels.subjectOrCourse.toLowerCase()} to load enrolled students`}
+                icon={<BookOpen className="w-5 h-5 text-green-600 dark:text-green-400" />}
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {labels.coursesData.map((course) => {
+                    const isSelected = formData.selectedCourseForCustom === course.value;
+                    return (
+                      <button
+                        key={course.value}
+                        type="button"
+                        onClick={() => {
+                          setFormData({ ...formData, selectedCourseForCustom: course.value, studentId: "", studentName: "", studentNumber: "", studentClassLevel: "" });
+                          if (errors.selectedCourseForCustom) setErrors({ ...errors, selectedCourseForCustom: "" });
+                        }}
+                        className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all cursor-pointer text-left ${
+                          isSelected
+                            ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-green-300 dark:hover:border-green-700"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                            isSelected
+                              ? "bg-green-500 text-white"
+                              : "bg-gray-200 dark:bg-gray-700"
+                          }`}>
+                            {isSelected && <Check className="w-3 h-3" />}
+                          </div>
+                          <span className={`text-sm font-medium ${
+                            isSelected ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"
+                          }`}>
+                            {course.label}
+                          </span>
+                        </div>
+                        <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                          {currencySymbol}{course.amount.toLocaleString()}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {errors.selectedCourseForCustom && (
+                  <p className="text-xs text-red-600 dark:text-red-400 mt-2">{errors.selectedCourseForCustom}</p>
+                )}
+              </FormSection>
+            )}
+
+            {/* Step 3: Select Student (only after course/subject is selected) */}
+            {formData.selectedPeriod && formData.selectedCourseForCustom && (
+              <FormSection
+                title="Step 3: Select Student"
+                description={`Students enrolled in ${labels.coursesData.find(c => c.value === formData.selectedCourseForCustom)?.label}`}
                 icon={<User className="w-5 h-5 text-purple-600 dark:text-purple-400" />}
               >
                 <div className="space-y-5">
-                  <FormDropdown
-                    label="Select Student"
-                    icon={<User className="w-2.5 h-2.5" />}
-                    value={formData.studentId}
-                    onChange={handleStudentChange}
-                    options={filteredStudents}
-                    placeholder="Search and select a student"
-                    required
-                    error={errors.studentId}
-                    disabled={isEditing}
-                  />
+                  {filteredStudents.length === 0 ? (
+                    <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                      <p className="text-sm text-amber-700 dark:text-amber-300">
+                        No students found enrolled in {labels.coursesData.find(c => c.value === formData.selectedCourseForCustom)?.label}
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <p className="text-xs text-blue-700 dark:text-blue-300">
+                          <span className="font-semibold">{filteredStudents.length}</span> student{filteredStudents.length !== 1 ? "s" : ""} enrolled in this {labels.subjectOrCourse.toLowerCase()}
+                        </p>
+                      </div>
+                      <FormDropdown
+                        label="Select Student"
+                        icon={<User className="w-2.5 h-2.5" />}
+                        value={formData.studentId}
+                        onChange={handleStudentChange}
+                        options={filteredStudents}
+                        placeholder="Search and select a student"
+                        required
+                        error={errors.studentId}
+                        disabled={isEditing}
+                      />
+                    </>
+                  )}
 
                   {/* Show selected student info */}
                   {formData.studentId && (
@@ -1318,10 +1557,10 @@ export default function InstallmentPlanModal({
               </FormSection>
             )}
 
-            {/* Step 3: Custom Installments */}
+            {/* Step 4: Custom Installments */}
             {formData.studentId && (
               <FormSection
-                title="Step 3: Define Custom Installments"
+                title="Step 4: Define Custom Installments"
                 description="Create a custom payment schedule for this student"
                 icon={<Settings2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />}
               >
@@ -1405,38 +1644,81 @@ export default function InstallmentPlanModal({
                 <h4 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                   Payment Schedule Preview
                 </h4>
-                {formData.planType !== "custom" && affectedStudentsCount > 0 && (
+                {formData.planType !== "custom" && (
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    This schedule will be applied to {affectedStudentsCount} students
+                    {affectedStudentsCount > 0 && `This schedule will be applied to ${affectedStudentsCount} students. `}
+                    Click on amounts to customize each installment.
                   </p>
                 )}
               </div>
             </div>
 
             <div className="space-y-2">
-              {schedulePreview.map((item) => (
-                <div
-                  key={item.sequence}
-                  className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-sm font-bold text-gray-700 dark:text-gray-300">
-                      {item.sequence}
+              {schedulePreview.map((item) => {
+                // Check if this installment has an override
+                const override = formData.scheduleAmountOverrides.find(o => o.sequence === item.sequence);
+                const hasOverride = override && override.amount !== "";
+                const isCustomPlan = formData.planType === "custom";
+
+                return (
+                  <div
+                    key={item.sequence}
+                    className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                        hasOverride
+                          ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                      }`}>
+                        {item.sequence}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {item.description}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Due: {new Date(item.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {item.description}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Due: {new Date(item.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      </p>
-                    </div>
+
+                    {/* Editable amount for non-custom plans */}
+                    {!isCustomPlan ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500 dark:text-gray-400">{currencySymbol}</span>
+                        <input
+                          type="number"
+                          value={override?.amount ?? item.amount.toString()}
+                          onChange={(e) => updateScheduleAmountOverride(item.sequence, e.target.value)}
+                          placeholder={item.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                          className={`w-28 px-3 py-1.5 text-sm font-semibold text-right rounded-lg border transition-all ${
+                            hasOverride
+                              ? "border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                              : "border-green-200 dark:border-green-700 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400"
+                          } focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 dark:focus:border-blue-500 outline-none`}
+                        />
+                        {hasOverride && (
+                          <button
+                            type="button"
+                            onClick={() => updateScheduleAmountOverride(item.sequence, "")}
+                            className="p-1 text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+                            title="Reset to default"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                        {currencySymbol}{item.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                      </span>
+                    )}
                   </div>
-                  <span className="text-sm font-bold text-green-600 dark:text-green-400">
-                    {currencySymbol}{item.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="mt-4 pt-4 border-t-2 border-green-300 dark:border-green-700 midnight:border-cyan-700 purple:border-pink-700 flex justify-between items-center">

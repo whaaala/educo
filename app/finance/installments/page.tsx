@@ -16,6 +16,7 @@ import SearchFilterBar from "@/components/shared/SearchFilterBar";
 import StatCard from "@/components/shared/StatCard";
 import InstallmentPlanModal from "@/components/finance/InstallmentPlanModal";
 import ConfirmationModal from "@/components/shared/ConfirmationModal";
+import FormInput from "@/components/shared/FormInput";
 import {
   Plus,
   Edit,
@@ -30,7 +31,11 @@ import {
   XCircle,
   Layers,
   Copy,
+  DollarSign,
+  User,
 } from "lucide-react";
+import { exportInstallmentPlansToPDF } from "@/utils/installmentPdfExport";
+import { exportInstallmentPlansToExcel } from "@/utils/installmentExcelExport";
 
 // Installment Plan Status
 type InstallmentPlanStatus = "active" | "completed" | "defaulted" | "cancelled";
@@ -237,6 +242,18 @@ const CLASS_OPTIONS = [
   { label: "SSS 3", value: "SSS 3" },
 ];
 
+// Mock students for duplicate selection
+const MOCK_STUDENTS = [
+  { value: "std-001", label: "John Adebayo (STU2024001) - SSS 1", name: "John Adebayo", number: "STU2024001", class: "SSS 1" },
+  { value: "std-002", label: "Amina Bello (STU2024002) - SSS 2", name: "Amina Bello", number: "STU2024002", class: "SSS 2" },
+  { value: "std-003", label: "Chukwuemeka Okonkwo (STU2024003) - JSS 3", name: "Chukwuemeka Okonkwo", number: "STU2024003", class: "JSS 3" },
+  { value: "std-004", label: "Fatima Yusuf (STU2024004) - SSS 3", name: "Fatima Yusuf", number: "STU2024004", class: "SSS 3" },
+  { value: "std-005", label: "David Okafor (STU2024005) - JSS 1", name: "David Okafor", number: "STU2024005", class: "JSS 1" },
+  { value: "std-006", label: "Grace Eze (STU2024006) - JSS 2", name: "Grace Eze", number: "STU2024006", class: "JSS 2" },
+  { value: "std-007", label: "Ibrahim Musa (STU2024007) - SSS 1", name: "Ibrahim Musa", number: "STU2024007", class: "SSS 1" },
+  { value: "std-008", label: "Jennifer Obi (STU2024008) - SSS 2", name: "Jennifer Obi", number: "STU2024008", class: "SSS 2" },
+];
+
 export default function InstallmentPlansPage() {
   const isPageLoading = usePageLoad(600);
   useSchoolSettings();
@@ -256,9 +273,11 @@ export default function InstallmentPlansPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<InstallmentPlan | null>(null);
   const [viewingPlan, setViewingPlan] = useState<InstallmentPlan | null>(null);
   const [deletingPlan, setDeletingPlan] = useState<InstallmentPlan | null>(null);
+  const [duplicatingPlan, setDuplicatingPlan] = useState<InstallmentPlan | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isFiltering, setIsFiltering] = useState(false);
@@ -379,8 +398,9 @@ export default function InstallmentPlansPage() {
     setIsAddModalOpen(true);
   };
 
-  // Open edit modal
+  // Open edit modal (uses view modal in edit mode)
   const handleEdit = (plan: InstallmentPlan) => {
+    setViewingPlan(plan);
     setEditingPlan(plan);
     setIsEditModalOpen(true);
   };
@@ -391,15 +411,34 @@ export default function InstallmentPlansPage() {
     setIsViewModalOpen(true);
   };
 
-  // Handle duplicate
+  // Handle duplicate - open modal to select student and optionally edit
   const handleDuplicate = (plan: InstallmentPlan) => {
+    setDuplicatingPlan(plan);
+    setIsDuplicateModalOpen(true);
+  };
+
+  // Create the duplicate with selected student
+  const handleCreateDuplicate = (selectedStudentId: string, editedInstallments: Installment[]) => {
+    if (!duplicatingPlan) return;
+
+    const selectedStudent = MOCK_STUDENTS.find((s) => s.value === selectedStudentId);
+    if (!selectedStudent) return;
+
+    // Calculate new totals based on edited installments
+    const newTotalAmount = editedInstallments.reduce((sum, inst) => sum + inst.amount, 0);
+
     const duplicated: InstallmentPlan = {
-      ...plan,
+      ...duplicatingPlan,
       id: `ip-${Date.now()}`,
+      studentId: selectedStudentId,
+      studentName: selectedStudent.name,
+      studentNumber: selectedStudent.number,
+      classLevel: selectedStudent.class,
       status: "active",
       paidAmount: 0,
-      remainingAmount: plan.totalAmount,
-      installments: plan.installments.map((inst, index) => ({
+      totalAmount: newTotalAmount,
+      remainingAmount: newTotalAmount,
+      installments: editedInstallments.map((inst, index) => ({
         ...inst,
         id: `ins-${Date.now()}-${index}`,
         paidAmount: 0,
@@ -413,6 +452,8 @@ export default function InstallmentPlansPage() {
       updatedAt: new Date().toISOString(),
     };
     setInstallmentPlans([...installmentPlans, duplicated]);
+    setIsDuplicateModalOpen(false);
+    setDuplicatingPlan(null);
   };
 
   // Handle delete
@@ -619,28 +660,38 @@ export default function InstallmentPlansPage() {
       render: (plan) => (
         <div className="flex items-center justify-center gap-2.5">
           <button
-            onClick={() => handleView(plan)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleView(plan);
+            }}
             className="group relative p-2 rounded-lg bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/30 dark:to-blue-900/20 midnight:from-blue-950/30 midnight:to-blue-900/20 purple:from-blue-950/30 purple:to-blue-900/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-blue-900/40 dark:hover:to-blue-800/30 transition-all duration-200 cursor-pointer border border-blue-200/40 dark:border-blue-800/30 hover:border-blue-400/60 dark:hover:border-blue-600/50 active:scale-95"
             title="View"
           >
             <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
           </button>
           <button
-            onClick={() => handleEdit(plan)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit(plan);
+            }}
             className="group relative p-2 rounded-lg bg-gradient-to-br from-orange-50/50 to-orange-100/30 dark:from-orange-950/30 dark:to-orange-900/20 midnight:from-orange-950/30 midnight:to-orange-900/20 purple:from-orange-950/30 purple:to-orange-900/20 hover:from-orange-100 hover:to-orange-100 dark:hover:from-orange-900/40 dark:hover:to-orange-800/30 transition-all duration-200 cursor-pointer border border-orange-200/40 dark:border-orange-800/30 hover:border-orange-400/60 dark:hover:border-orange-600/50 active:scale-95"
             title="Edit"
           >
             <Edit className="w-4 h-4 text-orange-600 dark:text-orange-400 group-hover:text-orange-700 dark:group-hover:text-orange-300 transition-colors" />
           </button>
           <button
-            onClick={() => handleDuplicate(plan)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDuplicate(plan);
+            }}
             className="group relative p-2 rounded-lg bg-gradient-to-br from-purple-50/50 to-purple-100/30 dark:from-purple-950/30 dark:to-purple-900/20 midnight:from-purple-950/30 midnight:to-purple-900/20 purple:from-purple-950/30 purple:to-purple-900/20 hover:from-purple-100 hover:to-purple-100 dark:hover:from-purple-900/40 dark:hover:to-purple-800/30 transition-all duration-200 cursor-pointer border border-purple-200/40 dark:border-purple-800/30 hover:border-purple-400/60 dark:hover:border-purple-600/50 active:scale-95"
             title="Duplicate"
           >
             <Copy className="w-4 h-4 text-purple-600 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors" />
           </button>
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setDeletingPlan(plan);
               setIsDeleteModalOpen(true);
             }}
@@ -672,8 +723,14 @@ export default function InstallmentPlansPage() {
           />
           <PageActions
             onRefresh={handleRefresh}
-            onExportPDF={() => {}}
-            onExportExcel={() => {}}
+            onExportPDF={() => {
+              const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+              exportInstallmentPlansToPDF(filteredData, `installment-plans_${dateStr}.pdf`, currencySymbol);
+            }}
+            onExportExcel={() => {
+              const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+              exportInstallmentPlansToExcel(filteredData, `installment-plans_${dateStr}.xlsx`, currencySymbol);
+            }}
             onAdd={handleAddNew}
             addButtonLabel="Add Plan"
             exportDescription="Export installment plan records"
@@ -820,33 +877,46 @@ export default function InstallmentPlansPage() {
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
+      {/* Add Modal */}
       <InstallmentPlanModal
-        isOpen={isAddModalOpen || isEditModalOpen}
+        isOpen={isAddModalOpen}
         onClose={() => {
           setIsAddModalOpen(false);
-          setIsEditModalOpen(false);
-          setEditingPlan(null);
         }}
         onSave={handleSave}
-        isEditing={isEditModalOpen}
-        editingPlan={editingPlan}
+        isEditing={false}
+        editingPlan={null}
         isSaving={isSaving}
         currencySymbol={currencySymbol}
       />
 
-      {/* View Modal */}
+      {/* View/Edit Modal */}
       {viewingPlan && (
         <InstallmentPlanViewModal
-          isOpen={isViewModalOpen}
+          isOpen={isViewModalOpen || isEditModalOpen}
           onClose={() => {
             setIsViewModalOpen(false);
+            setIsEditModalOpen(false);
             setViewingPlan(null);
+            setEditingPlan(null);
           }}
           plan={viewingPlan}
           countryCode={countryCode}
           getInstallmentStatusBadge={getInstallmentStatusBadge}
           getStatusBadge={getStatusBadge}
+          isEditMode={isEditModalOpen}
+          onSave={(updatedPlan) => {
+            setInstallmentPlans((prev) =>
+              prev.map((p) =>
+                p.id === updatedPlan.id
+                  ? { ...updatedPlan, updatedAt: new Date().toISOString() }
+                  : p
+              )
+            );
+            setIsEditModalOpen(false);
+            setViewingPlan(null);
+            setEditingPlan(null);
+          }}
         />
       )}
 
@@ -864,6 +934,24 @@ export default function InstallmentPlansPage() {
         cancelLabel="Cancel"
         variant="danger"
       />
+
+      {/* Duplicate Plan Modal */}
+      {duplicatingPlan && (
+        <DuplicatePlanModal
+          isOpen={isDuplicateModalOpen}
+          onClose={() => {
+            setIsDuplicateModalOpen(false);
+            setDuplicatingPlan(null);
+          }}
+          plan={duplicatingPlan}
+          students={MOCK_STUDENTS}
+          existingStudentIds={installmentPlans
+            .filter((p) => p.feeTypeName === duplicatingPlan.feeTypeName && p.academicYear === duplicatingPlan.academicYear && p.term === duplicatingPlan.term)
+            .map((p) => p.studentId)}
+          onConfirm={handleCreateDuplicate}
+          countryCode={countryCode}
+        />
+      )}
     </MainLayout>
   );
 }
@@ -876,6 +964,8 @@ interface InstallmentPlanViewModalProps {
   countryCode: string;
   getInstallmentStatusBadge: (status: InstallmentStatus) => React.ReactNode;
   getStatusBadge: (status: InstallmentPlanStatus) => React.ReactNode;
+  isEditMode?: boolean;
+  onSave?: (updatedPlan: InstallmentPlan) => void;
 }
 
 function InstallmentPlanViewModal({
@@ -885,33 +975,82 @@ function InstallmentPlanViewModal({
   countryCode,
   getInstallmentStatusBadge,
   getStatusBadge,
+  isEditMode = false,
+  onSave,
 }: InstallmentPlanViewModalProps) {
   const Modal = require("@/components/shared/Modal").default;
+  const [editedPlan, setEditedPlan] = useState<InstallmentPlan>(plan);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const percentage = (plan.paidAmount / plan.totalAmount) * 100;
+  // Reset edited plan when plan changes or modal opens
+  useEffect(() => {
+    setEditedPlan(plan);
+  }, [plan, isOpen]);
+
+  const handleInstallmentChange = (index: number, field: "amount" | "dueDate", value: string) => {
+    const newInstallments = [...editedPlan.installments];
+    if (field === "amount") {
+      const newAmount = parseFloat(value) || 0;
+      newInstallments[index] = { ...newInstallments[index], amount: newAmount };
+    } else if (field === "dueDate") {
+      newInstallments[index] = { ...newInstallments[index], dueDate: value };
+    }
+
+    // Recalculate total amount
+    const newTotalAmount = newInstallments.reduce((sum, inst) => sum + inst.amount, 0);
+    const newRemainingAmount = newTotalAmount - editedPlan.paidAmount;
+
+    setEditedPlan({
+      ...editedPlan,
+      installments: newInstallments,
+      totalAmount: newTotalAmount,
+      remainingAmount: newRemainingAmount,
+    });
+  };
+
+  const handleSave = async () => {
+    if (!onSave) return;
+    setIsSaving(true);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    onSave(editedPlan);
+    setIsSaving(false);
+  };
+
+  const displayPlan = isEditMode ? editedPlan : plan;
+  const percentage = (displayPlan.paidAmount / displayPlan.totalAmount) * 100;
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Installment Plan Details"
-      subtitle={`${plan.studentName} - ${plan.feeTypeName}`}
+      title={isEditMode ? "Edit Installment Plan" : "Installment Plan Details"}
+      subtitle={`${displayPlan.studentName} - ${displayPlan.feeTypeName}`}
       icon={<FileText className="w-5 h-5" />}
       maxWidth="3xl"
     >
       <div className="space-y-6">
+        {/* Edit Mode Banner */}
+        {isEditMode && (
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 flex items-center gap-2">
+            <Edit className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <span className="text-sm text-amber-700 dark:text-amber-300">
+              Edit mode enabled - You can modify installment amounts and due dates below
+            </span>
+          </div>
+        )}
+
         {/* Plan Overview */}
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 midnight:from-cyan-900/20 midnight:to-blue-900/20 purple:from-pink-900/20 purple:to-purple-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800 midnight:border-cyan-800 purple:border-pink-800">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                {plan.studentName}
+                {displayPlan.studentName}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
-                {plan.studentNumber} | {plan.classLevel}
+                {displayPlan.studentNumber} | {displayPlan.classLevel}
               </p>
             </div>
-            {getStatusBadge(plan.status)}
+            {getStatusBadge(displayPlan.status)}
           </div>
 
           {/* Progress */}
@@ -919,7 +1058,7 @@ function InstallmentPlanViewModal({
             <div className="flex justify-between text-sm mb-2">
               <span className="text-gray-600 dark:text-gray-400">Payment Progress</span>
               <span className="font-semibold text-gray-900 dark:text-white">
-                {formatCurrency(plan.paidAmount, countryCode)} / {formatCurrency(plan.totalAmount, countryCode)}
+                {formatCurrency(displayPlan.paidAmount, countryCode)} / {formatCurrency(displayPlan.totalAmount, countryCode)}
               </span>
             </div>
             <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -931,13 +1070,13 @@ function InstallmentPlanViewModal({
                     ? "bg-blue-500"
                     : "bg-amber-500"
                 }`}
-                style={{ width: `${percentage}%` }}
+                style={{ width: `${Math.min(percentage, 100)}%` }}
               />
             </div>
             <div className="flex justify-between text-xs mt-1">
               <span className="text-gray-500">{percentage.toFixed(0)}% Complete</span>
               <span className="text-amber-600 dark:text-amber-400 font-medium">
-                {formatCurrency(plan.remainingAmount, countryCode)} remaining
+                {formatCurrency(displayPlan.remainingAmount, countryCode)} remaining
               </span>
             </div>
           </div>
@@ -947,22 +1086,22 @@ function InstallmentPlanViewModal({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-3">
             <p className="text-xs text-gray-500 dark:text-gray-400">Fee Type</p>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">{plan.feeTypeName}</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">{displayPlan.feeTypeName}</p>
           </div>
           <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-3">
             <p className="text-xs text-gray-500 dark:text-gray-400">Installments</p>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">{plan.installmentCount} payments</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">{displayPlan.installmentCount} payments</p>
           </div>
           <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-3">
             <p className="text-xs text-gray-500 dark:text-gray-400">Start Date</p>
             <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">
-              {new Date(plan.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+              {new Date(displayPlan.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </p>
           </div>
           <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-3">
             <p className="text-xs text-gray-500 dark:text-gray-400">End Date</p>
             <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">
-              {new Date(plan.endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+              {new Date(displayPlan.endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </p>
           </div>
         </div>
@@ -974,7 +1113,7 @@ function InstallmentPlanViewModal({
             Payment Schedule
           </h4>
           <div className="space-y-3">
-            {plan.installments.map((installment) => (
+            {displayPlan.installments.map((installment, index) => (
               <div
                 key={installment.id}
                 className={`relative flex items-start gap-4 p-4 rounded-xl border transition-all ${
@@ -1003,33 +1142,72 @@ function InstallmentPlanViewModal({
                 {/* Installment Details */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <div>
+                    <div className="flex-1">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">
                         Installment {installment.sequence}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        Due: {new Date(installment.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                      </p>
+                      {isEditMode ? (
+                        <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <FormInput
+                            label="Due Date"
+                            icon={<Calendar className="w-2.5 h-2.5" />}
+                            type="date"
+                            value={installment.dueDate}
+                            onChange={(value) => handleInstallmentChange(index, "dueDate", value)}
+                            placeholder="Select due date"
+                          />
+                          <FormInput
+                            label="Amount"
+                            icon={<DollarSign className="w-2.5 h-2.5" />}
+                            type="number"
+                            value={installment.amount.toString()}
+                            onChange={(value) => handleInstallmentChange(index, "amount", value)}
+                            placeholder="Enter amount"
+                          />
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                          Due: {new Date(installment.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                        </p>
+                      )}
                     </div>
-                    {getInstallmentStatusBadge(installment.status)}
+                    {!isEditMode && getInstallmentStatusBadge(installment.status)}
                   </div>
 
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Amount: </span>
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        {formatCurrency(installment.amount, countryCode)}
-                      </span>
-                    </div>
-                    {installment.paidAmount > 0 && (
+                  {!isEditMode && (
+                    <div className="flex items-center justify-between mt-2">
                       <div className="text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">Paid: </span>
-                        <span className="font-semibold text-green-600 dark:text-green-400">
-                          {formatCurrency(installment.paidAmount, countryCode)}
+                        <span className="text-gray-600 dark:text-gray-400">Amount: </span>
+                        <span className="font-semibold text-gray-900 dark:text-white">
+                          {formatCurrency(installment.amount, countryCode)}
                         </span>
                       </div>
-                    )}
-                  </div>
+                      {installment.paidAmount > 0 && (
+                        <div className="text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">Paid: </span>
+                          <span className="font-semibold text-green-600 dark:text-green-400">
+                            {formatCurrency(installment.paidAmount, countryCode)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {isEditMode && (
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-200 dark:border-gray-600">
+                      <div className="flex items-center gap-2">
+                        {getInstallmentStatusBadge(installment.status)}
+                      </div>
+                      {installment.paidAmount > 0 && (
+                        <div className="text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">Paid: </span>
+                          <span className="font-semibold text-green-600 dark:text-green-400">
+                            {formatCurrency(installment.paidAmount, countryCode)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Payment Info */}
                   {installment.paidDate && (
@@ -1052,6 +1230,243 @@ function InstallmentPlanViewModal({
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Edit Mode Actions */}
+        {isEditMode && (
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 rounded-lg transition-colors flex items-center gap-2"
+            >
+              {isSaving ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  Save Changes
+                </>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+}
+
+// Duplicate Plan Modal Component
+interface DuplicatePlanModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  plan: InstallmentPlan;
+  students: { value: string; label: string; name: string; number: string; class: string }[];
+  existingStudentIds: string[];
+  onConfirm: (studentId: string, installments: Installment[]) => void;
+  countryCode: string;
+}
+
+function DuplicatePlanModal({
+  isOpen,
+  onClose,
+  plan,
+  students,
+  existingStudentIds,
+  onConfirm,
+  countryCode,
+}: DuplicatePlanModalProps) {
+  const Modal = require("@/components/shared/Modal").default;
+  const [selectedStudentId, setSelectedStudentId] = useState("");
+  const [editInstallments, setEditInstallments] = useState(false);
+  const [editedInstallments, setEditedInstallments] = useState<Installment[]>(plan.installments);
+
+  // Reset state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedStudentId("");
+      setEditInstallments(false);
+      setEditedInstallments(plan.installments);
+    }
+  }, [isOpen, plan.installments]);
+
+  // Filter out students who already have this plan
+  const availableStudents = students.filter(
+    (s) => !existingStudentIds.includes(s.value)
+  );
+
+  const handleInstallmentAmountChange = (index: number, value: string) => {
+    const newInstallments = [...editedInstallments];
+    newInstallments[index] = { ...newInstallments[index], amount: parseFloat(value) || 0 };
+    setEditedInstallments(newInstallments);
+  };
+
+  const handleInstallmentDateChange = (index: number, value: string) => {
+    const newInstallments = [...editedInstallments];
+    newInstallments[index] = { ...newInstallments[index], dueDate: value };
+    setEditedInstallments(newInstallments);
+  };
+
+  const totalAmount = editedInstallments.reduce((sum, inst) => sum + inst.amount, 0);
+
+  const handleConfirm = () => {
+    if (!selectedStudentId) return;
+    onConfirm(selectedStudentId, editedInstallments);
+  };
+
+  const selectedStudent = students.find((s) => s.value === selectedStudentId);
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Copy Installment Plan"
+      subtitle={`Copy plan from ${plan.studentName}`}
+      icon={<Copy className="w-5 h-5" />}
+      maxWidth="2xl"
+    >
+      <div className="space-y-6">
+        {/* Source Plan Info */}
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Copying from:</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-semibold text-gray-900 dark:text-white">{plan.studentName}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{plan.feeTypeName} - {plan.installmentCount} installments</p>
+            </div>
+            <div className="text-right">
+              <p className="font-semibold text-gray-900 dark:text-white">{formatCurrency(plan.totalAmount, countryCode)}</p>
+              <p className="text-xs text-gray-500">{plan.academicYear} | {plan.term.replace("-", " ")}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Student Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
+            <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+              <User className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <span>Select Student</span>
+            <span className="text-red-500 ml-1">*</span>
+          </label>
+          {availableStudents.length === 0 ? (
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+              <p className="text-sm text-amber-700 dark:text-amber-300">
+                All students already have this installment plan for {plan.feeTypeName} in {plan.term.replace("-", " ")}.
+              </p>
+            </div>
+          ) : (
+            <select
+              value={selectedStudentId}
+              onChange={(e) => setSelectedStudentId(e.target.value)}
+              className="w-full h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-1 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
+            >
+              <option value="">Select a student...</option>
+              {availableStudents.map((student) => (
+                <option key={student.value} value={student.value}>
+                  {student.label}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Selected Student Preview */}
+        {selectedStudent && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+            <p className="text-xs text-blue-600 dark:text-blue-400 mb-1">New plan will be created for:</p>
+            <p className="font-semibold text-blue-900 dark:text-blue-100">{selectedStudent.name}</p>
+            <p className="text-sm text-blue-700 dark:text-blue-300">{selectedStudent.number} - {selectedStudent.class}</p>
+          </div>
+        )}
+
+        {/* Edit Toggle */}
+        <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+          <input
+            type="checkbox"
+            id="editInstallments"
+            checked={editInstallments}
+            onChange={(e) => setEditInstallments(e.target.checked)}
+            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <label htmlFor="editInstallments" className="flex-1 cursor-pointer">
+            <p className="text-sm font-medium text-gray-900 dark:text-white">Modify installment amounts and dates</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Leave unchecked to keep the same schedule as the original plan</p>
+          </label>
+        </div>
+
+        {/* Editable Installments */}
+        {editInstallments && (
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Edit Payment Schedule
+            </h4>
+            <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+              {editedInstallments.map((inst, index) => (
+                <div
+                  key={inst.id}
+                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+                >
+                  <div className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold">
+                    {inst.sequence}
+                  </div>
+                  <div className="flex-1 grid grid-cols-2 gap-3">
+                    <FormInput
+                      label="Due Date"
+                      icon={<Calendar className="w-2.5 h-2.5" />}
+                      type="date"
+                      value={inst.dueDate}
+                      onChange={(value) => handleInstallmentDateChange(index, value)}
+                      placeholder="Select date"
+                    />
+                    <FormInput
+                      label="Amount"
+                      icon={<DollarSign className="w-2.5 h-2.5" />}
+                      type="number"
+                      value={inst.amount.toString()}
+                      onChange={(value) => handleInstallmentAmountChange(index, value)}
+                      placeholder="Enter amount"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-sm">
+                <span className="text-gray-600 dark:text-gray-400">Total: </span>
+                <span className="font-semibold text-gray-900 dark:text-white">{formatCurrency(totalAmount, countryCode)}</span>
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={!selectedStudentId || availableStudents.length === 0}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
+          >
+            <Copy className="w-4 h-4" />
+            Create Copy
+          </button>
         </div>
       </div>
     </Modal>
