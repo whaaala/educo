@@ -258,8 +258,8 @@ export default function DataTable<T>({
       )}
 
       {/* Table Body Container */}
-      <div className="overflow-x-auto overflow-y-visible -mx-px smooth-scroll snap-x snap-mandatory">
-        <table className="w-full border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
+      <div className="overflow-x-auto -mx-px smooth-scroll snap-x snap-mandatory pb-16" style={{ overflowY: 'visible', overflowX: 'auto' }}>
+        <table className="w-full border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900" style={{ overflow: 'visible' }}>
           {/* Table Header */}
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border-b border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
@@ -269,9 +269,9 @@ export default function DataTable<T>({
                 const isCenterAligned = column.className?.includes('text-center') || !isLeftAligned;
                 const justifyClass = isLeftAligned ? 'justify-start' : 'justify-center';
 
-                // Make first two columns sticky on mobile
+                // Make first two columns sticky on mobile - first column needs higher z-index than second
                 const stickyClass = index === 0
-                  ? 'md:relative md:left-auto sticky left-0 z-30 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800'
+                  ? 'md:relative md:left-auto sticky left-0 z-40 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800'
                   : index === 1
                   ? 'md:relative md:left-auto sticky left-[80px] z-30 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800'
                   : '';
@@ -319,7 +319,7 @@ export default function DataTable<T>({
           </thead>
 
           {/* Table Body */}
-          <tbody>
+          <tbody style={{ overflow: 'visible' }}>
             {isLoading ? (
               <tr>
                 <td
@@ -370,8 +370,9 @@ export default function DataTable<T>({
                 >
                   {columns.map((column, colIndex) => {
                     // Make first two columns sticky on mobile with shadow to indicate more content
+                    // First column needs higher z-index than second to prevent overlap when scrolling
                     const stickyClass = colIndex === 0
-                      ? 'md:relative md:left-auto sticky left-0 z-20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none'
+                      ? 'md:relative md:left-auto sticky left-0 z-30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none'
                       : colIndex === 1
                       ? 'md:relative md:left-auto sticky left-[80px] z-20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none'
                       : '';
@@ -384,6 +385,7 @@ export default function DataTable<T>({
                     <td
                       key={column.key}
                       className={`px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 ${defaultAlignment} align-middle transition-colors duration-200 ${stickyClass} ${getHiddenClasses(column.hidden)} ${column.className || ''}`}
+                      style={{ overflow: 'visible' }}
                     >
                       {column.render ? column.render(item, index) : (
                         <span className="text-[12px] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 block truncate">
@@ -456,7 +458,7 @@ export default function DataTable<T>({
 
       {/* Pagination Controls */}
       {enablePagination && (totalDataCount ? totalDataCount > 0 : data.length > 0) && (
-        <div className={`bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-b-xl md:rounded-b-2xl transition-opacity duration-200 ${
+        <div className={`relative z-10 -mt-16 bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-b-xl md:rounded-b-2xl transition-opacity duration-200 ${
           isLoading ? 'opacity-50 pointer-events-none' : 'opacity-100'
         }`}>
           {/* Left - Showing info */}

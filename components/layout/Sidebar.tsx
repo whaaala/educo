@@ -142,7 +142,17 @@ const menuItems: MenuItem[] = [
           { id: "receipts", label: "Receipts", icon: <Receipt className="w-4 h-4" />, href: "/finance/receipts" },
         ]
       },
-      { id: "library", label: "Library", icon: <BookOpen className="w-4 h-4" />, href: "/library" },
+      {
+        id: "library",
+        label: "Library",
+        icon: <BookOpen className="w-4 h-4" />,
+        children: [
+          { id: "book-catalog", label: "Book Catalog", icon: <BookOpen className="w-4 h-4" />, href: "/library" },
+          { id: "borrowing", label: "Borrowing & Returns", icon: <ArrowRight className="w-4 h-4" />, href: "/library/borrowing" },
+          { id: "members", label: "Library Members", icon: <Users className="w-4 h-4" />, href: "/library/members" },
+          { id: "fines", label: "Fines & Payments", icon: <Receipt className="w-4 h-4" />, href: "/library/fines" },
+        ]
+      },
       { id: "dormitory", label: "Dormitory", icon: <Home className="w-4 h-4" />, href: "/dormitory" },
       { id: "transport", label: "Transport", icon: <Bus className="w-4 h-4" />, href: "/transport" },
     ],
