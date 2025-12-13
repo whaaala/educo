@@ -15,6 +15,7 @@ import FeaturesSettingsSection from "@/components/classes/form-sections/Features
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import type { EducationLevel } from "@/utils/educationLevel";
 
 export default function AddClassPage() {
   const router = useRouter();
@@ -73,7 +74,7 @@ export default function AddClassPage() {
   // Form state
   const [formData, setFormData] = useState({
     // Basic Information
-    educationLevel: "" as "Nursery" | "Kindergarten" | "Primary" | "Junior Secondary" | "Secondary" | "Tertiary" | "",
+    educationLevel: "" as EducationLevel,
     className: "",
     level: "",
     section: "A",

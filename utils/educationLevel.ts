@@ -3,7 +3,7 @@
  * Based on PRD requirements for Primary, Secondary, and Tertiary classification
  */
 
-export type EducationLevel = "Primary" | "Secondary" | "Tertiary" | "";
+export type EducationLevel = "Nursery" | "Kindergarten" | "Primary" | "Junior Secondary" | "Secondary" | "Tertiary" | "";
 
 /**
  * Auto-detect education level from class/grade name

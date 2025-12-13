@@ -1,6 +1,6 @@
 // Comprehensive School/Tenant Type Definitions (Educo v4.0)
 
-export type EducationLevel = "Primary" | "Secondary" | "Tertiary";
+export type EducationLevel = "Nursery" | "Kindergarten" | "Primary" | "Junior Secondary" | "Secondary" | "Tertiary";
 export type InstitutionType = "Public" | "Private" | "International";
 export type SchoolScheduleType = "full-time" | "after-school" | "weekend" | "online" | "hybrid";
 export type TenantStatus = "Active" | "Inactive" | "Suspended" | "Trial";

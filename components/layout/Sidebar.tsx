@@ -32,6 +32,7 @@ import {
   CalendarClock,
   Star,
   MessageSquare,
+  Receipt,
 } from "lucide-react";
 import TenantSwitcher from "@/components/admin/TenantSwitcher";
 
@@ -138,6 +139,7 @@ const menuItems: MenuItem[] = [
         children: [
           { id: "fee-structure", label: "Fee Structure", icon: <FileText className="w-4 h-4" />, href: "/finance/fee-structure" },
           { id: "installment-plans", label: "Installment Plans", icon: <Boxes className="w-4 h-4" />, href: "/finance/installments" },
+          { id: "receipts", label: "Receipts", icon: <Receipt className="w-4 h-4" />, href: "/finance/receipts" },
         ]
       },
       { id: "library", label: "Library", icon: <BookOpen className="w-4 h-4" />, href: "/library" },

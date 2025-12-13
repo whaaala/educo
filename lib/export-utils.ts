@@ -2,6 +2,40 @@ import * as XLSX from "xlsx";
 import { LeaveRequest } from "@/types/leave";
 import { TransferRequest } from "@/types/transfer";
 
+// Receipt interface for export
+interface ReceiptItem {
+  id: string;
+  description: string;
+  amount: number;
+  quantity: number;
+}
+
+interface Receipt {
+  id: string;
+  receiptNumber: string;
+  studentId: string;
+  studentName: string;
+  studentNumber: string;
+  classLevel: string;
+  items: ReceiptItem[];
+  subtotal: number;
+  discount: number;
+  totalAmount: number;
+  amountPaid: number;
+  balance: number;
+  paymentMethod: string;
+  paymentReference?: string;
+  status: "issued" | "pending" | "voided";
+  issueDate: string;
+  dueDate?: string;
+  academicYear: string;
+  term: string;
+  issuedBy: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Fee Structure Item interface (matching the page's interface)
 interface FeeStructureItem {
   id: string;
@@ -916,6 +950,321 @@ export function exportFeeStructureToPDF(
                 <td>${fee.term.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}</td>
                 <td><span class="status ${fee.isActive ? 'active' : 'inactive'}">${fee.isActive ? 'Active' : 'Inactive'}</span></td>
                 <td>${fee.allowInstallments ? `Yes (${fee.installmentCount || 'N/A'})` : 'No'}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p>This is a computer-generated document. No signature is required.</p>
+          <p>&copy; ${new Date().getFullYear()} ${schoolName}. All rights reserved.</p>
+        </div>
+      </body>
+    </html>
+  `;
+
+  // Create a new window for printing
+  const printWindow = window.open("", "_blank");
+  if (printWindow) {
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+
+    // Wait for content to load then print
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      // Close window after printing (user can cancel)
+      setTimeout(() => {
+        printWindow.close();
+      }, 100);
+    };
+  } else {
+    alert("Please allow popups to export to PDF");
+  }
+}
+
+/**
+ * Export receipts data to Excel format
+ */
+export function exportReceiptsToExcel(
+  receipts: Receipt[],
+  filename: string = "receipts",
+  formatCurrency?: (amount: number) => string
+) {
+  // Transform data for Excel
+  const excelData = receipts.map((receipt) => ({
+    "Receipt Number": receipt.receiptNumber,
+    "Student Name": receipt.studentName,
+    "Student ID": receipt.studentNumber,
+    "Class": receipt.classLevel,
+    "Items": receipt.items.map(i => i.description).join(", "),
+    "Subtotal": formatCurrency ? formatCurrency(receipt.subtotal) : receipt.subtotal,
+    "Discount": formatCurrency ? formatCurrency(receipt.discount) : receipt.discount,
+    "Total Amount": formatCurrency ? formatCurrency(receipt.totalAmount) : receipt.totalAmount,
+    "Amount Paid": formatCurrency ? formatCurrency(receipt.amountPaid) : receipt.amountPaid,
+    "Balance": formatCurrency ? formatCurrency(receipt.balance) : receipt.balance,
+    "Payment Method": receipt.paymentMethod.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
+    "Payment Reference": receipt.paymentReference || "N/A",
+    "Status": receipt.status.charAt(0).toUpperCase() + receipt.status.slice(1),
+    "Issue Date": receipt.issueDate,
+    "Due Date": receipt.dueDate || "N/A",
+    "Academic Year": receipt.academicYear,
+    "Term": receipt.term.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
+    "Issued By": receipt.issuedBy,
+    "Notes": receipt.notes || "N/A",
+    "Created At": new Date(receipt.createdAt).toLocaleString(),
+  }));
+
+  // Create worksheet
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+  // Set column widths
+  const columnWidths = [
+    { wch: 18 }, // Receipt Number
+    { wch: 25 }, // Student Name
+    { wch: 15 }, // Student ID
+    { wch: 10 }, // Class
+    { wch: 40 }, // Items
+    { wch: 15 }, // Subtotal
+    { wch: 12 }, // Discount
+    { wch: 15 }, // Total Amount
+    { wch: 15 }, // Amount Paid
+    { wch: 15 }, // Balance
+    { wch: 15 }, // Payment Method
+    { wch: 20 }, // Payment Reference
+    { wch: 10 }, // Status
+    { wch: 12 }, // Issue Date
+    { wch: 12 }, // Due Date
+    { wch: 12 }, // Academic Year
+    { wch: 15 }, // Term
+    { wch: 15 }, // Issued By
+    { wch: 30 }, // Notes
+    { wch: 20 }, // Created At
+  ];
+  worksheet["!cols"] = columnWidths;
+
+  // Create workbook
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Receipts");
+
+  // Generate Excel file
+  const timestamp = new Date().toISOString().split("T")[0];
+  XLSX.writeFile(workbook, `${filename}_${timestamp}.xlsx`);
+}
+
+/**
+ * Export receipts data to PDF format (using print)
+ */
+export function exportReceiptsToPDF(
+  receipts: Receipt[],
+  filename: string = "receipts",
+  formatCurrency?: (amount: number) => string,
+  schoolName: string = "School Management System"
+) {
+  // Calculate summary statistics
+  const totalAmount = receipts.filter(r => r.status !== "voided").reduce((sum, r) => sum + r.totalAmount, 0);
+  const totalCollected = receipts.filter(r => r.status === "issued").reduce((sum, r) => sum + r.amountPaid, 0);
+  const totalOutstanding = receipts.filter(r => r.status !== "voided").reduce((sum, r) => sum + r.balance, 0);
+  const issuedCount = receipts.filter(r => r.status === "issued").length;
+  const pendingCount = receipts.filter(r => r.status === "pending").length;
+  const voidedCount = receipts.filter(r => r.status === "voided").length;
+
+  const formatAmount = (amount: number) => formatCurrency ? formatCurrency(amount) : `NGN ${amount.toLocaleString()}`;
+
+  // Create a printable HTML structure
+  const printContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Receipts Report</title>
+        <style>
+          @media print {
+            @page {
+              size: A4 landscape;
+              margin: 15mm;
+            }
+          }
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 15px;
+          }
+          .header h1 {
+            margin: 0 0 5px 0;
+            color: #059669;
+            font-size: 22pt;
+          }
+          .header .school-name {
+            font-size: 12pt;
+            color: #6b7280;
+            margin-bottom: 5px;
+          }
+          .header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 10pt;
+          }
+          .summary {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-radius: 10px;
+            border: 1px solid #a7f3d0;
+          }
+          .summary-item {
+            text-align: center;
+          }
+          .summary-item .label {
+            font-size: 9pt;
+            color: #6b7280;
+            margin-bottom: 5px;
+          }
+          .summary-item .value {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #059669;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+          }
+          th {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 10px 6px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 8pt;
+            border: 1px solid #059669;
+          }
+          td {
+            padding: 8px 6px;
+            border: 1px solid #e5e7eb;
+            font-size: 8pt;
+          }
+          tr:nth-child(even) {
+            background-color: #f9fafb;
+          }
+          tr:hover {
+            background-color: #ecfdf5;
+          }
+          .status {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 7pt;
+            text-transform: uppercase;
+            display: inline-block;
+          }
+          .status.issued {
+            background-color: #d1fae5;
+            color: #065f46;
+          }
+          .status.pending {
+            background-color: #fef3c7;
+            color: #92400e;
+          }
+          .status.voided {
+            background-color: #fee2e2;
+            color: #991b1b;
+          }
+          .amount {
+            font-weight: 600;
+            color: #059669;
+          }
+          .amount.balance {
+            color: #d97706;
+          }
+          .footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 8pt;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 15px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="school-name">${schoolName}</div>
+          <h1>Receipts Report</h1>
+          <p>Generated on ${new Date().toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+          })}</p>
+        </div>
+
+        <div class="summary">
+          <div class="summary-item">
+            <div class="label">Total Receipts</div>
+            <div class="value">${receipts.length}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Issued</div>
+            <div class="value">${issuedCount}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Pending</div>
+            <div class="value">${pendingCount}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Voided</div>
+            <div class="value">${voidedCount}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Total Amount</div>
+            <div class="value">${formatAmount(totalAmount)}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Collected</div>
+            <div class="value">${formatAmount(totalCollected)}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Outstanding</div>
+            <div class="value">${formatAmount(totalOutstanding)}</div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Receipt #</th>
+              <th>Student</th>
+              <th>Class</th>
+              <th>Total</th>
+              <th>Paid</th>
+              <th>Balance</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${receipts.map(receipt => `
+              <tr>
+                <td>${receipt.receiptNumber}</td>
+                <td>${receipt.studentName}<br/><small style="color:#6b7280">${receipt.studentNumber}</small></td>
+                <td>${receipt.classLevel}</td>
+                <td class="amount">${formatAmount(receipt.totalAmount)}</td>
+                <td class="amount">${formatAmount(receipt.amountPaid)}</td>
+                <td class="amount ${receipt.balance > 0 ? 'balance' : ''}">${formatAmount(receipt.balance)}</td>
+                <td>${receipt.paymentMethod.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</td>
+                <td><span class="status ${receipt.status}">${receipt.status}</span></td>
+                <td>${receipt.issueDate}</td>
               </tr>
             `).join("")}
           </tbody>

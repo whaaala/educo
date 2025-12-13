@@ -541,6 +541,11 @@ export default function InstallmentPlanModal({
   // Get the override amount for a specific installment (if any)
   // Now also considers redistribution of remaining amounts
   const getOverrideAmount = (sequence: number, defaultAmount: number, allSequences: number[]): number => {
+    // Safety check for undefined allSequences
+    if (!allSequences || !Array.isArray(allSequences)) {
+      return defaultAmount;
+    }
+
     const totalPlanAmount = getTotalPlanAmount();
     const installmentCount = allSequences.length;
 

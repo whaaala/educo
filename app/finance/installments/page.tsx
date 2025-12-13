@@ -713,7 +713,7 @@ export default function InstallmentPlansPage() {
 
       <div className={`space-y-6 transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
         {/* Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <PageHeader
             title="Installment Plans"
             breadcrumbs={[
