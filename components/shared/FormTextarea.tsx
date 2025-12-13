@@ -2,6 +2,7 @@
 
 import { ReactNode, useRef, useEffect } from "react";
 import ErrorMessage from "./ErrorMessage";
+import Tooltip from "./Tooltip";
 
 interface FormTextareaProps {
   label: string;
@@ -53,16 +54,18 @@ export default function FormTextarea({
 
   return (
     <div className="group">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
-        <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
-          <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
-        </div>
-        <span>{label}</span>
-        {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
-        {optional && !required && (
-          <span className="text-xs text-gray-400 dark:text-gray-500">(Optional)</span>
-        )}
-      </label>
+      <Tooltip content={label}>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5 cursor-help">
+          <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
+            <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
+          </div>
+          <span>{label}</span>
+          {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
+          {optional && !required && (
+            <span className="text-xs text-gray-400 dark:text-gray-500">(Optional)</span>
+          )}
+        </label>
+      </Tooltip>
       <div className="relative">
         <textarea
           ref={textareaRef}

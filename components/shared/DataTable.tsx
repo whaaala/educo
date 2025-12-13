@@ -3,6 +3,7 @@
 import { useState, useEffect, ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Loader2, Search, FileX } from "lucide-react";
 import SearchBar from "./SearchBar";
+import Tooltip from "./Tooltip";
 
 export interface ColumnConfig<T> {
   key: string;
@@ -295,22 +296,24 @@ export default function DataTable<T>({
                   {column.renderHeader ? (
                     column.renderHeader()
                   ) : (
-                    <div className={`flex items-center ${justifyClass} gap-1.5`}>
-                      <span className="relative">
-                        {column.label}
-                      </span>
-                      {column.sortable !== false && (
-                        <span className={`icon-arrow inline-flex items-center justify-center w-4 h-4 rounded transition-all duration-300 ease-in-out ${
-                          sortColumn === column.key
-                            ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 scale-110 opacity-100'
-                            : 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 opacity-0 group-hover/header:opacity-100 scale-100'
-                        } ${sortColumn === column.key && !sortAsc ? 'rotate-180' : 'rotate-0'}`}>
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 15l7-7 7 7" />
-                          </svg>
+                    <Tooltip content={column.label}>
+                      <div className={`flex items-center ${justifyClass} gap-1.5 cursor-help`}>
+                        <span className="relative">
+                          {column.label}
                         </span>
-                      )}
-                    </div>
+                        {column.sortable !== false && (
+                          <span className={`icon-arrow inline-flex items-center justify-center w-4 h-4 rounded transition-all duration-300 ease-in-out ${
+                            sortColumn === column.key
+                              ? 'text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 scale-110 opacity-100'
+                              : 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 opacity-0 group-hover/header:opacity-100 scale-100'
+                          } ${sortColumn === column.key && !sortAsc ? 'rotate-180' : 'rotate-0'}`}>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 15l7-7 7 7" />
+                            </svg>
+                          </span>
+                        )}
+                      </div>
+                    </Tooltip>
                   )}
                 </th>
                 );

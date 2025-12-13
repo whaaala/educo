@@ -15,7 +15,10 @@ import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import PageActions from "@/components/shared/PageActions";
 import SearchFilterBar from "@/components/shared/SearchFilterBar";
 import StatCard from "@/components/shared/StatCard";
-import Modal from "@/components/shared/Modal";
+import Tooltip from "@/components/shared/Tooltip";
+import BookViewModal from "@/components/library/BookViewModal";
+import AddBookModal from "@/components/library/AddBookModal";
+import IssueBookModal from "@/components/library/IssueBookModal";
 import {
   Plus,
   BookOpen,
@@ -25,10 +28,9 @@ import {
   CheckCircle2,
   Library,
   BookCopy,
-  Printer,
-  Download,
 } from "lucide-react";
-import type { Book, BookStatus, BookCategory, BookCondition, BookEducationLevel } from "@/types/library";
+import type { Book, BookStatus, BookCategory, BookCondition, BookEducationLevel, BookLoan } from "@/types/library";
+import { exportBooksToExcel, exportBooksToPDF } from "@/lib/export-utils";
 
 // Book categories with labels
 const BOOK_CATEGORIES: { value: BookCategory; label: string }[] = [
@@ -364,7 +366,12 @@ export default function LibraryPage() {
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
   const [viewingBook, setViewingBook] = useState<Book | null>(null);
+  const [editingBook, setEditingBook] = useState<Book | null>(null);
+  const [issuingBook, setIssuingBook] = useState<Book | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isIssuing, setIsIssuing] = useState(false);
 
   // Loading states
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -459,6 +466,79 @@ export default function LibraryPage() {
     setIsViewModalOpen(true);
   };
 
+  // Handle add/edit book
+  const handleSaveBook = (bookData: Omit<Book, "id" | "createdAt" | "updatedAt">) => {
+    setIsSaving(true);
+
+    // Simulate API call
+    setTimeout(() => {
+      if (editingBook) {
+        // Update existing book
+        setBooks(prev => prev.map(book =>
+          book.id === editingBook.id
+            ? {
+                ...book,
+                ...bookData,
+                updatedAt: new Date().toISOString()
+              }
+            : book
+        ));
+      } else {
+        // Add new book
+        const newBook: Book = {
+          ...bookData,
+          id: `book-${Date.now()}`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        setBooks(prev => [newBook, ...prev]);
+      }
+
+      setIsSaving(false);
+      setIsAddModalOpen(false);
+      setEditingBook(null);
+    }, 500);
+  };
+
+  // Handle edit book
+  const handleEditBook = (book: Book) => {
+    setEditingBook(book);
+    setIsAddModalOpen(true);
+  };
+
+  // Handle issue book - open modal
+  const handleIssueBook = (book: Book) => {
+    setIssuingBook(book);
+    setIsIssueModalOpen(true);
+  };
+
+  // Handle issue book submission
+  const handleIssueBookSubmit = (loanData: Omit<BookLoan, "id" | "createdAt" | "updatedAt">) => {
+    setIsIssuing(true);
+
+    // Simulate API call
+    setTimeout(() => {
+      // Update book's available copies
+      setBooks(prev => prev.map(book =>
+        book.id === loanData.bookId
+          ? {
+              ...book,
+              availableCopies: Math.max(0, book.availableCopies - 1),
+              status: book.availableCopies - 1 <= 0 ? "borrowed" : book.status,
+              updatedAt: new Date().toISOString()
+            }
+          : book
+      ));
+
+      // In a real app, you would also save the loan record
+      console.log("Book issued:", loanData);
+
+      setIsIssuing(false);
+      setIsIssueModalOpen(false);
+      setIssuingBook(null);
+    }, 500);
+  };
+
   // Handle refresh
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -477,14 +557,21 @@ export default function LibraryPage() {
 
   // Export to PDF
   const handleExportPDF = () => {
-    // Implementation for PDF export
-    console.log("Exporting books to PDF...", filteredBooks);
+    exportBooksToPDF(
+      filteredBooks,
+      "book-catalog",
+      (price) => formatCurrency(price, countryCode),
+      settings.schoolName
+    );
   };
 
   // Export to Excel
   const handleExportExcel = () => {
-    // Implementation for Excel export
-    console.log("Exporting books to Excel...", filteredBooks);
+    exportBooksToExcel(
+      filteredBooks,
+      "book-catalog",
+      (price) => formatCurrency(price, countryCode)
+    );
   };
 
   // Get status badge
@@ -694,36 +781,50 @@ export default function LibraryPage() {
       className: "text-center",
       render: (book) => (
         <div className="flex items-center justify-center gap-2.5">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleView(book);
-            }}
-            className="group relative p-2 rounded-lg bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/30 dark:to-blue-900/20 midnight:from-blue-950/30 midnight:to-blue-900/20 purple:from-blue-950/30 purple:to-blue-900/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-blue-900/40 dark:hover:to-blue-800/30 transition-all duration-200 cursor-pointer border border-blue-200/40 dark:border-blue-800/30 hover:border-blue-400/60 dark:hover:border-blue-600/50 active:scale-95"
-            title="View Details"
-          >
-            <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              // Handle edit
-            }}
-            className="group relative p-2 rounded-lg bg-gradient-to-br from-green-50/50 to-green-100/30 dark:from-green-950/30 dark:to-green-900/20 midnight:from-green-950/30 midnight:to-green-900/20 purple:from-green-950/30 purple:to-green-900/20 hover:from-green-100 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/30 transition-all duration-200 cursor-pointer border border-green-200/40 dark:border-green-800/30 hover:border-green-400/60 dark:hover:border-green-600/50 active:scale-95"
-            title="Edit Book"
-          >
-            <Edit2 className="w-4 h-4 text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              // Handle issue book
-            }}
-            className="group relative p-2 rounded-lg bg-gradient-to-br from-purple-50/50 to-purple-100/30 dark:from-purple-950/30 dark:to-purple-900/20 midnight:from-purple-950/30 midnight:to-purple-900/20 purple:from-purple-950/30 purple:to-purple-900/20 hover:from-purple-100 hover:to-purple-100 dark:hover:from-purple-900/40 dark:hover:to-purple-800/30 transition-all duration-200 cursor-pointer border border-purple-200/40 dark:border-purple-800/30 hover:border-purple-400/60 dark:hover:border-purple-600/50 active:scale-95"
-            title="Issue Book"
-          >
-            <BookMarked className="w-4 h-4 text-purple-600 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors" />
-          </button>
+          <Tooltip content="View Details">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleView(book);
+              }}
+              className="group relative p-2 rounded-lg bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/30 dark:to-blue-900/20 midnight:from-blue-950/30 midnight:to-blue-900/20 purple:from-blue-950/30 purple:to-blue-900/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-blue-900/40 dark:hover:to-blue-800/30 transition-all duration-200 cursor-pointer border border-blue-200/40 dark:border-blue-800/30 hover:border-blue-400/60 dark:hover:border-blue-600/50 active:scale-95"
+            >
+              <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
+            </button>
+          </Tooltip>
+          <Tooltip content="Edit Book">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditBook(book);
+              }}
+              className="group relative p-2 rounded-lg bg-gradient-to-br from-green-50/50 to-green-100/30 dark:from-green-950/30 dark:to-green-900/20 midnight:from-green-950/30 midnight:to-green-900/20 purple:from-green-950/30 purple:to-green-900/20 hover:from-green-100 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/30 transition-all duration-200 cursor-pointer border border-green-200/40 dark:border-green-800/30 hover:border-green-400/60 dark:hover:border-green-600/50 active:scale-95"
+            >
+              <Edit2 className="w-4 h-4 text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors" />
+            </button>
+          </Tooltip>
+          <Tooltip content={book.availableCopies > 0 ? "Issue Book" : "No copies available"}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (book.availableCopies > 0) {
+                  handleIssueBook(book);
+                }
+              }}
+              disabled={book.availableCopies < 1}
+              className={`group relative p-2 rounded-lg transition-all duration-200 border ${
+                book.availableCopies > 0
+                  ? "bg-gradient-to-br from-purple-50/50 to-purple-100/30 dark:from-purple-950/30 dark:to-purple-900/20 midnight:from-purple-950/30 midnight:to-purple-900/20 purple:from-purple-950/30 purple:to-purple-900/20 hover:from-purple-100 hover:to-purple-100 dark:hover:from-purple-900/40 dark:hover:to-purple-800/30 cursor-pointer border-purple-200/40 dark:border-purple-800/30 hover:border-purple-400/60 dark:hover:border-purple-600/50 active:scale-95"
+                  : "bg-gray-100/50 dark:bg-gray-800/30 cursor-not-allowed opacity-50 border-gray-200/40 dark:border-gray-700/30"
+              }`}
+            >
+              <BookMarked className={`w-4 h-4 transition-colors ${
+                book.availableCopies > 0
+                  ? "text-purple-600 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300"
+                  : "text-gray-400 dark:text-gray-500"
+              }`} />
+            </button>
+          </Tooltip>
         </div>
       ),
     },
@@ -896,169 +997,39 @@ export default function LibraryPage() {
             setViewingBook(null);
           }}
           book={viewingBook}
-          countryCode={countryCode}
-          getStatusBadge={getStatusBadge}
-          getConditionBadge={getConditionBadge}
+          formatCurrency={(price) => formatCurrency(price, countryCode)}
+          onIssueBook={() => {
+            // Close view modal and open issue modal
+            setIsViewModalOpen(false);
+            handleIssueBook(viewingBook);
+          }}
         />
       )}
+
+      {/* Add/Edit Book Modal */}
+      <AddBookModal
+        isOpen={isAddModalOpen}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setEditingBook(null);
+        }}
+        onSave={handleSaveBook}
+        isSaving={isSaving}
+        editingBook={editingBook}
+      />
+
+      {/* Issue Book Modal */}
+      <IssueBookModal
+        isOpen={isIssueModalOpen}
+        onClose={() => {
+          setIsIssueModalOpen(false);
+          setIssuingBook(null);
+        }}
+        onIssue={handleIssueBookSubmit}
+        book={issuingBook}
+        isIssuing={isIssuing}
+      />
     </MainLayout>
   );
 }
 
-// Book View Modal Component
-interface BookViewModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  book: Book;
-  countryCode: string;
-  getStatusBadge: (status: BookStatus) => React.ReactNode;
-  getConditionBadge: (condition: BookCondition) => React.ReactNode;
-}
-
-function BookViewModal({
-  isOpen,
-  onClose,
-  book,
-  countryCode,
-  getStatusBadge,
-  getConditionBadge,
-}: BookViewModalProps) {
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={book.title}
-      subtitle={`by ${book.author}`}
-      icon={<BookOpen className="w-5 h-5" />}
-      maxWidth="2xl"
-      footer={
-        <div className="flex justify-between w-full">
-          <div className="flex gap-2">
-            <Button variant="secondary">
-              <Printer className="w-4 h-4 mr-2" />
-              Print
-            </Button>
-            <Button variant="secondary">
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={onClose}>
-              Close
-            </Button>
-            <Button variant="primary">
-              <BookMarked className="w-4 h-4 mr-2" />
-              Issue Book
-            </Button>
-          </div>
-        </div>
-      }
-    >
-      <div className="space-y-6">
-        {/* Header with cover and basic info */}
-        <div className="flex gap-6">
-          <div className="relative w-32 h-44 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0 shadow-lg ring-2 ring-white dark:ring-gray-800">
-            {book.coverImage ? (
-              <Image src={book.coverImage} alt={book.title} fill className="object-cover" unoptimized />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <BookOpen className="w-12 h-12 text-gray-400" />
-              </div>
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-4 mb-2">
-              <div className="flex flex-wrap items-center gap-2">
-                {getStatusBadge(book.status)}
-                {getConditionBadge(book.condition)}
-              </div>
-            </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-              {book.publisher} {book.edition && `- ${book.edition}`} ({book.publishYear})
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 capitalize">
-                {book.category}
-              </span>
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
-                {book.educationLevel}
-              </span>
-              {book.subject && (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                  {book.subject}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Description */}
-        {book.description && (
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{book.description}</p>
-          </div>
-        )}
-
-        {/* Details Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1">ISBN</p>
-            <p className="text-sm font-medium text-gray-900 dark:text-white font-mono">{book.isbn}</p>
-          </div>
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1">Language</p>
-            <p className="text-sm font-medium text-gray-900 dark:text-white">{book.language}</p>
-          </div>
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1">Pages</p>
-            <p className="text-sm font-medium text-gray-900 dark:text-white">{book.pages || "N/A"}</p>
-          </div>
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1">Location</p>
-            <p className="text-sm font-medium text-gray-900 dark:text-white">{book.location}</p>
-          </div>
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1">Price</p>
-            <p className="text-sm font-medium text-gray-900 dark:text-white">
-              {book.price ? formatCurrency(book.price, countryCode) : "N/A"}
-            </p>
-          </div>
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1">Copies</p>
-            <p className="text-sm font-medium">
-              <span className={book.availableCopies > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}>
-                {book.availableCopies} available
-              </span>
-              <span className="text-gray-500"> / {book.totalCopies} total</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Tags */}
-        {book.tags && book.tags.length > 0 && (
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tags</h4>
-            <div className="flex flex-wrap gap-2">
-              {book.tags.map((tag, idx) => (
-                <span
-                  key={idx}
-                  className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Footer Info */}
-        <div className="text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-4">
-          <p>Acquired: {new Date(book.acquisitionDate).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>
-          <p>Last Updated: {new Date(book.updatedAt).toLocaleString()}</p>
-        </div>
-      </div>
-    </Modal>
-  );
-}

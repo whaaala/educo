@@ -5,6 +5,7 @@ import { Calendar as CalendarIcon, Clock } from "lucide-react";
 import ModernCalendar from "./ModernCalendar";
 import ModernTimePicker from "./ModernTimePicker";
 import ErrorMessage from "./ErrorMessage";
+import Tooltip from "./Tooltip";
 
 interface FormInputProps {
   label: string;
@@ -62,13 +63,15 @@ export default function FormInput({
   if (type === "date") {
     return (
       <div className="group">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
-          <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
-            <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
-          </div>
-          <span>{label}</span>
-          {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
-        </label>
+        <Tooltip content={label}>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5 cursor-help">
+            <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
+              <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
+            </div>
+            <span>{label}</span>
+            {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
+          </label>
+        </Tooltip>
         <div className="relative" ref={calendarContainerRef}>
           <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none z-10" />
           <button
@@ -112,13 +115,15 @@ export default function FormInput({
   if (type === "time") {
     return (
       <div className="group">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
-          <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
-            <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
-          </div>
-          <span>{label}</span>
-          {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
-        </label>
+        <Tooltip content={label}>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5 cursor-help">
+            <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
+              <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
+            </div>
+            <span>{label}</span>
+            {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
+          </label>
+        </Tooltip>
         <div className="relative" ref={timePickerContainerRef}>
           <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none z-10" />
           <button
@@ -159,13 +164,15 @@ export default function FormInput({
 
   return (
     <div className="group">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
-        <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
-          <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
-        </div>
-        <span>{label}</span>
-        {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
-      </label>
+      <Tooltip content={label}>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5 cursor-help">
+          <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
+            <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
+          </div>
+          <span>{label}</span>
+          {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
+        </label>
+      </Tooltip>
       <div className="relative">
         {leftIcon && (
           <div className={`absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded ${leftIconBg}`}>

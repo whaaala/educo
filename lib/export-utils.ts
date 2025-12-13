@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx";
 import { LeaveRequest } from "@/types/leave";
 import { TransferRequest } from "@/types/transfer";
+import type { Book } from "@/types/library";
 
 // Receipt interface for export
 interface ReceiptItem {
@@ -1265,6 +1266,413 @@ export function exportReceiptsToPDF(
                 <td>${receipt.paymentMethod.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</td>
                 <td><span class="status ${receipt.status}">${receipt.status}</span></td>
                 <td>${receipt.issueDate}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p>This is a computer-generated document. No signature is required.</p>
+          <p>&copy; ${new Date().getFullYear()} ${schoolName}. All rights reserved.</p>
+        </div>
+      </body>
+    </html>
+  `;
+
+  // Create a new window for printing
+  const printWindow = window.open("", "_blank");
+  if (printWindow) {
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+
+    // Wait for content to load then print
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      // Close window after printing (user can cancel)
+      setTimeout(() => {
+        printWindow.close();
+      }, 100);
+    };
+  } else {
+    alert("Please allow popups to export to PDF");
+  }
+}
+
+/**
+ * Export library books data to Excel format
+ */
+export function exportBooksToExcel(
+  books: Book[],
+  filename: string = "book-catalog",
+  formatCurrency?: (amount: number) => string
+) {
+  // Transform data for Excel
+  const excelData = books.map((book) => ({
+    "ISBN": book.isbn,
+    "Title": book.title,
+    "Author": book.author,
+    "Publisher": book.publisher,
+    "Publish Year": book.publishYear,
+    "Edition": book.edition || "N/A",
+    "Category": book.category.charAt(0).toUpperCase() + book.category.slice(1).replace("-", " "),
+    "Subject": book.subject || "N/A",
+    "Education Level": book.educationLevel,
+    "Total Copies": book.totalCopies,
+    "Available Copies": book.availableCopies,
+    "Borrowed Copies": book.totalCopies - book.availableCopies,
+    "Location": book.location,
+    "Condition": book.condition.charAt(0).toUpperCase() + book.condition.slice(1),
+    "Status": book.status.charAt(0).toUpperCase() + book.status.slice(1),
+    "Language": book.language,
+    "Pages": book.pages || "N/A",
+    "Price": book.price ? (formatCurrency ? formatCurrency(book.price) : book.price) : "N/A",
+    "Acquisition Date": book.acquisitionDate,
+    "Tags": book.tags?.join(", ") || "N/A",
+    "Description": book.description || "N/A",
+  }));
+
+  // Create worksheet
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+  // Set column widths
+  const columnWidths = [
+    { wch: 18 }, // ISBN
+    { wch: 35 }, // Title
+    { wch: 25 }, // Author
+    { wch: 25 }, // Publisher
+    { wch: 12 }, // Publish Year
+    { wch: 15 }, // Edition
+    { wch: 15 }, // Category
+    { wch: 20 }, // Subject
+    { wch: 15 }, // Education Level
+    { wch: 12 }, // Total Copies
+    { wch: 15 }, // Available Copies
+    { wch: 15 }, // Borrowed Copies
+    { wch: 20 }, // Location
+    { wch: 12 }, // Condition
+    { wch: 12 }, // Status
+    { wch: 12 }, // Language
+    { wch: 8 },  // Pages
+    { wch: 15 }, // Price
+    { wch: 15 }, // Acquisition Date
+    { wch: 30 }, // Tags
+    { wch: 50 }, // Description
+  ];
+  worksheet["!cols"] = columnWidths;
+
+  // Create workbook
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Book Catalog");
+
+  // Generate Excel file
+  const timestamp = new Date().toISOString().split("T")[0];
+  XLSX.writeFile(workbook, `${filename}_${timestamp}.xlsx`);
+}
+
+/**
+ * Export library books data to PDF format (using print)
+ */
+export function exportBooksToPDF(
+  books: Book[],
+  filename: string = "book-catalog",
+  formatCurrency?: (amount: number) => string,
+  schoolName: string = "School Management System"
+) {
+  // Calculate summary statistics
+  const totalBooks = books.reduce((sum, b) => sum + b.totalCopies, 0);
+  const availableBooks = books.reduce((sum, b) => sum + b.availableCopies, 0);
+  const borrowedBooks = totalBooks - availableBooks;
+  const uniqueTitles = books.length;
+
+  // Group by category
+  const categoryStats = books.reduce((acc, book) => {
+    const cat = book.category;
+    if (!acc[cat]) {
+      acc[cat] = { count: 0, copies: 0 };
+    }
+    acc[cat].count++;
+    acc[cat].copies += book.totalCopies;
+    return acc;
+  }, {} as Record<string, { count: number; copies: number }>);
+
+  const formatAmount = (amount: number) => formatCurrency ? formatCurrency(amount) : `NGN ${amount.toLocaleString()}`;
+
+  // Create a printable HTML structure
+  const printContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Book Catalog Report</title>
+        <style>
+          @media print {
+            @page {
+              size: A4 landscape;
+              margin: 15mm;
+            }
+          }
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #8b5cf6;
+            padding-bottom: 15px;
+          }
+          .header h1 {
+            margin: 0 0 5px 0;
+            color: #7c3aed;
+            font-size: 22pt;
+          }
+          .header .school-name {
+            font-size: 12pt;
+            color: #6b7280;
+            margin-bottom: 5px;
+          }
+          .header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 10pt;
+          }
+          .summary {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+            border-radius: 10px;
+            border: 1px solid #ddd6fe;
+          }
+          .summary-item {
+            text-align: center;
+          }
+          .summary-item .label {
+            font-size: 9pt;
+            color: #6b7280;
+            margin-bottom: 5px;
+          }
+          .summary-item .value {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #7c3aed;
+          }
+          .category-summary {
+            margin-bottom: 20px;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+          }
+          .category-summary h3 {
+            margin: 0 0 10px 0;
+            font-size: 11pt;
+            color: #374151;
+          }
+          .category-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+          }
+          .category-item {
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+          }
+          .category-item .name {
+            font-size: 9pt;
+            color: #6b7280;
+            text-transform: capitalize;
+          }
+          .category-item .count {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #374151;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+          }
+          th {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            padding: 10px 6px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 8pt;
+            border: 1px solid #7c3aed;
+          }
+          td {
+            padding: 8px 6px;
+            border: 1px solid #e5e7eb;
+            font-size: 8pt;
+          }
+          tr:nth-child(even) {
+            background-color: #f9fafb;
+          }
+          tr:hover {
+            background-color: #f5f3ff;
+          }
+          .status {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 7pt;
+            text-transform: capitalize;
+            display: inline-block;
+          }
+          .status.available {
+            background-color: #d1fae5;
+            color: #065f46;
+          }
+          .status.borrowed {
+            background-color: #dbeafe;
+            color: #1e40af;
+          }
+          .status.reserved {
+            background-color: #fef3c7;
+            color: #92400e;
+          }
+          .status.lost {
+            background-color: #fee2e2;
+            color: #991b1b;
+          }
+          .status.damaged {
+            background-color: #ffedd5;
+            color: #9a3412;
+          }
+          .status.maintenance {
+            background-color: #e5e7eb;
+            color: #374151;
+          }
+          .condition {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 7pt;
+            text-transform: capitalize;
+          }
+          .condition.new {
+            background-color: #d1fae5;
+            color: #065f46;
+          }
+          .condition.good {
+            background-color: #dbeafe;
+            color: #1e40af;
+          }
+          .condition.fair {
+            background-color: #fef3c7;
+            color: #92400e;
+          }
+          .condition.poor {
+            background-color: #ffedd5;
+            color: #9a3412;
+          }
+          .condition.damaged {
+            background-color: #fee2e2;
+            color: #991b1b;
+          }
+          .copies {
+            font-weight: 600;
+          }
+          .copies .available {
+            color: #059669;
+          }
+          .copies .total {
+            color: #6b7280;
+          }
+          .footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 8pt;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 15px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="school-name">${schoolName}</div>
+          <h1>Book Catalog Report</h1>
+          <p>Generated on ${new Date().toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+          })}</p>
+        </div>
+
+        <div class="summary">
+          <div class="summary-item">
+            <div class="label">Unique Titles</div>
+            <div class="value">${uniqueTitles}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Total Copies</div>
+            <div class="value">${totalBooks.toLocaleString()}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Available</div>
+            <div class="value">${availableBooks.toLocaleString()}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Borrowed</div>
+            <div class="value">${borrowedBooks.toLocaleString()}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Availability Rate</div>
+            <div class="value">${totalBooks > 0 ? ((availableBooks / totalBooks) * 100).toFixed(1) : 0}%</div>
+          </div>
+        </div>
+
+        <div class="category-summary">
+          <h3>Category Distribution</h3>
+          <div class="category-grid">
+            ${Object.entries(categoryStats).slice(0, 8).map(([name, data]) => `
+              <div class="category-item">
+                <div class="name">${name.replace("-", " ")}</div>
+                <div class="count">${data.count} titles · ${data.copies} copies</div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>ISBN</th>
+              <th>Title / Author</th>
+              <th>Category</th>
+              <th>Level</th>
+              <th>Copies</th>
+              <th>Location</th>
+              <th>Condition</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${books.map(book => `
+              <tr>
+                <td style="font-family: monospace; font-size: 7pt;">${book.isbn}</td>
+                <td>
+                  <strong>${book.title}</strong><br/>
+                  <small style="color:#6b7280">${book.author}</small>
+                </td>
+                <td style="text-transform: capitalize;">${book.category.replace("-", " ")}</td>
+                <td>${book.educationLevel}</td>
+                <td class="copies">
+                  <span class="available">${book.availableCopies}</span>
+                  <span class="total">/ ${book.totalCopies}</span>
+                </td>
+                <td>${book.location}</td>
+                <td><span class="condition ${book.condition}">${book.condition}</span></td>
+                <td><span class="status ${book.status}">${book.status}</span></td>
               </tr>
             `).join("")}
           </tbody>
