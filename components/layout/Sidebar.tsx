@@ -92,7 +92,17 @@ const menuItems: MenuItem[] = [
           { id: "bulk-import", label: "Bulk Import", icon: <Upload className="w-4 h-4" />, href: "/students/bulk-import" },
         ]
       },
-      { id: "parents", label: "Parents", icon: <Users className="w-4 h-4" />, href: "/parents" },
+      {
+        id: "parents",
+        label: "Parents",
+        icon: <Users className="w-4 h-4" />,
+        children: [
+          { id: "parent-dashboard", label: "Parent Dashboard", icon: <LayoutDashboard className="w-4 h-4" />, href: "/parents" },
+          { id: "my-children", label: "My Children", icon: <GraduationCap className="w-4 h-4" />, href: "/parents/children" },
+          { id: "parent-fees", label: "Fees & Payments", icon: <Receipt className="w-4 h-4" />, href: "/parents/fees" },
+          { id: "parent-messages", label: "Messages", icon: <MessageSquare className="w-4 h-4" />, href: "/parents/messages" },
+        ]
+      },
       {
         id: "personnel",
         label: "Personnel",

@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 import { LeaveRequest } from "@/types/leave";
 import { TransferRequest } from "@/types/transfer";
-import type { Book, BookLoan, LibraryMember } from "@/types/library";
+import type { Book, BookLoan, LibraryMember, LibraryFine } from "@/types/library";
 
 // Receipt interface for export
 interface ReceiptItem {
@@ -2493,6 +2493,393 @@ export function exportMembersToPDF(
       // Close window after printing (user can cancel)
       setTimeout(() => {
         printWindow.close();
+      }, 100);
+    };
+  } else {
+    alert("Please allow popups to export to PDF");
+  }
+}
+
+/**
+ * Export library fines data to Excel format
+ */
+export function exportFinesToExcel(
+  fines: LibraryFine[],
+  filename: string = "library-fines",
+  formatCurrency?: (amount: number) => string
+) {
+  // Transform data for Excel
+  const excelData = fines.map((fine) => ({
+    "Fine ID": fine.id,
+    "Loan ID": fine.loanId,
+    "Member ID": fine.memberId,
+    "Member Name": fine.memberName,
+    "Book Title": fine.bookTitle,
+    "Fine Type": fine.fineType.charAt(0).toUpperCase() + fine.fineType.slice(1),
+    "Amount": formatCurrency ? formatCurrency(fine.amount) : fine.amount,
+    "Days Overdue": fine.daysOverdue || "N/A",
+    "Status": fine.isPaid ? (fine.waivedAmount && fine.waivedAmount > 0 && (!fine.paidAmount || fine.paidAmount === 0) ? "Waived" : "Paid") : "Pending",
+    "Paid Amount": fine.paidAmount ? (formatCurrency ? formatCurrency(fine.paidAmount) : fine.paidAmount) : "N/A",
+    "Payment Method": fine.paymentMethod || "N/A",
+    "Payment Reference": fine.paymentReference || "N/A",
+    "Paid Date": fine.paidDate || "N/A",
+    "Waived Amount": fine.waivedAmount ? (formatCurrency ? formatCurrency(fine.waivedAmount) : fine.waivedAmount) : "N/A",
+    "Waived By": fine.waivedBy || "N/A",
+    "Waived Reason": fine.waivedReason || "N/A",
+    "Created At": new Date(fine.createdAt).toLocaleString(),
+    "Last Updated": new Date(fine.updatedAt).toLocaleString(),
+  }));
+
+  // Create worksheet
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+  // Set column widths
+  const columnWidths = [
+    { wch: 12 }, // Fine ID
+    { wch: 12 }, // Loan ID
+    { wch: 12 }, // Member ID
+    { wch: 25 }, // Member Name
+    { wch: 35 }, // Book Title
+    { wch: 12 }, // Fine Type
+    { wch: 15 }, // Amount
+    { wch: 12 }, // Days Overdue
+    { wch: 10 }, // Status
+    { wch: 15 }, // Paid Amount
+    { wch: 15 }, // Payment Method
+    { wch: 20 }, // Payment Reference
+    { wch: 12 }, // Paid Date
+    { wch: 15 }, // Waived Amount
+    { wch: 15 }, // Waived By
+    { wch: 30 }, // Waived Reason
+    { wch: 20 }, // Created At
+    { wch: 20 }, // Last Updated
+  ];
+  worksheet["!cols"] = columnWidths;
+
+  // Create workbook
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Library Fines");
+
+  // Generate Excel file
+  const timestamp = new Date().toISOString().split("T")[0];
+  XLSX.writeFile(workbook, `${filename}_${timestamp}.xlsx`);
+}
+
+/**
+ * Export library fines data to PDF format (using print)
+ */
+export function exportFinesToPDF(
+  fines: LibraryFine[],
+  filename: string = "library-fines",
+  formatCurrency?: (amount: number) => string,
+  schoolName: string = "School Management System"
+) {
+  // Calculate summary statistics
+  const totalFinesCount = fines.length;
+  const pendingFines = fines.filter(f => !f.isPaid).length;
+  const pendingAmount = fines.filter(f => !f.isPaid).reduce((sum, f) => sum + f.amount, 0);
+  const collectedAmount = fines.filter(f => f.isPaid).reduce((sum, f) => sum + (f.paidAmount || 0), 0);
+  const waivedAmount = fines.reduce((sum, f) => sum + (f.waivedAmount || 0), 0);
+
+  // Group by fine type
+  const typeStats = fines.reduce((acc, fine) => {
+    const type = fine.fineType;
+    if (!acc[type]) {
+      acc[type] = { count: 0, amount: 0 };
+    }
+    acc[type].count++;
+    acc[type].amount += fine.amount;
+    return acc;
+  }, {} as Record<string, { count: number; amount: number }>);
+
+  const formatAmount = (amount: number) => formatCurrency ? formatCurrency(amount) : `NGN ${amount.toLocaleString()}`;
+
+  // Create a printable HTML structure
+  const finesPrintContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Library Fines Report</title>
+        <style>
+          @media print {
+            @page {
+              size: A4 landscape;
+              margin: 15mm;
+            }
+          }
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #dc2626;
+            padding-bottom: 15px;
+          }
+          .header h1 {
+            margin: 0 0 5px 0;
+            color: #dc2626;
+            font-size: 22pt;
+          }
+          .header .school-name {
+            font-size: 12pt;
+            color: #6b7280;
+            margin-bottom: 5px;
+          }
+          .header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 10pt;
+          }
+          .summary {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-radius: 10px;
+            border: 1px solid #fecaca;
+          }
+          .summary-item {
+            text-align: center;
+          }
+          .summary-item .label {
+            font-size: 9pt;
+            color: #6b7280;
+            margin-bottom: 5px;
+          }
+          .summary-item .value {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #dc2626;
+          }
+          .summary-item .value.warning {
+            color: #dc2626;
+          }
+          .summary-item .value.success {
+            color: #059669;
+          }
+          .summary-item .value.purple {
+            color: #7c3aed;
+          }
+          .type-summary {
+            margin-bottom: 20px;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+          }
+          .type-summary h3 {
+            margin: 0 0 10px 0;
+            font-size: 11pt;
+            color: #374151;
+          }
+          .type-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+          }
+          .type-item {
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+          }
+          .type-item .name {
+            font-size: 9pt;
+            color: #6b7280;
+            text-transform: capitalize;
+          }
+          .type-item .count {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #374151;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+          }
+          th {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            padding: 10px 6px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 8pt;
+            border: 1px solid #b91c1c;
+          }
+          td {
+            padding: 8px 6px;
+            border: 1px solid #e5e7eb;
+            font-size: 8pt;
+          }
+          tr:nth-child(even) {
+            background-color: #f9fafb;
+          }
+          tr:hover {
+            background-color: #fef2f2;
+          }
+          .status {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 7pt;
+            text-transform: capitalize;
+            display: inline-block;
+          }
+          .status.pending {
+            background-color: #fee2e2;
+            color: #991b1b;
+          }
+          .status.paid {
+            background-color: #d1fae5;
+            color: #065f46;
+          }
+          .status.waived {
+            background-color: #f3e8ff;
+            color: #7c3aed;
+          }
+          .fine-type {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 7pt;
+            text-transform: capitalize;
+          }
+          .fine-type.overdue {
+            background-color: #fef3c7;
+            color: #92400e;
+          }
+          .fine-type.lost {
+            background-color: #fee2e2;
+            color: #991b1b;
+          }
+          .fine-type.damaged {
+            background-color: #ffedd5;
+            color: #9a3412;
+          }
+          .amount {
+            font-weight: 600;
+          }
+          .amount.pending {
+            color: #dc2626;
+          }
+          .footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 8pt;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 15px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="school-name">${schoolName}</div>
+          <h1>Library Fines Report</h1>
+          <p>Generated on ${new Date().toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+          })}</p>
+        </div>
+
+        <div class="summary">
+          <div class="summary-item">
+            <div class="label">Total Fines</div>
+            <div class="value">${totalFinesCount}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Pending</div>
+            <div class="value warning">${pendingFines}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Pending Amount</div>
+            <div class="value warning">${formatAmount(pendingAmount)}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Collected</div>
+            <div class="value success">${formatAmount(collectedAmount)}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Waived</div>
+            <div class="value purple">${formatAmount(waivedAmount)}</div>
+          </div>
+        </div>
+
+        <div class="type-summary">
+          <h3>Fine Type Breakdown</h3>
+          <div class="type-grid">
+            ${Object.entries(typeStats).map(([type, data]) => `
+              <div class="type-item">
+                <div class="name">${type}</div>
+                <div class="count">${data.count} fines · ${formatAmount(data.amount)}</div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Fine ID</th>
+              <th>Member</th>
+              <th>Book Title</th>
+              <th>Type</th>
+              <th>Days</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Paid</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${fines.map(fine => `
+              <tr>
+                <td style="font-family: monospace;">${fine.id.toUpperCase()}</td>
+                <td>
+                  <strong>${fine.memberName}</strong><br/>
+                  <small style="color:#6b7280">${fine.memberId}</small>
+                </td>
+                <td>${fine.bookTitle}</td>
+                <td><span class="fine-type ${fine.fineType}">${fine.fineType}</span></td>
+                <td>${fine.daysOverdue || "-"}</td>
+                <td class="amount ${!fine.isPaid ? 'pending' : ''}">${formatAmount(fine.amount)}</td>
+                <td><span class="status ${fine.isPaid ? (fine.waivedAmount && fine.waivedAmount > 0 && (!fine.paidAmount || fine.paidAmount === 0) ? 'waived' : 'paid') : 'pending'}">${fine.isPaid ? (fine.waivedAmount && fine.waivedAmount > 0 && (!fine.paidAmount || fine.paidAmount === 0) ? 'Waived' : 'Paid') : 'Pending'}</span></td>
+                <td>${fine.paidAmount ? formatAmount(fine.paidAmount) : "-"}</td>
+                <td>${new Date(fine.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p>This is a computer-generated document. No signature is required.</p>
+          <p>&copy; ${new Date().getFullYear()} ${schoolName}. All rights reserved.</p>
+        </div>
+      </body>
+    </html>
+  `;
+
+  // Create a new window for printing
+  const finesPrintWindow = window.open("", "_blank");
+  if (finesPrintWindow) {
+    finesPrintWindow.document.write(finesPrintContent);
+    finesPrintWindow.document.close();
+
+    // Wait for content to load then print
+    finesPrintWindow.onload = () => {
+      finesPrintWindow.focus();
+      finesPrintWindow.print();
+      // Close window after printing (user can cancel)
+      setTimeout(() => {
+        finesPrintWindow.close();
       }, 100);
     };
   } else {

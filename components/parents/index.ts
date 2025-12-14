@@ -1,0 +1,9 @@
+export { default as ParentProfileCard } from "./ParentProfileCard";
+export { default as QuickActionsCard } from "./QuickActionsCard";
+export { default as EventsSection } from "./EventsSection";
+export { default as LeaveStatusSection } from "./LeaveStatusSection";
+export { default as HomeworkSection } from "./HomeworkSection";
+export { default as FeesReminderSection } from "./FeesReminderSection";
+export { default as ExamResultsSection } from "./ExamResultsSection";
+export { default as NoticeBoardSection } from "./NoticeBoardSection";
+export { default as ChildProgressCard } from "./ChildProgressCard";
