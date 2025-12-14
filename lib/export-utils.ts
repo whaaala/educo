@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 import { LeaveRequest } from "@/types/leave";
 import { TransferRequest } from "@/types/transfer";
-import type { Book } from "@/types/library";
+import type { Book, BookLoan, LibraryMember } from "@/types/library";
 
 // Receipt interface for export
 interface ReceiptItem {
@@ -1673,6 +1673,800 @@ export function exportBooksToPDF(
                 <td>${book.location}</td>
                 <td><span class="condition ${book.condition}">${book.condition}</span></td>
                 <td><span class="status ${book.status}">${book.status}</span></td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p>This is a computer-generated document. No signature is required.</p>
+          <p>&copy; ${new Date().getFullYear()} ${schoolName}. All rights reserved.</p>
+        </div>
+      </body>
+    </html>
+  `;
+
+  // Create a new window for printing
+  const printWindow = window.open("", "_blank");
+  if (printWindow) {
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+
+    // Wait for content to load then print
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      // Close window after printing (user can cancel)
+      setTimeout(() => {
+        printWindow.close();
+      }, 100);
+    };
+  } else {
+    alert("Please allow popups to export to PDF");
+  }
+}
+
+/**
+ * Export book loans data to Excel format
+ */
+export function exportLoansToExcel(
+  loans: BookLoan[],
+  filename: string = "borrowing-records",
+  formatCurrency?: (amount: number) => string
+) {
+  // Transform data for Excel
+  const excelData = loans.map((loan) => ({
+    "Loan Number": loan.loanNumber,
+    "Book Title": loan.bookTitle,
+    "Book ISBN": loan.bookIsbn,
+    "Borrower Name": loan.memberName,
+    "Borrower Type": loan.memberType.charAt(0).toUpperCase() + loan.memberType.slice(1),
+    "Borrow Date": loan.borrowDate,
+    "Due Date": loan.dueDate,
+    "Return Date": loan.returnDate || "Not Returned",
+    "Status": loan.status.charAt(0).toUpperCase() + loan.status.slice(1),
+    "Renewals": `${loan.renewalCount} / ${loan.maxRenewals}`,
+    "Fine Amount": loan.fineAmount > 0 ? (formatCurrency ? formatCurrency(loan.fineAmount) : loan.fineAmount) : "None",
+    "Fine Paid": loan.fineAmount > 0 ? (loan.finePaid ? "Yes" : "No") : "N/A",
+    "Issued By": loan.issuedBy,
+    "Returned To": loan.returnedTo || "N/A",
+    "Notes": loan.notes || "N/A",
+    "Created At": new Date(loan.createdAt).toLocaleString(),
+    "Last Updated": new Date(loan.updatedAt).toLocaleString(),
+  }));
+
+  // Create worksheet
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+  // Set column widths
+  const columnWidths = [
+    { wch: 18 }, // Loan Number
+    { wch: 35 }, // Book Title
+    { wch: 20 }, // Book ISBN
+    { wch: 25 }, // Borrower Name
+    { wch: 15 }, // Borrower Type
+    { wch: 12 }, // Borrow Date
+    { wch: 12 }, // Due Date
+    { wch: 15 }, // Return Date
+    { wch: 12 }, // Status
+    { wch: 10 }, // Renewals
+    { wch: 15 }, // Fine Amount
+    { wch: 10 }, // Fine Paid
+    { wch: 15 }, // Issued By
+    { wch: 15 }, // Returned To
+    { wch: 30 }, // Notes
+    { wch: 20 }, // Created At
+    { wch: 20 }, // Last Updated
+  ];
+  worksheet["!cols"] = columnWidths;
+
+  // Create workbook
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Borrowing Records");
+
+  // Generate Excel file
+  const timestamp = new Date().toISOString().split("T")[0];
+  XLSX.writeFile(workbook, `${filename}_${timestamp}.xlsx`);
+}
+
+/**
+ * Export book loans data to PDF format (using print)
+ */
+export function exportLoansToPDF(
+  loans: BookLoan[],
+  filename: string = "borrowing-records",
+  formatCurrency?: (amount: number) => string,
+  schoolName: string = "School Management System"
+) {
+  // Calculate summary statistics
+  const activeLoans = loans.filter(l => l.status === "active").length;
+  const overdueLoans = loans.filter(l => l.status === "overdue").length;
+  const returnedLoans = loans.filter(l => l.status === "returned").length;
+  const lostLoans = loans.filter(l => l.status === "lost").length;
+  const totalFines = loans.reduce((sum, l) => sum + (l.finePaid ? 0 : l.fineAmount), 0);
+  const collectedFines = loans.reduce((sum, l) => sum + (l.finePaid ? l.fineAmount : 0), 0);
+
+  // Group by borrower type
+  const borrowerStats = loans.reduce((acc, loan) => {
+    const type = loan.memberType;
+    if (!acc[type]) {
+      acc[type] = { count: 0, fines: 0 };
+    }
+    acc[type].count++;
+    acc[type].fines += loan.fineAmount;
+    return acc;
+  }, {} as Record<string, { count: number; fines: number }>);
+
+  const formatAmount = (amount: number) => formatCurrency ? formatCurrency(amount) : `NGN ${amount.toLocaleString()}`;
+
+  // Create a printable HTML structure
+  const printContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Borrowing Records Report</title>
+        <style>
+          @media print {
+            @page {
+              size: A4 landscape;
+              margin: 15mm;
+            }
+          }
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 15px;
+          }
+          .header h1 {
+            margin: 0 0 5px 0;
+            color: #1e40af;
+            font-size: 22pt;
+          }
+          .header .school-name {
+            font-size: 12pt;
+            color: #6b7280;
+            margin-bottom: 5px;
+          }
+          .header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 10pt;
+          }
+          .summary {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-radius: 10px;
+            border: 1px solid #bfdbfe;
+          }
+          .summary-item {
+            text-align: center;
+          }
+          .summary-item .label {
+            font-size: 9pt;
+            color: #6b7280;
+            margin-bottom: 5px;
+          }
+          .summary-item .value {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #1e40af;
+          }
+          .summary-item .value.warning {
+            color: #dc2626;
+          }
+          .summary-item .value.success {
+            color: #059669;
+          }
+          .borrower-summary {
+            margin-bottom: 20px;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+          }
+          .borrower-summary h3 {
+            margin: 0 0 10px 0;
+            font-size: 11pt;
+            color: #374151;
+          }
+          .borrower-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+          }
+          .borrower-item {
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+          }
+          .borrower-item .name {
+            font-size: 9pt;
+            color: #6b7280;
+            text-transform: capitalize;
+          }
+          .borrower-item .count {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #374151;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+          }
+          th {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            padding: 10px 6px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 8pt;
+            border: 1px solid #1e40af;
+          }
+          td {
+            padding: 8px 6px;
+            border: 1px solid #e5e7eb;
+            font-size: 8pt;
+          }
+          tr:nth-child(even) {
+            background-color: #f9fafb;
+          }
+          tr:hover {
+            background-color: #eff6ff;
+          }
+          .status {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 7pt;
+            text-transform: capitalize;
+            display: inline-block;
+          }
+          .status.active {
+            background-color: #dbeafe;
+            color: #1e40af;
+          }
+          .status.overdue {
+            background-color: #fee2e2;
+            color: #991b1b;
+          }
+          .status.returned {
+            background-color: #d1fae5;
+            color: #065f46;
+          }
+          .status.lost {
+            background-color: #e5e7eb;
+            color: #374151;
+          }
+          .member-type {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 7pt;
+            text-transform: capitalize;
+          }
+          .member-type.student {
+            background-color: #f3e8ff;
+            color: #7c3aed;
+          }
+          .member-type.teacher {
+            background-color: #cffafe;
+            color: #0891b2;
+          }
+          .member-type.staff {
+            background-color: #ffedd5;
+            color: #c2410c;
+          }
+          .fine {
+            font-weight: 600;
+          }
+          .fine.unpaid {
+            color: #dc2626;
+          }
+          .fine.paid {
+            color: #6b7280;
+            text-decoration: line-through;
+          }
+          .footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 8pt;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 15px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="school-name">${schoolName}</div>
+          <h1>Borrowing Records Report</h1>
+          <p>Generated on ${new Date().toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+          })}</p>
+        </div>
+
+        <div class="summary">
+          <div class="summary-item">
+            <div class="label">Total Loans</div>
+            <div class="value">${loans.length}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Active</div>
+            <div class="value">${activeLoans}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Overdue</div>
+            <div class="value warning">${overdueLoans}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Returned</div>
+            <div class="value success">${returnedLoans}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Lost</div>
+            <div class="value">${lostLoans}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Pending Fines</div>
+            <div class="value warning">${formatAmount(totalFines)}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Collected Fines</div>
+            <div class="value success">${formatAmount(collectedFines)}</div>
+          </div>
+        </div>
+
+        <div class="borrower-summary">
+          <h3>Borrower Type Breakdown</h3>
+          <div class="borrower-grid">
+            ${Object.entries(borrowerStats).map(([type, data]) => `
+              <div class="borrower-item">
+                <div class="name">${type}s</div>
+                <div class="count">${data.count} loans · ${formatAmount(data.fines)} fines</div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Loan #</th>
+              <th>Book Title</th>
+              <th>Borrower</th>
+              <th>Type</th>
+              <th>Borrow Date</th>
+              <th>Due Date</th>
+              <th>Return Date</th>
+              <th>Status</th>
+              <th>Fine</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${loans.map(loan => `
+              <tr>
+                <td style="font-family: monospace;">${loan.loanNumber}</td>
+                <td>
+                  <strong>${loan.bookTitle}</strong><br/>
+                  <small style="color:#6b7280">${loan.bookIsbn}</small>
+                </td>
+                <td>${loan.memberName}</td>
+                <td><span class="member-type ${loan.memberType}">${loan.memberType}</span></td>
+                <td>${loan.borrowDate}</td>
+                <td>${loan.dueDate}</td>
+                <td>${loan.returnDate || "-"}</td>
+                <td><span class="status ${loan.status}">${loan.status}</span></td>
+                <td class="fine ${loan.fineAmount > 0 ? (loan.finePaid ? 'paid' : 'unpaid') : ''}">
+                  ${loan.fineAmount > 0 ? formatAmount(loan.fineAmount) : "-"}
+                  ${loan.finePaid && loan.fineAmount > 0 ? ' (Paid)' : ''}
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p>This is a computer-generated document. No signature is required.</p>
+          <p>&copy; ${new Date().getFullYear()} ${schoolName}. All rights reserved.</p>
+        </div>
+      </body>
+    </html>
+  `;
+
+  // Create a new window for printing
+  const printWindow = window.open("", "_blank");
+  if (printWindow) {
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+
+    // Wait for content to load then print
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      // Close window after printing (user can cancel)
+      setTimeout(() => {
+        printWindow.close();
+      }, 100);
+    };
+  } else {
+    alert("Please allow popups to export to PDF");
+  }
+}
+
+/**
+ * Export library members data to Excel format
+ */
+export function exportMembersToExcel(
+  members: LibraryMember[],
+  filename: string = "library-members",
+  formatCurrency?: (amount: number) => string
+) {
+  // Transform data for Excel
+  const excelData = members.map((member) => ({
+    "Member ID": member.memberId,
+    "Name": member.name,
+    "Type": member.type.charAt(0).toUpperCase() + member.type.slice(1),
+    "Email": member.email || "N/A",
+    "Phone": member.phone || "N/A",
+    "Class/Department": member.class || member.department || "N/A",
+    "Status": member.isActive ? "Active" : "Inactive",
+    "Current Books": member.currentBooksCount,
+    "Max Books Allowed": member.maxBooksAllowed,
+    "Total Borrowed": member.totalBorrowedCount,
+    "Fines Due": member.finesDue > 0 ? (formatCurrency ? formatCurrency(member.finesDue) : member.finesDue) : "None",
+    "Member Since": member.memberSince,
+    "Expiry Date": member.expiryDate || "N/A",
+    "Person ID": member.personId,
+    "Created At": new Date(member.createdAt).toLocaleString(),
+    "Last Updated": new Date(member.updatedAt).toLocaleString(),
+  }));
+
+  // Create worksheet
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+  // Set column widths
+  const columnWidths = [
+    { wch: 18 }, // Member ID
+    { wch: 25 }, // Name
+    { wch: 10 }, // Type
+    { wch: 30 }, // Email
+    { wch: 15 }, // Phone
+    { wch: 20 }, // Class/Department
+    { wch: 10 }, // Status
+    { wch: 14 }, // Current Books
+    { wch: 16 }, // Max Books Allowed
+    { wch: 14 }, // Total Borrowed
+    { wch: 15 }, // Fines Due
+    { wch: 12 }, // Member Since
+    { wch: 12 }, // Expiry Date
+    { wch: 15 }, // Person ID
+    { wch: 20 }, // Created At
+    { wch: 20 }, // Last Updated
+  ];
+  worksheet["!cols"] = columnWidths;
+
+  // Create workbook
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Library Members");
+
+  // Generate Excel file
+  const timestamp = new Date().toISOString().split("T")[0];
+  XLSX.writeFile(workbook, `${filename}_${timestamp}.xlsx`);
+}
+
+/**
+ * Export library members data to PDF format (using print)
+ */
+export function exportMembersToPDF(
+  members: LibraryMember[],
+  filename: string = "library-members",
+  formatCurrency?: (amount: number) => string,
+  schoolName: string = "School Management System"
+) {
+  // Calculate summary statistics
+  const totalMembers = members.length;
+  const activeMembers = members.filter(m => m.isActive).length;
+  const inactiveMembers = members.filter(m => !m.isActive).length;
+  const membersWithFines = members.filter(m => m.finesDue > 0).length;
+  const totalFines = members.reduce((sum, m) => sum + m.finesDue, 0);
+  const totalBooksBorrowed = members.reduce((sum, m) => sum + m.currentBooksCount, 0);
+
+  // Group by type
+  const typeStats = members.reduce((acc, member) => {
+    const type = member.type;
+    if (!acc[type]) {
+      acc[type] = { count: 0, fines: 0, books: 0 };
+    }
+    acc[type].count++;
+    acc[type].fines += member.finesDue;
+    acc[type].books += member.currentBooksCount;
+    return acc;
+  }, {} as Record<string, { count: number; fines: number; books: number }>);
+
+  const formatAmount = (amount: number) => formatCurrency ? formatCurrency(amount) : `NGN ${amount.toLocaleString()}`;
+
+  // Create a printable HTML structure
+  const printContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Library Members Report</title>
+        <style>
+          @media print {
+            @page {
+              size: A4 landscape;
+              margin: 15mm;
+            }
+          }
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #8b5cf6;
+            padding-bottom: 15px;
+          }
+          .header h1 {
+            margin: 0 0 5px 0;
+            color: #7c3aed;
+            font-size: 22pt;
+          }
+          .header .school-name {
+            font-size: 12pt;
+            color: #6b7280;
+            margin-bottom: 5px;
+          }
+          .header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 10pt;
+          }
+          .summary {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+            border-radius: 10px;
+            border: 1px solid #ddd6fe;
+          }
+          .summary-item {
+            text-align: center;
+          }
+          .summary-item .label {
+            font-size: 9pt;
+            color: #6b7280;
+            margin-bottom: 5px;
+          }
+          .summary-item .value {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #7c3aed;
+          }
+          .summary-item .value.warning {
+            color: #dc2626;
+          }
+          .summary-item .value.success {
+            color: #059669;
+          }
+          .type-summary {
+            margin-bottom: 20px;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+          }
+          .type-summary h3 {
+            margin: 0 0 10px 0;
+            font-size: 11pt;
+            color: #374151;
+          }
+          .type-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+          }
+          .type-item {
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+          }
+          .type-item .name {
+            font-size: 9pt;
+            color: #6b7280;
+            text-transform: capitalize;
+          }
+          .type-item .count {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #374151;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+          }
+          th {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            padding: 10px 6px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 8pt;
+            border: 1px solid #7c3aed;
+          }
+          td {
+            padding: 8px 6px;
+            border: 1px solid #e5e7eb;
+            font-size: 8pt;
+          }
+          tr:nth-child(even) {
+            background-color: #f9fafb;
+          }
+          tr:hover {
+            background-color: #f5f3ff;
+          }
+          .status {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 7pt;
+            text-transform: capitalize;
+            display: inline-block;
+          }
+          .status.active {
+            background-color: #d1fae5;
+            color: #065f46;
+          }
+          .status.inactive {
+            background-color: #e5e7eb;
+            color: #374151;
+          }
+          .member-type {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 7pt;
+            text-transform: capitalize;
+          }
+          .member-type.student {
+            background-color: #f3e8ff;
+            color: #7c3aed;
+          }
+          .member-type.teacher {
+            background-color: #cffafe;
+            color: #0891b2;
+          }
+          .member-type.staff {
+            background-color: #ffedd5;
+            color: #c2410c;
+          }
+          .fine {
+            font-weight: 600;
+            color: #dc2626;
+          }
+          .books {
+            font-weight: 600;
+          }
+          .books .current {
+            color: #059669;
+          }
+          .books .max {
+            color: #6b7280;
+          }
+          .footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 8pt;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 15px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="school-name">${schoolName}</div>
+          <h1>Library Members Report</h1>
+          <p>Generated on ${new Date().toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+          })}</p>
+        </div>
+
+        <div class="summary">
+          <div class="summary-item">
+            <div class="label">Total Members</div>
+            <div class="value">${totalMembers}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Active</div>
+            <div class="value success">${activeMembers}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Inactive</div>
+            <div class="value">${inactiveMembers}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">With Fines</div>
+            <div class="value warning">${membersWithFines}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Total Fines</div>
+            <div class="value warning">${formatAmount(totalFines)}</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">Books Borrowed</div>
+            <div class="value">${totalBooksBorrowed}</div>
+          </div>
+        </div>
+
+        <div class="type-summary">
+          <h3>Member Type Breakdown</h3>
+          <div class="type-grid">
+            ${Object.entries(typeStats).map(([type, data]) => `
+              <div class="type-item">
+                <div class="name">${type}s</div>
+                <div class="count">${data.count} members · ${data.books} books · ${formatAmount(data.fines)} fines</div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Member ID</th>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Class/Dept</th>
+              <th>Books</th>
+              <th>Total Borrowed</th>
+              <th>Fines</th>
+              <th>Status</th>
+              <th>Member Since</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${members.map(member => `
+              <tr>
+                <td style="font-family: monospace;">${member.memberId}</td>
+                <td>
+                  <strong>${member.name}</strong><br/>
+                  <small style="color:#6b7280">${member.email || "No email"}</small>
+                </td>
+                <td><span class="member-type ${member.type}">${member.type}</span></td>
+                <td>${member.class || member.department || "-"}</td>
+                <td class="books">
+                  <span class="current">${member.currentBooksCount}</span>
+                  <span class="max">/ ${member.maxBooksAllowed}</span>
+                </td>
+                <td>${member.totalBorrowedCount}</td>
+                <td class="${member.finesDue > 0 ? 'fine' : ''}">${member.finesDue > 0 ? formatAmount(member.finesDue) : "-"}</td>
+                <td><span class="status ${member.isActive ? 'active' : 'inactive'}">${member.isActive ? 'Active' : 'Inactive'}</span></td>
+                <td>${member.memberSince}</td>
               </tr>
             `).join("")}
           </tbody>
