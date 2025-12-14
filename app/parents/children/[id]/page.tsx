@@ -33,6 +33,16 @@ import {
   Download,
   MessageSquare,
   AlertCircle,
+  Sparkles,
+  Calculator,
+  Atom,
+  FlaskConical,
+  Leaf,
+  Languages,
+  Globe,
+  Monitor,
+  Palette,
+  Hash,
 } from "lucide-react";
 import type { ParentChild, ChildAcademicSummary, ParentAttendanceRecord } from "@/types/parent";
 
@@ -151,22 +161,47 @@ export default function ChildDetailPage() {
     return age;
   };
 
-  // Get grade color
+  // Get grade color with enhanced styling
   const getGradeColor = (grade: string) => {
     const colors: Record<string, string> = {
-      A: "text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30",
-      B: "text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30",
-      C: "text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30",
-      D: "text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30",
-      E: "text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30",
-      F: "text-red-700 dark:text-red-500 bg-red-100 dark:bg-red-900/30",
+      A: "text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/40 ring-1 ring-green-200 dark:ring-green-800",
+      B: "text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 ring-1 ring-blue-200 dark:ring-blue-800",
+      C: "text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/40 ring-1 ring-yellow-200 dark:ring-yellow-800",
+      D: "text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/40 ring-1 ring-orange-200 dark:ring-orange-800",
+      E: "text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/40 ring-1 ring-red-200 dark:ring-red-800",
+      F: "text-red-700 dark:text-red-500 bg-red-100 dark:bg-red-900/40 ring-1 ring-red-200 dark:ring-red-800",
     };
     return colors[grade] || colors.C;
   };
 
+  // Subject icons mapping
+  const subjectIcons: Record<string, { icon: React.ReactNode; bg: string; iconColor: string }> = {
+    'Mathematics': { icon: <Calculator className="w-4 h-4" />, bg: 'bg-blue-100 dark:bg-blue-900/50', iconColor: 'text-blue-600 dark:text-blue-400' },
+    'Further Mathematics': { icon: <Calculator className="w-4 h-4" />, bg: 'bg-indigo-100 dark:bg-indigo-900/50', iconColor: 'text-indigo-600 dark:text-indigo-400' },
+    'Physics': { icon: <Atom className="w-4 h-4" />, bg: 'bg-purple-100 dark:bg-purple-900/50', iconColor: 'text-purple-600 dark:text-purple-400' },
+    'Chemistry': { icon: <FlaskConical className="w-4 h-4" />, bg: 'bg-emerald-100 dark:bg-emerald-900/50', iconColor: 'text-emerald-600 dark:text-emerald-400' },
+    'Biology': { icon: <Leaf className="w-4 h-4" />, bg: 'bg-green-100 dark:bg-green-900/50', iconColor: 'text-green-600 dark:text-green-400' },
+    'Basic Science': { icon: <Atom className="w-4 h-4" />, bg: 'bg-cyan-100 dark:bg-cyan-900/50', iconColor: 'text-cyan-600 dark:text-cyan-400' },
+    'English Language': { icon: <Languages className="w-4 h-4" />, bg: 'bg-amber-100 dark:bg-amber-900/50', iconColor: 'text-amber-600 dark:text-amber-400' },
+    'French': { icon: <Languages className="w-4 h-4" />, bg: 'bg-rose-100 dark:bg-rose-900/50', iconColor: 'text-rose-600 dark:text-rose-400' },
+    'Social Studies': { icon: <Globe className="w-4 h-4" />, bg: 'bg-teal-100 dark:bg-teal-900/50', iconColor: 'text-teal-600 dark:text-teal-400' },
+    'Civic Education': { icon: <Users className="w-4 h-4" />, bg: 'bg-orange-100 dark:bg-orange-900/50', iconColor: 'text-orange-600 dark:text-orange-400' },
+    'Computer Studies': { icon: <Monitor className="w-4 h-4" />, bg: 'bg-violet-100 dark:bg-violet-900/50', iconColor: 'text-violet-600 dark:text-violet-400' },
+    'Data Processing': { icon: <Monitor className="w-4 h-4" />, bg: 'bg-fuchsia-100 dark:bg-fuchsia-900/50', iconColor: 'text-fuchsia-600 dark:text-fuchsia-400' },
+    'Creative Arts': { icon: <Palette className="w-4 h-4" />, bg: 'bg-pink-100 dark:bg-pink-900/50', iconColor: 'text-pink-600 dark:text-pink-400' },
+  };
+
+  const getSubjectIcon = (subject: string) => {
+    return subjectIcons[subject] || {
+      icon: <BookOpen className="w-4 h-4" />,
+      bg: 'bg-gray-100 dark:bg-gray-800',
+      iconColor: 'text-gray-600 dark:text-gray-400'
+    };
+  };
+
   // Tab configuration
   const tabs = [
-    { id: "overview", label: "Overview", icon: User },
+    { id: "overview", label: "Student Details", icon: GraduationCap },
     { id: "academics", label: "Academics", icon: GraduationCap },
     { id: "attendance", label: "Attendance", icon: CheckCircle2 },
     { id: "fees", label: "Fees", icon: CreditCard },
@@ -207,217 +242,364 @@ export default function ChildDetailPage() {
           ]}
         />
 
-        {/* Profile Card */}
-        <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
-          <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/10">
-            <div className="flex flex-col md:flex-row md:items-center gap-6">
-              <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 flex-shrink-0 shadow-xl ring-4 ring-white dark:ring-gray-700">
-                <Image
-                  src={child.profilePhoto || `https://i.pravatar.cc/150?u=${child.id}`}
-                  alt={child.fullName}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
+        {/* Profile Card - Hero Section */}
+        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 shadow-sm">
+          <div className="relative p-4">
+            {/* Main Content Row */}
+            <div className="flex items-start gap-4">
+              {/* Profile Photo */}
+              <div className="relative flex-shrink-0">
+                <div className="absolute -inset-1 bg-gradient-to-br from-blue-400/60 via-purple-400/60 to-pink-400/60 rounded-xl blur-[2px]" />
+                <div className="relative w-16 h-16 rounded-lg overflow-hidden ring-2 ring-white dark:ring-gray-800">
+                  <Image
+                    src={child.profilePhoto || `https://i.pravatar.cc/150?u=${child.id}`}
+                    alt={child.fullName}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+                {/* Status indicator */}
+                <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full ring-2 ring-white dark:ring-gray-800 flex items-center justify-center ${
+                  child.status === "Active" ? "bg-emerald-400" : "bg-gray-400"
+                }`}>
+                  {child.status === "Active" && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                  )}
+                </div>
               </div>
+
+              {/* Info Section */}
               <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                {/* Name and status row */}
+                <div className="flex items-center gap-2 mb-1.5">
+                  <h1 className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight truncate">
                     {child.fullName}
                   </h1>
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                      child.status === "Active"
-                        ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-                    }`}
-                  >
+                  <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wide ${
+                    child.status === "Active"
+                      ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+                  }`}>
                     {child.status}
                   </span>
                 </div>
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  <span className="flex items-center gap-1.5">
-                    <GraduationCap className="w-4 h-4" />
-                    {child.classLevel} {child.section && `(${child.section})`}
+
+                {/* Info badges - inline with subtle colors */}
+                <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 text-[11px] font-medium">
+                    <GraduationCap className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+                    {child.classLevel} {child.section && `• ${child.section}`}
                   </span>
-                  <span className="flex items-center gap-1.5">
-                    <BookOpen className="w-4 h-4" />
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 text-[11px] font-medium">
+                    <Hash className="w-3 h-3 text-gray-400 dark:text-gray-500" />
                     {child.admissionNumber}
                   </span>
-                  <span className="flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4" />
-                    {calculateAge(child.dateOfBirth)} years old ({new Date(child.dateOfBirth).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })})
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 text-[11px] font-medium">
+                    <Calendar className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+                    {calculateAge(child.dateOfBirth)} yrs
                   </span>
-                  <span className="flex items-center gap-1.5">
-                    <User className="w-4 h-4" />
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 text-[11px] font-medium">
+                    <User className="w-3 h-3 text-gray-400 dark:text-gray-500" />
                     {child.gender}
                   </span>
                 </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button variant="ghost" className="text-blue-600 dark:text-blue-400">
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Message Teacher
-                </Button>
-                <Link href={`/parents/children/${child.id}/report-card`}>
-                  <Button variant="primary">
-                    <FileText className="w-4 h-4 mr-2" />
-                    View Report Card
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
 
-          {/* Stats Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="p-4 text-center border-r border-gray-200 dark:border-gray-700">
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {academicData?.currentTermAverage?.toFixed(1)}%
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Term Average</p>
+                {/* Action buttons - compact */}
+                <div className="flex items-center gap-2">
+                  <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium text-xs border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 cursor-pointer">
+                    <MessageSquare className="w-3.5 h-3.5 text-gray-400" />
+                    Message Teacher
+                  </button>
+                  <Link href={`/parents/children/${child.id}/report-card`}>
+                    <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-xs shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer">
+                      <FileText className="w-3.5 h-3.5" />
+                      View Report Card
+                    </button>
+                  </Link>
+                </div>
+              </div>
             </div>
-            <div className="p-4 text-center border-r border-gray-200 dark:border-gray-700 md:border-r">
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                #{academicData?.classPosition}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                of {academicData?.totalStudents} students
-              </p>
-            </div>
-            <div className="p-4 text-center border-r border-gray-200 dark:border-gray-700">
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                {attendanceData?.rate}%
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Attendance Rate</p>
-            </div>
-            <div className="p-4 text-center">
-              <p className={`text-2xl font-bold ${
-                feeData?.status === "paid"
-                  ? "text-green-600 dark:text-green-400"
-                  : "text-red-600 dark:text-red-400"
-              }`}>
-                {feeData?.status === "paid" ? "Paid" : formatCurrency(feeData?.balance || 0, countryCode)}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {feeData?.status === "paid" ? "Fees Cleared" : "Fee Balance"}
-              </p>
+
+            {/* Stats Row - Compact Card Design */}
+            <div className="grid grid-cols-4 gap-3 mt-5">
+              <div className="group relative flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-blue-50/80 to-white dark:from-blue-900/20 dark:to-gray-800/50 border border-gray-100 dark:border-gray-700/50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                <div className="flex-shrink-0 p-2.5 rounded-xl bg-blue-100 dark:bg-blue-900/50">
+                  <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-0.5">Term Average</p>
+                  <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                    {academicData?.currentTermAverage?.toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+
+              <div className="group relative flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-green-50/80 to-white dark:from-green-900/20 dark:to-gray-800/50 border border-gray-100 dark:border-gray-700/50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                <div className="flex-shrink-0 p-2.5 rounded-xl bg-green-100 dark:bg-green-900/50">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider mb-0.5">Active</p>
+                  <p className="text-2xl font-bold text-green-700 dark:text-green-300">
+                    {child.status === "Active" ? "Yes" : "No"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="group relative flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-amber-50/80 to-amber-100/30 dark:from-amber-900/20 dark:to-gray-800/50 border border-gray-100 dark:border-gray-700/50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                <div className="flex-shrink-0 p-2.5 rounded-xl bg-amber-100 dark:bg-amber-900/50">
+                  <TrendingUp className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-0.5">Attendance</p>
+                  <p className="text-2xl font-bold text-amber-700 dark:text-amber-300">
+                    {attendanceData?.rate}%
+                  </p>
+                </div>
+              </div>
+
+              <div className="group relative flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-orange-50/80 to-orange-100/30 dark:from-orange-900/20 dark:to-gray-800/50 border border-gray-100 dark:border-gray-700/50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                <div className="flex-shrink-0 p-2.5 rounded-xl bg-orange-100 dark:bg-orange-900/50">
+                  <Award className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider mb-0.5">Best Position</p>
+                  <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">
+                    #{academicData?.classPosition}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex overflow-x-auto gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as TabType)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm whitespace-nowrap transition-all ${
-                  activeTab === tab.id
-                    ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            );
-          })}
+        {/* Tabs - Modern Navigation */}
+        <div className="relative bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-[#1a1d23]/30 dark:to-[#14161b]/50 midnight:from-[#0f1729]/30 midnight:to-[#0a0f1c]/50 purple:from-[#2a1a3e]/30 purple:to-[#1f1330]/50 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/30 dark:border-gray-800/30 midnight:border-cyan-500/10 purple:border-pink-500/10 p-1.5 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
+          {/* Animated background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-400/5 dark:via-purple-400/5 dark:to-pink-400/5 midnight:from-cyan-400/5 midnight:via-blue-400/5 midnight:to-cyan-400/5 purple:from-pink-400/5 purple:via-purple-400/5 purple:to-pink-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+          <div className="relative flex gap-1.5 min-w-max lg:min-w-0">
+            {tabs.map((tab, index) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as TabType)}
+                  style={{
+                    animationDelay: `${index * 50}ms`
+                  }}
+                  className={`relative flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl transition-all duration-300 ease-out whitespace-nowrap group overflow-hidden ${
+                    isActive
+                      ? "bg-blue-50/80 dark:bg-blue-950/20 midnight:bg-cyan-950/20 purple:bg-pink-950/20 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 shadow-sm border border-blue-100/50 dark:border-blue-900/30 midnight:border-cyan-900/30 purple:border-pink-900/30"
+                      : "text-gray-700 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:bg-white/40 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/30 purple:hover:bg-gray-800/30 hover:text-gray-900 dark:hover:text-gray-200 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:shadow-sm"
+                  } cursor-pointer active:scale-95`}
+                >
+                  {/* Shine effect on active tab */}
+                  {isActive && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                  )}
+
+                  {/* Hover glow effect for inactive tabs */}
+                  {!isActive && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-blue-500/5 group-hover:via-purple-500/5 group-hover:to-pink-500/5 transition-all duration-500 rounded-xl" />
+                  )}
+
+                  <Icon className={`relative w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 transition-all duration-300 ${
+                    isActive
+                      ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                      : "text-gray-600 dark:text-gray-500 midnight:text-cyan-300/70 purple:text-pink-300/70 group-hover:scale-110 group-hover:rotate-6"
+                  }`} />
+                  <span className={`relative text-[11.75px] sm:text-xs font-semibold transition-all duration-300 ${
+                    isActive ? "tracking-wide" : "group-hover:tracking-wide"
+                  }`}>
+                    {tab.label}
+                  </span>
+
+                  {/* Active indicator dot */}
+                  {isActive && (
+                    <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 midnight:bg-cyan-400 purple:bg-pink-400 rounded-full shadow-sm" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-6">
+        <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700/50 p-6 overflow-hidden">
+          {/* Decorative background */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-500/5 via-purple-500/3 to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-indigo-500/5 to-transparent pointer-events-none" />
+
           {/* Overview Tab */}
           {activeTab === "overview" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Recent Performance */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  Recent Performance
-                </h3>
-                <div className="space-y-2">
-                  {academicData?.subjectPerformance.slice(0, 5).map((subject) => (
-                    <div
-                      key={subject.subject}
-                      className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50"
-                    >
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {subject.subject}
-                      </span>
-                      <div className="flex items-center gap-3">
-                        <div className="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${
-                              subject.score >= 80
-                                ? "bg-green-500"
-                                : subject.score >= 60
-                                ? "bg-blue-500"
-                                : subject.score >= 50
-                                ? "bg-yellow-500"
-                                : "bg-red-500"
-                            }`}
-                            style={{ width: `${subject.score}%` }}
-                          />
+              <div className="space-y-5">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-800/20 border border-blue-200/50 dark:border-blue-700/30">
+                    <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 dark:text-white text-base">Recent Performance</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Top 5 subjects this term</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {academicData?.subjectPerformance.slice(0, 5).map((subject, index) => {
+                    const subjectStyle = getSubjectIcon(subject.subject);
+                    return (
+                      <div
+                        key={subject.subject}
+                        className="group relative p-4 rounded-2xl bg-white dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/50 hover:border-gray-200 dark:hover:border-gray-600 shadow-sm hover:shadow-lg transition-all duration-300"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        {/* Subtle gradient overlay on hover */}
+                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-gray-50/50 to-transparent dark:from-gray-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                        <div className="relative flex items-center gap-4">
+                          {/* Subject Icon */}
+                          <div className={`p-3 rounded-xl ${subjectStyle.bg} ${subjectStyle.iconColor} group-hover:scale-105 transition-transform duration-300`}>
+                            {subjectStyle.icon}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-2.5">
+                              <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                {subject.subject}
+                              </span>
+                              <div className="flex items-center gap-2.5">
+                                <span className="text-sm font-bold text-gray-700 dark:text-gray-200">
+                                  {subject.score}%
+                                </span>
+                                <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${getGradeColor(subject.grade)}`}>
+                                  {subject.grade}
+                                </span>
+                              </div>
+                            </div>
+                            {/* Progress bar - sleeker design */}
+                            <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all duration-700 ease-out ${
+                                  subject.score >= 80
+                                    ? "bg-gradient-to-r from-emerald-400 to-green-500"
+                                    : subject.score >= 60
+                                    ? "bg-gradient-to-r from-blue-400 to-indigo-500"
+                                    : subject.score >= 50
+                                    ? "bg-gradient-to-r from-amber-400 to-orange-500"
+                                    : "bg-gradient-to-r from-red-400 to-rose-500"
+                                }`}
+                                style={{ width: `${subject.score}%` }}
+                              />
+                            </div>
+                          </div>
                         </div>
-                        <span className="text-sm font-semibold text-gray-900 dark:text-white w-10 text-right">
-                          {subject.score}%
-                        </span>
-                        <span
-                          className={`px-2 py-0.5 rounded text-xs font-bold ${getGradeColor(subject.grade)}`}
-                        >
-                          {subject.grade}
-                        </span>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Attendance Overview */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  Attendance Overview
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 text-center">
-                    <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-                      {attendanceData?.present}
-                    </p>
-                    <p className="text-sm text-gray-500">Days Present</p>
+              <div className="space-y-5">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/40 dark:to-emerald-800/20 border border-emerald-200/50 dark:border-emerald-700/30">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
-                  <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-center">
-                    <p className="text-3xl font-bold text-red-600 dark:text-red-400">
-                      {attendanceData?.absent}
-                    </p>
-                    <p className="text-sm text-gray-500">Days Absent</p>
+                  <div>
+                    <h3 className="font-bold text-gray-900 dark:text-white text-base">Attendance Overview</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Current term attendance</p>
                   </div>
-                  <div className="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 text-center">
-                    <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-                      {attendanceData?.late}
-                    </p>
-                    <p className="text-sm text-gray-500">Times Late</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Days Present Card */}
+                  <div className="group relative p-5 rounded-2xl bg-gradient-to-br from-emerald-50 via-green-50/80 to-teal-50/50 dark:from-emerald-900/30 dark:via-green-900/20 dark:to-teal-900/10 border border-emerald-100/80 dark:border-emerald-800/30 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden">
+                    {/* Decorative gradient blob */}
+                    <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-bl from-emerald-300/30 via-green-200/20 to-transparent rounded-full blur-xl" />
+                    <div className="relative">
+                      <div className="flex items-center justify-end mb-2">
+                        <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 group-hover:scale-110 transition-transform duration-300">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                      </div>
+                      <p className="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-1 tracking-tight">
+                        {attendanceData?.present}
+                      </p>
+                      <p className="text-[10px] font-bold text-emerald-600/80 dark:text-emerald-400/80 uppercase tracking-widest">Days Present</p>
+                    </div>
                   </div>
-                  <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-center">
-                    <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                      {attendanceData?.rate}%
-                    </p>
-                    <p className="text-sm text-gray-500">Attendance Rate</p>
+
+                  {/* Days Absent Card */}
+                  <div className="group relative p-5 rounded-2xl bg-gradient-to-br from-rose-50 via-red-50/80 to-pink-50/50 dark:from-rose-900/30 dark:via-red-900/20 dark:to-pink-900/10 border border-rose-100/80 dark:border-rose-800/30 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden">
+                    <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-bl from-rose-300/30 via-red-200/20 to-transparent rounded-full blur-xl" />
+                    <div className="relative">
+                      <div className="flex items-center justify-end mb-2">
+                        <div className="p-2 rounded-xl bg-rose-100 dark:bg-rose-900/50 group-hover:scale-110 transition-transform duration-300">
+                          <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                        </div>
+                      </div>
+                      <p className="text-4xl font-bold text-rose-600 dark:text-rose-400 mb-1 tracking-tight">
+                        {attendanceData?.absent}
+                      </p>
+                      <p className="text-[10px] font-bold text-rose-600/80 dark:text-rose-400/80 uppercase tracking-widest">Days Absent</p>
+                    </div>
+                  </div>
+
+                  {/* Times Late Card */}
+                  <div className="group relative p-5 rounded-2xl bg-gradient-to-br from-amber-50 via-yellow-50/80 to-orange-50/50 dark:from-amber-900/30 dark:via-yellow-900/20 dark:to-orange-900/10 border border-amber-100/80 dark:border-amber-800/30 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden">
+                    <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-bl from-amber-300/30 via-yellow-200/20 to-transparent rounded-full blur-xl" />
+                    <div className="relative">
+                      <div className="flex items-center justify-end mb-2">
+                        <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-900/50 group-hover:scale-110 transition-transform duration-300">
+                          <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        </div>
+                      </div>
+                      <p className="text-4xl font-bold text-amber-600 dark:text-amber-400 mb-1 tracking-tight">
+                        {attendanceData?.late}
+                      </p>
+                      <p className="text-[10px] font-bold text-amber-600/80 dark:text-amber-400/80 uppercase tracking-widest">Times Late</p>
+                    </div>
+                  </div>
+
+                  {/* Attendance Rate Card */}
+                  <div className="group relative p-5 rounded-2xl bg-gradient-to-br from-blue-50 via-indigo-50/80 to-violet-50/50 dark:from-blue-900/30 dark:via-indigo-900/20 dark:to-violet-900/10 border border-blue-100/80 dark:border-blue-800/30 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden">
+                    <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-bl from-blue-300/30 via-indigo-200/20 to-transparent rounded-full blur-xl" />
+                    <div className="relative">
+                      <div className="flex items-center justify-end mb-2">
+                        <div className="p-2 rounded-xl bg-blue-100 dark:bg-blue-900/50 group-hover:scale-110 transition-transform duration-300">
+                          <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                      </div>
+                      <p className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-1 tracking-tight">
+                        {attendanceData?.rate}%
+                      </p>
+                      <p className="text-[10px] font-bold text-blue-600/80 dark:text-blue-400/80 uppercase tracking-widest">Attendance Rate</p>
+                    </div>
                   </div>
                 </div>
 
                 {/* Teacher's Remarks */}
                 {academicData?.overallRemarks && (
-                  <div className="p-4 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50/50 dark:from-amber-900/20 dark:to-orange-900/10 border border-amber-200/60 dark:border-amber-700/30">
-                    <p className="text-sm font-medium text-amber-700 dark:text-amber-400 mb-2">
-                      Teacher&apos;s Remarks
-                    </p>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 italic">
-                      &quot;{academicData.overallRemarks}&quot;
-                    </p>
+                  <div className="relative p-5 rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50/70 to-yellow-50/50 dark:from-amber-900/25 dark:via-orange-900/15 dark:to-yellow-900/10 border border-amber-200/60 dark:border-amber-700/30 overflow-hidden">
+                    {/* Decorative elements */}
+                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-bl from-amber-300/25 via-orange-200/15 to-transparent rounded-full blur-2xl" />
+                    <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-gradient-to-tr from-orange-300/20 to-transparent rounded-full blur-xl" />
+
+                    <div className="relative flex items-start gap-4">
+                      <div className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/20">
+                        <Sparkles className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-widest mb-2">
+                          Teacher&apos;s Remarks
+                        </p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 italic leading-relaxed">
+                          &quot;{academicData.overallRemarks}&quot;
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -426,119 +608,228 @@ export default function ChildDetailPage() {
 
           {/* Academics Tab */}
           {activeTab === "academics" && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Subject Performance - Current Term
-                </h3>
-                <Button variant="ghost" className="text-blue-600 dark:text-blue-400">
-                  <Download className="w-4 h-4 mr-2" />
+            <div className="relative space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/25">
+                    <GraduationCap className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 dark:text-white">Subject Performance</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Current term results</p>
+                  </div>
+                </div>
+                <button className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium text-sm shadow-lg shadow-blue-500/25 hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5">
+                  <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
                   Download Report
-                </Button>
+                </button>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Subject</th>
-                      <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Score</th>
-                      <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Grade</th>
-                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Teacher&apos;s Remarks</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {academicData?.subjectPerformance.map((subject, idx) => (
-                      <tr
-                        key={subject.subject}
-                        className={`border-b border-gray-100 dark:border-gray-800 ${
-                          idx % 2 === 0 ? "bg-gray-50/50 dark:bg-gray-800/30" : ""
-                        }`}
-                      >
-                        <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">
-                          {subject.subject}
-                        </td>
-                        <td className="py-3 px-4 text-center">
+
+              {/* Modern Card-Based Subject List */}
+              <div className="grid gap-4">
+                {academicData?.subjectPerformance.map((subject, index) => {
+                  const subjectStyle = getSubjectIcon(subject.subject);
+                  return (
+                    <div
+                      key={subject.subject}
+                      className="group relative flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/80 dark:to-gray-800/40 hover:from-white hover:to-gray-50 dark:hover:from-gray-800 dark:hover:to-gray-700/50 hover:shadow-xl transition-all duration-300 ring-1 ring-gray-200/60 dark:ring-gray-700/50 hover:ring-gray-300 dark:hover:ring-gray-600 overflow-hidden"
+                      style={{ animationDelay: `${index * 30}ms` }}
+                    >
+                      {/* Decorative accent */}
+                      <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                        subject.score >= 80 ? "bg-gradient-to-b from-green-400 to-emerald-500" :
+                        subject.score >= 60 ? "bg-gradient-to-b from-blue-400 to-indigo-500" :
+                        subject.score >= 50 ? "bg-gradient-to-b from-amber-400 to-orange-500" :
+                        "bg-gradient-to-b from-red-400 to-rose-500"
+                      }`} />
+
+                      {/* Subject Icon */}
+                      <div className={`p-3 rounded-xl ${subjectStyle.bg} ${subjectStyle.iconColor} shadow-sm group-hover:scale-110 transition-transform duration-300`}>
+                        {subjectStyle.icon}
+                      </div>
+
+                      {/* Subject Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
                           <span className="font-semibold text-gray-900 dark:text-white">
+                            {subject.subject}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate italic">
+                          &quot;{subject.teacherRemarks || "No remarks"}&quot;
+                        </p>
+                      </div>
+
+                      {/* Score with Progress */}
+                      <div className="flex items-center gap-4">
+                        <div className="hidden sm:block w-36">
+                          <div className="flex items-center justify-between text-xs mb-1.5">
+                            <span className="text-gray-500 dark:text-gray-400">Score</span>
+                            <span className="font-bold text-gray-900 dark:text-white">{subject.score}%</span>
+                          </div>
+                          <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-700 ease-out ${
+                                subject.score >= 80
+                                  ? "bg-gradient-to-r from-green-400 to-emerald-500"
+                                  : subject.score >= 60
+                                  ? "bg-gradient-to-r from-blue-400 to-indigo-500"
+                                  : subject.score >= 50
+                                  ? "bg-gradient-to-r from-amber-400 to-orange-500"
+                                  : "bg-gradient-to-r from-red-400 to-rose-500"
+                              }`}
+                              style={{ width: `${subject.score}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-bold text-gray-900 dark:text-white sm:hidden">
                             {subject.score}%
                           </span>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <span className={`px-2 py-1 rounded text-sm font-bold ${getGradeColor(subject.grade)}`}>
+                          <span className={`px-4 py-2 rounded-xl text-sm font-bold shadow-sm ${getGradeColor(subject.grade)}`}>
                             {subject.grade}
                           </span>
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
-                          {subject.teacherRemarks || "-"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
+
+              {/* Conduct Grade */}
+              {academicData?.conductGrade && (
+                <div className="relative flex items-center justify-between p-5 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 dark:from-purple-900/20 dark:via-indigo-900/15 dark:to-blue-900/20 ring-1 ring-purple-200/60 dark:ring-purple-800/50 overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-400/10 to-transparent" />
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/25">
+                      <Award className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-gray-900 dark:text-white">Conduct Grade</span>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Overall behavior assessment</p>
+                    </div>
+                  </div>
+                  <span className={`px-5 py-2.5 rounded-xl text-lg font-bold shadow-sm ${getGradeColor(academicData.conductGrade)}`}>
+                    {academicData.conductGrade}
+                  </span>
+                </div>
+              )}
             </div>
           )}
 
           {/* Attendance Tab */}
           {activeTab === "attendance" && (
-            <div className="space-y-6">
+            <div className="relative space-y-6">
+              {/* Header */}
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/25">
+                  <CheckCircle2 className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 dark:text-white">Attendance Summary</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Current term attendance record</p>
+                </div>
+              </div>
+
+              {/* Stat Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200/60 dark:border-green-700/30">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-                      <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <div className="relative p-5 rounded-2xl bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/30 dark:to-green-800/20 group hover:shadow-lg transition-all duration-300 ring-1 ring-green-100 dark:ring-green-800/50 overflow-hidden">
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-green-400/10 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+                  <div className="relative">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2.5 rounded-xl bg-green-100 dark:bg-green-900/50 ring-1 ring-green-200 dark:ring-green-700 shadow-sm group-hover:scale-110 transition-transform">
+                        <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        {attendanceData?.present}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Present</p>
-                    </div>
+                    <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
+                      {attendanceData?.present}
+                    </p>
+                    <p className="text-xs font-semibold text-green-600/70 dark:text-green-400/70 uppercase tracking-wide">Days Present</p>
                   </div>
                 </div>
-                <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200/60 dark:border-red-700/30">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
-                      <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+
+                <div className="relative p-5 rounded-2xl bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/30 dark:to-red-800/20 group hover:shadow-lg transition-all duration-300 ring-1 ring-red-100 dark:ring-red-800/50 overflow-hidden">
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-red-400/10 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+                  <div className="relative">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2.5 rounded-xl bg-red-100 dark:bg-red-900/50 ring-1 ring-red-200 dark:ring-red-700 shadow-sm group-hover:scale-110 transition-transform">
+                        <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                        {attendanceData?.absent}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Absent</p>
-                    </div>
+                    <p className="text-3xl font-bold text-red-600 dark:text-red-400 mb-1">
+                      {attendanceData?.absent}
+                    </p>
+                    <p className="text-xs font-semibold text-red-600/70 dark:text-red-400/70 uppercase tracking-wide">Days Absent</p>
                   </div>
                 </div>
-                <div className="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200/60 dark:border-yellow-700/30">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
-                      <Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+
+                <div className="relative p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/30 dark:to-amber-800/20 group hover:shadow-lg transition-all duration-300 ring-1 ring-amber-100 dark:ring-amber-800/50 overflow-hidden">
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-amber-400/10 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+                  <div className="relative">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-900/50 ring-1 ring-amber-200 dark:ring-amber-700 shadow-sm group-hover:scale-110 transition-transform">
+                        <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                        {attendanceData?.late}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Late</p>
-                    </div>
+                    <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mb-1">
+                      {attendanceData?.late}
+                    </p>
+                    <p className="text-xs font-semibold text-amber-600/70 dark:text-amber-400/70 uppercase tracking-wide">Times Late</p>
                   </div>
                 </div>
-                <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200/60 dark:border-blue-700/30">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                      <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+
+                <div className="relative p-5 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/30 dark:to-blue-800/20 group hover:shadow-lg transition-all duration-300 ring-1 ring-blue-100 dark:ring-blue-800/50 overflow-hidden">
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-blue-400/10 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+                  <div className="relative">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-900/50 ring-1 ring-blue-200 dark:ring-blue-700 shadow-sm group-hover:scale-110 transition-transform">
+                        <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {attendanceData?.rate}%
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Rate</p>
-                    </div>
+                    <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                      {attendanceData?.rate}%
+                    </p>
+                    <p className="text-xs font-semibold text-blue-600/70 dark:text-blue-400/70 uppercase tracking-wide">Attendance Rate</p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-center">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Attendance calendar and detailed records coming soon...
+              {/* Progress Visualization */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 ring-1 ring-gray-200/50 dark:ring-gray-700/50">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="font-semibold text-gray-900 dark:text-white">Attendance Progress</span>
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {attendanceData?.present} of {attendanceData?.total} days
+                  </span>
+                </div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-green-400 via-green-500 to-emerald-500 rounded-full transition-all duration-500 relative"
+                    style={{ width: `${attendanceData?.rate || 0}%` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
+                  </div>
+                </div>
+                <div className="flex justify-between mt-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <span>0%</span>
+                  <span className={`font-bold ${(attendanceData?.rate || 0) >= 80 ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                    {attendanceData?.rate}% Overall
+                  </span>
+                  <span>100%</span>
+                </div>
+              </div>
+
+              {/* Coming Soon */}
+              <div className="relative p-6 rounded-2xl bg-gradient-to-br from-indigo-50/80 to-purple-50/50 dark:from-indigo-900/20 dark:to-purple-900/10 ring-1 ring-indigo-100 dark:ring-indigo-800/50 text-center overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-400/10 to-transparent" />
+                <Calendar className="w-10 h-10 text-indigo-400 dark:text-indigo-500 mx-auto mb-3" />
+                <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                  Detailed attendance calendar coming soon...
                 </p>
               </div>
             </div>
@@ -546,48 +837,146 @@ export default function ChildDetailPage() {
 
           {/* Fees Tab */}
           {activeTab === "fees" && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200/60 dark:border-blue-700/30">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Fees</p>
-                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    {formatCurrency(feeData?.total || 0, countryCode)}
-                  </p>
+            <div className="relative space-y-6">
+              {/* Header */}
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/25">
+                  <CreditCard className="w-5 h-5 text-white" />
                 </div>
-                <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200/60 dark:border-green-700/30">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Paid</p>
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                    {formatCurrency(feeData?.paid || 0, countryCode)}
-                  </p>
-                </div>
-                <div className={`p-4 rounded-xl border ${
-                  (feeData?.balance || 0) > 0
-                    ? "bg-red-50 dark:bg-red-900/20 border-red-200/60 dark:border-red-700/30"
-                    : "bg-green-50 dark:bg-green-900/20 border-green-200/60 dark:border-green-700/30"
-                }`}>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Balance</p>
-                  <p className={`text-2xl font-bold ${
-                    (feeData?.balance || 0) > 0
-                      ? "text-red-600 dark:text-red-400"
-                      : "text-green-600 dark:text-green-400"
-                  }`}>
-                    {formatCurrency(feeData?.balance || 0, countryCode)}
-                  </p>
+                <div>
+                  <h3 className="font-bold text-gray-900 dark:text-white">Fee Summary</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Current term fee status</p>
                 </div>
               </div>
 
+              {/* Fee Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="relative p-5 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/30 dark:to-blue-800/20 group hover:shadow-lg transition-all duration-300 ring-1 ring-blue-100 dark:ring-blue-800/50 overflow-hidden">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-blue-400/10 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+                  <div className="relative">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-900/50 ring-1 ring-blue-200 dark:ring-blue-700 shadow-sm">
+                        <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <p className="text-xs font-semibold text-blue-600/70 dark:text-blue-400/70 uppercase tracking-wide">Total Fees</p>
+                    </div>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {formatCurrency(feeData?.total || 0, countryCode)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="relative p-5 rounded-2xl bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/30 dark:to-green-800/20 group hover:shadow-lg transition-all duration-300 ring-1 ring-green-100 dark:ring-green-800/50 overflow-hidden">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-green-400/10 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+                  <div className="relative">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2.5 rounded-xl bg-green-100 dark:bg-green-900/50 ring-1 ring-green-200 dark:ring-green-700 shadow-sm">
+                        <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      </div>
+                      <p className="text-xs font-semibold text-green-600/70 dark:text-green-400/70 uppercase tracking-wide">Amount Paid</p>
+                    </div>
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {formatCurrency(feeData?.paid || 0, countryCode)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className={`relative p-5 rounded-2xl group hover:shadow-lg transition-all duration-300 overflow-hidden ${
+                  (feeData?.balance || 0) > 0
+                    ? "bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/30 dark:to-red-800/20 ring-1 ring-red-100 dark:ring-red-800/50"
+                    : "bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/30 dark:to-emerald-800/20 ring-1 ring-emerald-100 dark:ring-emerald-800/50"
+                }`}>
+                  <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl to-transparent ${
+                    (feeData?.balance || 0) > 0 ? "from-red-400/10" : "from-emerald-400/10"
+                  }`} />
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+                  <div className="relative">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`p-2.5 rounded-xl ring-1 shadow-sm ${
+                        (feeData?.balance || 0) > 0
+                          ? "bg-red-100 dark:bg-red-900/50 ring-red-200 dark:ring-red-700"
+                          : "bg-emerald-100 dark:bg-emerald-900/50 ring-emerald-200 dark:ring-emerald-700"
+                      }`}>
+                        {(feeData?.balance || 0) > 0 ? (
+                          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                        ) : (
+                          <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        )}
+                      </div>
+                      <p className={`text-xs font-semibold uppercase tracking-wide ${
+                        (feeData?.balance || 0) > 0
+                          ? "text-red-600/70 dark:text-red-400/70"
+                          : "text-emerald-600/70 dark:text-emerald-400/70"
+                      }`}>
+                        {(feeData?.balance || 0) > 0 ? "Balance Due" : "Fully Paid"}
+                      </p>
+                    </div>
+                    <p className={`text-2xl font-bold ${
+                      (feeData?.balance || 0) > 0
+                        ? "text-red-600 dark:text-red-400"
+                        : "text-emerald-600 dark:text-emerald-400"
+                    }`}>
+                      {formatCurrency(feeData?.balance || 0, countryCode)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Progress */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 ring-1 ring-gray-200/50 dark:ring-gray-700/50">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="font-semibold text-gray-900 dark:text-white">Payment Progress</span>
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {Math.round(((feeData?.paid || 0) / (feeData?.total || 1)) * 100)}% Complete
+                  </span>
+                </div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 relative ${
+                      (feeData?.balance || 0) > 0
+                        ? "bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500"
+                        : "bg-gradient-to-r from-green-400 via-green-500 to-emerald-500"
+                    }`}
+                    style={{ width: `${((feeData?.paid || 0) / (feeData?.total || 1)) * 100}%` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Pay Button */}
               {(feeData?.balance || 0) > 0 && (
                 <Link
                   href={`/parents/fees/pay?child=${child.id}`}
-                  className="flex items-center justify-center gap-2 w-full py-4 px-6 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium transition-all shadow-lg hover:shadow-xl"
+                  className="group relative flex items-center justify-center gap-3 w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 overflow-hidden"
                 >
-                  <CreditCard className="w-5 h-5" />
-                  Pay Outstanding Balance ({formatCurrency(feeData?.balance || 0, countryCode)})
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <CreditCard className="w-5 h-5 relative z-10" />
+                  <span className="relative z-10">Pay Outstanding Balance ({formatCurrency(feeData?.balance || 0, countryCode)})</span>
                 </Link>
               )}
 
-              <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-center">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+              {/* Cleared Status */}
+              {(feeData?.balance || 0) === 0 && (
+                <div className="relative p-6 rounded-2xl bg-gradient-to-br from-emerald-50/80 to-green-50/50 dark:from-emerald-900/20 dark:to-green-900/10 ring-1 ring-emerald-100 dark:ring-emerald-800/50 text-center overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-emerald-400/10 to-transparent" />
+                  <CheckCircle2 className="w-12 h-12 text-emerald-500 dark:text-emerald-400 mx-auto mb-3" />
+                  <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
+                    All Fees Cleared!
+                  </p>
+                  <p className="text-sm text-emerald-600/70 dark:text-emerald-400/60 mt-1">
+                    This student has no outstanding balance.
+                  </p>
+                </div>
+              )}
+
+              {/* Coming Soon */}
+              <div className="relative p-6 rounded-2xl bg-gradient-to-br from-indigo-50/80 to-purple-50/50 dark:from-indigo-900/20 dark:to-purple-900/10 ring-1 ring-indigo-100 dark:ring-indigo-800/50 text-center overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-400/10 to-transparent" />
+                <FileText className="w-10 h-10 text-indigo-400 dark:text-indigo-500 mx-auto mb-3" />
+                <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
                   Payment history and receipts coming soon...
                 </p>
               </div>
