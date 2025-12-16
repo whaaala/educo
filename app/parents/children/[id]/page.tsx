@@ -609,85 +609,88 @@ export default function ChildDetailPage() {
           {/* Academics Tab */}
           {activeTab === "academics" && (
             <div className="relative space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              {/* Decorative Background Elements */}
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-indigo-400/20 via-purple-400/15 to-pink-400/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-20 -left-10 w-32 h-32 bg-gradient-to-tr from-blue-400/15 via-cyan-400/10 to-emerald-400/5 rounded-full blur-2xl pointer-events-none" />
+
+              {/* Header */}
+              <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/25">
-                    <GraduationCap className="w-5 h-5 text-white" />
+                  <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-900/30">
+                    <GraduationCap className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 dark:text-white">Subject Performance</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Current term results</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Subject Performance</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Current term results</p>
                   </div>
                 </div>
-                <button className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium text-sm shadow-lg shadow-blue-500/25 hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5">
-                  <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <Button variant="primary" size="md" className="gap-2 cursor-pointer">
+                  <Download className="w-4 h-4" />
                   Download Report
-                </button>
+                </Button>
               </div>
 
               {/* Modern Card-Based Subject List */}
-              <div className="grid gap-4">
+              <div className="relative grid gap-4">
                 {academicData?.subjectPerformance.map((subject, index) => {
                   const subjectStyle = getSubjectIcon(subject.subject);
+                  const scoreColor = subject.score >= 80
+                    ? { gradient: "from-emerald-400 to-green-500", text: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/20" }
+                    : subject.score >= 60
+                    ? { gradient: "from-blue-400 to-indigo-500", text: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-900/20" }
+                    : subject.score >= 50
+                    ? { gradient: "from-amber-400 to-orange-500", text: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-900/20" }
+                    : { gradient: "from-red-400 to-rose-500", text: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-900/20" };
+
                   return (
                     <div
                       key={subject.subject}
-                      className="group relative flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/80 dark:to-gray-800/40 hover:from-white hover:to-gray-50 dark:hover:from-gray-800 dark:hover:to-gray-700/50 hover:shadow-xl transition-all duration-300 ring-1 ring-gray-200/60 dark:ring-gray-700/50 hover:ring-gray-300 dark:hover:ring-gray-600 overflow-hidden"
+                      className="group relative flex items-center gap-4 p-5 rounded-2xl bg-white dark:bg-gray-800/80 hover:bg-gradient-to-r hover:from-white hover:to-gray-50/80 dark:hover:from-gray-800 dark:hover:to-gray-750/80 shadow-sm hover:shadow-xl transition-all duration-300 ring-1 ring-gray-200/80 dark:ring-gray-700/60 hover:ring-gray-300/80 dark:hover:ring-gray-600/80 overflow-hidden hover:-translate-y-0.5"
                       style={{ animationDelay: `${index * 30}ms` }}
                     >
-                      {/* Decorative accent */}
-                      <div className={`absolute left-0 top-0 bottom-0 w-1 ${
-                        subject.score >= 80 ? "bg-gradient-to-b from-green-400 to-emerald-500" :
-                        subject.score >= 60 ? "bg-gradient-to-b from-blue-400 to-indigo-500" :
-                        subject.score >= 50 ? "bg-gradient-to-b from-amber-400 to-orange-500" :
-                        "bg-gradient-to-b from-red-400 to-rose-500"
-                      }`} />
+                      {/* Decorative accent bar */}
+                      <div className={`absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b ${scoreColor.gradient} rounded-l-2xl`} />
+
+                      {/* Subtle hover glow */}
+                      <div className={`absolute inset-0 bg-gradient-to-r ${scoreColor.bg} to-transparent opacity-0 group-hover:opacity-40 transition-opacity duration-300 rounded-2xl`} />
 
                       {/* Subject Icon */}
-                      <div className={`p-3 rounded-xl ${subjectStyle.bg} ${subjectStyle.iconColor} shadow-sm group-hover:scale-110 transition-transform duration-300`}>
+                      <div className={`relative p-3.5 rounded-xl ${subjectStyle.bg} ${subjectStyle.iconColor} ring-1 ring-gray-200/60 dark:ring-gray-700/40 shadow-sm group-hover:scale-110 group-hover:shadow-md transition-all duration-300`}>
                         {subjectStyle.icon}
                       </div>
 
                       {/* Subject Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold text-gray-900 dark:text-white">
+                      <div className="relative flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="font-bold text-gray-900 dark:text-white text-base">
                             {subject.subject}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate italic">
-                          &quot;{subject.teacherRemarks || "No remarks"}&quot;
+                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                          <span className="italic">&quot;{subject.teacherRemarks || "No remarks"}&quot;</span>
                         </p>
                       </div>
 
                       {/* Score with Progress */}
-                      <div className="flex items-center gap-4">
-                        <div className="hidden sm:block w-36">
-                          <div className="flex items-center justify-between text-xs mb-1.5">
-                            <span className="text-gray-500 dark:text-gray-400">Score</span>
-                            <span className="font-bold text-gray-900 dark:text-white">{subject.score}%</span>
+                      <div className="relative flex items-center gap-5">
+                        <div className="hidden sm:block w-40">
+                          <div className="flex items-center justify-between text-xs mb-2">
+                            <span className="text-gray-500 dark:text-gray-400 font-medium">Score</span>
+                            <span className={`font-bold ${scoreColor.text}`}>{subject.score}%</span>
                           </div>
-                          <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div className="w-full h-2.5 bg-gray-100 dark:bg-gray-700/60 rounded-full overflow-hidden ring-1 ring-gray-200/50 dark:ring-gray-700/30">
                             <div
-                              className={`h-full rounded-full transition-all duration-700 ease-out ${
-                                subject.score >= 80
-                                  ? "bg-gradient-to-r from-green-400 to-emerald-500"
-                                  : subject.score >= 60
-                                  ? "bg-gradient-to-r from-blue-400 to-indigo-500"
-                                  : subject.score >= 50
-                                  ? "bg-gradient-to-r from-amber-400 to-orange-500"
-                                  : "bg-gradient-to-r from-red-400 to-rose-500"
-                              }`}
+                              className={`h-full rounded-full bg-gradient-to-r ${scoreColor.gradient} transition-all duration-700 ease-out shadow-sm`}
                               style={{ width: `${subject.score}%` }}
                             />
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg font-bold text-gray-900 dark:text-white sm:hidden">
+                        <div className="flex items-center gap-3">
+                          <span className={`text-lg font-bold ${scoreColor.text} sm:hidden`}>
                             {subject.score}%
                           </span>
-                          <span className={`px-4 py-2 rounded-xl text-sm font-bold shadow-sm ${getGradeColor(subject.grade)}`}>
+                          <span className={`px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm ring-1 ring-inset ${getGradeColor(subject.grade)}`}>
                             {subject.grade}
                           </span>
                         </div>
@@ -699,18 +702,23 @@ export default function ChildDetailPage() {
 
               {/* Conduct Grade */}
               {academicData?.conductGrade && (
-                <div className="relative flex items-center justify-between p-5 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 dark:from-purple-900/20 dark:via-indigo-900/15 dark:to-blue-900/20 ring-1 ring-purple-200/60 dark:ring-purple-800/50 overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-400/10 to-transparent" />
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/25">
-                      <Award className="w-5 h-5 text-white" />
+                <div className="relative flex items-center justify-between p-6 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50/80 to-blue-50/60 dark:from-purple-900/30 dark:via-indigo-900/20 dark:to-blue-900/15 ring-1 ring-purple-200/60 dark:ring-purple-700/40 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group">
+                  {/* Decorative elements */}
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-purple-400/15 via-indigo-400/10 to-transparent rounded-full blur-2xl" />
+                  <div className="absolute bottom-0 left-1/4 w-24 h-24 bg-gradient-to-tr from-blue-400/10 to-transparent rounded-full blur-xl" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-transparent to-transparent dark:from-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                  <div className="relative flex items-center gap-4">
+                    <div className="relative p-3.5 rounded-2xl bg-gradient-to-br from-purple-100 via-indigo-50 to-blue-50 dark:from-purple-900/50 dark:via-indigo-900/40 dark:to-blue-900/30 ring-1 ring-purple-200/60 dark:ring-purple-700/40 shadow-sm group-hover:scale-105 transition-transform">
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/60 to-transparent dark:from-white/5" />
+                      <Award className="relative w-6 h-6 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div>
-                      <span className="font-bold text-gray-900 dark:text-white">Conduct Grade</span>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Overall behavior assessment</p>
+                      <span className="font-bold text-lg text-gray-900 dark:text-white">Conduct Grade</span>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Overall behavior assessment</p>
                     </div>
                   </div>
-                  <span className={`px-5 py-2.5 rounded-xl text-lg font-bold shadow-sm ${getGradeColor(academicData.conductGrade)}`}>
+                  <span className={`relative px-6 py-3 rounded-2xl text-xl font-bold shadow-md ring-1 ring-inset ${getGradeColor(academicData.conductGrade)}`}>
                     {academicData.conductGrade}
                   </span>
                 </div>
@@ -721,116 +729,137 @@ export default function ChildDetailPage() {
           {/* Attendance Tab */}
           {activeTab === "attendance" && (
             <div className="relative space-y-6">
+              {/* Decorative Background Elements */}
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-emerald-400/15 via-green-400/10 to-teal-400/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-20 -left-10 w-32 h-32 bg-gradient-to-tr from-blue-400/10 via-cyan-400/5 to-transparent rounded-full blur-2xl pointer-events-none" />
+
               {/* Header */}
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/25">
-                  <CheckCircle2 className="w-5 h-5 text-white" />
+                <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/30">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 dark:text-white">Attendance Summary</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Current term attendance record</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Attendance Summary</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Current term attendance record</p>
                 </div>
               </div>
 
               {/* Stat Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="relative p-5 rounded-2xl bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/30 dark:to-green-800/20 group hover:shadow-lg transition-all duration-300 ring-1 ring-green-100 dark:ring-green-800/50 overflow-hidden">
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-green-400/10 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+                {/* Days Present */}
+                <div className="group relative p-5 rounded-2xl bg-white dark:bg-gray-800/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700/60 hover:ring-emerald-200 dark:hover:ring-emerald-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-green-500 rounded-l-2xl" />
+                  <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-bl from-emerald-100/60 dark:from-emerald-900/30 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2.5 rounded-xl bg-green-100 dark:bg-green-900/50 ring-1 ring-green-200 dark:ring-green-700 shadow-sm group-hover:scale-110 transition-transform">
-                        <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/40 group-hover:scale-110 transition-transform duration-300">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                       </div>
                     </div>
-                    <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
+                    <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1 tracking-tight">
                       {attendanceData?.present}
                     </p>
-                    <p className="text-xs font-semibold text-green-600/70 dark:text-green-400/70 uppercase tracking-wide">Days Present</p>
+                    <p className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-widest">Days Present</p>
                   </div>
                 </div>
 
-                <div className="relative p-5 rounded-2xl bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/30 dark:to-red-800/20 group hover:shadow-lg transition-all duration-300 ring-1 ring-red-100 dark:ring-red-800/50 overflow-hidden">
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-red-400/10 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+                {/* Days Absent */}
+                <div className="group relative p-5 rounded-2xl bg-white dark:bg-gray-800/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700/60 hover:ring-rose-200 dark:hover:ring-rose-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-rose-400 to-red-500 rounded-l-2xl" />
+                  <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-bl from-rose-100/60 dark:from-rose-900/30 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2.5 rounded-xl bg-red-100 dark:bg-red-900/50 ring-1 ring-red-200 dark:ring-red-700 shadow-sm group-hover:scale-110 transition-transform">
-                        <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-900/40 group-hover:scale-110 transition-transform duration-300">
+                        <AlertCircle className="w-4 h-4 text-rose-500 dark:text-rose-400" />
                       </div>
                     </div>
-                    <p className="text-3xl font-bold text-red-600 dark:text-red-400 mb-1">
+                    <p className="text-3xl font-bold text-rose-600 dark:text-rose-400 mb-1 tracking-tight">
                       {attendanceData?.absent}
                     </p>
-                    <p className="text-xs font-semibold text-red-600/70 dark:text-red-400/70 uppercase tracking-wide">Days Absent</p>
+                    <p className="text-[10px] font-bold text-rose-600/70 dark:text-rose-400/70 uppercase tracking-widest">Days Absent</p>
                   </div>
                 </div>
 
-                <div className="relative p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/30 dark:to-amber-800/20 group hover:shadow-lg transition-all duration-300 ring-1 ring-amber-100 dark:ring-amber-800/50 overflow-hidden">
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-amber-400/10 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+                {/* Times Late */}
+                <div className="group relative p-5 rounded-2xl bg-white dark:bg-gray-800/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700/60 hover:ring-amber-200 dark:hover:ring-amber-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-amber-400 to-orange-500 rounded-l-2xl" />
+                  <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-bl from-amber-100/60 dark:from-amber-900/30 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-900/50 ring-1 ring-amber-200 dark:ring-amber-700 shadow-sm group-hover:scale-110 transition-transform">
-                        <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/40 group-hover:scale-110 transition-transform duration-300">
+                        <Clock className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                       </div>
                     </div>
-                    <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mb-1">
+                    <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mb-1 tracking-tight">
                       {attendanceData?.late}
                     </p>
-                    <p className="text-xs font-semibold text-amber-600/70 dark:text-amber-400/70 uppercase tracking-wide">Times Late</p>
+                    <p className="text-[10px] font-bold text-amber-600/70 dark:text-amber-400/70 uppercase tracking-widest">Times Late</p>
                   </div>
                 </div>
 
-                <div className="relative p-5 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/30 dark:to-blue-800/20 group hover:shadow-lg transition-all duration-300 ring-1 ring-blue-100 dark:ring-blue-800/50 overflow-hidden">
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-blue-400/10 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+                {/* Attendance Rate */}
+                <div className="group relative p-5 rounded-2xl bg-white dark:bg-gray-800/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700/60 hover:ring-blue-200 dark:hover:ring-blue-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 to-indigo-500 rounded-l-2xl" />
+                  <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-bl from-blue-100/60 dark:from-blue-900/30 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-900/50 ring-1 ring-blue-200 dark:ring-blue-700 shadow-sm group-hover:scale-110 transition-transform">
-                        <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/40 group-hover:scale-110 transition-transform duration-300">
+                        <TrendingUp className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                       </div>
                     </div>
-                    <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                    <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1 tracking-tight">
                       {attendanceData?.rate}%
                     </p>
-                    <p className="text-xs font-semibold text-blue-600/70 dark:text-blue-400/70 uppercase tracking-wide">Attendance Rate</p>
+                    <p className="text-[10px] font-bold text-blue-600/70 dark:text-blue-400/70 uppercase tracking-widest">Attendance Rate</p>
                   </div>
                 </div>
               </div>
 
               {/* Progress Visualization */}
-              <div className="p-5 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 ring-1 ring-gray-200/50 dark:ring-gray-700/50">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="font-semibold text-gray-900 dark:text-white">Attendance Progress</span>
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    {attendanceData?.present} of {attendanceData?.total} days
-                  </span>
-                </div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-green-400 via-green-500 to-emerald-500 rounded-full transition-all duration-500 relative"
-                    style={{ width: `${attendanceData?.rate || 0}%` }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
+              <div className="relative p-6 rounded-2xl bg-white dark:bg-gray-800/80 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700/60 overflow-hidden">
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-bl from-emerald-100/40 dark:from-emerald-900/20 to-transparent rounded-full blur-2xl" />
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-5">
+                    <span className="font-semibold text-gray-900 dark:text-white">Attendance Progress</span>
+                    <span className="px-3 py-1 rounded-lg bg-gray-100 dark:bg-gray-700/60 text-sm font-medium text-gray-600 dark:text-gray-300">
+                      {attendanceData?.present} of {attendanceData?.total} days
+                    </span>
                   </div>
-                </div>
-                <div className="flex justify-between mt-2 text-xs font-medium text-gray-500 dark:text-gray-400">
-                  <span>0%</span>
-                  <span className={`font-bold ${(attendanceData?.rate || 0) >= 80 ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                    {attendanceData?.rate}% Overall
-                  </span>
-                  <span>100%</span>
+                  <div className="h-3 bg-gray-100 dark:bg-gray-700/60 rounded-full overflow-hidden ring-1 ring-gray-200/50 dark:ring-gray-600/30">
+                    <div
+                      className="h-full bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500 rounded-full transition-all duration-700 ease-out relative"
+                      style={{ width: `${attendanceData?.rate || 0}%` }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/30 via-white/10 to-transparent" />
+                      <div className="absolute right-0 top-0 bottom-0 w-1 bg-white/40 rounded-full" />
+                    </div>
+                  </div>
+                  <div className="flex justify-between mt-3 text-xs font-medium text-gray-400 dark:text-gray-500">
+                    <span>0%</span>
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                      (attendanceData?.rate || 0) >= 80
+                        ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                    }`}>
+                      {attendanceData?.rate}% Overall
+                    </span>
+                    <span>100%</span>
+                  </div>
                 </div>
               </div>
 
               {/* Coming Soon */}
-              <div className="relative p-6 rounded-2xl bg-gradient-to-br from-indigo-50/80 to-purple-50/50 dark:from-indigo-900/20 dark:to-purple-900/10 ring-1 ring-indigo-100 dark:ring-indigo-800/50 text-center overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-400/10 to-transparent" />
-                <Calendar className="w-10 h-10 text-indigo-400 dark:text-indigo-500 mx-auto mb-3" />
-                <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
-                  Detailed attendance calendar coming soon...
-                </p>
+              <div className="relative p-8 rounded-2xl bg-gradient-to-br from-indigo-50/80 via-purple-50/50 to-blue-50/30 dark:from-indigo-900/20 dark:via-purple-900/15 dark:to-blue-900/10 ring-1 ring-indigo-100/80 dark:ring-indigo-800/40 text-center overflow-hidden group hover:shadow-lg transition-all duration-300">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-indigo-200/30 via-purple-200/20 to-transparent rounded-full blur-2xl" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-blue-200/20 to-transparent rounded-full blur-xl" />
+                <div className="relative">
+                  <div className="inline-flex p-4 rounded-2xl bg-white/60 dark:bg-gray-800/40 ring-1 ring-indigo-100 dark:ring-indigo-800/30 shadow-sm mb-4 group-hover:scale-105 transition-transform duration-300">
+                    <Calendar className="w-8 h-8 text-indigo-500 dark:text-indigo-400" />
+                  </div>
+                  <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                    Detailed attendance calendar coming soon...
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -838,84 +867,97 @@ export default function ChildDetailPage() {
           {/* Fees Tab */}
           {activeTab === "fees" && (
             <div className="relative space-y-6">
+              {/* Decorative Background Elements */}
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-emerald-400/15 via-teal-400/10 to-cyan-400/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-20 -left-10 w-32 h-32 bg-gradient-to-tr from-blue-400/10 via-indigo-400/5 to-transparent rounded-full blur-2xl pointer-events-none" />
+
               {/* Header */}
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/25">
-                  <CreditCard className="w-5 h-5 text-white" />
+                <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/30">
+                  <CreditCard className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 dark:text-white">Fee Summary</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Current term fee status</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Fee Summary</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Current term fee status</p>
                 </div>
               </div>
 
               {/* Fee Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="relative p-5 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/30 dark:to-blue-800/20 group hover:shadow-lg transition-all duration-300 ring-1 ring-blue-100 dark:ring-blue-800/50 overflow-hidden">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-blue-400/10 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+                {/* Total Fees */}
+                <div className="group relative p-5 rounded-2xl bg-white dark:bg-gray-800/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700/60 hover:ring-blue-200 dark:hover:ring-blue-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 to-indigo-500 rounded-l-2xl" />
+                  <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-bl from-blue-100/60 dark:from-blue-900/30 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-900/50 ring-1 ring-blue-200 dark:ring-blue-700 shadow-sm">
-                        <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/40 group-hover:scale-110 transition-transform duration-300">
+                        <FileText className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                       </div>
-                      <p className="text-xs font-semibold text-blue-600/70 dark:text-blue-400/70 uppercase tracking-wide">Total Fees</p>
+                      <p className="text-[10px] font-bold text-blue-600/70 dark:text-blue-400/70 uppercase tracking-widest">Total Fees</p>
                     </div>
-                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 tracking-tight">
                       {formatCurrency(feeData?.total || 0, countryCode)}
                     </p>
                   </div>
                 </div>
 
-                <div className="relative p-5 rounded-2xl bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/30 dark:to-green-800/20 group hover:shadow-lg transition-all duration-300 ring-1 ring-green-100 dark:ring-green-800/50 overflow-hidden">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-green-400/10 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+                {/* Amount Paid */}
+                <div className="group relative p-5 rounded-2xl bg-white dark:bg-gray-800/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700/60 hover:ring-emerald-200 dark:hover:ring-emerald-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-green-500 rounded-l-2xl" />
+                  <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-bl from-emerald-100/60 dark:from-emerald-900/30 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2.5 rounded-xl bg-green-100 dark:bg-green-900/50 ring-1 ring-green-200 dark:ring-green-700 shadow-sm">
-                        <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/40 group-hover:scale-110 transition-transform duration-300">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                       </div>
-                      <p className="text-xs font-semibold text-green-600/70 dark:text-green-400/70 uppercase tracking-wide">Amount Paid</p>
+                      <p className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-widest">Amount Paid</p>
                     </div>
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">
                       {formatCurrency(feeData?.paid || 0, countryCode)}
                     </p>
                   </div>
                 </div>
 
-                <div className={`relative p-5 rounded-2xl group hover:shadow-lg transition-all duration-300 overflow-hidden ${
+                {/* Balance Due */}
+                <div className={`group relative p-5 rounded-2xl bg-white dark:bg-gray-800/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700/60 overflow-hidden transition-all duration-300 hover:-translate-y-0.5 ${
                   (feeData?.balance || 0) > 0
-                    ? "bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/30 dark:to-red-800/20 ring-1 ring-red-100 dark:ring-red-800/50"
-                    : "bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/30 dark:to-emerald-800/20 ring-1 ring-emerald-100 dark:ring-emerald-800/50"
+                    ? "hover:ring-rose-200 dark:hover:ring-rose-700/50"
+                    : "hover:ring-emerald-200 dark:hover:ring-emerald-700/50"
                 }`}>
-                  <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl to-transparent ${
-                    (feeData?.balance || 0) > 0 ? "from-red-400/10" : "from-emerald-400/10"
+                  <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${
+                    (feeData?.balance || 0) > 0
+                      ? "bg-gradient-to-b from-rose-400 to-red-500"
+                      : "bg-gradient-to-b from-emerald-400 to-green-500"
                   }`} />
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+                  <div className={`absolute -top-6 -right-6 w-24 h-24 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity ${
+                    (feeData?.balance || 0) > 0
+                      ? "bg-gradient-to-bl from-rose-100/60 dark:from-rose-900/30 to-transparent"
+                      : "bg-gradient-to-bl from-emerald-100/60 dark:from-emerald-900/30 to-transparent"
+                  }`} />
                   <div className="relative">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className={`p-2.5 rounded-xl ring-1 shadow-sm ${
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className={`p-2 rounded-lg group-hover:scale-110 transition-transform duration-300 ${
                         (feeData?.balance || 0) > 0
-                          ? "bg-red-100 dark:bg-red-900/50 ring-red-200 dark:ring-red-700"
-                          : "bg-emerald-100 dark:bg-emerald-900/50 ring-emerald-200 dark:ring-emerald-700"
+                          ? "bg-rose-50 dark:bg-rose-900/40"
+                          : "bg-emerald-50 dark:bg-emerald-900/40"
                       }`}>
                         {(feeData?.balance || 0) > 0 ? (
-                          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                          <AlertCircle className="w-4 h-4 text-rose-500 dark:text-rose-400" />
                         ) : (
-                          <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                         )}
                       </div>
-                      <p className={`text-xs font-semibold uppercase tracking-wide ${
+                      <p className={`text-[10px] font-bold uppercase tracking-widest ${
                         (feeData?.balance || 0) > 0
-                          ? "text-red-600/70 dark:text-red-400/70"
+                          ? "text-rose-600/70 dark:text-rose-400/70"
                           : "text-emerald-600/70 dark:text-emerald-400/70"
                       }`}>
                         {(feeData?.balance || 0) > 0 ? "Balance Due" : "Fully Paid"}
                       </p>
                     </div>
-                    <p className={`text-2xl font-bold ${
+                    <p className={`text-2xl font-bold tracking-tight ${
                       (feeData?.balance || 0) > 0
-                        ? "text-red-600 dark:text-red-400"
+                        ? "text-rose-600 dark:text-rose-400"
                         : "text-emerald-600 dark:text-emerald-400"
                     }`}>
                       {formatCurrency(feeData?.balance || 0, countryCode)}
@@ -925,23 +967,31 @@ export default function ChildDetailPage() {
               </div>
 
               {/* Payment Progress */}
-              <div className="p-5 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 ring-1 ring-gray-200/50 dark:ring-gray-700/50">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="font-semibold text-gray-900 dark:text-white">Payment Progress</span>
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    {Math.round(((feeData?.paid || 0) / (feeData?.total || 1)) * 100)}% Complete
-                  </span>
-                </div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 relative ${
-                      (feeData?.balance || 0) > 0
-                        ? "bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500"
-                        : "bg-gradient-to-r from-green-400 via-green-500 to-emerald-500"
-                    }`}
-                    style={{ width: `${((feeData?.paid || 0) / (feeData?.total || 1)) * 100}%` }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
+              <div className="relative p-6 rounded-2xl bg-white dark:bg-gray-800/80 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700/60 overflow-hidden">
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-bl from-emerald-100/40 dark:from-emerald-900/20 to-transparent rounded-full blur-2xl" />
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-5">
+                    <span className="font-semibold text-gray-900 dark:text-white">Payment Progress</span>
+                    <span className={`px-3 py-1 rounded-lg text-sm font-medium ${
+                      ((feeData?.paid || 0) / (feeData?.total || 1)) * 100 >= 100
+                        ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
+                        : "bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300"
+                    }`}>
+                      {Math.round(((feeData?.paid || 0) / (feeData?.total || 1)) * 100)}% Complete
+                    </span>
+                  </div>
+                  <div className="h-3 bg-gray-100 dark:bg-gray-700/60 rounded-full overflow-hidden ring-1 ring-gray-200/50 dark:ring-gray-600/30">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ease-out relative ${
+                        (feeData?.balance || 0) > 0
+                          ? "bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500"
+                          : "bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500"
+                      }`}
+                      style={{ width: `${((feeData?.paid || 0) / (feeData?.total || 1)) * 100}%` }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/30 via-white/10 to-transparent" />
+                      <div className="absolute right-0 top-0 bottom-0 w-1 bg-white/40 rounded-full" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -950,35 +1000,46 @@ export default function ChildDetailPage() {
               {(feeData?.balance || 0) > 0 && (
                 <Link
                   href={`/parents/fees/pay?child=${child.id}`}
-                  className="group relative flex items-center justify-center gap-3 w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 overflow-hidden"
+                  className="group relative flex items-center justify-center gap-3 w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:via-green-600 hover:to-teal-600 text-white font-semibold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:-translate-y-0.5 overflow-hidden"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <CreditCard className="w-5 h-5 relative z-10" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:200%_100%] animate-shimmer opacity-0 group-hover:opacity-100" />
+                  <CreditCard className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform" />
                   <span className="relative z-10">Pay Outstanding Balance ({formatCurrency(feeData?.balance || 0, countryCode)})</span>
                 </Link>
               )}
 
               {/* Cleared Status */}
               {(feeData?.balance || 0) === 0 && (
-                <div className="relative p-6 rounded-2xl bg-gradient-to-br from-emerald-50/80 to-green-50/50 dark:from-emerald-900/20 dark:to-green-900/10 ring-1 ring-emerald-100 dark:ring-emerald-800/50 text-center overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-emerald-400/10 to-transparent" />
-                  <CheckCircle2 className="w-12 h-12 text-emerald-500 dark:text-emerald-400 mx-auto mb-3" />
-                  <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
-                    All Fees Cleared!
-                  </p>
-                  <p className="text-sm text-emerald-600/70 dark:text-emerald-400/60 mt-1">
-                    This student has no outstanding balance.
-                  </p>
+                <div className="relative p-8 rounded-2xl bg-gradient-to-br from-emerald-50/80 via-green-50/50 to-teal-50/30 dark:from-emerald-900/20 dark:via-green-900/15 dark:to-teal-900/10 ring-1 ring-emerald-100/80 dark:ring-emerald-800/40 text-center overflow-hidden group hover:shadow-lg transition-all duration-300">
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-emerald-200/30 via-green-200/20 to-transparent rounded-full blur-2xl" />
+                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-teal-200/20 to-transparent rounded-full blur-xl" />
+                  <div className="relative">
+                    <div className="inline-flex p-4 rounded-2xl bg-white/60 dark:bg-gray-800/40 ring-1 ring-emerald-100 dark:ring-emerald-800/30 shadow-sm mb-4 group-hover:scale-105 transition-transform duration-300">
+                      <CheckCircle2 className="w-10 h-10 text-emerald-500 dark:text-emerald-400" />
+                    </div>
+                    <p className="text-xl font-bold text-emerald-700 dark:text-emerald-400">
+                      All Fees Cleared!
+                    </p>
+                    <p className="text-sm text-emerald-600/70 dark:text-emerald-400/60 mt-2">
+                      This student has no outstanding balance.
+                    </p>
+                  </div>
                 </div>
               )}
 
               {/* Coming Soon */}
-              <div className="relative p-6 rounded-2xl bg-gradient-to-br from-indigo-50/80 to-purple-50/50 dark:from-indigo-900/20 dark:to-purple-900/10 ring-1 ring-indigo-100 dark:ring-indigo-800/50 text-center overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-400/10 to-transparent" />
-                <FileText className="w-10 h-10 text-indigo-400 dark:text-indigo-500 mx-auto mb-3" />
-                <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
-                  Payment history and receipts coming soon...
-                </p>
+              <div className="relative p-8 rounded-2xl bg-gradient-to-br from-indigo-50/80 via-purple-50/50 to-blue-50/30 dark:from-indigo-900/20 dark:via-purple-900/15 dark:to-blue-900/10 ring-1 ring-indigo-100/80 dark:ring-indigo-800/40 text-center overflow-hidden group hover:shadow-lg transition-all duration-300">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-indigo-200/30 via-purple-200/20 to-transparent rounded-full blur-2xl" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-blue-200/20 to-transparent rounded-full blur-xl" />
+                <div className="relative">
+                  <div className="inline-flex p-4 rounded-2xl bg-white/60 dark:bg-gray-800/40 ring-1 ring-indigo-100 dark:ring-indigo-800/30 shadow-sm mb-4 group-hover:scale-105 transition-transform duration-300">
+                    <FileText className="w-8 h-8 text-indigo-500 dark:text-indigo-400" />
+                  </div>
+                  <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                    Payment history and receipts coming soon...
+                  </p>
+                </div>
               </div>
             </div>
           )}
