@@ -167,6 +167,12 @@ export interface BrandingConfiguration {
   // Transcript Design (from existing TenantTranscriptConfig)
   transcriptDesign?: TranscriptDesignConfig;
   signatures?: SignatureConfig;
+
+  // Report Card Design Configuration
+  reportCardConfig?: ReportCardConfig;
+
+  // Transcript Design Configuration
+  transcriptConfig?: TranscriptConfig;
 }
 
 /**
@@ -194,9 +200,398 @@ export interface SignatureConfig {
   principalName: string;
   principalTitle: string;
   principalSignature?: string; // Image URL
+  classTeacherTitle?: string; // e.g., "Class Teacher" or "Form Master"
   showOfficialSeal: boolean;
   sealImage?: string; // Image URL
 }
+
+/**
+ * Report Card Design Configuration
+ * Controls the appearance and content of report cards at tenant level
+ */
+export interface ReportCardConfig {
+  // Template & Layout
+  template: "standard" | "detailed" | "compact" | "modern";
+  paperSize: "A4" | "Letter";
+  orientation: "portrait" | "landscape";
+
+  // Header Configuration
+  header: {
+    showLogo: boolean;
+    logoPosition: "left" | "center" | "right";
+    showMotto: boolean;
+    showAddress: boolean;
+    showContact: boolean;
+    backgroundColor?: string; // Override primary color for header
+  };
+
+  // Student Info Section
+  studentInfo: {
+    showPhoto: boolean;
+    showAdmissionNumber: boolean;
+    showClass: boolean;
+    showSection: boolean;
+    showGender: boolean;
+    showDateOfBirth: boolean;
+    showAttendanceSummary: boolean;
+    showClassRank: boolean;
+  };
+
+  // Academic Performance Section
+  academicSection: {
+    showMaxScore: boolean;
+    showGradeBadge: boolean;
+    showRemarks: boolean;
+    showSubjectPosition: boolean;
+    gradeDisplayFormat: "letter" | "percentage" | "both";
+    sortSubjectsBy: "alphabetical" | "score" | "custom";
+    showTotalRow: boolean;
+    showAverageRow: boolean;
+  };
+
+  // Overall Performance Section
+  overallSection: {
+    showOverallGrade: boolean;
+    showPercentage: boolean;
+    showTotalMarks: boolean;
+    showClassAverage: boolean;
+    showGradeDescription: boolean;
+  };
+
+  // Conduct & Behavior Section
+  conductSection: {
+    enabled: boolean;
+    showBehavior: boolean;
+    showDiscipline: boolean;
+    showParticipation: boolean;
+    showPunctuality: boolean;
+    showNeatness: boolean;
+    customFields?: string[]; // Additional conduct fields
+  };
+
+  // Attendance Section
+  attendanceSection: {
+    enabled: boolean;
+    showDaysPresent: boolean;
+    showDaysAbsent: boolean;
+    showDaysLate: boolean;
+    showAttendanceRate: boolean;
+  };
+
+  // Remarks Section
+  remarksSection: {
+    showTeacherRemarks: boolean;
+    showPrincipalRemarks: boolean;
+    showCustomRemarks: boolean;
+    customRemarksLabel?: string; // e.g., "Head of Department's Remarks"
+  };
+
+  // Signatures Section
+  signaturesSection: {
+    showClassTeacher: boolean;
+    showPrincipal: boolean;
+    showParentGuardian: boolean;
+    showDateField: boolean;
+    showOfficialSeal: boolean;
+  };
+
+  // Footer Configuration
+  footer: {
+    showFooter: boolean;
+    showGeneratedDate: boolean;
+    showSchoolName: boolean;
+    customText?: string; // e.g., "This is an official document"
+  };
+
+  // Grading Scale (displayed on report card)
+  gradingScale: {
+    showOnCard: boolean;
+    position: "top" | "bottom" | "sidebar";
+    scale: GradeScaleItem[];
+  };
+
+  // Additional Options
+  options: {
+    showWatermark: boolean;
+    watermarkText?: string;
+    showQRCode: boolean;
+    qrCodeContent?: "verification" | "student-profile" | "custom";
+    showBorder: boolean;
+    borderStyle: "solid" | "double" | "decorative" | "none";
+  };
+}
+
+/**
+ * Grade Scale Item for display on report cards
+ */
+export interface GradeScaleItem {
+  grade: string; // e.g., "A"
+  minScore: number; // e.g., 80
+  maxScore: number; // e.g., 100
+  description: string; // e.g., "Excellent"
+  color?: string; // e.g., "#16a34a"
+}
+
+/**
+ * Default Report Card Configuration
+ * Used when tenant doesn't have custom config
+ */
+export const DEFAULT_REPORT_CARD_CONFIG: ReportCardConfig = {
+  template: "modern",
+  paperSize: "A4",
+  orientation: "portrait",
+  header: {
+    showLogo: true,
+    logoPosition: "center",
+    showMotto: true,
+    showAddress: true,
+    showContact: true,
+  },
+  studentInfo: {
+    showPhoto: false,
+    showAdmissionNumber: true,
+    showClass: true,
+    showSection: true,
+    showGender: true,
+    showDateOfBirth: false,
+    showAttendanceSummary: true,
+    showClassRank: true,
+  },
+  academicSection: {
+    showMaxScore: true,
+    showGradeBadge: true,
+    showRemarks: true,
+    showSubjectPosition: false,
+    gradeDisplayFormat: "letter",
+    sortSubjectsBy: "alphabetical",
+    showTotalRow: true,
+    showAverageRow: false,
+  },
+  overallSection: {
+    showOverallGrade: true,
+    showPercentage: true,
+    showTotalMarks: true,
+    showClassAverage: false,
+    showGradeDescription: true,
+  },
+  conductSection: {
+    enabled: true,
+    showBehavior: true,
+    showDiscipline: true,
+    showParticipation: true,
+    showPunctuality: false,
+    showNeatness: false,
+  },
+  attendanceSection: {
+    enabled: true,
+    showDaysPresent: true,
+    showDaysAbsent: true,
+    showDaysLate: true,
+    showAttendanceRate: true,
+  },
+  remarksSection: {
+    showTeacherRemarks: true,
+    showPrincipalRemarks: true,
+    showCustomRemarks: false,
+  },
+  signaturesSection: {
+    showClassTeacher: true,
+    showPrincipal: true,
+    showParentGuardian: true,
+    showDateField: false,
+    showOfficialSeal: false,
+  },
+  footer: {
+    showFooter: true,
+    showGeneratedDate: true,
+    showSchoolName: true,
+  },
+  gradingScale: {
+    showOnCard: false,
+    position: "bottom",
+    scale: [
+      { grade: "A", minScore: 80, maxScore: 100, description: "Excellent", color: "#16a34a" },
+      { grade: "B", minScore: 70, maxScore: 79, description: "Very Good", color: "#2563eb" },
+      { grade: "C", minScore: 60, maxScore: 69, description: "Good", color: "#ca8a04" },
+      { grade: "D", minScore: 50, maxScore: 59, description: "Satisfactory", color: "#ea580c" },
+      { grade: "F", minScore: 0, maxScore: 49, description: "Needs Improvement", color: "#dc2626" },
+    ],
+  },
+  options: {
+    showWatermark: false,
+    showQRCode: false,
+    showBorder: true,
+    borderStyle: "solid",
+  },
+};
+
+/**
+ * Transcript Design Configuration
+ * Controls the appearance and content of academic transcripts at tenant level
+ */
+export interface TranscriptConfig {
+  // Template & Layout
+  template: "classic" | "modern" | "minimal" | "formal";
+  paperSize: "A4" | "Letter";
+  orientation: "portrait" | "landscape";
+
+  // Header Configuration
+  header: {
+    showLogo: boolean;
+    logoPosition: "left" | "center" | "right";
+    headerStyle: "centered" | "left-aligned" | "logo-left" | "logo-right";
+    showMotto: boolean;
+    showAddress: boolean;
+    showContact: boolean;
+    backgroundColor?: string;
+  };
+
+  // Student Info Section
+  studentInfo: {
+    showPhoto: boolean;
+    showAdmissionNumber: boolean;
+    showClass: boolean;
+    showDateOfBirth: boolean;
+    showGender: boolean;
+    showNationality: boolean;
+    showStateOfOrigin: boolean;
+    showGraduationYear: boolean;
+  };
+
+  // Academic Records Section
+  academicSection: {
+    showTermGPA: boolean;
+    showTermAverage: boolean;
+    showPosition: boolean;
+    showCreditHours: boolean;
+    showGradePoints: boolean;
+    showRemarks: boolean;
+    gradeDisplayFormat: "letter" | "percentage" | "gpa" | "both";
+    showAttendance: boolean;
+    showConduct: boolean;
+  };
+
+  // Summary Section
+  summarySection: {
+    showOverallGPA: boolean;
+    showOverallAverage: boolean;
+    showTotalCredits: boolean;
+    showClassification: boolean;
+    showTermsCompleted: boolean;
+  };
+
+  // Grading Scale Section
+  gradingScale: {
+    showOnTranscript: boolean;
+    position: "top" | "bottom" | "sidebar";
+    showSecondaryScale: boolean;
+    showTertiaryScale: boolean;
+    showClassification: boolean;
+  };
+
+  // Signatures Section
+  signaturesSection: {
+    showRegistrar: boolean;
+    showPrincipal: boolean;
+    showDean: boolean;
+    showOfficialSeal: boolean;
+    showDate: boolean;
+  };
+
+  // Footer Configuration
+  footer: {
+    showFooter: boolean;
+    showIssueDate: boolean;
+    showPageNumbers: boolean;
+    showVerificationCode: boolean;
+    customText?: string;
+  };
+
+  // Additional Options
+  options: {
+    showWatermark: boolean;
+    watermarkText?: string;
+    showQRCode: boolean;
+    qrCodeContent?: "verification" | "student-profile" | "custom";
+    showBorder: boolean;
+    borderStyle: "solid" | "double" | "decorative" | "none";
+    fontFamily?: string;
+  };
+}
+
+/**
+ * Default Transcript Configuration
+ * Used when tenant doesn't have custom config
+ */
+export const DEFAULT_TRANSCRIPT_CONFIG: TranscriptConfig = {
+  template: "modern",
+  paperSize: "A4",
+  orientation: "portrait",
+  header: {
+    showLogo: true,
+    logoPosition: "center",
+    headerStyle: "centered",
+    showMotto: true,
+    showAddress: true,
+    showContact: true,
+  },
+  studentInfo: {
+    showPhoto: false,
+    showAdmissionNumber: true,
+    showClass: true,
+    showDateOfBirth: false,
+    showGender: true,
+    showNationality: false,
+    showStateOfOrigin: false,
+    showGraduationYear: true,
+  },
+  academicSection: {
+    showTermGPA: true,
+    showTermAverage: true,
+    showPosition: true,
+    showCreditHours: true,
+    showGradePoints: true,
+    showRemarks: true,
+    gradeDisplayFormat: "both",
+    showAttendance: true,
+    showConduct: true,
+  },
+  summarySection: {
+    showOverallGPA: true,
+    showOverallAverage: true,
+    showTotalCredits: true,
+    showClassification: true,
+    showTermsCompleted: true,
+  },
+  gradingScale: {
+    showOnTranscript: true,
+    position: "bottom",
+    showSecondaryScale: true,
+    showTertiaryScale: true,
+    showClassification: true,
+  },
+  signaturesSection: {
+    showRegistrar: true,
+    showPrincipal: true,
+    showDean: false,
+    showOfficialSeal: true,
+    showDate: true,
+  },
+  footer: {
+    showFooter: true,
+    showIssueDate: true,
+    showPageNumbers: true,
+    showVerificationCode: true,
+  },
+  options: {
+    showWatermark: true,
+    watermarkText: "OFFICIAL",
+    showQRCode: true,
+    qrCodeContent: "verification",
+    showBorder: true,
+    borderStyle: "solid",
+  },
+};
 
 /**
  * Bank Account Settings

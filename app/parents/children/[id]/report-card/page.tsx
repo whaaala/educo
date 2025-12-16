@@ -756,6 +756,7 @@ export default function ReportCardPage() {
             // School Info
             schoolName={currentTenant?.name || settings.schoolName}
             schoolMotto={currentTenant?.branding?.motto}
+            schoolLogo={currentTenant?.branding?.logo}
             schoolAddress={{
               line1: currentTenant?.contact?.address?.line1 || "123 Education Avenue",
               city: currentTenant?.contact?.address?.city || "Lagos",
@@ -769,12 +770,15 @@ export default function ReportCardPage() {
             secondaryColor={secondaryColor}
             principalName={currentTenant?.branding?.signatures?.principalName || "Principal"}
             principalTitle={currentTenant?.branding?.signatures?.principalTitle || "Principal"}
+            classTeacherTitle={currentTenant?.branding?.signatures?.classTeacherTitle}
             // Student Info
             studentName={child.fullName}
             admissionNumber={child.admissionNumber}
             classLevel={child.classLevel}
             section={child.section}
             gender={child.gender}
+            dateOfBirth={child.dateOfBirth}
+            studentPhoto={child.profilePhoto}
             // Academic Info
             term={selectedTerm}
             academicYear={selectedYear}
@@ -794,6 +798,8 @@ export default function ReportCardPage() {
               behavior: "Excellent",
               discipline: "Very Good",
               participation: "Excellent",
+              punctuality: "Good",
+              neatness: "Excellent",
             }}
             teacherRemarks={academicData?.overallRemarks}
             principalRemarks="Congratulations on your achievement. Keep up the excellent work!"
@@ -803,6 +809,8 @@ export default function ReportCardPage() {
             includeConduct={true}
             // Viewer context
             viewerType="parent"
+            // Tenant-level report card configuration
+            config={currentTenant?.branding?.reportCardConfig}
           />
         </div>
 

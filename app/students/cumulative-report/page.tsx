@@ -639,15 +639,29 @@ export default function CumulativeReportPage() {
 
             {/* Report Preview */}
             <div ref={printRef} data-print-target className="bg-white p-4 sm:p-6 md:p-8 rounded-xl shadow-lg">
-              {/* Header */}
-              <div className="text-center mb-6 sm:mb-8 pb-4 sm:pb-6 border-b-2 border-neutral-200">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900 mb-2">
-                  {settings.schoolName}
+              {/* Header - Uses tenant branding */}
+              <div
+                className="text-center mb-6 sm:mb-8 pb-4 sm:pb-6 border-b-2"
+                style={{ borderColor: currentTenant?.branding?.primaryColor || '#e5e7eb' }}
+              >
+                <h1
+                  className="text-xl sm:text-2xl md:text-3xl font-bold mb-2"
+                  style={{ color: currentTenant?.branding?.primaryColor || '#171717' }}
+                >
+                  {currentTenant?.name || settings.schoolName}
                 </h1>
+                {currentTenant?.branding?.motto && (
+                  <p className="text-xs sm:text-sm text-neutral-500 italic mb-2">
+                    &quot;{currentTenant.branding.motto}&quot;
+                  </p>
+                )}
                 <p className="text-xs sm:text-sm text-neutral-600 mb-3 sm:mb-4">
-                  {settings.institutionType} • {settings.region || "Nigeria"}
+                  {currentTenant?.config?.institutionType || settings.institutionType} • {currentTenant?.config?.region || settings.region || "Nigeria"}
                 </p>
-                <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-blue-600 mb-1">
+                <h2
+                  className="text-lg sm:text-xl md:text-2xl font-semibold mb-1"
+                  style={{ color: currentTenant?.branding?.primaryColor || '#2563eb' }}
+                >
                   Cumulative Academic Report
                 </h2>
                 <p className="text-xs sm:text-sm text-neutral-600">

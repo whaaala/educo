@@ -1889,6 +1889,7 @@ export default function ReportCardsPage() {
               // School Info
               schoolName={currentTenant?.name || settings.schoolName}
               schoolMotto={currentTenant?.branding?.motto}
+              schoolLogo={currentTenant?.branding?.logo}
               schoolAddress={{
                 line1: currentTenant?.contact?.address?.line1,
                 city: currentTenant?.contact?.address?.city,
@@ -1902,6 +1903,7 @@ export default function ReportCardsPage() {
               secondaryColor={currentTenant?.branding?.secondaryColor || '#1e40af'}
               principalName={currentTenant?.branding?.signatures?.principalName || "Principal"}
               principalTitle={currentTenant?.branding?.signatures?.principalTitle || "Principal"}
+              classTeacherTitle={currentTenant?.branding?.signatures?.classTeacherTitle}
               // Student Info
               studentName={currentReportCard.student.name}
               admissionNumber={currentReportCard.student.rollNo}
@@ -1936,6 +1938,8 @@ export default function ReportCardsPage() {
               includeConduct={config.includeConduct}
               // Viewer context
               viewerType="admin"
+              // Tenant-level report card configuration
+              config={currentTenant?.branding?.reportCardConfig}
             />
           </div>
         </div>
