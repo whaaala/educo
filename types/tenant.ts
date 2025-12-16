@@ -61,10 +61,74 @@ export interface TenantTranscriptConfig {
   customFields?: Record<string, any>;
 }
 
+export interface ReportCardDesignConfig {
+  // Layout options
+  template: "classic" | "modern" | "minimal" | "professional";
+  orientation: "portrait" | "landscape";
+  pageSize: "A4" | "letter";
+
+  // Colors
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  headerBgColor: string;
+  tableBorderColor: string;
+  tableHeaderBgColor: string;
+  tableStripedBgColor: string;
+
+  // Header configuration
+  headerStyle: "centered" | "left-aligned" | "logo-left" | "logo-right";
+  showSchoolLogo: boolean;
+  showSchoolMotto: boolean;
+  showSchoolAddress: boolean;
+  showSchoolContact: boolean;
+
+  // Content sections
+  showStudentPhoto: boolean;
+  showAttendanceSummary: boolean;
+  showTeacherRemarks: boolean;
+  showConductGrade: boolean;
+  showClassPosition: boolean;
+  showGradeScale: boolean;
+
+  // Footer configuration
+  showWatermark: boolean;
+  watermarkText?: string;
+  showPrincipalSignature: boolean;
+  showClassTeacherSignature: boolean;
+  showParentSignature: boolean;
+  showOfficialStamp: boolean;
+
+  // Typography
+  fontFamily: string;
+  headerFontSize: number;
+  bodyFontSize: number;
+  tableFontSize: number;
+
+  // Custom branding text
+  reportTitle: string;
+  termLabel: string;
+  sessionLabel: string;
+}
+
+export interface TenantReportCardConfig {
+  tenantId: string;
+  branding: SchoolBranding;
+  design: ReportCardDesignConfig;
+  signatures: SignatureConfig;
+  gradeScale?: {
+    label: string;
+    minScore: number;
+    maxScore: number;
+    description: string;
+  }[];
+}
+
 export interface TenantSettings {
   tenantId: string;
   schoolName: string;
   currency: string;
   bankAccount: BankAccountSettings;
   transcriptConfig?: TenantTranscriptConfig;
+  reportCardConfig?: TenantReportCardConfig;
 }
