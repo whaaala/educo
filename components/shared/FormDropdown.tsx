@@ -59,15 +59,17 @@ export default function FormDropdown({
 
   return (
     <div className="group">
-      <Tooltip content={label}>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5 cursor-help">
-          <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
-            <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
-          </div>
-          <span>{label}</span>
-          {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
-        </label>
-      </Tooltip>
+      {label && (
+        <Tooltip content={label}>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5 cursor-help">
+            <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
+              <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
+            </div>
+            <span>{label}</span>
+            {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
+          </label>
+        </Tooltip>
+      )}
       <div className="relative" ref={dropdownRef}>
         {/* Custom Dropdown Button */}
         <Tooltip content={selectedOption?.label || placeholder} block>

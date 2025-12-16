@@ -8,6 +8,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import PageLoader from "@/components/shared/PageLoader";
 import Button from "@/components/shared/Button";
+import FormDropdown from "@/components/shared/FormDropdown";
 import ReportCardTemplate from "@/components/reports/ReportCardTemplate";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
@@ -17,9 +18,10 @@ import {
   ArrowLeft,
   Download,
   Printer,
-  Calendar,
   AlertCircle,
   UserCheck,
+  Calendar,
+  GraduationCap,
 } from "lucide-react";
 import type { ParentChild, ChildAcademicSummary } from "@/types/parent";
 
@@ -661,89 +663,136 @@ export default function ReportCardPage() {
           />
         </div>
 
-        {/* Term/Year Selection & Actions Bar */}
-        <div className="no-print bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-200 dark:border-indigo-800 rounded-xl p-4 sm:p-6 shadow-lg">
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
-            {/* Left: Term & Year Selection */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex-shrink-0">
-                  <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+        {/* Modern Report Card Controls */}
+        <div className="no-print relative rounded-2xl bg-gradient-to-br from-slate-50 via-white to-slate-50/80 dark:from-slate-900 dark:via-slate-800/95 dark:to-slate-900 border border-slate-200/80 dark:border-slate-700/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)]">
+          {/* Subtle gradient accent line at top */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent rounded-t-2xl" />
+
+          <div className="relative px-4 py-3 sm:px-5 sm:py-4">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+              {/* Left Section: Student + Period */}
+              <div className="flex flex-wrap items-center gap-4 lg:gap-5">
+                {/* Student Card */}
+                <div className="flex items-center gap-3 pr-4 lg:pr-5 lg:border-r border-slate-200/70 dark:border-slate-700/50">
+                  <div
+                    className="relative cursor-pointer group/avatar flex-shrink-0 w-11 h-11 z-10"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.zIndex = '9999';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.zIndex = '10';
+                    }}
+                  >
+                    <Image
+                      src={child.profilePhoto || `https://i.pravatar.cc/150?u=${child.id}`}
+                      alt={child.fullName}
+                      width={44}
+                      height={44}
+                      className="absolute inset-0 w-11 h-11 rounded-xl object-cover ring-2 ring-white dark:ring-slate-700 shadow-md transition-all duration-300 ease-out group-hover/avatar:scale-[2.5] group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 group-hover/avatar:rounded-2xl"
+                      style={{ transformOrigin: 'left center' }}
+                      unoptimized
+                    />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center transition-opacity duration-300 group-hover/avatar:opacity-0">
+                      <UserCheck className="w-2.5 h-2.5 text-white" />
+                    </div>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{child.fullName}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 font-medium">
+                        {child.classLevel}{child.section && `-${child.section}`}
+                      </span>
+                      <span className="text-slate-300 dark:text-slate-600">•</span>
+                      <span className="truncate">{child.admissionNumber}</span>
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">Select Period</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Choose term and academic year</p>
+
+                {/* Period Selection */}
+                <div className="flex items-center gap-2">
+                  <div className="w-32">
+                    <FormDropdown
+                      label=""
+                      icon={<Calendar className="w-full h-full" />}
+                      value={selectedTerm}
+                      onChange={(value) => setSelectedTerm(value as Term)}
+                      options={TERMS.map((term) => ({ value: term, label: term }))}
+                      placeholder="Select term"
+                    />
+                  </div>
+                  <div className="w-28">
+                    <FormDropdown
+                      label=""
+                      icon={<GraduationCap className="w-full h-full" />}
+                      value={selectedYear}
+                      onChange={setSelectedYear}
+                      options={ACADEMIC_YEARS.map((year) => ({ value: year, label: year }))}
+                      placeholder="Select year"
+                    />
+                  </div>
+                </div>
+
+                {/* Stats Pills - Desktop */}
+                <div className="hidden xl:flex items-center gap-2">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                      {academicData?.currentTermAverage?.toFixed(1) || 0}% avg
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20">
+                    <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">
+                      #{academicData?.classPosition}
+                    </span>
+                    <span className="text-xs text-blue-600/70 dark:text-blue-400/70">rank</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-50 dark:bg-violet-500/10 border border-violet-200/60 dark:border-violet-500/20">
+                    <span className="text-xs font-semibold text-violet-700 dark:text-violet-400">
+                      {academicData?.conductGrade}
+                    </span>
+                    <span className="text-xs text-violet-600/70 dark:text-violet-400/70">conduct</span>
+                  </div>
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <select
-                  value={selectedTerm}
-                  onChange={(e) => setSelectedTerm(e.target.value as Term)}
-                  className="w-full sm:w-40 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 cursor-pointer"
+
+              {/* Right Section: Actions */}
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handlePrint}
+                  variant="outline"
+                  className="gap-2"
                 >
-                  {TERMS.map((term) => (
-                    <option key={term} value={term}>{term}</option>
-                  ))}
-                </select>
-                <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
-                  className="w-full sm:w-32 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 cursor-pointer"
+                  <Printer className="w-4 h-4" />
+                  <span className="hidden sm:inline">Print</span>
+                </Button>
+                <Button
+                  onClick={handleDownloadPDF}
+                  variant="primary"
+                  className="gap-2"
                 >
-                  {ACADEMIC_YEARS.map((year) => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </select>
+                  <Download className="w-4 h-4" />
+                  <span className="hidden sm:inline">Download PDF</span>
+                </Button>
               </div>
             </div>
 
-            {/* Right: Actions */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-              <Button variant="outline" onClick={handlePrint} className="gap-2">
-                <Printer className="w-4 h-4" />
-                Print
-              </Button>
-              <Button variant="primary" onClick={handleDownloadPDF} className="gap-2">
-                <Download className="w-4 h-4" />
-                Download PDF
-              </Button>
-            </div>
-          </div>
-
-          {/* Student Quick Info */}
-          <div className="mt-4 pt-4 border-t border-indigo-200 dark:border-indigo-700">
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-3">
-                <div className="relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-indigo-200 dark:ring-indigo-700">
-                  <Image
-                    src={child.profilePhoto || `https://i.pravatar.cc/150?u=${child.id}`}
-                    alt={child.fullName}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{child.fullName}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {child.classLevel} {child.section && `/ ${child.section}`} • {child.admissionNumber}
-                  </p>
-                </div>
+            {/* Mobile/Tablet Stats Row */}
+            <div className="xl:hidden flex items-center justify-center gap-3 mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/40">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                  {academicData?.currentTermAverage?.toFixed(1) || 0}%
+                </span>
               </div>
-              <div className="hidden sm:block h-8 w-px bg-indigo-200 dark:bg-indigo-700" />
-              <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm">
-                <div>
-                  <span className="text-gray-500 dark:text-gray-400">Average:</span>
-                  <span className="ml-2 font-bold text-indigo-600 dark:text-indigo-400">{academicData?.currentTermAverage?.toFixed(1) || 0}%</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 dark:text-gray-400">Position:</span>
-                  <span className="ml-2 font-bold text-purple-600 dark:text-purple-400">#{academicData?.classPosition}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 dark:text-gray-400">Conduct:</span>
-                  <span className="ml-2 font-bold text-green-600 dark:text-green-400">{academicData?.conductGrade}</span>
-                </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20">
+                <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">
+                  #{academicData?.classPosition}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-50 dark:bg-violet-500/10 border border-violet-200/60 dark:border-violet-500/20">
+                <span className="text-xs font-semibold text-violet-700 dark:text-violet-400">
+                  {academicData?.conductGrade}
+                </span>
               </div>
             </div>
           </div>
