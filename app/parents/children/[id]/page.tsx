@@ -13,6 +13,8 @@ import { useCountry } from "@/contexts/CountryContext";
 import { formatCurrency } from "@/config/countries";
 import StatCard from "@/components/shared/StatCard";
 import Button from "@/components/shared/Button";
+import ActionButton from "@/components/shared/ActionButton";
+import MessageTeacherModal from "@/components/parents/MessageTeacherModal";
 import {
   Users,
   GraduationCap,
@@ -143,6 +145,7 @@ export default function ChildDetailPage() {
   const { countryCode } = useCountry();
 
   const [activeTab, setActiveTab] = useState<TabType>("overview");
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
 
   const child = MOCK_CHILDREN[childId];
   const academicData = MOCK_ACADEMIC_SUMMARY[childId];
@@ -305,17 +308,26 @@ export default function ChildDetailPage() {
                   </span>
                 </div>
 
-                {/* Action buttons - compact */}
-                <div className="flex items-center gap-2">
-                  <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium text-xs border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 cursor-pointer">
-                    <MessageSquare className="w-3.5 h-3.5 text-gray-400" />
+                {/* Action buttons - using ActionButton component */}
+                <div className="flex items-center gap-2.5">
+                  <ActionButton
+                    variant="secondary"
+                    color="blue"
+                    size="md"
+                    icon={<MessageSquare className="w-full h-full" />}
+                    onClick={() => setIsMessageModalOpen(true)}
+                  >
                     Message Teacher
-                  </button>
+                  </ActionButton>
                   <Link href={`/parents/children/${child.id}/report-card`}>
-                    <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-xs shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer">
-                      <FileText className="w-3.5 h-3.5" />
+                    <ActionButton
+                      variant="primary"
+                      color="emerald"
+                      size="md"
+                      icon={<FileText className="w-full h-full" />}
+                    >
                       View Report Card
-                    </button>
+                    </ActionButton>
                   </Link>
                 </div>
               </div>
@@ -1045,6 +1057,14 @@ export default function ChildDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Message Teacher Modal */}
+      <MessageTeacherModal
+        isOpen={isMessageModalOpen}
+        onClose={() => setIsMessageModalOpen(false)}
+        childName={child.fullName}
+        childClass={`${child.classLevel}${child.section ? ` ${child.section}` : ""}`}
+      />
     </MainLayout>
   );
 }

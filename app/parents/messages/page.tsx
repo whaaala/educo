@@ -7,24 +7,31 @@ import MainLayout from "@/components/layout/MainLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import PageLoader from "@/components/shared/PageLoader";
 import { usePageLoad } from "@/hooks/usePageLoad";
-import StatCard from "@/components/shared/StatCard";
-import Button from "@/components/shared/Button";
+import ActionButton from "@/components/shared/ActionButton";
+import EmojiPickerPopover from "@/components/shared/EmojiPickerPopover";
 import {
   MessageSquare,
   Mail,
   MailOpen,
   Send,
   Search,
-  ChevronRight,
   Clock,
   Star,
   Paperclip,
-  Filter,
   Plus,
   Inbox,
   Archive,
   Trash2,
   User,
+  MoreHorizontal,
+  Reply,
+  Forward,
+  ChevronDown,
+  Check,
+  Filter,
+  Sparkles,
+  ArrowLeft,
+  X,
 } from "lucide-react";
 import type { ParentMessage } from "@/types/parent";
 
@@ -165,6 +172,8 @@ export default function ParentMessagesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMessage, setSelectedMessage] = useState<ParentMessage | null>(null);
   const [starredMessages, setStarredMessages] = useState<Set<string>>(new Set());
+  const [replyText, setReplyText] = useState("");
+  const [showMobileMessage, setShowMobileMessage] = useState(false);
 
   // Filter messages
   const filteredMessages = useMemo(() => {
@@ -203,15 +212,31 @@ export default function ParentMessagesPage() {
     });
   };
 
-  // Get role badge color
-  const getRoleBadgeColor = (role: ParentMessage["senderRole"]) => {
-    const colors = {
-      Teacher: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
-      Admin: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
-      Principal: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
-      System: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400",
+  // Get role badge styles
+  const getRoleBadgeStyles = (role: ParentMessage["senderRole"]) => {
+    const styles = {
+      Teacher: {
+        bg: "bg-blue-100 dark:bg-blue-900/30",
+        text: "text-blue-700 dark:text-blue-400",
+        ring: "ring-blue-500/20",
+      },
+      Admin: {
+        bg: "bg-purple-100 dark:bg-purple-900/30",
+        text: "text-purple-700 dark:text-purple-400",
+        ring: "ring-purple-500/20",
+      },
+      Principal: {
+        bg: "bg-emerald-100 dark:bg-emerald-900/30",
+        text: "text-emerald-700 dark:text-emerald-400",
+        ring: "ring-emerald-500/20",
+      },
+      System: {
+        bg: "bg-gray-100 dark:bg-gray-700/50",
+        text: "text-gray-600 dark:text-gray-400",
+        ring: "ring-gray-500/20",
+      },
     };
-    return colors[role];
+    return styles[role];
   };
 
   // Format timestamp
@@ -232,291 +257,428 @@ export default function ParentMessagesPage() {
     }
   };
 
+  // Format full date
+  const formatFullDate = (timestamp: string) => {
+    return new Date(timestamp).toLocaleDateString("en-GB", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
+
+  // Handle message selection
+  const handleSelectMessage = (message: ParentMessage) => {
+    setSelectedMessage(message);
+    setShowMobileMessage(true);
+  };
+
+  // Handle emoji selection for reply
+  const handleEmojiSelect = (emoji: string) => {
+    setReplyText((prev) => prev + emoji);
+  };
+
   return (
     <MainLayout>
       <PageLoader isLoading={isPageLoading} loadingText="Loading Messages" />
 
       <div
-        className={`space-y-6 transition-opacity duration-500 ${
+        className={`transition-opacity duration-500 ${
           isPageLoading ? "opacity-0" : "opacity-100"
         }`}
       >
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <PageHeader
-            title="Messages"
-            breadcrumbs={[
-              { label: "Parent Portal", href: "/parents" },
-              { label: "Messages" },
-            ]}
-          />
-          <Link href="/parents/messages/compose">
-            <Button variant="primary">
-              <Plus className="w-4 h-4 mr-2" />
-              Compose Message
-            </Button>
-          </Link>
-        </div>
+        {/* Header Section */}
+        <div className="mb-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+            <PageHeader
+              title="Messages"
+              breadcrumbs={[
+                { label: "Parent Portal", href: "/parents" },
+                { label: "Messages" },
+              ]}
+            />
+            <Link href="/parents/messages/compose">
+              <ActionButton
+                variant="primary"
+                color="blue"
+                size="md"
+                icon={<Plus className="w-full h-full" />}
+              >
+                Compose Message
+              </ActionButton>
+            </Link>
+          </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 sm:gap-4">
-          <StatCard
-            icon={Inbox}
-            label="Total Messages"
-            value={stats.total.toString()}
-            color="blue"
-          />
-          <StatCard
-            icon={Mail}
-            label="Unread"
-            value={stats.unread.toString()}
-            color={stats.unread > 0 ? "red" : "green"}
-            badge={stats.unread > 0 ? "New" : undefined}
-          />
-          <StatCard
-            icon={Star}
-            label="Starred"
-            value={stats.starred.toString()}
-            color="yellow"
-          />
-        </div>
-
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Message List */}
-          <div className="lg:col-span-1 space-y-4">
-            {/* Search & Filter */}
-            <div className="space-y-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search messages..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
-                />
+          {/* Stats Row */}
+          <div className="grid grid-cols-3 gap-4">
+            {/* Total Messages */}
+            <div className="group relative flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-br from-blue-50/80 to-white dark:from-blue-900/20 dark:to-gray-800/50 border border-blue-100/50 dark:border-blue-800/30 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <Inbox className="w-6 h-6 text-white" />
               </div>
-              <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                {[
-                  { id: "all", label: "All", icon: Inbox },
-                  { id: "unread", label: "Unread", icon: Mail },
-                  { id: "starred", label: "Starred", icon: Star },
-                ].map((filter) => {
-                  const Icon = filter.icon;
-                  return (
-                    <button
-                      key={filter.id}
-                      onClick={() => setSelectedFilter(filter.id as FilterType)}
-                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                        selectedFilter === filter.id
-                          ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
-                          : "text-gray-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-700/50"
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      {filter.label}
-                    </button>
-                  );
-                })}
+              <div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+                <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">Total Messages</p>
               </div>
             </div>
 
-            {/* Message List */}
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
-              <div className="max-h-[600px] overflow-y-auto">
-                {filteredMessages.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <MessageSquare className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                    <p className="text-gray-500 dark:text-gray-400">No messages found</p>
-                  </div>
-                ) : (
-                  filteredMessages.map((message) => (
-                    <button
-                      key={message.id}
-                      onClick={() => setSelectedMessage(message)}
-                      className={`w-full text-left p-4 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-all hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
-                        selectedMessage?.id === message.id
-                          ? "bg-blue-50 dark:bg-blue-900/20"
-                          : !message.isRead
-                          ? "bg-blue-50/50 dark:bg-blue-900/10"
-                          : ""
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
-                          {message.senderAvatar ? (
-                            <Image
-                              src={message.senderAvatar}
-                              alt={message.senderName}
-                              fill
-                              className="object-cover"
-                              unoptimized
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <User className="w-5 h-5 text-gray-500" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <p className={`text-sm truncate ${!message.isRead ? "font-semibold text-gray-900 dark:text-white" : "font-medium text-gray-700 dark:text-gray-300"}`}>
-                              {message.senderName}
-                            </p>
-                            <div className="flex items-center gap-1.5 flex-shrink-0">
-                              {!message.isRead && (
-                                <span className="w-2 h-2 rounded-full bg-blue-500" />
-                              )}
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {formatTime(message.timestamp)}
-                              </span>
-                            </div>
-                          </div>
-                          <p className={`text-sm truncate mb-1 ${!message.isRead ? "font-medium text-gray-800 dark:text-gray-200" : "text-gray-600 dark:text-gray-400"}`}>
-                            {message.subject}
-                          </p>
-                          <div className="flex items-center gap-2">
-                            <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${getRoleBadgeColor(message.senderRole)}`}>
-                              {message.senderRole}
-                            </span>
-                            {message.childName && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                • {message.childName}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleStar(message.id);
-                          }}
-                          className={`p-1 rounded transition-colors ${
-                            starredMessages.has(message.id)
-                              ? "text-yellow-500"
-                              : "text-gray-300 dark:text-gray-600 hover:text-yellow-500"
-                          }`}
-                        >
-                          <Star className={`w-4 h-4 ${starredMessages.has(message.id) ? "fill-current" : ""}`} />
-                        </button>
-                      </div>
-                    </button>
-                  ))
+            {/* Unread Messages */}
+            <div className="group relative flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-br from-red-50/80 to-white dark:from-red-900/20 dark:to-gray-800/50 border border-red-100/50 dark:border-red-800/30 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+              <div className="relative">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/20">
+                  <Mail className="w-6 h-6 text-white" />
+                </div>
+                {stats.unread > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white ring-2 ring-white dark:ring-gray-800">
+                    {stats.unread}
+                  </span>
                 )}
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.unread}</p>
+                <p className="text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-wide">Unread</p>
+              </div>
+            </div>
+
+            {/* Starred Messages */}
+            <div className="group relative flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-br from-amber-50/80 to-white dark:from-amber-900/20 dark:to-gray-800/50 border border-amber-100/50 dark:border-amber-800/30 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                <Star className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.starred}</p>
+                <p className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide">Starred</p>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Message View */}
-          <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden h-full">
+        {/* Main Content - Chat-like Layout */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[600px]">
+            {/* Message List Sidebar */}
+            <div className={`lg:col-span-4 xl:col-span-4 border-r border-gray-200 dark:border-gray-700 flex flex-col ${showMobileMessage ? "hidden lg:flex" : "flex"}`}>
+              {/* Search & Filter Header */}
+              <div className="p-4 border-b border-gray-100 dark:border-gray-700/50 space-y-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search messages..."
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border-0 text-gray-900 dark:text-white text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                  />
+                </div>
+
+                {/* Filter Pills */}
+                <div className="flex gap-2">
+                  {[
+                    { id: "all", label: "All", count: stats.total },
+                    { id: "unread", label: "Unread", count: stats.unread },
+                    { id: "starred", label: "Starred", count: stats.starred },
+                  ].map((filter) => (
+                    <button
+                      key={filter.id}
+                      onClick={() => setSelectedFilter(filter.id as FilterType)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                        selectedFilter === filter.id
+                          ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 ring-1 ring-blue-500/20"
+                          : "bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                      }`}
+                    >
+                      {filter.label}
+                      {filter.count > 0 && (
+                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                          selectedFilter === filter.id
+                            ? "bg-blue-200 dark:bg-blue-800/50 text-blue-800 dark:text-blue-300"
+                            : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
+                        }`}>
+                          {filter.count}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Messages List */}
+              <div className="flex-1 overflow-y-auto">
+                {filteredMessages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full p-8">
+                    <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
+                      <MessageSquare className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <p className="text-gray-500 dark:text-gray-400 font-medium">No messages found</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Try adjusting your filters</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
+                    {filteredMessages.map((message) => {
+                      const roleStyles = getRoleBadgeStyles(message.senderRole);
+                      const isSelected = selectedMessage?.id === message.id;
+
+                      return (
+                        <div
+                          key={message.id}
+                          onClick={() => handleSelectMessage(message)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => e.key === "Enter" && handleSelectMessage(message)}
+                          className={`relative p-4 transition-all cursor-pointer group ${
+                            isSelected
+                              ? "bg-blue-50/80 dark:bg-blue-900/20"
+                              : !message.isRead
+                              ? "bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent"
+                              : "hover:bg-gray-50 dark:hover:bg-gray-700/30"
+                          }`}
+                        >
+                          {/* Selection indicator */}
+                          {isSelected && (
+                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r" />
+                          )}
+
+                          <div className="flex gap-3">
+                            {/* Avatar */}
+                            <div className="relative flex-shrink-0">
+                              <div className="w-11 h-11 rounded-full overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 ring-2 ring-white dark:ring-gray-800">
+                                {message.senderAvatar ? (
+                                  <Image
+                                    src={message.senderAvatar}
+                                    alt={message.senderName}
+                                    width={44}
+                                    height={44}
+                                    className="w-full h-full object-cover"
+                                    unoptimized
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <User className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                                  </div>
+                                )}
+                              </div>
+                              {/* Online indicator for teachers */}
+                              {message.senderRole === "Teacher" && (
+                                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                              )}
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2 mb-0.5">
+                                <span className={`text-sm truncate ${
+                                  !message.isRead
+                                    ? "font-semibold text-gray-900 dark:text-white"
+                                    : "font-medium text-gray-700 dark:text-gray-300"
+                                }`}>
+                                  {message.senderName}
+                                </span>
+                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                  {!message.isRead && (
+                                    <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                                  )}
+                                  <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                                    {formatTime(message.timestamp)}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <p className={`text-sm truncate mb-1.5 ${
+                                !message.isRead
+                                  ? "font-medium text-gray-800 dark:text-gray-200"
+                                  : "text-gray-600 dark:text-gray-400"
+                              }`}>
+                                {message.subject}
+                              </p>
+
+                              <div className="flex items-center gap-2">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold ${roleStyles.bg} ${roleStyles.text} ring-1 ${roleStyles.ring}`}>
+                                  {message.senderRole}
+                                </span>
+                                {message.childName && (
+                                  <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                                    {message.childName}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Star button */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleStar(message.id);
+                              }}
+                              className={`flex-shrink-0 p-1 rounded-lg transition-all opacity-0 group-hover:opacity-100 ${
+                                starredMessages.has(message.id)
+                                  ? "opacity-100 text-amber-500"
+                                  : "text-gray-300 dark:text-gray-600 hover:text-amber-500"
+                              }`}
+                            >
+                              <Star className={`w-4 h-4 ${starredMessages.has(message.id) ? "fill-current" : ""}`} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Message View Panel */}
+            <div className={`lg:col-span-8 xl:col-span-8 flex flex-col ${!showMobileMessage ? "hidden lg:flex" : "flex"}`}>
               {selectedMessage ? (
-                <div className="h-full flex flex-col">
+                <>
                   {/* Message Header */}
-                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-start justify-between gap-4 mb-4">
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                        {selectedMessage.subject}
-                      </h2>
-                      <div className="flex items-center gap-2">
+                  <div className="p-4 lg:p-6 border-b border-gray-100 dark:border-gray-700/50">
+                    {/* Mobile back button */}
+                    <button
+                      onClick={() => setShowMobileMessage(false)}
+                      className="lg:hidden flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-4 hover:text-gray-900 dark:hover:text-white transition-colors"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      <span className="text-sm font-medium">Back to messages</span>
+                    </button>
+
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <h2 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white mb-3 leading-tight">
+                          {selectedMessage.subject}
+                        </h2>
+
+                        <div className="flex items-center gap-4">
+                          <div className="relative">
+                            <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 ring-2 ring-white dark:ring-gray-700 shadow-md">
+                              {selectedMessage.senderAvatar ? (
+                                <Image
+                                  src={selectedMessage.senderAvatar}
+                                  alt={selectedMessage.senderName}
+                                  width={48}
+                                  height={48}
+                                  className="w-full h-full object-cover"
+                                  unoptimized
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <User className="w-6 h-6 text-gray-500" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-gray-900 dark:text-white">
+                                {selectedMessage.senderName}
+                              </span>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold ${getRoleBadgeStyles(selectedMessage.senderRole).bg} ${getRoleBadgeStyles(selectedMessage.senderRole).text}`}>
+                                {selectedMessage.senderRole}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5" />
+                              {formatFullDate(selectedMessage.timestamp)}
+                            </p>
+                            {selectedMessage.childName && (
+                              <p className="text-sm text-blue-600 dark:text-blue-400 mt-0.5 flex items-center gap-1">
+                                <User className="w-3.5 h-3.5" />
+                                Regarding: {selectedMessage.childName}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex items-center gap-1">
                         <button
                           onClick={() => toggleStar(selectedMessage.id)}
-                          className={`p-2 rounded-lg transition-colors ${
+                          className={`p-2 rounded-xl transition-all cursor-pointer ${
                             starredMessages.has(selectedMessage.id)
-                              ? "text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20"
-                              : "text-gray-400 hover:text-yellow-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              ? "text-amber-500 bg-amber-50 dark:bg-amber-900/20"
+                              : "text-gray-400 hover:text-amber-500 hover:bg-gray-100 dark:hover:bg-gray-700"
                           }`}
                         >
                           <Star className={`w-5 h-5 ${starredMessages.has(selectedMessage.id) ? "fill-current" : ""}`} />
                         </button>
-                        <button className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <button className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all cursor-pointer">
                           <Archive className="w-5 h-5" />
                         </button>
-                        <button className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        <button className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all cursor-pointer">
                           <Trash2 className="w-5 h-5" />
                         </button>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
-                        {selectedMessage.senderAvatar ? (
-                          <Image
-                            src={selectedMessage.senderAvatar}
-                            alt={selectedMessage.senderName}
-                            fill
-                            className="object-cover"
-                            unoptimized
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <User className="w-6 h-6 text-gray-500" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-gray-900 dark:text-white">
-                            {selectedMessage.senderName}
-                          </p>
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${getRoleBadgeColor(selectedMessage.senderRole)}`}>
-                            {selectedMessage.senderRole}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {new Date(selectedMessage.timestamp).toLocaleDateString("en-GB", {
-                            weekday: "long",
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                        {selectedMessage.childName && (
-                          <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
-                            Regarding: {selectedMessage.childName}
-                          </p>
-                        )}
                       </div>
                     </div>
                   </div>
 
                   {/* Message Body */}
-                  <div className="flex-1 overflow-y-auto p-6">
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      {selectedMessage.content.split("\n").map((line, idx) => (
-                        <p key={idx} className="mb-2 text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                          {line || <br />}
-                        </p>
-                      ))}
+                  <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-2xl p-5 lg:p-6">
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                        {selectedMessage.content.split("\n").map((line, idx) => (
+                          <p key={idx} className="mb-2 text-gray-700 dark:text-gray-300 leading-relaxed">
+                            {line || <br />}
+                          </p>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Reply Actions */}
-                  <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                    <div className="flex gap-2">
-                      <Button variant="primary" className="flex-1">
-                        <Send className="w-4 h-4 mr-2" />
-                        Reply
-                      </Button>
-                      <Button variant="ghost">
-                        <Paperclip className="w-4 h-4" />
-                      </Button>
+                  {/* Reply Section */}
+                  <div className="p-4 lg:p-6 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                      <textarea
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        placeholder="Type your reply..."
+                        rows={3}
+                        className="w-full px-4 py-3 bg-transparent text-gray-900 dark:text-white placeholder:text-gray-400 text-sm resize-none focus:outline-none"
+                      />
+                      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-700/50">
+                        <div className="flex items-center gap-1">
+                          <EmojiPickerPopover
+                            onEmojiSelect={handleEmojiSelect}
+                            position="top"
+                          />
+                          <button className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+                            <Paperclip className="w-5 h-5" />
+                          </button>
+                        </div>
+                        <ActionButton
+                          variant="primary"
+                          color="blue"
+                          size="sm"
+                          icon={<Send className="w-full h-full" />}
+                          disabled={!replyText.trim()}
+                        >
+                          Send Reply
+                        </ActionButton>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </>
               ) : (
-                <div className="h-full flex flex-col items-center justify-center p-8">
-                  <div className="p-4 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
-                    <MessageSquare className="w-12 h-12 text-gray-400 dark:text-gray-500" />
+                /* Empty State */
+                <div className="flex-1 flex flex-col items-center justify-center p-8">
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-2xl scale-150 animate-pulse" />
+                    <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-800/20 flex items-center justify-center">
+                      <MessageSquare className="w-12 h-12 text-blue-500 dark:text-blue-400" />
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                     Select a message
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-xs">
-                    Choose a message from the list to view its contents
+                  <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-xs mb-6">
+                    Choose a message from the list to view its contents and reply
                   </p>
+                  <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
+                    <Sparkles className="w-4 h-4" />
+                    <span>{stats.unread} unread messages waiting</span>
+                  </div>
                 </div>
               )}
             </div>

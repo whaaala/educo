@@ -69,6 +69,57 @@ export interface ParentMessage {
   childName?: string;
 }
 
+export interface MessageThread {
+  id: string;
+  participants: {
+    id: string;
+    name: string;
+    role: "Parent" | "Teacher" | "Admin" | "Principal";
+    avatar?: string;
+  }[];
+  childId?: string;
+  childName?: string;
+  subject: string;
+  category?: "academic" | "behavior" | "attendance" | "homework" | "general" | "meeting" | "other";
+  lastMessage: {
+    content: string;
+    senderId: string;
+    timestamp: string;
+  };
+  unreadCount: number;
+  messages: ThreadMessage[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ThreadMessage {
+  id: string;
+  threadId: string;
+  senderId: string;
+  senderName: string;
+  senderRole: "Parent" | "Teacher" | "Admin" | "Principal";
+  senderAvatar?: string;
+  content: string;
+  timestamp: string;
+  isRead: boolean;
+  attachments?: {
+    name: string;
+    url: string;
+    type: string;
+    size?: number;
+  }[];
+}
+
+export interface Teacher {
+  id: string;
+  name: string;
+  subject: string;
+  email: string;
+  phone?: string;
+  photo?: string;
+  isClassTeacher?: boolean;
+}
+
 export interface ParentAnnouncement {
   id: string;
   title: string;
