@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -8,8 +8,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import PageLoader from "@/components/shared/PageLoader";
 import { usePageLoad } from "@/hooks/usePageLoad";
-import { useCountry } from "@/contexts/CountryContext";
-import { formatCurrency } from "@/config/countries";
+import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import StatCard from "@/components/shared/StatCard";
 import SearchFilterBar from "@/components/shared/SearchFilterBar";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
@@ -165,12 +164,36 @@ const CHILD_OPTIONS = [
 export default function ParentFeesPage() {
   const searchParams = useSearchParams();
   const isPageLoading = usePageLoad(600);
-  const { countryCode } = useCountry();
+  const { settings } = useSchoolSettings();
+  const currencyCode = settings.currency || "NGN";
+  const { money, currencySymbol } = useMemo(() => {
+    const formatter = new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: currencyCode,
+      currencyDisplay: "narrowSymbol",
+      maximumFractionDigits: 0,
+    });
+
+    const symbol =
+      formatter.formatToParts(0).find((p) => p.type === "currency")?.value ??
+      currencyCode;
+
+    return {
+      money: (amount: number) => formatter.format(amount),
+      currencySymbol: symbol,
+    };
+  }, [currencyCode]);
 
   const initialChild = searchParams.get("child") || "all";
   const [selectedChild, setSelectedChild] = useState(initialChild);
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const tableWrapRef = useRef<HTMLDivElement | null>(null);
+
+  // Match /finance/installments: trigger row animation when filters/search change.
+  const filterKey = `${searchQuery}-${selectedChild}-${selectedStatus}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  const [animationTrigger, setAnimationTrigger] = useState(0);
 
   // Filter fees
   const filteredFees = useMemo(() => {
@@ -194,6 +217,35 @@ export default function ParentFeesPage() {
     const overdueCount = MOCK_FEES.filter((f) => f.status === "overdue").length;
     return { totalAmount, totalPaid, totalBalance, overdueCount };
   }, []);
+
+  useEffect(() => {
+    if (filterKey !== prevFilterKey) {
+      setAnimationTrigger((prev) => prev + 1);
+      setPrevFilterKey(filterKey);
+    }
+  }, [filterKey, prevFilterKey]);
+
+  useEffect(() => {
+    if (animationTrigger <= 0) return;
+    const timeoutId = setTimeout(() => {
+      const root = tableWrapRef.current;
+      if (!root) return;
+      const rows = root.querySelectorAll("tbody tr");
+      rows.forEach((row, index) => {
+        const htmlRow = row as HTMLElement;
+        const delay = index / 80;
+        htmlRow.style.animation = `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${delay}s both`;
+      });
+      setTimeout(() => {
+        rows.forEach((row) => {
+          const htmlRow = row as HTMLElement;
+          htmlRow.style.animation = "";
+        });
+      }, 600);
+    }, 50);
+
+    return () => clearTimeout(timeoutId);
+  }, [animationTrigger]);
 
   // Get status badge
   const getStatusBadge = (status: ParentFeeRecord["status"]) => {
@@ -275,7 +327,7 @@ export default function ParentFeesPage() {
       sortable: true,
       render: (fee) => (
         <span className="font-semibold text-gray-900 dark:text-white text-sm">
-          {formatCurrency(fee.amount, countryCode)}
+          {money(fee.amount)}
         </span>
       ),
     },
@@ -285,7 +337,7 @@ export default function ParentFeesPage() {
       sortable: true,
       render: (fee) => (
         <span className="font-medium text-green-600 dark:text-green-400 text-sm">
-          {formatCurrency(fee.paidAmount, countryCode)}
+          {money(fee.paidAmount)}
         </span>
       ),
     },
@@ -297,7 +349,7 @@ export default function ParentFeesPage() {
         <span className={`font-semibold text-sm ${
           fee.balance > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
         }`}>
-          {formatCurrency(fee.balance, countryCode)}
+          {money(fee.balance)}
         </span>
       ),
     },
@@ -330,14 +382,20 @@ export default function ParentFeesPage() {
           {fee.balance > 0 && (
             <Link
               href={`/parents/fees/pay?fee=${fee.id}`}
-              className="px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-medium transition-colors"
+              className="inline-flex h-8 items-center justify-center rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-semibold transition-colors px-3 whitespace-nowrap"
             >
               Pay Now
             </Link>
           )}
           {fee.paymentHistory.length > 0 && (
-            <button className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-              <Receipt className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <button
+              type="button"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              aria-label="View receipt"
+            >
+              <span className="text-[13px] font-extrabold text-gray-700 dark:text-gray-200 leading-none">
+                {currencySymbol}
+              </span>
             </button>
           )}
         </div>
@@ -372,7 +430,7 @@ export default function ParentFeesPage() {
               <Link href="/parents/fees/pay">
                 <Button variant="primary">
                   <CreditCard className="w-4 h-4 mr-2" />
-                  Pay Outstanding ({formatCurrency(stats.totalBalance, countryCode)})
+                  Pay Outstanding ({money(stats.totalBalance)})
                 </Button>
               </Link>
             )}
@@ -384,19 +442,19 @@ export default function ParentFeesPage() {
           <StatCard
             icon={Banknote}
             label="Total Fees"
-            value={formatCurrency(stats.totalAmount, countryCode)}
+            value={money(stats.totalAmount)}
             color="blue"
           />
           <StatCard
             icon={CheckCircle2}
             label="Total Paid"
-            value={formatCurrency(stats.totalPaid, countryCode)}
+            value={money(stats.totalPaid)}
             color="green"
           />
           <StatCard
             icon={Clock}
             label="Outstanding"
-            value={formatCurrency(stats.totalBalance, countryCode)}
+            value={money(stats.totalBalance)}
             color={stats.totalBalance > 0 ? "red" : "green"}
           />
           <StatCard
@@ -418,7 +476,7 @@ export default function ParentFeesPage() {
                 </div>
                 <div>
                   <p className="font-semibold text-red-700 dark:text-red-400">
-                    Outstanding Balance: {formatCurrency(stats.totalBalance, countryCode)}
+                    Outstanding Balance: {money(stats.totalBalance)}
                   </p>
                   <p className="text-sm text-red-600/80 dark:text-red-400/70">
                     Please clear your outstanding balance to avoid late fees and service disruptions.
@@ -457,18 +515,30 @@ export default function ParentFeesPage() {
           ]}
         />
 
-        {/* Fee Table */}
-        <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
-          <DataTable
-            data={filteredFees}
-            columns={columns}
-            getRowKey={(fee) => fee.id}
-            emptyMessage="No fee records found"
-            title=""
-            showSearch={false}
-            defaultItemsPerPage={10}
-            enablePagination={true}
-          />
+        {/* Fee Table (match /finance/installments behavior) */}
+        <div className="relative">
+          {/* Mobile Scroll Indicator */}
+          <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none" />
+
+          <div
+            ref={tableWrapRef}
+            key={`fees-table-${filterKey}`}
+            className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden"
+          >
+            <DataTable
+              data={filteredFees}
+              columns={columns}
+              getRowKey={(fee) => fee.id}
+              emptyMessage="No fee records found"
+              title=""
+              showSearch={false}
+              defaultItemsPerPage={10}
+              itemsPerPageOptions={[5, 10, 15, 20, 25]}
+              enablePagination={true}
+              enableItemsPerPage={true}
+              stickyColumnCount={1}
+            />
+          </div>
         </div>
 
         {/* Payment Methods Info */}

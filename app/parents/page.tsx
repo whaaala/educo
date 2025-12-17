@@ -264,18 +264,23 @@ export default function ParentDashboardPage() {
     },
   ];
 
+  // Default dashboard order (PRD-aligned for Parents): fees + communication + progress first.
+  // PRD highlights Parent priorities as: Progress, chat/communication, fees/payments.
   const defaultOrder = [
+    // Highest importance
+    "my-children",
     "fees-reminder",
     "messages",
     "recent-grades",
     "exam-results",
+    // Next
     "homework",
+    "payment-history",
     "events",
+    "notice-board",
+    // Lowest importance / utility
     "leave-requests",
     "quick-links",
-    "payment-history",
-    "notice-board",
-    "my-children",
     "quick-actions",
     "parent-profile",
   ];

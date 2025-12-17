@@ -91,14 +91,14 @@ export function MyChildrenCard({
 }) {
   return (
     <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-md transition-shadow duration-300 p-3">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40 midnight:from-cyan-900/40 midnight:to-indigo-900/40 purple:from-pink-900/40 purple:to-purple-900/40 shadow-sm">
             <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
-          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">My Children</span>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">My Children</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <span className="text-[10px] font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 midnight:from-cyan-500 midnight:to-indigo-500 purple:from-pink-500 purple:to-purple-500 px-2.5 py-1 rounded-full shadow-sm">
             {children.length}
           </span>
@@ -166,9 +166,11 @@ export function MyChildrenCard({
 export function QuickActionsCard() {
   return (
     <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-md transition-shadow duration-300 p-3">
-      <div className="flex items-center justify-between mb-2.5">
-        <h4 className="text-xs font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Quick Actions</h4>
-        <DashboardDragHandle />
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+        <h4 className="text-xs font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 min-w-0 truncate">Quick Actions</h4>
+        <div className="shrink-0">
+          <DashboardDragHandle />
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <button
@@ -207,14 +209,14 @@ export function PaymentHistoryCard({
 }) {
   return (
     <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-md transition-shadow duration-300 p-3">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-2 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/40 dark:to-emerald-900/40 midnight:from-emerald-900/40 midnight:to-green-900/40 purple:from-green-900/40 purple:to-emerald-900/40 shadow-sm">
             <CreditCard className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
           </div>
-          <h4 className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Payment History</h4>
+          <h4 className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Payment History</h4>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Link href="/parents/fees" className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline">
             View All
           </Link>
@@ -258,14 +260,14 @@ export function ExamResultsCard({ results }: { results: ExamResultItem[] }) {
   return (
     <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-500/5 via-transparent to-transparent dark:from-indigo-400/10 midnight:from-indigo-400/10 purple:from-pink-400/10 pointer-events-none" />
-      <div className="relative px-3 py-2.5 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
-        <div className="flex items-center gap-2.5">
+      <div className="relative px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-pink-900/30">
             <GraduationCap className="w-4 h-4 text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-pink-400" />
           </div>
-          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Exam Results</span>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Exam Results</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Link
             href="/parents/results"
             className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
@@ -343,14 +345,14 @@ export function RecentGradesCard({
   return (
     <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-500/5 via-transparent to-transparent dark:from-blue-400/10 midnight:from-cyan-400/10 purple:from-pink-400/10 pointer-events-none" />
-      <div className="relative px-3 py-2.5 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
-        <div className="flex items-center gap-2.5">
+      <div className="relative px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
             <Award className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
-          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Recent Grades</span>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Recent Grades</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Link
             href={`/parents/children/${selectedChildId}`}
             className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
@@ -394,14 +396,14 @@ export function EventsCard({ events }: { events: ParentEvent[] }) {
   return (
     <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-500/5 via-transparent to-transparent dark:from-purple-400/10 midnight:from-indigo-400/10 purple:from-pink-400/10 pointer-events-none" />
-      <div className="relative px-3 py-2.5 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
-        <div className="flex items-center gap-2.5">
+      <div className="relative px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-900/30 midnight:bg-indigo-900/30 purple:bg-pink-900/30">
             <CalendarDays className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-indigo-400 purple:text-pink-400" />
           </div>
-          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Events</span>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Events</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Link
             href="/parents/events"
             className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"

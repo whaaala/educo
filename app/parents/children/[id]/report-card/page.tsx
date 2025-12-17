@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -112,6 +112,51 @@ const TERMS: Term[] = ["First Term", "Second Term", "Third Term"];
 const currentYear = new Date().getFullYear();
 const ACADEMIC_YEARS = Array.from({ length: 3 }, (_, i) => (currentYear - 1 + i).toString());
 
+function ResponsiveReportPreview({ children }: { children: React.ReactNode }) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const [scale, setScale] = useState(1);
+  const [scaledHeight, setScaledHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const content = contentRef.current;
+    if (!container || !content) return;
+
+    const compute = () => {
+      // Use offset* so transforms don't affect measurement
+      const containerWidth = container.clientWidth;
+      const contentWidth = content.offsetWidth;
+      const contentHeight = content.offsetHeight;
+      if (!containerWidth || !contentWidth || !contentHeight) return;
+
+      const nextScale = Math.min(1, containerWidth / contentWidth);
+      setScale(nextScale);
+      setScaledHeight(contentHeight * nextScale);
+    };
+
+    compute();
+    const ro = new ResizeObserver(() => compute());
+    ro.observe(container);
+    ro.observe(content);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div ref={containerRef} className="w-full overflow-hidden">
+      {/* Reserve vertical space so layout doesn't jump when scaling */}
+      <div style={{ height: scaledHeight ?? undefined }} className="w-full">
+        <div
+          style={{ transform: `scale(${scale})`, transformOrigin: "top center" }}
+          className="w-full flex justify-center"
+        >
+          <div ref={contentRef}>{children}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ReportCardPage() {
   const params = useParams();
   const childId = params?.id as string;
@@ -125,6 +170,7 @@ export default function ReportCardPage() {
   const child = MOCK_CHILDREN[childId];
   const academicData = MOCK_ACADEMIC_SUMMARY[childId];
   const attendanceData = MOCK_ATTENDANCE[childId];
+  const previewKey = useMemo(() => `${childId}-${selectedTerm}-${selectedYear}`, [childId, selectedTerm, selectedYear]);
 
   // Handle print
   const handlePrint = useReactToPrint({
@@ -669,11 +715,11 @@ export default function ReportCardPage() {
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent rounded-t-2xl" />
 
           <div className="relative px-4 py-3 sm:px-5 sm:py-4">
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               {/* Left Section: Student + Period */}
-              <div className="flex flex-wrap items-center gap-4 lg:gap-5">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4 lg:gap-5 min-w-0">
                 {/* Student Card */}
-                <div className="flex items-center gap-3 pr-4 lg:pr-5 lg:border-r border-slate-200/70 dark:border-slate-700/50">
+                <div className="flex items-center gap-3 pr-0 sm:pr-4 lg:pr-5 sm:border-r border-slate-200/70 dark:border-slate-700/50 min-w-0">
                   <div
                     className="relative cursor-pointer group/avatar flex-shrink-0 w-11 h-11 z-10"
                     onMouseEnter={(e) => {
@@ -709,8 +755,8 @@ export default function ReportCardPage() {
                 </div>
 
                 {/* Period Selection */}
-                <div className="flex items-center gap-2">
-                  <div className="w-32">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                  <div className="w-full sm:w-32">
                     <FormDropdown
                       label=""
                       icon={<Calendar className="w-full h-full" />}
@@ -720,7 +766,7 @@ export default function ReportCardPage() {
                       placeholder="Select term"
                     />
                   </div>
-                  <div className="w-28">
+                  <div className="w-full sm:w-28">
                     <FormDropdown
                       label=""
                       icon={<GraduationCap className="w-full h-full" />}
@@ -756,11 +802,11 @@ export default function ReportCardPage() {
               </div>
 
               {/* Right Section: Actions */}
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
                 <Button
                   onClick={handlePrint}
                   variant="outline"
-                  className="gap-2"
+                  className="gap-2 w-full sm:w-auto justify-center"
                 >
                   <Printer className="w-4 h-4" />
                   <span className="hidden sm:inline">Print</span>
@@ -768,7 +814,7 @@ export default function ReportCardPage() {
                 <Button
                   onClick={handleDownloadPDF}
                   variant="primary"
-                  className="gap-2"
+                  className="gap-2 w-full sm:w-auto justify-center"
                 >
                   <Download className="w-4 h-4" />
                   <span className="hidden sm:inline">Download PDF</span>
@@ -777,7 +823,7 @@ export default function ReportCardPage() {
             </div>
 
             {/* Mobile/Tablet Stats Row */}
-            <div className="xl:hidden flex items-center justify-center gap-3 mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/40">
+            <div className="xl:hidden flex flex-wrap items-center justify-center gap-2 mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/40">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
@@ -798,10 +844,11 @@ export default function ReportCardPage() {
           </div>
         </div>
 
-        {/* Report Card Preview - Full Width */}
-        <div className="no-print">
-          <ReportCardTemplate
-            ref={printRef}
+        {/* Report Card Preview (screen): scale-to-fit, no horizontal scrolling */}
+        <div className="no-print -mx-4 sm:mx-0 px-4 sm:px-0">
+          <ResponsiveReportPreview key={previewKey}>
+            <ReportCardTemplate
+              ref={printRef}
             // School Info
             schoolName={currentTenant?.name || settings.schoolName}
             schoolMotto={currentTenant?.branding?.motto}
@@ -860,7 +907,8 @@ export default function ReportCardPage() {
             viewerType="parent"
             // Tenant-level report card configuration
             config={currentTenant?.branding?.reportCardConfig}
-          />
+            />
+          </ResponsiveReportPreview>
         </div>
 
         {/* Parent Portal Notice */}

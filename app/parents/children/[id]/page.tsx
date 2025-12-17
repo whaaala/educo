@@ -1002,23 +1002,24 @@ export default function ChildDetailPage() {
 
         {/* Profile Card - Hero Section */}
         <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 shadow-sm">
-          <div className="relative p-4">
+          <div className="relative p-4 sm:p-5">
             {/* Main Content Row */}
-            <div className="flex items-start gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-4">
               {/* Profile Photo */}
               <div className="relative flex-shrink-0">
                 <div className="absolute -inset-1 bg-gradient-to-br from-blue-400/60 via-purple-400/60 to-pink-400/60 rounded-xl blur-[2px]" />
-                <div className="relative w-16 h-16 rounded-lg overflow-hidden ring-2 ring-white dark:ring-gray-800">
+                <div className="relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-lg overflow-hidden ring-2 ring-white dark:ring-gray-800">
                   <Image
                     src={child.profilePhoto || `https://i.pravatar.cc/150?u=${child.id}`}
                     alt={child.fullName}
                     fill
+                    sizes="(max-width: 640px) 56px, (max-width: 1024px) 64px, 80px"
                     className="object-cover"
                     unoptimized
                   />
                 </div>
                 {/* Status indicator */}
-                <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full ring-2 ring-white dark:ring-gray-800 flex items-center justify-center ${
+                <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 lg:w-5 lg:h-5 rounded-full ring-2 ring-white dark:ring-gray-800 flex items-center justify-center ${
                   child.status === "Active" ? "bg-emerald-400" : "bg-gray-400"
                 }`}>
                   {child.status === "Active" && (
@@ -1030,7 +1031,7 @@ export default function ChildDetailPage() {
               {/* Info Section */}
               <div className="flex-1 min-w-0">
                 {/* Name and status row */}
-                <div className="flex items-center gap-2 mb-1.5">
+                <div className="flex flex-wrap items-center gap-2 mb-1.5">
                   <h1 className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight truncate">
                     {child.fullName}
                   </h1>
@@ -1064,22 +1065,24 @@ export default function ChildDetailPage() {
                 </div>
 
                 {/* Action buttons - using ActionButton component */}
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 w-full">
                   <ActionButton
                     variant="secondary"
                     color="blue"
                     size="md"
                     icon={<MessageSquare className="w-full h-full" />}
                     onClick={() => setIsMessageModalOpen(true)}
+                    className="w-full sm:w-auto justify-center"
                   >
                     Message Teacher
                   </ActionButton>
-                  <Link href={`/parents/children/${child.id}/report-card`}>
+                  <Link href={`/parents/children/${child.id}/report-card`} className="w-full sm:w-auto">
                     <ActionButton
                       variant="primary"
                       color="emerald"
                       size="md"
                       icon={<FileText className="w-full h-full" />}
+                      className="w-full sm:w-auto justify-center"
                     >
                       View Report Card
                     </ActionButton>
@@ -1089,7 +1092,7 @@ export default function ChildDetailPage() {
             </div>
 
             {/* Stats Row - Compact Card Design */}
-            <div className="grid grid-cols-4 gap-3 mt-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mt-5">
               <div className="group relative flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-blue-50/80 to-white dark:from-blue-900/20 dark:to-gray-800/50 border border-gray-100 dark:border-gray-700/50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <div className="flex-shrink-0 p-2.5 rounded-xl bg-blue-100 dark:bg-blue-900/50">
                   <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -1195,14 +1198,14 @@ export default function ChildDetailPage() {
         </div>
 
         {/* Tab Content */}
-        <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700/50 p-6 overflow-hidden">
+        <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700/50 p-4 sm:p-6 overflow-hidden">
           {/* Decorative background */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-500/5 via-purple-500/3 to-transparent pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-indigo-500/5 to-transparent pointer-events-none" />
+          <div className="absolute top-0 right-0 w-40 h-40 sm:w-64 sm:h-64 lg:w-96 lg:h-96 bg-gradient-to-bl from-blue-500/5 via-purple-500/3 to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 bg-gradient-to-tr from-indigo-500/5 to-transparent pointer-events-none" />
 
           {/* Overview Tab */}
           {activeTab === "overview" && (
-            <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-8">
               {/* Recent Performance */}
               <div className="space-y-5">
                 <div className="flex items-center gap-3">

@@ -39,6 +39,13 @@ export interface DataTableProps<T> {
   onClearFilters?: () => void;
   hasActiveFilters?: boolean;
   totalDataCount?: number;
+  /**
+   * Number of sticky columns on small screens.
+   * - 0: none sticky
+   * - 1: first column sticky
+   * - 2: first two columns sticky (default, matches existing behavior)
+   */
+  stickyColumnCount?: 0 | 1 | 2;
 }
 
 export default function DataTable<T>({
@@ -59,6 +66,7 @@ export default function DataTable<T>({
   onClearFilters,
   hasActiveFilters = false,
   totalDataCount,
+  stickyColumnCount = 2,
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -270,12 +278,13 @@ export default function DataTable<T>({
                 const isCenterAligned = column.className?.includes('text-center') || !isLeftAligned;
                 const justifyClass = isLeftAligned ? 'justify-start' : 'justify-center';
 
-                // Make first two columns sticky on mobile - first column needs higher z-index than second
-                const stickyClass = index === 0
-                  ? 'md:relative md:left-auto sticky left-0 z-40 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800'
-                  : index === 1
-                  ? 'md:relative md:left-auto sticky left-[80px] z-30 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800'
-                  : '';
+                // Make first N columns sticky on mobile - first column needs higher z-index than second
+                const stickyClass =
+                  stickyColumnCount >= 1 && index === 0
+                    ? 'md:relative md:left-auto sticky left-0 z-40 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800'
+                    : stickyColumnCount >= 2 && index === 1
+                    ? 'md:relative md:left-auto sticky left-[80px] z-30 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800'
+                    : '';
 
                 return (
                 <th
@@ -374,11 +383,12 @@ export default function DataTable<T>({
                   {columns.map((column, colIndex) => {
                     // Make first two columns sticky on mobile with shadow to indicate more content
                     // First column needs higher z-index than second to prevent overlap when scrolling
-                    const stickyClass = colIndex === 0
-                      ? 'md:relative md:left-auto sticky left-0 z-30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none'
-                      : colIndex === 1
-                      ? 'md:relative md:left-auto sticky left-[80px] z-20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none'
-                      : '';
+                    const stickyClass =
+                      stickyColumnCount >= 1 && colIndex === 0
+                        ? 'md:relative md:left-auto sticky left-0 z-30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none'
+                        : stickyColumnCount >= 2 && colIndex === 1
+                        ? 'md:relative md:left-auto sticky left-[80px] z-20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none'
+                        : '';
 
                     // Determine alignment from className - check if explicitly set, otherwise use center as default
                     const hasTextAlignment = column.className?.includes('text-left') || column.className?.includes('text-center') || column.className?.includes('text-right');

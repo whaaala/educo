@@ -53,7 +53,23 @@ export function DashboardDragHandle({
   className?: string;
 }) {
   const ctx = React.useContext(DragHandleContext);
-  if (!ctx) return null;
+  // During SSR / first client render we intentionally render a "static" handle
+  // (DnD is enabled after mount) to avoid hydration mismatches from @dnd-kit.
+  if (!ctx) {
+    return (
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-hidden="true"
+        className={
+          className ??
+          "inline-flex h-7 w-7 shrink-0 touch-none items-center justify-center rounded-md border border-gray-200/80 bg-white/90 text-gray-700 shadow-sm backdrop-blur transition-colors dark:border-gray-700/70 dark:bg-gray-900/70 dark:text-gray-200 cursor-grab"
+        }
+      >
+        <Grip className="h-4 w-4" />
+      </button>
+    );
+  }
 
   return (
     <button
@@ -61,7 +77,7 @@ export function DashboardDragHandle({
       type="button"
       className={
         className ??
-        `inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-200/80 bg-white/90 text-gray-700 shadow-sm backdrop-blur transition-colors hover:bg-white hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:border-gray-700/70 dark:bg-gray-900/70 dark:text-gray-200 dark:hover:bg-gray-900 dark:hover:text-white dark:focus:ring-blue-400/40 ${
+        `inline-flex h-7 w-7 shrink-0 touch-none items-center justify-center rounded-md border border-gray-200/80 bg-white/90 text-gray-700 shadow-sm backdrop-blur transition-colors hover:bg-white hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:border-gray-700/70 dark:bg-gray-900/70 dark:text-gray-200 dark:hover:bg-gray-900 dark:hover:text-white dark:focus:ring-blue-400/40 ${
           ctx.isDragging ? "cursor-grabbing" : "cursor-grab"
         }`
       }
@@ -162,7 +178,22 @@ function SortableMasonryCard({
   );
 }
 
+function StaticMasonryCard({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative group break-inside-avoid mb-3 inline-block w-full align-top">
+      <div className="[&>*]:!m-0">{children}</div>
+    </div>
+  );
+}
+
 export function ParentDashboardMasonryDnD({ cards, order, onOrderChange }: ParentDashboardMasonryDnDProps) {
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => setIsMounted(true), []);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -189,6 +220,18 @@ export function ParentDashboardMasonryDnD({ cards, order, onOrderChange }: Paren
   const activeCard = useMemo(() => (activeId ? cardsById.get(activeId) : undefined), [activeId, cardsById]);
   const activeSize = activeId ? sizesById[activeId] : undefined;
 
+  // Avoid SSR hydration mismatch: @dnd-kit generates non-deterministic ids for a11y elements.
+  // Render a static masonry layout until the component is mounted on the client.
+  if (!isMounted) {
+    return (
+      <div className="columns-1 sm:columns-2 lg:columns-3 2xl:columns-4 gap-3 [column-fill:balance]">
+        {orderedCards.map((card) => (
+          <StaticMasonryCard key={card.id}>{card.content}</StaticMasonryCard>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <DndContext
       sensors={sensors}
@@ -206,7 +249,7 @@ export function ParentDashboardMasonryDnD({ cards, order, onOrderChange }: Paren
       onDragCancel={() => setActiveId(null)}
     >
       <SortableContext items={orderedIds} strategy={rectSortingStrategy}>
-        <div className="columns-1 md:columns-2 xl:columns-3 gap-3 [column-fill:balance]">
+        <div className="columns-1 sm:columns-2 lg:columns-3 2xl:columns-4 gap-3 [column-fill:balance]">
           {orderedCards.map((card) => (
             <SortableMasonryCard
               key={card.id}
