@@ -20,9 +20,11 @@ import {
   GraduationCap,
   Mail,
   Minus,
+  Phone,
   Send,
   TrendingUp,
   Users,
+  Video,
   Zap,
 } from "lucide-react";
 import { DashboardDragHandle } from "@/components/parents/dashboard/parent-dashboard-masonry-dnd";
@@ -38,6 +40,8 @@ import type {
   ParentMessage,
   ParentProfile,
   PaymentHistoryItem,
+  UpcomingMeeting,
+  MeetingPlatform,
 } from "@/components/parents/dashboard/models";
 
 function formatShortDate(dateStr: string) {
@@ -281,53 +285,60 @@ export function ExamResultsCard({ results }: { results: ExamResultItem[] }) {
         {results.map((result) => (
           <div
             key={result.id}
-            className={`group flex items-center gap-3 p-2.5 rounded-xl border transition-all duration-200 hover:shadow-md hover:-translate-x-0.5 ${
+            className={`group p-2.5 rounded-xl border transition-all duration-200 hover:shadow-md ${
               result.status === "pass"
                 ? "bg-gradient-to-r from-green-50/50 to-white dark:from-green-900/10 dark:to-gray-700/10 midnight:from-green-900/10 midnight:to-gray-800/20 purple:from-green-900/10 purple:to-gray-800/20 border-green-100 dark:border-green-700/20 midnight:border-green-700/15 purple:border-green-700/15 hover:border-green-300 dark:hover:border-green-500/40"
                 : "bg-gradient-to-r from-red-50/50 to-white dark:from-red-900/10 dark:to-gray-700/10 midnight:from-red-900/10 midnight:to-gray-800/20 purple:from-red-900/10 purple:to-gray-800/20 border-red-100 dark:border-red-700/20 midnight:border-red-700/15 purple:border-red-700/15 hover:border-red-300 dark:hover:border-red-500/40"
             }`}
           >
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <div className="relative flex-shrink-0">
-                <div className="w-10 h-10 rounded-xl overflow-hidden ring-2 ring-white dark:ring-gray-700 shadow-md">
-                  <Image src={result.studentPhoto} alt={result.studentName} width={40} height={40} className="object-cover" unoptimized />
+            <div className="flex flex-col gap-2">
+              {/* Top row: Photo + Name + View Button */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-8 h-8 rounded-lg overflow-hidden ring-2 ring-white dark:ring-gray-700 shadow-sm">
+                      <Image src={result.studentPhoto} alt={result.studentName} width={32} height={32} className="object-cover" unoptimized />
+                    </div>
+                    <div
+                      className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center ${
+                        result.status === "pass" ? "bg-green-500" : "bg-red-500"
+                      }`}
+                    >
+                      {result.status === "pass" ? <CheckCircle2 className="w-2 h-2 text-white" /> : <AlertTriangle className="w-2 h-2 text-white" />}
+                    </div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate">{result.studentName}</p>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 truncate">
+                      {result.class}-{result.section} • {result.examType}
+                    </p>
+                  </div>
                 </div>
-                <div
-                  className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center ${
-                    result.status === "pass" ? "bg-green-500" : "bg-red-500"
-                  }`}
+                <button
+                  className="flex-shrink-0 p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-pink-900/30 text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-pink-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all duration-200 group-hover:scale-105 cursor-pointer"
+                  type="button"
                 >
-                  {result.status === "pass" ? <CheckCircle2 className="w-2.5 h-2.5 text-white" /> : <AlertTriangle className="w-2.5 h-2.5 text-white" />}
+                  <Eye className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Bottom row: Progress bar + Percentage */}
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 midnight:bg-gray-700 purple:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      result.percentage >= 70 ? "bg-gradient-to-r from-green-400 to-emerald-500" : "bg-gradient-to-r from-amber-400 to-orange-500"
+                    }`}
+                    style={{ width: `${result.percentage}%` }}
+                  />
                 </div>
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate">{result.studentName}</p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400">
-                  {result.class}-{result.section} • {result.examType}
-                </p>
+                <span
+                  className={`text-sm font-bold min-w-[36px] text-right ${result.percentage >= 70 ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}
+                >
+                  {result.percentage}%
+                </span>
               </div>
             </div>
-            <div className="flex-shrink-0 flex items-center gap-2">
-              <div className="w-20 h-2 bg-gray-200 dark:bg-gray-700 midnight:bg-gray-700 purple:bg-gray-700 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    result.percentage >= 70 ? "bg-gradient-to-r from-green-400 to-emerald-500" : "bg-gradient-to-r from-amber-400 to-orange-500"
-                  }`}
-                  style={{ width: `${result.percentage}%` }}
-                />
-              </div>
-              <span
-                className={`text-sm font-bold min-w-[36px] text-right ${result.percentage >= 70 ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}
-              >
-                {result.percentage}%
-              </span>
-            </div>
-            <button
-              className="flex-shrink-0 p-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-pink-900/30 text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-pink-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all duration-200 group-hover:scale-105"
-              type="button"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
           </div>
         ))}
       </div>
@@ -559,9 +570,11 @@ export function HomeworkCard({ homework }: { homework: HomeworkItem[] }) {
 export function FeesReminderCard({
   reminders,
   countryCode,
+  onPayNow,
 }: {
   reminders: FeeReminderItem[];
   countryCode: string;
+  onPayNow?: (fee: FeeReminderItem) => void;
 }) {
   return (
     <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
@@ -620,7 +633,8 @@ export function FeesReminderCard({
               </div>
               <Button
                 size="sm"
-                className={`text-[10px] px-3 py-1.5 font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 ${
+                onClick={() => onPayNow?.(fee)}
+                className={`text-[10px] px-3 py-1.5 font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer ${
                   fee.status === "overdue"
                     ? "bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700"
                     : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
@@ -667,7 +681,7 @@ export function MessagesCard({ messages }: { messages: ParentMessage[] }) {
         {messages.map((msg) => (
           <Link
             key={msg.id}
-            href={`/parents/messages/${msg.id}`}
+            href={`/parents/messages?selected=${msg.id}`}
             className={`group flex items-center gap-3 p-2.5 rounded-xl border transition-all duration-200 hover:shadow-md hover:-translate-x-0.5 ${
               msg.unread
                 ? "bg-gradient-to-r from-teal-50/80 to-white dark:from-teal-900/20 dark:to-gray-700/10 midnight:from-teal-900/20 midnight:to-gray-800/20 purple:from-teal-900/20 purple:to-gray-800/20 border-teal-100 dark:border-teal-700/30 midnight:border-teal-700/20 purple:border-teal-700/20 hover:border-teal-300 dark:hover:border-teal-500/40"
@@ -784,6 +798,138 @@ export function QuickLinksCard({ selectedChildId }: { selectedChildId: string })
           </span>
           <ChevronRight className="w-4 h-4 text-gray-400 ml-auto group-hover:text-green-500 dark:group-hover:text-green-400 group-hover:translate-x-0.5 transition-all duration-200" />
         </Link>
+      </div>
+    </div>
+  );
+}
+
+// Platform info helper for meetings
+function getMeetingPlatformInfo(platform: MeetingPlatform) {
+  switch (platform) {
+    case "zoom":
+      return {
+        name: "Zoom",
+        bgClass: "bg-blue-100 dark:bg-blue-900/40",
+        textClass: "text-blue-600 dark:text-blue-400",
+        icon: <Video className="w-3 h-3" />,
+      };
+    case "google-meet":
+      return {
+        name: "Meet",
+        bgClass: "bg-green-100 dark:bg-green-900/40",
+        textClass: "text-green-600 dark:text-green-400",
+        icon: <Video className="w-3 h-3" />,
+      };
+    case "whatsapp-video":
+      return {
+        name: "WhatsApp",
+        bgClass: "bg-emerald-100 dark:bg-emerald-900/40",
+        textClass: "text-emerald-600 dark:text-emerald-400",
+        icon: <Video className="w-3 h-3" />,
+      };
+    case "whatsapp-voice":
+      return {
+        name: "WhatsApp",
+        bgClass: "bg-emerald-100 dark:bg-emerald-900/40",
+        textClass: "text-emerald-600 dark:text-emerald-400",
+        icon: <Phone className="w-3 h-3" />,
+      };
+    case "educo-meet":
+      return {
+        name: "Educo",
+        bgClass: "bg-indigo-100 dark:bg-indigo-900/40",
+        textClass: "text-indigo-600 dark:text-indigo-400",
+        icon: <Video className="w-3 h-3" />,
+      };
+  }
+}
+
+function formatMeetingDate(dateStr: string) {
+  const date = new Date(dateStr);
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  if (date.toDateString() === today.toDateString()) {
+    return "Today";
+  } else if (date.toDateString() === tomorrow.toDateString()) {
+    return "Tomorrow";
+  }
+  return date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+}
+
+export function UpcomingMeetingsCard({ meetings }: { meetings: UpcomingMeeting[] }) {
+  const upcomingMeetings = meetings.filter((m) => m.status === "scheduled" || m.status === "in-progress");
+
+  return (
+    <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-violet-500/5 via-transparent to-transparent dark:from-violet-400/10 midnight:from-violet-400/10 purple:from-pink-400/10 pointer-events-none" />
+      <div className="relative px-3 py-2.5 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-violet-50 dark:bg-violet-900/30 midnight:bg-violet-900/30 purple:bg-pink-900/30">
+            <Video className="w-4 h-4 text-violet-600 dark:text-violet-400 midnight:text-violet-400 purple:text-pink-400" />
+          </div>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Upcoming Meetings</span>
+          {upcomingMeetings.length > 0 && (
+            <span className="text-[9px] font-bold text-white bg-gradient-to-r from-violet-500 to-purple-500 px-1.5 py-0.5 rounded-full shadow-sm min-w-[18px] text-center">
+              {upcomingMeetings.length}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/parents/meetings"
+            className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+          >
+            View All <ChevronRight className="w-3 h-3" />
+          </Link>
+          <DashboardDragHandle />
+        </div>
+      </div>
+      <div className="relative flex-1 px-3 py-2.5 flex flex-col justify-between gap-2">
+        {upcomingMeetings.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <div className="p-3 rounded-full bg-gray-100 dark:bg-gray-700/50 mb-2">
+              <Video className="w-5 h-5 text-gray-400" />
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">No upcoming meetings</p>
+          </div>
+        ) : (
+          upcomingMeetings.slice(0, 3).map((meeting) => {
+            const platformInfo = getMeetingPlatformInfo(meeting.platform);
+            return (
+              <Link
+                key={meeting.id}
+                href="/parents/meetings"
+                className="group flex items-center gap-3 p-2.5 rounded-xl bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-700/30 dark:to-gray-700/10 midnight:from-gray-800/40 midnight:to-gray-800/20 purple:from-gray-800/40 purple:to-gray-800/20 border border-gray-100 dark:border-gray-600/20 midnight:border-gray-600/15 purple:border-gray-600/15 hover:border-violet-200 dark:hover:border-violet-500/30 hover:shadow-md hover:-translate-x-0.5 transition-all duration-200"
+              >
+                <div className="relative flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl overflow-hidden ring-2 ring-white dark:ring-gray-700 shadow-md">
+                    <Image src={meeting.hostPhoto} alt={meeting.hostName} width={40} height={40} className="object-cover" unoptimized />
+                  </div>
+                  <div className={`absolute -bottom-1 -right-1 p-1 rounded-md ${platformInfo.bgClass} ${platformInfo.textClass} shadow-sm`}>
+                    {platformInfo.icon}
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                    {meeting.title}
+                  </p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 truncate">
+                    {meeting.hostName} • {meeting.hostRole}
+                  </p>
+                </div>
+                <div className="flex-shrink-0 text-right">
+                  <p className="text-[11px] font-bold text-gray-900 dark:text-white">{formatMeetingDate(meeting.scheduledDate)}</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center justify-end gap-1">
+                    <Clock className="w-2.5 h-2.5" />
+                    {meeting.scheduledTime}
+                  </p>
+                </div>
+              </Link>
+            );
+          })
+        )}
       </div>
     </div>
   );

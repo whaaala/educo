@@ -33,6 +33,7 @@ import {
   Star,
   MessageSquare,
   Receipt,
+  Video,
 } from "lucide-react";
 import TenantSwitcher from "@/components/admin/TenantSwitcher";
 
@@ -101,6 +102,7 @@ const menuItems: MenuItem[] = [
           { id: "my-children", label: "My Children", icon: <GraduationCap className="w-4 h-4" />, href: "/parents/children" },
           { id: "parent-fees", label: "Fees & Payments", icon: <Receipt className="w-4 h-4" />, href: "/parents/fees" },
           { id: "parent-messages", label: "Messages", icon: <MessageSquare className="w-4 h-4" />, href: "/parents/messages" },
+          { id: "parent-meetings", label: "Video Calls & Meetings", icon: <Video className="w-4 h-4" />, href: "/parents/meetings" },
         ]
       },
       {

@@ -15,6 +15,8 @@ import StatCard from "@/components/shared/StatCard";
 import Button from "@/components/shared/Button";
 import ActionButton from "@/components/shared/ActionButton";
 import MessageTeacherModal from "@/components/parents/MessageTeacherModal";
+import PaymentModal from "@/components/shared/PaymentModal";
+import SuccessModal from "@/components/shared/SuccessModal";
 import {
   Users,
   GraduationCap,
@@ -271,6 +273,8 @@ export default function ChildDetailPage() {
 
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isPaymentSuccessModalOpen, setIsPaymentSuccessModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
 
@@ -2053,15 +2057,16 @@ export default function ChildDetailPage() {
 
               {/* Pay Button */}
               {(feeData?.balance || 0) > 0 && (
-                <Link
-                  href={`/parents/fees/pay?child=${child.id}`}
-                  className="group relative flex items-center justify-center gap-3 w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:via-green-600 hover:to-teal-600 text-white font-semibold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:-translate-y-0.5 overflow-hidden"
+                <button
+                  type="button"
+                  onClick={() => setIsPaymentModalOpen(true)}
+                  className="group relative flex items-center justify-center gap-3 w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:via-green-600 hover:to-teal-600 text-white font-semibold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:-translate-y-0.5 overflow-hidden cursor-pointer"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:200%_100%] animate-shimmer opacity-0 group-hover:opacity-100" />
                   <CreditCard className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform" />
                   <span className="relative z-10">Pay Outstanding Balance ({formatCurrency(feeData?.balance || 0, countryCode)})</span>
-                </Link>
+                </button>
               )}
 
               {/* Cleared Status */}
@@ -2622,6 +2627,40 @@ export default function ChildDetailPage() {
         childName={child.fullName}
         childClass={`${child.classLevel}${child.section ? ` ${child.section}` : ""}`}
       />
+
+      {/* Payment Modal */}
+      {feeData && (feeData.balance || 0) > 0 && (
+        <PaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          onPaymentComplete={() => {
+            setIsPaymentModalOpen(false);
+            setIsPaymentSuccessModalOpen(true);
+          }}
+          title="Pay Outstanding Balance"
+          itemType={`School Fees for ${child.fullName} (${child.classLevel}${child.section ? ` ${child.section}` : ""})`}
+          amount={feeData.balance}
+          currency="₦"
+        />
+      )}
+
+      {/* Payment Success Modal */}
+      {feeData && (
+        <SuccessModal
+          isOpen={isPaymentSuccessModalOpen}
+          onClose={() => setIsPaymentSuccessModalOpen(false)}
+          title="Payment Successful!"
+          subtitle="Your fee payment has been processed successfully."
+          fields={[
+            { label: "Student", value: child.fullName },
+            { label: "Class", value: `${child.classLevel}${child.section ? ` ${child.section}` : ""}` },
+            { label: "Amount Paid", value: `₦${(feeData.balance || 0).toLocaleString()}` },
+            { label: "Date", value: new Date().toLocaleDateString() },
+          ]}
+          note="A receipt has been sent to your email. You can also view this payment in the Payment History section."
+          closeButtonText="Done"
+        />
+      )}
     </MainLayout>
   );
 }

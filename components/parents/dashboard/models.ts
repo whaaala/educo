@@ -105,4 +105,22 @@ export interface NoticeItem {
   isNew?: boolean;
 }
 
+export type MeetingPlatform = "zoom" | "google-meet" | "whatsapp-video" | "whatsapp-voice" | "educo-meet";
+export type MeetingStatus = "scheduled" | "in-progress" | "completed" | "cancelled";
+
+export interface UpcomingMeeting {
+  id: string;
+  title: string;
+  platform: MeetingPlatform;
+  hostName: string;
+  hostRole: string;
+  hostPhoto: string;
+  scheduledDate: string;
+  scheduledTime: string;
+  duration: number;
+  status: MeetingStatus;
+  meetingLink?: string;
+  childName?: string;
+}
+
 

@@ -1,11 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import MainLayout from "@/components/layout/MainLayout";
 import PageLoader from "@/components/shared/PageLoader";
 import StatCard from "@/components/shared/StatCard";
+import PaymentModal from "@/components/shared/PaymentModal";
+import SuccessModal from "@/components/shared/SuccessModal";
+import type { FeeReminderItem } from "@/components/parents/dashboard/models";
 import { ParentDashboardMasonryDnD } from "@/components/parents/dashboard/parent-dashboard-masonry-dnd";
 import { useDashboardLayout } from "@/components/parents/dashboard/use-dashboard-layout";
 import {
@@ -22,6 +25,7 @@ import {
   QuickActionsCard,
   QuickLinksCard,
   RecentGradesCard,
+  UpcomingMeetingsCard,
 } from "@/components/parents/dashboard/cards";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useCountry } from "@/contexts/CountryContext";
@@ -185,6 +189,52 @@ const MOCK_NOTICES = [
   { id: "notice-004", title: "Uniform Guidelines Reminder", date: "2024-01-12" },
 ];
 
+// Upcoming Meetings (Educo Meet, Zoom, Google Meet, WhatsApp)
+const MOCK_MEETINGS = [
+  {
+    id: "meet-001",
+    title: "Parent-Teacher Conference",
+    platform: "zoom" as const,
+    hostName: "Mrs. Nkechi Eze",
+    hostRole: "Class Teacher",
+    hostPhoto: "https://i.pravatar.cc/150?u=teacher-nkechi",
+    scheduledDate: "2024-01-25",
+    scheduledTime: "10:00 AM",
+    duration: 30,
+    status: "scheduled" as const,
+    meetingLink: "https://zoom.us/j/1234567890",
+    childName: "Adaeze Okonkwo",
+  },
+  {
+    id: "meet-002",
+    title: "Chemistry Lab Discussion",
+    platform: "google-meet" as const,
+    hostName: "Mr. Chidi Okoro",
+    hostRole: "Chemistry Teacher",
+    hostPhoto: "https://i.pravatar.cc/150?u=teacher-chidi",
+    scheduledDate: "2024-01-26",
+    scheduledTime: "2:00 PM",
+    duration: 45,
+    status: "scheduled" as const,
+    meetingLink: "https://meet.google.com/abc-defg-hij",
+    childName: "Chukwuemeka Okonkwo",
+  },
+  {
+    id: "meet-004",
+    title: "Academic Counseling",
+    platform: "educo-meet" as const,
+    hostName: "Mrs. Funke Adeleke",
+    hostRole: "Academic Counselor",
+    hostPhoto: "https://i.pravatar.cc/150?u=counselor-funke",
+    scheduledDate: "2024-01-28",
+    scheduledTime: "3:00 PM",
+    duration: 40,
+    status: "scheduled" as const,
+    meetingLink: "/meetings/room/educo-meet-abc123",
+    childName: "Adaeze Okonkwo",
+  },
+];
+
 // ============================================
 // COMPONENT
 // ============================================
@@ -194,13 +244,64 @@ export default function ParentDashboardPage() {
   const { countryCode } = useCountry();
   const [selectedChild, setSelectedChild] = useState<Child>(MOCK_CHILDREN[0]);
 
+  // Payment modal state
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [selectedFee, setSelectedFee] = useState<FeeReminderItem | null>(null);
+  const [paidFeeIds, setPaidFeeIds] = useState<Set<string>>(() => {
+    // Load paid fees from localStorage on mount
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("educo.parent.paidFees");
+        if (stored) {
+          return new Set(JSON.parse(stored));
+        }
+      } catch {
+        // Ignore errors
+      }
+    }
+    return new Set();
+  });
+
   const childProgress = MOCK_PROGRESS.find((p) => p.childId === selectedChild.id);
+
+  // Filter out paid fees from reminders
+  const activeReminders = MOCK_FEE_REMINDERS.filter((fee) => !paidFeeIds.has(fee.id));
+
+  // Handle Pay Now button click
+  const handlePayNow = useCallback((fee: FeeReminderItem) => {
+    setSelectedFee(fee);
+    setIsPaymentModalOpen(true);
+  }, []);
+
+  // Handle payment completion
+  const handlePaymentComplete = useCallback(() => {
+    if (selectedFee) {
+      // Add to paid fees
+      const newPaidFeeIds = new Set(paidFeeIds);
+      newPaidFeeIds.add(selectedFee.id);
+      setPaidFeeIds(newPaidFeeIds);
+
+      // Persist to localStorage
+      localStorage.setItem("educo.parent.paidFees", JSON.stringify([...newPaidFeeIds]));
+
+      // Close payment modal and show success
+      setIsPaymentModalOpen(false);
+      setIsSuccessModalOpen(true);
+    }
+  }, [selectedFee, paidFeeIds]);
+
+  // Handle success modal close
+  const handleSuccessClose = useCallback(() => {
+    setIsSuccessModalOpen(false);
+    setSelectedFee(null);
+  }, []);
 
   const dashboardCards: DashboardCardDefinition[] = [
     {
       id: "fees-reminder",
       title: "Fees Reminder",
-      content: <FeesReminderCard reminders={MOCK_FEE_REMINDERS} countryCode={countryCode} />,
+      content: <FeesReminderCard reminders={activeReminders} countryCode={countryCode} onPayNow={handlePayNow} />,
     },
     {
       id: "messages",
@@ -262,6 +363,11 @@ export default function ParentDashboardPage() {
       title: "Parent Profile",
       content: <ParentProfileCard parent={MOCK_PARENT} />,
     },
+    {
+      id: "upcoming-meetings",
+      title: "Upcoming Meetings",
+      content: <UpcomingMeetingsCard meetings={MOCK_MEETINGS} />,
+    },
   ];
 
   // Default dashboard order (PRD-aligned for Parents): fees + communication + progress first.
@@ -271,6 +377,7 @@ export default function ParentDashboardPage() {
     "my-children",
     "fees-reminder",
     "messages",
+    "upcoming-meetings",
     "recent-grades",
     "exam-results",
     // Next
@@ -349,6 +456,40 @@ export default function ParentDashboardPage() {
           <ParentDashboardMasonryDnD cards={dashboardCards} order={order} onOrderChange={setOrder} />
         </div>
       </div>
+
+      {/* Payment Modal */}
+      {selectedFee && (
+        <PaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => {
+            setIsPaymentModalOpen(false);
+            setSelectedFee(null);
+          }}
+          onPaymentComplete={handlePaymentComplete}
+          title={`Pay ${selectedFee.feeType}`}
+          itemType={`${selectedFee.feeType} for ${selectedFee.childName}`}
+          amount={selectedFee.amount}
+          currency="₦"
+        />
+      )}
+
+      {/* Success Modal */}
+      {selectedFee && (
+        <SuccessModal
+          isOpen={isSuccessModalOpen}
+          onClose={handleSuccessClose}
+          title="Payment Successful!"
+          subtitle="Your fee payment has been processed successfully."
+          fields={[
+            { label: "Fee Type", value: selectedFee.feeType },
+            { label: "Child", value: selectedFee.childName },
+            { label: "Amount Paid", value: `₦${selectedFee.amount.toLocaleString()}` },
+            { label: "Date", value: new Date().toLocaleDateString() },
+          ]}
+          note="A receipt has been sent to your email. You can also view this payment in your Payment History."
+          closeButtonText="Done"
+        />
+      )}
     </MainLayout>
   );
 }
