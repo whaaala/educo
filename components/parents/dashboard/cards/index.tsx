@@ -493,60 +493,93 @@ export function ChildLeaveRequestsCard({ leaves }: { leaves: ChildLeaveRequest[]
   return (
     <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cyan-500/5 via-transparent to-transparent dark:from-cyan-400/10 midnight:from-cyan-400/10 purple:from-pink-400/10 pointer-events-none" />
-      <div className="relative px-3 py-2.5 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
-        <div className="flex items-center gap-2.5">
+      <div className="relative px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-2 rounded-xl bg-cyan-50 dark:bg-cyan-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
             <CalendarCheck className="w-4 h-4 text-cyan-600 dark:text-cyan-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
-          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Child Leave Requests</span>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Child Leave Requests</span>
         </div>
-        <DashboardDragHandle />
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            href="/parents/leaves"
+            className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+          >
+            View All <ChevronRight className="w-3 h-3" />
+          </Link>
+          <DashboardDragHandle />
+        </div>
       </div>
       <div className="relative flex-1 px-3 py-2.5 flex flex-col justify-between gap-2">
-        {leaves.map((leave) => (
-          <div
+        {leaves.slice(0, 2).map((leave) => (
+          <Link
             key={leave.id}
-            className={`group relative p-2.5 rounded-xl border transition-all duration-200 hover:shadow-md overflow-hidden ${
+            href={`/parents/leaves/${leave.id}`}
+            className={`group p-2.5 rounded-xl border transition-all duration-200 hover:shadow-md ${
               leave.status === "approved"
-                ? "bg-gradient-to-r from-green-50/80 to-white dark:from-green-900/20 dark:to-gray-700/10 midnight:from-green-900/20 midnight:to-gray-800/20 purple:from-green-900/20 purple:to-gray-800/20 border-green-100 dark:border-green-700/30 midnight:border-green-700/20 purple:border-green-700/20 hover:border-green-300 dark:hover:border-green-500/40"
+                ? "bg-gradient-to-r from-green-50/50 to-white dark:from-green-900/10 dark:to-gray-700/10 midnight:from-green-900/10 midnight:to-gray-800/20 purple:from-green-900/10 purple:to-gray-800/20 border-green-100 dark:border-green-700/20 midnight:border-green-700/15 purple:border-green-700/15 hover:border-green-300 dark:hover:border-green-500/40"
                 : leave.status === "pending"
-                  ? "bg-gradient-to-r from-amber-50/80 to-white dark:from-amber-900/20 dark:to-gray-700/10 midnight:from-amber-900/20 midnight:to-gray-800/20 purple:from-amber-900/20 purple:to-gray-800/20 border-amber-100 dark:border-amber-700/30 midnight:border-amber-700/20 purple:border-amber-700/20 hover:border-amber-300 dark:hover:border-amber-500/40"
-                  : "bg-gradient-to-r from-red-50/80 to-white dark:from-red-900/20 dark:to-gray-700/10 midnight:from-red-900/20 midnight:to-gray-800/20 purple:from-red-900/20 purple:to-gray-800/20 border-red-100 dark:border-red-700/30 midnight:border-red-700/20 purple:border-red-700/20 hover:border-red-300 dark:hover:border-red-500/40"
+                  ? "bg-gradient-to-r from-amber-50/50 to-white dark:from-amber-900/10 dark:to-gray-700/10 midnight:from-amber-900/10 midnight:to-gray-800/20 purple:from-amber-900/10 purple:to-gray-800/20 border-amber-100 dark:border-amber-700/20 midnight:border-amber-700/15 purple:border-amber-700/15 hover:border-amber-300 dark:hover:border-amber-500/40"
+                  : "bg-gradient-to-r from-red-50/50 to-white dark:from-red-900/10 dark:to-gray-700/10 midnight:from-red-900/10 midnight:to-gray-800/20 purple:from-red-900/10 purple:to-gray-800/20 border-red-100 dark:border-red-700/20 midnight:border-red-700/15 purple:border-red-700/15 hover:border-red-300 dark:hover:border-red-500/40"
             }`}
           >
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <div
-                className={`flex-shrink-0 p-2 rounded-lg ${
-                  leave.status === "approved"
-                    ? "bg-green-100 dark:bg-green-900/40 midnight:bg-green-900/40 purple:bg-green-900/40"
-                    : leave.status === "pending"
-                      ? "bg-amber-100 dark:bg-amber-900/40 midnight:bg-amber-900/40 purple:bg-amber-900/40"
-                      : "bg-red-100 dark:bg-red-900/40 midnight:bg-red-900/40 purple:bg-red-900/40"
-                }`}
-              >
-                {leave.status === "approved" && <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />}
-                {leave.status === "pending" && <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
-                {leave.status === "declined" && <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />}
+            <div className="flex flex-col gap-2">
+              {/* Top row: Icon + Reason + Status Badge */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div
+                    className={`relative flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
+                      leave.status === "approved"
+                        ? "bg-green-100 dark:bg-green-900/40"
+                        : leave.status === "pending"
+                          ? "bg-amber-100 dark:bg-amber-900/40"
+                          : "bg-red-100 dark:bg-red-900/40"
+                    }`}
+                  >
+                    {leave.status === "approved" && <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />}
+                    {leave.status === "pending" && <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
+                    {leave.status === "declined" && <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate">{leave.reason}</p>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 truncate">
+                      {leave.childName}
+                    </p>
+                  </div>
+                </div>
+                <span
+                  className={`flex-shrink-0 px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${
+                    leave.status === "approved"
+                      ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400"
+                      : leave.status === "pending"
+                        ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"
+                        : "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400"
+                  }`}
+                >
+                  {leave.status}
+                </span>
               </div>
-              <span
-                className={`flex-shrink-0 px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-wide ${
-                  leave.status === "approved"
-                    ? "bg-green-500/10 text-green-700 dark:text-green-400"
-                    : leave.status === "pending"
-                      ? "bg-amber-500/10 text-amber-700 dark:text-amber-400"
-                      : "bg-red-500/10 text-red-700 dark:text-red-400"
-                }`}
-              >
-                {leave.status}
-              </span>
+
+              {/* Bottom row: Date range */}
+              <div className="flex items-center gap-2">
+                <div className="flex-1 flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400">
+                  <Calendar className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate">{formatShortDate(leave.fromDate)} - {formatShortDate(leave.toDate)}</span>
+                </div>
+                <span
+                  className={`text-sm font-bold min-w-[45px] text-right ${
+                    leave.status === "approved"
+                      ? "text-green-600 dark:text-green-400"
+                      : leave.status === "pending"
+                        ? "text-amber-600 dark:text-amber-400"
+                        : "text-red-600 dark:text-red-400"
+                  }`}
+                >
+                  {leave.days}d
+                </span>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate">{leave.reason}</p>
-              <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 truncate">
-                {leave.childName} • {formatShortDate(leave.fromDate)} - {formatShortDate(leave.toDate)}
-              </p>
-            </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
