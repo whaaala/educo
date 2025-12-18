@@ -314,12 +314,12 @@ export function ExamResultsCard({ results }: { results: ExamResultItem[] }) {
                     </p>
                   </div>
                 </div>
-                <button
-                  className="flex-shrink-0 p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-pink-900/30 text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-pink-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all duration-200 group-hover:scale-105 cursor-pointer"
-                  type="button"
+                <Link
+                  href={`/parents/children/${result.childId}/report-card?from=results`}
+                  className="flex-shrink-0 p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-pink-900/30 text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-pink-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all duration-200 group-hover:scale-105"
                 >
                   <Eye className="w-3.5 h-3.5" />
-                </button>
+                </Link>
               </div>
 
               {/* Bottom row: Progress bar + Percentage */}
@@ -525,13 +525,22 @@ export function HomeworkCard({ homework }: { homework: HomeworkItem[] }) {
           </div>
           <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Homework</span>
         </div>
-        <DashboardDragHandle />
+        <div className="flex items-center gap-2">
+          <Link
+            href="/parents/homework"
+            className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+          >
+            View All <ChevronRight className="w-3 h-3" />
+          </Link>
+          <DashboardDragHandle />
+        </div>
       </div>
       <div className="relative flex-1 px-3 py-2.5 flex flex-col justify-between gap-2">
         {homework.map((hw) => (
-          <div
+          <Link
             key={hw.id}
-            className={`group relative p-2.5 rounded-xl border transition-all duration-200 hover:shadow-md overflow-hidden ${
+            href={`/parents/homework/${hw.id}`}
+            className={`group relative p-2.5 rounded-xl border transition-all duration-200 hover:shadow-md hover:-translate-x-0.5 overflow-hidden ${
               hw.color === "purple"
                 ? "bg-gradient-to-r from-purple-50/80 to-white dark:from-purple-900/20 dark:to-gray-700/10 midnight:from-purple-900/20 midnight:to-gray-800/20 purple:from-purple-900/20 purple:to-gray-800/20 border-purple-100 dark:border-purple-700/30 midnight:border-purple-700/20 purple:border-purple-700/20 hover:border-purple-300 dark:hover:border-purple-500/40"
                 : hw.color === "green"
@@ -556,11 +565,14 @@ export function HomeworkCard({ homework }: { homework: HomeworkItem[] }) {
                 <span className="text-[9px] font-semibold text-gray-600 dark:text-gray-300">{formatShortDate(hw.dueDate)}</span>
               </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate">{hw.description}</p>
-              <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 truncate">{hw.teacher}</p>
+            <div className="min-w-0 flex items-center justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{hw.description}</p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 truncate">{hw.teacher}</p>
+              </div>
+              <ChevronRight className="w-4 h-4 flex-shrink-0 text-gray-300 dark:text-gray-600 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all duration-200" />
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

@@ -167,9 +167,9 @@ const MOCK_EVENTS = [
 ];
 
 const MOCK_HOMEWORK = [
-  { id: "hw-001", subject: "Physics", color: "purple", description: "Complete Chapter 5 Exercise", teacher: "Mrs. Nkechi Eze", dueDate: "2024-01-25" },
-  { id: "hw-002", subject: "Chemistry", color: "green", description: "Lab report on Acid-Base", teacher: "Mr. Chidi Okoro", dueDate: "2024-01-26" },
-  { id: "hw-003", subject: "Mathematics", color: "blue", description: "Quadratic Equations worksheet", teacher: "Mr. Tunde Adeyemi", dueDate: "2024-01-27" },
+  { id: "hw-001", childId: "child-001", subject: "Physics", color: "purple" as const, description: "Complete Chapter 5 Exercise", teacher: "Mrs. Nkechi Eze", dueDate: "2024-01-25" },
+  { id: "hw-002", childId: "child-001", subject: "Chemistry", color: "green" as const, description: "Lab report on Acid-Base", teacher: "Mr. Chidi Okoro", dueDate: "2024-01-26" },
+  { id: "hw-003", childId: "child-002", subject: "Mathematics", color: "blue" as const, description: "Quadratic Equations worksheet", teacher: "Mr. Tunde Adeyemi", dueDate: "2024-01-27" },
 ];
 
 const MOCK_FEE_REMINDERS = [
@@ -178,8 +178,8 @@ const MOCK_FEE_REMINDERS = [
 ];
 
 const MOCK_EXAM_RESULTS = [
-  { id: "exam-001", studentName: "Adaeze Okonkwo", studentPhoto: "https://i.pravatar.cc/150?u=adaeze", class: "JSS 2", section: "A", percentage: 85, examType: "Mid-Term", status: "pass" as const },
-  { id: "exam-002", studentName: "Chukwuemeka Okonkwo", studentPhoto: "https://i.pravatar.cc/150?u=chukwuemeka", class: "SS 1", section: "B", percentage: 78, examType: "Mid-Term", status: "pass" as const },
+  { id: "exam-001", childId: "child-001", studentName: "Adaeze Okonkwo", studentPhoto: "https://i.pravatar.cc/150?u=adaeze", class: "JSS 2", section: "A", percentage: 85, examType: "Mid-Term", status: "pass" as const },
+  { id: "exam-002", childId: "child-002", studentName: "Chukwuemeka Okonkwo", studentPhoto: "https://i.pravatar.cc/150?u=chukwuemeka", class: "SS 1", section: "B", percentage: 78, examType: "Mid-Term", status: "pass" as const },
 ];
 
 const MOCK_NOTICES = [

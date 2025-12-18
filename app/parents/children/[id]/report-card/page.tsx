@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import PageLoader from "@/components/shared/PageLoader";
@@ -159,7 +159,9 @@ function ResponsiveReportPreview({ children }: { children: React.ReactNode }) {
 
 export default function ReportCardPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const childId = params?.id as string;
+  const fromResults = searchParams.get("from") === "results";
   const isPageLoading = usePageLoad(600);
   const { settings, currentTenant } = useSchoolSettings();
   const printRef = useRef<HTMLDivElement>(null);
@@ -700,12 +702,20 @@ export default function ReportCardPage() {
         <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <PageHeader
             title="Report Card"
-            breadcrumbs={[
-              { label: "Parent Portal", href: "/parents" },
-              { label: "My Children", href: "/parents/children" },
-              { label: child.firstName, href: `/parents/children/${child.id}` },
-              { label: "Report Card" },
-            ]}
+            breadcrumbs={
+              fromResults
+                ? [
+                    { label: "Parent Portal", href: "/parents" },
+                    { label: "Exam Results", href: "/parents/results" },
+                    { label: child.fullName },
+                  ]
+                : [
+                    { label: "Parent Portal", href: "/parents" },
+                    { label: "My Children", href: "/parents/children" },
+                    { label: child.firstName, href: `/parents/children/${child.id}` },
+                    { label: "Report Card" },
+                  ]
+            }
           />
         </div>
 

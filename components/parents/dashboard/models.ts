@@ -71,6 +71,7 @@ export interface ParentEvent {
 
 export interface HomeworkItem {
   id: string;
+  childId: string;
   subject: string;
   color: "purple" | "green" | "blue";
   description: string;
@@ -89,6 +90,7 @@ export interface FeeReminderItem {
 
 export interface ExamResultItem {
   id: string;
+  childId: string;
   studentName: string;
   studentPhoto: string;
   class: string;
