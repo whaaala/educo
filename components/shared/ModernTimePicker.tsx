@@ -59,27 +59,42 @@ export default function ModernTimePicker({
 
     const rect = triggerRef.current.getBoundingClientRect();
     const pickerWidth = 280;
-    const pickerHeight = pickerRef.current?.offsetHeight || 300;
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const spaceAbove = rect.top;
-    const spaceRight = window.innerWidth - rect.left;
+    const pickerHeight = pickerRef.current?.offsetHeight || 380;
     const marginFromEdge = 16;
 
     const style: React.CSSProperties = {
       position: 'fixed',
-      zIndex: 9999,
+      zIndex: 10001,
     };
 
-    // Determine vertical position
-    if (spaceBelow >= pickerHeight + marginFromEdge || spaceBelow > spaceAbove) {
-      style.top = `${rect.bottom + 8}px`;
+    // Calculate available space
+    const spaceAbove = rect.top - marginFromEdge;
+    const spaceBelow = window.innerHeight - rect.bottom - marginFromEdge;
+
+    // Prefer showing above when there's enough space, or when below doesn't have enough space
+    if (spaceAbove >= pickerHeight || spaceAbove > spaceBelow) {
+      // Position above - anchor to bottom of picker
+      const topPosition = rect.top - pickerHeight - 8;
+      if (topPosition >= marginFromEdge) {
+        style.top = `${topPosition}px`;
+      } else {
+        // Not enough space above, clamp to top edge
+        style.top = `${marginFromEdge}px`;
+      }
     } else {
-      style.bottom = `${window.innerHeight - rect.top + 8}px`;
+      // Position below
+      style.top = `${rect.bottom + 8}px`;
     }
 
-    // Determine horizontal position
-    if (spaceRight >= pickerWidth + marginFromEdge) {
-      style.left = `${rect.left}px`;
+    // Determine horizontal position - center on modal/viewport
+    const viewportCenter = window.innerWidth / 2;
+    const idealLeft = viewportCenter - pickerWidth / 2;
+
+    // Ensure it stays within viewport bounds
+    if (idealLeft >= marginFromEdge && idealLeft + pickerWidth <= window.innerWidth - marginFromEdge) {
+      style.left = `${idealLeft}px`;
+    } else if (idealLeft < marginFromEdge) {
+      style.left = `${marginFromEdge}px`;
     } else {
       style.right = `${marginFromEdge}px`;
     }

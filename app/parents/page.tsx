@@ -160,10 +160,13 @@ const MOCK_PAYMENT_HISTORY = [
 ];
 
 const MOCK_EVENTS = [
-  { id: "evt-001", title: "Parents Teacher Meet", date: "2024-02-10", duration: "Half Day" as const, image: "https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&h=300&fit=crop" },
+  { id: "evt-001", title: "Parents Teacher Meet", date: "2024-02-10", duration: "Half Day" as const, image: "https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&h=300&fit=crop", childId: "child-001" },
   { id: "evt-002", title: "Farewell Party", date: "2024-02-15", duration: "Full Day" as const, image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=300&fit=crop" },
   { id: "evt-003", title: "Annual Day", date: "2024-02-28", duration: "Full Day" as const, image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=300&fit=crop" },
   { id: "evt-004", title: "Sports Day", date: "2024-03-05", duration: "Full Day" as const, image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=300&fit=crop" },
+  { id: "evt-005", title: "Science Exhibition", date: "2024-03-15", duration: "Half Day" as const, image: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&h=300&fit=crop", childId: "child-002" },
+  { id: "evt-008", title: "JSS 2 Class Assembly", date: "2024-03-12", duration: "Half Day" as const, image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=300&fit=crop", childId: "child-001" },
+  { id: "evt-009", title: "Inter-School Debate", date: "2024-03-18", duration: "Half Day" as const, image: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&h=300&fit=crop", childId: "child-002" },
 ];
 
 const MOCK_HOMEWORK = [
@@ -326,7 +329,7 @@ export default function ParentDashboardPage() {
     {
       id: "events",
       title: "Events",
-      content: <EventsCard events={MOCK_EVENTS} />,
+      content: <EventsCard events={MOCK_EVENTS} selectedChildId={selectedChild.id} />,
     },
     {
       id: "leave-requests",

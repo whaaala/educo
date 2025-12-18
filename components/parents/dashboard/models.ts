@@ -61,12 +61,25 @@ export interface PaymentHistoryItem {
   child: string;
 }
 
+export type EventType = "academic" | "sports" | "cultural" | "meeting" | "holiday" | "examination";
+export type EventStatus = "upcoming" | "ongoing" | "completed" | "cancelled";
+
 export interface ParentEvent {
   id: string;
   title: string;
+  description?: string;
   date: string;
+  endDate?: string;
+  time?: string;
   duration: "Half Day" | "Full Day";
   image: string;
+  type?: EventType;
+  status?: EventStatus;
+  location?: string;
+  isImportant?: boolean;
+  childId?: string;
+  childName?: string;
+  classLevel?: string;
 }
 
 export interface HomeworkItem {

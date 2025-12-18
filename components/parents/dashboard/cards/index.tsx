@@ -403,10 +403,17 @@ export function RecentGradesCard({
   );
 }
 
-export function EventsCard({ events }: { events: ParentEvent[] }) {
+export function EventsCard({ events, selectedChildId }: { events: ParentEvent[]; selectedChildId?: string }) {
+  // Filter events: show events for selected child OR general events (no childId)
+  const filteredEvents = selectedChildId
+    ? events.filter((event) => !event.childId || event.childId === selectedChildId)
+    : events;
+
   return (
     <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-500/5 via-transparent to-transparent dark:from-purple-400/10 midnight:from-indigo-400/10 purple:from-pink-400/10 pointer-events-none" />
+
+      {/* Header */}
       <div className="relative px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-900/30 midnight:bg-indigo-900/30 purple:bg-pink-900/30">
@@ -416,7 +423,7 @@ export function EventsCard({ events }: { events: ParentEvent[] }) {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Link
-            href="/parents/events"
+            href={selectedChildId ? `/parents/events?child=${selectedChildId}` : "/parents/events"}
             className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
           >
             View All <ChevronRight className="w-3 h-3" />
@@ -424,28 +431,60 @@ export function EventsCard({ events }: { events: ParentEvent[] }) {
           <DashboardDragHandle />
         </div>
       </div>
-      <div className="relative flex-1 p-3 grid grid-cols-2 gap-2 auto-rows-fr">
-        {events.map((event) => (
-          <div
-            key={event.id}
-            className="group cursor-pointer rounded-xl overflow-hidden border border-gray-100 dark:border-gray-600/20 midnight:border-gray-600/15 purple:border-gray-600/15 hover:border-purple-300 dark:hover:border-purple-500/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 bg-white dark:bg-gray-700/20 midnight:bg-gray-800/30 purple:bg-gray-800/30 flex flex-col"
-          >
-            <div className="relative flex-1 min-h-[60px] overflow-hidden">
-              <Image src={event.image} alt={event.title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" unoptimized />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-              <span className="absolute bottom-1.5 left-1.5 px-2 py-0.5 rounded-md text-[8px] font-bold bg-white/95 text-gray-800 shadow-md">{event.duration}</span>
-            </div>
-            <div className="p-2 bg-gradient-to-r from-gray-50 to-white dark:from-gray-700/30 dark:to-gray-700/10 midnight:from-gray-800/40 midnight:to-gray-800/20 purple:from-gray-800/40 purple:to-gray-800/20 flex-shrink-0">
-              <p className="text-[11px] font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 line-clamp-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                {event.title}
-              </p>
-              <p className="text-[9px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 flex items-center gap-1">
-                <CalendarDays className="w-2.5 h-2.5" /> {formatShortDate(event.date)}
-              </p>
-            </div>
-          </div>
-        ))}
+
+      {/* Events 2x2 Grid */}
+      <div className="relative flex-1 px-3 py-2.5">
+        <div className="grid grid-cols-2 gap-2">
+          {filteredEvents.slice(0, 4).map((event) => (
+            <Link
+              key={event.id}
+              href={`/parents/events/${event.id}`}
+              className="group flex flex-col rounded-xl overflow-hidden border border-gray-100 dark:border-gray-600/20 midnight:border-gray-600/15 purple:border-gray-600/15 hover:border-purple-200 dark:hover:border-purple-500/30 hover:shadow-md transition-all duration-200"
+            >
+              {/* Event Image */}
+              <div className="relative h-[70px] w-full">
+                <Image
+                  src={event.image}
+                  alt={event.title}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  unoptimized
+                />
+                {/* Duration badge */}
+                <span className={`absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold ${
+                  event.duration === "Half Day"
+                    ? "bg-blue-500 text-white"
+                    : "bg-purple-500 text-white"
+                }`}>
+                  {event.duration}
+                </span>
+              </div>
+
+              {/* Event info below image */}
+              <div className="p-2 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
+                <p className="text-xs font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                  {event.title}
+                </p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
+                  <Calendar className="w-3 h-3" />
+                  {formatShortDate(event.date)}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
+
+      {/* Empty state */}
+      {filteredEvents.length === 0 && (
+        <div className="flex-1 flex flex-col items-center justify-center py-8 text-center">
+          <div className="p-3 rounded-full bg-gray-100 dark:bg-gray-700/50 mb-3">
+            <CalendarDays className="w-6 h-6 text-gray-400" />
+          </div>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">No upcoming events</p>
+          <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">Check back later for school events</p>
+        </div>
+      )}
     </div>
   );
 }
