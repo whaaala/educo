@@ -44,3 +44,6 @@ next-env.d.ts
 Thumbs.db
 nul
 con
+
+# Android APKs (downloaded/generated)
+*.apk
