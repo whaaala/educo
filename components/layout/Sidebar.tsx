@@ -36,6 +36,7 @@ import {
   Video,
 } from "lucide-react";
 import TenantSwitcher from "@/components/admin/TenantSwitcher";
+import { useUser } from "@/contexts/UserContext";
 
 // Custom Naira Icon Component
 const NairaIcon = ({ className }: { className?: string }) => (
@@ -190,6 +191,52 @@ const menuItems: MenuItem[] = [
   },
 ];
 
+// Parent-specific navigation (used when a Parent user is logged in)
+const parentMenuItems: MenuItem[] = [
+  {
+    id: "parent-dashboard",
+    label: "Dashboard",
+    icon: <LayoutDashboard className="w-5 h-5" />,
+    href: "/parents",
+  },
+  {
+    id: "parent-children",
+    label: "My Children",
+    icon: <GraduationCap className="w-5 h-5" />,
+    href: "/parents/children",
+  },
+  {
+    id: "parent-fees",
+    label: "Fees & Payments",
+    icon: <Receipt className="w-5 h-5" />,
+    href: "/parents/fees",
+  },
+  {
+    id: "parent-messages",
+    label: "Messages",
+    icon: <MessageSquare className="w-5 h-5" />,
+    href: "/parents/messages",
+  },
+  {
+    id: "parent-meetings",
+    label: "Video Calls & Meetings",
+    icon: <Video className="w-5 h-5" />,
+    href: "/parents/meetings",
+  },
+  {
+    id: "parent-homework",
+    label: "Homework",
+    icon: <BookOpen className="w-5 h-5" />,
+    href: "/parents/homework",
+  },
+  {
+    id: "parent-results",
+    label: "Results",
+    icon: <FileText className="w-5 h-5" />,
+    href: "/parents/results",
+  },
+];
+
 interface SidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
@@ -200,6 +247,7 @@ interface SidebarProps {
 export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { isParent } = useUser();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState<boolean | null>(null); // null on server, boolean on client
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
@@ -756,7 +804,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
             style={isCollapsed && isMobile === false ? { overflow: 'visible' } : { overflowY: 'auto', overflowX: 'hidden' }}
           >
             <div className="space-y-2">
-              {menuItems.map((item) => renderMenuItem(item))}
+              {(isParent ? parentMenuItems : menuItems).map((item) => renderMenuItem(item))}
             </div>
           </nav>
 
@@ -764,7 +812,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
           {(isMobile === true || (isMobile === false && !isCollapsed)) && (
             <div className="p-4 border-t border-gray-200/80 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-500/5 dark:to-indigo-500/5 midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5 space-y-3">
               {/* Tenant Switcher */}
-              <TenantSwitcher />
+              {!isParent && <TenantSwitcher />}
 
               {/* Help Section */}
               <div className="px-4 py-3.5 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-blue-600/10 midnight:from-cyan-500/10 midnight:via-blue-500/10 midnight:to-cyan-600/10 purple:from-pink-500/10 purple:via-purple-500/10 purple:to-pink-600/10 rounded-xl border border-blue-200/50 dark:border-blue-500/20 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-200">

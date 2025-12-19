@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { User, Settings, LogOut } from "lucide-react";
+import { User, Settings, LogOut, Shield, Users } from "lucide-react";
 import Image from "next/image";
 import MenuItem from "./MenuItem";
 import MenuDivider from "./MenuDivider";
+import { useUser, type UserRole } from "@/contexts/UserContext";
 
 interface UserMenuProps {
   userName?: string;
@@ -18,11 +19,32 @@ export default function UserMenu({
   userRole = "Administrator",
   userAvatar,
 }: UserMenuProps) {
+  const { user, switchRole, logout } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const displayName = user ? `${user.firstName} ${user.lastName}` : userName;
+  const displayAvatar = user?.avatar ?? userAvatar;
+  const displayRole =
+    user?.role === "super_admin"
+      ? "Super Admin"
+      : user?.role === "school_admin"
+        ? "School Admin"
+        : user?.role === "branch_admin"
+          ? "Branch Admin"
+          : user?.role === "teacher"
+            ? "Teacher"
+            : user?.role === "student"
+              ? "Student"
+              : user?.role === "parent"
+                ? "Parent"
+                : user?.role === "custom"
+                  ? "Custom"
+                  : userRole;
 
   // Track if component is mounted
   useEffect(() => {
@@ -44,9 +66,15 @@ export default function UserMenu({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
+      const targetNode = event.target as Node | null;
+      if (!targetNode) return;
+
+      // Because the dropdown is rendered in a portal, it's NOT a child of menuRef.
+      // We must explicitly treat clicks inside the trigger button OR the dropdown as "inside".
+      const clickedTrigger = !!buttonRef.current?.contains(targetNode);
+      const clickedDropdown = !!dropdownRef.current?.contains(targetNode);
+
+      if (!clickedTrigger && !clickedDropdown) setIsOpen(false);
     };
 
     if (isOpen) {
@@ -66,6 +94,14 @@ export default function UserMenu({
     setIsOpen(false);
     // Handle navigation or actions here
     console.log(`Navigating to: ${action}`);
+    if (action === "logout") {
+      logout();
+    }
+  };
+
+  const handleRoleSwitch = (role: UserRole) => {
+    switchRole(role);
+    setIsOpen(false);
   };
 
   return (
@@ -80,17 +116,17 @@ export default function UserMenu({
       >
         {/* Avatar */}
         <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden bg-gray-200 flex-shrink-0 ring-2 ring-transparent hover:ring-blue-500/20 transition-all duration-200">
-          {userAvatar ? (
+          {displayAvatar ? (
             <Image
-              src={userAvatar}
-              alt={userName}
+              src={displayAvatar}
+              alt={displayName}
               width={36}
               height={36}
               className="object-cover"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 text-white font-bold text-xs sm:text-sm shadow-lg">
-              {userName.charAt(0).toUpperCase()}
+              {displayName.charAt(0).toUpperCase()}
             </div>
           )}
         </div>
@@ -109,6 +145,7 @@ export default function UserMenu({
 
             <div
               style={dropdownStyle}
+              ref={dropdownRef}
               className="w-64 sm:w-72 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[9999] transition-colors duration-300 max-h-[500px] overflow-y-auto"
               role="menu"
               aria-orientation="vertical"
@@ -119,25 +156,25 @@ export default function UserMenu({
               <div className="flex items-center gap-2.5 sm:gap-3">
                 {/* Avatar in dropdown */}
                 <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden bg-gray-200 flex-shrink-0 ring-2 ring-blue-500/10 shadow-lg">
-                  {userAvatar ? (
+                  {displayAvatar ? (
                     <Image
-                      src={userAvatar}
-                      alt={userName}
+                      src={displayAvatar}
+                      alt={displayName}
                       width={64}
                       height={64}
                       className="object-cover"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 text-white font-bold text-lg sm:text-xl shadow-inner">
-                      {userName.charAt(0).toUpperCase()}
+                      {displayName.charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
 
                 {/* User Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{userName}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 truncate mt-0.5">{userRole}</p>
+                  <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{displayName}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 truncate mt-0.5">{displayRole}</p>
                 </div>
               </div>
             </div>
@@ -155,6 +192,39 @@ export default function UserMenu({
                 label="Settings"
                 onClick={() => handleMenuItemClick("settings")}
               />
+
+              {/* Dev-only role switcher (helps differentiate Parent vs Admin UI) */}
+              <div className="px-4 pt-3 pb-2">
+                <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 uppercase tracking-wide mb-2">
+                  Switch Role (dev)
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleRoleSwitch("parent")}
+                    className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
+                      user?.role === "parent"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700/30"
+                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 dark:bg-[#1a1d23] dark:text-gray-200 dark:border-gray-700/50 dark:hover:bg-[#252930]"
+                    }`}
+                  >
+                    <Users className="w-4 h-4" />
+                    Parent
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRoleSwitch("super_admin")}
+                    className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
+                      user?.role === "super_admin"
+                        ? "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700/30"
+                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 dark:bg-[#1a1d23] dark:text-gray-200 dark:border-gray-700/50 dark:hover:bg-[#252930]"
+                    }`}
+                  >
+                    <Shield className="w-4 h-4" />
+                    Admin
+                  </button>
+                </div>
+              </div>
 
               <MenuDivider />
 

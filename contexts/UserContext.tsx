@@ -63,6 +63,7 @@ interface UserContextType {
   isAnyAdmin: boolean;
   // Methods
   setUser: (user: User | null) => void;
+  switchRole: (role: UserRole) => void;
   logout: () => void;
 }
 
@@ -100,7 +101,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
       if (savedUser) {
         try {
           const parsedUser = JSON.parse(savedUser) as User;
-          setUser(parsedUser);
+          // If userRole exists, it should win (dev role switching)
+          setUser(savedRole ? { ...parsedUser, role: savedRole as UserRole } : parsedUser);
         } catch {
           // Use mock user with saved role if available
           setUser({
@@ -119,21 +121,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
     };
 
     loadUser();
-
-    // Listen for role changes from settings
-    const handleRoleChange = (event: CustomEvent) => {
-      const newRole = event.detail?.role as UserRole;
-      if (newRole && user) {
-        setUser({ ...user, role: newRole });
-        localStorage.setItem("userRole", newRole);
-      }
-    };
-
-    window.addEventListener("userRoleChanged", handleRoleChange as EventListener);
-    return () => {
-      window.removeEventListener("userRoleChanged", handleRoleChange as EventListener);
-    };
   }, []);
+
+  const switchRole = (role: UserRole) => {
+    setUser((prev) => {
+      const next = prev ? { ...prev, role } : { ...MOCK_USER, role };
+      localStorage.setItem("userRole", role);
+      localStorage.setItem("currentUser", JSON.stringify(next));
+      return next;
+    });
+  };
 
   const logout = () => {
     setUser(null);
@@ -164,6 +161,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         isParent,
         isAnyAdmin,
         setUser,
+        switchRole,
         logout,
       }}
     >

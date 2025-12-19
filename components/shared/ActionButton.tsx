@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, createElement, isValidElement } from "react";
+import type { LucideIcon } from "lucide-react";
 
 type ActionButtonVariant = "primary" | "secondary" | "outline" | "ghost";
 type ActionButtonColor = "blue" | "emerald" | "purple" | "amber" | "red" | "gray";
@@ -8,7 +9,12 @@ type ActionButtonSize = "sm" | "md" | "lg";
 
 interface ActionButtonProps {
   children: ReactNode;
-  icon?: ReactNode;
+  /**
+   * Icon can be either a React element (`<Plus />`) OR a Lucide icon component (`Plus`).
+   * Some parts of the codebase pass icon components; rendering them as-is causes:
+   * "Objects are not valid as a React child (found: object with keys {$$typeof, render})"
+   */
+  icon?: ReactNode | LucideIcon;
   onClick?: () => void;
   variant?: ActionButtonVariant;
   color?: ActionButtonColor;
@@ -120,6 +126,19 @@ export default function ActionButton({
   const sizeStyle = sizeStyles[size];
   const isPrimary = variant === "primary";
 
+  const renderedIcon = (() => {
+    if (!icon) return null;
+    if (isValidElement(icon)) return icon;
+
+    // LucideIcon (forwardRef) is an object with $$typeof/render; also allow function components.
+    if (typeof icon === "function" || (typeof icon === "object" && icon !== null)) {
+      return createElement(icon as unknown as LucideIcon, { className: "w-full h-full" });
+    }
+
+    // Strings/numbers/etc are valid ReactNode
+    return icon;
+  })();
+
   return (
     <button
       type={type}
@@ -133,12 +152,12 @@ export default function ActionButton({
       />
 
       {/* Icon container */}
-      {icon && (
+      {renderedIcon && (
         <div
           className={`relative flex items-center justify-center ${sizeStyle.icon} ${isPrimary ? colorStyle.iconBgPrimary : colorStyle.iconBg} transition-colors duration-300`}
         >
           <div className={`${sizeStyle.iconInner} ${isPrimary ? "" : colorStyle.iconColor}`}>
-            {icon}
+            {renderedIcon}
           </div>
         </div>
       )}
