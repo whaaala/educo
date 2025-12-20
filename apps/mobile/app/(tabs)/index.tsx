@@ -258,18 +258,29 @@ function MobileWidgetCard({ title, icon, linkHref, linkText, children }: {
   );
 }
 
-function QuickActionButton({ icon, label, href, variant = 'default' }: {
+function QuickActionTile({ icon, label, subtitle, href, color }: {
   icon: ComponentProps<typeof Ionicons>['name'];
   label: string;
+  subtitle: string;
   href: string;
-  variant?: 'default' | 'primary';
+  color: 'blue' | 'emerald' | 'violet' | 'rose';
 }) {
-  const isPrimary = variant === 'primary';
+  const colorMap = {
+    blue: { bg: '#f0f9ff', iconBg: '#dbeafe', icon: '#2563eb', border: '#bfdbfe', subtitleColor: '#3b82f6' },
+    emerald: { bg: '#ecfdf5', iconBg: '#d1fae5', icon: '#059669', border: '#a7f3d0', subtitleColor: '#10b981' },
+    violet: { bg: '#f5f3ff', iconBg: '#ede9fe', icon: '#7c3aed', border: '#ddd6fe', subtitleColor: '#8b5cf6' },
+    rose: { bg: '#fff1f2', iconBg: '#ffe4e6', icon: '#e11d48', border: '#fecdd3', subtitleColor: '#f43f5e' },
+  };
+  const c = colorMap[color];
+
   return (
     <Link href={href as any} asChild>
-      <Pressable style={[mobileStyles.quickActionBtn, isPrimary && mobileStyles.quickActionBtnPrimary]}>
-        <Ionicons name={icon} size={16} color={isPrimary ? COLORS.white : COLORS.slate600} />
-        <Text style={[mobileStyles.quickActionText, isPrimary && { color: COLORS.white }]}>{label}</Text>
+      <Pressable style={[mobileStyles.quickActionTile, { backgroundColor: c.bg, borderColor: c.border }]}>
+        <View style={[mobileStyles.quickActionTileIcon, { backgroundColor: c.iconBg }]}>
+          <Ionicons name={icon} size={22} color={c.icon} />
+        </View>
+        <Text style={mobileStyles.quickActionTileText}>{label}</Text>
+        <Text style={[mobileStyles.quickActionTileSubtitle, { color: c.subtitleColor }]}>{subtitle}</Text>
       </Pressable>
     </Link>
   );
@@ -569,12 +580,12 @@ export default function ParentHomeScreen() {
           </LinearGradient>
 
           {/* Quick Actions */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12 }} contentContainerStyle={{ paddingHorizontal: 16 }}>
-            <QuickActionButton icon="card-outline" label="Pay Fees" href="/(tabs)/fees" variant="primary" />
-            <QuickActionButton icon="chatbubbles-outline" label="Messages" href="/(tabs)/messages" />
-            <QuickActionButton icon="document-text-outline" label="Results" href="/(tabs)/children" />
-            <QuickActionButton icon="calendar-outline" label="Calendar" href="/(tabs)/more" />
-          </ScrollView>
+          <View style={mobileStyles.quickActionsGrid}>
+            <QuickActionTile icon="wallet-outline" label="Pay Fees" subtitle="Quick payment" href="/(tabs)/fees" color="blue" />
+            <QuickActionTile icon="mail-outline" label="Messages" subtitle="Chat with school" href="/(tabs)/messages" color="emerald" />
+            <QuickActionTile icon="school-outline" label="Results" subtitle="View grades" href="/(tabs)/children" color="violet" />
+            <QuickActionTile icon="document-text-outline" label="Leave" subtitle="Request absence" href="/(tabs)/more" color="rose" />
+          </View>
 
           {/* Stats */}
           <View style={{ marginTop: 14 }}>
@@ -1530,22 +1541,41 @@ const mobileStyles = StyleSheet.create({
     marginRight: 8,
   },
 
-  quickActionBtn: {
+  // Quick Actions Grid
+  quickActionsGrid: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    marginTop: 16,
+  },
+  quickActionTile: {
+    width: (SCREEN_WIDTH - 24 - 24) / 4,
+    paddingVertical: 12,
+    borderRadius: 16,
+    borderWidth: 1.5,
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+  },
+  quickActionTileIcon: {
+    width: 44,
+    height: 44,
     borderRadius: 12,
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.slate200,
-    marginRight: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginBottom: 8,
   },
-  quickActionBtnPrimary: {
-    backgroundColor: COLORS.slate900,
-    borderColor: COLORS.slate900,
+  quickActionTileText: {
+    fontSize: 11,
+    fontFamily: FONTS.bold,
+    color: COLORS.slate800,
+    textAlign: 'center',
+    marginBottom: 2,
   },
-  quickActionText: { fontSize: 12, fontFamily: FONTS.semiBold, color: COLORS.slate700, marginLeft: 6 },
+  quickActionTileSubtitle: {
+    fontSize: 9,
+    fontFamily: FONTS.medium,
+    textAlign: 'center',
+  },
 
   widgetCard: {
     marginHorizontal: 16,
