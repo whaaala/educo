@@ -473,6 +473,13 @@ export default function ReportDetailsScreen() {
     }
   };
 
+  // Get score ring color
+  const getScoreRingColor = (): readonly [string, string] => {
+    if (report.totalPercentage >= 70) return ['#10b981', '#059669'] as const;
+    if (report.totalPercentage >= 50) return ['#f59e0b', '#d97706'] as const;
+    return ['#ef4444', '#dc2626'] as const;
+  };
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       {/* Fixed Header */}
@@ -483,7 +490,7 @@ export default function ReportDetailsScreen() {
         >
           <Ionicons name="arrow-back" size={20} color={colors.text} />
         </Pressable>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Report Details</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Report Card</Text>
         <Pressable
           style={[styles.shareButton, { backgroundColor: colors.backgroundTertiary }]}
           onPress={handleShare}
@@ -502,237 +509,450 @@ export default function ReportDetailsScreen() {
         contentContainerStyle={[styles.scrollContent, isTablet && styles.scrollContentTablet]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Student Info Card */}
-        <View style={[styles.studentCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={styles.studentInfo}>
-            {/* Avatar */}
-            <View style={styles.avatarWrapper}>
-              <LinearGradient
-                colors={['#6366f1', '#8b5cf6', '#a855f7']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.avatarGradient}
-              >
-                <View style={[styles.avatarInner, { backgroundColor: colors.surface }]}>
-                  <Image source={{ uri: childAvatar }} style={styles.avatar} />
+        {/* TABLET: Modern Clean Layout */}
+        {isTablet ? (
+          <View style={styles.tabletContainer}>
+            {/* Left Column */}
+            <View style={styles.tabletLeftColumn}>
+              {/* Student Header Card - Clean Design */}
+              <View style={[styles.studentHeaderCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={styles.studentHeaderTop}>
+                  <View style={styles.studentAvatarSection}>
+                    <LinearGradient
+                      colors={['#6366f1', '#8b5cf6']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.studentAvatarRing}
+                    >
+                      <View style={[styles.studentAvatarInner, { backgroundColor: colors.surface }]}>
+                        <Image source={{ uri: childAvatar }} style={styles.studentAvatarImg} />
+                      </View>
+                    </LinearGradient>
+                  </View>
+                  <View style={styles.studentInfoSection}>
+                    <Text style={[styles.studentNameText, { color: colors.text }]}>{childName}</Text>
+                    <View style={styles.studentBadgesRow}>
+                      <View style={[styles.studentClassBadge, { backgroundColor: colors.primaryLight }]}>
+                        <Ionicons name="school" size={12} color={colors.primary} />
+                        <Text style={[styles.studentClassText, { color: colors.primary }]}>{childClass}</Text>
+                      </View>
+                      <View style={[styles.studentSessionBadge, { backgroundColor: colors.backgroundTertiary }]}>
+                        <Text style={[styles.studentSessionText, { color: colors.textSecondary }]}>{report.academicSession}</Text>
+                      </View>
+                    </View>
+                  </View>
                 </View>
-              </LinearGradient>
-            </View>
-            {/* Details */}
-            <View style={styles.studentDetails}>
-              <Text style={[styles.studentName, { color: colors.text }]}>{childName}</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                <View style={[styles.classBadge, { backgroundColor: colors.primaryLight }]}>
-                  <Ionicons name="school" size={12} color={colors.primary} />
-                  <Text style={[styles.classBadgeText, { color: colors.primary }]}>{childClass}</Text>
-                </View>
-                <View style={[styles.sessionBadge, { backgroundColor: colors.backgroundTertiary }]}>
-                  <Text style={[styles.sessionText, { color: colors.textSecondary }]}>{report.academicSession}</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* Exam Info */}
-          <View style={[styles.examInfoRow, { borderTopColor: colors.border }]}>
-            <View style={styles.examInfoItem}>
-              <Ionicons name="document-text-outline" size={16} color={colors.textMuted} />
-              <Text style={[styles.examInfoText, { color: colors.text }]}>{report.examType}</Text>
-            </View>
-            <View style={[styles.examInfoDivider, { backgroundColor: colors.border }]} />
-            <View style={styles.examInfoItem}>
-              <Ionicons name="calendar-outline" size={16} color={colors.textMuted} />
-              <Text style={[styles.examInfoText, { color: colors.text }]}>{formatDate(report.datePublished)}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Performance Overview - Modern Card Design */}
-        <View style={[styles.performanceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={styles.performanceTop}>
-            {/* Modern Score Circle with Gradient Ring */}
-            <View style={styles.scoreCircleWrapper}>
-              <LinearGradient
-                colors={report.totalPercentage >= 70 ? ['#10b981', '#059669'] : report.totalPercentage >= 50 ? ['#f59e0b', '#d97706'] : ['#ef4444', '#dc2626']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.scoreGradientRing}
-              >
-                <View style={[styles.scoreInnerCircle, { backgroundColor: colors.surface }]}>
-                  <Text style={[styles.scoreMainValue, { color: colors.text }]}>{report.totalPercentage}</Text>
-                  <Text style={[styles.scorePercentSign, { color: colors.textMuted }]}>%</Text>
-                </View>
-              </LinearGradient>
-              <Text style={[styles.scoreLabel, { color: colors.textMuted }]}>Overall Score</Text>
-            </View>
-
-            {/* Right Side - Rank & Status */}
-            <View style={styles.performanceStats}>
-              {/* Rank Card */}
-              <View style={[styles.performanceStatRow, { backgroundColor: colors.backgroundTertiary }]}>
-                <View style={[styles.performanceStatIcon, { backgroundColor: '#fef3c7' }]}>
-                  <Ionicons name="trophy" size={16} color="#f59e0b" />
-                </View>
-                <View style={styles.performanceStatContent}>
-                  <Text style={[styles.performanceStatValue, { color: colors.text }]}>#{report.rank}</Text>
-                  <Text style={[styles.performanceStatLabel, { color: colors.textMuted }]}>of {report.totalStudents} students</Text>
+                <View style={[styles.examInfoBar, { backgroundColor: colors.backgroundTertiary }]}>
+                  <View style={styles.examInfoItemNew}>
+                    <Ionicons name="document-text" size={16} color={colors.primary} />
+                    <Text style={[styles.examInfoTextNew, { color: colors.text }]}>{report.examType}</Text>
+                  </View>
+                  <View style={[styles.examInfoDot, { backgroundColor: colors.border }]} />
+                  <View style={styles.examInfoItemNew}>
+                    <Ionicons name="calendar" size={16} color={colors.primary} />
+                    <Text style={[styles.examInfoTextNew, { color: colors.text }]}>{formatDate(report.datePublished)}</Text>
+                  </View>
                 </View>
               </View>
 
-              {/* Status Badge */}
-              <View style={[styles.statusBadgeNew, { backgroundColor: report.status === 'pass' ? '#ecfdf5' : '#fef2f2' }]}>
-                <View style={[styles.statusDot, { backgroundColor: report.status === 'pass' ? '#10b981' : '#ef4444' }]} />
-                <Text style={[styles.statusTextNew, { color: report.status === 'pass' ? '#059669' : '#dc2626' }]}>
-                  {report.status === 'pass' ? 'Passed' : 'Failed'}
+              {/* Performance Card - Modern Grid */}
+              <View style={[styles.performanceCardNew, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={styles.performanceLayout}>
+                  {/* Score Circle */}
+                  <View style={styles.scoreAreaNew}>
+                    <LinearGradient
+                      colors={getScoreRingColor()}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.scoreRingNew}
+                    >
+                      <View style={[styles.scoreInnerNew, { backgroundColor: colors.surface }]}>
+                        <Text style={[styles.scoreValueNew, { color: colors.text }]}>{report.totalPercentage}</Text>
+                        <Text style={[styles.scorePercentNew, { color: colors.textMuted }]}>%</Text>
+                      </View>
+                    </LinearGradient>
+                    <Text style={[styles.scoreLabelNew, { color: colors.textMuted }]}>Overall Score</Text>
+                  </View>
+
+                  {/* Stats Grid - 2x2 */}
+                  <View style={styles.statsGridNew}>
+                    <View style={[styles.statCardNew, { backgroundColor: colors.backgroundTertiary }]}>
+                      <View style={[styles.statIconNew, { backgroundColor: '#fef3c7' }]}>
+                        <Ionicons name="trophy" size={20} color="#f59e0b" />
+                      </View>
+                      <Text style={[styles.statValueNew, { color: colors.text }]}>#{report.rank}</Text>
+                      <Text style={[styles.statLabelNew, { color: colors.textMuted }]}>of {report.totalStudents}</Text>
+                    </View>
+                    <View style={[styles.statCardNew, { backgroundColor: colors.backgroundTertiary }]}>
+                      <View style={[styles.statIconNew, { backgroundColor: '#eff6ff' }]}>
+                        <Ionicons name="book" size={20} color="#3b82f6" />
+                      </View>
+                      <Text style={[styles.statValueNew, { color: colors.text }]}>{report.subjects.length}</Text>
+                      <Text style={[styles.statLabelNew, { color: colors.textMuted }]}>Subjects</Text>
+                    </View>
+                    <View style={[styles.statCardNew, { backgroundColor: colors.backgroundTertiary }]}>
+                      <View style={[styles.statIconNew, { backgroundColor: '#ecfdf5' }]}>
+                        <Ionicons name="ribbon" size={20} color="#10b981" />
+                      </View>
+                      <Text style={[styles.statValueNew, { color: colors.text }]}>{gradeACount}</Text>
+                      <Text style={[styles.statLabelNew, { color: colors.textMuted }]}>A Grades</Text>
+                    </View>
+                    <View style={[styles.statCardNew, { backgroundColor: report.status === 'pass' ? '#ecfdf5' : '#fef2f2' }]}>
+                      <View style={[styles.statIconNew, { backgroundColor: report.status === 'pass' ? '#d1fae5' : '#fecaca' }]}>
+                        <Ionicons name={report.status === 'pass' ? 'checkmark-circle' : 'close-circle'} size={20} color={report.status === 'pass' ? '#10b981' : '#ef4444'} />
+                      </View>
+                      <Text style={[styles.statValueNew, { color: report.status === 'pass' ? '#10b981' : '#ef4444' }]}>
+                        {report.status === 'pass' ? 'Passed' : 'Failed'}
+                      </Text>
+                      <Text style={[styles.statLabelNew, { color: colors.textMuted }]}>Status</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+
+              {/* Highlights Row */}
+              <View style={styles.highlightsRowNew}>
+                <View style={[styles.highlightCardNew2, { backgroundColor: '#f0fdf4' }]}>
+                  <View style={styles.highlightTopNew}>
+                    <Ionicons name="trending-up" size={20} color="#10b981" />
+                    <Text style={styles.highlightLabelNew2}>BEST</Text>
+                  </View>
+                  <Text style={[styles.highlightSubjectNew, { color: colors.text }]}>{highestSubject.name}</Text>
+                  <Text style={styles.highlightScoreNew2}>{highestSubject.score}%</Text>
+                </View>
+                <View style={[styles.highlightCardNew2, { backgroundColor: '#fef2f2' }]}>
+                  <View style={styles.highlightTopNew}>
+                    <Ionicons name="trending-down" size={20} color="#ef4444" />
+                    <Text style={[styles.highlightLabelNew2, { color: '#ef4444' }]}>IMPROVE</Text>
+                  </View>
+                  <Text style={[styles.highlightSubjectNew, { color: colors.text }]}>{lowestSubject.name}</Text>
+                  <Text style={[styles.highlightScoreNew2, { color: '#ef4444' }]}>{lowestSubject.score}%</Text>
+                </View>
+              </View>
+
+              {/* Remarks */}
+              <View style={[styles.remarksCardNew, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.remarksTitleNew, { color: colors.text }]}>Remarks</Text>
+                <View style={[styles.remarkBoxNew, { backgroundColor: colors.backgroundTertiary }]}>
+                  <View style={styles.remarkHeaderNew}>
+                    <Ionicons name="person" size={16} color="#3b82f6" />
+                    <Text style={[styles.remarkLabelNew, { color: colors.textMuted }]}>Class Teacher</Text>
+                  </View>
+                  <Text style={[styles.remarkTextNew, { color: colors.text }]}>{report.classTeacherRemark}</Text>
+                </View>
+                <View style={[styles.remarkBoxNew, { backgroundColor: colors.backgroundTertiary, marginTop: 12 }]}>
+                  <View style={styles.remarkHeaderNew}>
+                    <Ionicons name="school" size={16} color="#f59e0b" />
+                    <Text style={[styles.remarkLabelNew, { color: colors.textMuted }]}>Principal</Text>
+                  </View>
+                  <Text style={[styles.remarkTextNew, { color: colors.text }]}>{report.principalRemark}</Text>
+                </View>
+              </View>
+
+              {/* Attendance */}
+              <View style={[styles.attendanceCardNew, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={styles.attendanceTopNew}>
+                  <View style={styles.attendanceTitleRow}>
+                    <Ionicons name="calendar" size={18} color={colors.primary} />
+                    <Text style={[styles.attendanceTitleNew, { color: colors.text }]}>Attendance</Text>
+                  </View>
+                  <Text style={styles.attendanceRateNew}>{report.attendanceRate}%</Text>
+                </View>
+                <View style={[styles.attendanceProgressBg, { backgroundColor: colors.backgroundTertiary }]}>
+                  <LinearGradient
+                    colors={['#10b981', '#059669']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[styles.attendanceProgressFill, { width: `${report.attendanceRate}%` }]}
+                  />
+                </View>
+                <View style={styles.attendanceStatsNew}>
+                  <View style={styles.attendanceStatItemNew}>
+                    <Text style={[styles.attendanceStatNumNew, { color: '#10b981' }]}>{report.daysPresent}</Text>
+                    <Text style={[styles.attendanceStatTextNew, { color: colors.textMuted }]}>Present</Text>
+                  </View>
+                  <View style={styles.attendanceStatItemNew}>
+                    <Text style={[styles.attendanceStatNumNew, { color: '#ef4444' }]}>{report.totalDays - report.daysPresent}</Text>
+                    <Text style={[styles.attendanceStatTextNew, { color: colors.textMuted }]}>Absent</Text>
+                  </View>
+                  <View style={styles.attendanceStatItemNew}>
+                    <Text style={[styles.attendanceStatNumNew, { color: colors.text }]}>{report.totalDays}</Text>
+                    <Text style={[styles.attendanceStatTextNew, { color: colors.textMuted }]}>Total</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            {/* Right Column - Subjects */}
+            <View style={styles.tabletRightColumn}>
+              <View style={[styles.subjectsCardNew, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={styles.subjectsHeaderNew}>
+                  <Text style={[styles.subjectsTitleNew, { color: colors.text }]}>Subject Results</Text>
+                  <View style={[styles.subjectsBadgeNew, { backgroundColor: colors.primaryLight }]}>
+                    <Text style={[styles.subjectsBadgeText, { color: colors.primary }]}>{report.subjects.length}</Text>
+                  </View>
+                </View>
+
+                {/* Subject Grid */}
+                <View style={styles.subjectsGridNew}>
+                  {report.subjects.map((subject) => (
+                    <View key={subject.name} style={[styles.subjectItemNew, { backgroundColor: colors.backgroundTertiary }]}>
+                      <View style={styles.subjectItemTop}>
+                        <View style={[styles.subjectGradeBox, { backgroundColor: getGradeBgColor(subject.grade) }]}>
+                          <Text style={[styles.subjectGradeLetter, { color: getGradeColor(subject.grade) }]}>{subject.grade}</Text>
+                        </View>
+                        <Text style={[styles.subjectScoreNum, { color: getGradeColor(subject.grade) }]}>{subject.score}%</Text>
+                      </View>
+                      <Text style={[styles.subjectItemName, { color: colors.text }]} numberOfLines={1}>{subject.name}</Text>
+                      <Text style={[styles.subjectItemMeta, { color: colors.textMuted }]}>Rank #{subject.position} • Avg {subject.classAverage}%</Text>
+                      <View style={[styles.subjectProgressBg, { backgroundColor: colors.border }]}>
+                        <View style={[styles.subjectProgressFill, { width: `${subject.score}%`, backgroundColor: getGradeColor(subject.grade) }]} />
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              {/* Download Button */}
+              <Pressable style={styles.downloadBtnNew} onPress={handleDownload} disabled={isDownloading}>
+                <LinearGradient
+                  colors={isDownloading ? ['#9ca3af', '#9ca3af'] : ['#6366f1', '#8b5cf6']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.downloadBtnGradient}
+                >
+                  {isDownloading ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <Ionicons name="download-outline" size={20} color="#ffffff" />
+                  )}
+                  <Text style={styles.downloadBtnText}>
+                    {isDownloading ? 'Generating...' : 'Download Report Card'}
+                  </Text>
+                </LinearGradient>
+              </Pressable>
+            </View>
+          </View>
+        ) : (
+          /* MOBILE: Single Column Layout */
+          <>
+            {/* Student Info Card */}
+            <View style={[styles.studentCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={styles.studentInfo}>
+                <View style={styles.avatarWrapper}>
+                  <LinearGradient
+                    colors={['#6366f1', '#8b5cf6', '#a855f7']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.avatarGradient}
+                  >
+                    <View style={[styles.avatarInner, { backgroundColor: colors.surface }]}>
+                      <Image source={{ uri: childAvatar }} style={styles.avatar} />
+                    </View>
+                  </LinearGradient>
+                </View>
+                <View style={styles.studentDetails}>
+                  <Text style={[styles.studentName, { color: colors.text }]}>{childName}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                    <View style={[styles.classBadge, { backgroundColor: colors.primaryLight }]}>
+                      <Ionicons name="school" size={12} color={colors.primary} />
+                      <Text style={[styles.classBadgeText, { color: colors.primary }]}>{childClass}</Text>
+                    </View>
+                    <View style={[styles.sessionBadge, { backgroundColor: colors.backgroundTertiary }]}>
+                      <Text style={[styles.sessionText, { color: colors.textSecondary }]}>{report.academicSession}</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+              <View style={[styles.examInfoRow, { borderTopColor: colors.border }]}>
+                <View style={styles.examInfoItem}>
+                  <Ionicons name="document-text-outline" size={16} color={colors.textMuted} />
+                  <Text style={[styles.examInfoText, { color: colors.text }]}>{report.examType}</Text>
+                </View>
+                <View style={[styles.examInfoDivider, { backgroundColor: colors.border }]} />
+                <View style={styles.examInfoItem}>
+                  <Ionicons name="calendar-outline" size={16} color={colors.textMuted} />
+                  <Text style={[styles.examInfoText, { color: colors.text }]}>{formatDate(report.datePublished)}</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Performance Card */}
+            <View style={[styles.performanceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={styles.performanceTop}>
+                <View style={styles.scoreCircleWrapper}>
+                  <LinearGradient
+                    colors={getScoreRingColor()}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.scoreGradientRing}
+                  >
+                    <View style={[styles.scoreInnerCircle, { backgroundColor: colors.surface }]}>
+                      <Text style={[styles.scoreMainValue, { color: colors.text }]}>{report.totalPercentage}</Text>
+                      <Text style={[styles.scorePercentSign, { color: colors.textMuted }]}>%</Text>
+                    </View>
+                  </LinearGradient>
+                  <Text style={[styles.scoreLabel, { color: colors.textMuted }]}>Overall Score</Text>
+                </View>
+                <View style={styles.performanceStats}>
+                  <View style={[styles.performanceStatRow, { backgroundColor: colors.backgroundTertiary }]}>
+                    <View style={[styles.performanceStatIcon, { backgroundColor: '#fef3c7' }]}>
+                      <Ionicons name="trophy" size={16} color="#f59e0b" />
+                    </View>
+                    <View style={styles.performanceStatContent}>
+                      <Text style={[styles.performanceStatValue, { color: colors.text }]}>#{report.rank}</Text>
+                      <Text style={[styles.performanceStatLabel, { color: colors.textMuted }]}>of {report.totalStudents} students</Text>
+                    </View>
+                  </View>
+                  <View style={[styles.statusBadgeNew, { backgroundColor: report.status === 'pass' ? '#ecfdf5' : '#fef2f2' }]}>
+                    <View style={[styles.statusDot, { backgroundColor: report.status === 'pass' ? '#10b981' : '#ef4444' }]} />
+                    <Text style={[styles.statusTextNew, { color: report.status === 'pass' ? '#059669' : '#dc2626' }]}>
+                      {report.status === 'pass' ? 'Passed' : 'Failed'}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            {/* Quick Stats */}
+            <View style={styles.quickStatsRow}>
+              <View style={[styles.quickStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={[styles.quickStatIcon, { backgroundColor: '#eff6ff' }]}>
+                  <Ionicons name="book-outline" size={16} color="#3b82f6" />
+                </View>
+                <Text style={[styles.quickStatValue, { color: colors.text }]}>{report.subjects.length}</Text>
+                <Text style={[styles.quickStatLabel, { color: colors.textMuted }]}>Subjects</Text>
+              </View>
+              <View style={[styles.quickStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={[styles.quickStatIcon, { backgroundColor: '#ecfdf5' }]}>
+                  <Ionicons name="ribbon-outline" size={16} color="#10b981" />
+                </View>
+                <Text style={[styles.quickStatValue, { color: colors.text }]}>{gradeACount}</Text>
+                <Text style={[styles.quickStatLabel, { color: colors.textMuted }]}>A Grades</Text>
+              </View>
+              <View style={[styles.quickStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={[styles.quickStatIcon, { backgroundColor: '#fef3c7' }]}>
+                  <Ionicons name="stats-chart-outline" size={16} color="#f59e0b" />
+                </View>
+                <Text style={[styles.quickStatValue, { color: colors.text }]}>{averageScore}%</Text>
+                <Text style={[styles.quickStatLabel, { color: colors.textMuted }]}>Average</Text>
+              </View>
+              <View style={[styles.quickStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={[styles.quickStatIcon, { backgroundColor: '#fce7f3' }]}>
+                  <Ionicons name="calendar-outline" size={16} color="#ec4899" />
+                </View>
+                <Text style={[styles.quickStatValue, { color: colors.text }]}>{report.attendanceRate}%</Text>
+                <Text style={[styles.quickStatLabel, { color: colors.textMuted }]}>Attend.</Text>
+              </View>
+            </View>
+
+            {/* Highlights */}
+            <View style={styles.highlightsRow}>
+              <View style={[styles.highlightCardNew, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={[styles.highlightIconWrap, { backgroundColor: '#ecfdf5' }]}>
+                  <Ionicons name="trending-up" size={18} color="#10b981" />
+                </View>
+                <View style={styles.highlightTextWrap}>
+                  <Text style={[styles.highlightLabelNew, { color: colors.textMuted }]}>Best</Text>
+                  <Text style={[styles.highlightValueNew, { color: colors.text }]} numberOfLines={1}>{highestSubject.name}</Text>
+                  <Text style={[styles.highlightScoreNew, { color: '#10b981' }]}>{highestSubject.score}%</Text>
+                </View>
+              </View>
+              <View style={[styles.highlightCardNew, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={[styles.highlightIconWrap, { backgroundColor: '#fef2f2' }]}>
+                  <Ionicons name="trending-down" size={18} color="#ef4444" />
+                </View>
+                <View style={styles.highlightTextWrap}>
+                  <Text style={[styles.highlightLabelNew, { color: colors.textMuted }]}>Improve</Text>
+                  <Text style={[styles.highlightValueNew, { color: colors.text }]} numberOfLines={1}>{lowestSubject.name}</Text>
+                  <Text style={[styles.highlightScoreNew, { color: '#ef4444' }]}>{lowestSubject.score}%</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Subject Results */}
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Subject Results</Text>
+              <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>{report.subjects.length} subjects</Text>
+            </View>
+
+            <View style={styles.subjectsContainer}>
+              {report.subjects.map((subject) => (
+                <SubjectCard key={subject.name} subject={subject} colors={colors} isTablet={isTablet} />
+              ))}
+            </View>
+
+            {/* Remarks */}
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Remarks</Text>
+            </View>
+
+            <View style={[styles.remarksCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={styles.remarkItem}>
+                <View style={styles.remarkHeader}>
+                  <View style={[styles.remarkIcon, { backgroundColor: '#eff6ff' }]}>
+                    <Ionicons name="person" size={16} color="#3b82f6" />
+                  </View>
+                  <Text style={[styles.remarkLabel, { color: colors.textSecondary }]}>Class Teacher</Text>
+                </View>
+                <Text style={[styles.remarkText, { color: colors.text }]}>{report.classTeacherRemark}</Text>
+              </View>
+              <View style={[styles.remarkDivider, { backgroundColor: colors.border }]} />
+              <View style={styles.remarkItem}>
+                <View style={styles.remarkHeader}>
+                  <View style={[styles.remarkIcon, { backgroundColor: '#fef3c7' }]}>
+                    <Ionicons name="school" size={16} color="#f59e0b" />
+                  </View>
+                  <Text style={[styles.remarkLabel, { color: colors.textSecondary }]}>Principal</Text>
+                </View>
+                <Text style={[styles.remarkText, { color: colors.text }]}>{report.principalRemark}</Text>
+              </View>
+            </View>
+
+            {/* Attendance */}
+            <View style={[styles.attendanceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={styles.attendanceHeader}>
+                <Ionicons name="calendar-outline" size={20} color={colors.primary} />
+                <Text style={[styles.attendanceTitle, { color: colors.text }]}>Attendance Record</Text>
+              </View>
+              <View style={styles.attendanceStats}>
+                <View style={styles.attendanceStat}>
+                  <Text style={[styles.attendanceValue, { color: colors.text }]}>{report.daysPresent}</Text>
+                  <Text style={[styles.attendanceLabel, { color: colors.textMuted }]}>Days Present</Text>
+                </View>
+                <View style={[styles.attendanceDivider, { backgroundColor: colors.border }]} />
+                <View style={styles.attendanceStat}>
+                  <Text style={[styles.attendanceValue, { color: colors.text }]}>{report.totalDays - report.daysPresent}</Text>
+                  <Text style={[styles.attendanceLabel, { color: colors.textMuted }]}>Days Absent</Text>
+                </View>
+                <View style={[styles.attendanceDivider, { backgroundColor: colors.border }]} />
+                <View style={styles.attendanceStat}>
+                  <Text style={[styles.attendanceValue, { color: '#10b981' }]}>{report.attendanceRate}%</Text>
+                  <Text style={[styles.attendanceLabel, { color: colors.textMuted }]}>Rate</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Download Button */}
+            <Pressable style={styles.downloadButton} onPress={handleDownload} disabled={isDownloading}>
+              <LinearGradient
+                colors={isDownloading ? ['#9ca3af', '#9ca3af'] : ['#6366f1', '#8b5cf6']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.downloadButtonGradient}
+              >
+                {isDownloading ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <Ionicons name="download-outline" size={20} color="#ffffff" />
+                )}
+                <Text style={styles.downloadButtonText}>
+                  {isDownloading ? 'Generating PDF...' : 'Download Report Card'}
                 </Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Quick Stats Row - Separate Cards */}
-        <View style={styles.quickStatsRow}>
-          <View style={[styles.quickStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={[styles.quickStatIcon, { backgroundColor: '#eff6ff' }]}>
-              <Ionicons name="book-outline" size={16} color="#3b82f6" />
-            </View>
-            <Text style={[styles.quickStatValue, { color: colors.text }]}>{report.subjects.length}</Text>
-            <Text style={[styles.quickStatLabel, { color: colors.textMuted }]}>Subjects</Text>
-          </View>
-          <View style={[styles.quickStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={[styles.quickStatIcon, { backgroundColor: '#ecfdf5' }]}>
-              <Ionicons name="ribbon-outline" size={16} color="#10b981" />
-            </View>
-            <Text style={[styles.quickStatValue, { color: colors.text }]}>{gradeACount}</Text>
-            <Text style={[styles.quickStatLabel, { color: colors.textMuted }]}>A Grades</Text>
-          </View>
-          <View style={[styles.quickStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={[styles.quickStatIcon, { backgroundColor: '#fef3c7' }]}>
-              <Ionicons name="stats-chart-outline" size={16} color="#f59e0b" />
-            </View>
-            <Text style={[styles.quickStatValue, { color: colors.text }]}>{averageScore}%</Text>
-            <Text style={[styles.quickStatLabel, { color: colors.textMuted }]}>Average</Text>
-          </View>
-          <View style={[styles.quickStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={[styles.quickStatIcon, { backgroundColor: '#fce7f3' }]}>
-              <Ionicons name="calendar-outline" size={16} color="#ec4899" />
-            </View>
-            <Text style={[styles.quickStatValue, { color: colors.text }]}>{report.attendanceRate}%</Text>
-            <Text style={[styles.quickStatLabel, { color: colors.textMuted }]}>Attend.</Text>
-          </View>
-        </View>
-
-        {/* Highlights - Inline Design */}
-        <View style={styles.highlightsRow}>
-          <View style={[styles.highlightCardNew, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={[styles.highlightIconWrap, { backgroundColor: '#ecfdf5' }]}>
-              <Ionicons name="trending-up" size={18} color="#10b981" />
-            </View>
-            <View style={styles.highlightTextWrap}>
-              <Text style={[styles.highlightLabelNew, { color: colors.textMuted }]}>Best</Text>
-              <Text style={[styles.highlightValueNew, { color: colors.text }]} numberOfLines={1}>{highestSubject.name}</Text>
-              <Text style={[styles.highlightScoreNew, { color: '#10b981' }]}>{highestSubject.score}%</Text>
-            </View>
-          </View>
-          <View style={[styles.highlightCardNew, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={[styles.highlightIconWrap, { backgroundColor: '#fef2f2' }]}>
-              <Ionicons name="trending-down" size={18} color="#ef4444" />
-            </View>
-            <View style={styles.highlightTextWrap}>
-              <Text style={[styles.highlightLabelNew, { color: colors.textMuted }]}>Improve</Text>
-              <Text style={[styles.highlightValueNew, { color: colors.text }]} numberOfLines={1}>{lowestSubject.name}</Text>
-              <Text style={[styles.highlightScoreNew, { color: '#ef4444' }]}>{lowestSubject.score}%</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Subject Results */}
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Subject Results</Text>
-          <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>{report.subjects.length} subjects</Text>
-        </View>
-
-        <View style={[styles.subjectsContainer, isTablet && styles.subjectsContainerTablet]}>
-          {report.subjects.map((subject, index) => (
-            <View key={subject.name} style={isTablet && styles.subjectCardWrapper}>
-              <SubjectCard subject={subject} colors={colors} isTablet={isTablet} />
-            </View>
-          ))}
-        </View>
-
-        {/* Remarks Section */}
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Remarks</Text>
-        </View>
-
-        <View style={[styles.remarksCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          {/* Class Teacher Remark */}
-          <View style={styles.remarkItem}>
-            <View style={styles.remarkHeader}>
-              <View style={[styles.remarkIcon, { backgroundColor: '#eff6ff' }]}>
-                <Ionicons name="person" size={16} color="#3b82f6" />
-              </View>
-              <Text style={[styles.remarkLabel, { color: colors.textSecondary }]}>Class Teacher</Text>
-            </View>
-            <Text style={[styles.remarkText, { color: colors.text }]}>{report.classTeacherRemark}</Text>
-          </View>
-
-          <View style={[styles.remarkDivider, { backgroundColor: colors.border }]} />
-
-          {/* Principal Remark */}
-          <View style={styles.remarkItem}>
-            <View style={styles.remarkHeader}>
-              <View style={[styles.remarkIcon, { backgroundColor: '#fef3c7' }]}>
-                <Ionicons name="school" size={16} color="#f59e0b" />
-              </View>
-              <Text style={[styles.remarkLabel, { color: colors.textSecondary }]}>Principal</Text>
-            </View>
-            <Text style={[styles.remarkText, { color: colors.text }]}>{report.principalRemark}</Text>
-          </View>
-        </View>
-
-        {/* Attendance Info */}
-        <View style={[styles.attendanceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={styles.attendanceHeader}>
-            <Ionicons name="calendar-outline" size={20} color={colors.primary} />
-            <Text style={[styles.attendanceTitle, { color: colors.text }]}>Attendance Record</Text>
-          </View>
-          <View style={styles.attendanceStats}>
-            <View style={styles.attendanceStat}>
-              <Text style={[styles.attendanceValue, { color: colors.text }]}>{report.daysPresent}</Text>
-              <Text style={[styles.attendanceLabel, { color: colors.textMuted }]}>Days Present</Text>
-            </View>
-            <View style={[styles.attendanceDivider, { backgroundColor: colors.border }]} />
-            <View style={styles.attendanceStat}>
-              <Text style={[styles.attendanceValue, { color: colors.text }]}>{report.totalDays - report.daysPresent}</Text>
-              <Text style={[styles.attendanceLabel, { color: colors.textMuted }]}>Days Absent</Text>
-            </View>
-            <View style={[styles.attendanceDivider, { backgroundColor: colors.border }]} />
-            <View style={styles.attendanceStat}>
-              <Text style={[styles.attendanceValue, { color: '#10b981' }]}>{report.attendanceRate}%</Text>
-              <Text style={[styles.attendanceLabel, { color: colors.textMuted }]}>Rate</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Download Button */}
-        <Pressable style={styles.downloadButton} onPress={handleDownload} disabled={isDownloading}>
-          <LinearGradient
-            colors={isDownloading ? ['#9ca3af', '#9ca3af'] : ['#6366f1', '#8b5cf6']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.downloadButtonGradient}
-          >
-            {isDownloading ? (
-              <ActivityIndicator size="small" color="#ffffff" />
-            ) : (
-              <Ionicons name="download-outline" size={20} color="#ffffff" />
-            )}
-            <Text style={styles.downloadButtonText}>
-              {isDownloading ? 'Generating PDF...' : 'Download Report Card'}
-            </Text>
-          </LinearGradient>
-        </Pressable>
+              </LinearGradient>
+            </Pressable>
+          </>
+        )}
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -778,7 +998,8 @@ const styles = StyleSheet.create({
   },
   scrollContentTablet: {
     paddingHorizontal: 24,
-    maxWidth: 900,
+    paddingTop: 20,
+    maxWidth: 1200,
     alignSelf: 'center',
     width: '100%',
   },
@@ -1220,6 +1441,799 @@ const styles = StyleSheet.create({
   },
   downloadButtonText: {
     fontSize: 15,
+    fontFamily: FONTS.bold,
+    color: '#ffffff',
+  },
+
+  // =============================================
+  // TABLET STYLES - Two Column Layout
+  // =============================================
+  tabletContainer: {
+    flexDirection: 'row',
+    gap: 20,
+  },
+  tabletLeftColumn: {
+    flex: 1.2,
+    gap: 12,
+    maxWidth: 680,
+  },
+  tabletRightColumn: {
+    flex: 0.8,
+    gap: 12,
+    maxWidth: 460,
+  },
+
+  // Hero Card (Tablet)
+  heroCard: {
+    borderRadius: 20,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  heroGradient: {
+    padding: 24,
+  },
+  heroStudentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  heroAvatarWrapper: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 3,
+    borderColor: 'rgba(255,255,255,0.3)',
+    overflow: 'hidden',
+  },
+  heroAvatar: {
+    width: '100%',
+    height: '100%',
+  },
+  heroStudentInfo: {
+    flex: 1,
+  },
+  heroStudentName: {
+    fontSize: 22,
+    fontFamily: FONTS.bold,
+    color: '#ffffff',
+    marginBottom: 8,
+  },
+  heroBadgesRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  heroBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  heroBadgeText: {
+    fontSize: 12,
+    fontFamily: FONTS.semiBold,
+    color: '#ffffff',
+  },
+  heroExamBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 16,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    alignSelf: 'flex-start',
+  },
+  heroExamText: {
+    fontSize: 13,
+    fontFamily: FONTS.medium,
+    color: 'rgba(255,255,255,0.9)',
+  },
+  heroExamDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+  },
+
+  // Hero Score Section
+  heroScoreSection: {
+    padding: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 32,
+  },
+  heroScoreWrapper: {
+    alignItems: 'center',
+  },
+  heroScoreRing: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    padding: 5,
+    shadowColor: '#10b981',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  heroScoreInner: {
+    flex: 1,
+    borderRadius: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  heroScoreValue: {
+    fontSize: 44,
+    fontFamily: FONTS.bold,
+  },
+  heroScorePercent: {
+    fontSize: 20,
+    fontFamily: FONTS.semiBold,
+    marginTop: 8,
+    marginLeft: 2,
+  },
+  heroScoreLabel: {
+    fontSize: 13,
+    fontFamily: FONTS.medium,
+    marginTop: 12,
+  },
+
+  // Hero Stats Grid
+  heroStatsGrid: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  heroStatItem: {
+    width: '45%',
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  heroStatIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  heroStatValue: {
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+  },
+  heroStatLabel: {
+    fontSize: 11,
+    fontFamily: FONTS.medium,
+    marginTop: 2,
+  },
+
+  // Highlights Row (Tablet)
+  highlightsRowTablet: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  highlightCardTablet: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 14,
+  },
+  highlightIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  highlightContent: {
+    flex: 1,
+  },
+  highlightLabelTablet: {
+    fontSize: 11,
+    fontFamily: FONTS.semiBold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  highlightValueTablet: {
+    fontSize: 15,
+    fontFamily: FONTS.semiBold,
+    marginTop: 4,
+  },
+  highlightScoreTablet: {
+    fontSize: 14,
+    fontFamily: FONTS.bold,
+    marginTop: 2,
+  },
+
+  // Remarks Card (Tablet)
+  remarksCardTablet: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 20,
+  },
+  remarksTitleTablet: {
+    fontSize: 16,
+    fontFamily: FONTS.bold,
+    marginBottom: 16,
+  },
+  remarkItemTablet: {
+    flexDirection: 'row',
+    gap: 14,
+  },
+  remarkIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  remarkContentTablet: {
+    flex: 1,
+  },
+  remarkLabelTablet: {
+    fontSize: 11,
+    fontFamily: FONTS.semiBold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  remarkTextTablet: {
+    fontSize: 14,
+    fontFamily: FONTS.medium,
+    lineHeight: 20,
+  },
+  remarkDividerTablet: {
+    height: 1,
+    marginVertical: 16,
+  },
+
+  // Attendance Card (Tablet)
+  attendanceCardTablet: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 20,
+  },
+  attendanceHeaderTablet: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 16,
+  },
+  attendanceTitleTablet: {
+    fontSize: 15,
+    fontFamily: FONTS.bold,
+    flex: 1,
+  },
+  attendanceRateTablet: {
+    fontSize: 20,
+    fontFamily: FONTS.bold,
+  },
+  attendanceBarBg: {
+    height: 8,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
+  attendanceBarFill: {
+    height: '100%',
+    backgroundColor: '#10b981',
+    borderRadius: 4,
+  },
+  attendanceStatsRowTablet: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  attendanceStatTablet: {
+    alignItems: 'center',
+  },
+  attendanceStatValueTablet: {
+    fontSize: 20,
+    fontFamily: FONTS.bold,
+    marginBottom: 2,
+  },
+  attendanceStatLabelTablet: {
+    fontSize: 11,
+    fontFamily: FONTS.medium,
+  },
+
+  // Subjects Card (Tablet)
+  subjectsCardTablet: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  subjectsHeaderTablet: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 20,
+    paddingBottom: 16,
+  },
+  subjectsTitleTablet: {
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+  },
+  subjectsCountBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  subjectsCountText: {
+    fontSize: 12,
+    fontFamily: FONTS.semiBold,
+  },
+  subjectsListTablet: {
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+  },
+  subjectRowTablet: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
+  subjectLeftTablet: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    flex: 1,
+  },
+  subjectGradeBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  subjectGradeText: {
+    fontSize: 16,
+    fontFamily: FONTS.bold,
+  },
+  subjectInfoTablet: {
+    flex: 1,
+  },
+  subjectNameTablet: {
+    fontSize: 15,
+    fontFamily: FONTS.semiBold,
+    marginBottom: 2,
+  },
+  subjectMetaTablet: {
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+  },
+  subjectRightTablet: {
+    alignItems: 'flex-end',
+    width: 100,
+  },
+  subjectScoreTablet: {
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+    marginBottom: 6,
+  },
+  subjectScoreBarBg: {
+    width: '100%',
+    height: 6,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  subjectScoreBarFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+
+  // Download Button (Tablet)
+  downloadButtonTablet: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  downloadButtonGradientTablet: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 18,
+    gap: 12,
+  },
+  downloadButtonTextTablet: {
+    fontSize: 16,
+    fontFamily: FONTS.bold,
+    color: '#ffffff',
+  },
+
+  // =============================================
+  // NEW TABLET STYLES - Modern Clean Design
+  // =============================================
+
+  // Student Header Card
+  studentHeaderCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  studentHeaderTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 12,
+  },
+  studentAvatarSection: {
+    alignItems: 'center',
+  },
+  studentAvatarRing: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    padding: 2,
+  },
+  studentAvatarInner: {
+    flex: 1,
+    borderRadius: 26,
+    padding: 2,
+  },
+  studentAvatarImg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 24,
+  },
+  studentInfoSection: {
+    flex: 1,
+  },
+  studentNameText: {
+    fontSize: 17,
+    fontFamily: FONTS.bold,
+    marginBottom: 6,
+  },
+  studentBadgesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  studentClassBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    gap: 5,
+  },
+  studentClassText: {
+    fontSize: 12,
+    fontFamily: FONTS.semiBold,
+  },
+  studentSessionBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  studentSessionText: {
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+  },
+  examInfoBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    gap: 10,
+  },
+  examInfoItemNew: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  examInfoTextNew: {
+    fontSize: 13,
+    fontFamily: FONTS.medium,
+  },
+  examInfoDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+  },
+
+  // Performance Card - Modern
+  performanceCardNew: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
+  },
+  performanceLayout: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  scoreAreaNew: {
+    alignItems: 'center',
+  },
+  scoreRingNew: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    padding: 3,
+    shadowColor: '#10b981',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  scoreInnerNew: {
+    flex: 1,
+    borderRadius: 47,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  scoreValueNew: {
+    fontSize: 32,
+    fontFamily: FONTS.bold,
+  },
+  scorePercentNew: {
+    fontSize: 14,
+    fontFamily: FONTS.semiBold,
+    marginTop: 4,
+    marginLeft: 1,
+  },
+  scoreLabelNew: {
+    fontSize: 11,
+    fontFamily: FONTS.medium,
+    marginTop: 8,
+  },
+  statsGridNew: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  statCardNew: {
+    width: '47%',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderRadius: 12,
+  },
+  statIconNew: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  statValueNew: {
+    fontSize: 15,
+    fontFamily: FONTS.bold,
+  },
+  statLabelNew: {
+    fontSize: 10,
+    fontFamily: FONTS.medium,
+    marginTop: 1,
+  },
+
+  // Highlights Row - New Style
+  highlightsRowNew: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  highlightCardNew2: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 14,
+  },
+  highlightTopNew: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  highlightLabelNew2: {
+    fontSize: 10,
+    fontFamily: FONTS.bold,
+    color: '#10b981',
+    letterSpacing: 0.5,
+  },
+  highlightSubjectNew: {
+    fontSize: 13,
+    fontFamily: FONTS.semiBold,
+    marginBottom: 2,
+  },
+  highlightScoreNew2: {
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+    color: '#10b981',
+  },
+
+  // Remarks Card - New
+  remarksCardNew: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
+  },
+  remarksTitleNew: {
+    fontSize: 14,
+    fontFamily: FONTS.bold,
+    marginBottom: 12,
+  },
+  remarkBoxNew: {
+    padding: 10,
+    borderRadius: 12,
+  },
+  remarkHeaderNew: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  remarkLabelNew: {
+    fontSize: 10,
+    fontFamily: FONTS.semiBold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  remarkTextNew: {
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+    lineHeight: 18,
+  },
+
+  // Attendance Card - New
+  attendanceCardNew: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
+  },
+  attendanceTopNew: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  attendanceTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  attendanceTitleNew: {
+    fontSize: 13,
+    fontFamily: FONTS.bold,
+  },
+  attendanceRateNew: {
+    fontSize: 20,
+    fontFamily: FONTS.bold,
+    color: '#10b981',
+  },
+  attendanceProgressBg: {
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 12,
+  },
+  attendanceProgressFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  attendanceStatsNew: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  attendanceStatItemNew: {
+    alignItems: 'center',
+  },
+  attendanceStatNumNew: {
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+  },
+  attendanceStatTextNew: {
+    fontSize: 10,
+    fontFamily: FONTS.medium,
+    marginTop: 2,
+  },
+
+  // Subjects Card - New (Grid Layout)
+  subjectsCardNew: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  subjectsHeaderNew: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    paddingBottom: 12,
+  },
+  subjectsTitleNew: {
+    fontSize: 17,
+    fontFamily: FONTS.bold,
+  },
+  subjectsBadgeNew: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  subjectsBadgeText: {
+    fontSize: 14,
+    fontFamily: FONTS.bold,
+  },
+  subjectsGridNew: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  subjectItemNew: {
+    width: '47%',
+    padding: 14,
+    borderRadius: 14,
+  },
+  subjectItemTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  subjectGradeBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  subjectGradeLetter: {
+    fontSize: 16,
+    fontFamily: FONTS.bold,
+  },
+  subjectScoreNum: {
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+  },
+  subjectItemName: {
+    fontSize: 14,
+    fontFamily: FONTS.semiBold,
+    marginBottom: 4,
+  },
+  subjectItemMeta: {
+    fontSize: 11,
+    fontFamily: FONTS.medium,
+    marginBottom: 8,
+  },
+  subjectProgressBg: {
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  subjectProgressFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+
+  // Download Button - New
+  downloadBtnNew: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  downloadBtnGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    gap: 8,
+  },
+  downloadBtnText: {
+    fontSize: 14,
     fontFamily: FONTS.bold,
     color: '#ffffff',
   },
