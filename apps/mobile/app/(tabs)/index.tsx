@@ -45,7 +45,7 @@ const mockUser = {
 
 const mockChildren: Child[] = [
   { id: 'child-001', name: 'Adaeze Okonkwo', classLevel: 'JSS 2', avatarUri: 'https://i.pravatar.cc/150?u=adaeze' },
-  // { id: 'child-002', name: 'Chukwuemeka Okonkwo', classLevel: 'SS 1', avatarUri: 'https://i.pravatar.cc/150?u=chukwuemeka' },
+  { id: 'child-002', name: 'Chukwuemeka Okonkwo', classLevel: 'SS 1', avatarUri: 'https://i.pravatar.cc/150?u=chukwuemeka' },
   // { id: 'child-003', name: 'Obioma Okonkwo', classLevel: 'JSS 1', avatarUri: 'https://i.pravatar.cc/150?u=obioma' },
   // { id: 'child-004', name: 'Kelechi Okonkwo', classLevel: 'Primary 6', avatarUri: 'https://i.pravatar.cc/150?u=kelechi' },
 ];
@@ -327,11 +327,13 @@ export default function ParentHomeScreen() {
             end={{ x: 0, y: 1 }}
             style={mobileStyles.headerGradient}
           >
-            {/* Top row - Date and Icons */}
+            {/* Top row - School name and Icons */}
             <View style={mobileStyles.headerTopRow}>
-              <View style={mobileStyles.dateBadge}>
-                <Ionicons name="calendar-outline" size={12} color={COLORS.blue600} />
-                <Text style={mobileStyles.dateBadgeText}>{todayLabel}</Text>
+              <View style={mobileStyles.schoolBadge}>
+                <View style={mobileStyles.schoolIconWrap}>
+                  <Ionicons name="school" size={12} color={COLORS.white} />
+                </View>
+                <Text style={mobileStyles.schoolBadgeText}>Educo Demo School</Text>
               </View>
               <View style={mobileStyles.headerIconsRow}>
                 <Pressable style={mobileStyles.headerIconBtn}>
@@ -350,19 +352,20 @@ export default function ParentHomeScreen() {
               </View>
             </View>
 
-            {/* Greeting row with parent avatar */}
+            {/* Greeting row with parent info */}
             <View style={mobileStyles.greetingRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={mobileStyles.greetingText}>{greeting}</Text>
-                <Text style={styles.schoolText}>Educo Demo School</Text>
+              <View style={mobileStyles.greetingTextSection}>
+                <Text style={mobileStyles.dateBadgeText}>{todayLabel}</Text>
+                <View style={mobileStyles.greetingNameRow}>
+                  <Text style={mobileStyles.greetingText}>{greeting}, </Text>
+                  <Text style={mobileStyles.parentNameText}>{mockUser.name.split(' ')[0]}</Text>
+                </View>
               </View>
-              <View style={mobileStyles.parentAvatarContainer}>
-                <Image
-                  source={{ uri: mockUser.avatarUri }}
-                  style={mobileStyles.parentAvatarImg}
-                  resizeMode="cover"
-                />
-              </View>
+              <Image
+                source={{ uri: mockUser.avatarUri }}
+                style={mobileStyles.parentAvatarImg}
+                resizeMode="cover"
+              />
             </View>
 
             {/* Child selector - Enhanced */}
@@ -1177,49 +1180,60 @@ const mobileStyles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // Date badge
-  dateBadge: {
+  // School badge at top
+  schoolBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: COLORS.blue50,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
   },
-  dateBadgeText: {
-    fontSize: 11,
+  schoolIconWrap: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: COLORS.blue500,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
+  },
+  schoolBadgeText: {
+    fontSize: 13,
     fontFamily: FONTS.semiBold,
-    color: COLORS.blue600,
-    marginLeft: 5,
+    color: COLORS.slate700,
   },
 
-  // Greeting row with parent avatar
+  // Greeting row
   greetingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginTop: 14,
+    marginBottom: 6,
   },
-  greetingText: { fontSize: 24, fontFamily: FONTS.extraBold, color: COLORS.slate900, letterSpacing: -0.5 },
+  greetingTextSection: {
+    flex: 1,
+  },
+
+  // Date text
+  dateBadgeText: {
+    fontSize: 13,
+    fontFamily: FONTS.bold,
+    color: COLORS.slate600,
+    marginBottom: 4,
+  },
+
+  // Greeting + name row
+  greetingNameRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  greetingText: { fontSize: 18, fontFamily: FONTS.medium, color: COLORS.slate500 },
+  parentNameText: { fontSize: 18, fontFamily: FONTS.bold, color: COLORS.slate900 },
 
   // Parent avatar in header
-  parentAvatarContainer: {
+  parentAvatarImg: {
     width: 52,
     height: 52,
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: COLORS.blue200,
-    shadowColor: COLORS.blue500,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  parentAvatarImg: {
-    width: '100%',
-    height: '100%',
+    borderRadius: 26,
+    backgroundColor: COLORS.slate100,
   },
 
   // Header icons
