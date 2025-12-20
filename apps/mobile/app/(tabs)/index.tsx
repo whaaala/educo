@@ -45,9 +45,9 @@ const mockUser = {
 
 const mockChildren: Child[] = [
   { id: 'child-001', name: 'Adaeze Okonkwo', classLevel: 'JSS 2', avatarUri: 'https://i.pravatar.cc/150?u=adaeze' },
-  { id: 'child-002', name: 'Chukwuemeka Okonkwo', classLevel: 'SS 1', avatarUri: 'https://i.pravatar.cc/150?u=chukwuemeka' },
-  { id: 'child-003', name: 'Obioma Okonkwo', classLevel: 'JSS 1', avatarUri: 'https://i.pravatar.cc/150?u=obioma' },
-  { id: 'child-004', name: 'Kelechi Okonkwo', classLevel: 'Primary 6', avatarUri: 'https://i.pravatar.cc/150?u=kelechi' },
+  // { id: 'child-002', name: 'Chukwuemeka Okonkwo', classLevel: 'SS 1', avatarUri: 'https://i.pravatar.cc/150?u=chukwuemeka' },
+  // { id: 'child-003', name: 'Obioma Okonkwo', classLevel: 'JSS 1', avatarUri: 'https://i.pravatar.cc/150?u=obioma' },
+  // { id: 'child-004', name: 'Kelechi Okonkwo', classLevel: 'Primary 6', avatarUri: 'https://i.pravatar.cc/150?u=kelechi' },
 ];
 
 const metricsByChild: Record<string, ChildMetrics> = {
@@ -383,9 +383,8 @@ export default function ParentHomeScreen() {
                 <View style={mobileStyles.singleChildContainer}>
                   {(() => {
                     const child = mockChildren[0];
-                    const isSelected = true;
                     return (
-                      <View style={[mobileStyles.childCardBase, mobileStyles.childCardSelected]}>
+                      <View style={[mobileStyles.childCardBase, mobileStyles.singleChildCardSize, mobileStyles.childCardSelected]}>
                         <LinearGradient
                           colors={['#eef2ff', '#e0e7ff', '#dbeafe']}
                           start={{ x: 0, y: 0 }}
@@ -1277,6 +1276,12 @@ const mobileStyles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     position: 'relative',
+  },
+
+  // Size for single-child layout
+  singleChildCardSize: {
+    width: (SCREEN_WIDTH - 56) / 2,
+    minWidth: 160,
   },
 
   // Size for two-child layout
