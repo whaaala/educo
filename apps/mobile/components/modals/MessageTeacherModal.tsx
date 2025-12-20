@@ -46,6 +46,7 @@ export interface MessageTeacherModalProps {
 export interface MessageFormData {
   teacherId: string;
   category: string;
+  customCategory: string;
   subject: string;
   message: string;
 }
@@ -90,6 +91,7 @@ const MESSAGE_CATEGORIES = [
   { value: 'behavior', label: 'Behavior & Conduct' },
   { value: 'meeting', label: 'Request Meeting' },
   { value: 'general', label: 'General Inquiry' },
+  { value: 'other', label: 'Other (Custom)' },
 ];
 
 export function MessageTeacherModal({
@@ -107,6 +109,7 @@ export function MessageTeacherModal({
   const [formData, setFormData] = useState<MessageFormData>({
     teacherId: preselectedTeacher?.id || '',
     category: '',
+    customCategory: '',
     subject: '',
     message: '',
   });
@@ -154,6 +157,7 @@ export function MessageTeacherModal({
       setFormData({
         teacherId: preselectedTeacher?.id || '',
         category: '',
+        customCategory: '',
         subject: '',
         message: '',
       });
@@ -176,6 +180,7 @@ export function MessageTeacherModal({
     setFormData({
       teacherId: preselectedTeacher?.id || '',
       category: '',
+      customCategory: '',
       subject: '',
       message: '',
     });
@@ -268,11 +273,25 @@ export function MessageTeacherModal({
           icon={<Ionicons name="folder" size={12} color={colors.accent} />}
           iconBgColor={colors.accentLight}
           value={formData.category}
-          onChange={(value) => setFormData({ ...formData, category: value })}
+          onChange={(value) => {
+            setFormData({ ...formData, category: value, customCategory: value === 'other' ? formData.customCategory : '' });
+          }}
           options={MESSAGE_CATEGORIES}
           placeholder="Select category (optional)"
           parentScrollRef={scrollRef}
         />
+
+        {/* Custom Category Input (shown when "Other" is selected) */}
+        {formData.category === 'other' && (
+          <FormInput
+            label="Custom Category"
+            icon={<Ionicons name="create" size={12} color={colors.accent} />}
+            iconBgColor={colors.accentLight}
+            value={formData.customCategory}
+            onChangeText={(text) => setFormData({ ...formData, customCategory: text })}
+            placeholder="Enter your custom category"
+          />
+        )}
 
         {/* Subject */}
         <FormInput

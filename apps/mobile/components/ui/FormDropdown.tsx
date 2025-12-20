@@ -184,7 +184,7 @@ export function FormDropdown({
           <ScrollView
             style={styles.optionsList}
             nestedScrollEnabled
-            showsVerticalScrollIndicator={false}
+            showsVerticalScrollIndicator
             keyboardShouldPersistTaps="handled"
           >
             {options.map((item, index) => {
