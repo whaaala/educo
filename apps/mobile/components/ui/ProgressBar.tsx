@@ -1,25 +1,42 @@
 import { StyleSheet, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-export function ProgressBar({ value }: { value: number }) {
+interface ProgressBarProps {
+  value: number;
+  variant?: 'default' | 'success' | 'warning';
+  size?: 'sm' | 'md';
+}
+
+export function ProgressBar({ value, variant = 'default', size = 'md' }: ProgressBarProps) {
   const pct = Math.max(0, Math.min(1, value));
+  const height = size === 'sm' ? 6 : 8;
+
+  const gradientColors = {
+    default: ['#334155', '#1e293b'] as const,
+    success: ['#10b981', '#059669'] as const,
+    warning: ['#f59e0b', '#d97706'] as const,
+  };
+
   return (
-    <View style={styles.track}>
-      <View style={[styles.fill, { width: `${pct * 100}%` }]} />
+    <View style={[styles.track, { height }]}>
+      <LinearGradient
+        colors={gradientColors[variant]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={[styles.fill, { width: `${pct * 100}%`, height }]}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   track: {
-    height: 8,
     borderRadius: 999,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: '#e8ecf0',
     overflow: 'hidden',
   },
   fill: {
-    height: 8,
     borderRadius: 999,
-    backgroundColor: '#0f172a',
   },
 });
 

@@ -1,10 +1,7 @@
 import type { ComponentProps, ReactNode } from 'react';
-import { useMemo, useState } from 'react';
-
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { Link } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useMemo, useRef, useState } from 'react';
 import {
+  Dimensions,
   Image,
   Pressable,
   ScrollView,
@@ -13,13 +10,16 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { Link } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import { Avatar } from '../../components/ui/Avatar';
-import { ProgressBar } from '../../components/ui/ProgressBar';
-import { Screen } from '../../components/ui/Screen';
-import { useTenantSettings } from '../../contexts/TenantSettingsContext';
-import { useIsTablet } from '../../hooks/useIsTablet';
-import { formatMoney } from '../../lib/format';
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// ============================================================================
+// Types & Mock Data
+// ============================================================================
 
 interface Child {
   id: string;
@@ -46,6 +46,8 @@ const mockUser = {
 const mockChildren: Child[] = [
   { id: 'child-001', name: 'Adaeze Okonkwo', classLevel: 'JSS 2', avatarUri: 'https://i.pravatar.cc/150?u=adaeze' },
   { id: 'child-002', name: 'Chukwuemeka Okonkwo', classLevel: 'SS 1', avatarUri: 'https://i.pravatar.cc/150?u=chukwuemeka' },
+  { id: 'child-003', name: 'Obioma Okonkwo', classLevel: 'JSS 1', avatarUri: 'https://i.pravatar.cc/150?u=obioma' },
+  { id: 'child-004', name: 'Kelechi Okonkwo', classLevel: 'Primary 6', avatarUri: 'https://i.pravatar.cc/150?u=kelechi' },
 ];
 
 const metricsByChild: Record<string, ChildMetrics> = {
@@ -67,16 +69,71 @@ const metricsByChild: Record<string, ChildMetrics> = {
     progressPct: 0.72,
     feesDue: 65000,
   },
+  'child-003': {
+    termAverage: 85.1,
+    classPosition: 2,
+    totalStudents: 40,
+    attendanceRate: 98.0,
+    conductGrade: 'A',
+    progressPct: 0.80,
+    feesDue: 45000,
+  },
+  'child-004': {
+    termAverage: 76.8,
+    classPosition: 8,
+    totalStudents: 35,
+    attendanceRate: 92.5,
+    conductGrade: 'B',
+    progressPct: 0.58,
+    feesDue: 35000,
+  },
 };
 
-const heroImageUri =
-  'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80';
+const heroImageUri = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80';
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
 
 function getGreeting(now = new Date()) {
   const hour = now.getHours();
   if (hour < 12) return 'Good morning';
   if (hour < 18) return 'Good afternoon';
   return 'Good evening';
+}
+
+function formatMoney(amount: number, currency: string = 'NGN') {
+  try {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `₦${amount.toLocaleString()}`;
+  }
+}
+
+function useIsTablet() {
+  const [isTablet, setIsTablet] = useState(() => Dimensions.get('window').width >= 768);
+  return isTablet;
+}
+
+// ============================================================================
+// Reusable Components
+// ============================================================================
+
+function Avatar({ name, size = 40, imageUri }: { name: string; size?: number; imageUri?: string }) {
+  const initial = (name || '?').trim().charAt(0).toUpperCase();
+  return (
+    <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
+      {imageUri ? (
+        <Image source={{ uri: imageUri }} style={{ width: size, height: size, borderRadius: size / 2 }} />
+      ) : (
+        <Text style={styles.avatarText}>{initial}</Text>
+      )}
+    </View>
+  );
 }
 
 function Card({ children, style }: { children: ReactNode; style?: object }) {
@@ -92,37 +149,35 @@ function Pill({ icon, text }: { icon: ComponentProps<typeof Ionicons>['name']; t
   );
 }
 
-function RowHeader({
-  title,
-  icon,
-  right,
-}: {
-  title: string;
-  icon: ComponentProps<typeof Ionicons>['name'];
-  right?: ReactNode;
-}) {
+function RowHeader({ title, icon, right }: { title: string; icon: ComponentProps<typeof Ionicons>['name']; right?: ReactNode }) {
   return (
     <View style={styles.rowHeader}>
       <View style={styles.rowHeaderLeft}>
         <View style={styles.rowHeaderIcon}>
-          <Ionicons name={icon} size={18} color={COLORS.slate900} />
+          <Ionicons name={icon} size={16} color={COLORS.slate700} />
         </View>
         <Text style={styles.rowHeaderTitle}>{title}</Text>
       </View>
-      {right ? <View>{right}</View> : null}
+      {right}
     </View>
   );
 }
 
-function StatTile({
-  label,
-  value,
-  subtitle,
-  icon,
-  tint,
-  bg,
-  border,
-}: {
+function ProgressBar({ value }: { value: number }) {
+  const pct = Math.max(0, Math.min(1, value));
+  return (
+    <View style={styles.progressTrack}>
+      <LinearGradient
+        colors={['#334155', '#1e293b']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={[styles.progressFill, { width: `${pct * 100}%` }]}
+      />
+    </View>
+  );
+}
+
+function StatTile({ label, value, subtitle, icon, tint, bg, border }: {
   label: string;
   value: string;
   subtitle?: string;
@@ -135,51 +190,113 @@ function StatTile({
     <View style={[styles.statTile, { backgroundColor: bg, borderColor: border }]}>
       <View style={styles.statTop}>
         <Text style={styles.statLabel}>{label}</Text>
-        <View style={styles.statIconWrap}>
-          <Ionicons name={icon} size={16} color={tint} />
+        <View style={[styles.statIconWrap, { backgroundColor: `${tint}15` }]}>
+          <Ionicons name={icon} size={14} color={tint} />
         </View>
       </View>
       <Text style={styles.statValue}>{value}</Text>
-      {subtitle ? <Text style={styles.statSubtitle}>{subtitle}</Text> : null}
+      {subtitle && <Text style={styles.statSubtitle}>{subtitle}</Text>}
     </View>
   );
 }
 
-function ChildChip({
-  child,
-  selected,
-  onPress,
-}: {
-  child: Child;
-  selected: boolean;
-  onPress: () => void;
+// ============================================================================
+// Mobile-specific Components
+// ============================================================================
+
+function MobileStatCard({ label, value, subtitle, icon, color }: {
+  label: string;
+  value: string;
+  subtitle?: string;
+  icon: ComponentProps<typeof Ionicons>['name'];
+  color: 'blue' | 'emerald' | 'violet' | 'amber';
 }) {
+  const colorMap = {
+    blue: { bg: COLORS.blue50, border: COLORS.blue200, tint: COLORS.blue600, iconBg: COLORS.blue100 },
+    emerald: { bg: COLORS.emerald50, border: COLORS.emerald200, tint: COLORS.emerald600, iconBg: COLORS.emerald100 },
+    violet: { bg: COLORS.violet50, border: COLORS.violet200, tint: COLORS.violet600, iconBg: COLORS.violet100 },
+    amber: { bg: COLORS.amber50, border: COLORS.amber200, tint: COLORS.amber600, iconBg: COLORS.amber100 },
+  };
+  const colors = colorMap[color];
+
   return (
-    <Pressable
-      onPress={onPress}
-      style={[
-        styles.childChip,
-        selected ? styles.childChipSelected : styles.childChipDefault,
-      ]}
-    >
-      <Image source={{ uri: child.avatarUri }} style={styles.childChipAvatar} />
-      <View style={{ flexShrink: 1 }}>
-        <Text style={[styles.childChipName, selected ? styles.childChipNameSelected : null]} numberOfLines={1}>
-          {child.name.split(' ')[0]}
-        </Text>
-        <Text style={[styles.childChipClass, selected ? styles.childChipClassSelected : null]} numberOfLines={1}>
-          {child.classLevel}
-        </Text>
+    <View style={[mobileStyles.statCard, { backgroundColor: colors.bg, borderColor: colors.border }]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 10, fontFamily: FONTS.semiBold, color: COLORS.slate600 }}>{label}</Text>
+        <View style={{ height: 26, width: 26, borderRadius: 7, backgroundColor: colors.iconBg, alignItems: 'center', justifyContent: 'center' }}>
+          <Ionicons name={icon} size={14} color={colors.tint} />
+        </View>
       </View>
-    </Pressable>
+      <Text style={{ marginTop: 4, fontSize: 18, fontFamily: FONTS.bold, color: COLORS.slate900 }}>{value}</Text>
+      {subtitle && <Text style={{ marginTop: 1, fontSize: 9, fontFamily: FONTS.medium, color: COLORS.slate500 }}>{subtitle}</Text>}
+    </View>
   );
 }
 
+function MobileWidgetCard({ title, icon, linkHref, linkText, children }: {
+  title: string;
+  icon: ComponentProps<typeof Ionicons>['name'];
+  linkHref: string;
+  linkText: string;
+  children: ReactNode;
+}) {
+  return (
+    <View style={mobileStyles.widgetCard}>
+      <View style={styles.rowHeader}>
+        <View style={styles.rowHeaderLeft}>
+          <View style={styles.rowHeaderIcon}>
+            <Ionicons name={icon} size={16} color={COLORS.slate700} />
+          </View>
+          <Text style={styles.rowHeaderTitle}>{title}</Text>
+        </View>
+        <Link href={linkHref as any}>
+          <Text style={styles.linkText}>{linkText}</Text>
+        </Link>
+      </View>
+      {children}
+    </View>
+  );
+}
+
+function QuickActionButton({ icon, label, href, variant = 'default' }: {
+  icon: ComponentProps<typeof Ionicons>['name'];
+  label: string;
+  href: string;
+  variant?: 'default' | 'primary';
+}) {
+  const isPrimary = variant === 'primary';
+  return (
+    <Link href={href as any} asChild>
+      <Pressable style={[mobileStyles.quickActionBtn, isPrimary && mobileStyles.quickActionBtnPrimary]}>
+        <Ionicons name={icon} size={16} color={isPrimary ? COLORS.white : COLORS.slate600} />
+        <Text style={[mobileStyles.quickActionText, isPrimary && { color: COLORS.white }]}>{label}</Text>
+      </Pressable>
+    </Link>
+  );
+}
+
+// ============================================================================
+// Main Parent Home Screen
+// ============================================================================
+
 export default function ParentHomeScreen() {
   const isTablet = useIsTablet();
-  const { settings } = useTenantSettings();
-
   const [selectedChildId, setSelectedChildId] = useState<string>(mockChildren[0]?.id ?? '');
+  const childScrollRef = useRef<ScrollView>(null);
+
+  // Calculate card width for scrolling
+  const cardWidth = (SCREEN_WIDTH - 32) * 0.46;
+  const cardMargin = 12;
+
+  const handleSelectChild = (childId: string, index: number) => {
+    setSelectedChildId(childId);
+    // Scroll to the selected card
+    if (childScrollRef.current && mockChildren.length > 2) {
+      const scrollX = index * (cardWidth + cardMargin);
+      childScrollRef.current.scrollTo({ x: scrollX, animated: true });
+    }
+  };
+
   const selectedChild = useMemo(
     () => mockChildren.find((c) => c.id === selectedChildId) ?? mockChildren[0],
     [selectedChildId]
@@ -187,126 +304,442 @@ export default function ParentHomeScreen() {
   const metrics = metricsByChild[selectedChild.id];
 
   const greeting = getGreeting();
-  const todayLabel = new Intl.DateTimeFormat(settings.locale, {
+  const todayLabel = new Intl.DateTimeFormat('en-NG', {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
   }).format(new Date());
 
   const currentTermLabel = '2nd Term 2024';
-  const feesDueFormatted = formatMoney(metrics.feesDue, settings.locale, settings.currency);
+  const feesDueFormatted = formatMoney(metrics.feesDue);
 
-  return (
-    <Screen padded={false} scroll={false} backgroundClassName="bg-slate-50">
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 112 }}>
-        <LinearGradient
-          colors={['#ffffff', '#f8fafc', '#eef2ff']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={styles.headerGradient}
-        >
-          <View style={styles.topRow}>
-            <View style={{ flex: 1, paddingRight: 12 }}>
-              <Text style={styles.todayText}>{todayLabel}</Text>
-              <Text style={styles.greetingText}>{greeting}</Text>
-              <Text style={styles.schoolText} numberOfLines={1}>
-                {settings.schoolName}
-              </Text>
-            </View>
-
-            <View style={styles.iconRow}>
-              <Pressable style={styles.iconButton}>
-                <Ionicons name="notifications-outline" size={20} color={COLORS.slate900} />
-              </Pressable>
-              <Link href="/modal" asChild>
-                <Pressable style={styles.iconButton}>
-                  <Ionicons name="help-circle-outline" size={20} color={COLORS.slate900} />
-                </Pressable>
-              </Link>
-            </View>
-          </View>
-
-          <View style={styles.pillsRow}>
-            <Pill icon="shield-checkmark-outline" text="Parent Portal" />
-            <Pill icon="calendar-outline" text={currentTermLabel} />
-            <Pill icon="location-outline" text={settings.country} />
-          </View>
-
-          <Card style={{ padding: 16, marginTop: 14 }}>
-            <RowHeader
-              title="My Children"
-              icon="people-outline"
-              right={
-                <Link href="/(tabs)/children">
-                  <Text style={styles.linkText}>Open</Text>
-                </Link>
-              }
-            />
-
-            <View style={{ marginTop: 12 }}>
-              {isTablet ? (
-                <View style={styles.childGrid}>
-                  {mockChildren.map((child) => (
-                    <View key={child.id} style={styles.childGridItem}>
-                      <ChildChip
-                        child={child}
-                        selected={child.id === selectedChildId}
-                        onPress={() => setSelectedChildId(child.id)}
-                      />
-                    </View>
-                  ))}
+  // ============================================================================
+  // MOBILE LAYOUT
+  // ============================================================================
+  if (!isTablet) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+          {/* Header with gradient */}
+          <LinearGradient
+            colors={['#ffffff', '#f8fafc', '#f0f4ff']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={mobileStyles.headerGradient}
+          >
+            {/* Top row */}
+            <View style={styles.topRow}>
+              <View style={{ flex: 1 }}>
+                <View style={mobileStyles.dateBadge}>
+                  <Ionicons name="calendar-outline" size={12} color={COLORS.blue600} />
+                  <Text style={mobileStyles.dateBadgeText}>{todayLabel}</Text>
                 </View>
-              ) : (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingRight: 8 }}>
-                  {mockChildren.map((child) => (
-                    <ChildChip
-                      key={child.id}
-                      child={child}
-                      selected={child.id === selectedChildId}
-                      onPress={() => setSelectedChildId(child.id)}
-                    />
-                  ))}
+                <Text style={mobileStyles.greetingText}>{greeting}</Text>
+                <Text style={styles.schoolText}>Educo Demo School</Text>
+              </View>
+              <View style={styles.iconRow}>
+                <Pressable style={mobileStyles.headerIconBtn}>
+                  <View style={{ position: 'relative' }}>
+                    <Ionicons name="notifications-outline" size={20} color={COLORS.slate700} />
+                    <View style={mobileStyles.notifBadge}>
+                      <Text style={mobileStyles.notifBadgeText}>2</Text>
+                    </View>
+                  </View>
+                </Pressable>
+                <Link href="/modal" asChild>
+                  <Pressable style={[mobileStyles.headerIconBtn, { marginLeft: 8 }]}>
+                    <Ionicons name="help-circle-outline" size={20} color={COLORS.slate700} />
+                  </Pressable>
+                </Link>
+              </View>
+            </View>
+
+            {/* Child selector - Enhanced */}
+            <View style={mobileStyles.childSelectorSection}>
+              {/* Header - only show for multiple children */}
+              {mockChildren.length > 1 && (
+                <View style={mobileStyles.childSelectorHeader}>
+                  <Text style={mobileStyles.childSelectorLabel}>Select child</Text>
+                  {mockChildren.length > 2 && (
+                    <View style={mobileStyles.paginationDots}>
+                      {mockChildren.map((child, index) => (
+                        <Pressable
+                          key={child.id}
+                          onPress={() => handleSelectChild(child.id, index)}
+                          hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
+                          style={[
+                            mobileStyles.paginationDot,
+                            child.id === selectedChildId && mobileStyles.paginationDotActive,
+                          ]}
+                        />
+                      ))}
+                    </View>
+                  )}
+                </View>
+              )}
+
+              {/* === SINGLE CHILD LAYOUT === */}
+              {mockChildren.length === 1 && (
+                <View style={mobileStyles.singleChildContainer}>
+                  {(() => {
+                    const child = mockChildren[0];
+                    const isSelected = true;
+                    return (
+                      <View style={[mobileStyles.childCardBase, mobileStyles.childCardSelected]}>
+                        <LinearGradient
+                          colors={['#eef2ff', '#e0e7ff', '#dbeafe']}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          style={mobileStyles.childCardGradient}
+                        />
+                        <View style={mobileStyles.childCardInner}>
+                          <View style={mobileStyles.childAvatarContainer}>
+                            <Image
+                              source={{ uri: child.avatarUri }}
+                              style={mobileStyles.childAvatarImg}
+                              resizeMode="cover"
+                            />
+                            <View style={mobileStyles.childCheckBadge}>
+                              <Ionicons name="checkmark" size={10} color={COLORS.white} />
+                            </View>
+                          </View>
+                          <View style={mobileStyles.childTextContainer}>
+                            <Text style={[mobileStyles.childNameText, mobileStyles.childNameTextSelected]} numberOfLines={1}>
+                              {child.name.split(' ')[0]}
+                            </Text>
+                            <View style={[mobileStyles.childClassPill, mobileStyles.childClassPillSelected]}>
+                              <Ionicons name="school-outline" size={10} color={COLORS.blue600} style={{ marginRight: 3 }} />
+                              <Text style={[mobileStyles.childClassPillText, mobileStyles.childClassPillTextSelected]}>
+                                {child.classLevel}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      </View>
+                    );
+                  })()}
+                </View>
+              )}
+
+              {/* === TWO CHILDREN LAYOUT === */}
+              {mockChildren.length === 2 && (
+                <View style={mobileStyles.twoChildrenContainer}>
+                  {mockChildren.map((child) => {
+                    const isSelected = child.id === selectedChildId;
+                    return (
+                      <Pressable
+                        key={child.id}
+                        onPress={() => setSelectedChildId(child.id)}
+                        style={[
+                          mobileStyles.childCardBase,
+                          mobileStyles.twoChildCardSize,
+                          isSelected ? mobileStyles.childCardSelected : mobileStyles.childCardDefault,
+                        ]}
+                      >
+                        {isSelected && (
+                          <LinearGradient
+                            colors={['#eef2ff', '#e0e7ff', '#dbeafe']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={mobileStyles.childCardGradient}
+                          />
+                        )}
+                        <View style={mobileStyles.childCardInner}>
+                          <View style={mobileStyles.childAvatarContainer}>
+                            <Image
+                              source={{ uri: child.avatarUri }}
+                              style={mobileStyles.childAvatarImg}
+                              resizeMode="cover"
+                            />
+                            {isSelected && (
+                              <View style={mobileStyles.childCheckBadge}>
+                                <Ionicons name="checkmark" size={10} color={COLORS.white} />
+                              </View>
+                            )}
+                          </View>
+                          <View style={mobileStyles.childTextContainer}>
+                            <Text
+                              style={[mobileStyles.childNameText, isSelected && mobileStyles.childNameTextSelected]}
+                              numberOfLines={1}
+                            >
+                              {child.name.split(' ')[0]}
+                            </Text>
+                            <View style={[mobileStyles.childClassPill, isSelected && mobileStyles.childClassPillSelected]}>
+                              <Ionicons
+                                name="school-outline"
+                                size={10}
+                                color={isSelected ? COLORS.blue600 : COLORS.slate500}
+                                style={{ marginRight: 3 }}
+                              />
+                              <Text style={[mobileStyles.childClassPillText, isSelected && mobileStyles.childClassPillTextSelected]}>
+                                {child.classLevel}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
+
+              {/* === MORE THAN TWO CHILDREN LAYOUT (with pagination) === */}
+              {mockChildren.length > 2 && (
+                <ScrollView
+                  ref={childScrollRef}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={mobileStyles.multiChildScrollContent}
+                  snapToInterval={(SCREEN_WIDTH - 32) * 0.48 + 12}
+                  decelerationRate="fast"
+                >
+                  {mockChildren.map((child, index) => {
+                    const isSelected = child.id === selectedChildId;
+                    return (
+                      <Pressable
+                        key={child.id}
+                        onPress={() => handleSelectChild(child.id, index)}
+                        style={[
+                          mobileStyles.childCardBase,
+                          mobileStyles.multiChildCardSize,
+                          isSelected ? mobileStyles.childCardSelected : mobileStyles.childCardDefault,
+                          { marginRight: index === mockChildren.length - 1 ? 16 : 12 },
+                        ]}
+                      >
+                        {isSelected && (
+                          <LinearGradient
+                            colors={['#eef2ff', '#e0e7ff', '#dbeafe']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={mobileStyles.childCardGradient}
+                          />
+                        )}
+                        <View style={mobileStyles.childCardInner}>
+                          <View style={mobileStyles.childAvatarContainer}>
+                            <Image
+                              source={{ uri: child.avatarUri }}
+                              style={mobileStyles.childAvatarImg}
+                              resizeMode="cover"
+                            />
+                            {isSelected && (
+                              <View style={mobileStyles.childCheckBadge}>
+                                <Ionicons name="checkmark" size={10} color={COLORS.white} />
+                              </View>
+                            )}
+                          </View>
+                          <View style={mobileStyles.childTextContainer}>
+                            <Text
+                              style={[mobileStyles.childNameText, isSelected && mobileStyles.childNameTextSelected]}
+                              numberOfLines={1}
+                            >
+                              {child.name.split(' ')[0]}
+                            </Text>
+                            <View style={[mobileStyles.childClassPill, isSelected && mobileStyles.childClassPillSelected]}>
+                              <Ionicons
+                                name="school-outline"
+                                size={10}
+                                color={isSelected ? COLORS.blue600 : COLORS.slate500}
+                                style={{ marginRight: 3 }}
+                              />
+                              <Text style={[mobileStyles.childClassPillText, isSelected && mobileStyles.childClassPillTextSelected]}>
+                                {child.classLevel}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
                 </ScrollView>
               )}
             </View>
+          </LinearGradient>
 
-            <View style={styles.profileRow}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                <Avatar name={mockUser.name} imageUri={mockUser.avatarUri} size={42} />
-                <View style={{ marginLeft: 12, flex: 1 }}>
-                  <Text style={styles.profileName} numberOfLines={1}>
-                    {mockUser.name}
-                  </Text>
-                  <Text style={styles.profileSub} numberOfLines={1}>
-                    Viewing: {selectedChild.name} • {selectedChild.classLevel}
-                  </Text>
+          {/* Quick Actions */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12 }} contentContainerStyle={{ paddingHorizontal: 16 }}>
+            <QuickActionButton icon="card-outline" label="Pay Fees" href="/(tabs)/fees" variant="primary" />
+            <QuickActionButton icon="chatbubbles-outline" label="Messages" href="/(tabs)/messages" />
+            <QuickActionButton icon="document-text-outline" label="Results" href="/(tabs)/children" />
+            <QuickActionButton icon="calendar-outline" label="Calendar" href="/(tabs)/more" />
+          </ScrollView>
+
+          {/* Stats */}
+          <View style={{ marginTop: 14 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginBottom: 8 }}>
+              <Text style={{ fontSize: 13, fontFamily: FONTS.bold, color: COLORS.slate800 }}>{selectedChild.name.split(' ')[0]}'s Stats</Text>
+              <Text style={{ fontSize: 11, fontFamily: FONTS.semiBold, color: COLORS.blue600 }}>{currentTermLabel}</Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
+              <MobileStatCard label="Average" value={`${metrics.termAverage.toFixed(1)}%`} icon="trending-up-outline" color="blue" />
+              <MobileStatCard label="Position" value={`#${metrics.classPosition}`} subtitle={`of ${metrics.totalStudents}`} icon="trophy-outline" color="emerald" />
+              <MobileStatCard label="Attendance" value={`${Math.round(metrics.attendanceRate)}%`} icon="pie-chart-outline" color="violet" />
+              <MobileStatCard label="Conduct" value={metrics.conductGrade} icon="ribbon-outline" color="amber" />
+            </ScrollView>
+          </View>
+
+          {/* Fees Due Widget */}
+          <MobileWidgetCard title="Fees Due" icon="card-outline" linkHref="/(tabs)/fees" linkText="Pay now">
+            <View style={styles.mutedBox}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.mutedLabel}>{selectedChild.name.split(' ')[0]} • School Fees</Text>
+                <Text style={styles.moneyText}>{feesDueFormatted}</Text>
+                <View style={styles.dueRow}>
+                  <View style={styles.duePill}>
+                    <Text style={styles.duePillText}>Due soon</Text>
+                  </View>
+                  <Text style={styles.dueText}>Due: 15 Feb</Text>
                 </View>
               </View>
-
-              <Link href="/(tabs)/children" asChild>
-                <Pressable style={styles.smallIconButton}>
-                  <Ionicons name="person-outline" size={18} color={COLORS.slate900} />
-                </Pressable>
-              </Link>
-            </View>
-
-            <View style={styles.ctaRow}>
               <Link href="/(tabs)/fees" asChild>
-                <Pressable style={[styles.ctaPrimary, { flex: 1 }]}>
-                  <Ionicons name="card-outline" size={18} color="#fff" />
-                  <Text style={styles.ctaPrimaryText}>Pay fees</Text>
-                </Pressable>
-              </Link>
-              <Link href="/(tabs)/messages" asChild>
-                <Pressable style={[styles.ctaSecondary, { flex: 1 }]}>
-                  <Ionicons name="chatbubbles-outline" size={18} color={COLORS.slate900} />
-                  <Text style={styles.ctaSecondaryText}>Message</Text>
+                <Pressable style={styles.payButton}>
+                  <Text style={styles.payButtonText}>Pay</Text>
                 </Pressable>
               </Link>
             </View>
+          </MobileWidgetCard>
 
+          {/* Messages Widget */}
+          <MobileWidgetCard title="Messages" icon="mail-outline" linkHref="/(tabs)/messages" linkText="View all">
+            <View style={{ marginTop: 10 }}>
+              <Pressable style={styles.messageRow}>
+                <Avatar name="Mrs. Nkechi Eze" imageUri="https://i.pravatar.cc/150?u=teacher-nkechi" size={32} />
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={styles.messageTitle}>{selectedChild.name.split(' ')[0]}: Progress Update</Text>
+                  <Text style={styles.messageMeta}>Class Teacher • 2h ago</Text>
+                </View>
+                <View style={styles.unreadDot}>
+                  <Text style={styles.unreadDotText}>1</Text>
+                </View>
+              </Pressable>
+              <Pressable style={[styles.messageRow, { marginTop: 8, backgroundColor: COLORS.white }]}>
+                <Avatar name="Admin Office" imageUri="https://i.pravatar.cc/150?u=admin-office" size={32} />
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={styles.messageTitle}>Fee Payment Reminder</Text>
+                  <Text style={styles.messageMeta}>Educo Demo School • 1d ago</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color={COLORS.slate400} />
+              </Pressable>
+            </View>
+          </MobileWidgetCard>
+
+          {/* Progress Widget */}
+          <MobileWidgetCard title="Progress" icon="analytics-outline" linkHref="/(tabs)/children" linkText="Details">
+            <View style={{ marginTop: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Image source={{ uri: selectedChild.avatarUri }} style={{ height: 36, width: 36, borderRadius: 10 }} />
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={{ fontSize: 13, fontFamily: FONTS.bold, color: COLORS.slate800 }}>{selectedChild.name.split(' ')[0]}</Text>
+                  <Text style={{ fontSize: 11, fontFamily: FONTS.medium, color: COLORS.slate500 }}>On track this week</Text>
+                </View>
+                <Text style={{ fontSize: 16, fontFamily: FONTS.bold, color: COLORS.slate900 }}>{Math.round(metrics.progressPct * 100)}%</Text>
+              </View>
+              <View style={{ marginTop: 10 }}>
+                <ProgressBar value={metrics.progressPct} />
+              </View>
+            </View>
+          </MobileWidgetCard>
+
+          <View style={{ height: 20 }} />
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  // ============================================================================
+  // TABLET LAYOUT
+  // ============================================================================
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 112 }} showsVerticalScrollIndicator={false}>
+        <LinearGradient
+          colors={[COLORS.white, COLORS.slate50, '#f0f4ff']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={tabletStyles.headerGradient}
+        >
+          {/* Two-column header */}
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.todayText}>{todayLabel}</Text>
+              <Text style={styles.greetingText}>{greeting}</Text>
+              <Text style={styles.schoolText}>Educo Demo School</Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={styles.pillsRow}>
+                <Pill icon="shield-checkmark-outline" text="Parent Portal" />
+                <Pill icon="calendar-outline" text={currentTermLabel} />
+              </View>
+              <View style={[styles.iconRow, { marginLeft: 10 }]}>
+                <Pressable style={styles.iconButton}>
+                  <View style={{ position: 'relative' }}>
+                    <Ionicons name="notifications-outline" size={18} color={COLORS.slate700} />
+                    <View style={styles.notifDot} />
+                  </View>
+                </Pressable>
+                <Link href="/modal" asChild>
+                  <Pressable style={[styles.iconButton, { marginLeft: 8 }]}>
+                    <Ionicons name="help-circle-outline" size={18} color={COLORS.slate700} />
+                  </Pressable>
+                </Link>
+              </View>
+            </View>
+          </View>
+
+          {/* Child selector card */}
+          <Card style={{ padding: 16, marginTop: 16 }}>
+            <RowHeader title="My Children" icon="people-outline" right={<Link href="/(tabs)/children"><Text style={styles.linkText}>Manage</Text></Link>} />
+            <View style={[styles.childGrid, { marginTop: 12 }]}>
+              {mockChildren.map((child) => (
+                <Pressable
+                  key={child.id}
+                  onPress={() => setSelectedChildId(child.id)}
+                  style={[
+                    styles.childChip,
+                    child.id === selectedChildId ? styles.childChipSelected : styles.childChipDefault,
+                    { marginRight: 8, marginBottom: 8 },
+                  ]}
+                >
+                  <Image source={{ uri: child.avatarUri }} style={styles.childChipAvatar} />
+                  <View>
+                    <Text style={[styles.childChipName, child.id === selectedChildId && styles.childChipNameSelected]}>
+                      {child.name.split(' ')[0]}
+                    </Text>
+                    <Text style={[styles.childChipClass, child.id === selectedChildId && styles.childChipClassSelected]}>
+                      {child.classLevel}
+                    </Text>
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+
+            {/* Parent profile row */}
+            <View style={styles.profileRow}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                <Avatar name={mockUser.name} imageUri={mockUser.avatarUri} size={40} />
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                  <Text style={styles.profileName}>{mockUser.name}</Text>
+                  <Text style={styles.profileSub}>Viewing: {selectedChild.name} • {selectedChild.classLevel}</Text>
+                </View>
+              </View>
+              <View style={{ flexDirection: 'row' }}>
+                <Link href="/(tabs)/fees" asChild>
+                  <Pressable style={styles.ctaPrimary}>
+                    <Ionicons name="card-outline" size={16} color={COLORS.white} />
+                    <Text style={styles.ctaPrimaryText}>Pay fees</Text>
+                  </Pressable>
+                </Link>
+                <Link href="/(tabs)/messages" asChild>
+                  <Pressable style={[styles.ctaSecondary, { marginLeft: 8 }]}>
+                    <Ionicons name="chatbubbles-outline" size={16} color={COLORS.slate700} />
+                    <Text style={styles.ctaSecondaryText}>Message</Text>
+                  </Pressable>
+                </Link>
+              </View>
+            </View>
+
+            {/* Search */}
             <View style={styles.searchRow}>
-              <Ionicons name="search-outline" size={18} color={COLORS.slate500} />
+              <Ionicons name="search-outline" size={16} color={COLORS.slate400} />
               <TextInput
                 placeholder={`Search ${selectedChild.name.split(' ')[0]}'s fees, messages, results...`}
                 placeholderTextColor={COLORS.slate400}
@@ -316,79 +749,20 @@ export default function ParentHomeScreen() {
           </Card>
         </LinearGradient>
 
-        <View style={styles.contentWrap}>
-          {/* Stats */}
-          {isTablet ? (
-            <View style={styles.statsRow}>
-              <StatTile label="Term Average" value={`${metrics.termAverage.toFixed(1)}%`} icon="trending-up-outline" tint={COLORS.blue600} bg={COLORS.blue50} border={COLORS.blue200} />
-              <StatTile label="Position" value={`${metrics.classPosition}`} subtitle={`out of ${metrics.totalStudents}`} icon="trophy-outline" tint={COLORS.emerald600} bg={COLORS.emerald50} border={COLORS.emerald200} />
-              <StatTile label="Attendance" value={`${Math.round(metrics.attendanceRate)}%`} icon="pie-chart-outline" tint={COLORS.violet600} bg={COLORS.violet50} border={COLORS.violet200} />
-              <StatTile label="Conduct" value={metrics.conductGrade} icon="ribbon-outline" tint={COLORS.amber600} bg={COLORS.amber50} border={COLORS.amber200} />
-            </View>
-          ) : (
-            <View style={{ gap: 12 }}>
-              <View style={styles.statsRow}>
-                <StatTile label="Term Average" value={`${metrics.termAverage.toFixed(1)}%`} icon="trending-up-outline" tint={COLORS.blue600} bg={COLORS.blue50} border={COLORS.blue200} />
-                <StatTile label="Position" value={`${metrics.classPosition}`} subtitle={`out of ${metrics.totalStudents}`} icon="trophy-outline" tint={COLORS.emerald600} bg={COLORS.emerald50} border={COLORS.emerald200} />
-              </View>
-              <View style={styles.statsRow}>
-                <StatTile label="Attendance" value={`${Math.round(metrics.attendanceRate)}%`} icon="pie-chart-outline" tint={COLORS.violet600} bg={COLORS.violet50} border={COLORS.violet200} />
-                <StatTile label="Conduct" value={metrics.conductGrade} icon="ribbon-outline" tint={COLORS.amber600} bg={COLORS.amber50} border={COLORS.amber200} />
-              </View>
-            </View>
-          )}
+        <View style={tabletStyles.contentWrap}>
+          {/* 4-column stats grid */}
+          <View style={styles.statsRow}>
+            <StatTile label="Term Average" value={`${metrics.termAverage.toFixed(1)}%`} icon="trending-up-outline" tint={COLORS.blue600} bg={COLORS.blue50} border={COLORS.blue200} />
+            <StatTile label="Position" value={`#${metrics.classPosition}`} subtitle={`of ${metrics.totalStudents}`} icon="trophy-outline" tint={COLORS.emerald600} bg={COLORS.emerald50} border={COLORS.emerald200} />
+            <StatTile label="Attendance" value={`${Math.round(metrics.attendanceRate)}%`} icon="pie-chart-outline" tint={COLORS.violet600} bg={COLORS.violet50} border={COLORS.violet200} />
+            <StatTile label="Conduct" value={metrics.conductGrade} icon="ribbon-outline" tint={COLORS.amber600} bg={COLORS.amber50} border={COLORS.amber200} />
+          </View>
 
-          {/* Progress */}
-          <Card style={{ marginTop: 16, overflow: 'hidden' }}>
-            <View>
-              <Image source={{ uri: heroImageUri }} style={styles.heroImage} resizeMode="cover" />
-              <LinearGradient colors={['rgba(2,6,23,0.0)', 'rgba(2,6,23,0.55)']} style={styles.heroOverlay} />
-              <View style={styles.heroBadges}>
-                <View style={styles.heroBadge}>
-                  <Image source={{ uri: selectedChild.avatarUri }} style={styles.heroBadgeAvatar} />
-                  <Text style={styles.heroBadgeText}>{selectedChild.classLevel}</Text>
-                </View>
-                <View style={styles.heroBadge}>
-                  <Text style={styles.heroBadgeText}>{settings.country}</Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={{ padding: 16 }}>
-              <RowHeader
-                title="Progress overview"
-                icon="analytics-outline"
-                right={
-                  <Link href="/(tabs)/children">
-                    <Text style={styles.linkText}>View</Text>
-                  </Link>
-                }
-              />
-              <Text style={styles.sectionStrong}>{selectedChild.name.split(' ')[0]} • {currentTermLabel}</Text>
-              <Text style={styles.sectionSub}>On track this week</Text>
-
-              <View style={{ marginTop: 14 }}>
-                <ProgressBar value={metrics.progressPct} />
-                <View style={styles.progressMeta}>
-                  <Text style={styles.progressLabel}>Weekly progress</Text>
-                  <Text style={styles.progressValue}>{Math.round(metrics.progressPct * 100)}%</Text>
-                </View>
-              </View>
-            </View>
-          </Card>
-
-          {/* Fees + Messages */}
-          <View style={[{ marginTop: 16 }, isTablet ? styles.twoCol : null]}>
-            <Card style={[styles.sectionCard, isTablet ? styles.twoColItem : null]}>
-              <RowHeader
-                title="Fees due"
-                icon="card-outline"
-                right={
-                  <Link href="/(tabs)/fees">
-                    <Text style={styles.linkText}>Open</Text>
-                  </Link>
-                }
-              />
+          {/* Two-column widget grid */}
+          <View style={styles.twoCol}>
+            {/* Fees Due Widget */}
+            <Card style={[styles.sectionCard, styles.twoColItem, { marginTop: 14 }]}>
+              <RowHeader title="Fees Due" icon="card-outline" right={<Link href="/(tabs)/fees"><Text style={styles.linkText}>View all</Text></Link>} />
               <View style={styles.mutedBox}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.mutedLabel}>{selectedChild.name.split(' ')[0]} • School Fees</Text>
@@ -408,296 +782,720 @@ export default function ParentHomeScreen() {
               </View>
             </Card>
 
-            <Card style={[styles.sectionCard, isTablet ? styles.twoColItem : null]}>
-              <RowHeader
-                title="Messages"
-                icon="mail-outline"
-                right={
-                  <Link href="/(tabs)/messages">
-                    <Text style={styles.linkText}>View all</Text>
-                  </Link>
-                }
-              />
-              <View style={{ marginTop: 12, gap: 10 }}>
+            {/* Messages Widget */}
+            <Card style={[styles.sectionCard, styles.twoColItem, { marginTop: 14 }]}>
+              <RowHeader title="Messages" icon="mail-outline" right={<Link href="/(tabs)/messages"><Text style={styles.linkText}>View all</Text></Link>} />
+              <View style={{ marginTop: 10 }}>
                 <Pressable style={styles.messageRow}>
-                  <Avatar name="Mrs. Nkechi Eze" imageUri="https://i.pravatar.cc/150?u=teacher-nkechi" size={34} />
+                  <Avatar name="Mrs. Nkechi Eze" imageUri="https://i.pravatar.cc/150?u=teacher-nkechi" size={32} />
                   <View style={{ flex: 1, marginLeft: 10 }}>
-                    <Text style={styles.messageTitle} numberOfLines={1}>
-                      {selectedChild.name.split(' ')[0]}: Progress Update
-                    </Text>
-                    <Text style={styles.messageMeta} numberOfLines={1}>
-                      Class Teacher • 2 hours ago
-                    </Text>
+                    <Text style={styles.messageTitle}>{selectedChild.name.split(' ')[0]}: Progress Update</Text>
+                    <Text style={styles.messageMeta}>Class Teacher • 2h ago</Text>
                   </View>
                   <View style={styles.unreadDot}>
                     <Text style={styles.unreadDotText}>1</Text>
                   </View>
                 </Pressable>
-
-                <Pressable style={styles.messageRowAlt}>
-                  <Avatar name="Admin Office" imageUri="https://i.pravatar.cc/150?u=admin-office" size={34} />
+                <Pressable style={[styles.messageRow, { marginTop: 8, backgroundColor: COLORS.white }]}>
+                  <Avatar name="Admin Office" imageUri="https://i.pravatar.cc/150?u=admin-office" size={32} />
                   <View style={{ flex: 1, marginLeft: 10 }}>
-                    <Text style={styles.messageTitle} numberOfLines={1}>
-                      Fee Payment Reminder
-                    </Text>
-                    <Text style={styles.messageMeta} numberOfLines={1}>
-                      {settings.schoolName} • 1 day ago
-                    </Text>
+                    <Text style={styles.messageTitle}>Fee Payment Reminder</Text>
+                    <Text style={styles.messageMeta}>Educo Demo School • 1d ago</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={18} color={COLORS.slate400} />
+                  <Ionicons name="chevron-forward" size={16} color={COLORS.slate400} />
                 </Pressable>
               </View>
             </Card>
           </View>
 
+          {/* Progress Overview - Full width */}
+          <Card style={{ marginTop: 14, overflow: 'hidden' }}>
+            <View>
+              <Image source={{ uri: heroImageUri }} style={styles.heroImage} resizeMode="cover" />
+              <LinearGradient colors={['rgba(2,6,23,0.0)', 'rgba(2,6,23,0.5)']} style={styles.heroOverlay} />
+              <View style={styles.heroBadges}>
+                <View style={styles.heroBadge}>
+                  <Image source={{ uri: selectedChild.avatarUri }} style={styles.heroBadgeAvatar} />
+                  <Text style={styles.heroBadgeText}>{selectedChild.classLevel}</Text>
+                </View>
+                <View style={styles.heroBadge}>
+                  <Text style={styles.heroBadgeText}>Nigeria</Text>
+                </View>
+              </View>
+            </View>
+            <View style={{ padding: 16 }}>
+              <RowHeader title="Progress Overview" icon="analytics-outline" right={<Link href="/(tabs)/children"><Text style={styles.linkText}>View details</Text></Link>} />
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sectionStrong}>{selectedChild.name.split(' ')[0]} • {currentTermLabel}</Text>
+                  <Text style={styles.sectionSub}>On track this week</Text>
+                </View>
+                <Text style={{ fontSize: 24, fontFamily: FONTS.bold, color: COLORS.slate900 }}>{Math.round(metrics.progressPct * 100)}%</Text>
+              </View>
+              <View style={{ marginTop: 12 }}>
+                <ProgressBar value={metrics.progressPct} />
+                <View style={styles.progressMeta}>
+                  <Text style={styles.progressLabel}>Weekly progress</Text>
+                  <Text style={styles.progressValue}>{Math.round(metrics.progressPct * 100)}%</Text>
+                </View>
+              </View>
+            </View>
+          </Card>
+
           <View style={{ height: 24 }} />
         </View>
       </ScrollView>
-    </Screen>
+    </SafeAreaView>
   );
 }
 
-const COLORS = {
-  slate50: '#f8fafc',
-  slate100: '#f1f5f9',
-  slate200: '#e2e8f0',
-  slate300: '#cbd5e1',
-  slate400: '#94a3b8',
-  slate500: '#64748b',
-  slate600: '#475569',
-  slate900: '#0f172a',
+// ============================================================================
+// Color Palette
+// ============================================================================
 
-  blue50: '#eff6ff',
-  blue200: 'rgba(191,219,254,0.8)',
-  blue600: '#2563eb',
-
-  emerald50: '#ecfdf5',
-  emerald200: 'rgba(167,243,208,0.8)',
-  emerald600: '#059669',
-
-  violet50: '#f5f3ff',
-  violet200: 'rgba(221,214,254,0.8)',
-  violet600: '#7c3aed',
-
-  amber50: '#fffbeb',
-  amber200: 'rgba(253,230,138,0.8)',
-  amber600: '#d97706',
+// Font family constants
+const FONTS = {
+  regular: 'Inter_400Regular',
+  medium: 'Inter_500Medium',
+  semiBold: 'Inter_600SemiBold',
+  bold: 'Inter_700Bold',
+  extraBold: 'Inter_800ExtraBold',
 };
 
+const COLORS = {
+  slate50: '#fafbfc',
+  slate100: '#f4f6f8',
+  slate200: '#e8ecf0',
+  slate300: '#d1d9e0',
+  slate400: '#9ba8b4',
+  slate500: '#6b7a88',
+  slate600: '#4a5568',
+  slate700: '#334155',
+  slate800: '#1e293b',
+  slate900: '#0f172a',
+  blue50: '#f0f7ff',
+  blue100: '#e0efff',
+  blue200: '#bfdbfe',
+  blue500: '#3b82f6',
+  blue600: '#2563eb',
+  blue700: '#1d4ed8',
+  emerald50: '#f0fdf6',
+  emerald100: '#dcfce7',
+  emerald200: '#a7f3d0',
+  emerald500: '#10b981',
+  emerald600: '#059669',
+  violet50: '#f7f5ff',
+  violet100: '#ede9fe',
+  violet200: '#ddd6fe',
+  violet500: '#8b5cf6',
+  violet600: '#7c3aed',
+  amber50: '#fffcf0',
+  amber100: '#fef3c7',
+  amber200: '#fde68a',
+  amber500: '#f59e0b',
+  amber600: '#d97706',
+  rose50: '#fff5f7',
+  rose500: '#f43f5e',
+  rose600: '#e11d48',
+  white: '#ffffff',
+};
+
+// ============================================================================
+// Styles
+// ============================================================================
+
 const styles = StyleSheet.create({
-  headerGradient: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 18 },
-  contentWrap: { paddingHorizontal: 20, paddingTop: 16 },
+  safeArea: { flex: 1, backgroundColor: COLORS.white },
 
+  // Header
   topRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
-  todayText: { fontSize: 11, fontWeight: '600', color: COLORS.slate500 },
-  greetingText: { marginTop: 4, fontSize: 24, lineHeight: 28, fontWeight: '800', color: COLORS.slate900 },
-  schoolText: { marginTop: 4, fontSize: 12, fontWeight: '500', color: COLORS.slate600 },
+  todayText: { fontSize: 11, fontFamily: FONTS.medium, color: COLORS.slate500 },
+  greetingText: { marginTop: 2, fontSize: 22, fontFamily: FONTS.bold, color: COLORS.slate900 },
+  schoolText: { marginTop: 3, fontSize: 12, fontFamily: FONTS.medium, color: COLORS.slate500 },
 
-  iconRow: { flexDirection: 'row', gap: 10 },
+  iconRow: { flexDirection: 'row' },
   iconButton: {
-    height: 44,
-    width: 44,
-    borderRadius: 18,
-    backgroundColor: '#fff',
+    height: 42,
+    width: 42,
+    borderRadius: 14,
+    backgroundColor: COLORS.white,
     borderWidth: 1,
-    borderColor: 'rgba(226,232,240,0.9)',
+    borderColor: COLORS.slate200,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  smallIconButton: {
-    height: 44,
-    width: 44,
-    borderRadius: 18,
-    backgroundColor: COLORS.slate50,
-    borderWidth: 1,
-    borderColor: 'rgba(226,232,240,0.9)',
-    alignItems: 'center',
-    justifyContent: 'center',
+  notifDot: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    height: 8,
+    width: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.rose500,
   },
 
-  pillsRow: { marginTop: 14, flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  // Pills
+  pillsRow: { flexDirection: 'row' },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: 'rgba(226,232,240,0.8)',
-  },
-  pillText: { fontSize: 11, fontWeight: '600', color: COLORS.slate600 },
-
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(226,232,240,0.7)',
-  },
-
-  rowHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  rowHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  rowHeaderIcon: {
-    height: 36,
-    width: 36,
-    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
     backgroundColor: COLORS.slate100,
+    marginRight: 6,
+  },
+  pillText: { fontSize: 10, fontFamily: FONTS.semiBold, color: COLORS.slate600, marginLeft: 5 },
+
+  // Card
+  card: {
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(226,232,240,0.7)',
+    borderColor: COLORS.slate200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+
+  // Row headers
+  rowHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  rowHeaderLeft: { flexDirection: 'row', alignItems: 'center' },
+  rowHeaderIcon: {
+    height: 32,
+    width: 32,
+    borderRadius: 8,
+    backgroundColor: COLORS.slate100,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 10,
   },
-  rowHeaderTitle: { fontSize: 16, fontWeight: '800', color: COLORS.slate900 },
-  linkText: { fontSize: 12, fontWeight: '600', color: COLORS.slate600 },
+  rowHeaderTitle: { fontSize: 15, fontFamily: FONTS.bold, color: COLORS.slate800 },
+  linkText: { fontSize: 12, fontFamily: FONTS.semiBold, color: COLORS.blue600 },
 
-  childGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  childGridItem: { width: '48%' },
+  // Child chips
+  childGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   childChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 18,
-    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    marginRight: 8,
   },
-  childChipDefault: { backgroundColor: '#fff', borderColor: 'rgba(226,232,240,0.8)' },
+  childChipDefault: { backgroundColor: COLORS.white, borderColor: COLORS.slate200 },
   childChipSelected: { backgroundColor: COLORS.slate900, borderColor: COLORS.slate900 },
-  childChipAvatar: { height: 28, width: 28, borderRadius: 999 },
-  childChipName: { fontSize: 12, fontWeight: '800', color: COLORS.slate900 },
-  childChipNameSelected: { color: '#fff' },
-  childChipClass: { marginTop: 1, fontSize: 10, fontWeight: '500', color: COLORS.slate500 },
-  childChipClassSelected: { color: 'rgba(255,255,255,0.75)' },
+  childChipAvatar: { height: 26, width: 26, borderRadius: 8, marginRight: 8 },
+  childChipName: { fontSize: 12, fontFamily: FONTS.bold, color: COLORS.slate800 },
+  childChipNameSelected: { color: COLORS.white },
+  childChipClass: { marginTop: 1, fontSize: 10, fontFamily: FONTS.medium, color: COLORS.slate500 },
+  childChipClassSelected: { color: 'rgba(255,255,255,0.7)' },
 
-  profileRow: { marginTop: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  profileName: { fontSize: 14, fontWeight: '800', color: COLORS.slate900 },
-  profileSub: { marginTop: 2, fontSize: 11, fontWeight: '500', color: COLORS.slate500 },
+  // Profile row
+  profileRow: { marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  profileName: { fontSize: 14, fontFamily: FONTS.bold, color: COLORS.slate800 },
+  profileSub: { marginTop: 2, fontSize: 11, fontFamily: FONTS.medium, color: COLORS.slate500 },
 
-  ctaRow: { marginTop: 14, flexDirection: 'row', gap: 10 },
+  // CTA buttons
   ctaPrimary: {
     height: 44,
-    borderRadius: 18,
+    paddingHorizontal: 20,
+    borderRadius: 12,
     backgroundColor: COLORS.slate900,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 8,
   },
-  ctaPrimaryText: { fontSize: 14, fontWeight: '700', color: '#fff' },
+  ctaPrimaryText: { fontSize: 13, fontFamily: FONTS.semiBold, color: COLORS.white, marginLeft: 6 },
   ctaSecondary: {
     height: 44,
-    borderRadius: 18,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: 'rgba(226,232,240,0.9)',
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.slate200,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 8,
   },
-  ctaSecondaryText: { fontSize: 14, fontWeight: '700', color: COLORS.slate900 },
+  ctaSecondaryText: { fontSize: 13, fontFamily: FONTS.semiBold, color: COLORS.slate700, marginLeft: 6 },
 
+  // Search
   searchRow: {
-    marginTop: 14,
+    marginTop: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 18,
+    paddingVertical: 11,
+    borderRadius: 12,
     backgroundColor: COLORS.slate50,
     borderWidth: 1,
-    borderColor: 'rgba(226,232,240,0.9)',
+    borderColor: COLORS.slate200,
   },
-  searchInput: { flex: 1, fontSize: 14, color: COLORS.slate900 },
+  searchInput: { flex: 1, fontSize: 13, fontFamily: FONTS.regular, color: COLORS.slate700, marginLeft: 10 },
 
-  statsRow: { flexDirection: 'row', gap: 12 },
-  statTile: { flex: 1, borderRadius: 18, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12 },
-  statTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  statLabel: { fontSize: 11, fontWeight: '600', color: COLORS.slate600 },
-  statIconWrap: {
-    height: 32,
-    width: 32,
+  // Stats
+  statsRow: { flexDirection: 'row' },
+  statTile: {
+    flex: 1,
     borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.85)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.7)',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginRight: 10,
+  },
+  statTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  statLabel: { fontSize: 10, fontFamily: FONTS.semiBold, color: COLORS.slate600 },
+  statIconWrap: {
+    height: 28,
+    width: 28,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  statValue: { marginTop: 8, fontSize: 18, fontWeight: '800', color: COLORS.slate900 },
-  statSubtitle: { marginTop: 4, fontSize: 10, fontWeight: '500', color: COLORS.slate500 },
+  statValue: { marginTop: 6, fontSize: 20, fontFamily: FONTS.bold, color: COLORS.slate900 },
+  statSubtitle: { marginTop: 2, fontSize: 10, fontFamily: FONTS.medium, color: COLORS.slate500 },
 
-  heroImage: { height: 176, width: '100%' },
+  // Hero image
+  heroImage: { height: 160, width: '100%' },
   heroOverlay: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 },
   heroBadges: { position: 'absolute', left: 12, right: 12, bottom: 12, flexDirection: 'row', justifyContent: 'space-between' },
   heroBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.88)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.7)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.92)',
   },
-  heroBadgeAvatar: { height: 20, width: 20, borderRadius: 999 },
-  heroBadgeText: { fontSize: 11, fontWeight: '600', color: COLORS.slate900 },
+  heroBadgeAvatar: { height: 18, width: 18, borderRadius: 6, marginRight: 6 },
+  heroBadgeText: { fontSize: 10, fontFamily: FONTS.semiBold, color: COLORS.slate800 },
 
-  sectionStrong: { marginTop: 10, fontSize: 14, fontWeight: '800', color: COLORS.slate900 },
-  sectionSub: { marginTop: 4, fontSize: 12, fontWeight: '500', color: COLORS.slate500 },
-  progressMeta: { marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  progressLabel: { fontSize: 12, fontWeight: '600', color: COLORS.slate500 },
-  progressValue: { fontSize: 12, fontWeight: '800', color: COLORS.slate900 },
+  // Section text
+  sectionStrong: { fontSize: 14, fontFamily: FONTS.bold, color: COLORS.slate800 },
+  sectionSub: { marginTop: 2, fontSize: 12, fontFamily: FONTS.medium, color: COLORS.slate500 },
 
-  twoCol: { flexDirection: 'row', gap: 12 },
-  twoColItem: { flex: 1 },
+  // Progress
+  progressTrack: { height: 8, backgroundColor: COLORS.slate200, borderRadius: 4, overflow: 'hidden' },
+  progressFill: { height: 8, borderRadius: 4 },
+  progressMeta: { marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  progressLabel: { fontSize: 11, fontFamily: FONTS.semiBold, color: COLORS.slate500 },
+  progressValue: { fontSize: 12, fontFamily: FONTS.bold, color: COLORS.slate800 },
 
-  sectionCard: { padding: 16, marginTop: 0 },
+  // Two column layout
+  twoCol: { flexDirection: 'row' },
+  twoColItem: { flex: 1, marginRight: 10 },
+
+  // Section cards
+  sectionCard: { padding: 14 },
   mutedBox: {
-    marginTop: 12,
-    borderRadius: 18,
+    marginTop: 10,
+    borderRadius: 14,
     backgroundColor: COLORS.slate50,
     borderWidth: 1,
-    borderColor: 'rgba(226,232,240,0.8)',
-    padding: 14,
+    borderColor: COLORS.slate200,
+    padding: 12,
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
   },
-  mutedLabel: { fontSize: 11, fontWeight: '600', color: COLORS.slate500 },
-  moneyText: { marginTop: 6, fontSize: 20, fontWeight: '800', color: COLORS.slate900 },
-  dueRow: { marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  duePill: { backgroundColor: COLORS.amber200, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
-  duePillText: { fontSize: 10, fontWeight: '800', color: COLORS.amber600 },
-  dueText: { fontSize: 11, fontWeight: '500', color: COLORS.slate500 },
-  payButton: { paddingHorizontal: 16, paddingVertical: 12, backgroundColor: COLORS.slate900, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  payButtonText: { fontSize: 14, fontWeight: '700', color: '#fff' },
+  mutedLabel: { fontSize: 10, fontFamily: FONTS.semiBold, color: COLORS.slate500 },
+  moneyText: { marginTop: 4, fontSize: 18, fontFamily: FONTS.bold, color: COLORS.slate900 },
+  dueRow: { marginTop: 8, flexDirection: 'row', alignItems: 'center' },
+  duePill: { backgroundColor: COLORS.amber100, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  duePillText: { fontSize: 9, fontFamily: FONTS.bold, color: COLORS.amber600 },
+  dueText: { fontSize: 10, fontFamily: FONTS.medium, color: COLORS.slate500, marginLeft: 6 },
+  payButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: COLORS.slate900,
+    borderRadius: 10,
+  },
+  payButtonText: { fontSize: 12, fontFamily: FONTS.semiBold, color: COLORS.white },
 
+  // Messages
   messageRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 18,
+    borderRadius: 14,
     backgroundColor: COLORS.slate50,
     borderWidth: 1,
-    borderColor: 'rgba(226,232,240,0.8)',
-    padding: 12,
+    borderColor: COLORS.slate200,
+    padding: 10,
   },
-  messageRowAlt: {
-    flexDirection: 'row',
+  messageTitle: { fontSize: 12, fontFamily: FONTS.bold, color: COLORS.slate800 },
+  messageMeta: { marginTop: 1, fontSize: 10, fontFamily: FONTS.medium, color: COLORS.slate500 },
+  unreadDot: {
+    height: 20,
+    width: 20,
+    borderRadius: 6,
+    backgroundColor: COLORS.rose500,
     alignItems: 'center',
-    borderRadius: 18,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: 'rgba(226,232,240,0.8)',
-    padding: 12,
+    justifyContent: 'center',
   },
-  messageTitle: { fontSize: 12, fontWeight: '800', color: COLORS.slate900 },
-  messageMeta: { marginTop: 2, fontSize: 11, fontWeight: '500', color: COLORS.slate500 },
-  unreadDot: { height: 24, width: 24, borderRadius: 999, backgroundColor: '#f43f5e', alignItems: 'center', justifyContent: 'center' },
-  unreadDotText: { fontSize: 10, fontWeight: '800', color: '#fff' },
+  unreadDotText: { fontSize: 9, fontFamily: FONTS.bold, color: COLORS.white },
+
+  // Avatar
+  avatar: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.slate200,
+    borderWidth: 1,
+    borderColor: COLORS.slate200,
+  },
+  avatarText: { fontSize: 14, fontFamily: FONTS.bold, color: COLORS.slate700 },
 });
 
+// ============================================================================
+// Mobile-specific styles
+// ============================================================================
 
+const mobileStyles = StyleSheet.create({
+  headerGradient: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16 },
+
+  // Date badge
+  dateBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: COLORS.blue50,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    marginBottom: 8,
+  },
+  dateBadgeText: {
+    fontSize: 11,
+    fontFamily: FONTS.semiBold,
+    color: COLORS.blue600,
+    marginLeft: 5,
+  },
+
+  greetingText: { fontSize: 24, fontFamily: FONTS.extraBold, color: COLORS.slate900, letterSpacing: -0.5 },
+
+  // Header icons
+  headerIconBtn: {
+    height: 44,
+    width: 44,
+    borderRadius: 14,
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.slate100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  notifBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    height: 18,
+    width: 18,
+    borderRadius: 9,
+    backgroundColor: COLORS.rose500,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.white,
+  },
+  notifBadgeText: {
+    fontSize: 9,
+    fontFamily: FONTS.bold,
+    color: COLORS.white,
+  },
+
+  // Child selector section
+  childSelectorSection: {
+    marginTop: 20,
+  },
+  childSelectorHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  childSelectorLabel: {
+    fontSize: 13,
+    fontFamily: FONTS.bold,
+    color: COLORS.slate700,
+    letterSpacing: -0.2,
+  },
+  childSelectorLink: {
+    fontSize: 12,
+    fontFamily: FONTS.semiBold,
+    color: COLORS.blue600,
+  },
+
+  // Pagination dots
+  paginationDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.slate300,
+  },
+  paginationDotActive: {
+    width: 20,
+    backgroundColor: COLORS.blue500,
+    borderRadius: 4,
+  },
+
+  // Single child container (centered)
+  singleChildContainer: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+
+  // Two children container (centered with gap)
+  twoChildrenContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+  },
+
+  // Multi-child scroll container (3+ children)
+  multiChildScrollContent: {
+    paddingHorizontal: 0,
+    paddingVertical: 8,
+  },
+
+  // ========== NEW CARD STYLES ==========
+  // Base card style (shared by all)
+  childCardBase: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+
+  // Size for two-child layout
+  twoChildCardSize: {
+    width: (SCREEN_WIDTH - 56) / 2,
+    minWidth: 150,
+  },
+
+  // Size for multi-child layout
+  multiChildCardSize: {
+    width: (SCREEN_WIDTH - 32) * 0.46,
+    minWidth: 155,
+  },
+
+  // Default (unselected) card state
+  childCardDefault: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.slate200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+
+  // Selected card state
+  childCardSelected: {
+    backgroundColor: COLORS.blue50,
+    borderWidth: 2,
+    borderColor: COLORS.blue500,
+    shadowColor: COLORS.blue500,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+
+  // Gradient overlay for selected card
+  childCardGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    borderRadius: 14,
+  },
+
+  // Inner content container
+  childCardInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+  },
+
+  // Avatar container with checkmark positioning
+  childAvatarContainer: {
+    position: 'relative',
+    width: 48,
+    height: 48,
+  },
+
+  // Avatar image
+  childAvatarImg: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: COLORS.slate100,
+  },
+
+  // Checkmark badge on avatar
+  childCheckBadge: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: COLORS.blue500,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.white,
+  },
+
+  // Text container (name + class)
+  childTextContainer: {
+    flex: 1,
+    marginLeft: 12,
+    justifyContent: 'center',
+  },
+
+  // Child name text
+  childNameText: {
+    fontSize: 14,
+    fontFamily: FONTS.bold,
+    color: COLORS.slate800,
+  },
+  childNameTextSelected: {
+    color: COLORS.blue700,
+  },
+
+  // Class pill/badge
+  childClassPill: {
+    marginTop: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: COLORS.slate100,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  childClassPillSelected: {
+    backgroundColor: COLORS.blue100,
+  },
+
+  // Class text inside pill
+  childClassPillText: {
+    fontSize: 11,
+    fontFamily: FONTS.semiBold,
+    color: COLORS.slate500,
+  },
+  childClassPillTextSelected: {
+    color: COLORS.blue600,
+  },
+
+  // Legacy single child styles (keeping for backwards compat)
+  singleChildCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderWidth: 2,
+    borderColor: COLORS.slate200,
+    borderRadius: 16,
+    padding: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  singleChildAvatarWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: COLORS.slate100,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: COLORS.slate200,
+  },
+  singleChildInfo: {
+    flex: 1,
+    marginLeft: 14,
+  },
+  singleChildName: {
+    fontSize: 17,
+    fontFamily: FONTS.bold,
+    color: COLORS.slate800,
+  },
+  singleChildClassBadge: {
+    marginTop: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: COLORS.slate100,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  singleChildClassText: {
+    fontSize: 12,
+    fontFamily: FONTS.semiBold,
+    color: COLORS.slate600,
+  },
+
+  statCard: {
+    width: (SCREEN_WIDTH - 48) / 2,
+    minWidth: 140,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginRight: 8,
+  },
+
+  quickActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.slate200,
+    marginRight: 8,
+  },
+  quickActionBtnPrimary: {
+    backgroundColor: COLORS.slate900,
+    borderColor: COLORS.slate900,
+  },
+  quickActionText: { fontSize: 12, fontFamily: FONTS.semiBold, color: COLORS.slate700, marginLeft: 6 },
+
+  widgetCard: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.slate200,
+    padding: 14,
+  },
+});
+
+// ============================================================================
+// Tablet-specific styles
+// ============================================================================
+
+const tabletStyles = StyleSheet.create({
+  headerGradient: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 18 },
+  contentWrap: { paddingHorizontal: 24, paddingTop: 16 },
+});

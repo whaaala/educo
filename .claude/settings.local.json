@@ -5,7 +5,8 @@
       "Bash(cat:*)",
       "Bash(curl:*)",
       "Bash(tr:*)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(npx expo start:*)"
     ],
     "deny": [],
     "ask": []

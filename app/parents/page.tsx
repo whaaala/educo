@@ -37,7 +37,110 @@ import {
   Award,
   Percent,
   BarChart3,
+  ChevronDown,
+  TrendingUp,
+  Users,
+  MessageSquare,
+  Search,
+  Bell,
+  HelpCircle,
 } from "lucide-react";
+
+// ============================================
+// MOBILE STAT CARD COMPONENT
+// ============================================
+
+type StatColor = "blue" | "green" | "purple" | "amber";
+
+interface MobileStatCardProps {
+  icon: React.ElementType;
+  label: string;
+  value: string | number;
+  subtitle?: string;
+  color: StatColor;
+}
+
+const colorConfig: Record<StatColor, { bg: string; iconBg: string; iconColor: string; valueColor: string }> = {
+  blue: {
+    bg: "bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90",
+    iconBg: "bg-blue-50 dark:bg-blue-500/10",
+    iconColor: "text-blue-600 dark:text-blue-400",
+    valueColor: "text-blue-700 dark:text-blue-300",
+  },
+  green: {
+    bg: "bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90",
+    iconBg: "bg-emerald-50 dark:bg-emerald-500/10",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
+    valueColor: "text-emerald-700 dark:text-emerald-300",
+  },
+  purple: {
+    bg: "bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90",
+    iconBg: "bg-purple-50 dark:bg-purple-500/10",
+    iconColor: "text-purple-600 dark:text-purple-400",
+    valueColor: "text-purple-700 dark:text-purple-300",
+  },
+  amber: {
+    bg: "bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90",
+    iconBg: "bg-amber-50 dark:bg-amber-500/10",
+    iconColor: "text-amber-600 dark:text-amber-400",
+    valueColor: "text-amber-700 dark:text-amber-300",
+  },
+};
+
+function MobileStatCard({ icon: Icon, label, value, subtitle, color }: MobileStatCardProps) {
+  const config = colorConfig[color];
+
+  return (
+    <div className={`${config.bg} rounded-2xl border border-gray-100/80 dark:border-gray-700/30 p-4 min-w-[140px] snap-start flex-shrink-0 shadow-sm hover:shadow-md transition-all duration-200`}>
+      {/* Icon */}
+      <div className={`${config.iconBg} w-10 h-10 rounded-xl flex items-center justify-center mb-3`}>
+        <Icon className={`w-5 h-5 ${config.iconColor}`} />
+      </div>
+
+      {/* Value */}
+      <p className={`text-2xl font-bold ${config.valueColor} mb-0.5`}>{value}</p>
+
+      {/* Label */}
+      <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</p>
+
+      {/* Subtitle */}
+      {subtitle && (
+        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{subtitle}</p>
+      )}
+    </div>
+  );
+}
+
+// ============================================
+// TABLET STAT CARD COMPONENT
+// ============================================
+
+function TabletStatCard({ icon: Icon, label, value, subtitle, color }: MobileStatCardProps) {
+  const config = colorConfig[color];
+
+  return (
+    <div className={`group relative ${config.bg} rounded-2xl border border-gray-100/80 dark:border-gray-700/30 p-4 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 overflow-hidden`}>
+      {/* Subtle gradient accent */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-500/[0.01] to-transparent pointer-events-none" />
+
+      <div className="relative flex items-center gap-3">
+        {/* Icon */}
+        <div className={`${config.iconBg} w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-200`}>
+          <Icon className={`w-5 h-5 ${config.iconColor}`} />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-0.5">{label}</p>
+          <p className={`text-xl font-bold ${config.valueColor}`}>{value}</p>
+          {subtitle && (
+            <p className="text-[10px] text-gray-400 dark:text-gray-500">{subtitle}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ============================================
 // TYPES
@@ -401,61 +504,351 @@ export default function ParentDashboardPage() {
     defaultOrder
   );
 
+  // Get greeting based on time of day
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
+  // Format current date
+  const getCurrentDate = () => {
+    return new Date().toLocaleDateString("en-GB", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+    });
+  };
+
   return (
     <MainLayout>
       <PageLoader isLoading={isPageLoading} loadingText="Loading Dashboard" />
 
-      <div className={`space-y-5 transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Custom Header with Right Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-1">Parent Dashboard</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Welcome back, {MOCK_PARENT.fullName.split(" ").slice(1).join(" ")}</p>
+      <div className={`transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
+
+        {/* ============================================ */}
+        {/* MOBILE LAYOUT (< md) */}
+        {/* ============================================ */}
+        <div className="md:hidden space-y-4">
+          {/* Mobile Header - Clean & Modern */}
+          <div className="relative">
+            {/* Background accent */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.02] via-transparent to-cyan-500/[0.02] rounded-2xl pointer-events-none" />
+
+            <div className="relative bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90 rounded-2xl border border-gray-100/80 dark:border-gray-700/30 p-4 shadow-sm">
+              {/* Top Row: Date & Actions */}
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  {getCurrentDate()}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button className="p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <Bell className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  </button>
+                  <button className="p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <HelpCircle className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Greeting */}
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-gray-100 purple:text-gray-100 mb-0.5">
+                {getGreeting()}
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                {MOCK_PARENT.fullName.split(" ").slice(1).join(" ")}
+              </p>
+
+              {/* Info Pills Row */}
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50/80 dark:bg-blue-500/10 border border-blue-100/50 dark:border-blue-500/20">
+                  <GraduationCap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <span className="text-[11px] font-medium text-blue-700 dark:text-blue-400">Parent Portal</span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50/80 dark:bg-gray-700/50 border border-gray-100/50 dark:border-gray-700/30">
+                  <Calendar className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                  <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400">2nd Term 2024</span>
+                </div>
+              </div>
+
+              {/* My Children Section */}
+              <div className="bg-gray-50/80 dark:bg-gray-900/40 midnight:bg-gray-800/40 purple:bg-gray-800/40 rounded-xl p-3 border border-gray-100/80 dark:border-gray-700/30">
+                <div className="flex items-center justify-between mb-2.5">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">My Children</span>
+                  </div>
+                  <Link href="/parents/children" className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                    Open
+                  </Link>
+                </div>
+
+                {/* Child Selector Pills */}
+                <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+                  {MOCK_CHILDREN.map((child) => {
+                    const isSelected = selectedChild.id === child.id;
+                    return (
+                      <button
+                        key={child.id}
+                        onClick={() => setSelectedChild(child)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200 flex-shrink-0 ${
+                          isSelected
+                            ? "bg-white dark:bg-gray-800 shadow-sm border-2 border-blue-500/50 dark:border-blue-400/50"
+                            : "bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/30 hover:bg-white dark:hover:bg-gray-800"
+                        }`}
+                      >
+                        <div className={`relative w-8 h-8 rounded-lg overflow-hidden ${isSelected ? "ring-2 ring-blue-400/50 ring-offset-1 ring-offset-white dark:ring-offset-gray-800" : ""}`}>
+                          <Image src={child.profilePhoto} alt={child.fullName} width={32} height={32} className="object-cover" unoptimized />
+                        </div>
+                        <div className="text-left">
+                          <p className={`text-xs font-semibold ${isSelected ? "text-blue-700 dark:text-blue-400" : "text-gray-700 dark:text-gray-300"}`}>
+                            {child.firstName}
+                          </p>
+                          <p className="text-[10px] text-gray-500 dark:text-gray-400">{child.classLevel}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Current Child Info & Message Button */}
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100/80 dark:border-gray-700/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl overflow-hidden shadow-sm ring-2 ring-white dark:ring-gray-700">
+                    <Image src={selectedChild.profilePhoto} alt={selectedChild.fullName} width={40} height={40} className="object-cover" unoptimized />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400">Viewing</p>
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{selectedChild.firstName} {selectedChild.lastName} • {selectedChild.classLevel}</p>
+                  </div>
+                </div>
+                <button className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors">
+                  <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </button>
+              </div>
+            </div>
+
+            {/* Search Bar - Below Header */}
+            <div className="mt-3 relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder={`Search ${selectedChild.firstName}'s fees, messages, results...`}
+                className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-gray-800/90 border border-gray-100/80 dark:border-gray-700/30 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+              />
+            </div>
           </div>
 
-          {/* Right Side - Selected Child & Quick Stats */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Current Term Info */}
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-              <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              <div>
-                <p className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">Current Term</p>
-                <p className="text-xs font-bold text-gray-900 dark:text-white">2nd Term 2024</p>
-              </div>
-            </div>
+          {/* Mobile Stats - Horizontal Scroll */}
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory">
+            <MobileStatCard
+              icon={TrendingUp}
+              label="Term Average"
+              value={`${childProgress?.currentTermAverage || 0}%`}
+              color="blue"
+            />
+            <MobileStatCard
+              icon={Award}
+              label="Position"
+              value={childProgress?.classPosition || 0}
+              subtitle={`out of ${childProgress?.totalStudents || 0}`}
+              color="green"
+            />
+            <MobileStatCard
+              icon={Percent}
+              label="Attendance"
+              value={`${childProgress?.attendanceRate || 0}%`}
+              color="purple"
+            />
+            <MobileStatCard
+              icon={GraduationCap}
+              label="Conduct"
+              value={childProgress?.conductGrade || "-"}
+              color="amber"
+            />
+          </div>
 
-            {/* Selected Child Quick View */}
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-              <div className="w-8 h-8 rounded-lg overflow-hidden">
-                <Image src={selectedChild.profilePhoto} alt={selectedChild.fullName} width={32} height={32} className="object-cover" unoptimized />
-              </div>
-              <div>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Viewing</p>
-                <p className="text-xs font-bold text-gray-900 dark:text-white">{selectedChild.firstName} • {selectedChild.classLevel}</p>
-              </div>
-            </div>
-
-            {/* Pay Fees Button */}
-            <Link
-              href="/parents/fees"
-              className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm shadow-sm transition-all"
-            >
-              <CreditCard className="w-4 h-4" />
-              Pay Fees
-            </Link>
+          {/* Mobile Dashboard Widgets - Single Column */}
+          <div className="space-y-3">
+            {/* Priority widgets for mobile based on PRD */}
+            <FeesReminderCard reminders={activeReminders} countryCode={countryCode} onPayNow={handlePayNow} />
+            <MessagesCard messages={MOCK_MESSAGES} />
+            <RecentGradesCard selectedChildId={selectedChild.id} progress={childProgress} />
+            <UpcomingMeetingsCard meetings={MOCK_MEETINGS} />
+            <HomeworkCard homework={MOCK_HOMEWORK} />
+            <ExamResultsCard results={MOCK_EXAM_RESULTS} />
+            <EventsCard events={MOCK_EVENTS} selectedChildId={selectedChild.id} />
+            <NoticeBoardCard notices={MOCK_NOTICES} />
+            <ChildLeaveRequestsCard leaves={MOCK_CHILD_LEAVE_REQUESTS} />
+            <PaymentHistoryCard payments={MOCK_PAYMENT_HISTORY} countryCode={countryCode} />
+            <QuickLinksCard selectedChildId={selectedChild.id} />
+            <QuickActionsCard />
           </div>
         </div>
 
-        {/* Dashboard Cards (parent priority) - draggable masonry */}
-        <div className="space-y-0">
-            {/* Stats Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        {/* ============================================ */}
+        {/* TABLET LAYOUT (md - lg) */}
+        {/* ============================================ */}
+        <div className="hidden md:block lg:hidden space-y-5">
+          {/* Tablet Header - Two Column */}
+          <div className="relative bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90 rounded-2xl border border-gray-100/80 dark:border-gray-700/30 p-5 shadow-sm overflow-hidden">
+            {/* Background accent */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.02] via-transparent to-cyan-500/[0.02] pointer-events-none" />
+
+            <div className="relative flex items-start justify-between gap-6">
+              {/* Left Side */}
+              <div className="flex-1">
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{getCurrentDate()}</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-gray-100 purple:text-gray-100 mb-0.5">
+                  {getGreeting()}
+                </h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  {MOCK_PARENT.fullName.split(" ").slice(1).join(" ")}
+                </p>
+
+                {/* Info Pills */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50/80 dark:bg-blue-500/10 border border-blue-100/50 dark:border-blue-500/20">
+                    <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <span className="text-xs font-medium text-blue-700 dark:text-blue-400">Parent Portal</span>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-50/80 dark:bg-gray-700/50 border border-gray-100/50 dark:border-gray-700/30">
+                    <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">2nd Term 2024</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Side - Children & Actions */}
+              <div className="flex flex-col items-end gap-3">
+                {/* Child Selector */}
+                <div className="flex items-center gap-2">
+                  {MOCK_CHILDREN.map((child) => {
+                    const isSelected = selectedChild.id === child.id;
+                    return (
+                      <button
+                        key={child.id}
+                        onClick={() => setSelectedChild(child)}
+                        className={`flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all duration-200 ${
+                          isSelected
+                            ? "bg-blue-50 dark:bg-blue-500/10 border-2 border-blue-400/50 shadow-sm"
+                            : "bg-gray-50 dark:bg-gray-700/50 border border-gray-200/50 dark:border-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        }`}
+                      >
+                        <div className={`w-9 h-9 rounded-lg overflow-hidden ${isSelected ? "ring-2 ring-blue-400/50 ring-offset-1" : ""}`}>
+                          <Image src={child.profilePhoto} alt={child.fullName} width={36} height={36} className="object-cover" unoptimized />
+                        </div>
+                        <div className="text-left">
+                          <p className={`text-xs font-semibold ${isSelected ? "text-blue-700 dark:text-blue-400" : "text-gray-700 dark:text-gray-300"}`}>
+                            {child.firstName}
+                          </p>
+                          <p className="text-[10px] text-gray-500 dark:text-gray-400">{child.classLevel}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Pay Fees Button */}
+                <Link
+                  href="/parents/fees"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-medium text-sm shadow-md hover:shadow-lg transition-all"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Pay Fees
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Tablet Stats - 4 Column Grid */}
+          <div className="grid grid-cols-4 gap-3">
+            <TabletStatCard
+              icon={TrendingUp}
+              label="Term Average"
+              value={`${childProgress?.currentTermAverage || 0}%`}
+              color="blue"
+            />
+            <TabletStatCard
+              icon={Award}
+              label="Position"
+              value={childProgress?.classPosition || 0}
+              subtitle={`of ${childProgress?.totalStudents || 0}`}
+              color="green"
+            />
+            <TabletStatCard
+              icon={Percent}
+              label="Attendance"
+              value={`${childProgress?.attendanceRate || 0}%`}
+              color="purple"
+            />
+            <TabletStatCard
+              icon={GraduationCap}
+              label="Conduct"
+              value={childProgress?.conductGrade || "-"}
+              color="amber"
+            />
+          </div>
+
+          {/* Tablet Dashboard - 2 Column Masonry */}
+          <ParentDashboardMasonryDnD cards={dashboardCards} order={order} onOrderChange={setOrder} />
+        </div>
+
+        {/* ============================================ */}
+        {/* DESKTOP LAYOUT (lg+) */}
+        {/* ============================================ */}
+        <div className="hidden lg:block space-y-5">
+          {/* Desktop Header */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-1">Parent Dashboard</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Welcome back, {MOCK_PARENT.fullName.split(" ").slice(1).join(" ")}</p>
+            </div>
+
+            {/* Right Side - Selected Child & Quick Stats */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Current Term Info */}
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <div>
+                  <p className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">Current Term</p>
+                  <p className="text-xs font-bold text-gray-900 dark:text-white">2nd Term 2024</p>
+                </div>
+              </div>
+
+              {/* Selected Child Quick View */}
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <div className="w-8 h-8 rounded-lg overflow-hidden">
+                  <Image src={selectedChild.profilePhoto} alt={selectedChild.fullName} width={32} height={32} className="object-cover" unoptimized />
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Viewing</p>
+                  <p className="text-xs font-bold text-gray-900 dark:text-white">{selectedChild.firstName} • {selectedChild.classLevel}</p>
+                </div>
+              </div>
+
+              {/* Pay Fees Button */}
+              <Link
+                href="/parents/fees"
+                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm shadow-sm transition-all"
+              >
+                <CreditCard className="w-4 h-4" />
+                Pay Fees
+              </Link>
+            </div>
+          </div>
+
+          {/* Desktop Stats Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <StatCard icon={BarChart3} label="Term Average" value={`${childProgress?.currentTermAverage || 0}%`} color="blue" />
             <StatCard icon={Award} label="Class Position" value={childProgress?.classPosition || 0} color="green" subtitle={`out of ${childProgress?.totalStudents || 0} students`} />
             <StatCard icon={Percent} label="Attendance" value={`${childProgress?.attendanceRate || 0}%`} color="purple" />
             <StatCard icon={GraduationCap} label="Conduct" value={childProgress?.conductGrade || "-"} color="amber" />
           </div>
 
+          {/* Desktop Dashboard Masonry */}
           <ParentDashboardMasonryDnD cards={dashboardCards} order={order} onOrderChange={setOrder} />
         </div>
       </div>
@@ -484,10 +877,10 @@ export default function ParentDashboardPage() {
           title="Payment Successful!"
           subtitle="Your fee payment has been processed successfully."
           fields={[
-            { label: "Fee Type", value: selectedFee.feeType },
-            { label: "Child", value: selectedFee.childName },
-            { label: "Amount Paid", value: `₦${selectedFee.amount.toLocaleString()}` },
-            { label: "Date", value: new Date().toLocaleDateString() },
+            { icon: <CreditCard className="w-4 h-4 text-blue-600 dark:text-blue-400" />, label: "Fee Type", value: selectedFee.feeType },
+            { icon: <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />, label: "Child", value: selectedFee.childName },
+            { icon: <CreditCard className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />, label: "Amount Paid", value: `₦${selectedFee.amount.toLocaleString()}` },
+            { icon: <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />, label: "Date", value: new Date().toLocaleDateString() },
           ]}
           note="A receipt has been sent to your email. You can also view this payment in your Payment History."
           closeButtonText="Done"

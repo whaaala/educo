@@ -10,6 +10,7 @@
     "android:both": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/open-android-both.ps1 -Port 8093 -StartExpo"
   },
   "dependencies": {
+    "@expo-google-fonts/inter": "^0.4.2",
     "@expo/vector-icons": "^15.0.3",
     "@react-navigation/native": "^7.1.8",
     "expo": "~54.0.30",
@@ -37,5 +38,3 @@
     "typescript": "~5.9.2"
   }
 }
-
-
