@@ -14,6 +14,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { LeaveRequestModal } from '../../components/modals/LeaveRequestModal';
+import { MessageTeacherModal } from '../../components/modals/MessageTeacherModal';
+import { PayFeesModal } from '../../components/modals/PayFeesModal';
+import { ViewResultsModal } from '../../components/modals/ViewResultsModal';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -258,11 +262,11 @@ function MobileWidgetCard({ title, icon, linkHref, linkText, children }: {
   );
 }
 
-function QuickActionTile({ icon, label, subtitle, href, color }: {
+function QuickActionTile({ icon, label, subtitle, onPress, color }: {
   icon: ComponentProps<typeof Ionicons>['name'];
   label: string;
   subtitle: string;
-  href: string;
+  onPress: () => void;
   color: 'blue' | 'emerald' | 'violet' | 'rose';
 }) {
   const colorMap = {
@@ -274,15 +278,16 @@ function QuickActionTile({ icon, label, subtitle, href, color }: {
   const c = colorMap[color];
 
   return (
-    <Link href={href as any} asChild>
-      <Pressable style={[mobileStyles.quickActionTile, { backgroundColor: c.bg, borderColor: c.border }]}>
-        <View style={[mobileStyles.quickActionTileIcon, { backgroundColor: c.iconBg }]}>
-          <Ionicons name={icon} size={22} color={c.icon} />
-        </View>
-        <Text style={mobileStyles.quickActionTileText}>{label}</Text>
-        <Text style={[mobileStyles.quickActionTileSubtitle, { color: c.subtitleColor }]}>{subtitle}</Text>
-      </Pressable>
-    </Link>
+    <Pressable
+      style={[mobileStyles.quickActionTile, { backgroundColor: c.bg, borderColor: c.border }]}
+      onPress={onPress}
+    >
+      <View style={[mobileStyles.quickActionTileIcon, { backgroundColor: c.iconBg }]}>
+        <Ionicons name={icon} size={22} color={c.icon} />
+      </View>
+      <Text style={mobileStyles.quickActionTileText}>{label}</Text>
+      <Text style={[mobileStyles.quickActionTileSubtitle, { color: c.subtitleColor }]}>{subtitle}</Text>
+    </Pressable>
   );
 }
 
@@ -294,6 +299,12 @@ export default function ParentHomeScreen() {
   const isTablet = useIsTablet();
   const [selectedChildId, setSelectedChildId] = useState<string>(mockChildren[0]?.id ?? '');
   const childScrollRef = useRef<ScrollView>(null);
+
+  // Modal states
+  const [leaveModalVisible, setLeaveModalVisible] = useState(false);
+  const [messageModalVisible, setMessageModalVisible] = useState(false);
+  const [payFeesModalVisible, setPayFeesModalVisible] = useState(false);
+  const [resultsModalVisible, setResultsModalVisible] = useState(false);
 
   // Calculate card width for scrolling
   const cardWidth = (SCREEN_WIDTH - 32) * 0.46;
@@ -581,10 +592,10 @@ export default function ParentHomeScreen() {
 
           {/* Quick Actions */}
           <View style={mobileStyles.quickActionsGrid}>
-            <QuickActionTile icon="wallet-outline" label="Pay Fees" subtitle="Quick payment" href="/(tabs)/fees" color="blue" />
-            <QuickActionTile icon="mail-outline" label="Messages" subtitle="Chat with school" href="/(tabs)/messages" color="emerald" />
-            <QuickActionTile icon="school-outline" label="Results" subtitle="View grades" href="/(tabs)/children" color="violet" />
-            <QuickActionTile icon="document-text-outline" label="Leave" subtitle="Request absence" href="/(tabs)/more" color="rose" />
+            <QuickActionTile icon="wallet-outline" label="Pay Fees" subtitle="Quick payment" onPress={() => setPayFeesModalVisible(true)} color="blue" />
+            <QuickActionTile icon="mail-outline" label="Messages" subtitle="Chat with school" onPress={() => setMessageModalVisible(true)} color="emerald" />
+            <QuickActionTile icon="school-outline" label="Results" subtitle="View grades" onPress={() => setResultsModalVisible(true)} color="violet" />
+            <QuickActionTile icon="document-text-outline" label="Leave" subtitle="Request absence" onPress={() => setLeaveModalVisible(true)} color="rose" />
           </View>
 
           {/* Stats */}
@@ -665,6 +676,30 @@ export default function ParentHomeScreen() {
 
           <View style={{ height: 20 }} />
         </ScrollView>
+
+        {/* Modals */}
+        <LeaveRequestModal
+          visible={leaveModalVisible}
+          onClose={() => setLeaveModalVisible(false)}
+          childName={selectedChild.name}
+        />
+        <MessageTeacherModal
+          visible={messageModalVisible}
+          onClose={() => setMessageModalVisible(false)}
+          childName={selectedChild.name}
+          childClass={selectedChild.classLevel}
+        />
+        <PayFeesModal
+          visible={payFeesModalVisible}
+          onClose={() => setPayFeesModalVisible(false)}
+          childName={selectedChild.name}
+        />
+        <ViewResultsModal
+          visible={resultsModalVisible}
+          onClose={() => setResultsModalVisible(false)}
+          childName={selectedChild.name}
+          childClass={selectedChild.classLevel}
+        />
       </SafeAreaView>
     );
   }
