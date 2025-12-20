@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
+import type { ScrollView as ScrollViewType } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Modal } from '../ui/Modal';
@@ -101,6 +102,7 @@ export function MessageTeacherModal({
   preselectedTeacher,
 }: MessageTeacherModalProps) {
   const { colors } = useTheme();
+  const scrollRef = useRef<ScrollViewType>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<MessageFormData>({
     teacherId: preselectedTeacher?.id || '',
@@ -221,6 +223,7 @@ export function MessageTeacherModal({
       icon={<Ionicons name="chatbubble-ellipses" size={22} color="#ffffff" />}
       iconBgColors={[colors.primary, colors.primaryDark]}
       footer={footer}
+      scrollRef={scrollRef}
     >
       <View style={styles.content}>
         {/* Selected Teacher Preview (if selected) */}
@@ -256,6 +259,7 @@ export function MessageTeacherModal({
           placeholder="Select a teacher"
           required
           error={errors.teacherId}
+          parentScrollRef={scrollRef}
         />
 
         {/* Category Selection */}
@@ -267,6 +271,7 @@ export function MessageTeacherModal({
           onChange={(value) => setFormData({ ...formData, category: value })}
           options={MESSAGE_CATEGORIES}
           placeholder="Select category (optional)"
+          parentScrollRef={scrollRef}
         />
 
         {/* Subject */}

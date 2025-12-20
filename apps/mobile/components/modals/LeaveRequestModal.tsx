@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
+import type { ScrollView as ScrollViewType } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Modal } from '../ui/Modal';
@@ -45,6 +46,7 @@ export function LeaveRequestModal({
   childName,
 }: LeaveRequestModalProps) {
   const { colors } = useTheme();
+  const scrollRef = useRef<ScrollViewType>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<LeaveFormData>({
     leaveType: '',
@@ -180,6 +182,7 @@ export function LeaveRequestModal({
       icon={<Ionicons name="calendar" size={22} color="#ffffff" />}
       iconBgColors={[colors.primary, colors.primaryDark]}
       footer={footer}
+      scrollRef={scrollRef}
     >
       <View style={styles.content}>
         {/* Info Banner */}
@@ -204,6 +207,7 @@ export function LeaveRequestModal({
           placeholder="Select leave type"
           required
           error={errors.leaveType}
+          parentScrollRef={scrollRef}
         />
 
         {/* Date Range */}
