@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LeaveRequestModal } from '../../components/modals/LeaveRequestModal';
 import { MessageTeacherModal } from '../../components/modals/MessageTeacherModal';
@@ -328,6 +328,7 @@ function TabletQuickActionTile({ icon, label, subtitle, onPress, color }: {
 
 export default function ParentHomeScreen() {
   const isTablet = useIsTablet();
+  const router = useRouter();
   const [selectedChildId, setSelectedChildId] = useState<string>(mockChildren[0]?.id ?? '');
   const childScrollRef = useRef<ScrollView>(null);
 
@@ -336,6 +337,14 @@ export default function ParentHomeScreen() {
   const [messageModalVisible, setMessageModalVisible] = useState(false);
   const [payFeesModalVisible, setPayFeesModalVisible] = useState(false);
   const [resultsModalVisible, setResultsModalVisible] = useState(false);
+
+  // Navigate to reports history
+  const handleViewAllReports = (childId?: string) => {
+    router.push({
+      pathname: '/reports',
+      params: { childId, childName: selectedChild.name },
+    });
+  };
 
   // Calculate card width for scrolling
   const cardWidth = (SCREEN_WIDTH - 32) * 0.46;
@@ -730,6 +739,8 @@ export default function ParentHomeScreen() {
           onClose={() => setResultsModalVisible(false)}
           childName={selectedChild.name}
           childClass={selectedChild.classLevel}
+          childId={selectedChild.id}
+          onViewAllReports={handleViewAllReports}
         />
       </SafeAreaView>
     );
@@ -1119,6 +1130,8 @@ export default function ParentHomeScreen() {
         onClose={() => setResultsModalVisible(false)}
         childName={selectedChild.name}
         childClass={selectedChild.classLevel}
+        childId={selectedChild.id}
+        onViewAllReports={handleViewAllReports}
       />
     </SafeAreaView>
   );
