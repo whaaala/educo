@@ -716,19 +716,20 @@ export default function ParentHomeScreen() {
           end={{ x: 0, y: 1 }}
           style={tabletStyles.headerGradient}
         >
-          {/* Two-column header */}
-          <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.todayText}>{todayLabel}</Text>
-              <Text style={styles.greetingText}>{greeting}</Text>
-              <Text style={styles.schoolText}>Educo Demo School</Text>
+          {/* Top row - School name, Pills and Icons */}
+          <View style={tabletStyles.headerTopRow}>
+            <View style={tabletStyles.schoolBadge}>
+              <View style={tabletStyles.schoolIconWrap}>
+                <Ionicons name="school" size={14} color={COLORS.white} />
+              </View>
+              <Text style={tabletStyles.schoolBadgeText}>Educo Demo School</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={styles.pillsRow}>
                 <Pill icon="shield-checkmark-outline" text="Parent Portal" />
                 <Pill icon="calendar-outline" text={currentTermLabel} />
               </View>
-              <View style={[styles.iconRow, { marginLeft: 10 }]}>
+              <View style={[styles.iconRow, { marginLeft: 12 }]}>
                 <Pressable style={styles.iconButton}>
                   <View style={{ position: 'relative' }}>
                     <Ionicons name="notifications-outline" size={18} color={COLORS.slate700} />
@@ -744,33 +745,223 @@ export default function ParentHomeScreen() {
             </View>
           </View>
 
-          {/* Child selector card */}
-          <Card style={{ padding: 16, marginTop: 16 }}>
-            <RowHeader title="My Children" icon="people-outline" right={<Link href="/(tabs)/children"><Text style={styles.linkText}>Manage</Text></Link>} />
-            <View style={[styles.childGrid, { marginTop: 12 }]}>
-              {mockChildren.map((child) => (
-                <Pressable
-                  key={child.id}
-                  onPress={() => setSelectedChildId(child.id)}
-                  style={[
-                    styles.childChip,
-                    child.id === selectedChildId ? styles.childChipSelected : styles.childChipDefault,
-                    { marginRight: 8, marginBottom: 8 },
-                  ]}
-                >
-                  <Image source={{ uri: child.avatarUri }} style={styles.childChipAvatar} />
-                  <View>
-                    <Text style={[styles.childChipName, child.id === selectedChildId && styles.childChipNameSelected]}>
-                      {child.name.split(' ')[0]}
-                    </Text>
-                    <Text style={[styles.childChipClass, child.id === selectedChildId && styles.childChipClassSelected]}>
-                      {child.classLevel}
-                    </Text>
-                  </View>
-                </Pressable>
-              ))}
+          {/* Greeting row with date and parent avatar */}
+          <View style={tabletStyles.greetingRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={tabletStyles.dateBadgeText}>{todayLabel}</Text>
+              <View style={tabletStyles.greetingNameRow}>
+                <Text style={tabletStyles.greetingText}>{greeting}, </Text>
+                <Text style={tabletStyles.parentNameText}>{mockUser.name.split(' ')[0]}</Text>
+              </View>
             </View>
+            <Image
+              source={{ uri: mockUser.avatarUri }}
+              style={tabletStyles.parentAvatarImg}
+              resizeMode="cover"
+            />
+          </View>
 
+          {/* Child selector section - tablet optimized */}
+          <View style={tabletStyles.childSelectorSection}>
+            {/* Header - only show for multiple children */}
+            {mockChildren.length > 1 && (
+              <View style={tabletStyles.childSelectorHeader}>
+                <Text style={tabletStyles.childSelectorLabel}>Select child</Text>
+                {mockChildren.length > 2 && (
+                  <View style={tabletStyles.paginationDots}>
+                    {mockChildren.map((child, index) => (
+                      <Pressable
+                        key={child.id}
+                        onPress={() => handleSelectChild(child.id, index)}
+                        hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
+                        style={[
+                          tabletStyles.paginationDot,
+                          child.id === selectedChildId && tabletStyles.paginationDotActive,
+                        ]}
+                      />
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* === SINGLE CHILD LAYOUT === */}
+            {mockChildren.length === 1 && (
+              <View style={tabletStyles.singleChildContainer}>
+                {(() => {
+                  const child = mockChildren[0];
+                  return (
+                    <View style={[tabletStyles.childCardBase, tabletStyles.singleChildCardSize, tabletStyles.childCardSelected]}>
+                      <LinearGradient
+                        colors={['#eef2ff', '#e0e7ff', '#dbeafe']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={tabletStyles.childCardGradient}
+                      />
+                      <View style={tabletStyles.childCardInner}>
+                        <View style={tabletStyles.childAvatarContainer}>
+                          <Image
+                            source={{ uri: child.avatarUri }}
+                            style={tabletStyles.childAvatarImg}
+                            resizeMode="cover"
+                          />
+                          <View style={tabletStyles.childCheckBadge}>
+                            <Ionicons name="checkmark" size={14} color={COLORS.white} />
+                          </View>
+                        </View>
+                        <View style={tabletStyles.childTextContainer}>
+                          <Text style={[tabletStyles.childNameText, tabletStyles.childNameTextSelected]} numberOfLines={1}>
+                            {child.name.split(' ')[0]}
+                          </Text>
+                          <View style={[tabletStyles.childClassPill, tabletStyles.childClassPillSelected]}>
+                            <Ionicons name="school-outline" size={13} color={COLORS.blue600} style={{ marginRight: 5 }} />
+                            <Text style={[tabletStyles.childClassPillText, tabletStyles.childClassPillTextSelected]}>
+                              {child.classLevel}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })()}
+              </View>
+            )}
+
+            {/* === TWO CHILDREN LAYOUT === */}
+            {mockChildren.length === 2 && (
+              <View style={tabletStyles.twoChildrenContainer}>
+                {mockChildren.map((child) => {
+                  const isSelected = child.id === selectedChildId;
+                  return (
+                    <Pressable
+                      key={child.id}
+                      onPress={() => setSelectedChildId(child.id)}
+                      style={[
+                        tabletStyles.childCardBase,
+                        tabletStyles.twoChildCardSize,
+                        isSelected ? tabletStyles.childCardSelected : tabletStyles.childCardDefault,
+                      ]}
+                    >
+                      {isSelected && (
+                        <LinearGradient
+                          colors={['#eef2ff', '#e0e7ff', '#dbeafe']}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          style={tabletStyles.childCardGradient}
+                        />
+                      )}
+                      <View style={tabletStyles.childCardInner}>
+                        <View style={tabletStyles.childAvatarContainer}>
+                          <Image
+                            source={{ uri: child.avatarUri }}
+                            style={tabletStyles.childAvatarImg}
+                            resizeMode="cover"
+                          />
+                          {isSelected && (
+                            <View style={tabletStyles.childCheckBadge}>
+                              <Ionicons name="checkmark" size={14} color={COLORS.white} />
+                            </View>
+                          )}
+                        </View>
+                        <View style={tabletStyles.childTextContainer}>
+                          <Text
+                            style={[tabletStyles.childNameText, isSelected && tabletStyles.childNameTextSelected]}
+                            numberOfLines={1}
+                          >
+                            {child.name.split(' ')[0]}
+                          </Text>
+                          <View style={[tabletStyles.childClassPill, isSelected && tabletStyles.childClassPillSelected]}>
+                            <Ionicons
+                              name="school-outline"
+                              size={13}
+                              color={isSelected ? COLORS.blue600 : COLORS.slate500}
+                              style={{ marginRight: 5 }}
+                            />
+                            <Text style={[tabletStyles.childClassPillText, isSelected && tabletStyles.childClassPillTextSelected]}>
+                              {child.classLevel}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
+
+            {/* === MORE THAN TWO CHILDREN LAYOUT === */}
+            {mockChildren.length > 2 && (
+              <ScrollView
+                ref={childScrollRef}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={tabletStyles.multiChildScrollContent}
+                snapToInterval={240 + 20}
+                decelerationRate="fast"
+              >
+                {mockChildren.map((child, index) => {
+                  const isSelected = child.id === selectedChildId;
+                  return (
+                    <Pressable
+                      key={child.id}
+                      onPress={() => handleSelectChild(child.id, index)}
+                      style={[
+                        tabletStyles.childCardBase,
+                        tabletStyles.multiChildCardSize,
+                        isSelected ? tabletStyles.childCardSelected : tabletStyles.childCardDefault,
+                        { marginRight: index === mockChildren.length - 1 ? 0 : 20 },
+                      ]}
+                    >
+                      {isSelected && (
+                        <LinearGradient
+                          colors={['#eef2ff', '#e0e7ff', '#dbeafe']}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          style={tabletStyles.childCardGradient}
+                        />
+                      )}
+                      <View style={tabletStyles.childCardInner}>
+                        <View style={tabletStyles.childAvatarContainer}>
+                          <Image
+                            source={{ uri: child.avatarUri }}
+                            style={tabletStyles.childAvatarImg}
+                            resizeMode="cover"
+                          />
+                          {isSelected && (
+                            <View style={tabletStyles.childCheckBadge}>
+                              <Ionicons name="checkmark" size={14} color={COLORS.white} />
+                            </View>
+                          )}
+                        </View>
+                        <View style={tabletStyles.childTextContainer}>
+                          <Text
+                            style={[tabletStyles.childNameText, isSelected && tabletStyles.childNameTextSelected]}
+                            numberOfLines={1}
+                          >
+                            {child.name.split(' ')[0]}
+                          </Text>
+                          <View style={[tabletStyles.childClassPill, isSelected && tabletStyles.childClassPillSelected]}>
+                            <Ionicons
+                              name="school-outline"
+                              size={13}
+                              color={isSelected ? COLORS.blue600 : COLORS.slate500}
+                              style={{ marginRight: 5 }}
+                            />
+                            <Text style={[tabletStyles.childClassPillText, isSelected && tabletStyles.childClassPillTextSelected]}>
+                              {child.classLevel}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            )}
+          </View>
+
+          {/* Parent profile and actions card */}
+          <Card style={{ padding: 16, marginTop: 16 }}>
             {/* Parent profile row */}
             <View style={styles.profileRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
@@ -1630,4 +1821,267 @@ const mobileStyles = StyleSheet.create({
 const tabletStyles = StyleSheet.create({
   headerGradient: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 18 },
   contentWrap: { paddingHorizontal: 24, paddingTop: 16 },
+
+  // Top row with school badge and icons
+  headerTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+
+  // School badge
+  schoolBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  schoolIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.blue500,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  schoolBadgeText: {
+    fontSize: 15,
+    fontFamily: FONTS.semiBold,
+    color: COLORS.slate700,
+  },
+
+  // Greeting row
+  greetingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  dateBadgeText: {
+    fontSize: 14,
+    fontFamily: FONTS.bold,
+    color: COLORS.slate600,
+    marginBottom: 4,
+  },
+  greetingNameRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  greetingText: {
+    fontSize: 26,
+    fontFamily: FONTS.medium,
+    color: COLORS.slate500,
+  },
+  parentNameText: {
+    fontSize: 26,
+    fontFamily: FONTS.bold,
+    color: COLORS.slate900,
+  },
+  parentAvatarImg: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: COLORS.slate100,
+  },
+
+  // Child selector section
+  childSelectorSection: {
+    marginTop: 24,
+  },
+  childSelectorHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  childSelectorLabel: {
+    fontSize: 16,
+    fontFamily: FONTS.bold,
+    color: COLORS.slate700,
+    letterSpacing: -0.3,
+  },
+
+  // Pagination dots - sleek pill style
+  paginationDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.slate100,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 6,
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.slate300,
+  },
+  paginationDotActive: {
+    width: 28,
+    height: 8,
+    backgroundColor: COLORS.blue500,
+    borderRadius: 4,
+  },
+
+  // Single child container (centered)
+  singleChildContainer: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+
+  // Two children container (centered with gap)
+  twoChildrenContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 20,
+    paddingVertical: 12,
+  },
+
+  // Multi-child scroll container (3+ children)
+  multiChildScrollContent: {
+    paddingVertical: 12,
+  },
+
+  // Base card style (shared by all) - larger, more spacious for tablet
+  childCardBase: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+
+  // Size for single-child layout (tablet) - wider card
+  singleChildCardSize: {
+    minWidth: 280,
+  },
+
+  // Size for two-child layout (tablet)
+  twoChildCardSize: {
+    minWidth: 260,
+  },
+
+  // Size for multi-child layout (tablet)
+  multiChildCardSize: {
+    minWidth: 260,
+  },
+
+  // Default (unselected) card state - refined shadows
+  childCardDefault: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.slate200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+
+  // Selected card state - vibrant with stronger shadow
+  childCardSelected: {
+    backgroundColor: COLORS.blue50,
+    borderWidth: 2.5,
+    borderColor: COLORS.blue500,
+    shadowColor: COLORS.blue500,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+
+  // Gradient overlay for selected card
+  childCardGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    borderRadius: 18,
+  },
+
+  // Inner content container - more padding for tablet
+  childCardInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+  },
+
+  // Avatar container with checkmark positioning - larger for tablet
+  childAvatarContainer: {
+    position: 'relative',
+    width: 64,
+    height: 64,
+  },
+
+  // Avatar image - larger, more rounded
+  childAvatarImg: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    backgroundColor: COLORS.slate100,
+  },
+
+  // Checkmark badge on avatar - larger, more prominent
+  childCheckBadge: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: COLORS.blue500,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: COLORS.white,
+    shadowColor: COLORS.blue500,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  // Text container (name + class) - more spacing
+  childTextContainer: {
+    flex: 1,
+    marginLeft: 16,
+    justifyContent: 'center',
+  },
+
+  // Child name text - larger for tablet
+  childNameText: {
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+    color: COLORS.slate800,
+    letterSpacing: -0.3,
+  },
+  childNameTextSelected: {
+    color: COLORS.blue700,
+  },
+
+  // Class pill/badge - more refined
+  childClassPill: {
+    marginTop: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: COLORS.slate100,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  childClassPillSelected: {
+    backgroundColor: COLORS.blue100,
+  },
+
+  // Class text inside pill - slightly larger
+  childClassPillText: {
+    fontSize: 13,
+    fontFamily: FONTS.semiBold,
+    color: COLORS.slate500,
+  },
+  childClassPillTextSelected: {
+    color: COLORS.blue600,
+  },
 });

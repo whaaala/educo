@@ -127,6 +127,26 @@ export function ViewResultsModal({
     return ['#ef4444', '#dc2626'] as const;
   };
 
+  const footer = (
+    <View style={styles.footer}>
+      <Pressable
+        style={[styles.footerButton, { backgroundColor: colors.backgroundTertiary }]}
+        onPress={onClose}
+      >
+        <Text style={[styles.footerButtonText, { color: colors.textSecondary }]}>Close</Text>
+      </Pressable>
+      <Pressable
+        style={[styles.footerButton, styles.footerButtonPrimary, { backgroundColor: colors.primary }]}
+        onPress={() => {
+          // Handle download/share action
+        }}
+      >
+        <Ionicons name="download-outline" size={16} color="#ffffff" />
+        <Text style={[styles.footerButtonText, { color: '#ffffff' }]}>Download Report</Text>
+      </Pressable>
+    </View>
+  );
+
   return (
     <Modal
       visible={visible}
@@ -135,6 +155,7 @@ export function ViewResultsModal({
       subtitle={childName ? `${childName}${childClass ? ` (${childClass})` : ''}` : 'View academic performance'}
       icon={<Ionicons name="school" size={22} color="#ffffff" />}
       iconBgColors={['#6366f1', '#4f46e5']}
+      footer={footer}
     >
       <View style={styles.content}>
         {/* Exam Selector */}
@@ -467,6 +488,24 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.medium,
     textAlign: 'center',
     marginTop: 4,
+  },
+  footer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  footerButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
+  },
+  footerButtonPrimary: {},
+  footerButtonText: {
+    fontSize: 15,
+    fontFamily: FONTS.semiBold,
   },
 });
 

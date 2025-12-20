@@ -181,6 +181,7 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 20,
     overflow: 'hidden',
+    flexDirection: 'column',
   },
   handleBarContainer: {
     alignItems: 'center',
@@ -241,6 +242,7 @@ const styles = StyleSheet.create({
   },
   body: {
     flexShrink: 1,
+    flexGrow: 0,
   },
   bodyContent: {
     padding: 20,
