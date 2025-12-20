@@ -1,4 +1,5 @@
 import type { ReactNode, RefObject } from 'react';
+import { useState } from 'react';
 import {
   Modal as RNModal,
   View,
@@ -16,6 +17,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+function useIsTablet() {
+  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
+  return isTablet;
+}
 
 // Shared fonts
 const FONTS = {
@@ -53,6 +59,7 @@ export function Modal({
   scrollRef,
 }: ModalProps) {
   const { colors } = useTheme();
+  const isTablet = useIsTablet();
 
   // Default icon colors based on theme
   const defaultIconBgColors: readonly [string, string] = [colors.primary, colors.primaryDark];
@@ -61,7 +68,7 @@ export function Modal({
   return (
     <RNModal
       visible={visible}
-      animationType="slide"
+      animationType={isTablet ? 'fade' : 'slide'}
       transparent
       onRequestClose={onClose}
       statusBarTranslucent
@@ -76,15 +83,20 @@ export function Modal({
         {/* Modal Content Container */}
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.keyboardView}
+          style={isTablet ? styles.keyboardViewTablet : styles.keyboardView}
           pointerEvents="box-none"
         >
-          <View style={styles.modalContainer} pointerEvents="box-none">
-            <View style={[styles.modalContent, { backgroundColor: colors.modalBackground }]}>
-              {/* Handle Bar */}
-              <View style={styles.handleBarContainer}>
-                <View style={[styles.handleBar, { backgroundColor: colors.border }]} />
-              </View>
+          <View style={isTablet ? styles.modalContainerTablet : styles.modalContainer} pointerEvents="box-none">
+            <View style={[
+              isTablet ? styles.modalContentTablet : styles.modalContent,
+              { backgroundColor: colors.modalBackground }
+            ]}>
+              {/* Handle Bar - only show on mobile */}
+              {!isTablet && (
+                <View style={styles.handleBarContainer}>
+                  <View style={[styles.handleBar, { backgroundColor: colors.border }]} />
+                </View>
+              )}
 
               {/* Header */}
               {(title || icon || showCloseButton) && (
@@ -163,6 +175,7 @@ const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
   },
+  // Mobile styles
   keyboardView: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -180,6 +193,31 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 20,
     elevation: 20,
+    overflow: 'hidden',
+    flexDirection: 'column',
+  },
+  // Tablet styles - centered modal
+  keyboardViewTablet: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainerTablet: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 520,
+    paddingHorizontal: 24,
+  },
+  modalContentTablet: {
+    width: '100%',
+    borderRadius: 20,
+    maxHeight: SCREEN_HEIGHT * 0.75,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 24,
+    elevation: 24,
     overflow: 'hidden',
     flexDirection: 'column',
   },

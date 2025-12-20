@@ -270,10 +270,10 @@ function QuickActionTile({ icon, label, subtitle, onPress, color }: {
   color: 'blue' | 'emerald' | 'violet' | 'rose';
 }) {
   const colorMap = {
-    blue: { bg: '#f0f9ff', iconBg: '#dbeafe', icon: '#2563eb', border: '#bfdbfe', subtitleColor: '#3b82f6' },
-    emerald: { bg: '#ecfdf5', iconBg: '#d1fae5', icon: '#059669', border: '#a7f3d0', subtitleColor: '#10b981' },
-    violet: { bg: '#f5f3ff', iconBg: '#ede9fe', icon: '#7c3aed', border: '#ddd6fe', subtitleColor: '#8b5cf6' },
-    rose: { bg: '#fff1f2', iconBg: '#ffe4e6', icon: '#e11d48', border: '#fecdd3', subtitleColor: '#f43f5e' },
+    blue: { bg: '#fcfeff', iconBg: '#dbeafe', icon: '#2563eb', border: '#f0f5fa', subtitleColor: '#3b82f6' },
+    emerald: { bg: '#fcfefd', iconBg: '#d1fae5', icon: '#059669', border: '#f0f7f4', subtitleColor: '#10b981' },
+    violet: { bg: '#fcfcfe', iconBg: '#ede9fe', icon: '#7c3aed', border: '#f4f2f9', subtitleColor: '#8b5cf6' },
+    rose: { bg: '#fefdfd', iconBg: '#ffe4e6', icon: '#e11d48', border: '#faf4f5', subtitleColor: '#f43f5e' },
   };
   const c = colorMap[color];
 
@@ -287,6 +287,37 @@ function QuickActionTile({ icon, label, subtitle, onPress, color }: {
       </View>
       <Text style={mobileStyles.quickActionTileText}>{label}</Text>
       <Text style={[mobileStyles.quickActionTileSubtitle, { color: c.subtitleColor }]}>{subtitle}</Text>
+    </Pressable>
+  );
+}
+
+function TabletQuickActionTile({ icon, label, subtitle, onPress, color }: {
+  icon: ComponentProps<typeof Ionicons>['name'];
+  label: string;
+  subtitle: string;
+  onPress: () => void;
+  color: 'blue' | 'emerald' | 'violet' | 'rose';
+}) {
+  const colorMap = {
+    blue: { bg: '#fafcff', iconBg: '#dbeafe', icon: '#2563eb', border: '#e8f0fa', subtitleColor: '#3b82f6' },
+    emerald: { bg: '#fafcfb', iconBg: '#d1fae5', icon: '#059669', border: '#e8f3ef', subtitleColor: '#10b981' },
+    violet: { bg: '#fbfaff', iconBg: '#ede9fe', icon: '#7c3aed', border: '#eeebf6', subtitleColor: '#8b5cf6' },
+    rose: { bg: '#fefafb', iconBg: '#ffe4e6', icon: '#e11d48', border: '#f6eced', subtitleColor: '#f43f5e' },
+  };
+  const c = colorMap[color];
+
+  return (
+    <Pressable
+      style={[tabletStyles.quickActionTile, { backgroundColor: c.bg, borderColor: c.border }]}
+      onPress={onPress}
+    >
+      <View style={[tabletStyles.quickActionTileIcon, { backgroundColor: c.iconBg }]}>
+        <Ionicons name={icon} size={28} color={c.icon} />
+      </View>
+      <View style={tabletStyles.quickActionTileTextContainer}>
+        <Text style={tabletStyles.quickActionTileText}>{label}</Text>
+        <Text style={[tabletStyles.quickActionTileSubtitle, { color: c.subtitleColor }]}>{subtitle}</Text>
+      </View>
     </Pressable>
   );
 }
@@ -960,43 +991,13 @@ export default function ParentHomeScreen() {
             )}
           </View>
 
-          {/* Parent profile and actions card */}
-          <Card style={{ padding: 16, marginTop: 16 }}>
-            {/* Parent profile row */}
-            <View style={styles.profileRow}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                <Avatar name={mockUser.name} imageUri={mockUser.avatarUri} size={40} />
-                <View style={{ marginLeft: 12, flex: 1 }}>
-                  <Text style={styles.profileName}>{mockUser.name}</Text>
-                  <Text style={styles.profileSub}>Viewing: {selectedChild.name} • {selectedChild.classLevel}</Text>
-                </View>
-              </View>
-              <View style={{ flexDirection: 'row' }}>
-                <Link href="/(tabs)/fees" asChild>
-                  <Pressable style={styles.ctaPrimary}>
-                    <Ionicons name="card-outline" size={16} color={COLORS.white} />
-                    <Text style={styles.ctaPrimaryText}>Pay fees</Text>
-                  </Pressable>
-                </Link>
-                <Link href="/(tabs)/messages" asChild>
-                  <Pressable style={[styles.ctaSecondary, { marginLeft: 8 }]}>
-                    <Ionicons name="chatbubbles-outline" size={16} color={COLORS.slate700} />
-                    <Text style={styles.ctaSecondaryText}>Message</Text>
-                  </Pressable>
-                </Link>
-              </View>
-            </View>
-
-            {/* Search */}
-            <View style={styles.searchRow}>
-              <Ionicons name="search-outline" size={16} color={COLORS.slate400} />
-              <TextInput
-                placeholder={`Search ${selectedChild.name.split(' ')[0]}'s fees, messages, results...`}
-                placeholderTextColor={COLORS.slate400}
-                style={styles.searchInput}
-              />
-            </View>
-          </Card>
+          {/* Quick Actions - Tablet */}
+          <View style={tabletStyles.quickActionsGrid}>
+            <TabletQuickActionTile icon="wallet-outline" label="Pay Fees" subtitle="Quick payment" onPress={() => setPayFeesModalVisible(true)} color="blue" />
+            <TabletQuickActionTile icon="mail-outline" label="Messages" subtitle="Chat with school" onPress={() => setMessageModalVisible(true)} color="emerald" />
+            <TabletQuickActionTile icon="school-outline" label="Results" subtitle="View grades" onPress={() => setResultsModalVisible(true)} color="violet" />
+            <TabletQuickActionTile icon="document-text-outline" label="Leave" subtitle="Request absence" onPress={() => setLeaveModalVisible(true)} color="rose" />
+          </View>
         </LinearGradient>
 
         <View style={tabletStyles.contentWrap}>
@@ -1095,6 +1096,30 @@ export default function ParentHomeScreen() {
           <View style={{ height: 24 }} />
         </View>
       </ScrollView>
+
+      {/* Modals */}
+      <LeaveRequestModal
+        visible={leaveModalVisible}
+        onClose={() => setLeaveModalVisible(false)}
+        childName={selectedChild.name}
+      />
+      <MessageTeacherModal
+        visible={messageModalVisible}
+        onClose={() => setMessageModalVisible(false)}
+        childName={selectedChild.name}
+        childClass={selectedChild.classLevel}
+      />
+      <PayFeesModal
+        visible={payFeesModalVisible}
+        onClose={() => setPayFeesModalVisible(false)}
+        childName={selectedChild.name}
+      />
+      <ViewResultsModal
+        visible={resultsModalVisible}
+        onClose={() => setResultsModalVisible(false)}
+        childName={selectedChild.name}
+        childClass={selectedChild.classLevel}
+      />
     </SafeAreaView>
   );
 }
@@ -1776,19 +1801,19 @@ const mobileStyles = StyleSheet.create({
   },
   quickActionTile: {
     width: (SCREEN_WIDTH - 24 - 24) / 4,
-    paddingVertical: 12,
-    borderRadius: 16,
-    borderWidth: 1.5,
+    paddingVertical: 10,
+    borderRadius: 14,
+    borderWidth: 1,
     alignItems: 'center',
   },
   quickActionTileIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   quickActionTileText: {
     fontSize: 11,
@@ -2083,5 +2108,43 @@ const tabletStyles = StyleSheet.create({
   },
   childClassPillTextSelected: {
     color: COLORS.blue600,
+  },
+
+  // Quick Actions Grid - Tablet
+  quickActionsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    gap: 16,
+  },
+  quickActionTile: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  quickActionTileIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickActionTileTextContainer: {
+    flex: 1,
+    marginLeft: 14,
+  },
+  quickActionTileText: {
+    fontSize: 15,
+    fontFamily: FONTS.bold,
+    color: COLORS.slate800,
+  },
+  quickActionTileSubtitle: {
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+    marginTop: 2,
   },
 });
