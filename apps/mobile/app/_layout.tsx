@@ -60,6 +60,7 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
             <Stack.Screen name="reports" options={{ presentation: 'card' }} />
+            <Stack.Screen name="report-details" options={{ presentation: 'card' }} />
           </Stack>
         </TenantSettingsProvider>
       </ThemeProvider>
