@@ -137,33 +137,6 @@ const MOCK_REPORT_HISTORY: ReportHistoryItem[] = [
   },
 ];
 
-// Current term in-progress data (real-time stats - report not yet generated)
-interface CurrentTermProgress {
-  term: string;
-  year: string;
-  currentAverage: number;
-  currentPosition: number;
-  totalStudents: number;
-  attendance: number;
-  conduct: string;
-  subjectsCompleted: number;
-  totalSubjects: number;
-  lastUpdated: string;
-}
-
-const CURRENT_TERM_PROGRESS: CurrentTermProgress = {
-  term: 'Term 1',
-  year: '2025',
-  currentAverage: 74,
-  currentPosition: 8,
-  totalStudents: 42,
-  attendance: 92,
-  conduct: 'A',
-  subjectsCompleted: 4,
-  totalSubjects: 7,
-  lastUpdated: '2025-02-15',
-};
-
 // Filter options
 const YEAR_OPTIONS = ['All Years', '2025', '2024', '2023', '2022'];
 const TERM_OPTIONS = ['All Terms', 'Term 1', 'Term 2', 'Term 3'];
@@ -352,6 +325,7 @@ export default function ReportsHistoryScreen() {
   const [termFilter, setTermFilter] = useState('All Terms');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
 
   // Animation values
   const filterHeight = useRef(new Animated.Value(0)).current;
@@ -805,16 +779,15 @@ export default function ReportsHistoryScreen() {
         {/* Reports List Content */}
         <View style={[styles.reportsListContainer, isTablet && styles.reportsListContainerTablet]}>
 
-        {/* All-Time Cumulative Stats Cards - Always shown at top */}
+        {/* Collapsible Performance Summary Section */}
         {(() => {
           // Calculate ALL-TIME cumulative stats from all reports
           const allTimeAvgScore = MOCK_REPORT_HISTORY.length > 0
             ? Math.round(MOCK_REPORT_HISTORY.reduce((sum, r) => sum + r.totalPercentage, 0) / MOCK_REPORT_HISTORY.length)
             : 0;
-          const allTimeAvgRank = MOCK_REPORT_HISTORY.length > 0
-            ? Math.round(MOCK_REPORT_HISTORY.reduce((sum, r) => sum + r.rank, 0) / MOCK_REPORT_HISTORY.length)
+          const bestScore = MOCK_REPORT_HISTORY.length > 0
+            ? Math.max(...MOCK_REPORT_HISTORY.map(r => r.totalPercentage))
             : 0;
-          const allTimeTotalStudents = MOCK_REPORT_HISTORY[0]?.totalStudents || 45;
           const allTimeAvgAttendance = MOCK_REPORT_HISTORY.length > 0
             ? Math.round(MOCK_REPORT_HISTORY.reduce((sum, r) => sum + r.attendance, 0) / MOCK_REPORT_HISTORY.length)
             : 0;
@@ -822,213 +795,138 @@ export default function ReportsHistoryScreen() {
           const allTimeConduct = MOCK_REPORT_HISTORY[0]?.conduct || 'A';
 
           return (
-            <>
-              {/* All-Time Stats Cards - Tablet */}
-              {isTablet && (
-                <View style={styles.tabletStatsCardsRow}>
-                  {/* Overall Average Card */}
-                  <View style={[styles.tabletStatCard, { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' }]}>
-                    <View style={styles.tabletStatCardTop}>
-                      <Text style={[styles.tabletStatCardLabel, { color: '#059669' }]}>Overall Avg</Text>
-                      <View style={[styles.tabletStatCardIcon, { backgroundColor: '#a7f3d0' }]}>
-                        <Ionicons name="trending-up" size={16} color="#059669" />
-                      </View>
-                    </View>
-                    <Text style={[styles.tabletStatCardValue, { color: '#064e3b' }]}>{allTimeAvgScore}%</Text>
+            <View style={[styles.performanceSummaryContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              {/* Collapsible Header */}
+              <Pressable
+                style={styles.performanceSummaryHeader}
+                onPress={() => {
+                  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                  setSummaryExpanded(!summaryExpanded);
+                }}
+              >
+                <View style={styles.performanceSummaryHeaderLeft}>
+                  <View style={[styles.performanceSummaryIcon, { backgroundColor: colors.primaryLight }]}>
+                    <Ionicons name="stats-chart" size={16} color={colors.primary} />
                   </View>
-
-                  {/* Position Card */}
-                  <View style={[styles.tabletStatCard, { backgroundColor: '#fef3c7', borderColor: '#fcd34d' }]}>
-                    <View style={styles.tabletStatCardTop}>
-                      <Text style={[styles.tabletStatCardLabel, { color: '#d97706' }]}>Avg Position</Text>
-                      <View style={[styles.tabletStatCardIcon, { backgroundColor: '#fcd34d' }]}>
-                        <Ionicons name="trophy" size={16} color="#d97706" />
-                      </View>
-                    </View>
-                    <Text style={[styles.tabletStatCardValue, { color: '#78350f' }]}>#{allTimeAvgRank}</Text>
-                    <Text style={[styles.tabletStatCardSubtext, { color: '#92400e' }]}>of {allTimeTotalStudents}</Text>
-                  </View>
-
-                  {/* Attendance Card */}
-                  <View style={[styles.tabletStatCard, { backgroundColor: '#eef2ff', borderColor: '#c7d2fe' }]}>
-                    <View style={styles.tabletStatCardTop}>
-                      <Text style={[styles.tabletStatCardLabel, { color: '#6366f1' }]}>Attendance</Text>
-                      <View style={[styles.tabletStatCardIcon, { backgroundColor: '#c7d2fe' }]}>
-                        <Ionicons name="time-outline" size={16} color="#6366f1" />
-                      </View>
-                    </View>
-                    <Text style={[styles.tabletStatCardValue, { color: '#1e1b4b' }]}>{allTimeAvgAttendance}%</Text>
-                  </View>
-
-                  {/* Conduct Card */}
-                  <View style={[styles.tabletStatCard, { backgroundColor: '#fce7f3', borderColor: '#f9a8d4' }]}>
-                    <View style={styles.tabletStatCardTop}>
-                      <Text style={[styles.tabletStatCardLabel, { color: '#db2777' }]}>Conduct</Text>
-                      <View style={[styles.tabletStatCardIcon, { backgroundColor: '#f9a8d4' }]}>
-                        <Ionicons name="ribbon-outline" size={16} color="#db2777" />
-                      </View>
-                    </View>
-                    <Text style={[styles.tabletStatCardValue, { color: '#831843' }]}>{allTimeConduct}</Text>
+                  <View>
+                    <Text style={[styles.performanceSummaryTitle, { color: colors.text }]}>Performance Summary</Text>
+                    <Text style={[styles.performanceSummarySubtitle, { color: colors.textMuted }]}>
+                      All-time averages across {MOCK_REPORT_HISTORY.length} reports
+                    </Text>
                   </View>
                 </View>
+                <Ionicons
+                  name={summaryExpanded ? 'chevron-up' : 'chevron-down'}
+                  size={20}
+                  color={colors.textMuted}
+                />
+              </Pressable>
+
+              {/* Expandable Content */}
+              {summaryExpanded && (
+                <>
+                  {/* All-Time Stats Cards - Tablet */}
+                  {isTablet && (
+                    <View style={[styles.tabletStatsCardsRow, { paddingHorizontal: 16, paddingBottom: 16 }]}>
+                      {/* All-Time Average Card */}
+                      <View style={[styles.tabletStatCard, { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' }]}>
+                        <View style={styles.tabletStatCardTop}>
+                          <Text style={[styles.tabletStatCardLabel, { color: '#059669' }]}>All-Time Avg</Text>
+                          <View style={[styles.tabletStatCardIcon, { backgroundColor: '#a7f3d0' }]}>
+                            <Ionicons name="trending-up" size={16} color="#059669" />
+                          </View>
+                        </View>
+                        <Text style={[styles.tabletStatCardValue, { color: '#064e3b' }]}>{allTimeAvgScore}%</Text>
+                      </View>
+
+                      {/* Best Score Card */}
+                      <View style={[styles.tabletStatCard, { backgroundColor: '#fef3c7', borderColor: '#fcd34d' }]}>
+                        <View style={styles.tabletStatCardTop}>
+                          <Text style={[styles.tabletStatCardLabel, { color: '#d97706' }]}>Best Score</Text>
+                          <View style={[styles.tabletStatCardIcon, { backgroundColor: '#fcd34d' }]}>
+                            <Ionicons name="star" size={16} color="#d97706" />
+                          </View>
+                        </View>
+                        <Text style={[styles.tabletStatCardValue, { color: '#78350f' }]}>{bestScore}%</Text>
+                      </View>
+
+                      {/* Avg Attendance Card */}
+                      <View style={[styles.tabletStatCard, { backgroundColor: '#eef2ff', borderColor: '#c7d2fe' }]}>
+                        <View style={styles.tabletStatCardTop}>
+                          <Text style={[styles.tabletStatCardLabel, { color: '#6366f1' }]}>Avg Attendance</Text>
+                          <View style={[styles.tabletStatCardIcon, { backgroundColor: '#c7d2fe' }]}>
+                            <Ionicons name="time-outline" size={16} color="#6366f1" />
+                          </View>
+                        </View>
+                        <Text style={[styles.tabletStatCardValue, { color: '#1e1b4b' }]}>{allTimeAvgAttendance}%</Text>
+                      </View>
+
+                      {/* Recent Conduct Card */}
+                      <View style={[styles.tabletStatCard, { backgroundColor: '#fce7f3', borderColor: '#f9a8d4' }]}>
+                        <View style={styles.tabletStatCardTop}>
+                          <Text style={[styles.tabletStatCardLabel, { color: '#db2777' }]}>Last Conduct</Text>
+                          <View style={[styles.tabletStatCardIcon, { backgroundColor: '#f9a8d4' }]}>
+                            <Ionicons name="ribbon-outline" size={16} color="#db2777" />
+                          </View>
+                        </View>
+                        <Text style={[styles.tabletStatCardValue, { color: '#831843' }]}>{allTimeConduct}</Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {/* All-Time Stats Cards - Mobile */}
+                  {!isTablet && (
+                    <View style={[styles.mobileYearStatsRow, { paddingHorizontal: 16, paddingBottom: 16 }]}>
+                      {/* All-Time Average Card */}
+                      <View style={[styles.mobileYearStatCard, { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' }]}>
+                        <View style={styles.mobileYearStatCardTop}>
+                          <Text style={[styles.mobileYearStatCardLabel, { color: '#059669' }]}>All-Time Avg</Text>
+                          <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#a7f3d0' }]}>
+                            <Ionicons name="trending-up" size={12} color="#059669" />
+                          </View>
+                        </View>
+                        <Text style={[styles.mobileYearStatCardValue, { color: '#064e3b' }]}>{allTimeAvgScore}%</Text>
+                      </View>
+
+                      {/* Best Score Card */}
+                      <View style={[styles.mobileYearStatCard, { backgroundColor: '#fef3c7', borderColor: '#fcd34d' }]}>
+                        <View style={styles.mobileYearStatCardTop}>
+                          <Text style={[styles.mobileYearStatCardLabel, { color: '#d97706' }]}>Best Score</Text>
+                          <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#fcd34d' }]}>
+                            <Ionicons name="star" size={12} color="#d97706" />
+                          </View>
+                        </View>
+                        <Text style={[styles.mobileYearStatCardValue, { color: '#78350f' }]}>{bestScore}%</Text>
+                      </View>
+
+                      {/* Avg Attendance Card */}
+                      <View style={[styles.mobileYearStatCard, { backgroundColor: '#eef2ff', borderColor: '#c7d2fe' }]}>
+                        <View style={styles.mobileYearStatCardTop}>
+                          <Text style={[styles.mobileYearStatCardLabel, { color: '#6366f1' }]}>Avg Attendance</Text>
+                          <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#c7d2fe' }]}>
+                            <Ionicons name="time-outline" size={12} color="#6366f1" />
+                          </View>
+                        </View>
+                        <Text style={[styles.mobileYearStatCardValue, { color: '#1e1b4b' }]}>{allTimeAvgAttendance}%</Text>
+                      </View>
+
+                      {/* Recent Conduct Card */}
+                      <View style={[styles.mobileYearStatCard, { backgroundColor: '#fce7f3', borderColor: '#f9a8d4' }]}>
+                        <View style={styles.mobileYearStatCardTop}>
+                          <Text style={[styles.mobileYearStatCardLabel, { color: '#db2777' }]}>Last Conduct</Text>
+                          <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#f9a8d4' }]}>
+                            <Ionicons name="ribbon-outline" size={12} color="#db2777" />
+                          </View>
+                        </View>
+                        <Text style={[styles.mobileYearStatCardValue, { color: '#831843' }]}>{allTimeConduct}</Text>
+                      </View>
+                    </View>
+                  )}
+                </>
               )}
-
-              {/* All-Time Stats Cards - Mobile */}
-              {!isTablet && (
-                <View style={styles.mobileYearStatsRow}>
-                  {/* Overall Average Card */}
-                  <View style={[styles.mobileYearStatCard, { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' }]}>
-                    <View style={styles.mobileYearStatCardTop}>
-                      <Text style={[styles.mobileYearStatCardLabel, { color: '#059669' }]}>Overall Avg</Text>
-                      <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#a7f3d0' }]}>
-                        <Ionicons name="trending-up" size={12} color="#059669" />
-                      </View>
-                    </View>
-                    <Text style={[styles.mobileYearStatCardValue, { color: '#064e3b' }]}>{allTimeAvgScore}%</Text>
-                  </View>
-
-                  {/* Position Card */}
-                  <View style={[styles.mobileYearStatCard, { backgroundColor: '#fef3c7', borderColor: '#fcd34d' }]}>
-                    <View style={styles.mobileYearStatCardTop}>
-                      <Text style={[styles.mobileYearStatCardLabel, { color: '#d97706' }]}>Avg Position</Text>
-                      <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#fcd34d' }]}>
-                        <Ionicons name="trophy" size={12} color="#d97706" />
-                      </View>
-                    </View>
-                    <Text style={[styles.mobileYearStatCardValue, { color: '#78350f' }]}>#{allTimeAvgRank}</Text>
-                  </View>
-
-                  {/* Attendance Card */}
-                  <View style={[styles.mobileYearStatCard, { backgroundColor: '#eef2ff', borderColor: '#c7d2fe' }]}>
-                    <View style={styles.mobileYearStatCardTop}>
-                      <Text style={[styles.mobileYearStatCardLabel, { color: '#6366f1' }]}>Attendance</Text>
-                      <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#c7d2fe' }]}>
-                        <Ionicons name="time-outline" size={12} color="#6366f1" />
-                      </View>
-                    </View>
-                    <Text style={[styles.mobileYearStatCardValue, { color: '#1e1b4b' }]}>{allTimeAvgAttendance}%</Text>
-                  </View>
-
-                  {/* Conduct Card */}
-                  <View style={[styles.mobileYearStatCard, { backgroundColor: '#fce7f3', borderColor: '#f9a8d4' }]}>
-                    <View style={styles.mobileYearStatCardTop}>
-                      <Text style={[styles.mobileYearStatCardLabel, { color: '#db2777' }]}>Conduct</Text>
-                      <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#f9a8d4' }]}>
-                        <Ionicons name="ribbon-outline" size={12} color="#db2777" />
-                      </View>
-                    </View>
-                    <Text style={[styles.mobileYearStatCardValue, { color: '#831843' }]}>{allTimeConduct}</Text>
-                  </View>
-                </View>
-              )}
-            </>
+            </View>
           );
         })()}
-
-        {/* Current Term In-Progress Section */}
-        <Pressable
-          style={[styles.currentTermSection, { backgroundColor: colors.surface, borderColor: colors.border }]}
-          onPress={() => router.push({
-            pathname: '/report-details',
-            params: {
-              reportId: 'current-term',
-              childName,
-              childClass,
-              examType: `${CURRENT_TERM_PROGRESS.term} Progress`,
-              term: CURRENT_TERM_PROGRESS.term,
-              year: CURRENT_TERM_PROGRESS.year,
-              totalPercentage: CURRENT_TERM_PROGRESS.currentAverage.toString(),
-              rank: CURRENT_TERM_PROGRESS.currentPosition.toString(),
-              totalStudents: CURRENT_TERM_PROGRESS.totalStudents.toString(),
-              status: 'in_progress',
-              datePublished: CURRENT_TERM_PROGRESS.lastUpdated,
-              subjects: CURRENT_TERM_PROGRESS.totalSubjects.toString(),
-            },
-          })}
-        >
-          <View style={styles.currentTermHeader}>
-            <View style={styles.currentTermBadgeRow}>
-              <LinearGradient
-                colors={['#6366f1', '#8b5cf6']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.currentTermBadge}
-              >
-                <Ionicons name="pulse" size={14} color="#ffffff" />
-                <Text style={styles.currentTermBadgeText}>In Progress</Text>
-              </LinearGradient>
-              <Text style={[styles.currentTermLabel, { color: colors.textSecondary }]}>
-                {CURRENT_TERM_PROGRESS.term} {CURRENT_TERM_PROGRESS.year}
-              </Text>
-            </View>
-            <Text style={[styles.currentTermLastUpdated, { color: colors.textMuted }]}>
-              Updated {new Date(CURRENT_TERM_PROGRESS.lastUpdated).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })}
-            </Text>
-          </View>
-
-          {/* Current Term Stats - 2x2 Grid */}
-          <View style={styles.currentTermStatsGrid}>
-            {/* Current Average */}
-            <View style={[styles.currentTermStatCard, { backgroundColor: '#f0fdf4' }]}>
-              <View style={styles.currentTermStatTop}>
-                <Text style={[styles.currentTermStatLabel, { color: '#16a34a' }]}>Current Avg</Text>
-                <View style={[styles.currentTermStatIcon, { backgroundColor: '#dcfce7' }]}>
-                  <Ionicons name="analytics" size={isTablet ? 14 : 12} color="#16a34a" />
-                </View>
-              </View>
-              <Text style={[styles.currentTermStatValue, { color: '#14532d' }]}>{CURRENT_TERM_PROGRESS.currentAverage}%</Text>
-              <Text style={[styles.currentTermStatSubtext, { color: '#166534' }]}>
-                {CURRENT_TERM_PROGRESS.subjectsCompleted}/{CURRENT_TERM_PROGRESS.totalSubjects} subjects
-              </Text>
-            </View>
-
-            {/* Current Position */}
-            <View style={[styles.currentTermStatCard, { backgroundColor: '#fefce8' }]}>
-              <View style={styles.currentTermStatTop}>
-                <Text style={[styles.currentTermStatLabel, { color: '#ca8a04' }]}>Position</Text>
-                <View style={[styles.currentTermStatIcon, { backgroundColor: '#fef9c3' }]}>
-                  <Ionicons name="trophy" size={isTablet ? 14 : 12} color="#ca8a04" />
-                </View>
-              </View>
-              <Text style={[styles.currentTermStatValue, { color: '#713f12' }]}>#{CURRENT_TERM_PROGRESS.currentPosition}</Text>
-              <Text style={[styles.currentTermStatSubtext, { color: '#854d0e' }]}>of {CURRENT_TERM_PROGRESS.totalStudents}</Text>
-            </View>
-
-            {/* Attendance */}
-            <View style={[styles.currentTermStatCard, { backgroundColor: '#eef2ff' }]}>
-              <View style={styles.currentTermStatTop}>
-                <Text style={[styles.currentTermStatLabel, { color: '#6366f1' }]}>Attendance</Text>
-                <View style={[styles.currentTermStatIcon, { backgroundColor: '#e0e7ff' }]}>
-                  <Ionicons name="calendar-outline" size={isTablet ? 14 : 12} color="#6366f1" />
-                </View>
-              </View>
-              <Text style={[styles.currentTermStatValue, { color: '#1e1b4b' }]}>{CURRENT_TERM_PROGRESS.attendance}%</Text>
-              <Text style={[styles.currentTermStatSubtext, { color: '#4338ca' }]}>this term</Text>
-            </View>
-
-            {/* Conduct */}
-            <View style={[styles.currentTermStatCard, { backgroundColor: '#fdf2f8' }]}>
-              <View style={styles.currentTermStatTop}>
-                <Text style={[styles.currentTermStatLabel, { color: '#db2777' }]}>Conduct</Text>
-                <View style={[styles.currentTermStatIcon, { backgroundColor: '#fce7f3' }]}>
-                  <Ionicons name="ribbon" size={isTablet ? 14 : 12} color="#db2777" />
-                </View>
-              </View>
-              <Text style={[styles.currentTermStatValue, { color: '#831843' }]}>{CURRENT_TERM_PROGRESS.conduct}</Text>
-              <Text style={[styles.currentTermStatSubtext, { color: '#9d174d' }]}>current grade</Text>
-            </View>
-          </View>
-
-          {/* View Details Footer */}
-          <View style={[styles.currentTermFooter, { backgroundColor: colors.surface }]}>
-            <View style={styles.viewDetailsButton}>
-              <Text style={[styles.viewDetailsText, { color: colors.primary }]}>
-                View Details
-              </Text>
-              <Ionicons name="chevron-forward" size={14} color={colors.primary} />
-            </View>
-          </View>
-        </Pressable>
 
         {/* Past Reports Section */}
         {filteredReports.length === 0 ? (
@@ -1394,91 +1292,39 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.bold,
     letterSpacing: -0.3,
   },
-  // Current Term In-Progress Section
-  currentTermSection: {
-    marginBottom: 20,
+  // Collapsible Performance Summary
+  performanceSummaryContainer: {
+    marginBottom: 16,
     borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
   },
-  currentTermHeader: {
+  performanceSummaryHeader: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    paddingBottom: 0,
-  },
-  currentTermBadgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  currentTermBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  currentTermBadgeText: {
-    fontSize: 12,
-    fontFamily: FONTS.semiBold,
-    color: '#ffffff',
-  },
-  currentTermLabel: {
-    fontSize: 14,
-    fontFamily: FONTS.semiBold,
-  },
-  currentTermLastUpdated: {
-    fontSize: 11,
-    fontFamily: FONTS.medium,
-  },
-  currentTermStatsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
     padding: 16,
   },
-  currentTermStatCard: {
-    width: '48%',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+  performanceSummaryHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  performanceSummaryIcon: {
+    width: 40,
+    height: 40,
     borderRadius: 12,
-  },
-  currentTermStatTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  currentTermStatLabel: {
-    fontSize: 11,
-    fontFamily: FONTS.medium,
-  },
-  currentTermStatIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  currentTermStatValue: {
-    fontSize: 20,
+  performanceSummaryTitle: {
+    fontSize: 15,
     fontFamily: FONTS.bold,
-    letterSpacing: -0.3,
+    marginBottom: 2,
   },
-  currentTermStatSubtext: {
-    fontSize: 10,
+  performanceSummarySubtitle: {
+    fontSize: 12,
     fontFamily: FONTS.medium,
-    marginTop: 2,
-  },
-  currentTermFooter: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
   },
   // Past Reports Header
   pastReportsHeader: {

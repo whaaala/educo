@@ -683,11 +683,37 @@ export default function ParentHomeScreen() {
             <QuickActionTile icon="document-text-outline" label="Leave" subtitle="Request absence" onPress={() => setLeaveModalVisible(true)} color="rose" />
           </View>
 
-          {/* Stats - 2x2 Grid */}
-          <View style={{ marginTop: 14, paddingHorizontal: 16 }}>
+          {/* Stats - 2x2 Grid - Current Term In Progress */}
+          <Pressable
+            style={{ marginTop: 14, paddingHorizontal: 16 }}
+            onPress={() => router.push({
+              pathname: '/term-progress',
+              params: {
+                childName: selectedChild.name,
+                childClass: selectedChild.className,
+                term: 'Term 1',
+                year: '2025',
+                totalPercentage: metrics.termAverage.toFixed(1),
+                rank: metrics.classPosition.toString(),
+                totalStudents: metrics.totalStudents.toString(),
+                attendance: Math.round(metrics.attendanceRate).toString(),
+                conduct: metrics.conductGrade,
+                datePublished: new Date().toISOString(),
+              },
+            })}
+          >
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <Text style={{ fontSize: 13, fontFamily: FONTS.bold, color: COLORS.slate800 }}>{selectedChild.name.split(' ')[0]}'s Stats</Text>
-              <Text style={{ fontSize: 11, fontFamily: FONTS.semiBold, color: COLORS.blue600 }}>{currentTermLabel}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Text style={{ fontSize: 13, fontFamily: FONTS.bold, color: COLORS.slate800 }}>{selectedChild.name.split(' ')[0]}'s Stats</Text>
+                <View style={{ backgroundColor: '#eef2ff', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Ionicons name="pulse" size={10} color="#6366f1" />
+                  <Text style={{ fontSize: 9, fontFamily: FONTS.semiBold, color: '#6366f1' }}>In Progress</Text>
+                </View>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Text style={{ fontSize: 11, fontFamily: FONTS.semiBold, color: COLORS.blue600 }}>View Details</Text>
+                <Ionicons name="chevron-forward" size={12} color={COLORS.blue600} />
+              </View>
             </View>
             <View style={mobileStyles.statsGrid}>
               {/* Average Card */}
@@ -735,7 +761,7 @@ export default function ParentHomeScreen() {
                 <Text style={[mobileStyles.statsGridCardValue, { color: '#831843' }]}>{metrics.conductGrade}</Text>
               </View>
             </View>
-          </View>
+          </Pressable>
 
           {/* Fees Due Widget */}
           <MobileWidgetCard title="Fees Due" icon="card-outline" linkHref="/(tabs)/fees" linkText="Pay now">
@@ -1154,13 +1180,44 @@ export default function ParentHomeScreen() {
         </LinearGradient>
 
         <View style={tabletStyles.contentWrap}>
-          {/* 4-column stats grid */}
-          <View style={styles.statsRow}>
-            <StatTile label="Term Average" value={`${metrics.termAverage.toFixed(1)}%`} icon="trending-up-outline" tint={COLORS.blue600} bg={COLORS.blue50} border={COLORS.blue200} />
-            <StatTile label="Position" value={`#${metrics.classPosition}`} subtitle={`of ${metrics.totalStudents}`} icon="trophy-outline" tint={COLORS.emerald600} bg={COLORS.emerald50} border={COLORS.emerald200} />
-            <StatTile label="Attendance" value={`${Math.round(metrics.attendanceRate)}%`} icon="pie-chart-outline" tint={COLORS.violet600} bg={COLORS.violet50} border={COLORS.violet200} />
-            <StatTile label="Conduct" value={metrics.conductGrade} icon="ribbon-outline" tint={COLORS.amber600} bg={COLORS.amber50} border={COLORS.amber200} />
-          </View>
+          {/* 4-column stats grid - Current Term In Progress */}
+          <Pressable
+            onPress={() => router.push({
+              pathname: '/term-progress',
+              params: {
+                childName: selectedChild.name,
+                childClass: selectedChild.className,
+                term: 'Term 1',
+                year: '2025',
+                totalPercentage: metrics.termAverage.toFixed(1),
+                rank: metrics.classPosition.toString(),
+                totalStudents: metrics.totalStudents.toString(),
+                attendance: Math.round(metrics.attendanceRate).toString(),
+                conduct: metrics.conductGrade,
+                datePublished: new Date().toISOString(),
+              },
+            })}
+          >
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Text style={{ fontSize: 15, fontFamily: FONTS.bold, color: COLORS.slate800 }}>{selectedChild.name.split(' ')[0]}'s Current Term</Text>
+                <View style={{ backgroundColor: '#eef2ff', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                  <Ionicons name="pulse" size={12} color="#6366f1" />
+                  <Text style={{ fontSize: 11, fontFamily: FONTS.semiBold, color: '#6366f1' }}>In Progress</Text>
+                </View>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={{ fontSize: 13, fontFamily: FONTS.semiBold, color: COLORS.blue600 }}>View Details</Text>
+                <Ionicons name="chevron-forward" size={14} color={COLORS.blue600} />
+              </View>
+            </View>
+            <View style={styles.statsRow}>
+              <StatTile label="Term Average" value={`${metrics.termAverage.toFixed(1)}%`} icon="trending-up-outline" tint={COLORS.blue600} bg={COLORS.blue50} border={COLORS.blue200} />
+              <StatTile label="Position" value={`#${metrics.classPosition}`} subtitle={`of ${metrics.totalStudents}`} icon="trophy-outline" tint={COLORS.emerald600} bg={COLORS.emerald50} border={COLORS.emerald200} />
+              <StatTile label="Attendance" value={`${Math.round(metrics.attendanceRate)}%`} icon="pie-chart-outline" tint={COLORS.violet600} bg={COLORS.violet50} border={COLORS.violet200} />
+              <StatTile label="Conduct" value={metrics.conductGrade} icon="ribbon-outline" tint={COLORS.amber600} bg={COLORS.amber50} border={COLORS.amber200} />
+            </View>
+          </Pressable>
 
           {/* Two-column widget grid */}
           <View style={styles.twoCol}>
