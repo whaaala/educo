@@ -519,41 +519,6 @@ export default function ReportsHistoryScreen() {
               </View>
             </View>
 
-            {/* Stats Cards Row */}
-            <View style={styles.statsRow}>
-              {/* Reports Count */}
-              <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <View style={[styles.statIconContainer, { backgroundColor: '#f0f9ff' }]}>
-                  <Ionicons name="document-text" size={18} color="#0ea5e9" />
-                </View>
-                <View style={styles.statContent}>
-                  <Text style={[styles.statValue, { color: colors.text }]}>{totalReports}</Text>
-                  <Text style={[styles.statLabel, { color: colors.textMuted }]}>Reports</Text>
-                </View>
-              </View>
-
-              {/* Average Score */}
-              <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <View style={[styles.statIconContainer, { backgroundColor: '#f0fdf4' }]}>
-                  <Ionicons name="trending-up" size={18} color="#22c55e" />
-                </View>
-                <View style={styles.statContent}>
-                  <Text style={[styles.statValue, { color: colors.text }]}>{avgScore}%</Text>
-                  <Text style={[styles.statLabel, { color: colors.textMuted }]}>Avg Score</Text>
-                </View>
-              </View>
-
-              {/* Average Rank */}
-              <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <View style={[styles.statIconContainer, { backgroundColor: '#fef3c7' }]}>
-                  <Ionicons name="trophy" size={18} color="#f59e0b" />
-                </View>
-                <View style={styles.statContent}>
-                  <Text style={[styles.statValue, { color: colors.text }]}>#{avgRank}</Text>
-                  <Text style={[styles.statLabel, { color: colors.textMuted }]}>Avg Rank</Text>
-                </View>
-              </View>
-            </View>
           </View>
         )}
 
@@ -888,6 +853,55 @@ export default function ReportsHistoryScreen() {
                 </View>
               )}
 
+              {/* Year Stats Cards - Mobile Only */}
+              {!isTablet && (
+                <View style={styles.mobileYearStatsRow}>
+                  {/* Term Average Card */}
+                  <View style={[styles.mobileYearStatCard, { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' }]}>
+                    <View style={styles.mobileYearStatCardTop}>
+                      <Text style={[styles.mobileYearStatCardLabel, { color: '#059669' }]}>Term Avg</Text>
+                      <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#a7f3d0' }]}>
+                        <Ionicons name="trending-up" size={12} color="#059669" />
+                      </View>
+                    </View>
+                    <Text style={[styles.mobileYearStatCardValue, { color: '#064e3b' }]}>{yearAvgScore}%</Text>
+                  </View>
+
+                  {/* Position Card */}
+                  <View style={[styles.mobileYearStatCard, { backgroundColor: '#fef3c7', borderColor: '#fcd34d' }]}>
+                    <View style={styles.mobileYearStatCardTop}>
+                      <Text style={[styles.mobileYearStatCardLabel, { color: '#d97706' }]}>Position</Text>
+                      <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#fcd34d' }]}>
+                        <Ionicons name="trophy" size={12} color="#d97706" />
+                      </View>
+                    </View>
+                    <Text style={[styles.mobileYearStatCardValue, { color: '#78350f' }]}>#{yearAvgRank}</Text>
+                  </View>
+
+                  {/* Attendance Card */}
+                  <View style={[styles.mobileYearStatCard, { backgroundColor: '#eef2ff', borderColor: '#c7d2fe' }]}>
+                    <View style={styles.mobileYearStatCardTop}>
+                      <Text style={[styles.mobileYearStatCardLabel, { color: '#6366f1' }]}>Attendance</Text>
+                      <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#c7d2fe' }]}>
+                        <Ionicons name="time-outline" size={12} color="#6366f1" />
+                      </View>
+                    </View>
+                    <Text style={[styles.mobileYearStatCardValue, { color: '#1e1b4b' }]}>96%</Text>
+                  </View>
+
+                  {/* Conduct Card */}
+                  <View style={[styles.mobileYearStatCard, { backgroundColor: '#fce7f3', borderColor: '#f9a8d4' }]}>
+                    <View style={styles.mobileYearStatCardTop}>
+                      <Text style={[styles.mobileYearStatCardLabel, { color: '#db2777' }]}>Conduct</Text>
+                      <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#f9a8d4' }]}>
+                        <Ionicons name="ribbon-outline" size={12} color="#db2777" />
+                      </View>
+                    </View>
+                    <Text style={[styles.mobileYearStatCardValue, { color: '#831843' }]}>A</Text>
+                  </View>
+                </View>
+              )}
+
               {/* Report Cards Grid */}
               <View style={[styles.reportsGrid, isTablet && styles.reportsGridTablet]}>
                 {reportsByYear[year].map((report, index) => (
@@ -1064,6 +1078,77 @@ const styles = StyleSheet.create({
     transform: [{ scale: 2.5 }, { translateX: 23 }, { translateY: 18 }],
     zIndex: 1000,
     elevation: 20,
+  },
+  // Mobile Stats Cards - Tablet-Style Design
+  mobileStatsCardsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  mobileStatCard: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    minHeight: 80,
+  },
+  mobileStatCardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  mobileStatCardLabel: {
+    fontSize: 11,
+    fontFamily: FONTS.medium,
+  },
+  mobileStatCardIcon: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mobileStatCardValue: {
+    fontSize: 22,
+    fontFamily: FONTS.bold,
+    letterSpacing: -0.5,
+  },
+  // Mobile Year Stats Cards (per year section)
+  mobileYearStatsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  mobileYearStatCard: {
+    width: '48%',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  mobileYearStatCardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  mobileYearStatCardLabel: {
+    fontSize: 10,
+    fontFamily: FONTS.medium,
+  },
+  mobileYearStatCardIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mobileYearStatCardValue: {
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+    letterSpacing: -0.3,
   },
   // Avatar with gradient ring
   avatarContainer: {
