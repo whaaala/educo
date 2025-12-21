@@ -306,6 +306,7 @@ export default function ReportsHistoryScreen() {
   // Search and filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [avatarEnlarged, setAvatarEnlarged] = useState(false);
   const [yearFilter, setYearFilter] = useState('All Years');
   const [termFilter, setTermFilter] = useState('All Terms');
   const [statusFilter, setStatusFilter] = useState('All Status');
@@ -434,132 +435,332 @@ export default function ReportsHistoryScreen() {
         contentContainerStyle={styles.scrollContentFull}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header with Child Info - Modern Subtle Design */}
-        <View style={[styles.headerContainer, { backgroundColor: colors.background }]}>
-          {/* Child Profile Section */}
-          <View style={[styles.profileSection, isTablet && styles.profileSectionTablet]}>
-            {/* Avatar with gradient ring */}
-            <View style={styles.avatarContainer}>
-              <LinearGradient
-                colors={['#6366f1', '#8b5cf6', '#a855f7']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.avatarRing}
+        {/* Header with Child Info - Modern Sleek Design */}
+        {isTablet ? (
+          /* TABLET: Modern layout with profile above stats cards */
+          <View style={styles.tabletHeaderWrapper}>
+            {/* Profile Row */}
+            <View style={styles.tabletProfileRow}>
+              {/* Avatar with hover/press to enlarge */}
+              <Pressable
+                onPressIn={() => setAvatarEnlarged(true)}
+                onPressOut={() => setAvatarEnlarged(false)}
+                onHoverIn={() => setAvatarEnlarged(true)}
+                onHoverOut={() => setAvatarEnlarged(false)}
+                style={styles.tabletAvatarPressable}
               >
-                <View style={[styles.avatarInner, { backgroundColor: colors.background }]}>
-                  <Image source={{ uri: childAvatar }} style={styles.avatarImage} />
-                </View>
-              </LinearGradient>
-              {/* Online indicator */}
-              <View style={[styles.onlineIndicator, { borderColor: colors.background }]} />
-            </View>
-
-            {/* Name and Class */}
-            <View style={[styles.profileDetails, isTablet && styles.profileDetailsTablet]}>
-              <Text style={[styles.profileName, { color: colors.text }]}>{childName}</Text>
-              <View style={[styles.classBadge, { backgroundColor: colors.primaryLight }]}>
-                <Ionicons name="school" size={12} color={colors.primary} />
-                <Text style={[styles.classBadgeText, { color: colors.primary }]}>{childClass}</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Stats Cards Row */}
-          <View style={[styles.statsRow, isTablet && styles.statsRowTablet]}>
-            {/* Reports Count */}
-            <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={[styles.statIconContainer, { backgroundColor: '#f0f9ff' }]}>
-                <Ionicons name="document-text" size={18} color="#0ea5e9" />
-              </View>
-              <View style={styles.statContent}>
-                <Text style={[styles.statValue, { color: colors.text }]}>{totalReports}</Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Reports</Text>
-              </View>
-            </View>
-
-            {/* Average Score */}
-            <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={[styles.statIconContainer, { backgroundColor: '#f0fdf4' }]}>
-                <Ionicons name="trending-up" size={18} color="#22c55e" />
-              </View>
-              <View style={styles.statContent}>
-                <Text style={[styles.statValue, { color: colors.text }]}>{avgScore}%</Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Avg Score</Text>
-              </View>
-            </View>
-
-            {/* Average Rank */}
-            <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={[styles.statIconContainer, { backgroundColor: '#fef3c7' }]}>
-                <Ionicons name="trophy" size={18} color="#f59e0b" />
-              </View>
-              <View style={styles.statContent}>
-                <Text style={[styles.statValue, { color: colors.text }]}>#{avgRank}</Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Avg Rank</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Search and Filter Bar - Same Line */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: colors.background }}>
-          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 14, height: 48, paddingHorizontal: 12 }}>
-            <View style={[styles.searchIconWrap, { backgroundColor: colors.primaryLight }]}>
-              <Ionicons name="search" size={14} color={colors.primary} />
-            </View>
-            <TextInput
-              style={{ flex: 1, fontSize: 14, fontFamily: FONTS.medium, color: colors.text, marginLeft: 10, paddingVertical: 0 }}
-              placeholder="Search reports..."
-              placeholderTextColor={colors.textMuted}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            {searchQuery.length > 0 && (
-              <Pressable onPress={() => setSearchQuery('')} style={[styles.searchClearButton, { backgroundColor: colors.backgroundTertiary }]}>
-                <Ionicons name="close" size={14} color={colors.textMuted} />
+                <Animated.View style={[
+                  styles.tabletAvatarWrapper,
+                  avatarEnlarged && styles.tabletAvatarEnlarged
+                ]}>
+                  <LinearGradient
+                    colors={['#6366f1', '#8b5cf6']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.tabletAvatarGradient}
+                  >
+                    <View style={[styles.tabletAvatarInner, { backgroundColor: colors.background }]}>
+                      <Image source={{ uri: childAvatar }} style={styles.tabletAvatarImage} />
+                    </View>
+                  </LinearGradient>
+                </Animated.View>
               </Pressable>
-            )}
-          </View>
-          <Pressable
-            style={{ width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 1, marginLeft: 12, backgroundColor: showFilters || activeFilterCount > 0 ? colors.primary : colors.surface, borderColor: showFilters || activeFilterCount > 0 ? colors.primary : colors.border }}
-            onPress={toggleFilters}
-          >
-            <Ionicons name="options-outline" size={18} color={showFilters || activeFilterCount > 0 ? '#ffffff' : colors.text} />
-            {activeFilterCount > 0 && (
-              <View style={styles.filterCountBadge}>
-                <Text style={styles.filterCountText}>{activeFilterCount}</Text>
-              </View>
-            )}
-          </Pressable>
-        </View>
 
-        {/* Filter Panel - Modern Expandable */}
-        {showFilters && (
-          <View style={[styles.filterPanel, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            {/* Filter Header */}
-            <View style={styles.filterPanelHeader}>
-              <Text style={[styles.filterPanelTitle, { color: colors.text }]}>Filter by</Text>
-              {hasActiveFilters && (
-                <Pressable
-                  onPress={resetFilters}
-                  style={[styles.resetButton, { backgroundColor: colors.backgroundTertiary }]}
-                >
-                  <Ionicons name="refresh-outline" size={14} color={colors.textSecondary} />
-                  <Text style={[styles.resetButtonText, { color: colors.textSecondary }]}>Clear all</Text>
+              {/* Name and Class */}
+              <View style={styles.tabletNameSection}>
+                <Text style={[styles.tabletProfileName, { color: colors.text }]}>{childName}</Text>
+                <View style={[styles.tabletClassBadge, { backgroundColor: colors.primaryLight }]}>
+                  <Ionicons name="school" size={13} color={colors.primary} />
+                  <Text style={[styles.tabletClassText, { color: colors.primary }]}>{childClass}</Text>
+                </View>
+              </View>
+            </View>
+
+          </View>
+        ) : (
+          /* MOBILE: Original design */
+          <View style={[styles.headerContainer, { backgroundColor: colors.background }]}>
+            {/* Child Profile Section */}
+            <View style={styles.profileSection}>
+              {/* Avatar with gradient ring - Pressable for enlargement */}
+              <Pressable
+                onPressIn={() => setAvatarEnlarged(true)}
+                onPressOut={() => setAvatarEnlarged(false)}
+                onHoverIn={() => setAvatarEnlarged(true)}
+                onHoverOut={() => setAvatarEnlarged(false)}
+                style={styles.mobileAvatarPressable}
+              >
+                <Animated.View style={[
+                  styles.avatarContainer,
+                  avatarEnlarged && styles.mobileAvatarEnlarged
+                ]}>
+                  <LinearGradient
+                    colors={['#6366f1', '#8b5cf6', '#a855f7']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.avatarRing}
+                  >
+                    <View style={[styles.avatarInner, { backgroundColor: colors.background }]}>
+                      <Image source={{ uri: childAvatar }} style={styles.avatarImage} />
+                    </View>
+                  </LinearGradient>
+                  {/* Online indicator */}
+                  <View style={[styles.onlineIndicator, { borderColor: colors.background }]} />
+                </Animated.View>
+              </Pressable>
+
+              {/* Name and Class */}
+              <View style={styles.profileDetails}>
+                <Text style={[styles.profileName, { color: colors.text }]}>{childName}</Text>
+                <View style={[styles.classBadge, { backgroundColor: colors.primaryLight }]}>
+                  <Ionicons name="school" size={12} color={colors.primary} />
+                  <Text style={[styles.classBadgeText, { color: colors.primary }]}>{childClass}</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Stats Cards Row */}
+            <View style={styles.statsRow}>
+              {/* Reports Count */}
+              <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={[styles.statIconContainer, { backgroundColor: '#f0f9ff' }]}>
+                  <Ionicons name="document-text" size={18} color="#0ea5e9" />
+                </View>
+                <View style={styles.statContent}>
+                  <Text style={[styles.statValue, { color: colors.text }]}>{totalReports}</Text>
+                  <Text style={[styles.statLabel, { color: colors.textMuted }]}>Reports</Text>
+                </View>
+              </View>
+
+              {/* Average Score */}
+              <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={[styles.statIconContainer, { backgroundColor: '#f0fdf4' }]}>
+                  <Ionicons name="trending-up" size={18} color="#22c55e" />
+                </View>
+                <View style={styles.statContent}>
+                  <Text style={[styles.statValue, { color: colors.text }]}>{avgScore}%</Text>
+                  <Text style={[styles.statLabel, { color: colors.textMuted }]}>Avg Score</Text>
+                </View>
+              </View>
+
+              {/* Average Rank */}
+              <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={[styles.statIconContainer, { backgroundColor: '#fef3c7' }]}>
+                  <Ionicons name="trophy" size={18} color="#f59e0b" />
+                </View>
+                <View style={styles.statContent}>
+                  <Text style={[styles.statValue, { color: colors.text }]}>#{avgRank}</Text>
+                  <Text style={[styles.statLabel, { color: colors.textMuted }]}>Avg Rank</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* Search and Filter Bar - Tablet has inline filters */}
+        {isTablet ? (
+          /* TABLET: Search and filter chips on one line */
+          <View style={styles.tabletSearchFilterContainer}>
+            {/* Search Input - Left side */}
+            <View style={[styles.tabletSearchInput, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={[styles.searchIconWrap, { backgroundColor: colors.primaryLight }]}>
+                <Ionicons name="search" size={14} color={colors.primary} />
+              </View>
+              <TextInput
+                style={{ flex: 1, fontSize: 14, fontFamily: FONTS.medium, color: colors.text, marginLeft: 10, paddingVertical: 0 }}
+                placeholder="Search reports..."
+                placeholderTextColor={colors.textMuted}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+              {searchQuery.length > 0 && (
+                <Pressable onPress={() => setSearchQuery('')} style={[styles.searchClearButton, { backgroundColor: colors.backgroundTertiary }]}>
+                  <Ionicons name="close" size={14} color={colors.textMuted} />
                 </Pressable>
               )}
             </View>
 
-            {/* Filter Dropdowns - Stacked vertically */}
-            <View>
-              <FilterDropdown
-                label="Year"
-                value={yearFilter}
-                options={YEAR_OPTIONS}
-                onSelect={setYearFilter}
-                isOpen={openDropdown === 'year'}
-                onToggle={() => setOpenDropdown(openDropdown === 'year' ? null : 'year')}
-                colors={colors}
+            {/* Filter Chips - Right side */}
+            <View style={styles.tabletFilterChips}>
+              {/* Year Filter Chip with Dropdown */}
+              <View style={styles.tabletFilterChipWrapper}>
+                <Pressable
+                  style={[
+                    styles.tabletFilterChip,
+                    {
+                      backgroundColor: yearFilter !== 'All Years' ? colors.primaryLight : colors.surface,
+                      borderColor: yearFilter !== 'All Years' ? colors.primary : colors.border
+                    }
+                  ]}
+                  onPress={() => setOpenDropdown(openDropdown === 'year' ? null : 'year')}
+                >
+                  <Ionicons name="calendar-outline" size={16} color={yearFilter !== 'All Years' ? colors.primary : colors.textSecondary} />
+                  <Text style={[styles.tabletFilterChipText, { color: yearFilter !== 'All Years' ? colors.primary : colors.text }]}>
+                    {yearFilter === 'All Years' ? 'Year' : yearFilter}
+                  </Text>
+                  <Ionicons name="chevron-down" size={14} color={yearFilter !== 'All Years' ? colors.primary : colors.textMuted} />
+                </Pressable>
+                {openDropdown === 'year' && (
+                  <View style={[styles.tabletDropdownMenu, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    {YEAR_OPTIONS.map((option, idx) => (
+                      <Pressable
+                        key={option}
+                        style={[styles.tabletDropdownOption, yearFilter === option && { backgroundColor: colors.primaryLight }, idx === 0 && styles.tabletDropdownOptionFirst]}
+                        onPress={() => { setYearFilter(option); setOpenDropdown(null); }}
+                      >
+                        <Text style={[styles.tabletDropdownOptionText, { color: yearFilter === option ? colors.primary : colors.text }]}>{option}</Text>
+                        {yearFilter === option && <Ionicons name="checkmark" size={18} color={colors.primary} />}
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              {/* Term Filter Chip with Dropdown */}
+              <View style={styles.tabletFilterChipWrapper}>
+                <Pressable
+                  style={[
+                    styles.tabletFilterChip,
+                    {
+                      backgroundColor: termFilter !== 'All Terms' ? colors.primaryLight : colors.surface,
+                      borderColor: termFilter !== 'All Terms' ? colors.primary : colors.border
+                    }
+                  ]}
+                  onPress={() => setOpenDropdown(openDropdown === 'term' ? null : 'term')}
+                >
+                  <Ionicons name="book-outline" size={16} color={termFilter !== 'All Terms' ? colors.primary : colors.textSecondary} />
+                  <Text style={[styles.tabletFilterChipText, { color: termFilter !== 'All Terms' ? colors.primary : colors.text }]}>
+                    {termFilter === 'All Terms' ? 'Term' : termFilter}
+                  </Text>
+                  <Ionicons name="chevron-down" size={14} color={termFilter !== 'All Terms' ? colors.primary : colors.textMuted} />
+                </Pressable>
+                {openDropdown === 'term' && (
+                  <View style={[styles.tabletDropdownMenu, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    {TERM_OPTIONS.map((option, idx) => (
+                      <Pressable
+                        key={option}
+                        style={[styles.tabletDropdownOption, termFilter === option && { backgroundColor: colors.primaryLight }, idx === 0 && styles.tabletDropdownOptionFirst]}
+                        onPress={() => { setTermFilter(option); setOpenDropdown(null); }}
+                      >
+                        <Text style={[styles.tabletDropdownOptionText, { color: termFilter === option ? colors.primary : colors.text }]}>{option}</Text>
+                        {termFilter === option && <Ionicons name="checkmark" size={18} color={colors.primary} />}
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              {/* Status Filter Chip with Dropdown */}
+              <View style={styles.tabletFilterChipWrapper}>
+                <Pressable
+                  style={[
+                    styles.tabletFilterChip,
+                    {
+                      backgroundColor: statusFilter !== 'All Status' ? (statusFilter === 'Passed' ? '#ecfdf5' : '#fef2f2') : colors.surface,
+                      borderColor: statusFilter !== 'All Status' ? (statusFilter === 'Passed' ? '#10b981' : '#ef4444') : colors.border
+                    }
+                  ]}
+                  onPress={() => setOpenDropdown(openDropdown === 'status' ? null : 'status')}
+                >
+                  <Ionicons
+                    name={statusFilter === 'Passed' ? 'checkmark-circle-outline' : statusFilter === 'Failed' ? 'close-circle-outline' : 'funnel-outline'}
+                    size={16}
+                    color={statusFilter !== 'All Status' ? (statusFilter === 'Passed' ? '#10b981' : '#ef4444') : colors.textSecondary}
+                  />
+                  <Text style={[styles.tabletFilterChipText, { color: statusFilter !== 'All Status' ? (statusFilter === 'Passed' ? '#059669' : '#dc2626') : colors.text }]}>
+                    {statusFilter === 'All Status' ? 'Status' : statusFilter}
+                  </Text>
+                  <Ionicons name="chevron-down" size={14} color={statusFilter !== 'All Status' ? (statusFilter === 'Passed' ? '#10b981' : '#ef4444') : colors.textMuted} />
+                </Pressable>
+                {openDropdown === 'status' && (
+                  <View style={[styles.tabletDropdownMenu, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    {STATUS_OPTIONS.map((option, idx) => (
+                      <Pressable
+                        key={option}
+                        style={[styles.tabletDropdownOption, statusFilter === option && { backgroundColor: colors.primaryLight }, idx === 0 && styles.tabletDropdownOptionFirst]}
+                        onPress={() => { setStatusFilter(option); setOpenDropdown(null); }}
+                      >
+                        <Text style={[styles.tabletDropdownOptionText, { color: statusFilter === option ? colors.primary : colors.text }]}>{option}</Text>
+                        {statusFilter === option && <Ionicons name="checkmark" size={18} color={colors.primary} />}
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              {/* Clear Filters Button - Only show if filters active */}
+              {hasActiveFilters && (
+                <Pressable
+                  style={[styles.tabletClearFilters, { backgroundColor: colors.backgroundTertiary }]}
+                  onPress={resetFilters}
+                >
+                  <Ionicons name="close" size={16} color={colors.textSecondary} />
+                  <Text style={[styles.tabletClearFiltersText, { color: colors.textSecondary }]}>Clear</Text>
+                </Pressable>
+              )}
+            </View>
+          </View>
+        ) : (
+          /* MOBILE: Original stacked layout */
+          <>
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: colors.background }}>
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 14, height: 48, paddingHorizontal: 12 }}>
+              <View style={[styles.searchIconWrap, { backgroundColor: colors.primaryLight }]}>
+                <Ionicons name="search" size={14} color={colors.primary} />
+              </View>
+              <TextInput
+                style={{ flex: 1, fontSize: 14, fontFamily: FONTS.medium, color: colors.text, marginLeft: 10, paddingVertical: 0 }}
+                placeholder="Search reports..."
+                placeholderTextColor={colors.textMuted}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+              {searchQuery.length > 0 && (
+                <Pressable onPress={() => setSearchQuery('')} style={[styles.searchClearButton, { backgroundColor: colors.backgroundTertiary }]}>
+                  <Ionicons name="close" size={14} color={colors.textMuted} />
+                </Pressable>
+              )}
+            </View>
+            <Pressable
+              style={{ width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 1, marginLeft: 12, backgroundColor: showFilters || activeFilterCount > 0 ? colors.primary : colors.surface, borderColor: showFilters || activeFilterCount > 0 ? colors.primary : colors.border }}
+              onPress={toggleFilters}
+            >
+              <Ionicons name="options-outline" size={18} color={showFilters || activeFilterCount > 0 ? '#ffffff' : colors.text} />
+              {activeFilterCount > 0 && (
+                <View style={styles.filterCountBadge}>
+                  <Text style={styles.filterCountText}>{activeFilterCount}</Text>
+                </View>
+              )}
+            </Pressable>
+          </View>
+
+          {/* Filter Panel - Mobile Only */}
+          {showFilters && (
+            <View style={[styles.filterPanel, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              {/* Filter Header */}
+              <View style={styles.filterPanelHeader}>
+                <Text style={[styles.filterPanelTitle, { color: colors.text }]}>Filter by</Text>
+                {hasActiveFilters && (
+                  <Pressable
+                    onPress={resetFilters}
+                    style={[styles.resetButton, { backgroundColor: colors.backgroundTertiary }]}
+                  >
+                    <Ionicons name="refresh-outline" size={14} color={colors.textSecondary} />
+                    <Text style={[styles.resetButtonText, { color: colors.textSecondary }]}>Clear all</Text>
+                  </Pressable>
+                )}
+              </View>
+
+              {/* Filter Dropdowns - Stacked vertically */}
+              <View>
+                <FilterDropdown
+                  label="Year"
+                  value={yearFilter}
+                  options={YEAR_OPTIONS}
+                  onSelect={setYearFilter}
+                  isOpen={openDropdown === 'year'}
+                  onToggle={() => setOpenDropdown(openDropdown === 'year' ? null : 'year')}
+                  colors={colors}
               />
               <FilterDropdown
                 label="Term"
@@ -581,6 +782,8 @@ export default function ReportsHistoryScreen() {
               />
             </View>
           </View>
+        )}
+        </>
         )}
 
         {/* Results Count */}
@@ -613,7 +816,15 @@ export default function ReportsHistoryScreen() {
             )}
           </View>
         ) : (
-          years.map((year) => (
+          years.map((year) => {
+            // Calculate year-specific stats
+            const yearReports = reportsByYear[year];
+            const yearAvgScore = Math.round(yearReports.reduce((sum, r) => sum + r.totalPercentage, 0) / yearReports.length);
+            const yearAvgRank = Math.round(yearReports.reduce((sum, r) => sum + r.rank, 0) / yearReports.length);
+            const yearTotalStudents = yearReports[0]?.totalStudents || 45;
+            const yearPassCount = yearReports.filter(r => r.status === 'pass').length;
+
+            return (
             <View key={year} style={styles.yearSection}>
               {/* Year Header */}
               <View style={styles.yearHeader}>
@@ -623,9 +834,59 @@ export default function ReportsHistoryScreen() {
                 </View>
                 <View style={[styles.yearLine, { backgroundColor: colors.border }]} />
                 <Text style={[styles.yearCount, { color: colors.textMuted }]}>
-                  {reportsByYear[year].length} report{reportsByYear[year].length > 1 ? 's' : ''}
+                  {yearReports.length} report{yearReports.length > 1 ? 's' : ''}
                 </Text>
               </View>
+
+              {/* Year Stats Cards - Tablet Only */}
+              {isTablet && (
+                <View style={styles.tabletStatsCardsRow}>
+                  {/* Term Average Card */}
+                  <View style={[styles.tabletStatCard, { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' }]}>
+                    <View style={styles.tabletStatCardTop}>
+                      <Text style={[styles.tabletStatCardLabel, { color: '#059669' }]}>Term Average</Text>
+                      <View style={[styles.tabletStatCardIcon, { backgroundColor: '#a7f3d0' }]}>
+                        <Ionicons name="trending-up" size={16} color="#059669" />
+                      </View>
+                    </View>
+                    <Text style={[styles.tabletStatCardValue, { color: '#064e3b' }]}>{yearAvgScore}%</Text>
+                  </View>
+
+                  {/* Position Card */}
+                  <View style={[styles.tabletStatCard, { backgroundColor: '#fef3c7', borderColor: '#fcd34d' }]}>
+                    <View style={styles.tabletStatCardTop}>
+                      <Text style={[styles.tabletStatCardLabel, { color: '#d97706' }]}>Position</Text>
+                      <View style={[styles.tabletStatCardIcon, { backgroundColor: '#fcd34d' }]}>
+                        <Ionicons name="trophy" size={16} color="#d97706" />
+                      </View>
+                    </View>
+                    <Text style={[styles.tabletStatCardValue, { color: '#78350f' }]}>#{yearAvgRank}</Text>
+                    <Text style={[styles.tabletStatCardSubtext, { color: '#92400e' }]}>of {yearTotalStudents}</Text>
+                  </View>
+
+                  {/* Attendance Card */}
+                  <View style={[styles.tabletStatCard, { backgroundColor: '#eef2ff', borderColor: '#c7d2fe' }]}>
+                    <View style={styles.tabletStatCardTop}>
+                      <Text style={[styles.tabletStatCardLabel, { color: '#6366f1' }]}>Attendance</Text>
+                      <View style={[styles.tabletStatCardIcon, { backgroundColor: '#c7d2fe' }]}>
+                        <Ionicons name="time-outline" size={16} color="#6366f1" />
+                      </View>
+                    </View>
+                    <Text style={[styles.tabletStatCardValue, { color: '#1e1b4b' }]}>96%</Text>
+                  </View>
+
+                  {/* Conduct Card */}
+                  <View style={[styles.tabletStatCard, { backgroundColor: '#fce7f3', borderColor: '#f9a8d4' }]}>
+                    <View style={styles.tabletStatCardTop}>
+                      <Text style={[styles.tabletStatCardLabel, { color: '#db2777' }]}>Conduct</Text>
+                      <View style={[styles.tabletStatCardIcon, { backgroundColor: '#f9a8d4' }]}>
+                        <Ionicons name="ribbon-outline" size={16} color="#db2777" />
+                      </View>
+                    </View>
+                    <Text style={[styles.tabletStatCardValue, { color: '#831843' }]}>A</Text>
+                  </View>
+                </View>
+              )}
 
               {/* Report Cards Grid */}
               <View style={[styles.reportsGrid, isTablet && styles.reportsGridTablet]}>
@@ -736,7 +997,8 @@ export default function ReportsHistoryScreen() {
                 ))}
               </View>
             </View>
-          ))
+          );
+          })
         )}
         </View>
 
@@ -778,16 +1040,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 16,
+    overflow: 'visible',
+    zIndex: 50,
   },
   // Profile Section
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
+    overflow: 'visible',
+    zIndex: 50,
   },
   profileSectionTablet: {
     justifyContent: 'flex-start',
     marginBottom: 20,
+  },
+  // Mobile Avatar Pressable for enlargement
+  mobileAvatarPressable: {
+    cursor: 'pointer',
+    zIndex: 1,
+  },
+  mobileAvatarEnlarged: {
+    transform: [{ scale: 2.5 }, { translateX: 23 }, { translateY: 18 }],
+    zIndex: 1000,
+    elevation: 20,
   },
   // Avatar with gradient ring
   avatarContainer: {
@@ -1290,5 +1566,205 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: FONTS.semiBold,
     color: '#ffffff',
+  },
+
+  // =============================================
+  // TABLET HEADER STYLES - Modern Sleek Design
+  // =============================================
+  tabletHeaderWrapper: {
+    paddingHorizontal: 24,
+    paddingTop: 8,
+    paddingBottom: 4,
+    overflow: 'visible',
+    zIndex: 50,
+  },
+  tabletProfileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    gap: 16,
+    overflow: 'visible',
+    zIndex: 50,
+  },
+  tabletAvatarPressable: {
+    cursor: 'pointer',
+    zIndex: 1,
+  },
+  tabletAvatarWrapper: {
+    transform: [{ scale: 1 }],
+  },
+  tabletAvatarEnlarged: {
+    transform: [{ scale: 2.5 }, { translateX: 27 }, { translateY: 18 }],
+    zIndex: 1000,
+    elevation: 20,
+  },
+  tabletAvatarGradient: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    padding: 3,
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  tabletAvatarInner: {
+    flex: 1,
+    borderRadius: 33,
+    padding: 2,
+  },
+  tabletAvatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 31,
+  },
+  tabletNameSection: {
+    gap: 6,
+  },
+  tabletProfileName: {
+    fontSize: 22,
+    fontFamily: FONTS.bold,
+    letterSpacing: -0.3,
+  },
+  tabletClassBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+    gap: 6,
+    alignSelf: 'flex-start',
+  },
+  tabletClassText: {
+    fontSize: 13,
+    fontFamily: FONTS.semiBold,
+  },
+  // Stats Cards Row - Like the reference image
+  tabletStatsCardsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  tabletStatCard: {
+    flex: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    minHeight: 100,
+  },
+  tabletStatCardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  tabletStatCardLabel: {
+    fontSize: 13,
+    fontFamily: FONTS.medium,
+  },
+  tabletStatCardIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabletStatCardValue: {
+    fontSize: 28,
+    fontFamily: FONTS.bold,
+    letterSpacing: -0.5,
+  },
+  tabletStatCardSubtext: {
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+    marginTop: 2,
+  },
+
+  // =============================================
+  // TABLET FILTER STYLES - Modern Inline Design
+  // =============================================
+  tabletSearchFilterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  tabletSearchInput: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  tabletFilterChips: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  tabletFilterChipWrapper: {
+    position: 'relative',
+    zIndex: 10,
+  },
+  tabletFilterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    gap: 6,
+    height: 44,
+  },
+  tabletFilterChipText: {
+    fontSize: 13,
+    fontFamily: FONTS.semiBold,
+  },
+  tabletClearFilters: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 4,
+    height: 36,
+  },
+  tabletClearFiltersText: {
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+  },
+  tabletDropdownMenu: {
+    position: 'absolute',
+    top: 48,
+    left: 0,
+    minWidth: 140,
+    borderRadius: 12,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 12,
+    overflow: 'hidden',
+    zIndex: 100,
+  },
+  tabletDropdownOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+  },
+  tabletDropdownOptionFirst: {
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
+  },
+  tabletDropdownOptionText: {
+    fontSize: 14,
+    fontFamily: FONTS.medium,
   },
 });
