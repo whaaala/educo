@@ -95,6 +95,51 @@ const metricsByChild: Record<string, ChildMetrics> = {
 
 const heroImageUri = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80';
 
+// Mock Report History Data for each child
+interface ReportHistoryItem {
+  id: string;
+  examType: string;
+  term: string;
+  year: string;
+  totalPercentage: number;
+  rank: number;
+  totalStudents: number;
+  status: 'pass' | 'fail';
+  datePublished: string;
+}
+
+const reportsByChild: Record<string, ReportHistoryItem[]> = {
+  'child-001': [
+    { id: 'r1', examType: 'Third Term Exam', term: 'Term 3', year: '2024', totalPercentage: 72, rank: 9, totalStudents: 42, status: 'pass', datePublished: '2024-12-10' },
+    { id: 'r2', examType: 'Second Term Exam', term: 'Term 2', year: '2024', totalPercentage: 68, rank: 12, totalStudents: 42, status: 'pass', datePublished: '2024-08-15' },
+    { id: 'r3', examType: 'First Term Exam', term: 'Term 1', year: '2024', totalPercentage: 45, rank: 20, totalStudents: 42, status: 'fail', datePublished: '2024-04-12' },
+  ],
+  'child-002': [
+    { id: 'r4', examType: 'Third Term Exam', term: 'Term 3', year: '2024', totalPercentage: 85, rank: 3, totalStudents: 52, status: 'pass', datePublished: '2024-12-10' },
+    { id: 'r5', examType: 'Second Term Exam', term: 'Term 2', year: '2024', totalPercentage: 82, rank: 5, totalStudents: 52, status: 'pass', datePublished: '2024-08-15' },
+    { id: 'r6', examType: 'First Term Exam', term: 'Term 1', year: '2024', totalPercentage: 78, rank: 7, totalStudents: 52, status: 'pass', datePublished: '2024-04-12' },
+  ],
+  'child-003': [
+    { id: 'r7', examType: 'Third Term Exam', term: 'Term 3', year: '2024', totalPercentage: 88, rank: 2, totalStudents: 40, status: 'pass', datePublished: '2024-12-10' },
+    { id: 'r8', examType: 'Second Term Exam', term: 'Term 2', year: '2024', totalPercentage: 84, rank: 4, totalStudents: 40, status: 'pass', datePublished: '2024-08-15' },
+  ],
+  'child-004': [
+    { id: 'r9', examType: 'Third Term Exam', term: 'Term 3', year: '2024', totalPercentage: 75, rank: 8, totalStudents: 35, status: 'pass', datePublished: '2024-12-10' },
+    { id: 'r10', examType: 'Second Term Exam', term: 'Term 2', year: '2024', totalPercentage: 62, rank: 15, totalStudents: 35, status: 'pass', datePublished: '2024-08-15' },
+  ],
+};
+
+function getScoreColor(percentage: number) {
+  if (percentage >= 70) return { bg: '#ecfdf5', text: '#059669', border: '#a7f3d0' };
+  if (percentage >= 50) return { bg: '#fef3c7', text: '#d97706', border: '#fcd34d' };
+  return { bg: '#fef2f2', text: '#dc2626', border: '#fecaca' };
+}
+
+function formatShortDate(dateString: string) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });
+}
+
 // ============================================================================
 // Utility Functions
 // ============================================================================
@@ -638,18 +683,58 @@ export default function ParentHomeScreen() {
             <QuickActionTile icon="document-text-outline" label="Leave" subtitle="Request absence" onPress={() => setLeaveModalVisible(true)} color="rose" />
           </View>
 
-          {/* Stats */}
-          <View style={{ marginTop: 14 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginBottom: 8 }}>
+          {/* Stats - 2x2 Grid */}
+          <View style={{ marginTop: 14, paddingHorizontal: 16 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <Text style={{ fontSize: 13, fontFamily: FONTS.bold, color: COLORS.slate800 }}>{selectedChild.name.split(' ')[0]}'s Stats</Text>
               <Text style={{ fontSize: 11, fontFamily: FONTS.semiBold, color: COLORS.blue600 }}>{currentTermLabel}</Text>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
-              <MobileStatCard label="Average" value={`${metrics.termAverage.toFixed(1)}%`} icon="trending-up-outline" color="blue" />
-              <MobileStatCard label="Position" value={`#${metrics.classPosition}`} subtitle={`of ${metrics.totalStudents}`} icon="trophy-outline" color="emerald" />
-              <MobileStatCard label="Attendance" value={`${Math.round(metrics.attendanceRate)}%`} icon="pie-chart-outline" color="violet" />
-              <MobileStatCard label="Conduct" value={metrics.conductGrade} icon="ribbon-outline" color="amber" />
-            </ScrollView>
+            <View style={mobileStyles.statsGrid}>
+              {/* Average Card */}
+              <View style={[mobileStyles.statsGridCard, { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' }]}>
+                <View style={mobileStyles.statsGridCardTop}>
+                  <Text style={[mobileStyles.statsGridCardLabel, { color: '#059669' }]}>Average</Text>
+                  <View style={[mobileStyles.statsGridCardIcon, { backgroundColor: '#a7f3d0' }]}>
+                    <Ionicons name="trending-up-outline" size={14} color="#059669" />
+                  </View>
+                </View>
+                <Text style={[mobileStyles.statsGridCardValue, { color: '#064e3b' }]}>{metrics.termAverage.toFixed(1)}%</Text>
+              </View>
+
+              {/* Position Card */}
+              <View style={[mobileStyles.statsGridCard, { backgroundColor: '#fef3c7', borderColor: '#fcd34d' }]}>
+                <View style={mobileStyles.statsGridCardTop}>
+                  <Text style={[mobileStyles.statsGridCardLabel, { color: '#d97706' }]}>Position</Text>
+                  <View style={[mobileStyles.statsGridCardIcon, { backgroundColor: '#fcd34d' }]}>
+                    <Ionicons name="trophy-outline" size={14} color="#d97706" />
+                  </View>
+                </View>
+                <Text style={[mobileStyles.statsGridCardValue, { color: '#78350f' }]}>#{metrics.classPosition}</Text>
+                <Text style={[mobileStyles.statsGridCardSubtext, { color: '#92400e' }]}>of {metrics.totalStudents}</Text>
+              </View>
+
+              {/* Attendance Card */}
+              <View style={[mobileStyles.statsGridCard, { backgroundColor: '#eef2ff', borderColor: '#c7d2fe' }]}>
+                <View style={mobileStyles.statsGridCardTop}>
+                  <Text style={[mobileStyles.statsGridCardLabel, { color: '#6366f1' }]}>Attendance</Text>
+                  <View style={[mobileStyles.statsGridCardIcon, { backgroundColor: '#c7d2fe' }]}>
+                    <Ionicons name="pie-chart-outline" size={14} color="#6366f1" />
+                  </View>
+                </View>
+                <Text style={[mobileStyles.statsGridCardValue, { color: '#1e1b4b' }]}>{Math.round(metrics.attendanceRate)}%</Text>
+              </View>
+
+              {/* Conduct Card */}
+              <View style={[mobileStyles.statsGridCard, { backgroundColor: '#fce7f3', borderColor: '#f9a8d4' }]}>
+                <View style={mobileStyles.statsGridCardTop}>
+                  <Text style={[mobileStyles.statsGridCardLabel, { color: '#db2777' }]}>Conduct</Text>
+                  <View style={[mobileStyles.statsGridCardIcon, { backgroundColor: '#f9a8d4' }]}>
+                    <Ionicons name="ribbon-outline" size={14} color="#db2777" />
+                  </View>
+                </View>
+                <Text style={[mobileStyles.statsGridCardValue, { color: '#831843' }]}>{metrics.conductGrade}</Text>
+              </View>
+            </View>
           </View>
 
           {/* Fees Due Widget */}
@@ -711,6 +796,63 @@ export default function ParentHomeScreen() {
               <View style={{ marginTop: 10 }}>
                 <ProgressBar value={metrics.progressPct} />
               </View>
+            </View>
+          </MobileWidgetCard>
+
+          {/* Report History Widget */}
+          <MobileWidgetCard
+            title="Report History"
+            icon="document-text-outline"
+            linkHref="/reports"
+            linkText="View all"
+          >
+            <View style={{ marginTop: 10 }}>
+              {(reportsByChild[selectedChild.id] || []).slice(0, 2).map((report, index) => {
+                const scoreColors = getScoreColor(report.totalPercentage);
+                return (
+                  <Pressable
+                    key={report.id}
+                    style={[
+                      mobileStyles.reportHistoryCard,
+                      index > 0 && { marginTop: 10 }
+                    ]}
+                    onPress={() => handleViewAllReports(selectedChild.id)}
+                  >
+                    <View style={mobileStyles.reportHistoryCardHeader}>
+                      <View style={mobileStyles.reportHistoryTermBadge}>
+                        <Text style={mobileStyles.reportHistoryTermText}>{report.term}</Text>
+                      </View>
+                      <View style={[mobileStyles.reportHistoryScoreBadge, { backgroundColor: scoreColors.bg, borderColor: scoreColors.border }]}>
+                        <Text style={[mobileStyles.reportHistoryScoreText, { color: scoreColors.text }]}>{report.totalPercentage}%</Text>
+                      </View>
+                    </View>
+                    <Text style={mobileStyles.reportHistoryExamType}>{report.examType}</Text>
+                    <View style={mobileStyles.reportHistoryMeta}>
+                      <View style={mobileStyles.reportHistoryMetaItem}>
+                        <Ionicons name="trophy-outline" size={12} color={COLORS.slate400} />
+                        <Text style={mobileStyles.reportHistoryMetaText}>#{report.rank} of {report.totalStudents}</Text>
+                      </View>
+                      <View style={mobileStyles.reportHistoryMetaItem}>
+                        <Ionicons name="calendar-outline" size={12} color={COLORS.slate400} />
+                        <Text style={mobileStyles.reportHistoryMetaText}>{formatShortDate(report.datePublished)}</Text>
+                      </View>
+                      <View style={[
+                        mobileStyles.reportHistoryStatusBadge,
+                        { backgroundColor: report.status === 'pass' ? '#ecfdf5' : '#fef2f2' }
+                      ]}>
+                        <View style={[
+                          mobileStyles.reportHistoryStatusDot,
+                          { backgroundColor: report.status === 'pass' ? '#10b981' : '#ef4444' }
+                        ]} />
+                        <Text style={[
+                          mobileStyles.reportHistoryStatusText,
+                          { color: report.status === 'pass' ? '#059669' : '#dc2626' }
+                        ]}>{report.status === 'pass' ? 'Passed' : 'Failed'}</Text>
+                      </View>
+                    </View>
+                  </Pressable>
+                );
+              })}
             </View>
           </MobileWidgetCard>
 
@@ -1069,6 +1211,70 @@ export default function ParentHomeScreen() {
               </View>
             </Card>
           </View>
+
+          {/* Report History Section - Full width */}
+          <Card style={{ marginTop: 14, padding: 16 }}>
+            <RowHeader
+              title="Report History"
+              icon="document-text-outline"
+              right={
+                <Pressable onPress={() => handleViewAllReports(selectedChild.id)}>
+                  <Text style={styles.linkText}>View all</Text>
+                </Pressable>
+              }
+            />
+            <View style={tabletStyles.reportHistoryGrid}>
+              {(reportsByChild[selectedChild.id] || []).slice(0, 3).map((report) => {
+                const scoreColors = getScoreColor(report.totalPercentage);
+                return (
+                  <Pressable
+                    key={report.id}
+                    style={tabletStyles.reportHistoryCard}
+                    onPress={() => handleViewAllReports(selectedChild.id)}
+                  >
+                    <View style={tabletStyles.reportHistoryCardHeader}>
+                      <View style={tabletStyles.reportHistoryTermBadge}>
+                        <Text style={tabletStyles.reportHistoryTermText}>{report.term}</Text>
+                      </View>
+                      <View style={[tabletStyles.reportHistoryScoreBadge, { backgroundColor: scoreColors.bg, borderColor: scoreColors.border }]}>
+                        <Text style={[tabletStyles.reportHistoryScoreText, { color: scoreColors.text }]}>{report.totalPercentage}%</Text>
+                      </View>
+                    </View>
+                    <Text style={tabletStyles.reportHistoryExamType}>{report.examType}</Text>
+                    <View style={tabletStyles.reportHistoryMeta}>
+                      <View style={tabletStyles.reportHistoryMetaItem}>
+                        <Ionicons name="trophy-outline" size={14} color={COLORS.slate400} />
+                        <Text style={tabletStyles.reportHistoryMetaText}>#{report.rank} of {report.totalStudents}</Text>
+                      </View>
+                      <View style={tabletStyles.reportHistoryMetaItem}>
+                        <Ionicons name="calendar-outline" size={14} color={COLORS.slate400} />
+                        <Text style={tabletStyles.reportHistoryMetaText}>{formatShortDate(report.datePublished)}</Text>
+                      </View>
+                    </View>
+                    <View style={tabletStyles.reportHistoryFooter}>
+                      <View style={[
+                        tabletStyles.reportHistoryStatusBadge,
+                        { backgroundColor: report.status === 'pass' ? '#ecfdf5' : '#fef2f2' }
+                      ]}>
+                        <View style={[
+                          tabletStyles.reportHistoryStatusDot,
+                          { backgroundColor: report.status === 'pass' ? '#10b981' : '#ef4444' }
+                        ]} />
+                        <Text style={[
+                          tabletStyles.reportHistoryStatusText,
+                          { color: report.status === 'pass' ? '#059669' : '#dc2626' }
+                        ]}>{report.status === 'pass' ? 'Passed' : 'Failed'}</Text>
+                      </View>
+                      <View style={tabletStyles.reportHistoryViewDetails}>
+                        <Text style={tabletStyles.reportHistoryViewDetailsText}>View</Text>
+                        <Ionicons name="chevron-forward" size={14} color={COLORS.blue600} />
+                      </View>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </Card>
 
           {/* Progress Overview - Full width */}
           <Card style={{ marginTop: 14, overflow: 'hidden' }}>
@@ -1850,6 +2056,122 @@ const mobileStyles = StyleSheet.create({
     borderColor: COLORS.slate200,
     padding: 14,
   },
+
+  // Stats Grid Styles (2x2 layout)
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  statsGridCard: {
+    width: '48%',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  statsGridCardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statsGridCardLabel: {
+    fontSize: 11,
+    fontFamily: FONTS.semiBold,
+  },
+  statsGridCardIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statsGridCardValue: {
+    fontSize: 22,
+    fontFamily: FONTS.bold,
+    letterSpacing: -0.5,
+  },
+  statsGridCardSubtext: {
+    fontSize: 11,
+    fontFamily: FONTS.medium,
+    marginTop: 2,
+  },
+
+  // Report History Widget Styles
+  reportHistoryCard: {
+    backgroundColor: COLORS.slate50,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.slate200,
+    padding: 12,
+  },
+  reportHistoryCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  reportHistoryTermBadge: {
+    backgroundColor: COLORS.slate200,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  reportHistoryTermText: {
+    fontSize: 10,
+    fontFamily: FONTS.semiBold,
+    color: COLORS.slate600,
+  },
+  reportHistoryScoreBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  reportHistoryScoreText: {
+    fontSize: 13,
+    fontFamily: FONTS.bold,
+  },
+  reportHistoryExamType: {
+    fontSize: 14,
+    fontFamily: FONTS.bold,
+    color: COLORS.slate800,
+    marginBottom: 8,
+  },
+  reportHistoryMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  reportHistoryMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  reportHistoryMetaText: {
+    fontSize: 11,
+    fontFamily: FONTS.medium,
+    color: COLORS.slate500,
+  },
+  reportHistoryStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    gap: 4,
+  },
+  reportHistoryStatusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  reportHistoryStatusText: {
+    fontSize: 10,
+    fontFamily: FONTS.semiBold,
+  },
 });
 
 // ============================================================================
@@ -2159,5 +2481,104 @@ const tabletStyles = StyleSheet.create({
     fontSize: 12,
     fontFamily: FONTS.medium,
     marginTop: 2,
+  },
+
+  // Report History Styles - Tablet
+  reportHistoryGrid: {
+    flexDirection: 'row',
+    marginTop: 14,
+    gap: 14,
+  },
+  reportHistoryCard: {
+    flex: 1,
+    backgroundColor: COLORS.slate50,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.slate200,
+    padding: 14,
+  },
+  reportHistoryCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  reportHistoryTermBadge: {
+    backgroundColor: COLORS.slate200,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  reportHistoryTermText: {
+    fontSize: 11,
+    fontFamily: FONTS.semiBold,
+    color: COLORS.slate600,
+  },
+  reportHistoryScoreBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  reportHistoryScoreText: {
+    fontSize: 15,
+    fontFamily: FONTS.bold,
+  },
+  reportHistoryExamType: {
+    fontSize: 15,
+    fontFamily: FONTS.bold,
+    color: COLORS.slate800,
+    marginBottom: 10,
+  },
+  reportHistoryMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 12,
+  },
+  reportHistoryMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  reportHistoryMetaText: {
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+    color: COLORS.slate500,
+  },
+  reportHistoryFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.slate200,
+  },
+  reportHistoryStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    gap: 5,
+  },
+  reportHistoryStatusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+  },
+  reportHistoryStatusText: {
+    fontSize: 11,
+    fontFamily: FONTS.semiBold,
+  },
+  reportHistoryViewDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  reportHistoryViewDetailsText: {
+    fontSize: 12,
+    fontFamily: FONTS.semiBold,
+    color: COLORS.blue600,
   },
 });
