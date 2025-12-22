@@ -1,36 +1,33 @@
 import type { PropsWithChildren } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface ScreenProps extends PropsWithChildren {
   padded?: boolean;
   scroll?: boolean;
-  backgroundClassName?: string;
-  contentClassName?: string;
 }
 
 export function Screen({
   children,
   padded = true,
   scroll = true,
-  backgroundClassName = 'bg-white',
-  contentClassName = '',
 }: ScreenProps) {
-  // NativeWind is not reliably active in this environment; keep props for compatibility,
-  // but render using stable RN styles.
+  const { colors } = useTheme();
+
   const content = (
     <View style={[styles.content, padded ? styles.padded : null]}>{children}</View>
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       {scroll ? <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>{content}</ScrollView> : content}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#ffffff' },
+  safeArea: { flex: 1 },
   scroll: { flex: 1 },
   scrollContent: { flexGrow: 1 },
   content: { flex: 1 },

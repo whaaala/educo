@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
+import Tooltip from '../components/ui/Tooltip';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -165,7 +166,7 @@ function getTrendInfo(trend: SubjectProgress['trend']): { icon: string; label: s
 }
 
 export default function TermProgressScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
   const isTablet = useIsTablet();
@@ -226,7 +227,13 @@ export default function TermProgressScreen() {
                 </View>
               </LinearGradient>
               <View style={styles.studentDetails}>
-                <Text style={[styles.studentName, { color: colors.text }]}>{childName}</Text>
+                <Tooltip
+                  content={childName}
+                  backgroundColor={colors.text}
+                  textColor={colors.background}
+                >
+                  <Text style={[styles.studentName, { color: colors.text }]} numberOfLines={1}>{childName}</Text>
+                </Tooltip>
                 <Text style={[styles.studentClass, { color: colors.textSecondary }]}>{childClass}</Text>
               </View>
             </View>
@@ -254,53 +261,53 @@ export default function TermProgressScreen() {
         {isTablet && (
           <View style={styles.tabletStatsCardsRow}>
             {/* Current Average Card */}
-            <View style={[styles.tabletStatCard, { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' }]}>
+            <View style={[styles.tabletStatCard, { backgroundColor: isDark ? colors.surface : '#ecfdf5', borderColor: isDark ? colors.border : '#a7f3d0' }]}>
               <View style={styles.tabletStatCardTop}>
-                <Text style={[styles.tabletStatCardLabel, { color: '#059669' }]}>Current Avg</Text>
-                <View style={[styles.tabletStatCardIcon, { backgroundColor: '#a7f3d0' }]}>
-                  <Ionicons name="trending-up" size={16} color="#059669" />
+                <Text style={[styles.tabletStatCardLabel, { color: isDark ? colors.success : '#059669' }]}>Current Avg</Text>
+                <View style={[styles.tabletStatCardIcon, { backgroundColor: isDark ? colors.successLight : '#a7f3d0' }]}>
+                  <Ionicons name="trending-up" size={16} color={isDark ? colors.success : '#059669'} />
                 </View>
               </View>
-              <Text style={[styles.tabletStatCardValue, { color: '#064e3b' }]}>{currentAverage}%</Text>
-              <Text style={[styles.tabletStatCardSubtext, { color: '#047857' }]}>
+              <Text style={[styles.tabletStatCardValue, { color: isDark ? colors.text : '#064e3b' }]}>{currentAverage}%</Text>
+              <Text style={[styles.tabletStatCardSubtext, { color: isDark ? colors.textSecondary : '#047857' }]}>
                 {completedSubjects}/{totalSubjects} subjects
               </Text>
             </View>
 
             {/* Position Card */}
-            <View style={[styles.tabletStatCard, { backgroundColor: '#fef3c7', borderColor: '#fcd34d' }]}>
+            <View style={[styles.tabletStatCard, { backgroundColor: isDark ? colors.surface : '#fef3c7', borderColor: isDark ? colors.border : '#fcd34d' }]}>
               <View style={styles.tabletStatCardTop}>
-                <Text style={[styles.tabletStatCardLabel, { color: '#d97706' }]}>Position</Text>
-                <View style={[styles.tabletStatCardIcon, { backgroundColor: '#fcd34d' }]}>
-                  <Ionicons name="trophy" size={16} color="#d97706" />
+                <Text style={[styles.tabletStatCardLabel, { color: isDark ? colors.warning : '#d97706' }]}>Position</Text>
+                <View style={[styles.tabletStatCardIcon, { backgroundColor: isDark ? colors.warningLight : '#fcd34d' }]}>
+                  <Ionicons name="trophy" size={16} color={isDark ? colors.warning : '#d97706'} />
                 </View>
               </View>
-              <Text style={[styles.tabletStatCardValue, { color: '#78350f' }]}>#{currentPosition}</Text>
-              <Text style={[styles.tabletStatCardSubtext, { color: '#92400e' }]}>of {totalStudents}</Text>
+              <Text style={[styles.tabletStatCardValue, { color: isDark ? colors.text : '#78350f' }]}>#{currentPosition}</Text>
+              <Text style={[styles.tabletStatCardSubtext, { color: isDark ? colors.textSecondary : '#92400e' }]}>of {totalStudents}</Text>
             </View>
 
             {/* Attendance Card */}
-            <View style={[styles.tabletStatCard, { backgroundColor: '#e0f2fe', borderColor: '#7dd3fc' }]}>
+            <View style={[styles.tabletStatCard, { backgroundColor: isDark ? colors.surface : '#e0f2fe', borderColor: isDark ? colors.border : '#7dd3fc' }]}>
               <View style={styles.tabletStatCardTop}>
-                <Text style={[styles.tabletStatCardLabel, { color: '#0284c7' }]}>Attendance</Text>
-                <View style={[styles.tabletStatCardIcon, { backgroundColor: '#7dd3fc' }]}>
-                  <Ionicons name="calendar-outline" size={16} color="#0284c7" />
+                <Text style={[styles.tabletStatCardLabel, { color: isDark ? colors.info : '#0284c7' }]}>Attendance</Text>
+                <View style={[styles.tabletStatCardIcon, { backgroundColor: isDark ? colors.infoLight : '#7dd3fc' }]}>
+                  <Ionicons name="calendar-outline" size={16} color={isDark ? colors.info : '#0284c7'} />
                 </View>
               </View>
-              <Text style={[styles.tabletStatCardValue, { color: '#0c4a6e' }]}>{attendance}%</Text>
-              <Text style={[styles.tabletStatCardSubtext, { color: '#0369a1' }]}>this term</Text>
+              <Text style={[styles.tabletStatCardValue, { color: isDark ? colors.text : '#0c4a6e' }]}>{attendance}%</Text>
+              <Text style={[styles.tabletStatCardSubtext, { color: isDark ? colors.textSecondary : '#0369a1' }]}>this term</Text>
             </View>
 
             {/* Conduct Card */}
-            <View style={[styles.tabletStatCard, { backgroundColor: '#fce7f3', borderColor: '#f9a8d4' }]}>
+            <View style={[styles.tabletStatCard, { backgroundColor: isDark ? colors.surface : '#fce7f3', borderColor: isDark ? colors.border : '#f9a8d4' }]}>
               <View style={styles.tabletStatCardTop}>
-                <Text style={[styles.tabletStatCardLabel, { color: '#db2777' }]}>Conduct</Text>
-                <View style={[styles.tabletStatCardIcon, { backgroundColor: '#f9a8d4' }]}>
-                  <Ionicons name="ribbon" size={16} color="#db2777" />
+                <Text style={[styles.tabletStatCardLabel, { color: isDark ? colors.accent : '#db2777' }]}>Conduct</Text>
+                <View style={[styles.tabletStatCardIcon, { backgroundColor: isDark ? colors.accentLight : '#f9a8d4' }]}>
+                  <Ionicons name="ribbon" size={16} color={isDark ? colors.accent : '#db2777'} />
                 </View>
               </View>
-              <Text style={[styles.tabletStatCardValue, { color: '#831843' }]}>{conduct}</Text>
-              <Text style={[styles.tabletStatCardSubtext, { color: '#9d174d' }]}>current grade</Text>
+              <Text style={[styles.tabletStatCardValue, { color: isDark ? colors.text : '#831843' }]}>{conduct}</Text>
+              <Text style={[styles.tabletStatCardSubtext, { color: isDark ? colors.textSecondary : '#9d174d' }]}>current grade</Text>
             </View>
           </View>
         )}
@@ -309,53 +316,53 @@ export default function TermProgressScreen() {
         {!isTablet && (
           <View style={styles.mobileStatsGrid}>
             {/* Current Average Card */}
-            <View style={[styles.mobileStatCard, { backgroundColor: '#f0fdf4' }]}>
+            <View style={[styles.mobileStatCard, { backgroundColor: isDark ? colors.surface : '#f0fdf4' }]}>
               <View style={styles.mobileStatCardTop}>
-                <Text style={[styles.mobileStatCardLabel, { color: '#16a34a' }]}>Current Avg</Text>
-                <View style={[styles.mobileStatCardIcon, { backgroundColor: '#dcfce7' }]}>
-                  <Ionicons name="analytics" size={14} color="#16a34a" />
+                <Text style={[styles.mobileStatCardLabel, { color: isDark ? colors.success : '#16a34a' }]}>Current Avg</Text>
+                <View style={[styles.mobileStatCardIcon, { backgroundColor: isDark ? colors.successLight : '#dcfce7' }]}>
+                  <Ionicons name="analytics" size={14} color={isDark ? colors.success : '#16a34a'} />
                 </View>
               </View>
-              <Text style={[styles.mobileStatCardValue, { color: '#14532d' }]}>{currentAverage}%</Text>
-              <Text style={[styles.mobileStatCardSubtext, { color: '#166534' }]}>
+              <Text style={[styles.mobileStatCardValue, { color: isDark ? colors.text : '#14532d' }]}>{currentAverage}%</Text>
+              <Text style={[styles.mobileStatCardSubtext, { color: isDark ? colors.textSecondary : '#166534' }]}>
                 {completedSubjects}/{totalSubjects} subjects
               </Text>
             </View>
 
             {/* Position Card */}
-            <View style={[styles.mobileStatCard, { backgroundColor: '#fefce8' }]}>
+            <View style={[styles.mobileStatCard, { backgroundColor: isDark ? colors.surface : '#fefce8' }]}>
               <View style={styles.mobileStatCardTop}>
-                <Text style={[styles.mobileStatCardLabel, { color: '#ca8a04' }]}>Position</Text>
-                <View style={[styles.mobileStatCardIcon, { backgroundColor: '#fef9c3' }]}>
-                  <Ionicons name="trophy" size={14} color="#ca8a04" />
+                <Text style={[styles.mobileStatCardLabel, { color: isDark ? colors.warning : '#ca8a04' }]}>Position</Text>
+                <View style={[styles.mobileStatCardIcon, { backgroundColor: isDark ? colors.warningLight : '#fef9c3' }]}>
+                  <Ionicons name="trophy" size={14} color={isDark ? colors.warning : '#ca8a04'} />
                 </View>
               </View>
-              <Text style={[styles.mobileStatCardValue, { color: '#713f12' }]}>#{currentPosition}</Text>
-              <Text style={[styles.mobileStatCardSubtext, { color: '#854d0e' }]}>of {totalStudents}</Text>
+              <Text style={[styles.mobileStatCardValue, { color: isDark ? colors.text : '#713f12' }]}>#{currentPosition}</Text>
+              <Text style={[styles.mobileStatCardSubtext, { color: isDark ? colors.textSecondary : '#854d0e' }]}>of {totalStudents}</Text>
             </View>
 
             {/* Attendance Card */}
-            <View style={[styles.mobileStatCard, { backgroundColor: '#eef2ff' }]}>
+            <View style={[styles.mobileStatCard, { backgroundColor: isDark ? colors.surface : '#eef2ff' }]}>
               <View style={styles.mobileStatCardTop}>
-                <Text style={[styles.mobileStatCardLabel, { color: '#6366f1' }]}>Attendance</Text>
-                <View style={[styles.mobileStatCardIcon, { backgroundColor: '#e0e7ff' }]}>
-                  <Ionicons name="calendar-outline" size={14} color="#6366f1" />
+                <Text style={[styles.mobileStatCardLabel, { color: isDark ? colors.primary : '#6366f1' }]}>Attendance</Text>
+                <View style={[styles.mobileStatCardIcon, { backgroundColor: isDark ? colors.primaryLight : '#e0e7ff' }]}>
+                  <Ionicons name="calendar-outline" size={14} color={isDark ? colors.primary : '#6366f1'} />
                 </View>
               </View>
-              <Text style={[styles.mobileStatCardValue, { color: '#1e1b4b' }]}>{attendance}%</Text>
-              <Text style={[styles.mobileStatCardSubtext, { color: '#4338ca' }]}>this term</Text>
+              <Text style={[styles.mobileStatCardValue, { color: isDark ? colors.text : '#1e1b4b' }]}>{attendance}%</Text>
+              <Text style={[styles.mobileStatCardSubtext, { color: isDark ? colors.textSecondary : '#4338ca' }]}>this term</Text>
             </View>
 
             {/* Conduct Card */}
-            <View style={[styles.mobileStatCard, { backgroundColor: '#fdf2f8' }]}>
+            <View style={[styles.mobileStatCard, { backgroundColor: isDark ? colors.surface : '#fdf2f8' }]}>
               <View style={styles.mobileStatCardTop}>
-                <Text style={[styles.mobileStatCardLabel, { color: '#db2777' }]}>Conduct</Text>
-                <View style={[styles.mobileStatCardIcon, { backgroundColor: '#fce7f3' }]}>
-                  <Ionicons name="ribbon" size={14} color="#db2777" />
+                <Text style={[styles.mobileStatCardLabel, { color: isDark ? colors.accent : '#db2777' }]}>Conduct</Text>
+                <View style={[styles.mobileStatCardIcon, { backgroundColor: isDark ? colors.accentLight : '#fce7f3' }]}>
+                  <Ionicons name="ribbon" size={14} color={isDark ? colors.accent : '#db2777'} />
                 </View>
               </View>
-              <Text style={[styles.mobileStatCardValue, { color: '#831843' }]}>{conduct}</Text>
-              <Text style={[styles.mobileStatCardSubtext, { color: '#9d174d' }]}>current grade</Text>
+              <Text style={[styles.mobileStatCardValue, { color: isDark ? colors.text : '#831843' }]}>{conduct}</Text>
+              <Text style={[styles.mobileStatCardSubtext, { color: isDark ? colors.textSecondary : '#9d174d' }]}>current grade</Text>
             </View>
           </View>
         )}
@@ -437,41 +444,41 @@ export default function TermProgressScreen() {
                 {/* Subject Stats Cards - 2x2 Grid */}
                 <View style={[styles.subjectStatsGrid, { backgroundColor: colors.backgroundSecondary }, isTablet && styles.subjectStatsGridTablet]}>
                   {/* Average Card */}
-                  <View style={[styles.subjectStatCard, { backgroundColor: '#f0fdf4' }, isTablet && styles.subjectStatCardTablet]}>
+                  <View style={[styles.subjectStatCard, { backgroundColor: isDark ? colors.surface : '#f0fdf4' }, isTablet && styles.subjectStatCardTablet]}>
                     <View style={styles.subjectStatCardTop}>
-                      <Text style={[styles.subjectStatCardLabel, { color: '#16a34a' }]}>Average</Text>
-                      <View style={[styles.subjectStatCardIcon, { backgroundColor: '#dcfce7' }]}>
-                        <Ionicons name="analytics" size={isTablet ? 12 : 10} color="#16a34a" />
+                      <Text style={[styles.subjectStatCardLabel, { color: isDark ? colors.success : '#16a34a' }]}>Average</Text>
+                      <View style={[styles.subjectStatCardIcon, { backgroundColor: isDark ? colors.successLight : '#dcfce7' }]}>
+                        <Ionicons name="analytics" size={isTablet ? 12 : 10} color={isDark ? colors.success : '#16a34a'} />
                       </View>
                     </View>
-                    <Text style={[styles.subjectStatCardValue, { color: '#14532d' }, isTablet && styles.subjectStatCardValueTablet]}>
+                    <Text style={[styles.subjectStatCardValue, { color: isDark ? colors.text : '#14532d' }, isTablet && styles.subjectStatCardValueTablet]}>
                       {subject.currentAverage > 0 ? `${subject.currentAverage}%` : '-'}
                     </Text>
                   </View>
 
                   {/* Tests Card */}
-                  <View style={[styles.subjectStatCard, { backgroundColor: '#fefce8' }, isTablet && styles.subjectStatCardTablet]}>
+                  <View style={[styles.subjectStatCard, { backgroundColor: isDark ? colors.surface : '#fefce8' }, isTablet && styles.subjectStatCardTablet]}>
                     <View style={styles.subjectStatCardTop}>
-                      <Text style={[styles.subjectStatCardLabel, { color: '#ca8a04' }]}>Tests</Text>
-                      <View style={[styles.subjectStatCardIcon, { backgroundColor: '#fef9c3' }]}>
-                        <Ionicons name="document-text" size={isTablet ? 12 : 10} color="#ca8a04" />
+                      <Text style={[styles.subjectStatCardLabel, { color: isDark ? colors.warning : '#ca8a04' }]}>Tests</Text>
+                      <View style={[styles.subjectStatCardIcon, { backgroundColor: isDark ? colors.warningLight : '#fef9c3' }]}>
+                        <Ionicons name="document-text" size={isTablet ? 12 : 10} color={isDark ? colors.warning : '#ca8a04'} />
                       </View>
                     </View>
-                    <Text style={[styles.subjectStatCardValue, { color: '#713f12' }, isTablet && styles.subjectStatCardValueTablet]}>
+                    <Text style={[styles.subjectStatCardValue, { color: isDark ? colors.text : '#713f12' }, isTablet && styles.subjectStatCardValueTablet]}>
                       {subject.testsCompleted}/{subject.totalTests}
                     </Text>
-                    <Text style={[styles.subjectStatCardSubtext, { color: '#854d0e' }]}>completed</Text>
+                    <Text style={[styles.subjectStatCardSubtext, { color: isDark ? colors.textSecondary : '#854d0e' }]}>completed</Text>
                   </View>
 
                   {/* Last Score Card */}
-                  <View style={[styles.subjectStatCard, { backgroundColor: '#eef2ff' }, isTablet && styles.subjectStatCardTablet]}>
+                  <View style={[styles.subjectStatCard, { backgroundColor: isDark ? colors.surface : '#eef2ff' }, isTablet && styles.subjectStatCardTablet]}>
                     <View style={styles.subjectStatCardTop}>
-                      <Text style={[styles.subjectStatCardLabel, { color: '#6366f1' }]}>Last Test</Text>
-                      <View style={[styles.subjectStatCardIcon, { backgroundColor: '#e0e7ff' }]}>
-                        <Ionicons name="checkmark-circle" size={isTablet ? 12 : 10} color="#6366f1" />
+                      <Text style={[styles.subjectStatCardLabel, { color: isDark ? colors.primary : '#6366f1' }]}>Last Test</Text>
+                      <View style={[styles.subjectStatCardIcon, { backgroundColor: isDark ? colors.primaryLight : '#e0e7ff' }]}>
+                        <Ionicons name="checkmark-circle" size={isTablet ? 12 : 10} color={isDark ? colors.primary : '#6366f1'} />
                       </View>
                     </View>
-                    <Text style={[styles.subjectStatCardValue, { color: '#1e1b4b' }, isTablet && styles.subjectStatCardValueTablet]}>
+                    <Text style={[styles.subjectStatCardValue, { color: isDark ? colors.text : '#1e1b4b' }, isTablet && styles.subjectStatCardValueTablet]}>
                       {subject.lastTestScore ? `${subject.lastTestScore}%` : '-'}
                     </Text>
                   </View>
@@ -480,10 +487,10 @@ export default function TermProgressScreen() {
                   {(() => {
                     const trendInfo = getTrendInfo(subject.trend);
                     return (
-                      <View style={[styles.subjectStatCard, { backgroundColor: trendInfo.bg }, isTablet && styles.subjectStatCardTablet]}>
+                      <View style={[styles.subjectStatCard, { backgroundColor: isDark ? colors.surface : trendInfo.bg }, isTablet && styles.subjectStatCardTablet]}>
                         <View style={styles.subjectStatCardTop}>
                           <Text style={[styles.subjectStatCardLabel, { color: trendInfo.color }]}>Trend</Text>
-                          <View style={[styles.subjectStatCardIcon, { backgroundColor: trendInfo.color + '30' }]}>
+                          <View style={[styles.subjectStatCardIcon, { backgroundColor: isDark ? trendInfo.color + '30' : trendInfo.color + '30' }]}>
                             <Ionicons name={trendInfo.icon as any} size={isTablet ? 12 : 10} color={trendInfo.color} />
                           </View>
                         </View>
@@ -514,7 +521,7 @@ export default function TermProgressScreen() {
                           styles.subjectProgressFill,
                           {
                             width: `${progressPercent}%`,
-                            backgroundColor: subject.status === 'completed' ? '#10b981' : '#6366f1',
+                            backgroundColor: subject.status === 'completed' ? colors.success : colors.primary,
                           },
                         ]}
                       />
@@ -527,9 +534,9 @@ export default function TermProgressScreen() {
         </View>
 
         {/* Note about report generation */}
-        <View style={[styles.noteContainer, { backgroundColor: '#eef2ff', borderColor: '#c7d2fe' }]}>
-          <Ionicons name="information-circle" size={20} color="#6366f1" />
-          <Text style={[styles.noteText, { color: '#4338ca' }]}>
+        <View style={[styles.noteContainer, { backgroundColor: isDark ? colors.surface : '#eef2ff', borderColor: isDark ? colors.border : '#c7d2fe' }]}>
+          <Ionicons name="information-circle" size={20} color={isDark ? colors.primary : '#6366f1'} />
+          <Text style={[styles.noteText, { color: isDark ? colors.textSecondary : '#4338ca' }]}>
             The final report card will be generated at the end of the term once all assessments are completed.
           </Text>
         </View>
@@ -586,6 +593,8 @@ const styles = StyleSheet.create({
   studentInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    marginRight: 16,
   },
   avatarRing: {
     width: 56,
@@ -605,6 +614,7 @@ const styles = StyleSheet.create({
   },
   studentDetails: {
     marginLeft: 12,
+    flex: 1,
   },
   studentName: {
     fontSize: 18,

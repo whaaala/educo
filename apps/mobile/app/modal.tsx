@@ -1,16 +1,41 @@
-import { Text, View } from 'react-native';
-
+import { Text, View, StyleSheet } from 'react-native';
 import { Screen } from '../components/ui/Screen';
+import { useTheme } from '../contexts/ThemeContext';
+
+const FONTS = {
+  regular: 'Inter_400Regular',
+  medium: 'Inter_500Medium',
+  semiBold: 'Inter_600SemiBold',
+  bold: 'Inter_700Bold',
+};
 
 export default function ModalScreen() {
+  const { colors } = useTheme();
+
   return (
-    <Screen backgroundClassName="bg-slate-50">
-      <View className="gap-2">
-        <Text className="text-lg font-extrabold text-slate-900">Help</Text>
-        <Text className="text-sm text-slate-600">This is a placeholder modal.</Text>
+    <Screen>
+      <View style={styles.container}>
+        <Text style={[styles.title, { color: colors.text }]}>Help</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          This is a placeholder modal.
+        </Text>
       </View>
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    gap: 8,
+  },
+  title: {
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+  },
+  subtitle: {
+    fontSize: 14,
+    fontFamily: FONTS.medium,
+  },
+});
 
 

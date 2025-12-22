@@ -6,7 +6,8 @@
       "Bash(curl:*)",
       "Bash(tr:*)",
       "Bash(awk:*)",
-      "Bash(npx expo start:*)"
+      "Bash(npx expo start:*)",
+      "Bash(C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb.exe:*)"
     ],
     "deny": [],
     "ask": []

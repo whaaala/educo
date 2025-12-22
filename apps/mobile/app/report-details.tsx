@@ -219,7 +219,7 @@ function SubjectCard({ subject, colors, isTablet }: { subject: SubjectResult; co
 }
 
 export default function ReportDetailsScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
   const isTablet = useIsTablet();
@@ -577,31 +577,31 @@ export default function ReportDetailsScreen() {
                   {/* Stats Grid - 2x2 */}
                   <View style={styles.statsGridNew}>
                     <View style={[styles.statCardNew, { backgroundColor: colors.backgroundTertiary }]}>
-                      <View style={[styles.statIconNew, { backgroundColor: '#fef3c7' }]}>
-                        <Ionicons name="trophy" size={20} color="#f59e0b" />
+                      <View style={[styles.statIconNew, { backgroundColor: isDark ? colors.warningLight : '#fef3c7' }]}>
+                        <Ionicons name="trophy" size={20} color={isDark ? colors.warning : '#f59e0b'} />
                       </View>
                       <Text style={[styles.statValueNew, { color: colors.text }]}>#{report.rank}</Text>
                       <Text style={[styles.statLabelNew, { color: colors.textMuted }]}>of {report.totalStudents}</Text>
                     </View>
                     <View style={[styles.statCardNew, { backgroundColor: colors.backgroundTertiary }]}>
-                      <View style={[styles.statIconNew, { backgroundColor: '#eff6ff' }]}>
-                        <Ionicons name="book" size={20} color="#3b82f6" />
+                      <View style={[styles.statIconNew, { backgroundColor: isDark ? colors.infoLight : '#eff6ff' }]}>
+                        <Ionicons name="book" size={20} color={isDark ? colors.info : '#3b82f6'} />
                       </View>
                       <Text style={[styles.statValueNew, { color: colors.text }]}>{report.subjects.length}</Text>
                       <Text style={[styles.statLabelNew, { color: colors.textMuted }]}>Subjects</Text>
                     </View>
                     <View style={[styles.statCardNew, { backgroundColor: colors.backgroundTertiary }]}>
-                      <View style={[styles.statIconNew, { backgroundColor: '#ecfdf5' }]}>
-                        <Ionicons name="ribbon" size={20} color="#10b981" />
+                      <View style={[styles.statIconNew, { backgroundColor: isDark ? colors.successLight : '#ecfdf5' }]}>
+                        <Ionicons name="ribbon" size={20} color={isDark ? colors.success : '#10b981'} />
                       </View>
                       <Text style={[styles.statValueNew, { color: colors.text }]}>{gradeACount}</Text>
                       <Text style={[styles.statLabelNew, { color: colors.textMuted }]}>A Grades</Text>
                     </View>
-                    <View style={[styles.statCardNew, { backgroundColor: report.status === 'pass' ? '#ecfdf5' : '#fef2f2' }]}>
-                      <View style={[styles.statIconNew, { backgroundColor: report.status === 'pass' ? '#d1fae5' : '#fecaca' }]}>
-                        <Ionicons name={report.status === 'pass' ? 'checkmark-circle' : 'close-circle'} size={20} color={report.status === 'pass' ? '#10b981' : '#ef4444'} />
+                    <View style={[styles.statCardNew, { backgroundColor: isDark ? colors.backgroundTertiary : (report.status === 'pass' ? '#ecfdf5' : '#fef2f2') }]}>
+                      <View style={[styles.statIconNew, { backgroundColor: isDark ? (report.status === 'pass' ? colors.successLight : colors.errorLight) : (report.status === 'pass' ? '#d1fae5' : '#fecaca') }]}>
+                        <Ionicons name={report.status === 'pass' ? 'checkmark-circle' : 'close-circle'} size={20} color={report.status === 'pass' ? (isDark ? colors.success : '#10b981') : (isDark ? colors.error : '#ef4444')} />
                       </View>
-                      <Text style={[styles.statValueNew, { color: report.status === 'pass' ? '#10b981' : '#ef4444' }]}>
+                      <Text style={[styles.statValueNew, { color: report.status === 'pass' ? (isDark ? colors.success : '#10b981') : (isDark ? colors.error : '#ef4444') }]}>
                         {report.status === 'pass' ? 'Passed' : 'Failed'}
                       </Text>
                       <Text style={[styles.statLabelNew, { color: colors.textMuted }]}>Status</Text>
@@ -612,21 +612,21 @@ export default function ReportDetailsScreen() {
 
               {/* Highlights Row */}
               <View style={styles.highlightsRowNew}>
-                <View style={[styles.highlightCardNew2, { backgroundColor: '#f0fdf4' }]}>
+                <View style={[styles.highlightCardNew2, { backgroundColor: isDark ? colors.surface : '#f0fdf4' }]}>
                   <View style={styles.highlightTopNew}>
-                    <Ionicons name="trending-up" size={20} color="#10b981" />
-                    <Text style={styles.highlightLabelNew2}>BEST</Text>
+                    <Ionicons name="trending-up" size={20} color={isDark ? colors.success : '#10b981'} />
+                    <Text style={[styles.highlightLabelNew2, { color: isDark ? colors.success : '#10b981' }]}>BEST</Text>
                   </View>
                   <Text style={[styles.highlightSubjectNew, { color: colors.text }]}>{highestSubject.name}</Text>
-                  <Text style={styles.highlightScoreNew2}>{highestSubject.score}%</Text>
+                  <Text style={[styles.highlightScoreNew2, { color: isDark ? colors.success : '#10b981' }]}>{highestSubject.score}%</Text>
                 </View>
-                <View style={[styles.highlightCardNew2, { backgroundColor: '#fef2f2' }]}>
+                <View style={[styles.highlightCardNew2, { backgroundColor: isDark ? colors.surface : '#fef2f2' }]}>
                   <View style={styles.highlightTopNew}>
-                    <Ionicons name="trending-down" size={20} color="#ef4444" />
-                    <Text style={[styles.highlightLabelNew2, { color: '#ef4444' }]}>IMPROVE</Text>
+                    <Ionicons name="trending-down" size={20} color={isDark ? colors.error : '#ef4444'} />
+                    <Text style={[styles.highlightLabelNew2, { color: isDark ? colors.error : '#ef4444' }]}>IMPROVE</Text>
                   </View>
                   <Text style={[styles.highlightSubjectNew, { color: colors.text }]}>{lowestSubject.name}</Text>
-                  <Text style={[styles.highlightScoreNew2, { color: '#ef4444' }]}>{lowestSubject.score}%</Text>
+                  <Text style={[styles.highlightScoreNew2, { color: isDark ? colors.error : '#ef4444' }]}>{lowestSubject.score}%</Text>
                 </View>
               </View>
 
@@ -635,14 +635,14 @@ export default function ReportDetailsScreen() {
                 <Text style={[styles.remarksTitleNew, { color: colors.text }]}>Remarks</Text>
                 <View style={[styles.remarkBoxNew, { backgroundColor: colors.backgroundTertiary }]}>
                   <View style={styles.remarkHeaderNew}>
-                    <Ionicons name="person" size={16} color="#3b82f6" />
+                    <Ionicons name="person" size={16} color={isDark ? colors.info : '#3b82f6'} />
                     <Text style={[styles.remarkLabelNew, { color: colors.textMuted }]}>Class Teacher</Text>
                   </View>
                   <Text style={[styles.remarkTextNew, { color: colors.text }]}>{report.classTeacherRemark}</Text>
                 </View>
                 <View style={[styles.remarkBoxNew, { backgroundColor: colors.backgroundTertiary, marginTop: 12 }]}>
                   <View style={styles.remarkHeaderNew}>
-                    <Ionicons name="school" size={16} color="#f59e0b" />
+                    <Ionicons name="school" size={16} color={isDark ? colors.warning : '#f59e0b'} />
                     <Text style={[styles.remarkLabelNew, { color: colors.textMuted }]}>Principal</Text>
                   </View>
                   <Text style={[styles.remarkTextNew, { color: colors.text }]}>{report.principalRemark}</Text>
@@ -796,17 +796,17 @@ export default function ReportDetailsScreen() {
                 </View>
                 <View style={styles.performanceStats}>
                   <View style={[styles.performanceStatRow, { backgroundColor: colors.backgroundTertiary }]}>
-                    <View style={[styles.performanceStatIcon, { backgroundColor: '#fef3c7' }]}>
-                      <Ionicons name="trophy" size={16} color="#f59e0b" />
+                    <View style={[styles.performanceStatIcon, { backgroundColor: isDark ? colors.warningLight : '#fef3c7' }]}>
+                      <Ionicons name="trophy" size={16} color={isDark ? colors.warning : '#f59e0b'} />
                     </View>
                     <View style={styles.performanceStatContent}>
                       <Text style={[styles.performanceStatValue, { color: colors.text }]}>#{report.rank}</Text>
                       <Text style={[styles.performanceStatLabel, { color: colors.textMuted }]}>of {report.totalStudents} students</Text>
                     </View>
                   </View>
-                  <View style={[styles.statusBadgeNew, { backgroundColor: report.status === 'pass' ? '#ecfdf5' : '#fef2f2' }]}>
-                    <View style={[styles.statusDot, { backgroundColor: report.status === 'pass' ? '#10b981' : '#ef4444' }]} />
-                    <Text style={[styles.statusTextNew, { color: report.status === 'pass' ? '#059669' : '#dc2626' }]}>
+                  <View style={[styles.statusBadgeNew, { backgroundColor: isDark ? colors.backgroundTertiary : (report.status === 'pass' ? '#ecfdf5' : '#fef2f2') }]}>
+                    <View style={[styles.statusDot, { backgroundColor: report.status === 'pass' ? (isDark ? colors.success : '#10b981') : (isDark ? colors.error : '#ef4444') }]} />
+                    <Text style={[styles.statusTextNew, { color: report.status === 'pass' ? (isDark ? colors.success : '#059669') : (isDark ? colors.error : '#dc2626') }]}>
                       {report.status === 'pass' ? 'Passed' : 'Failed'}
                     </Text>
                   </View>
@@ -817,29 +817,29 @@ export default function ReportDetailsScreen() {
             {/* Quick Stats */}
             <View style={styles.quickStatsRow}>
               <View style={[styles.quickStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <View style={[styles.quickStatIcon, { backgroundColor: '#eff6ff' }]}>
-                  <Ionicons name="book-outline" size={16} color="#3b82f6" />
+                <View style={[styles.quickStatIcon, { backgroundColor: isDark ? colors.infoLight : '#eff6ff' }]}>
+                  <Ionicons name="book-outline" size={16} color={isDark ? colors.info : '#3b82f6'} />
                 </View>
                 <Text style={[styles.quickStatValue, { color: colors.text }]}>{report.subjects.length}</Text>
                 <Text style={[styles.quickStatLabel, { color: colors.textMuted }]}>Subjects</Text>
               </View>
               <View style={[styles.quickStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <View style={[styles.quickStatIcon, { backgroundColor: '#ecfdf5' }]}>
-                  <Ionicons name="ribbon-outline" size={16} color="#10b981" />
+                <View style={[styles.quickStatIcon, { backgroundColor: isDark ? colors.successLight : '#ecfdf5' }]}>
+                  <Ionicons name="ribbon-outline" size={16} color={isDark ? colors.success : '#10b981'} />
                 </View>
                 <Text style={[styles.quickStatValue, { color: colors.text }]}>{gradeACount}</Text>
                 <Text style={[styles.quickStatLabel, { color: colors.textMuted }]}>A Grades</Text>
               </View>
               <View style={[styles.quickStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <View style={[styles.quickStatIcon, { backgroundColor: '#fef3c7' }]}>
-                  <Ionicons name="stats-chart-outline" size={16} color="#f59e0b" />
+                <View style={[styles.quickStatIcon, { backgroundColor: isDark ? colors.warningLight : '#fef3c7' }]}>
+                  <Ionicons name="stats-chart-outline" size={16} color={isDark ? colors.warning : '#f59e0b'} />
                 </View>
                 <Text style={[styles.quickStatValue, { color: colors.text }]}>{averageScore}%</Text>
                 <Text style={[styles.quickStatLabel, { color: colors.textMuted }]}>Average</Text>
               </View>
               <View style={[styles.quickStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <View style={[styles.quickStatIcon, { backgroundColor: '#fce7f3' }]}>
-                  <Ionicons name="calendar-outline" size={16} color="#ec4899" />
+                <View style={[styles.quickStatIcon, { backgroundColor: isDark ? colors.accentLight : '#fce7f3' }]}>
+                  <Ionicons name="calendar-outline" size={16} color={isDark ? colors.accent : '#ec4899'} />
                 </View>
                 <Text style={[styles.quickStatValue, { color: colors.text }]}>{report.attendanceRate}%</Text>
                 <Text style={[styles.quickStatLabel, { color: colors.textMuted }]}>Attend.</Text>
@@ -849,23 +849,23 @@ export default function ReportDetailsScreen() {
             {/* Highlights */}
             <View style={styles.highlightsRow}>
               <View style={[styles.highlightCardNew, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <View style={[styles.highlightIconWrap, { backgroundColor: '#ecfdf5' }]}>
-                  <Ionicons name="trending-up" size={18} color="#10b981" />
+                <View style={[styles.highlightIconWrap, { backgroundColor: isDark ? colors.successLight : '#ecfdf5' }]}>
+                  <Ionicons name="trending-up" size={18} color={isDark ? colors.success : '#10b981'} />
                 </View>
                 <View style={styles.highlightTextWrap}>
                   <Text style={[styles.highlightLabelNew, { color: colors.textMuted }]}>Best</Text>
                   <Text style={[styles.highlightValueNew, { color: colors.text }]} numberOfLines={1}>{highestSubject.name}</Text>
-                  <Text style={[styles.highlightScoreNew, { color: '#10b981' }]}>{highestSubject.score}%</Text>
+                  <Text style={[styles.highlightScoreNew, { color: isDark ? colors.success : '#10b981' }]}>{highestSubject.score}%</Text>
                 </View>
               </View>
               <View style={[styles.highlightCardNew, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <View style={[styles.highlightIconWrap, { backgroundColor: '#fef2f2' }]}>
-                  <Ionicons name="trending-down" size={18} color="#ef4444" />
+                <View style={[styles.highlightIconWrap, { backgroundColor: isDark ? colors.errorLight : '#fef2f2' }]}>
+                  <Ionicons name="trending-down" size={18} color={isDark ? colors.error : '#ef4444'} />
                 </View>
                 <View style={styles.highlightTextWrap}>
                   <Text style={[styles.highlightLabelNew, { color: colors.textMuted }]}>Improve</Text>
                   <Text style={[styles.highlightValueNew, { color: colors.text }]} numberOfLines={1}>{lowestSubject.name}</Text>
-                  <Text style={[styles.highlightScoreNew, { color: '#ef4444' }]}>{lowestSubject.score}%</Text>
+                  <Text style={[styles.highlightScoreNew, { color: isDark ? colors.error : '#ef4444' }]}>{lowestSubject.score}%</Text>
                 </View>
               </View>
             </View>
@@ -890,8 +890,8 @@ export default function ReportDetailsScreen() {
             <View style={[styles.remarksCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.remarkItem}>
                 <View style={styles.remarkHeader}>
-                  <View style={[styles.remarkIcon, { backgroundColor: '#eff6ff' }]}>
-                    <Ionicons name="person" size={16} color="#3b82f6" />
+                  <View style={[styles.remarkIcon, { backgroundColor: isDark ? colors.infoLight : '#eff6ff' }]}>
+                    <Ionicons name="person" size={16} color={isDark ? colors.info : '#3b82f6'} />
                   </View>
                   <Text style={[styles.remarkLabel, { color: colors.textSecondary }]}>Class Teacher</Text>
                 </View>
@@ -900,8 +900,8 @@ export default function ReportDetailsScreen() {
               <View style={[styles.remarkDivider, { backgroundColor: colors.border }]} />
               <View style={styles.remarkItem}>
                 <View style={styles.remarkHeader}>
-                  <View style={[styles.remarkIcon, { backgroundColor: '#fef3c7' }]}>
-                    <Ionicons name="school" size={16} color="#f59e0b" />
+                  <View style={[styles.remarkIcon, { backgroundColor: isDark ? colors.warningLight : '#fef3c7' }]}>
+                    <Ionicons name="school" size={16} color={isDark ? colors.warning : '#f59e0b'} />
                   </View>
                   <Text style={[styles.remarkLabel, { color: colors.textSecondary }]}>Principal</Text>
                 </View>

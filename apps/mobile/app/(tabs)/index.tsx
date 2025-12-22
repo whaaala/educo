@@ -18,6 +18,7 @@ import { LeaveRequestModal } from '../../components/modals/LeaveRequestModal';
 import { MessageTeacherModal } from '../../components/modals/MessageTeacherModal';
 import { PayFeesModal } from '../../components/modals/PayFeesModal';
 import { ViewResultsModal } from '../../components/modals/ViewResultsModal';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -186,26 +187,29 @@ function Avatar({ name, size = 40, imageUri }: { name: string; size?: number; im
 }
 
 function Card({ children, style }: { children: ReactNode; style?: object }) {
-  return <View style={[styles.card, style]}>{children}</View>;
+  const { colors } = useTheme();
+  return <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }, style]}>{children}</View>;
 }
 
 function Pill({ icon, text }: { icon: ComponentProps<typeof Ionicons>['name']; text: string }) {
+  const { colors } = useTheme();
   return (
-    <View style={styles.pill}>
-      <Ionicons name={icon} size={14} color={COLORS.slate600} />
-      <Text style={styles.pillText}>{text}</Text>
+    <View style={[styles.pill, { backgroundColor: colors.backgroundSecondary }]}>
+      <Ionicons name={icon} size={14} color={colors.textSecondary} />
+      <Text style={[styles.pillText, { color: colors.textSecondary }]}>{text}</Text>
     </View>
   );
 }
 
 function RowHeader({ title, icon, right }: { title: string; icon: ComponentProps<typeof Ionicons>['name']; right?: ReactNode }) {
+  const { colors } = useTheme();
   return (
     <View style={styles.rowHeader}>
       <View style={styles.rowHeaderLeft}>
-        <View style={styles.rowHeaderIcon}>
-          <Ionicons name={icon} size={16} color={COLORS.slate700} />
+        <View style={[styles.rowHeaderIcon, { backgroundColor: colors.backgroundSecondary }]}>
+          <Ionicons name={icon} size={16} color={colors.text} />
         </View>
-        <Text style={styles.rowHeaderTitle}>{title}</Text>
+        <Text style={[styles.rowHeaderTitle, { color: colors.text }]}>{title}</Text>
       </View>
       {right}
     </View>
@@ -213,11 +217,12 @@ function RowHeader({ title, icon, right }: { title: string; icon: ComponentProps
 }
 
 function ProgressBar({ value }: { value: number }) {
+  const { colors, isDark } = useTheme();
   const pct = Math.max(0, Math.min(1, value));
   return (
-    <View style={styles.progressTrack}>
+    <View style={[styles.progressTrack, { backgroundColor: colors.backgroundTertiary }]}>
       <LinearGradient
-        colors={['#334155', '#1e293b']}
+        colors={isDark ? [colors.primary, colors.accent] : ['#334155', '#1e293b']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={[styles.progressFill, { width: `${pct * 100}%` }]}
@@ -235,16 +240,20 @@ function StatTile({ label, value, subtitle, icon, tint, bg, border }: {
   bg: string;
   border: string;
 }) {
+  const { colors, isDark } = useTheme();
+  // For dark themes, use theme surface colors instead of light colored backgrounds
+  const tileBg = isDark ? colors.surface : bg;
+  const tileBorder = isDark ? colors.border : border;
   return (
-    <View style={[styles.statTile, { backgroundColor: bg, borderColor: border }]}>
+    <View style={[styles.statTile, { backgroundColor: tileBg, borderColor: tileBorder }]}>
       <View style={styles.statTop}>
-        <Text style={styles.statLabel}>{label}</Text>
+        <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{label}</Text>
         <View style={[styles.statIconWrap, { backgroundColor: `${tint}15` }]}>
           <Ionicons name={icon} size={14} color={tint} />
         </View>
       </View>
-      <Text style={styles.statValue}>{value}</Text>
-      {subtitle && <Text style={styles.statSubtitle}>{subtitle}</Text>}
+      <Text style={[styles.statValue, { color: colors.text }]}>{value}</Text>
+      {subtitle && <Text style={[styles.statSubtitle, { color: colors.textMuted }]}>{subtitle}</Text>}
     </View>
   );
 }
@@ -289,17 +298,18 @@ function MobileWidgetCard({ title, icon, linkHref, linkText, children }: {
   linkText: string;
   children: ReactNode;
 }) {
+  const { colors } = useTheme();
   return (
-    <View style={mobileStyles.widgetCard}>
+    <View style={[mobileStyles.widgetCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={styles.rowHeader}>
         <View style={styles.rowHeaderLeft}>
-          <View style={styles.rowHeaderIcon}>
-            <Ionicons name={icon} size={16} color={COLORS.slate700} />
+          <View style={[styles.rowHeaderIcon, { backgroundColor: colors.backgroundSecondary }]}>
+            <Ionicons name={icon} size={16} color={colors.text} />
           </View>
-          <Text style={styles.rowHeaderTitle}>{title}</Text>
+          <Text style={[styles.rowHeaderTitle, { color: colors.text }]}>{title}</Text>
         </View>
         <Link href={linkHref as any}>
-          <Text style={styles.linkText}>{linkText}</Text>
+          <Text style={[styles.linkText, { color: colors.primary }]}>{linkText}</Text>
         </Link>
       </View>
       {children}
@@ -314,6 +324,7 @@ function QuickActionTile({ icon, label, subtitle, onPress, color }: {
   onPress: () => void;
   color: 'blue' | 'emerald' | 'violet' | 'rose';
 }) {
+  const { colors, isDark } = useTheme();
   const colorMap = {
     blue: { bg: '#fcfeff', iconBg: '#dbeafe', icon: '#2563eb', border: '#f0f5fa', subtitleColor: '#3b82f6' },
     emerald: { bg: '#fcfefd', iconBg: '#d1fae5', icon: '#059669', border: '#f0f7f4', subtitleColor: '#10b981' },
@@ -321,16 +332,19 @@ function QuickActionTile({ icon, label, subtitle, onPress, color }: {
     rose: { bg: '#fefdfd', iconBg: '#ffe4e6', icon: '#e11d48', border: '#faf4f5', subtitleColor: '#f43f5e' },
   };
   const c = colorMap[color];
+  // For dark mode, use surface colors
+  const tileBg = isDark ? colors.surface : c.bg;
+  const tileBorder = isDark ? colors.border : c.border;
 
   return (
     <Pressable
-      style={[mobileStyles.quickActionTile, { backgroundColor: c.bg, borderColor: c.border }]}
+      style={[mobileStyles.quickActionTile, { backgroundColor: tileBg, borderColor: tileBorder }]}
       onPress={onPress}
     >
       <View style={[mobileStyles.quickActionTileIcon, { backgroundColor: c.iconBg }]}>
         <Ionicons name={icon} size={22} color={c.icon} />
       </View>
-      <Text style={mobileStyles.quickActionTileText}>{label}</Text>
+      <Text style={[mobileStyles.quickActionTileText, { color: colors.text }]}>{label}</Text>
       <Text style={[mobileStyles.quickActionTileSubtitle, { color: c.subtitleColor }]}>{subtitle}</Text>
     </Pressable>
   );
@@ -343,6 +357,7 @@ function TabletQuickActionTile({ icon, label, subtitle, onPress, color }: {
   onPress: () => void;
   color: 'blue' | 'emerald' | 'violet' | 'rose';
 }) {
+  const { colors, isDark } = useTheme();
   const colorMap = {
     blue: { bg: '#fafcff', iconBg: '#dbeafe', icon: '#2563eb', border: '#e8f0fa', subtitleColor: '#3b82f6' },
     emerald: { bg: '#fafcfb', iconBg: '#d1fae5', icon: '#059669', border: '#e8f3ef', subtitleColor: '#10b981' },
@@ -350,17 +365,20 @@ function TabletQuickActionTile({ icon, label, subtitle, onPress, color }: {
     rose: { bg: '#fefafb', iconBg: '#ffe4e6', icon: '#e11d48', border: '#f6eced', subtitleColor: '#f43f5e' },
   };
   const c = colorMap[color];
+  // For dark mode, use surface colors
+  const tileBg = isDark ? colors.surface : c.bg;
+  const tileBorder = isDark ? colors.border : c.border;
 
   return (
     <Pressable
-      style={[tabletStyles.quickActionTile, { backgroundColor: c.bg, borderColor: c.border }]}
+      style={[tabletStyles.quickActionTile, { backgroundColor: tileBg, borderColor: tileBorder }]}
       onPress={onPress}
     >
       <View style={[tabletStyles.quickActionTileIcon, { backgroundColor: c.iconBg }]}>
         <Ionicons name={icon} size={28} color={c.icon} />
       </View>
       <View style={tabletStyles.quickActionTileTextContainer}>
-        <Text style={tabletStyles.quickActionTileText}>{label}</Text>
+        <Text style={[tabletStyles.quickActionTileText, { color: colors.text }]}>{label}</Text>
         <Text style={[tabletStyles.quickActionTileSubtitle, { color: c.subtitleColor }]}>{subtitle}</Text>
       </View>
     </Pressable>
@@ -374,6 +392,7 @@ function TabletQuickActionTile({ icon, label, subtitle, onPress, color }: {
 export default function ParentHomeScreen() {
   const isTablet = useIsTablet();
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const [selectedChildId, setSelectedChildId] = useState<string>(mockChildren[0]?.id ?? '');
   const childScrollRef = useRef<ScrollView>(null);
 
@@ -425,35 +444,35 @@ export default function ParentHomeScreen() {
   // ============================================================================
   if (!isTablet) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
           {/* Header with gradient */}
           <LinearGradient
-            colors={['#ffffff', '#f8fafc', '#f0f4ff']}
+            colors={isDark ? [colors.background, colors.backgroundSecondary, colors.backgroundTertiary] : ['#ffffff', '#f8fafc', '#f0f4ff']}
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
             style={mobileStyles.headerGradient}
           >
             {/* Top row - School name and Icons */}
             <View style={mobileStyles.headerTopRow}>
-              <View style={mobileStyles.schoolBadge}>
+              <View style={[mobileStyles.schoolBadge, isDark && { backgroundColor: colors.backgroundSecondary }]}>
                 <View style={mobileStyles.schoolIconWrap}>
-                  <Ionicons name="school" size={12} color={COLORS.white} />
+                  <Ionicons name="school" size={12} color="#ffffff" />
                 </View>
-                <Text style={mobileStyles.schoolBadgeText}>Educo Demo School</Text>
+                <Text style={[mobileStyles.schoolBadgeText, { color: colors.text }]}>Educo Demo School</Text>
               </View>
               <View style={mobileStyles.headerIconsRow}>
-                <Pressable style={mobileStyles.headerIconBtn}>
+                <Pressable style={[mobileStyles.headerIconBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                   <View style={{ position: 'relative' }}>
-                    <Ionicons name="notifications-outline" size={20} color={COLORS.slate700} />
+                    <Ionicons name="notifications-outline" size={20} color={colors.text} />
                     <View style={mobileStyles.notifBadge}>
                       <Text style={mobileStyles.notifBadgeText}>2</Text>
                     </View>
                   </View>
                 </Pressable>
                 <Link href="/modal" asChild>
-                  <Pressable style={[mobileStyles.headerIconBtn, { marginLeft: 8 }]}>
-                    <Ionicons name="help-circle-outline" size={20} color={COLORS.slate700} />
+                  <Pressable style={[mobileStyles.headerIconBtn, { marginLeft: 8, backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <Ionicons name="help-circle-outline" size={20} color={colors.text} />
                   </Pressable>
                 </Link>
               </View>
@@ -462,10 +481,10 @@ export default function ParentHomeScreen() {
             {/* Greeting row with parent info */}
             <View style={mobileStyles.greetingRow}>
               <View style={mobileStyles.greetingTextSection}>
-                <Text style={mobileStyles.dateBadgeText}>{todayLabel}</Text>
+                <Text style={[mobileStyles.dateBadgeText, { color: colors.textSecondary }]}>{todayLabel}</Text>
                 <View style={mobileStyles.greetingNameRow}>
-                  <Text style={mobileStyles.greetingText}>{greeting}, </Text>
-                  <Text style={mobileStyles.parentNameText}>{mockUser.name.split(' ')[0]}</Text>
+                  <Text style={[mobileStyles.greetingText, { color: colors.textSecondary }]}>{greeting}, </Text>
+                  <Text style={[mobileStyles.parentNameText, { color: colors.text }]}>{mockUser.name.split(' ')[0]}</Text>
                 </View>
               </View>
               <Image
@@ -480,7 +499,7 @@ export default function ParentHomeScreen() {
               {/* Header - only show for multiple children */}
               {mockChildren.length > 1 && (
                 <View style={mobileStyles.childSelectorHeader}>
-                  <Text style={mobileStyles.childSelectorLabel}>Select child</Text>
+                  <Text style={[mobileStyles.childSelectorLabel, { color: colors.textSecondary }]}>Select child</Text>
                   {mockChildren.length > 2 && (
                     <View style={mobileStyles.paginationDots}>
                       {mockChildren.map((child, index) => (
@@ -554,6 +573,7 @@ export default function ParentHomeScreen() {
                           mobileStyles.childCardBase,
                           mobileStyles.twoChildCardSize,
                           isSelected ? mobileStyles.childCardSelected : mobileStyles.childCardDefault,
+                          !isSelected && isDark && { backgroundColor: colors.surface, borderColor: colors.border },
                         ]}
                       >
                         {isSelected && (
@@ -579,19 +599,19 @@ export default function ParentHomeScreen() {
                           </View>
                           <View style={mobileStyles.childTextContainer}>
                             <Text
-                              style={[mobileStyles.childNameText, isSelected && mobileStyles.childNameTextSelected]}
+                              style={[mobileStyles.childNameText, isSelected && mobileStyles.childNameTextSelected, !isSelected && isDark && { color: colors.text }]}
                               numberOfLines={1}
                             >
                               {child.name.split(' ')[0]}
                             </Text>
-                            <View style={[mobileStyles.childClassPill, isSelected && mobileStyles.childClassPillSelected]}>
+                            <View style={[mobileStyles.childClassPill, isSelected && mobileStyles.childClassPillSelected, !isSelected && isDark && { backgroundColor: colors.backgroundTertiary }]}>
                               <Ionicons
                                 name="school-outline"
                                 size={10}
-                                color={isSelected ? COLORS.blue600 : COLORS.slate500}
+                                color={isSelected ? COLORS.blue600 : (isDark ? colors.textSecondary : COLORS.slate500)}
                                 style={{ marginRight: 3 }}
                               />
-                              <Text style={[mobileStyles.childClassPillText, isSelected && mobileStyles.childClassPillTextSelected]}>
+                              <Text style={[mobileStyles.childClassPillText, isSelected && mobileStyles.childClassPillTextSelected, !isSelected && isDark && { color: colors.textSecondary }]}>
                                 {child.classLevel}
                               </Text>
                             </View>
@@ -623,6 +643,7 @@ export default function ParentHomeScreen() {
                           mobileStyles.childCardBase,
                           mobileStyles.multiChildCardSize,
                           isSelected ? mobileStyles.childCardSelected : mobileStyles.childCardDefault,
+                          !isSelected && isDark && { backgroundColor: colors.surface, borderColor: colors.border },
                           { marginRight: index === mockChildren.length - 1 ? 16 : 12 },
                         ]}
                       >
@@ -649,19 +670,19 @@ export default function ParentHomeScreen() {
                           </View>
                           <View style={mobileStyles.childTextContainer}>
                             <Text
-                              style={[mobileStyles.childNameText, isSelected && mobileStyles.childNameTextSelected]}
+                              style={[mobileStyles.childNameText, isSelected && mobileStyles.childNameTextSelected, !isSelected && isDark && { color: colors.text }]}
                               numberOfLines={1}
                             >
                               {child.name.split(' ')[0]}
                             </Text>
-                            <View style={[mobileStyles.childClassPill, isSelected && mobileStyles.childClassPillSelected]}>
+                            <View style={[mobileStyles.childClassPill, isSelected && mobileStyles.childClassPillSelected, !isSelected && isDark && { backgroundColor: colors.backgroundTertiary }]}>
                               <Ionicons
                                 name="school-outline"
                                 size={10}
-                                color={isSelected ? COLORS.blue600 : COLORS.slate500}
+                                color={isSelected ? COLORS.blue600 : (isDark ? colors.textSecondary : COLORS.slate500)}
                                 style={{ marginRight: 3 }}
                               />
-                              <Text style={[mobileStyles.childClassPillText, isSelected && mobileStyles.childClassPillTextSelected]}>
+                              <Text style={[mobileStyles.childClassPillText, isSelected && mobileStyles.childClassPillTextSelected, !isSelected && isDark && { color: colors.textSecondary }]}>
                                 {child.classLevel}
                               </Text>
                             </View>
@@ -690,7 +711,7 @@ export default function ParentHomeScreen() {
               pathname: '/term-progress',
               params: {
                 childName: selectedChild.name,
-                childClass: selectedChild.className,
+                childClass: selectedChild.classLevel,
                 term: 'Term 1',
                 year: '2025',
                 totalPercentage: metrics.termAverage.toFixed(1),
@@ -704,80 +725,80 @@ export default function ParentHomeScreen() {
           >
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Text style={{ fontSize: 13, fontFamily: FONTS.bold, color: COLORS.slate800 }}>{selectedChild.name.split(' ')[0]}'s Stats</Text>
-                <View style={{ backgroundColor: '#eef2ff', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                  <Ionicons name="pulse" size={10} color="#6366f1" />
-                  <Text style={{ fontSize: 9, fontFamily: FONTS.semiBold, color: '#6366f1' }}>In Progress</Text>
+                <Text style={{ fontSize: 13, fontFamily: FONTS.bold, color: colors.text }}>{selectedChild.name.split(' ')[0]}'s Stats</Text>
+                <View style={{ backgroundColor: isDark ? colors.primaryLight : '#eef2ff', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Ionicons name="pulse" size={10} color={colors.primary} />
+                  <Text style={{ fontSize: 9, fontFamily: FONTS.semiBold, color: colors.primary }}>In Progress</Text>
                 </View>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Text style={{ fontSize: 11, fontFamily: FONTS.semiBold, color: COLORS.blue600 }}>View Details</Text>
-                <Ionicons name="chevron-forward" size={12} color={COLORS.blue600} />
+                <Text style={{ fontSize: 11, fontFamily: FONTS.semiBold, color: colors.primary }}>View Details</Text>
+                <Ionicons name="chevron-forward" size={12} color={colors.primary} />
               </View>
             </View>
             <View style={mobileStyles.statsGrid}>
               {/* Average Card */}
-              <View style={[mobileStyles.statsGridCard, { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' }]}>
+              <View style={[mobileStyles.statsGridCard, { backgroundColor: isDark ? colors.surface : '#ecfdf5', borderColor: isDark ? colors.border : '#a7f3d0' }]}>
                 <View style={mobileStyles.statsGridCardTop}>
-                  <Text style={[mobileStyles.statsGridCardLabel, { color: '#059669' }]}>Average</Text>
-                  <View style={[mobileStyles.statsGridCardIcon, { backgroundColor: '#a7f3d0' }]}>
-                    <Ionicons name="trending-up-outline" size={14} color="#059669" />
+                  <Text style={[mobileStyles.statsGridCardLabel, { color: isDark ? colors.success : '#059669' }]}>Average</Text>
+                  <View style={[mobileStyles.statsGridCardIcon, { backgroundColor: isDark ? colors.successLight : '#a7f3d0' }]}>
+                    <Ionicons name="trending-up-outline" size={14} color={isDark ? colors.success : '#059669'} />
                   </View>
                 </View>
-                <Text style={[mobileStyles.statsGridCardValue, { color: '#064e3b' }]}>{metrics.termAverage.toFixed(1)}%</Text>
+                <Text style={[mobileStyles.statsGridCardValue, { color: isDark ? colors.text : '#064e3b' }]}>{metrics.termAverage.toFixed(1)}%</Text>
               </View>
 
               {/* Position Card */}
-              <View style={[mobileStyles.statsGridCard, { backgroundColor: '#fef3c7', borderColor: '#fcd34d' }]}>
+              <View style={[mobileStyles.statsGridCard, { backgroundColor: isDark ? colors.surface : '#fef3c7', borderColor: isDark ? colors.border : '#fcd34d' }]}>
                 <View style={mobileStyles.statsGridCardTop}>
-                  <Text style={[mobileStyles.statsGridCardLabel, { color: '#d97706' }]}>Position</Text>
-                  <View style={[mobileStyles.statsGridCardIcon, { backgroundColor: '#fcd34d' }]}>
-                    <Ionicons name="trophy-outline" size={14} color="#d97706" />
+                  <Text style={[mobileStyles.statsGridCardLabel, { color: isDark ? colors.warning : '#d97706' }]}>Position</Text>
+                  <View style={[mobileStyles.statsGridCardIcon, { backgroundColor: isDark ? colors.warningLight : '#fcd34d' }]}>
+                    <Ionicons name="trophy-outline" size={14} color={isDark ? colors.warning : '#d97706'} />
                   </View>
                 </View>
-                <Text style={[mobileStyles.statsGridCardValue, { color: '#78350f' }]}>#{metrics.classPosition}</Text>
-                <Text style={[mobileStyles.statsGridCardSubtext, { color: '#92400e' }]}>of {metrics.totalStudents}</Text>
+                <Text style={[mobileStyles.statsGridCardValue, { color: isDark ? colors.text : '#78350f' }]}>#{metrics.classPosition}</Text>
+                <Text style={[mobileStyles.statsGridCardSubtext, { color: isDark ? colors.textSecondary : '#92400e' }]}>of {metrics.totalStudents}</Text>
               </View>
 
               {/* Attendance Card */}
-              <View style={[mobileStyles.statsGridCard, { backgroundColor: '#eef2ff', borderColor: '#c7d2fe' }]}>
+              <View style={[mobileStyles.statsGridCard, { backgroundColor: isDark ? colors.surface : '#eef2ff', borderColor: isDark ? colors.border : '#c7d2fe' }]}>
                 <View style={mobileStyles.statsGridCardTop}>
-                  <Text style={[mobileStyles.statsGridCardLabel, { color: '#6366f1' }]}>Attendance</Text>
-                  <View style={[mobileStyles.statsGridCardIcon, { backgroundColor: '#c7d2fe' }]}>
-                    <Ionicons name="pie-chart-outline" size={14} color="#6366f1" />
+                  <Text style={[mobileStyles.statsGridCardLabel, { color: isDark ? colors.primary : '#6366f1' }]}>Attendance</Text>
+                  <View style={[mobileStyles.statsGridCardIcon, { backgroundColor: isDark ? colors.primaryLight : '#c7d2fe' }]}>
+                    <Ionicons name="pie-chart-outline" size={14} color={isDark ? colors.primary : '#6366f1'} />
                   </View>
                 </View>
-                <Text style={[mobileStyles.statsGridCardValue, { color: '#1e1b4b' }]}>{Math.round(metrics.attendanceRate)}%</Text>
+                <Text style={[mobileStyles.statsGridCardValue, { color: isDark ? colors.text : '#1e1b4b' }]}>{Math.round(metrics.attendanceRate)}%</Text>
               </View>
 
               {/* Conduct Card */}
-              <View style={[mobileStyles.statsGridCard, { backgroundColor: '#fce7f3', borderColor: '#f9a8d4' }]}>
+              <View style={[mobileStyles.statsGridCard, { backgroundColor: isDark ? colors.surface : '#fce7f3', borderColor: isDark ? colors.border : '#f9a8d4' }]}>
                 <View style={mobileStyles.statsGridCardTop}>
-                  <Text style={[mobileStyles.statsGridCardLabel, { color: '#db2777' }]}>Conduct</Text>
-                  <View style={[mobileStyles.statsGridCardIcon, { backgroundColor: '#f9a8d4' }]}>
-                    <Ionicons name="ribbon-outline" size={14} color="#db2777" />
+                  <Text style={[mobileStyles.statsGridCardLabel, { color: isDark ? colors.accent : '#db2777' }]}>Conduct</Text>
+                  <View style={[mobileStyles.statsGridCardIcon, { backgroundColor: isDark ? colors.accentLight : '#f9a8d4' }]}>
+                    <Ionicons name="ribbon-outline" size={14} color={isDark ? colors.accent : '#db2777'} />
                   </View>
                 </View>
-                <Text style={[mobileStyles.statsGridCardValue, { color: '#831843' }]}>{metrics.conductGrade}</Text>
+                <Text style={[mobileStyles.statsGridCardValue, { color: isDark ? colors.text : '#831843' }]}>{metrics.conductGrade}</Text>
               </View>
             </View>
           </Pressable>
 
           {/* Fees Due Widget */}
           <MobileWidgetCard title="Fees Due" icon="card-outline" linkHref="/(tabs)/fees" linkText="Pay now">
-            <View style={styles.mutedBox}>
+            <View style={[styles.mutedBox, { backgroundColor: colors.backgroundSecondary }]}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.mutedLabel}>{selectedChild.name.split(' ')[0]} • School Fees</Text>
-                <Text style={styles.moneyText}>{feesDueFormatted}</Text>
+                <Text style={[styles.mutedLabel, { color: colors.textSecondary }]}>{selectedChild.name.split(' ')[0]} • School Fees</Text>
+                <Text style={[styles.moneyText, { color: colors.text }]}>{feesDueFormatted}</Text>
                 <View style={styles.dueRow}>
                   <View style={styles.duePill}>
                     <Text style={styles.duePillText}>Due soon</Text>
                   </View>
-                  <Text style={styles.dueText}>Due: 15 Feb</Text>
+                  <Text style={[styles.dueText, { color: colors.textMuted }]}>Due: 15 Feb</Text>
                 </View>
               </View>
               <Link href="/(tabs)/fees" asChild>
-                <Pressable style={styles.payButton}>
+                <Pressable style={[styles.payButton, { backgroundColor: colors.primary }]}>
                   <Text style={styles.payButtonText}>Pay</Text>
                 </Pressable>
               </Link>
@@ -787,23 +808,23 @@ export default function ParentHomeScreen() {
           {/* Messages Widget */}
           <MobileWidgetCard title="Messages" icon="mail-outline" linkHref="/(tabs)/messages" linkText="View all">
             <View style={{ marginTop: 10 }}>
-              <Pressable style={styles.messageRow}>
+              <Pressable style={[styles.messageRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <Avatar name="Mrs. Nkechi Eze" imageUri="https://i.pravatar.cc/150?u=teacher-nkechi" size={32} />
                 <View style={{ flex: 1, marginLeft: 10 }}>
-                  <Text style={styles.messageTitle}>{selectedChild.name.split(' ')[0]}: Progress Update</Text>
-                  <Text style={styles.messageMeta}>Class Teacher • 2h ago</Text>
+                  <Text style={[styles.messageTitle, { color: colors.text }]}>{selectedChild.name.split(' ')[0]}: Progress Update</Text>
+                  <Text style={[styles.messageMeta, { color: colors.textMuted }]}>Class Teacher • 2h ago</Text>
                 </View>
                 <View style={styles.unreadDot}>
                   <Text style={styles.unreadDotText}>1</Text>
                 </View>
               </Pressable>
-              <Pressable style={[styles.messageRow, { marginTop: 8, backgroundColor: COLORS.white }]}>
+              <Pressable style={[styles.messageRow, { marginTop: 8, backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <Avatar name="Admin Office" imageUri="https://i.pravatar.cc/150?u=admin-office" size={32} />
                 <View style={{ flex: 1, marginLeft: 10 }}>
-                  <Text style={styles.messageTitle}>Fee Payment Reminder</Text>
-                  <Text style={styles.messageMeta}>Educo Demo School • 1d ago</Text>
+                  <Text style={[styles.messageTitle, { color: colors.text }]}>Fee Payment Reminder</Text>
+                  <Text style={[styles.messageMeta, { color: colors.textMuted }]}>Educo Demo School • 1d ago</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={16} color={COLORS.slate400} />
+                <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
               </Pressable>
             </View>
           </MobileWidgetCard>
@@ -814,10 +835,10 @@ export default function ParentHomeScreen() {
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Image source={{ uri: selectedChild.avatarUri }} style={{ height: 36, width: 36, borderRadius: 10 }} />
                 <View style={{ flex: 1, marginLeft: 10 }}>
-                  <Text style={{ fontSize: 13, fontFamily: FONTS.bold, color: COLORS.slate800 }}>{selectedChild.name.split(' ')[0]}</Text>
-                  <Text style={{ fontSize: 11, fontFamily: FONTS.medium, color: COLORS.slate500 }}>On track this week</Text>
+                  <Text style={{ fontSize: 13, fontFamily: FONTS.bold, color: colors.text }}>{selectedChild.name.split(' ')[0]}</Text>
+                  <Text style={{ fontSize: 11, fontFamily: FONTS.medium, color: colors.textSecondary }}>On track this week</Text>
                 </View>
-                <Text style={{ fontSize: 16, fontFamily: FONTS.bold, color: COLORS.slate900 }}>{Math.round(metrics.progressPct * 100)}%</Text>
+                <Text style={{ fontSize: 16, fontFamily: FONTS.bold, color: colors.text }}>{Math.round(metrics.progressPct * 100)}%</Text>
               </View>
               <View style={{ marginTop: 10 }}>
                 <ProgressBar value={metrics.progressPct} />
@@ -840,39 +861,40 @@ export default function ParentHomeScreen() {
                     key={report.id}
                     style={[
                       mobileStyles.reportHistoryCard,
+                      { backgroundColor: isDark ? colors.backgroundSecondary : '#ffffff', borderColor: colors.border },
                       index > 0 && { marginTop: 10 }
                     ]}
                     onPress={() => handleViewAllReports(selectedChild.id)}
                   >
                     <View style={mobileStyles.reportHistoryCardHeader}>
-                      <View style={mobileStyles.reportHistoryTermBadge}>
-                        <Text style={mobileStyles.reportHistoryTermText}>{report.term}</Text>
+                      <View style={[mobileStyles.reportHistoryTermBadge, { backgroundColor: isDark ? colors.backgroundTertiary : '#f1f5f9' }]}>
+                        <Text style={[mobileStyles.reportHistoryTermText, { color: colors.textSecondary }]}>{report.term}</Text>
                       </View>
                       <View style={[mobileStyles.reportHistoryScoreBadge, { backgroundColor: scoreColors.bg, borderColor: scoreColors.border }]}>
                         <Text style={[mobileStyles.reportHistoryScoreText, { color: scoreColors.text }]}>{report.totalPercentage}%</Text>
                       </View>
                     </View>
-                    <Text style={mobileStyles.reportHistoryExamType}>{report.examType}</Text>
+                    <Text style={[mobileStyles.reportHistoryExamType, { color: colors.text }]}>{report.examType}</Text>
                     <View style={mobileStyles.reportHistoryMeta}>
                       <View style={mobileStyles.reportHistoryMetaItem}>
-                        <Ionicons name="trophy-outline" size={12} color={COLORS.slate400} />
-                        <Text style={mobileStyles.reportHistoryMetaText}>#{report.rank} of {report.totalStudents}</Text>
+                        <Ionicons name="trophy-outline" size={12} color={colors.textMuted} />
+                        <Text style={[mobileStyles.reportHistoryMetaText, { color: colors.textMuted }]}>#{report.rank} of {report.totalStudents}</Text>
                       </View>
                       <View style={mobileStyles.reportHistoryMetaItem}>
-                        <Ionicons name="calendar-outline" size={12} color={COLORS.slate400} />
-                        <Text style={mobileStyles.reportHistoryMetaText}>{formatShortDate(report.datePublished)}</Text>
+                        <Ionicons name="calendar-outline" size={12} color={colors.textMuted} />
+                        <Text style={[mobileStyles.reportHistoryMetaText, { color: colors.textMuted }]}>{formatShortDate(report.datePublished)}</Text>
                       </View>
                       <View style={[
                         mobileStyles.reportHistoryStatusBadge,
-                        { backgroundColor: report.status === 'pass' ? '#ecfdf5' : '#fef2f2' }
+                        { backgroundColor: isDark ? colors.backgroundTertiary : (report.status === 'pass' ? '#ecfdf5' : '#fef2f2') }
                       ]}>
                         <View style={[
                           mobileStyles.reportHistoryStatusDot,
-                          { backgroundColor: report.status === 'pass' ? '#10b981' : '#ef4444' }
+                          { backgroundColor: report.status === 'pass' ? (isDark ? colors.success : '#10b981') : (isDark ? colors.error : '#ef4444') }
                         ]} />
                         <Text style={[
                           mobileStyles.reportHistoryStatusText,
-                          { color: report.status === 'pass' ? '#059669' : '#dc2626' }
+                          { color: report.status === 'pass' ? (isDark ? colors.success : '#059669') : (isDark ? colors.error : '#dc2626') }
                         ]}>{report.status === 'pass' ? 'Passed' : 'Failed'}</Text>
                       </View>
                     </View>
@@ -918,37 +940,43 @@ export default function ParentHomeScreen() {
   // TABLET LAYOUT
   // ============================================================================
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 112 }} showsVerticalScrollIndicator={false}>
         <LinearGradient
-          colors={[COLORS.white, COLORS.slate50, '#f0f4ff']}
+          colors={isDark ? [colors.background, colors.backgroundSecondary, colors.backgroundTertiary] : [COLORS.white, COLORS.slate50, '#f0f4ff']}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
           style={tabletStyles.headerGradient}
         >
           {/* Top row - School name, Pills and Icons */}
           <View style={tabletStyles.headerTopRow}>
-            <View style={tabletStyles.schoolBadge}>
+            <View style={[tabletStyles.schoolBadge, isDark && { backgroundColor: colors.backgroundSecondary }]}>
               <View style={tabletStyles.schoolIconWrap}>
-                <Ionicons name="school" size={14} color={COLORS.white} />
+                <Ionicons name="school" size={14} color="#ffffff" />
               </View>
-              <Text style={tabletStyles.schoolBadgeText}>Educo Demo School</Text>
+              <Text style={[tabletStyles.schoolBadgeText, { color: colors.text }]}>Educo Demo School</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={styles.pillsRow}>
-                <Pill icon="shield-checkmark-outline" text="Parent Portal" />
-                <Pill icon="calendar-outline" text={currentTermLabel} />
+                <View style={[styles.pill, { backgroundColor: colors.backgroundSecondary }]}>
+                  <Ionicons name="shield-checkmark-outline" size={14} color={colors.textSecondary} />
+                  <Text style={[styles.pillText, { color: colors.textSecondary }]}>Parent Portal</Text>
+                </View>
+                <View style={[styles.pill, { backgroundColor: colors.backgroundSecondary }]}>
+                  <Ionicons name="calendar-outline" size={14} color={colors.textSecondary} />
+                  <Text style={[styles.pillText, { color: colors.textSecondary }]}>{currentTermLabel}</Text>
+                </View>
               </View>
               <View style={[styles.iconRow, { marginLeft: 12 }]}>
-                <Pressable style={styles.iconButton}>
+                <Pressable style={[styles.iconButton, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                   <View style={{ position: 'relative' }}>
-                    <Ionicons name="notifications-outline" size={18} color={COLORS.slate700} />
+                    <Ionicons name="notifications-outline" size={18} color={colors.text} />
                     <View style={styles.notifDot} />
                   </View>
                 </Pressable>
                 <Link href="/modal" asChild>
-                  <Pressable style={[styles.iconButton, { marginLeft: 8 }]}>
-                    <Ionicons name="help-circle-outline" size={18} color={COLORS.slate700} />
+                  <Pressable style={[styles.iconButton, { marginLeft: 8, backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <Ionicons name="help-circle-outline" size={18} color={colors.text} />
                   </Pressable>
                 </Link>
               </View>
@@ -958,10 +986,10 @@ export default function ParentHomeScreen() {
           {/* Greeting row with date and parent avatar */}
           <View style={tabletStyles.greetingRow}>
             <View style={{ flex: 1 }}>
-              <Text style={tabletStyles.dateBadgeText}>{todayLabel}</Text>
+              <Text style={[tabletStyles.dateBadgeText, { color: colors.textSecondary }]}>{todayLabel}</Text>
               <View style={tabletStyles.greetingNameRow}>
-                <Text style={tabletStyles.greetingText}>{greeting}, </Text>
-                <Text style={tabletStyles.parentNameText}>{mockUser.name.split(' ')[0]}</Text>
+                <Text style={[tabletStyles.greetingText, { color: colors.textSecondary }]}>{greeting}, </Text>
+                <Text style={[tabletStyles.parentNameText, { color: colors.text }]}>{mockUser.name.split(' ')[0]}</Text>
               </View>
             </View>
             <Image
@@ -976,7 +1004,7 @@ export default function ParentHomeScreen() {
             {/* Header - only show for multiple children */}
             {mockChildren.length > 1 && (
               <View style={tabletStyles.childSelectorHeader}>
-                <Text style={tabletStyles.childSelectorLabel}>Select child</Text>
+                <Text style={[tabletStyles.childSelectorLabel, { color: colors.textSecondary }]}>Select child</Text>
                 {mockChildren.length > 2 && (
                   <View style={tabletStyles.paginationDots}>
                     {mockChildren.map((child, index) => (
@@ -1050,6 +1078,7 @@ export default function ParentHomeScreen() {
                         tabletStyles.childCardBase,
                         tabletStyles.twoChildCardSize,
                         isSelected ? tabletStyles.childCardSelected : tabletStyles.childCardDefault,
+                        !isSelected && isDark && { backgroundColor: colors.surface, borderColor: colors.border },
                       ]}
                     >
                       {isSelected && (
@@ -1075,19 +1104,19 @@ export default function ParentHomeScreen() {
                         </View>
                         <View style={tabletStyles.childTextContainer}>
                           <Text
-                            style={[tabletStyles.childNameText, isSelected && tabletStyles.childNameTextSelected]}
+                            style={[tabletStyles.childNameText, isSelected && tabletStyles.childNameTextSelected, !isSelected && isDark && { color: colors.text }]}
                             numberOfLines={1}
                           >
                             {child.name.split(' ')[0]}
                           </Text>
-                          <View style={[tabletStyles.childClassPill, isSelected && tabletStyles.childClassPillSelected]}>
+                          <View style={[tabletStyles.childClassPill, isSelected && tabletStyles.childClassPillSelected, !isSelected && isDark && { backgroundColor: colors.backgroundTertiary }]}>
                             <Ionicons
                               name="school-outline"
                               size={13}
-                              color={isSelected ? COLORS.blue600 : COLORS.slate500}
+                              color={isSelected ? COLORS.blue600 : (isDark ? colors.textSecondary : COLORS.slate500)}
                               style={{ marginRight: 5 }}
                             />
-                            <Text style={[tabletStyles.childClassPillText, isSelected && tabletStyles.childClassPillTextSelected]}>
+                            <Text style={[tabletStyles.childClassPillText, isSelected && tabletStyles.childClassPillTextSelected, !isSelected && isDark && { color: colors.textSecondary }]}>
                               {child.classLevel}
                             </Text>
                           </View>
@@ -1119,6 +1148,7 @@ export default function ParentHomeScreen() {
                         tabletStyles.childCardBase,
                         tabletStyles.multiChildCardSize,
                         isSelected ? tabletStyles.childCardSelected : tabletStyles.childCardDefault,
+                        !isSelected && isDark && { backgroundColor: colors.surface, borderColor: colors.border },
                         { marginRight: index === mockChildren.length - 1 ? 0 : 20 },
                       ]}
                     >
@@ -1145,19 +1175,19 @@ export default function ParentHomeScreen() {
                         </View>
                         <View style={tabletStyles.childTextContainer}>
                           <Text
-                            style={[tabletStyles.childNameText, isSelected && tabletStyles.childNameTextSelected]}
+                            style={[tabletStyles.childNameText, isSelected && tabletStyles.childNameTextSelected, !isSelected && isDark && { color: colors.text }]}
                             numberOfLines={1}
                           >
                             {child.name.split(' ')[0]}
                           </Text>
-                          <View style={[tabletStyles.childClassPill, isSelected && tabletStyles.childClassPillSelected]}>
+                          <View style={[tabletStyles.childClassPill, isSelected && tabletStyles.childClassPillSelected, !isSelected && isDark && { backgroundColor: colors.backgroundTertiary }]}>
                             <Ionicons
                               name="school-outline"
                               size={13}
-                              color={isSelected ? COLORS.blue600 : COLORS.slate500}
+                              color={isSelected ? COLORS.blue600 : (isDark ? colors.textSecondary : COLORS.slate500)}
                               style={{ marginRight: 5 }}
                             />
-                            <Text style={[tabletStyles.childClassPillText, isSelected && tabletStyles.childClassPillTextSelected]}>
+                            <Text style={[tabletStyles.childClassPillText, isSelected && tabletStyles.childClassPillTextSelected, !isSelected && isDark && { color: colors.textSecondary }]}>
                               {child.classLevel}
                             </Text>
                           </View>
@@ -1186,7 +1216,7 @@ export default function ParentHomeScreen() {
               pathname: '/term-progress',
               params: {
                 childName: selectedChild.name,
-                childClass: selectedChild.className,
+                childClass: selectedChild.classLevel,
                 term: 'Term 1',
                 year: '2025',
                 totalPercentage: metrics.termAverage.toFixed(1),
@@ -1200,15 +1230,15 @@ export default function ParentHomeScreen() {
           >
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Text style={{ fontSize: 15, fontFamily: FONTS.bold, color: COLORS.slate800 }}>{selectedChild.name.split(' ')[0]}'s Current Term</Text>
-                <View style={{ backgroundColor: '#eef2ff', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                  <Ionicons name="pulse" size={12} color="#6366f1" />
-                  <Text style={{ fontSize: 11, fontFamily: FONTS.semiBold, color: '#6366f1' }}>In Progress</Text>
+                <Text style={{ fontSize: 15, fontFamily: FONTS.bold, color: colors.text }}>{selectedChild.name.split(' ')[0]}'s Current Term</Text>
+                <View style={{ backgroundColor: isDark ? colors.primaryLight : '#eef2ff', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                  <Ionicons name="pulse" size={12} color={colors.primary} />
+                  <Text style={{ fontSize: 11, fontFamily: FONTS.semiBold, color: colors.primary }}>In Progress</Text>
                 </View>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={{ fontSize: 13, fontFamily: FONTS.semiBold, color: COLORS.blue600 }}>View Details</Text>
-                <Ionicons name="chevron-forward" size={14} color={COLORS.blue600} />
+                <Text style={{ fontSize: 13, fontFamily: FONTS.semiBold, color: colors.primary }}>View Details</Text>
+                <Ionicons name="chevron-forward" size={14} color={colors.primary} />
               </View>
             </View>
             <View style={styles.statsRow}>
@@ -1223,20 +1253,20 @@ export default function ParentHomeScreen() {
           <View style={styles.twoCol}>
             {/* Fees Due Widget */}
             <Card style={[styles.sectionCard, styles.twoColItem, { marginTop: 14 }]}>
-              <RowHeader title="Fees Due" icon="card-outline" right={<Link href="/(tabs)/fees"><Text style={styles.linkText}>View all</Text></Link>} />
-              <View style={styles.mutedBox}>
+              <RowHeader title="Fees Due" icon="card-outline" right={<Link href="/(tabs)/fees"><Text style={[styles.linkText, { color: colors.primary }]}>View all</Text></Link>} />
+              <View style={[styles.mutedBox, { backgroundColor: colors.backgroundSecondary }]}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.mutedLabel}>{selectedChild.name.split(' ')[0]} • School Fees</Text>
-                  <Text style={styles.moneyText}>{feesDueFormatted}</Text>
+                  <Text style={[styles.mutedLabel, { color: colors.textSecondary }]}>{selectedChild.name.split(' ')[0]} • School Fees</Text>
+                  <Text style={[styles.moneyText, { color: colors.text }]}>{feesDueFormatted}</Text>
                   <View style={styles.dueRow}>
                     <View style={styles.duePill}>
                       <Text style={styles.duePillText}>Due soon</Text>
                     </View>
-                    <Text style={styles.dueText}>Due: 15 Feb</Text>
+                    <Text style={[styles.dueText, { color: colors.textMuted }]}>Due: 15 Feb</Text>
                   </View>
                 </View>
                 <Link href="/(tabs)/fees" asChild>
-                  <Pressable style={styles.payButton}>
+                  <Pressable style={[styles.payButton, { backgroundColor: colors.primary }]}>
                     <Text style={styles.payButtonText}>Pay</Text>
                   </Pressable>
                 </Link>
@@ -1245,25 +1275,25 @@ export default function ParentHomeScreen() {
 
             {/* Messages Widget */}
             <Card style={[styles.sectionCard, styles.twoColItem, { marginTop: 14 }]}>
-              <RowHeader title="Messages" icon="mail-outline" right={<Link href="/(tabs)/messages"><Text style={styles.linkText}>View all</Text></Link>} />
+              <RowHeader title="Messages" icon="mail-outline" right={<Link href="/(tabs)/messages"><Text style={[styles.linkText, { color: colors.primary }]}>View all</Text></Link>} />
               <View style={{ marginTop: 10 }}>
-                <Pressable style={styles.messageRow}>
+                <Pressable style={[styles.messageRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                   <Avatar name="Mrs. Nkechi Eze" imageUri="https://i.pravatar.cc/150?u=teacher-nkechi" size={32} />
                   <View style={{ flex: 1, marginLeft: 10 }}>
-                    <Text style={styles.messageTitle}>{selectedChild.name.split(' ')[0]}: Progress Update</Text>
-                    <Text style={styles.messageMeta}>Class Teacher • 2h ago</Text>
+                    <Text style={[styles.messageTitle, { color: colors.text }]}>{selectedChild.name.split(' ')[0]}: Progress Update</Text>
+                    <Text style={[styles.messageMeta, { color: colors.textMuted }]}>Class Teacher • 2h ago</Text>
                   </View>
                   <View style={styles.unreadDot}>
                     <Text style={styles.unreadDotText}>1</Text>
                   </View>
                 </Pressable>
-                <Pressable style={[styles.messageRow, { marginTop: 8, backgroundColor: COLORS.white }]}>
+                <Pressable style={[styles.messageRow, { marginTop: 8, backgroundColor: colors.surface, borderColor: colors.border }]}>
                   <Avatar name="Admin Office" imageUri="https://i.pravatar.cc/150?u=admin-office" size={32} />
                   <View style={{ flex: 1, marginLeft: 10 }}>
-                    <Text style={styles.messageTitle}>Fee Payment Reminder</Text>
-                    <Text style={styles.messageMeta}>Educo Demo School • 1d ago</Text>
+                    <Text style={[styles.messageTitle, { color: colors.text }]}>Fee Payment Reminder</Text>
+                    <Text style={[styles.messageMeta, { color: colors.textMuted }]}>Educo Demo School • 1d ago</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={16} color={COLORS.slate400} />
+                  <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
                 </Pressable>
               </View>
             </Card>
@@ -1276,7 +1306,7 @@ export default function ParentHomeScreen() {
               icon="document-text-outline"
               right={
                 <Pressable onPress={() => handleViewAllReports(selectedChild.id)}>
-                  <Text style={styles.linkText}>View all</Text>
+                  <Text style={[styles.linkText, { color: colors.primary }]}>View all</Text>
                 </Pressable>
               }
             />
@@ -1286,45 +1316,45 @@ export default function ParentHomeScreen() {
                 return (
                   <Pressable
                     key={report.id}
-                    style={tabletStyles.reportHistoryCard}
+                    style={[tabletStyles.reportHistoryCard, { backgroundColor: isDark ? colors.backgroundSecondary : '#ffffff', borderColor: colors.border }]}
                     onPress={() => handleViewAllReports(selectedChild.id)}
                   >
                     <View style={tabletStyles.reportHistoryCardHeader}>
-                      <View style={tabletStyles.reportHistoryTermBadge}>
-                        <Text style={tabletStyles.reportHistoryTermText}>{report.term}</Text>
+                      <View style={[tabletStyles.reportHistoryTermBadge, { backgroundColor: isDark ? colors.backgroundTertiary : '#f1f5f9' }]}>
+                        <Text style={[tabletStyles.reportHistoryTermText, { color: colors.textSecondary }]}>{report.term}</Text>
                       </View>
                       <View style={[tabletStyles.reportHistoryScoreBadge, { backgroundColor: scoreColors.bg, borderColor: scoreColors.border }]}>
                         <Text style={[tabletStyles.reportHistoryScoreText, { color: scoreColors.text }]}>{report.totalPercentage}%</Text>
                       </View>
                     </View>
-                    <Text style={tabletStyles.reportHistoryExamType}>{report.examType}</Text>
+                    <Text style={[tabletStyles.reportHistoryExamType, { color: colors.text }]}>{report.examType}</Text>
                     <View style={tabletStyles.reportHistoryMeta}>
                       <View style={tabletStyles.reportHistoryMetaItem}>
-                        <Ionicons name="trophy-outline" size={14} color={COLORS.slate400} />
-                        <Text style={tabletStyles.reportHistoryMetaText}>#{report.rank} of {report.totalStudents}</Text>
+                        <Ionicons name="trophy-outline" size={14} color={colors.textMuted} />
+                        <Text style={[tabletStyles.reportHistoryMetaText, { color: colors.textMuted }]}>#{report.rank} of {report.totalStudents}</Text>
                       </View>
                       <View style={tabletStyles.reportHistoryMetaItem}>
-                        <Ionicons name="calendar-outline" size={14} color={COLORS.slate400} />
-                        <Text style={tabletStyles.reportHistoryMetaText}>{formatShortDate(report.datePublished)}</Text>
+                        <Ionicons name="calendar-outline" size={14} color={colors.textMuted} />
+                        <Text style={[tabletStyles.reportHistoryMetaText, { color: colors.textMuted }]}>{formatShortDate(report.datePublished)}</Text>
                       </View>
                     </View>
                     <View style={tabletStyles.reportHistoryFooter}>
                       <View style={[
                         tabletStyles.reportHistoryStatusBadge,
-                        { backgroundColor: report.status === 'pass' ? '#ecfdf5' : '#fef2f2' }
+                        { backgroundColor: isDark ? colors.backgroundTertiary : (report.status === 'pass' ? '#ecfdf5' : '#fef2f2') }
                       ]}>
                         <View style={[
                           tabletStyles.reportHistoryStatusDot,
-                          { backgroundColor: report.status === 'pass' ? '#10b981' : '#ef4444' }
+                          { backgroundColor: report.status === 'pass' ? (isDark ? colors.success : '#10b981') : (isDark ? colors.error : '#ef4444') }
                         ]} />
                         <Text style={[
                           tabletStyles.reportHistoryStatusText,
-                          { color: report.status === 'pass' ? '#059669' : '#dc2626' }
+                          { color: report.status === 'pass' ? (isDark ? colors.success : '#059669') : (isDark ? colors.error : '#dc2626') }
                         ]}>{report.status === 'pass' ? 'Passed' : 'Failed'}</Text>
                       </View>
                       <View style={tabletStyles.reportHistoryViewDetails}>
-                        <Text style={tabletStyles.reportHistoryViewDetailsText}>View</Text>
-                        <Ionicons name="chevron-forward" size={14} color={COLORS.blue600} />
+                        <Text style={[tabletStyles.reportHistoryViewDetailsText, { color: colors.primary }]}>View</Text>
+                        <Ionicons name="chevron-forward" size={14} color={colors.primary} />
                       </View>
                     </View>
                   </Pressable>
@@ -1349,13 +1379,13 @@ export default function ParentHomeScreen() {
               </View>
             </View>
             <View style={{ padding: 16 }}>
-              <RowHeader title="Progress Overview" icon="analytics-outline" right={<Link href="/(tabs)/children"><Text style={styles.linkText}>View details</Text></Link>} />
+              <RowHeader title="Progress Overview" icon="analytics-outline" right={<Link href="/(tabs)/children"><Text style={[styles.linkText, { color: colors.primary }]}>View details</Text></Link>} />
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.sectionStrong}>{selectedChild.name.split(' ')[0]} • {currentTermLabel}</Text>
-                  <Text style={styles.sectionSub}>On track this week</Text>
+                  <Text style={[styles.sectionStrong, { color: colors.text }]}>{selectedChild.name.split(' ')[0]} • {currentTermLabel}</Text>
+                  <Text style={[styles.sectionSub, { color: colors.textSecondary }]}>On track this week</Text>
                 </View>
-                <Text style={{ fontSize: 24, fontFamily: FONTS.bold, color: COLORS.slate900 }}>{Math.round(metrics.progressPct * 100)}%</Text>
+                <Text style={{ fontSize: 24, fontFamily: FONTS.bold, color: colors.text }}>{Math.round(metrics.progressPct * 100)}%</Text>
               </View>
               <View style={{ marginTop: 12 }}>
                 <ProgressBar value={metrics.progressPct} />
@@ -1671,9 +1701,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 14,
-    backgroundColor: COLORS.slate50,
     borderWidth: 1,
-    borderColor: COLORS.slate200,
     padding: 10,
   },
   messageTitle: { fontSize: 12, fontFamily: FONTS.bold, color: COLORS.slate800 },

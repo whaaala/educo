@@ -307,7 +307,7 @@ function FilterDropdown({
 }
 
 export default function ReportsHistoryScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
   const isTablet = useIsTablet();
@@ -829,47 +829,47 @@ export default function ReportsHistoryScreen() {
                   {isTablet && (
                     <View style={[styles.tabletStatsCardsRow, { paddingHorizontal: 16, paddingBottom: 16 }]}>
                       {/* All-Time Average Card */}
-                      <View style={[styles.tabletStatCard, { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' }]}>
+                      <View style={[styles.tabletStatCard, { backgroundColor: isDark ? colors.surface : '#ecfdf5', borderColor: isDark ? colors.border : '#a7f3d0' }]}>
                         <View style={styles.tabletStatCardTop}>
-                          <Text style={[styles.tabletStatCardLabel, { color: '#059669' }]}>All-Time Avg</Text>
-                          <View style={[styles.tabletStatCardIcon, { backgroundColor: '#a7f3d0' }]}>
-                            <Ionicons name="trending-up" size={16} color="#059669" />
+                          <Text style={[styles.tabletStatCardLabel, { color: isDark ? colors.success : '#059669' }]}>All-Time Avg</Text>
+                          <View style={[styles.tabletStatCardIcon, { backgroundColor: isDark ? colors.successLight : '#a7f3d0' }]}>
+                            <Ionicons name="trending-up" size={16} color={isDark ? colors.success : '#059669'} />
                           </View>
                         </View>
-                        <Text style={[styles.tabletStatCardValue, { color: '#064e3b' }]}>{allTimeAvgScore}%</Text>
+                        <Text style={[styles.tabletStatCardValue, { color: isDark ? colors.text : '#064e3b' }]}>{allTimeAvgScore}%</Text>
                       </View>
 
                       {/* Best Score Card */}
-                      <View style={[styles.tabletStatCard, { backgroundColor: '#fef3c7', borderColor: '#fcd34d' }]}>
+                      <View style={[styles.tabletStatCard, { backgroundColor: isDark ? colors.surface : '#fef3c7', borderColor: isDark ? colors.border : '#fcd34d' }]}>
                         <View style={styles.tabletStatCardTop}>
-                          <Text style={[styles.tabletStatCardLabel, { color: '#d97706' }]}>Best Score</Text>
-                          <View style={[styles.tabletStatCardIcon, { backgroundColor: '#fcd34d' }]}>
-                            <Ionicons name="star" size={16} color="#d97706" />
+                          <Text style={[styles.tabletStatCardLabel, { color: isDark ? colors.warning : '#d97706' }]}>Best Score</Text>
+                          <View style={[styles.tabletStatCardIcon, { backgroundColor: isDark ? colors.warningLight : '#fcd34d' }]}>
+                            <Ionicons name="star" size={16} color={isDark ? colors.warning : '#d97706'} />
                           </View>
                         </View>
-                        <Text style={[styles.tabletStatCardValue, { color: '#78350f' }]}>{bestScore}%</Text>
+                        <Text style={[styles.tabletStatCardValue, { color: isDark ? colors.text : '#78350f' }]}>{bestScore}%</Text>
                       </View>
 
                       {/* Avg Attendance Card */}
-                      <View style={[styles.tabletStatCard, { backgroundColor: '#eef2ff', borderColor: '#c7d2fe' }]}>
+                      <View style={[styles.tabletStatCard, { backgroundColor: isDark ? colors.surface : '#eef2ff', borderColor: isDark ? colors.border : '#c7d2fe' }]}>
                         <View style={styles.tabletStatCardTop}>
-                          <Text style={[styles.tabletStatCardLabel, { color: '#6366f1' }]}>Avg Attendance</Text>
-                          <View style={[styles.tabletStatCardIcon, { backgroundColor: '#c7d2fe' }]}>
-                            <Ionicons name="time-outline" size={16} color="#6366f1" />
+                          <Text style={[styles.tabletStatCardLabel, { color: isDark ? colors.primary : '#6366f1' }]}>Avg Attendance</Text>
+                          <View style={[styles.tabletStatCardIcon, { backgroundColor: isDark ? colors.primaryLight : '#c7d2fe' }]}>
+                            <Ionicons name="time-outline" size={16} color={isDark ? colors.primary : '#6366f1'} />
                           </View>
                         </View>
-                        <Text style={[styles.tabletStatCardValue, { color: '#1e1b4b' }]}>{allTimeAvgAttendance}%</Text>
+                        <Text style={[styles.tabletStatCardValue, { color: isDark ? colors.text : '#1e1b4b' }]}>{allTimeAvgAttendance}%</Text>
                       </View>
 
                       {/* Recent Conduct Card */}
-                      <View style={[styles.tabletStatCard, { backgroundColor: '#fce7f3', borderColor: '#f9a8d4' }]}>
+                      <View style={[styles.tabletStatCard, { backgroundColor: isDark ? colors.surface : '#fce7f3', borderColor: isDark ? colors.border : '#f9a8d4' }]}>
                         <View style={styles.tabletStatCardTop}>
-                          <Text style={[styles.tabletStatCardLabel, { color: '#db2777' }]}>Last Conduct</Text>
-                          <View style={[styles.tabletStatCardIcon, { backgroundColor: '#f9a8d4' }]}>
-                            <Ionicons name="ribbon-outline" size={16} color="#db2777" />
+                          <Text style={[styles.tabletStatCardLabel, { color: isDark ? colors.accent : '#db2777' }]}>Last Conduct</Text>
+                          <View style={[styles.tabletStatCardIcon, { backgroundColor: isDark ? colors.accentLight : '#f9a8d4' }]}>
+                            <Ionicons name="ribbon-outline" size={16} color={isDark ? colors.accent : '#db2777'} />
                           </View>
                         </View>
-                        <Text style={[styles.tabletStatCardValue, { color: '#831843' }]}>{allTimeConduct}</Text>
+                        <Text style={[styles.tabletStatCardValue, { color: isDark ? colors.text : '#831843' }]}>{allTimeConduct}</Text>
                       </View>
                     </View>
                   )}
@@ -878,47 +878,47 @@ export default function ReportsHistoryScreen() {
                   {!isTablet && (
                     <View style={[styles.mobileYearStatsRow, { paddingHorizontal: 16, paddingBottom: 16 }]}>
                       {/* All-Time Average Card */}
-                      <View style={[styles.mobileYearStatCard, { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' }]}>
+                      <View style={[styles.mobileYearStatCard, { backgroundColor: isDark ? colors.surface : '#ecfdf5', borderColor: isDark ? colors.border : '#a7f3d0' }]}>
                         <View style={styles.mobileYearStatCardTop}>
-                          <Text style={[styles.mobileYearStatCardLabel, { color: '#059669' }]}>All-Time Avg</Text>
-                          <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#a7f3d0' }]}>
-                            <Ionicons name="trending-up" size={12} color="#059669" />
+                          <Text style={[styles.mobileYearStatCardLabel, { color: isDark ? colors.success : '#059669' }]}>All-Time Avg</Text>
+                          <View style={[styles.mobileYearStatCardIcon, { backgroundColor: isDark ? colors.successLight : '#a7f3d0' }]}>
+                            <Ionicons name="trending-up" size={12} color={isDark ? colors.success : '#059669'} />
                           </View>
                         </View>
-                        <Text style={[styles.mobileYearStatCardValue, { color: '#064e3b' }]}>{allTimeAvgScore}%</Text>
+                        <Text style={[styles.mobileYearStatCardValue, { color: isDark ? colors.text : '#064e3b' }]}>{allTimeAvgScore}%</Text>
                       </View>
 
                       {/* Best Score Card */}
-                      <View style={[styles.mobileYearStatCard, { backgroundColor: '#fef3c7', borderColor: '#fcd34d' }]}>
+                      <View style={[styles.mobileYearStatCard, { backgroundColor: isDark ? colors.surface : '#fef3c7', borderColor: isDark ? colors.border : '#fcd34d' }]}>
                         <View style={styles.mobileYearStatCardTop}>
-                          <Text style={[styles.mobileYearStatCardLabel, { color: '#d97706' }]}>Best Score</Text>
-                          <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#fcd34d' }]}>
-                            <Ionicons name="star" size={12} color="#d97706" />
+                          <Text style={[styles.mobileYearStatCardLabel, { color: isDark ? colors.warning : '#d97706' }]}>Best Score</Text>
+                          <View style={[styles.mobileYearStatCardIcon, { backgroundColor: isDark ? colors.warningLight : '#fcd34d' }]}>
+                            <Ionicons name="star" size={12} color={isDark ? colors.warning : '#d97706'} />
                           </View>
                         </View>
-                        <Text style={[styles.mobileYearStatCardValue, { color: '#78350f' }]}>{bestScore}%</Text>
+                        <Text style={[styles.mobileYearStatCardValue, { color: isDark ? colors.text : '#78350f' }]}>{bestScore}%</Text>
                       </View>
 
                       {/* Avg Attendance Card */}
-                      <View style={[styles.mobileYearStatCard, { backgroundColor: '#eef2ff', borderColor: '#c7d2fe' }]}>
+                      <View style={[styles.mobileYearStatCard, { backgroundColor: isDark ? colors.surface : '#eef2ff', borderColor: isDark ? colors.border : '#c7d2fe' }]}>
                         <View style={styles.mobileYearStatCardTop}>
-                          <Text style={[styles.mobileYearStatCardLabel, { color: '#6366f1' }]}>Avg Attendance</Text>
-                          <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#c7d2fe' }]}>
-                            <Ionicons name="time-outline" size={12} color="#6366f1" />
+                          <Text style={[styles.mobileYearStatCardLabel, { color: isDark ? colors.primary : '#6366f1' }]}>Avg Attendance</Text>
+                          <View style={[styles.mobileYearStatCardIcon, { backgroundColor: isDark ? colors.primaryLight : '#c7d2fe' }]}>
+                            <Ionicons name="time-outline" size={12} color={isDark ? colors.primary : '#6366f1'} />
                           </View>
                         </View>
-                        <Text style={[styles.mobileYearStatCardValue, { color: '#1e1b4b' }]}>{allTimeAvgAttendance}%</Text>
+                        <Text style={[styles.mobileYearStatCardValue, { color: isDark ? colors.text : '#1e1b4b' }]}>{allTimeAvgAttendance}%</Text>
                       </View>
 
                       {/* Recent Conduct Card */}
-                      <View style={[styles.mobileYearStatCard, { backgroundColor: '#fce7f3', borderColor: '#f9a8d4' }]}>
+                      <View style={[styles.mobileYearStatCard, { backgroundColor: isDark ? colors.surface : '#fce7f3', borderColor: isDark ? colors.border : '#f9a8d4' }]}>
                         <View style={styles.mobileYearStatCardTop}>
-                          <Text style={[styles.mobileYearStatCardLabel, { color: '#db2777' }]}>Last Conduct</Text>
-                          <View style={[styles.mobileYearStatCardIcon, { backgroundColor: '#f9a8d4' }]}>
-                            <Ionicons name="ribbon-outline" size={12} color="#db2777" />
+                          <Text style={[styles.mobileYearStatCardLabel, { color: isDark ? colors.accent : '#db2777' }]}>Last Conduct</Text>
+                          <View style={[styles.mobileYearStatCardIcon, { backgroundColor: isDark ? colors.accentLight : '#f9a8d4' }]}>
+                            <Ionicons name="ribbon-outline" size={12} color={isDark ? colors.accent : '#db2777'} />
                           </View>
                         </View>
-                        <Text style={[styles.mobileYearStatCardValue, { color: '#831843' }]}>{allTimeConduct}</Text>
+                        <Text style={[styles.mobileYearStatCardValue, { color: isDark ? colors.text : '#831843' }]}>{allTimeConduct}</Text>
                       </View>
                     </View>
                   )}
