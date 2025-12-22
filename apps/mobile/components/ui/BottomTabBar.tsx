@@ -183,8 +183,9 @@ export default function BottomTabBar() {
   const scaleAnims = useRef(TABS.map(() => new Animated.Value(1))).current;
   const translateYAnims = useRef(TABS.map(() => new Animated.Value(0))).current;
 
-  // Get the active tab index
-  const getActiveIndex = () => {
+  // Figure out which tab matches the current URL (if any).
+  // For non-tab pages (e.g. /term-progress), we keep the last matched tab highlighted.
+  const getMatchedTabIndex = (): number | null => {
     // Handle root path
     if (pathname === '/' || pathname === '') return 0;
 
@@ -192,10 +193,20 @@ export default function BottomTabBar() {
       if (tab.route === '/') return pathname === '/';
       return pathname.startsWith(tab.route);
     });
-    return index >= 0 ? index : 0;
+    return index >= 0 ? index : null;
   };
 
-  const activeIndex = getActiveIndex();
+  const matchedTabIndex = getMatchedTabIndex();
+  const [lastTabIndex, setLastTabIndex] = useState<number>(() => matchedTabIndex ?? 0);
+
+  useEffect(() => {
+    if (matchedTabIndex === null) return;
+    setLastTabIndex(matchedTabIndex);
+  }, [matchedTabIndex]);
+
+  // Important: on non-tab pages we DO NOT "highlight" any tab.
+  // We only *indicate* context (via a subtle dot) using lastTabIndex.
+  const activeIndex = matchedTabIndex ?? -1;
 
   // Animate active tab
   useEffect(() => {
@@ -235,6 +246,7 @@ export default function BottomTabBar() {
       }),
     ]).start();
 
+    setLastTabIndex(index);
     router.push(route as any);
   };
 
@@ -318,6 +330,7 @@ export default function BottomTabBar() {
       >
         {TABS.map((tab, index) => {
           const isActive = index === activeIndex;
+          const isContext = matchedTabIndex === null && lastTabIndex === index;
           const IconComponent = tab.icon;
 
           return (
@@ -372,6 +385,16 @@ export default function BottomTabBar() {
                   >
                     {tab.label}
                   </Text>
+
+                  {/* Context indicator (non-tab pages): indicate, don't highlight */}
+                  {isContext && !isActive ? (
+                    <View
+                      style={[
+                        styles.contextDot,
+                        { backgroundColor: activeGradient[0] },
+                      ]}
+                    />
+                  ) : null}
                 </View>
               </Pressable>
             </Animated.View>
@@ -470,5 +493,12 @@ const styles = StyleSheet.create({
   labelTablet: {},
   labelActive: {
     fontFamily: FONTS.semiBold,
+  },
+  contextDot: {
+    marginTop: 4,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    opacity: 0.75,
   },
 });
