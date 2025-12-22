@@ -173,6 +173,12 @@ export default function BottomTabBar() {
   const { colors, isDark, theme } = useTheme();
   const isTablet = useIsTablet();
 
+  // Tablet sizing: keep the bar centered with a max width so it doesn't look "stretched" on large screens.
+  const tabletHorizontalGutter = 24;
+  const tabletBarMaxWidth = 720;
+  const tabletBarWidth = Math.min(SCREEN_WIDTH - tabletHorizontalGutter * 2, tabletBarMaxWidth);
+  const tabletSideInset = Math.max(0, Math.round((SCREEN_WIDTH - tabletBarWidth) / 2));
+
   // Animation refs for each tab
   const scaleAnims = useRef(TABS.map(() => new Animated.Value(1))).current;
   const translateYAnims = useRef(TABS.map(() => new Animated.Value(0))).current;
@@ -248,10 +254,19 @@ export default function BottomTabBar() {
 
   const activeGradient = getActiveGradient();
 
-  // Background color - use solid colors for proper theme support
-  const tabBarBg = colors.surface;
+  const barGradientColors = isDark
+    ? ([colors.surfaceHover, colors.surface] as const)
+    : (['rgba(255, 255, 255, 0.92)', 'rgba(248, 250, 252, 0.92)'] as const);
 
-  const borderColor = colors.border;
+  // Less outspoken, but still clearly defined edges
+  const barBorderColor = isDark ? colors.border : colors.border;
+  const barBorderWidth = 1;
+  const barShadowOpacity = isDark ? 0.22 : 0.09;
+  const barBaseBg = isDark ? colors.surface : colors.backgroundSecondary;
+
+  const inactiveColor = isDark ? colors.textSecondary : colors.textTertiary;
+  const inactiveIconBg = 'transparent';
+  const inactiveIconBorder = 'transparent';
 
   return (
     <View
@@ -262,20 +277,45 @@ export default function BottomTabBar() {
     >
       {/* Background */}
       <View
+        pointerEvents="none"
         style={[
-          styles.solidBackground,
-          isTablet && styles.solidBackgroundTablet,
+          styles.solidBackgroundShadow,
+          isTablet && styles.solidBackgroundShadowTablet,
+          isTablet && {
+            left: tabletSideInset,
+            right: tabletSideInset,
+          },
           {
-            backgroundColor: tabBarBg,
-            borderColor,
+            backgroundColor: barBaseBg,
+            borderColor: barBorderColor,
+            borderWidth: barBorderWidth,
             shadowColor: isDark ? colors.primary : '#000',
-            shadowOpacity: isDark ? 0.3 : 0.12,
+            shadowOpacity: barShadowOpacity,
           },
         ]}
-      />
+      >
+        <View
+          style={[
+            styles.solidBackgroundInner,
+            isTablet && styles.solidBackgroundInnerTablet,
+          ]}
+        >
+          <LinearGradient
+            colors={barGradientColors}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+        </View>
+      </View>
 
       {/* Tab items */}
-      <View style={[styles.tabsContainer, isTablet && styles.tabsContainerTablet]}>
+      <View
+        style={[
+          styles.tabsContainer,
+          isTablet && { width: tabletBarWidth, alignSelf: 'center' },
+        ]}
+      >
         {TABS.map((tab, index) => {
           const isActive = index === activeIndex;
           const IconComponent = tab.icon;
@@ -296,47 +336,43 @@ export default function BottomTabBar() {
             >
               <Pressable
                 onPress={() => handlePress(tab.route, index)}
-                style={[styles.tabButton, isTablet && styles.tabButtonTablet]}
+                style={styles.tabButton}
               >
-                {/* Active indicator background */}
-                {isActive && (
-                  <LinearGradient
-                    colors={activeGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={[styles.activeIndicator, isTablet && styles.activeIndicatorTablet]}
-                  />
-                )}
-
-                {/* Icon container */}
-                <View style={[
-                  styles.iconContainer,
-                  isTablet && styles.iconContainerTablet,
-                  isActive && styles.iconContainerActive,
-                ]}>
-                  <IconComponent
-                    color={isActive ? '#ffffff' : colors.textMuted}
-                    size={isTablet ? 24 : 22}
-                    filled={isActive}
-                  />
-                </View>
-
-                {/* Label */}
-                <Text
+                {/* Tab content container */}
+                <View
                   style={[
-                    styles.label,
-                    isTablet && styles.labelTablet,
-                    { color: isActive ? activeGradient[0] : colors.textMuted },
-                    isActive && styles.labelActive,
+                    styles.tabContent,
                   ]}
                 >
-                  {tab.label}
-                </Text>
+                  {/* Icon with subtle background */}
+                  <View style={[
+                    styles.iconWrapper,
+                    {
+                      backgroundColor: isActive
+                        ? (isDark ? `${activeGradient[0]}35` : `${activeGradient[0]}18`)
+                        : inactiveIconBg,
+                      borderWidth: 0,
+                      borderColor: isActive ? 'transparent' : inactiveIconBorder,
+                    },
+                  ]}>
+                    <IconComponent
+                      color={isActive ? activeGradient[0] : inactiveColor}
+                      size={20}
+                      filled={isActive}
+                    />
+                  </View>
 
-                {/* Active dot indicator */}
-                {isActive && (
-                  <View style={[styles.activeDot, { backgroundColor: activeGradient[0] }]} />
-                )}
+                  {/* Label */}
+                  <Text
+                    style={[
+                      styles.label,
+                      { color: isActive ? activeGradient[0] : inactiveColor },
+                      isActive && styles.labelActive,
+                    ]}
+                  >
+                    {tab.label}
+                  </Text>
+                </View>
               </Pressable>
             </Animated.View>
           );
@@ -356,30 +392,36 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 24 : 16,
   },
   containerTablet: {
-    paddingHorizontal: 80,
+    paddingHorizontal: 0,
     paddingBottom: 20,
   },
-  solidBackground: {
+  solidBackgroundShadow: {
     position: 'absolute',
     bottom: Platform.OS === 'ios' ? 24 : 16,
     left: 16,
     right: 16,
     height: 72,
     borderRadius: 24,
-    borderWidth: 1,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
-    shadowRadius: 24,
-    elevation: 16,
+    shadowRadius: 18,
+    elevation: 10,
   },
-  solidBackgroundTablet: {
-    left: 80,
-    right: 80,
-    height: 76,
-    borderRadius: 28,
+  solidBackgroundShadowTablet: {
+    left: 0,
+    right: 0,
     bottom: 20,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 18,
+    elevation: 12,
   },
+  solidBackgroundInner: {
+    flex: 1,
+    borderRadius: 24,
+    overflow: 'hidden',
+  },
+  solidBackgroundInnerTablet: {},
   tabsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -387,10 +429,7 @@ const styles = StyleSheet.create({
     height: 72,
     paddingHorizontal: 8,
   },
-  tabsContainerTablet: {
-    height: 76,
-    paddingHorizontal: 20,
-  },
+  tabsContainerTablet: {},
   tabItem: {
     flex: 1,
     alignItems: 'center',
@@ -401,62 +440,35 @@ const styles = StyleSheet.create({
   tabButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 6,
-    position: 'relative',
+    flex: 1,
   },
-  tabButtonTablet: {
-    paddingVertical: 8,
-  },
-  activeIndicator: {
-    position: 'absolute',
-    top: 2,
-    width: 44,
-    height: 44,
-    borderRadius: 16,
-    shadowColor: '#3b82f6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  activeIndicatorTablet: {
-    width: 48,
-    height: 48,
-    borderRadius: 18,
-  },
-  iconContainer: {
-    width: 44,
-    height: 44,
+  tabButtonTablet: {},
+  tabContent: {
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 16,
+    minWidth: 56,
+    marginTop: 3,
   },
-  iconContainerTablet: {
-    width: 48,
-    height: 48,
-    borderRadius: 18,
+  tabContentTablet: {},
+  iconWrapper: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
   },
-  iconContainerActive: {
-    // Active state handled by gradient background
-  },
+  iconWrapperTablet: {},
   label: {
     fontSize: 10,
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.medium,
     marginTop: 2,
     letterSpacing: 0.2,
   },
-  labelTablet: {
-    fontSize: 11,
-    marginTop: 4,
-  },
+  labelTablet: {},
   labelActive: {
-    fontFamily: FONTS.bold,
-  },
-  activeDot: {
-    position: 'absolute',
-    bottom: -2,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+    fontFamily: FONTS.semiBold,
   },
 });
