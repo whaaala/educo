@@ -1080,6 +1080,17 @@ export default function ChildDetailPage() {
                   >
                     Message Teacher
                   </ActionButton>
+                  <Link href={`/parents/children/${child.id}/term-progress?from=profile`} className="w-full sm:w-auto">
+                    <ActionButton
+                      variant="secondary"
+                      color="purple"
+                      size="md"
+                      icon={<TrendingUp className="w-full h-full" />}
+                      className="w-full sm:w-auto justify-center"
+                    >
+                      Term Progress
+                    </ActionButton>
+                  </Link>
                   <Link href={`/parents/children/${child.id}/report-card`} className="w-full sm:w-auto">
                     <ActionButton
                       variant="primary"

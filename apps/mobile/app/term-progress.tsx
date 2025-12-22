@@ -37,6 +37,7 @@ interface SubjectProgress {
   lastTestScore: number | null;
   lastTestDate: string | null;
   status: 'completed' | 'in_progress' | 'pending';
+  trend: 'up' | 'down' | 'stable' | null;
 }
 
 // Mock subject progress data
@@ -49,6 +50,7 @@ const MOCK_SUBJECT_PROGRESS: SubjectProgress[] = [
     lastTestScore: 82,
     lastTestDate: '2025-02-10',
     status: 'in_progress',
+    trend: 'up',
   },
   {
     name: 'English Language',
@@ -58,6 +60,7 @@ const MOCK_SUBJECT_PROGRESS: SubjectProgress[] = [
     lastTestScore: 75,
     lastTestDate: '2025-02-08',
     status: 'completed',
+    trend: 'stable',
   },
   {
     name: 'Physics',
@@ -67,6 +70,7 @@ const MOCK_SUBJECT_PROGRESS: SubjectProgress[] = [
     lastTestScore: 70,
     lastTestDate: '2025-02-05',
     status: 'in_progress',
+    trend: 'down',
   },
   {
     name: 'Chemistry',
@@ -76,6 +80,7 @@ const MOCK_SUBJECT_PROGRESS: SubjectProgress[] = [
     lastTestScore: 76,
     lastTestDate: '2025-02-12',
     status: 'in_progress',
+    trend: 'up',
   },
   {
     name: 'Biology',
@@ -85,6 +90,7 @@ const MOCK_SUBJECT_PROGRESS: SubjectProgress[] = [
     lastTestScore: null,
     lastTestDate: null,
     status: 'pending',
+    trend: null,
   },
   {
     name: 'Geography',
@@ -94,6 +100,7 @@ const MOCK_SUBJECT_PROGRESS: SubjectProgress[] = [
     lastTestScore: 80,
     lastTestDate: '2025-01-28',
     status: 'in_progress',
+    trend: 'stable',
   },
   {
     name: 'Civic Education',
@@ -103,6 +110,7 @@ const MOCK_SUBJECT_PROGRESS: SubjectProgress[] = [
     lastTestScore: 88,
     lastTestDate: '2025-02-01',
     status: 'in_progress',
+    trend: 'up',
   },
 ];
 
@@ -141,6 +149,19 @@ function formatDate(dateString: string | null): string {
     day: 'numeric',
     month: 'short',
   });
+}
+
+function getTrendInfo(trend: SubjectProgress['trend']): { icon: string; label: string; color: string; bg: string } {
+  switch (trend) {
+    case 'up':
+      return { icon: 'trending-up', label: 'Improving', color: '#16a34a', bg: '#dcfce7' };
+    case 'down':
+      return { icon: 'trending-down', label: 'Declining', color: '#dc2626', bg: '#fee2e2' };
+    case 'stable':
+      return { icon: 'remove', label: 'Stable', color: '#ca8a04', bg: '#fef9c3' };
+    default:
+      return { icon: 'help-outline', label: '-', color: '#9ca3af', bg: '#f3f4f6' };
+  }
 }
 
 export default function TermProgressScreen() {
@@ -387,82 +408,91 @@ export default function TermProgressScreen() {
                 ]}
               >
                 {/* Card Header */}
-                <View style={styles.subjectCardHeader}>
+                <View style={[styles.subjectCardHeader, isTablet && styles.subjectCardHeaderTablet]}>
                   <View style={styles.subjectCardHeaderLeft}>
                     <View style={[styles.statusBadge, { backgroundColor: statusColors.bg }]}>
                       <Text style={[styles.statusText, { color: statusColors.text }]}>
                         {getStatusLabel(subject.status)}
                       </Text>
                     </View>
-                    <Text style={[styles.subjectName, { color: colors.text }]}>{subject.name}</Text>
+                    <Text style={[styles.subjectName, { color: colors.text }, isTablet && styles.subjectNameTablet]}>{subject.name}</Text>
                   </View>
-                  {/* Score Circle */}
-                  <LinearGradient
-                    colors={scoreGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.scoreCircle}
-                  >
-                    <Text style={styles.scoreCircleText}>
-                      {subject.currentAverage > 0 ? `${subject.currentAverage}%` : '-'}
-                    </Text>
-                  </LinearGradient>
+                  {/* Score Circle with Glow */}
+                  <View style={styles.scoreCircleContainer}>
+                    {/* Glow effect */}
+                    <View style={[styles.scoreCircleGlow, { backgroundColor: scoreGradient[0] }]} />
+                    <LinearGradient
+                      colors={scoreGradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={[styles.scoreCircle, isTablet && styles.scoreCircleTablet]}
+                    >
+                      <Text style={[styles.scoreCircleText, isTablet && styles.scoreCircleTextTablet]}>
+                        {subject.currentAverage > 0 ? `${subject.currentAverage}%` : '-'}
+                      </Text>
+                    </LinearGradient>
+                  </View>
                 </View>
 
                 {/* Subject Stats Cards - 2x2 Grid */}
-                <View style={[styles.subjectStatsGrid, { backgroundColor: colors.backgroundSecondary }]}>
+                <View style={[styles.subjectStatsGrid, { backgroundColor: colors.backgroundSecondary }, isTablet && styles.subjectStatsGridTablet]}>
                   {/* Average Card */}
-                  <View style={[styles.subjectStatCard, { backgroundColor: '#f0fdf4' }]}>
+                  <View style={[styles.subjectStatCard, { backgroundColor: '#f0fdf4' }, isTablet && styles.subjectStatCardTablet]}>
                     <View style={styles.subjectStatCardTop}>
                       <Text style={[styles.subjectStatCardLabel, { color: '#16a34a' }]}>Average</Text>
                       <View style={[styles.subjectStatCardIcon, { backgroundColor: '#dcfce7' }]}>
                         <Ionicons name="analytics" size={isTablet ? 12 : 10} color="#16a34a" />
                       </View>
                     </View>
-                    <Text style={[styles.subjectStatCardValue, { color: '#14532d' }]}>
+                    <Text style={[styles.subjectStatCardValue, { color: '#14532d' }, isTablet && styles.subjectStatCardValueTablet]}>
                       {subject.currentAverage > 0 ? `${subject.currentAverage}%` : '-'}
                     </Text>
                   </View>
 
                   {/* Tests Card */}
-                  <View style={[styles.subjectStatCard, { backgroundColor: '#fefce8' }]}>
+                  <View style={[styles.subjectStatCard, { backgroundColor: '#fefce8' }, isTablet && styles.subjectStatCardTablet]}>
                     <View style={styles.subjectStatCardTop}>
                       <Text style={[styles.subjectStatCardLabel, { color: '#ca8a04' }]}>Tests</Text>
                       <View style={[styles.subjectStatCardIcon, { backgroundColor: '#fef9c3' }]}>
                         <Ionicons name="document-text" size={isTablet ? 12 : 10} color="#ca8a04" />
                       </View>
                     </View>
-                    <Text style={[styles.subjectStatCardValue, { color: '#713f12' }]}>
+                    <Text style={[styles.subjectStatCardValue, { color: '#713f12' }, isTablet && styles.subjectStatCardValueTablet]}>
                       {subject.testsCompleted}/{subject.totalTests}
                     </Text>
                     <Text style={[styles.subjectStatCardSubtext, { color: '#854d0e' }]}>completed</Text>
                   </View>
 
                   {/* Last Score Card */}
-                  <View style={[styles.subjectStatCard, { backgroundColor: '#eef2ff' }]}>
+                  <View style={[styles.subjectStatCard, { backgroundColor: '#eef2ff' }, isTablet && styles.subjectStatCardTablet]}>
                     <View style={styles.subjectStatCardTop}>
                       <Text style={[styles.subjectStatCardLabel, { color: '#6366f1' }]}>Last Test</Text>
                       <View style={[styles.subjectStatCardIcon, { backgroundColor: '#e0e7ff' }]}>
                         <Ionicons name="checkmark-circle" size={isTablet ? 12 : 10} color="#6366f1" />
                       </View>
                     </View>
-                    <Text style={[styles.subjectStatCardValue, { color: '#1e1b4b' }]}>
+                    <Text style={[styles.subjectStatCardValue, { color: '#1e1b4b' }, isTablet && styles.subjectStatCardValueTablet]}>
                       {subject.lastTestScore ? `${subject.lastTestScore}%` : '-'}
                     </Text>
                   </View>
 
-                  {/* Date Card */}
-                  <View style={[styles.subjectStatCard, { backgroundColor: '#fdf2f8' }]}>
-                    <View style={styles.subjectStatCardTop}>
-                      <Text style={[styles.subjectStatCardLabel, { color: '#db2777' }]}>Date</Text>
-                      <View style={[styles.subjectStatCardIcon, { backgroundColor: '#fce7f3' }]}>
-                        <Ionicons name="calendar" size={isTablet ? 12 : 10} color="#db2777" />
+                  {/* Trend Card */}
+                  {(() => {
+                    const trendInfo = getTrendInfo(subject.trend);
+                    return (
+                      <View style={[styles.subjectStatCard, { backgroundColor: trendInfo.bg }, isTablet && styles.subjectStatCardTablet]}>
+                        <View style={styles.subjectStatCardTop}>
+                          <Text style={[styles.subjectStatCardLabel, { color: trendInfo.color }]}>Trend</Text>
+                          <View style={[styles.subjectStatCardIcon, { backgroundColor: trendInfo.color + '30' }]}>
+                            <Ionicons name={trendInfo.icon as any} size={isTablet ? 12 : 10} color={trendInfo.color} />
+                          </View>
+                        </View>
+                        <Text style={[styles.subjectStatCardValue, { color: trendInfo.color }, isTablet && styles.subjectStatCardValueTablet]}>
+                          {trendInfo.label}
+                        </Text>
                       </View>
-                    </View>
-                    <Text style={[styles.subjectStatCardValue, { color: '#831843' }]}>
-                      {formatDate(subject.lastTestDate)}
-                    </Text>
-                  </View>
+                    );
+                  })()}
                 </View>
 
                 {/* Progress Info Row */}
@@ -747,11 +777,12 @@ const styles = StyleSheet.create({
   },
   // Subjects Container
   subjectsContainer: {
-    gap: 12,
+    gap: 14,
   },
   subjectsContainerTablet: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 12,
   },
   subjectCard: {
     borderRadius: 16,
@@ -765,7 +796,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    padding: 14,
+    padding: 16,
+  },
+  subjectCardHeaderTablet: {
+    padding: 20,
   },
   subjectCardHeaderLeft: {
     flex: 1,
@@ -782,33 +816,70 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.semiBold,
   },
   subjectName: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: FONTS.bold,
   },
+  subjectNameTablet: {
+    fontSize: 14,
+  },
+  // Score Circle with Glow
+  scoreCircleContainer: {
+    position: 'relative',
+  },
+  scoreCircleGlow: {
+    position: 'absolute',
+    top: -4,
+    left: -4,
+    right: -4,
+    bottom: -4,
+    borderRadius: 30,
+    opacity: 0.3,
+  },
   scoreCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  scoreCircleTablet: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   scoreCircleText: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: FONTS.bold,
     color: '#ffffff',
+  },
+  scoreCircleTextTablet: {
+    fontSize: 13,
   },
   // Subject Stats Grid
   subjectStatsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    padding: 12,
+    padding: 14,
+  },
+  subjectStatsGridTablet: {
+    gap: 10,
+    padding: 16,
   },
   subjectStatCard: {
     width: '48%',
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 12,
     borderRadius: 12,
+  },
+  subjectStatCardTablet: {
+    paddingVertical: 14,
+    paddingHorizontal: 14,
   },
   subjectStatCardTop: {
     flexDirection: 'row',
@@ -817,7 +888,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   subjectStatCardLabel: {
-    fontSize: 10,
+    fontSize: 9,
     fontFamily: FONTS.semiBold,
     textTransform: 'uppercase',
     letterSpacing: 0.3,
@@ -830,12 +901,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   subjectStatCardValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: FONTS.bold,
     letterSpacing: -0.3,
   },
+  subjectStatCardValueTablet: {
+    fontSize: 15,
+  },
   subjectStatCardSubtext: {
-    fontSize: 10,
+    fontSize: 9,
     fontFamily: FONTS.medium,
     marginTop: 2,
   },
@@ -843,8 +917,8 @@ const styles = StyleSheet.create({
   subjectInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   subjectInfoItem: {
     flexDirection: 'row',
@@ -852,29 +926,29 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   subjectInfoValue: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: FONTS.bold,
   },
   subjectInfoLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: FONTS.medium,
   },
   subjectInfoDivider: {
     width: 1,
-    height: 20,
-    marginHorizontal: 12,
+    height: 18,
+    marginHorizontal: 10,
   },
   subjectProgressBarContainer: {
     flex: 1,
   },
   subjectProgressBar: {
-    height: 6,
-    borderRadius: 3,
+    height: 5,
+    borderRadius: 2.5,
     overflow: 'hidden',
   },
   subjectProgressFill: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 2.5,
   },
   // Note Container
   noteContainer: {

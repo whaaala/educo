@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import MainLayout from "@/components/layout/MainLayout";
@@ -38,12 +38,14 @@ import {
   Percent,
   BarChart3,
   ChevronDown,
+  ChevronRight,
   TrendingUp,
   Users,
   MessageSquare,
   Search,
   Bell,
   HelpCircle,
+  Activity,
 } from "lucide-react";
 
 // ============================================
@@ -350,6 +352,26 @@ export default function ParentDashboardPage() {
   const { countryCode } = useCountry();
   const [selectedChild, setSelectedChild] = useState<Child>(MOCK_CHILDREN[0]);
 
+  // Client-side only date values to avoid hydration mismatch
+  const [greeting, setGreeting] = useState("Welcome");
+  const [currentDate, setCurrentDate] = useState("");
+  const [paymentDate, setPaymentDate] = useState("");
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Good morning");
+    else if (hour < 17) setGreeting("Good afternoon");
+    else setGreeting("Good evening");
+
+    setCurrentDate(new Date().toLocaleDateString("en-GB", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+    }));
+
+    setPaymentDate(new Date().toLocaleDateString());
+  }, []);
+
   // Payment modal state
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
@@ -504,23 +526,6 @@ export default function ParentDashboardPage() {
     defaultOrder
   );
 
-  // Get greeting based on time of day
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 17) return "Good afternoon";
-    return "Good evening";
-  };
-
-  // Format current date
-  const getCurrentDate = () => {
-    return new Date().toLocaleDateString("en-GB", {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-    });
-  };
-
   return (
     <MainLayout>
       <PageLoader isLoading={isPageLoading} loadingText="Loading Dashboard" />
@@ -540,7 +545,7 @@ export default function ParentDashboardPage() {
               {/* Top Row: Date & Actions */}
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                  {getCurrentDate()}
+                  {currentDate}
                 </span>
                 <div className="flex items-center gap-2">
                   <button className="p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
@@ -554,7 +559,7 @@ export default function ParentDashboardPage() {
 
               {/* Greeting */}
               <h1 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-gray-100 purple:text-gray-100 mb-0.5">
-                {getGreeting()}
+                {greeting}
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 {MOCK_PARENT.fullName.split(" ").slice(1).join(" ")}
@@ -641,33 +646,53 @@ export default function ParentDashboardPage() {
             </div>
           </div>
 
-          {/* Mobile Stats - Horizontal Scroll */}
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory">
-            <MobileStatCard
-              icon={TrendingUp}
-              label="Term Average"
-              value={`${childProgress?.currentTermAverage || 0}%`}
-              color="blue"
-            />
-            <MobileStatCard
-              icon={Award}
-              label="Position"
-              value={childProgress?.classPosition || 0}
-              subtitle={`out of ${childProgress?.totalStudents || 0}`}
-              color="green"
-            />
-            <MobileStatCard
-              icon={Percent}
-              label="Attendance"
-              value={`${childProgress?.attendanceRate || 0}%`}
-              color="purple"
-            />
-            <MobileStatCard
-              icon={GraduationCap}
-              label="Conduct"
-              value={childProgress?.conductGrade || "-"}
-              color="amber"
-            />
+          {/* Mobile Stats - Current Term In Progress */}
+          <div className="space-y-2">
+            {/* Header with In Progress badge and View Details link */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-gray-800 dark:text-gray-100">{selectedChild.firstName}&apos;s Stats</span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+                  <Activity className="w-2.5 h-2.5" />
+                  In Progress
+                </span>
+              </div>
+              <Link
+                href={`/parents/children/${selectedChild.id}/term-progress`}
+                className="inline-flex items-center gap-0.5 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+              >
+                View Details
+                <ChevronRight className="w-3 h-3" />
+              </Link>
+            </div>
+            {/* Stats Scroll */}
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory">
+              <MobileStatCard
+                icon={TrendingUp}
+                label="Term Average"
+                value={`${childProgress?.currentTermAverage || 0}%`}
+                color="blue"
+              />
+              <MobileStatCard
+                icon={Award}
+                label="Position"
+                value={childProgress?.classPosition || 0}
+                subtitle={`out of ${childProgress?.totalStudents || 0}`}
+                color="green"
+              />
+              <MobileStatCard
+                icon={Percent}
+                label="Attendance"
+                value={`${childProgress?.attendanceRate || 0}%`}
+                color="purple"
+              />
+              <MobileStatCard
+                icon={GraduationCap}
+                label="Conduct"
+                value={childProgress?.conductGrade || "-"}
+                color="amber"
+              />
+            </div>
           </div>
 
           {/* Mobile Dashboard Widgets - Single Column */}
@@ -700,9 +725,9 @@ export default function ParentDashboardPage() {
             <div className="relative flex items-start justify-between gap-6">
               {/* Left Side */}
               <div className="flex-1">
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{getCurrentDate()}</p>
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{currentDate}</p>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-gray-100 purple:text-gray-100 mb-0.5">
-                  {getGreeting()}
+                  {greeting}
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                   {MOCK_PARENT.fullName.split(" ").slice(1).join(" ")}
@@ -763,33 +788,53 @@ export default function ParentDashboardPage() {
             </div>
           </div>
 
-          {/* Tablet Stats - 4 Column Grid */}
-          <div className="grid grid-cols-4 gap-3">
-            <TabletStatCard
-              icon={TrendingUp}
-              label="Term Average"
-              value={`${childProgress?.currentTermAverage || 0}%`}
-              color="blue"
-            />
-            <TabletStatCard
-              icon={Award}
-              label="Position"
-              value={childProgress?.classPosition || 0}
-              subtitle={`of ${childProgress?.totalStudents || 0}`}
-              color="green"
-            />
-            <TabletStatCard
-              icon={Percent}
-              label="Attendance"
-              value={`${childProgress?.attendanceRate || 0}%`}
-              color="purple"
-            />
-            <TabletStatCard
-              icon={GraduationCap}
-              label="Conduct"
-              value={childProgress?.conductGrade || "-"}
-              color="amber"
-            />
+          {/* Tablet Stats - Current Term In Progress */}
+          <div className="space-y-3">
+            {/* Header with In Progress badge and View Details link */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">{selectedChild.firstName}&apos;s Current Term</h3>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+                  <Activity className="w-3 h-3" />
+                  In Progress
+                </span>
+              </div>
+              <Link
+                href={`/parents/children/${selectedChild.id}/term-progress`}
+                className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+              >
+                View Details
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-4 gap-3">
+              <TabletStatCard
+                icon={TrendingUp}
+                label="Term Average"
+                value={`${childProgress?.currentTermAverage || 0}%`}
+                color="blue"
+              />
+              <TabletStatCard
+                icon={Award}
+                label="Position"
+                value={childProgress?.classPosition || 0}
+                subtitle={`of ${childProgress?.totalStudents || 0}`}
+                color="green"
+              />
+              <TabletStatCard
+                icon={Percent}
+                label="Attendance"
+                value={`${childProgress?.attendanceRate || 0}%`}
+                color="purple"
+              />
+              <TabletStatCard
+                icon={GraduationCap}
+                label="Conduct"
+                value={childProgress?.conductGrade || "-"}
+                color="amber"
+              />
+            </div>
           </div>
 
           {/* Tablet Dashboard - 2 Column Masonry */}
@@ -840,12 +885,32 @@ export default function ParentDashboardPage() {
             </div>
           </div>
 
-          {/* Desktop Stats Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatCard icon={BarChart3} label="Term Average" value={`${childProgress?.currentTermAverage || 0}%`} color="blue" />
-            <StatCard icon={Award} label="Class Position" value={childProgress?.classPosition || 0} color="green" subtitle={`out of ${childProgress?.totalStudents || 0} students`} />
-            <StatCard icon={Percent} label="Attendance" value={`${childProgress?.attendanceRate || 0}%`} color="purple" />
-            <StatCard icon={GraduationCap} label="Conduct" value={childProgress?.conductGrade || "-"} color="amber" />
+          {/* Desktop Stats Row - Current Term In Progress */}
+          <div className="space-y-3">
+            {/* Header with In Progress badge and View Details link */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">{selectedChild.firstName}&apos;s Current Term</h3>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+                  <Activity className="w-3 h-3" />
+                  In Progress
+                </span>
+              </div>
+              <Link
+                href={`/parents/children/${selectedChild.id}/term-progress`}
+                className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+              >
+                View Details
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <StatCard icon={BarChart3} label="Term Average" value={`${childProgress?.currentTermAverage || 0}%`} color="blue" />
+              <StatCard icon={Award} label="Class Position" value={childProgress?.classPosition || 0} color="green" subtitle={`out of ${childProgress?.totalStudents || 0} students`} />
+              <StatCard icon={Percent} label="Attendance" value={`${childProgress?.attendanceRate || 0}%`} color="purple" />
+              <StatCard icon={GraduationCap} label="Conduct" value={childProgress?.conductGrade || "-"} color="amber" />
+            </div>
           </div>
 
           {/* Desktop Dashboard Masonry */}
@@ -880,7 +945,7 @@ export default function ParentDashboardPage() {
             { icon: <CreditCard className="w-4 h-4 text-blue-600 dark:text-blue-400" />, label: "Fee Type", value: selectedFee.feeType },
             { icon: <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />, label: "Child", value: selectedFee.childName },
             { icon: <CreditCard className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />, label: "Amount Paid", value: `₦${selectedFee.amount.toLocaleString()}` },
-            { icon: <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />, label: "Date", value: new Date().toLocaleDateString() },
+            { icon: <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />, label: "Date", value: paymentDate },
           ]}
           note="A receipt has been sent to your email. You can also view this payment in your Payment History."
           closeButtonText="Done"
