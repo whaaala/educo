@@ -18,6 +18,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
+import { ProfileAvatar } from '../components/ui/ProfileAvatar';
+import { ChildSwitcher, type ChildData } from '../components/ui/ChildSwitcher';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -141,6 +143,12 @@ const MOCK_REPORT_HISTORY: ReportHistoryItem[] = [
 const YEAR_OPTIONS = ['All Years', '2025', '2024', '2023', '2022'];
 const TERM_OPTIONS = ['All Terms', 'Term 1', 'Term 2', 'Term 3'];
 const STATUS_OPTIONS = ['All Status', 'Passed', 'Failed'];
+
+// Mock children data - same as dashboard
+const MOCK_CHILDREN: ChildData[] = [
+  { id: 'child-001', name: 'Adaeze Okonkwo', classLevel: 'JSS 2', avatarUri: 'https://i.pravatar.cc/150?u=adaeze' },
+  { id: 'child-002', name: 'Chukwuemeka Okonkwo', classLevel: 'SS 1', avatarUri: 'https://i.pravatar.cc/150?u=chukwuemeka' },
+];
 
 function useIsTablet() {
   const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
@@ -312,15 +320,18 @@ export default function ReportsHistoryScreen() {
   const params = useLocalSearchParams();
   const isTablet = useIsTablet();
 
-  const childId = params.childId as string | undefined;
-  const childName = (params.childName as string) || 'Student';
-  const childAvatar = 'https://i.pravatar.cc/150?u=adaeze';
-  const childClass = 'JSS 2';
+  // Get selected child from params or default to first child
+  const initialChildId = (params.childId as string) || MOCK_CHILDREN[0]?.id || '';
+  const [selectedChildId, setSelectedChildId] = useState(initialChildId);
+
+  const selectedChild = MOCK_CHILDREN.find((c) => c.id === selectedChildId) || MOCK_CHILDREN[0];
+  const childName = selectedChild?.name || 'Student';
+  const childAvatar = selectedChild?.avatarUri || 'https://i.pravatar.cc/150?u=adaeze';
+  const childClass = selectedChild?.classLevel || 'JSS 2';
 
   // Search and filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [avatarEnlarged, setAvatarEnlarged] = useState(false);
   const [yearFilter, setYearFilter] = useState('All Years');
   const [termFilter, setTermFilter] = useState('All Terms');
   const [statusFilter, setStatusFilter] = useState('All Status');
@@ -330,6 +341,16 @@ export default function ReportsHistoryScreen() {
   // Animation values
   const filterHeight = useRef(new Animated.Value(0)).current;
   const searchFocused = useRef(new Animated.Value(0)).current;
+
+  // Handle child selection
+  const handleSelectChild = (childId: string) => {
+    setSelectedChildId(childId);
+    // Reset filters when switching child
+    setYearFilter('All Years');
+    setTermFilter('All Terms');
+    setStatusFilter('All Status');
+    setSearchQuery('');
+  };
 
   // Toggle filters with animation
   const toggleFilters = () => {
@@ -453,34 +474,18 @@ export default function ReportsHistoryScreen() {
       >
         {/* Header with Child Info - Modern Sleek Design */}
         {isTablet ? (
-          /* TABLET: Modern layout with profile above stats cards */
+          /* TABLET: Modern layout with profile and child switcher */
           <View style={styles.tabletHeaderWrapper}>
             {/* Profile Row */}
             <View style={styles.tabletProfileRow}>
-              {/* Avatar with hover/press to enlarge */}
-              <Pressable
-                onPressIn={() => setAvatarEnlarged(true)}
-                onPressOut={() => setAvatarEnlarged(false)}
-                onHoverIn={() => setAvatarEnlarged(true)}
-                onHoverOut={() => setAvatarEnlarged(false)}
-                style={styles.tabletAvatarPressable}
-              >
-                <Animated.View style={[
-                  styles.tabletAvatarWrapper,
-                  avatarEnlarged && styles.tabletAvatarEnlarged
-                ]}>
-                  <LinearGradient
-                    colors={['#6366f1', '#8b5cf6']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.tabletAvatarGradient}
-                  >
-                    <View style={[styles.tabletAvatarInner, { backgroundColor: colors.background }]}>
-                      <Image source={{ uri: childAvatar }} style={styles.tabletAvatarImage} />
-                    </View>
-                  </LinearGradient>
-                </Animated.View>
-              </Pressable>
+              {/* ProfileAvatar component */}
+              <ProfileAvatar
+                imageUri={childAvatar}
+                name={childName}
+                size="lg"
+                gradient="purple"
+                enlargeOnPress
+              />
 
               {/* Name and Class */}
               <View style={styles.tabletNameSection}>
@@ -490,40 +495,36 @@ export default function ReportsHistoryScreen() {
                   <Text style={[styles.tabletClassText, { color: colors.primary }]}>{childClass}</Text>
                 </View>
               </View>
+
+              {/* Child Switcher - Only show if multiple children */}
+              {MOCK_CHILDREN.length > 1 && (
+                <View style={styles.childSwitcherContainer}>
+                  <ChildSwitcher
+                    children={MOCK_CHILDREN}
+                    selectedChildId={selectedChildId}
+                    onSelectChild={handleSelectChild}
+                    variant="compact"
+                    showClass
+                  />
+                </View>
+              )}
             </View>
 
           </View>
         ) : (
-          /* MOBILE: Original design */
+          /* MOBILE: Modern design with child switcher */
           <View style={[styles.headerContainer, { backgroundColor: colors.background }]}>
             {/* Child Profile Section */}
             <View style={styles.profileSection}>
-              {/* Avatar with gradient ring - Pressable for enlargement */}
-              <Pressable
-                onPressIn={() => setAvatarEnlarged(true)}
-                onPressOut={() => setAvatarEnlarged(false)}
-                onHoverIn={() => setAvatarEnlarged(true)}
-                onHoverOut={() => setAvatarEnlarged(false)}
-                style={styles.mobileAvatarPressable}
-              >
-                <Animated.View style={[
-                  styles.avatarContainer,
-                  avatarEnlarged && styles.mobileAvatarEnlarged
-                ]}>
-                  <LinearGradient
-                    colors={['#6366f1', '#8b5cf6', '#a855f7']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.avatarRing}
-                  >
-                    <View style={[styles.avatarInner, { backgroundColor: colors.background }]}>
-                      <Image source={{ uri: childAvatar }} style={styles.avatarImage} />
-                    </View>
-                  </LinearGradient>
-                  {/* Online indicator */}
-                  <View style={[styles.onlineIndicator, { borderColor: colors.background }]} />
-                </Animated.View>
-              </Pressable>
+              {/* ProfileAvatar component */}
+              <ProfileAvatar
+                imageUri={childAvatar}
+                name={childName}
+                size="md"
+                gradient="purple"
+                showOnlineIndicator
+                enlargeOnPress
+              />
 
               {/* Name and Class */}
               <View style={styles.profileDetails}>
@@ -533,6 +534,19 @@ export default function ReportsHistoryScreen() {
                   <Text style={[styles.classBadgeText, { color: colors.primary }]}>{childClass}</Text>
                 </View>
               </View>
+
+              {/* Child Switcher - Only show if multiple children */}
+              {MOCK_CHILDREN.length > 1 && (
+                <View style={styles.mobileChildSwitcherContainer}>
+                  <ChildSwitcher
+                    children={MOCK_CHILDREN}
+                    selectedChildId={selectedChildId}
+                    onSelectChild={handleSelectChild}
+                    variant="compact"
+                    showClass
+                  />
+                </View>
+              )}
             </View>
 
           </View>
@@ -1179,6 +1193,17 @@ const styles = StyleSheet.create({
   profileSectionTablet: {
     justifyContent: 'flex-start',
     marginBottom: 20,
+  },
+  // Child Switcher Containers
+  childSwitcherContainer: {
+    marginLeft: 'auto',
+    maxWidth: 200,
+    zIndex: 100,
+  },
+  mobileChildSwitcherContainer: {
+    marginLeft: 'auto',
+    maxWidth: 160,
+    zIndex: 100,
   },
   // Mobile Avatar Pressable for enlargement
   mobileAvatarPressable: {

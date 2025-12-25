@@ -364,8 +364,7 @@ export default function BottomTabBar() {
                       backgroundColor: isActive
                         ? (isDark ? `${activeGradient[0]}35` : `${activeGradient[0]}18`)
                         : inactiveIconBg,
-                      borderWidth: 0,
-                      borderColor: isActive ? 'transparent' : inactiveIconBorder,
+                      borderRadius: 12,
                     },
                   ]}>
                     <IconComponent

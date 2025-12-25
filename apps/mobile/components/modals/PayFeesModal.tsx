@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTenantSettings } from '../../contexts/TenantSettingsContext';
 import { Modal } from '../ui/Modal';
@@ -72,10 +73,11 @@ export function PayFeesModal({
   onPaymentInitiated,
   childName,
   fees = MOCK_FEES,
-}: PayFeesModalProps) {
+}: PayFeesModalProps): JSX.Element {
   const { colors } = useTheme();
   const { settings } = useTenantSettings();
   const { currencySymbol, payment } = settings;
+  const router = useRouter();
 
   const [selectedFee, setSelectedFee] = useState<string | null>(null);
   const [selectedAmount, setSelectedAmount] = useState<number>(0);
@@ -85,10 +87,26 @@ export function PayFeesModal({
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
-  const totalOutstanding = fees.reduce((sum, fee) => {
-    const remaining = fee.paidAmount ? fee.amount - fee.paidAmount : fee.amount;
-    return sum + remaining;
-  }, 0);
+  // Calculate total - fee.amount is already the remaining balance when passed from fees.tsx
+  const totalOutstanding = fees.reduce((sum, fee) => sum + fee.amount, 0);
+
+  // Track if a specific fee is selected (null means "Pay All")
+  const isPayingAll = selectedFee === null;
+
+  // Auto-show payment options when modal opens with fees - default to "Pay All"
+  useEffect(() => {
+    if (visible && fees.length > 0) {
+      setShowPaymentOptions(true);
+      // Default to "Pay All" mode
+      setSelectedFee(null);
+      setSelectedAmount(totalOutstanding);
+      setSelectedFeeName(fees.length === 1 ? fees[0].name : 'All Outstanding Fees');
+      // Auto-scroll to payment methods section after a short delay
+      setTimeout(() => {
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }, 300);
+    }
+  }, [visible]);
 
   const formatCurrency = (amount: number) => {
     return `${currencySymbol}${amount.toLocaleString()}`;
@@ -207,11 +225,13 @@ export function PayFeesModal({
         <Text style={[styles.footerButtonText, { color: colors.textSecondary }]}>Close</Text>
       </Pressable>
       <Pressable
-        style={[styles.footerButton, styles.footerButtonPrimary, { backgroundColor: colors.primary }]}
-        onPress={handlePayAll}
+        style={[styles.footerButton, { backgroundColor: colors.primary }]}
+        onPress={() => handlePaymentMethodSelect(paymentMethod)}
       >
         <Ionicons name="card" size={16} color="#ffffff" />
-        <Text style={[styles.footerButtonText, { color: '#ffffff' }]}>Pay All ({formatCurrency(totalOutstanding)})</Text>
+        <Text style={[styles.footerButtonText, { color: '#ffffff' }]} numberOfLines={1}>
+          {isPayingAll ? `Pay All (${formatCurrency(totalOutstanding)})` : `Pay ${formatCurrency(selectedAmount)}`}
+        </Text>
       </Pressable>
     </View>
   );
@@ -251,20 +271,50 @@ export function PayFeesModal({
 
         {/* Fee Items */}
         <View style={styles.feesList}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Outstanding Fees</Text>
+          {/* Section Header with Pay All link */}
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Outstanding Fees</Text>
+            {fees.length > 1 && (
+              <Pressable
+                onPress={handlePayAll}
+                style={[
+                  styles.payAllLink,
+                  {
+                    backgroundColor: isPayingAll ? colors.primary : colors.primaryLight,
+                    borderColor: colors.primary,
+                  },
+                ]}
+              >
+                <Ionicons name="wallet-outline" size={12} color={isPayingAll ? '#ffffff' : colors.primary} />
+                <Text style={[styles.payAllLinkText, { color: isPayingAll ? '#ffffff' : colors.primary }]}>Pay All</Text>
+              </Pressable>
+            )}
+          </View>
 
           {fees.map((fee) => {
             const status = getStatusConfig(fee.status);
-            const remainingAmount = fee.paidAmount ? fee.amount - fee.paidAmount : fee.amount;
+            // fee.amount is already the remaining balance
+            const remainingAmount = fee.amount;
+            const isSelected = selectedFee === fee.id;
 
             return (
-              <View
+              <Pressable
                 key={fee.id}
-                style={[styles.feeItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                onPress={() => handlePayNow(fee.id, remainingAmount, fee.name)}
+                style={[
+                  styles.feeItem,
+                  {
+                    backgroundColor: isSelected ? colors.primaryLight : colors.surface,
+                    borderColor: isSelected ? colors.primary : colors.border,
+                    borderWidth: isSelected ? 2 : 1,
+                  },
+                ]}
               >
                 <View style={styles.feeItemLeft}>
                   <View style={styles.feeItemHeader}>
-                    <Text style={[styles.feeName, { color: colors.text }]} numberOfLines={1}>{fee.name}</Text>
+                    <Text style={[styles.feeName, { color: isSelected ? colors.primary : colors.text }]} numberOfLines={1}>
+                      {fee.name}
+                    </Text>
                     <View style={[styles.statusBadge, { backgroundColor: status.bgColor }]}>
                       <Ionicons name={status.icon} size={8} color={status.textColor} />
                       <Text style={[styles.statusText, { color: status.textColor }]}>{status.label}</Text>
@@ -283,18 +333,22 @@ export function PayFeesModal({
                 </View>
 
                 <View style={{ alignItems: 'flex-end', gap: 4 }}>
-                  <Text style={[styles.feeAmount, { color: colors.text }]}>
+                  <Text style={[styles.feeAmount, { color: isSelected ? colors.primary : colors.text }]}>
                     {formatCurrency(remainingAmount)}
                   </Text>
-                  <Pressable
-                    style={[styles.payButton, { backgroundColor: colors.primary }]}
-                    onPress={() => handlePayNow(fee.id, remainingAmount, fee.name)}
-                  >
-                    <Ionicons name="card" size={12} color="#ffffff" />
-                    <Text style={styles.payButtonText}>Pay Now</Text>
-                  </Pressable>
+                  {isSelected ? (
+                    <View style={[styles.selectedIndicator, { backgroundColor: colors.primary }]}>
+                      <Ionicons name="checkmark" size={12} color="#ffffff" />
+                      <Text style={styles.selectedText}>Selected</Text>
+                    </View>
+                  ) : (
+                    <View style={[styles.payButton, { backgroundColor: colors.primary }]}>
+                      <Ionicons name="card" size={12} color="#ffffff" />
+                      <Text style={styles.payButtonText}>Pay Now</Text>
+                    </View>
+                  )}
                 </View>
-              </View>
+              </Pressable>
             );
           })}
         </View>
@@ -336,7 +390,16 @@ export function PayFeesModal({
         )}
 
         {/* Payment History Link */}
-        <Pressable style={styles.historyLink}>
+        <Pressable
+          style={styles.historyLink}
+          onPress={() => {
+            handleClose();
+            router.push({
+              pathname: '/payment-history',
+              params: { childName },
+            });
+          }}
+        >
           <Ionicons name="receipt-outline" size={16} color={colors.primary} />
           <Text style={[styles.historyLinkText, { color: colors.primary }]}>View Payment History</Text>
           <Ionicons name="chevron-forward" size={16} color={colors.primary} />
@@ -418,12 +481,30 @@ const styles = StyleSheet.create({
   feesList: {
     gap: 8,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
   sectionTitle: {
     fontSize: 11,
     fontFamily: FONTS.semiBold,
-    marginBottom: 2,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+  },
+  payAllLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  payAllLinkText: {
+    fontSize: 11,
+    fontFamily: FONTS.semiBold,
   },
   feeItem: {
     flexDirection: 'row',
@@ -493,6 +574,19 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.semiBold,
     color: '#ffffff',
   },
+  selectedIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    gap: 4,
+  },
+  selectedText: {
+    fontSize: 11,
+    fontFamily: FONTS.semiBold,
+    color: '#ffffff',
+  },
   paymentMethodsSection: {
     padding: 12,
     borderRadius: 10,
@@ -541,20 +635,19 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    gap: 12,
+    justifyContent: 'space-between',
   },
   footerButton: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 12,
-    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    gap: 6,
   },
-  footerButtonPrimary: {},
   footerButtonText: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: FONTS.semiBold,
   },
 });
