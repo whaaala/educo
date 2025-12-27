@@ -5,13 +5,14 @@ import {
   Pressable,
   StyleSheet,
   Linking,
-  Alert,
   Platform,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Modal } from '../ui/Modal';
+import { InfoModal, InfoModalType, InfoModalButton } from '../ui/InfoModal';
 
 // Shared fonts
 const FONTS = {
@@ -47,6 +48,16 @@ const DEFAULT_BURSARY_CONTACT: BursaryContact = {
   location: 'Admin Block, Ground Floor',
 };
 
+interface InfoModalState {
+  visible: boolean;
+  type: InfoModalType;
+  title: string;
+  message: string;
+  detail?: string;
+  icon?: keyof typeof Ionicons.glyphMap;
+  buttons?: InfoModalButton[];
+}
+
 export function ContactBursaryModal({
   visible,
   onClose,
@@ -55,24 +66,97 @@ export function ContactBursaryModal({
 }: ContactBursaryModalProps) {
   const { colors, isDark } = useTheme();
   const [isCallingDisabled, setIsCallingDisabled] = useState(false);
+  const [infoModal, setInfoModal] = useState<InfoModalState>({
+    visible: false,
+    type: 'info',
+    title: '',
+    message: '',
+  });
+
+  const showInfoModal = (config: Omit<InfoModalState, 'visible'>) => {
+    setInfoModal({ ...config, visible: true });
+  };
+
+  const hideInfoModal = () => {
+    setInfoModal(prev => ({ ...prev, visible: false }));
+  };
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await Clipboard.setStringAsync(text);
+      showInfoModal({
+        type: 'success',
+        title: 'Copied!',
+        message: `${label} has been copied to your clipboard.`,
+        detail: text,
+        icon: 'checkmark-circle',
+        buttons: [{ text: 'Done', style: 'primary' }],
+      });
+    } catch (error) {
+      showInfoModal({
+        type: 'error',
+        title: 'Copy Failed',
+        message: 'Could not copy to clipboard. Please try again.',
+        buttons: [{ text: 'OK', style: 'primary' }],
+      });
+    }
+  };
 
   const handleCall = async () => {
+    // Clean the phone number - remove spaces but keep the + for international format
     const phoneNumber = contact.phone.replace(/\s/g, '');
+
+    // Use telprompt on iOS (shows confirmation dialog) or tel on Android
     const url = Platform.OS === 'ios' ? `telprompt:${phoneNumber}` : `tel:${phoneNumber}`;
 
     try {
-      const canOpen = await Linking.canOpenURL(url);
-      if (canOpen) {
-        await Linking.openURL(url);
-      } else {
-        Alert.alert(
-          'Cannot Make Call',
-          'Your device does not support making phone calls. Please dial manually: ' + contact.phone,
-          [{ text: 'OK' }]
-        );
-      }
+      // On real devices, just try to open directly - canOpenURL can be unreliable
+      // especially on Android emulators or devices without proper telephony setup
+      await Linking.openURL(url);
     } catch (error) {
-      Alert.alert('Error', 'Failed to initiate call. Please try again.');
+      // If direct opening fails, try the alternative scheme
+      const fallbackUrl = Platform.OS === 'ios' ? `tel:${phoneNumber}` : `tel:${phoneNumber}`;
+
+      try {
+        const canOpen = await Linking.canOpenURL(fallbackUrl);
+        if (canOpen) {
+          await Linking.openURL(fallbackUrl);
+        } else {
+          // Device cannot make calls - show copy option
+          showInfoModal({
+            type: 'warning',
+            title: 'Cannot Make Call',
+            message: 'Your device does not support making phone calls directly. You can copy the number and dial manually.',
+            detail: contact.phone,
+            icon: 'call',
+            buttons: [
+              { text: 'Cancel', style: 'default' },
+              {
+                text: 'Copy Number',
+                style: 'primary',
+                onPress: () => copyToClipboard(contact.phone, 'Phone number'),
+              },
+            ],
+          });
+        }
+      } catch (fallbackError) {
+        // All attempts failed - show copy option
+        showInfoModal({
+          type: 'warning',
+          title: 'Cannot Make Call',
+          message: 'Unable to initiate a phone call from this device. You can copy the number and dial manually.',
+          detail: contact.phone,
+          icon: 'call',
+          buttons: [
+            { text: 'Cancel', style: 'default' },
+            {
+              text: 'Copy Number',
+              style: 'primary',
+              onPress: () => copyToClipboard(contact.phone, 'Phone number'),
+            },
+          ],
+        });
+      }
     }
   };
 
@@ -86,46 +170,91 @@ export function ContactBursaryModal({
       if (canOpen) {
         await Linking.openURL(url);
       } else {
-        Alert.alert(
-          'Cannot Open Email',
-          'No email app found. Please email manually: ' + contact.email,
-          [{ text: 'OK' }]
-        );
+        showInfoModal({
+          type: 'warning',
+          title: 'Cannot Open Email',
+          message: 'No email app is available on your device. You can copy the email address and use your preferred email service.',
+          detail: contact.email,
+          icon: 'mail',
+          buttons: [
+            { text: 'Cancel', style: 'default' },
+            {
+              text: 'Copy Email',
+              style: 'primary',
+              onPress: () => copyToClipboard(contact.email, 'Email address'),
+            },
+          ],
+        });
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to open email app. Please try again.');
+      showInfoModal({
+        type: 'error',
+        title: 'Email Failed',
+        message: 'Failed to open email app. Please try again or copy the email address.',
+        detail: contact.email,
+        icon: 'mail',
+        buttons: [
+          { text: 'Cancel', style: 'default' },
+          {
+            text: 'Copy Email',
+            style: 'primary',
+            onPress: () => copyToClipboard(contact.email, 'Email address'),
+          },
+        ],
+      });
     }
   };
 
   const handleWhatsApp = async () => {
     const phoneNumber = contact.phone.replace(/\s/g, '').replace('+', '');
     const message = encodeURIComponent('Hello, I would like to inquire about school fees.');
-    const url = `whatsapp://send?phone=${phoneNumber}&text=${message}`;
 
-    try {
-      const canOpen = await Linking.canOpenURL(url);
-      if (canOpen) {
-        await Linking.openURL(url);
-      } else {
-        Alert.alert(
-          'WhatsApp Not Available',
-          'WhatsApp is not installed on your device.',
-          [{ text: 'OK' }]
-        );
+    // Try both WhatsApp URL schemes
+    const urlSchemes = [
+      `whatsapp://send?phone=${phoneNumber}&text=${message}`,
+      `https://wa.me/${phoneNumber}?text=${message}`,
+    ];
+
+    let whatsappOpened = false;
+
+    for (const url of urlSchemes) {
+      try {
+        const canOpen = await Linking.canOpenURL(url);
+        if (canOpen) {
+          await Linking.openURL(url);
+          whatsappOpened = true;
+          break;
+        }
+      } catch (error) {
+        continue;
       }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to open WhatsApp. Please try again.');
+    }
+
+    if (!whatsappOpened) {
+      showInfoModal({
+        type: 'info',
+        title: 'WhatsApp Not Available',
+        message: 'WhatsApp is not installed on your device. You can copy the phone number and contact them through other means.',
+        detail: contact.phone,
+        icon: 'logo-whatsapp',
+        buttons: [
+          { text: 'Cancel', style: 'default' },
+          {
+            text: 'Copy Number',
+            style: 'primary',
+            onPress: () => copyToClipboard(contact.phone, 'Phone number'),
+          },
+        ],
+      });
     }
   };
 
   const handleCopyPhone = () => {
-    // In a real app, you'd use Clipboard.setString
-    Alert.alert('Phone Number', contact.phone, [{ text: 'OK' }]);
+    copyToClipboard(contact.phone, 'Phone number');
   };
 
   const handleCopyEmail = () => {
-    // In a real app, you'd use Clipboard.setString
-    Alert.alert('Email Address', contact.email, [{ text: 'OK' }]);
+    copyToClipboard(contact.email, 'Email address');
   };
 
   return (
@@ -249,6 +378,18 @@ export function ContactBursaryModal({
           </Text>
         </View>
       </View>
+
+      {/* Info Modal for alerts */}
+      <InfoModal
+        visible={infoModal.visible}
+        onClose={hideInfoModal}
+        type={infoModal.type}
+        title={infoModal.title}
+        message={infoModal.message}
+        detail={infoModal.detail}
+        icon={infoModal.icon}
+        buttons={infoModal.buttons}
+      />
     </Modal>
   );
 }
