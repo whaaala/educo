@@ -18,6 +18,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useTenantSettings } from '../../contexts/TenantSettingsContext';
 import { PayFeesModal } from '../../components/modals/PayFeesModal';
 import { ContactBursaryModal } from '../../components/modals/ContactBursaryModal';
+import { DownloadStatementModal } from '../../components/modals/DownloadStatementModal';
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 import { ChildSwitcher, type ChildData } from '../../components/ui/ChildSwitcher';
 
@@ -490,6 +491,7 @@ export default function FeesScreen() {
   const [showFilters, setShowFilters] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [showContactBursaryModal, setShowContactBursaryModal] = useState(false);
+  const [showDownloadStatementModal, setShowDownloadStatementModal] = useState(false);
 
   const selectedChild = MOCK_CHILDREN.find((c) => c.id === selectedChildId) || MOCK_CHILDREN[0];
 
@@ -997,7 +999,7 @@ export default function FeesScreen() {
                 {/* Download Statement Card */}
                 <Pressable
                   style={[styles.tabletQuickActionCardModern, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                  onPress={() => {/* Handle download */}}
+                  onPress={() => setShowDownloadStatementModal(true)}
                 >
                   <View style={[styles.tabletQuickActionAccent, { backgroundColor: '#d97706' }]} />
                   <View style={styles.tabletQuickActionContent}>
@@ -1043,7 +1045,7 @@ export default function FeesScreen() {
                 </Pressable>
                 <Pressable
                   style={[styles.mobileQuickActionButton, { backgroundColor: isDark ? colors.backgroundTertiary : '#f8fafc' }]}
-                  onPress={() => {/* Handle download */}}
+                  onPress={() => setShowDownloadStatementModal(true)}
                 >
                   <View style={[styles.mobileQuickActionIcon, { backgroundColor: isDark ? '#3f2f1f' : '#fef3c7' }]}>
                     <Ionicons name="download-outline" size={16} color={isDark ? '#fbbf24' : '#d97706'} />
@@ -1087,6 +1089,28 @@ export default function FeesScreen() {
         visible={showContactBursaryModal}
         onClose={() => setShowContactBursaryModal(false)}
         schoolName="Greenfield Academy"
+      />
+
+      {/* Download Statement Modal */}
+      <DownloadStatementModal
+        visible={showDownloadStatementModal}
+        onClose={() => setShowDownloadStatementModal(false)}
+        childName={selectedChild.name}
+        childClass={selectedChild.classLevel}
+        schoolName="Greenfield Academy"
+        term="2nd Term"
+        academicYear="2024/2025"
+        fees={MOCK_CURRENT_FEES.filter(f => f.childId === selectedChildId).map(f => ({
+          id: f.id,
+          name: f.feeType,
+          feeType: f.feeType,
+          total: f.amount,
+          paid: f.paidAmount,
+          balance: f.balance,
+          dueDate: f.dueDate,
+          status: f.status as 'paid' | 'partial' | 'pending' | 'overdue',
+          term: f.term,
+        }))}
       />
     </SafeAreaView>
   );
