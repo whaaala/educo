@@ -39,118 +39,213 @@ const FONTS = {
 interface PaymentHistoryItem {
   id: string;
   feeName: string;
+  feeType: string;
   amount: number;
   paidAmount: number;
+  balance: number;
   paymentDate: string;
   paymentMethod: 'card' | 'bank' | 'cash';
   status: 'completed' | 'pending' | 'failed' | 'refunded';
   transactionRef: string;
   term: string;
-  year: string;
+  academicYear: string;
 }
 
-// Mock payment history data
+// Mock payment history data - Extended with multiple academic years
 const MOCK_PAYMENT_HISTORY: PaymentHistoryItem[] = [
+  // 2024/2025 - 2nd Term (Current)
   {
     id: 'pay-001',
-    feeName: 'Tuition Fee - Term 1',
+    feeName: 'School Fees - 2nd Term',
+    feeType: 'School Fees',
     amount: 150000,
-    paidAmount: 150000,
-    paymentDate: '2024-01-15',
+    paidAmount: 100000,
+    balance: 50000,
+    paymentDate: '2024-02-10',
     paymentMethod: 'card',
     status: 'completed',
     transactionRef: 'TXN-2024-001',
-    term: 'Term 1',
-    year: '2024',
+    term: '2nd Term',
+    academicYear: '2024/2025',
   },
   {
     id: 'pay-002',
-    feeName: 'Books & Materials',
-    amount: 25000,
-    paidAmount: 25000,
-    paymentDate: '2024-01-20',
+    feeName: 'Exam Fee - 2nd Term',
+    feeType: 'Exam Fee',
+    amount: 15000,
+    paidAmount: 15000,
+    balance: 0,
+    paymentDate: '2024-02-15',
     paymentMethod: 'bank',
     status: 'completed',
     transactionRef: 'TXN-2024-002',
-    term: 'Term 1',
-    year: '2024',
+    term: '2nd Term',
+    academicYear: '2024/2025',
   },
+  // 2024/2025 - 1st Term
   {
     id: 'pay-003',
-    feeName: 'Exam Fee',
-    amount: 15000,
-    paidAmount: 10000,
-    paymentDate: '2024-02-01',
-    paymentMethod: 'cash',
+    feeName: 'School Fees - 1st Term',
+    feeType: 'School Fees',
+    amount: 150000,
+    paidAmount: 150000,
+    balance: 0,
+    paymentDate: '2023-10-12',
+    paymentMethod: 'card',
     status: 'completed',
     transactionRef: 'TXN-2024-003',
-    term: 'Term 1',
-    year: '2024',
+    term: '1st Term',
+    academicYear: '2024/2025',
   },
   {
     id: 'pay-004',
-    feeName: 'Tuition Fee - Term 3',
-    amount: 150000,
-    paidAmount: 150000,
-    paymentDate: '2023-09-10',
-    paymentMethod: 'card',
+    feeName: 'Bus Fee - 1st Term',
+    feeType: 'Bus Fee',
+    amount: 25000,
+    paidAmount: 25000,
+    balance: 0,
+    paymentDate: '2023-10-15',
+    paymentMethod: 'bank',
     status: 'completed',
-    transactionRef: 'TXN-2023-004',
-    term: 'Term 3',
-    year: '2023',
+    transactionRef: 'TXN-2024-004',
+    term: '1st Term',
+    academicYear: '2024/2025',
   },
   {
     id: 'pay-005',
-    feeName: 'Sports Fee',
-    amount: 10000,
-    paidAmount: 10000,
-    paymentDate: '2023-09-12',
-    paymentMethod: 'bank',
+    feeName: 'Exam Fee - 1st Term',
+    feeType: 'Exam Fee',
+    amount: 15000,
+    paidAmount: 15000,
+    balance: 0,
+    paymentDate: '2023-11-10',
+    paymentMethod: 'cash',
     status: 'completed',
-    transactionRef: 'TXN-2023-005',
-    term: 'Term 3',
-    year: '2023',
+    transactionRef: 'TXN-2024-005',
+    term: '1st Term',
+    academicYear: '2024/2025',
   },
+  // 2023/2024 - 3rd Term
   {
     id: 'pay-006',
-    feeName: 'Tuition Fee - Term 2',
-    amount: 150000,
-    paidAmount: 150000,
+    feeName: 'School Fees - 3rd Term',
+    feeType: 'School Fees',
+    amount: 140000,
+    paidAmount: 140000,
+    balance: 0,
     paymentDate: '2023-05-08',
     paymentMethod: 'card',
     status: 'completed',
     transactionRef: 'TXN-2023-006',
-    term: 'Term 2',
-    year: '2023',
+    term: '3rd Term',
+    academicYear: '2023/2024',
   },
   {
     id: 'pay-007',
-    feeName: 'Lab Fee',
+    feeName: 'Graduation Fee - 3rd Term',
+    feeType: 'Graduation Fee',
     amount: 20000,
     paidAmount: 20000,
-    paymentDate: '2023-05-15',
-    paymentMethod: 'cash',
+    balance: 0,
+    paymentDate: '2023-06-01',
+    paymentMethod: 'bank',
     status: 'completed',
     transactionRef: 'TXN-2023-007',
-    term: 'Term 2',
-    year: '2023',
+    term: '3rd Term',
+    academicYear: '2023/2024',
   },
+  // 2023/2024 - 2nd Term
   {
     id: 'pay-008',
-    feeName: 'Tuition Fee - Term 1',
+    feeName: 'School Fees - 2nd Term',
+    feeType: 'School Fees',
     amount: 140000,
     paidAmount: 140000,
-    paymentDate: '2023-01-12',
+    balance: 0,
+    paymentDate: '2023-02-10',
     paymentMethod: 'card',
     status: 'completed',
     transactionRef: 'TXN-2023-008',
-    term: 'Term 1',
-    year: '2023',
+    term: '2nd Term',
+    academicYear: '2023/2024',
+  },
+  {
+    id: 'pay-009',
+    feeName: 'Bus Fee - 2nd Term',
+    feeType: 'Bus Fee',
+    amount: 22000,
+    paidAmount: 22000,
+    balance: 0,
+    paymentDate: '2023-02-12',
+    paymentMethod: 'cash',
+    status: 'completed',
+    transactionRef: 'TXN-2023-009',
+    term: '2nd Term',
+    academicYear: '2023/2024',
+  },
+  // 2023/2024 - 1st Term
+  {
+    id: 'pay-010',
+    feeName: 'School Fees - 1st Term',
+    feeType: 'School Fees',
+    amount: 140000,
+    paidAmount: 140000,
+    balance: 0,
+    paymentDate: '2022-10-10',
+    paymentMethod: 'card',
+    status: 'completed',
+    transactionRef: 'TXN-2023-010',
+    term: '1st Term',
+    academicYear: '2023/2024',
+  },
+  // 2022/2023 - 3rd Term
+  {
+    id: 'pay-011',
+    feeName: 'School Fees - 3rd Term',
+    feeType: 'School Fees',
+    amount: 130000,
+    paidAmount: 130000,
+    balance: 0,
+    paymentDate: '2022-05-10',
+    paymentMethod: 'card',
+    status: 'completed',
+    transactionRef: 'TXN-2022-011',
+    term: '3rd Term',
+    academicYear: '2022/2023',
+  },
+  {
+    id: 'pay-012',
+    feeName: 'School Fees - 2nd Term',
+    feeType: 'School Fees',
+    amount: 130000,
+    paidAmount: 130000,
+    balance: 0,
+    paymentDate: '2022-02-08',
+    paymentMethod: 'bank',
+    status: 'completed',
+    transactionRef: 'TXN-2022-012',
+    term: '2nd Term',
+    academicYear: '2022/2023',
+  },
+  {
+    id: 'pay-013',
+    feeName: 'School Fees - 1st Term',
+    feeType: 'School Fees',
+    amount: 130000,
+    paidAmount: 130000,
+    balance: 0,
+    paymentDate: '2021-10-05',
+    paymentMethod: 'card',
+    status: 'completed',
+    transactionRef: 'TXN-2022-013',
+    term: '1st Term',
+    academicYear: '2022/2023',
   },
 ];
 
 // Filter options
-const YEAR_OPTIONS = ['All Years', '2024', '2023', '2022'];
+const YEAR_OPTIONS = ['All Years', '2024/2025', '2023/2024', '2022/2023'];
+const TERM_OPTIONS = ['All Terms', '1st Term', '2nd Term', '3rd Term'];
 const STATUS_OPTIONS = ['All Status', 'Completed', 'Pending', 'Failed', 'Refunded'];
 const METHOD_OPTIONS = ['All Methods', 'Card', 'Bank Transfer', 'Cash'];
 
@@ -272,6 +367,7 @@ export default function PaymentHistoryScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [yearFilter, setYearFilter] = useState('All Years');
+  const [termFilter, setTermFilter] = useState('All Terms');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [methodFilter, setMethodFilter] = useState('All Methods');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -282,6 +378,7 @@ export default function PaymentHistoryScreen() {
     setSelectedChildId(childId);
     // Reset filters when switching child
     setYearFilter('All Years');
+    setTermFilter('All Terms');
     setStatusFilter('All Status');
     setMethodFilter('All Methods');
     setSearchQuery('');
@@ -301,6 +398,7 @@ export default function PaymentHistoryScreen() {
   // Reset filters
   const resetFilters = () => {
     setYearFilter('All Years');
+    setTermFilter('All Terms');
     setStatusFilter('All Status');
     setMethodFilter('All Methods');
     setSearchQuery('');
@@ -309,6 +407,7 @@ export default function PaymentHistoryScreen() {
   // Check if any filter is active
   const hasActiveFilters =
     yearFilter !== 'All Years' ||
+    termFilter !== 'All Terms' ||
     statusFilter !== 'All Status' ||
     methodFilter !== 'All Methods' ||
     searchQuery.length > 0;
@@ -320,13 +419,17 @@ export default function PaymentHistoryScreen() {
       const query = searchQuery.toLowerCase();
       const matchesSearch =
         payment.feeName.toLowerCase().includes(query) ||
+        payment.feeType.toLowerCase().includes(query) ||
         payment.transactionRef.toLowerCase().includes(query) ||
-        payment.year.includes(query);
+        payment.academicYear.includes(query);
       if (!matchesSearch) return false;
     }
 
     // Year filter
-    if (yearFilter !== 'All Years' && payment.year !== yearFilter) return false;
+    if (yearFilter !== 'All Years' && payment.academicYear !== yearFilter) return false;
+
+    // Term filter
+    if (termFilter !== 'All Terms' && payment.term !== termFilter) return false;
 
     // Status filter
     if (statusFilter !== 'All Status') {
@@ -347,16 +450,17 @@ export default function PaymentHistoryScreen() {
     return true;
   });
 
-  // Group payments by year
+  // Group payments by academic year
   const paymentsByYear = filteredPayments.reduce((acc, payment) => {
-    if (!acc[payment.year]) {
-      acc[payment.year] = [];
+    if (!acc[payment.academicYear]) {
+      acc[payment.academicYear] = [];
     }
-    acc[payment.year].push(payment);
+    acc[payment.academicYear].push(payment);
     return acc;
   }, {} as Record<string, PaymentHistoryItem[]>);
 
-  const years = Object.keys(paymentsByYear).sort((a, b) => Number(b) - Number(a));
+  // Sort years in descending order (most recent first)
+  const years = Object.keys(paymentsByYear).sort((a, b) => b.localeCompare(a));
 
   // Calculate summary stats
   const totalPaid = MOCK_PAYMENT_HISTORY.reduce((sum, p) => sum + p.paidAmount, 0);
@@ -367,6 +471,7 @@ export default function PaymentHistoryScreen() {
   // Active filter count
   const activeFilterCount =
     (yearFilter !== 'All Years' ? 1 : 0) +
+    (termFilter !== 'All Terms' ? 1 : 0) +
     (statusFilter !== 'All Status' ? 1 : 0) +
     (methodFilter !== 'All Methods' ? 1 : 0);
 
@@ -528,6 +633,40 @@ export default function PaymentHistoryScreen() {
                 )}
               </View>
 
+              {/* Term Filter */}
+              <View style={styles.tabletFilterChipWrapper} onTouchStart={(e) => e.stopPropagation()}>
+                <Pressable
+                  style={[
+                    styles.tabletFilterChip,
+                    {
+                      backgroundColor: termFilter !== 'All Terms' ? colors.successLight : colors.surface,
+                      borderColor: termFilter !== 'All Terms' ? colors.success : colors.border
+                    }
+                  ]}
+                  onPress={() => setOpenDropdown(openDropdown === 'term' ? null : 'term')}
+                >
+                  <Ionicons name="book-outline" size={16} color={termFilter !== 'All Terms' ? colors.success : colors.textSecondary} />
+                  <Text style={[styles.tabletFilterChipText, { color: termFilter !== 'All Terms' ? colors.success : colors.text }]}>
+                    {termFilter === 'All Terms' ? 'Term' : termFilter}
+                  </Text>
+                  <Ionicons name={openDropdown === 'term' ? 'chevron-up' : 'chevron-down'} size={14} color={termFilter !== 'All Terms' ? colors.success : colors.textMuted} />
+                </Pressable>
+                {openDropdown === 'term' && (
+                  <View style={[styles.tabletDropdownMenu, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    {TERM_OPTIONS.map((option, idx) => (
+                      <Pressable
+                        key={option}
+                        style={[styles.tabletDropdownOption, termFilter === option && { backgroundColor: colors.successLight }, idx === 0 && styles.tabletDropdownOptionFirst]}
+                        onPress={() => { setTermFilter(option); setOpenDropdown(null); }}
+                      >
+                        <Text style={[styles.tabletDropdownOptionText, { color: termFilter === option ? colors.success : colors.text }]}>{option}</Text>
+                        {termFilter === option && <Ionicons name="checkmark" size={18} color={colors.success} />}
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
+
               {/* Status Filter */}
               <View style={styles.tabletFilterChipWrapper} onTouchStart={(e) => e.stopPropagation()}>
                 <Pressable
@@ -681,7 +820,7 @@ export default function PaymentHistoryScreen() {
                   }}
                 >
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 10, fontFamily: FONTS.semiBold, textTransform: 'uppercase', letterSpacing: 0.5, color: colors.textMuted, marginBottom: 2 }}>Year</Text>
+                    <Text style={{ fontSize: 10, fontFamily: FONTS.semiBold, textTransform: 'uppercase', letterSpacing: 0.5, color: colors.textMuted, marginBottom: 2 }}>Academic Year</Text>
                     <Text style={{ fontSize: 14, fontFamily: FONTS.semiBold, color: yearFilter !== 'All Years' ? colors.success : colors.text }} numberOfLines={1}>{yearFilter}</Text>
                   </View>
                   <View style={{ width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: openDropdown === 'year' ? colors.success : colors.border + '60' }}>
@@ -707,6 +846,61 @@ export default function PaymentHistoryScreen() {
                       >
                         <Text style={{ fontSize: 14, fontFamily: yearFilter === option ? FONTS.semiBold : FONTS.medium, color: yearFilter === option ? colors.success : colors.text }}>{option}</Text>
                         {yearFilter === option && (
+                          <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: colors.success, alignItems: 'center', justifyContent: 'center' }}>
+                            <Ionicons name="checkmark" size={12} color="#ffffff" />
+                          </View>
+                        )}
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              {/* Term Filter */}
+              <View style={{ marginBottom: 8 }} onTouchStart={(e) => e.stopPropagation()}>
+                <Pressable
+                  onPress={() => setOpenDropdown(openDropdown === 'term' ? null : 'term')}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    backgroundColor: openDropdown === 'term' ? colors.successLight : colors.backgroundTertiary,
+                    borderWidth: 1.5,
+                    borderColor: openDropdown === 'term' ? colors.success : (termFilter !== 'All Terms' ? colors.success + '40' : 'transparent'),
+                    borderRadius: 12,
+                    paddingLeft: 14,
+                    paddingRight: 10,
+                    paddingVertical: 10,
+                    minHeight: 56,
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 10, fontFamily: FONTS.semiBold, textTransform: 'uppercase', letterSpacing: 0.5, color: colors.textMuted, marginBottom: 2 }}>Term</Text>
+                    <Text style={{ fontSize: 14, fontFamily: FONTS.semiBold, color: termFilter !== 'All Terms' ? colors.success : colors.text }} numberOfLines={1}>{termFilter}</Text>
+                  </View>
+                  <View style={{ width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: openDropdown === 'term' ? colors.success : colors.border + '60' }}>
+                    <Ionicons name={openDropdown === 'term' ? 'chevron-up' : 'chevron-down'} size={14} color={openDropdown === 'term' ? '#ffffff' : colors.textMuted} />
+                  </View>
+                </Pressable>
+                {openDropdown === 'term' && (
+                  <View style={{ backgroundColor: colors.surface, borderRadius: 12, marginTop: 8, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' }}>
+                    {TERM_OPTIONS.map((option, index) => (
+                      <Pressable
+                        key={option}
+                        onPress={() => { setTermFilter(option); setOpenDropdown(null); }}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          paddingHorizontal: 16,
+                          paddingVertical: 14,
+                          backgroundColor: termFilter === option ? colors.successLight : 'transparent',
+                          borderTopWidth: index > 0 ? 1 : 0,
+                          borderTopColor: colors.border,
+                        }}
+                      >
+                        <Text style={{ fontSize: 14, fontFamily: termFilter === option ? FONTS.semiBold : FONTS.medium, color: termFilter === option ? colors.success : colors.text }}>{option}</Text>
+                        {termFilter === option && (
                           <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: colors.success, alignItems: 'center', justifyContent: 'center' }}>
                             <Ionicons name="checkmark" size={12} color="#ffffff" />
                           </View>
@@ -1008,11 +1202,11 @@ export default function PaymentHistoryScreen() {
                 <View style={styles.yearHeader}>
                   <View style={[styles.yearBadge, { backgroundColor: colors.successLight }]}>
                     <Ionicons name="calendar" size={14} color={colors.success} />
-                    <Text style={[styles.yearText, { color: colors.success }]}>{year}</Text>
+                    <Text style={[styles.yearText, { color: colors.success }]}>{year} Academic Year</Text>
                   </View>
                   <View style={[styles.yearLine, { backgroundColor: colors.border }]} />
                   <Text style={[styles.yearCount, { color: colors.textMuted }]}>
-                    {paymentsByYear[year].length} payments
+                    {paymentsByYear[year].length} {paymentsByYear[year].length === 1 ? 'payment' : 'payments'}
                   </Text>
                 </View>
 

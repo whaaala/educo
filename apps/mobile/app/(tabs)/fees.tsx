@@ -35,6 +35,14 @@ const FONTS = {
   bold: 'Inter_700Bold',
 };
 
+// Color palette for stat tiles (matching dashboard)
+const STAT_COLORS = {
+  blue: { bg: '#eff6ff', border: '#bfdbfe', tint: '#2563eb', iconBg: '#dbeafe' },
+  emerald: { bg: '#ecfdf5', border: '#a7f3d0', tint: '#059669', iconBg: '#d1fae5' },
+  red: { bg: '#fef2f2', border: '#fecaca', tint: '#dc2626', iconBg: '#fee2e2' },
+  amber: { bg: '#fffbeb', border: '#fde68a', tint: '#d97706', iconBg: '#fef3c7' },
+};
+
 // Mock children data - same as dashboard
 const MOCK_CHILDREN: ChildData[] = [
   { id: 'child-001', name: 'Adaeze Okonkwo', classLevel: 'JSS 2', avatarUri: 'https://i.pravatar.cc/150?u=adaeze' },
@@ -56,8 +64,13 @@ interface FeeRecord {
   status: 'paid' | 'partial' | 'pending' | 'overdue';
 }
 
-// Mock fee data
-const MOCK_FEES: FeeRecord[] = [
+// Current term/year constants
+const CURRENT_TERM = '2nd Term';
+const CURRENT_YEAR = '2024/2025';
+
+// Mock fee data - Current term fees only
+const MOCK_CURRENT_FEES: FeeRecord[] = [
+  // Child 1 - Current Term Fees
   {
     id: 'fee-001',
     childId: 'child-001',
@@ -74,20 +87,6 @@ const MOCK_FEES: FeeRecord[] = [
   },
   {
     id: 'fee-002',
-    childId: 'child-002',
-    childName: 'Chukwuemeka Okonkwo',
-    childAvatar: 'https://i.pravatar.cc/150?u=chukwuemeka',
-    feeType: 'School Fees',
-    term: '2nd Term',
-    academicYear: '2024/2025',
-    amount: 180000,
-    paidAmount: 180000,
-    balance: 0,
-    dueDate: '2024-02-15',
-    status: 'paid',
-  },
-  {
-    id: 'fee-003',
     childId: 'child-001',
     childName: 'Adaeze Okonkwo',
     childAvatar: 'https://i.pravatar.cc/150?u=adaeze',
@@ -101,17 +100,32 @@ const MOCK_FEES: FeeRecord[] = [
     status: 'overdue',
   },
   {
-    id: 'fee-004',
+    id: 'fee-003',
     childId: 'child-001',
     childName: 'Adaeze Okonkwo',
     childAvatar: 'https://i.pravatar.cc/150?u=adaeze',
-    feeType: 'School Fees',
-    term: '1st Term',
+    feeType: 'Exam Fee',
+    term: '2nd Term',
     academicYear: '2024/2025',
-    amount: 150000,
-    paidAmount: 150000,
+    amount: 15000,
+    paidAmount: 15000,
     balance: 0,
-    dueDate: '2023-10-15',
+    dueDate: '2024-02-20',
+    status: 'paid',
+  },
+  // Child 2 - Current Term Fees
+  {
+    id: 'fee-004',
+    childId: 'child-002',
+    childName: 'Chukwuemeka Okonkwo',
+    childAvatar: 'https://i.pravatar.cc/150?u=chukwuemeka',
+    feeType: 'School Fees',
+    term: '2nd Term',
+    academicYear: '2024/2025',
+    amount: 180000,
+    paidAmount: 180000,
+    balance: 0,
+    dueDate: '2024-02-15',
     status: 'paid',
   },
   {
@@ -128,10 +142,24 @@ const MOCK_FEES: FeeRecord[] = [
     dueDate: '2024-02-20',
     status: 'pending',
   },
+  {
+    id: 'fee-006',
+    childId: 'child-002',
+    childName: 'Chukwuemeka Okonkwo',
+    childAvatar: 'https://i.pravatar.cc/150?u=chukwuemeka',
+    feeType: 'Bus Fee',
+    term: '2nd Term',
+    academicYear: '2024/2025',
+    amount: 25000,
+    paidAmount: 25000,
+    balance: 0,
+    dueDate: '2024-02-01',
+    status: 'paid',
+  },
 ];
 
-// Filter options
-const STATUS_OPTIONS = ['All Status', 'Paid', 'Partial', 'Pending', 'Overdue'];
+// Filter options - simplified for current fees
+const STATUS_OPTIONS = ['All', 'Paid', 'Partial', 'Pending', 'Overdue'];
 
 function useIsTablet() {
   const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
@@ -193,6 +221,9 @@ function FeeCard({
   const status = statusConfig[fee.status];
   const formatCurrency = (amount: number) => `${currencySymbol}${amount.toLocaleString()}`;
 
+  // Calculate progress percentage
+  const progressPercent = fee.amount > 0 ? Math.round((fee.paidAmount / fee.amount) * 100) : 0;
+
   if (isTablet) {
     return (
       <View
@@ -204,28 +235,26 @@ function FeeCard({
           },
         ]}
       >
-        {/* Left: Child Info */}
+        {/* Left: Fee Type Info */}
         <View style={styles.tabletFeeCardLeft}>
           <View style={styles.tabletFeeChildInfo}>
-            <View style={[styles.tabletAvatar, { backgroundColor: colors.backgroundTertiary }]}>
-              <Text style={[styles.tabletAvatarText, { color: colors.primary }]}>
-                {fee.childName.charAt(0)}
-              </Text>
+            <View style={[styles.tabletFeeIconWrap, { backgroundColor: isDark ? colors.primaryLight : '#eff6ff' }]}>
+              <Ionicons name="receipt-outline" size={20} color={colors.primary} />
             </View>
             <View style={styles.tabletFeeInfo}>
-              <Text style={[styles.tabletFeeChildName, { color: colors.text }]}>{fee.childName}</Text>
+              <Text style={[styles.tabletFeeChildName, { color: colors.text }]}>{fee.feeType}</Text>
               <Text style={[styles.tabletFeeType, { color: colors.textSecondary }]}>
-                {fee.feeType} - {fee.term}
+                {fee.term}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Middle: Amount Info */}
+        {/* Middle: Amount Info with Progress */}
         <View style={styles.tabletFeeCardMiddle}>
           <View style={styles.tabletAmountRow}>
             <View style={styles.tabletAmountItem}>
-              <Text style={[styles.tabletAmountLabel, { color: colors.textMuted }]}>Amount</Text>
+              <Text style={[styles.tabletAmountLabel, { color: colors.textMuted }]}>Total</Text>
               <Text style={[styles.tabletAmountValue, { color: colors.text }]}>
                 {formatCurrency(fee.amount)}
               </Text>
@@ -247,6 +276,23 @@ function FeeCard({
                 {formatCurrency(fee.balance)}
               </Text>
             </View>
+          </View>
+          {/* Progress Bar for Tablet */}
+          <View style={styles.tabletProgressContainer}>
+            <View style={[styles.tabletProgressBarBg, { backgroundColor: isDark ? colors.border : '#e2e8f0' }]}>
+              <View
+                style={[
+                  styles.tabletProgressBarFill,
+                  {
+                    width: `${progressPercent}%`,
+                    backgroundColor: fee.status === 'paid' ? colors.success : fee.status === 'overdue' ? colors.error : colors.primary,
+                  },
+                ]}
+              />
+            </View>
+            <Text style={[styles.tabletProgressText, { color: colors.textMuted }]}>
+              {progressPercent}%
+            </Text>
           </View>
           <View style={styles.tabletDueRow}>
             <Ionicons name="calendar-outline" size={12} color={colors.textMuted} />
@@ -297,10 +343,10 @@ function FeeCard({
           </View>
           <View style={styles.feeInfo}>
             <Text style={[styles.feeChildName, { color: colors.text }]} numberOfLines={1}>
-              {fee.childName}
+              {fee.feeType}
             </Text>
             <Text style={[styles.feeType, { color: colors.textSecondary }]}>
-              {fee.feeType} - {fee.term}
+              {fee.term}
             </Text>
           </View>
         </View>
@@ -310,10 +356,28 @@ function FeeCard({
         </View>
       </View>
 
+      {/* Progress Bar */}
+      <View style={styles.progressContainer}>
+        <View style={[styles.progressBarBg, { backgroundColor: isDark ? colors.border : '#e2e8f0' }]}>
+          <View
+            style={[
+              styles.progressBarFill,
+              {
+                width: `${progressPercent}%`,
+                backgroundColor: fee.status === 'paid' ? colors.success : fee.status === 'overdue' ? colors.error : colors.primary,
+              },
+            ]}
+          />
+        </View>
+        <Text style={[styles.progressText, { color: colors.textMuted }]}>
+          {progressPercent}% paid
+        </Text>
+      </View>
+
       {/* Amount Row */}
       <View style={styles.feeAmountRow}>
         <View style={styles.feeAmountItem}>
-          <Text style={[styles.feeAmountLabel, { color: colors.textMuted }]}>Amount</Text>
+          <Text style={[styles.feeAmountLabel, { color: colors.textMuted }]}>Total</Text>
           <Text style={[styles.feeAmountValue, { color: colors.text }]}>
             {formatCurrency(fee.amount)}
           </Text>
@@ -355,6 +419,53 @@ function FeeCard({
           </Pressable>
         )}
       </View>
+    </View>
+  );
+}
+
+// Stat Tile Component (matching dashboard design)
+function StatTile({
+  label,
+  value,
+  icon,
+  colorScheme,
+  badge,
+  isTablet,
+}: {
+  label: string;
+  value: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  colorScheme: 'blue' | 'emerald' | 'red' | 'amber';
+  badge?: string;
+  isTablet: boolean;
+}) {
+  const { colors, isDark } = useTheme();
+  const scheme = STAT_COLORS[colorScheme];
+  const tileBg = isDark ? colors.surface : scheme.bg;
+  const tileBorder = isDark ? colors.border : scheme.border;
+
+  return (
+    <View style={[
+      isTablet ? styles.tabletStatTile : styles.statTile,
+      { backgroundColor: tileBg, borderColor: tileBorder }
+    ]}>
+      {badge && (
+        <View style={[styles.tileBadge, { backgroundColor: isDark ? colors.errorLight : '#fef2f2' }]}>
+          <Text style={[styles.tileBadgeText, { color: isDark ? colors.error : '#dc2626' }]}>{badge}</Text>
+        </View>
+      )}
+      <View style={styles.statTileTop}>
+        <Text style={[styles.statTileLabel, { color: isDark ? colors.textSecondary : '#64748b' }]}>{label}</Text>
+        <View style={[styles.statTileIconWrap, { backgroundColor: isDark ? `${scheme.tint}20` : scheme.iconBg }]}>
+          <Ionicons name={icon} size={isTablet ? 16 : 14} color={scheme.tint} />
+        </View>
+      </View>
+      <Text style={[
+        isTablet ? styles.tabletStatTileValue : styles.statTileValue,
+        { color: colors.text }
+      ]} numberOfLines={1}>
+        {value}
+      </Text>
     </View>
   );
 }
@@ -422,7 +533,7 @@ export default function FeesScreen() {
   const [selectedChildId, setSelectedChildId] = useState(initialChildId);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('All Status');
+  const [selectedStatus, setSelectedStatus] = useState('All');
   const [showPayModal, setShowPayModal] = useState(false);
   const [selectedFeeForPayment, setSelectedFeeForPayment] = useState<FeeRecord | null>(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -430,19 +541,19 @@ export default function FeesScreen() {
 
   const selectedChild = MOCK_CHILDREN.find((c) => c.id === selectedChildId) || MOCK_CHILDREN[0];
 
-  // Filter fees by selected child and other filters
-  const filteredFees = MOCK_FEES.filter((fee) => {
+  // Filter current term fees by selected child and status
+  const filteredFees = MOCK_CURRENT_FEES.filter((fee) => {
     const matchesChild = fee.childId === selectedChildId;
     const matchesStatus =
-      selectedStatus === 'All Status' || fee.status.toLowerCase() === selectedStatus.toLowerCase();
+      selectedStatus === 'All' || fee.status.toLowerCase() === selectedStatus.toLowerCase();
     const matchesSearch =
       searchQuery === '' ||
       fee.feeType.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesChild && matchesStatus && matchesSearch;
   });
 
-  // Calculate stats for selected child
-  const childFees = MOCK_FEES.filter((f) => f.childId === selectedChildId);
+  // Calculate stats for selected child (current term only)
+  const childFees = MOCK_CURRENT_FEES.filter((f) => f.childId === selectedChildId);
   const stats = {
     totalAmount: childFees.reduce((sum, f) => sum + f.amount, 0),
     totalPaid: childFees.reduce((sum, f) => sum + f.paidAmount, 0),
@@ -475,12 +586,17 @@ export default function FeesScreen() {
   const handleSelectChild = (childId: string) => {
     setSelectedChildId(childId);
     // Reset filters when switching child
-    setSelectedStatus('All Status');
+    setSelectedStatus('All');
     setSearchQuery('');
   };
 
-  const hasActiveFilters = selectedStatus !== 'All Status' || searchQuery.length > 0;
-  const activeFilterCount = selectedStatus !== 'All Status' ? 1 : 0;
+  const clearAllFilters = () => {
+    setSelectedStatus('All');
+    setSearchQuery('');
+  };
+
+  const hasActiveFilters = selectedStatus !== 'All' || searchQuery.length > 0;
+  const activeFilterCount = selectedStatus !== 'All' ? 1 : 0;
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
@@ -590,58 +706,79 @@ export default function FeesScreen() {
           )}
         </View>
 
-        {/* Stats Summary Cards */}
+        {/* Stats Summary Cards - Dashboard style */}
         <View style={[styles.statsSection, isTablet && styles.tabletStatsSection]}>
-          <View style={[styles.statsRow, isTablet && styles.tabletStatsRow]}>
-            {/* Total Fees */}
-            <View style={[styles.statCard, isTablet && styles.tabletStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={[styles.statIconWrap, { backgroundColor: isDark ? colors.infoLight : '#eff6ff' }]}>
-                <Ionicons name="cash-outline" size={isTablet ? 18 : 14} color={isDark ? colors.info : '#3b82f6'} />
-              </View>
-              <Text style={[styles.statValue, isTablet && styles.tabletStatValue, { color: colors.text }]} numberOfLines={1}>
-                {formatCurrency(stats.totalAmount)}
-              </Text>
-              <Text style={[styles.statLabel, isTablet && styles.tabletStatLabel, { color: colors.textMuted }]}>Total Fees</Text>
+          {isTablet ? (
+            /* Tablet: Single row layout */
+            <View style={styles.tabletStatsRow}>
+              <StatTile
+                label="Total Fees"
+                value={formatCurrency(stats.totalAmount)}
+                icon="cash-outline"
+                colorScheme="blue"
+                isTablet={isTablet}
+              />
+              <StatTile
+                label="Total Paid"
+                value={formatCurrency(stats.totalPaid)}
+                icon="checkmark-circle-outline"
+                colorScheme="emerald"
+                isTablet={isTablet}
+              />
+              <StatTile
+                label="Outstanding"
+                value={formatCurrency(stats.totalBalance)}
+                icon="time-outline"
+                colorScheme={stats.totalBalance > 0 ? 'red' : 'emerald'}
+                isTablet={isTablet}
+              />
+              <StatTile
+                label="Overdue"
+                value={stats.overdueCount.toString()}
+                icon="alert-circle-outline"
+                colorScheme={stats.overdueCount > 0 ? 'amber' : 'emerald'}
+                badge={stats.overdueCount > 0 ? '!' : undefined}
+                isTablet={isTablet}
+              />
             </View>
-
-            {/* Total Paid */}
-            <View style={[styles.statCard, isTablet && styles.tabletStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={[styles.statIconWrap, { backgroundColor: isDark ? colors.successLight : '#ecfdf5' }]}>
-                <Ionicons name="checkmark-circle-outline" size={isTablet ? 18 : 14} color={isDark ? colors.success : '#10b981'} />
+          ) : (
+            /* Mobile: 2x2 grid layout */
+            <View style={styles.mobileStatsGrid}>
+              <View style={styles.mobileStatsRow}>
+                <StatTile
+                  label="Total Fees"
+                  value={formatCurrency(stats.totalAmount)}
+                  icon="cash-outline"
+                  colorScheme="blue"
+                  isTablet={false}
+                />
+                <StatTile
+                  label="Total Paid"
+                  value={formatCurrency(stats.totalPaid)}
+                  icon="checkmark-circle-outline"
+                  colorScheme="emerald"
+                  isTablet={false}
+                />
               </View>
-              <Text style={[styles.statValue, isTablet && styles.tabletStatValue, { color: colors.text }]} numberOfLines={1}>
-                {formatCurrency(stats.totalPaid)}
-              </Text>
-              <Text style={[styles.statLabel, isTablet && styles.tabletStatLabel, { color: colors.textMuted }]}>Total Paid</Text>
-            </View>
-
-            {/* Outstanding */}
-            <View style={[styles.statCard, isTablet && styles.tabletStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={[styles.statIconWrap, { backgroundColor: stats.totalBalance > 0 ? (isDark ? colors.errorLight : '#fef2f2') : (isDark ? colors.successLight : '#ecfdf5') }]}>
-                <Ionicons name="time-outline" size={isTablet ? 18 : 14} color={stats.totalBalance > 0 ? (isDark ? colors.error : '#ef4444') : (isDark ? colors.success : '#10b981')} />
+              <View style={styles.mobileStatsRow}>
+                <StatTile
+                  label="Outstanding"
+                  value={formatCurrency(stats.totalBalance)}
+                  icon="time-outline"
+                  colorScheme={stats.totalBalance > 0 ? 'red' : 'emerald'}
+                  isTablet={false}
+                />
+                <StatTile
+                  label="Overdue"
+                  value={stats.overdueCount.toString()}
+                  icon="alert-circle-outline"
+                  colorScheme={stats.overdueCount > 0 ? 'amber' : 'emerald'}
+                  badge={stats.overdueCount > 0 ? '!' : undefined}
+                  isTablet={false}
+                />
               </View>
-              <Text style={[styles.statValue, isTablet && styles.tabletStatValue, { color: colors.text }]} numberOfLines={1}>
-                {formatCurrency(stats.totalBalance)}
-              </Text>
-              <Text style={[styles.statLabel, isTablet && styles.tabletStatLabel, { color: colors.textMuted }]}>Outstanding</Text>
             </View>
-
-            {/* Overdue */}
-            <View style={[styles.statCard, isTablet && styles.tabletStatCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              {stats.overdueCount > 0 && (
-                <View style={[styles.statBadge, { backgroundColor: isDark ? colors.errorLight : '#fef2f2' }]}>
-                  <Text style={[styles.statBadgeText, { color: isDark ? colors.error : '#ef4444' }]}>!</Text>
-                </View>
-              )}
-              <View style={[styles.statIconWrap, { backgroundColor: stats.overdueCount > 0 ? (isDark ? colors.errorLight : '#fef2f2') : (isDark ? colors.successLight : '#ecfdf5') }]}>
-                <Ionicons name="alert-circle-outline" size={isTablet ? 18 : 14} color={stats.overdueCount > 0 ? (isDark ? colors.error : '#ef4444') : (isDark ? colors.success : '#10b981')} />
-              </View>
-              <Text style={[styles.statValue, isTablet && styles.tabletStatValue, { color: colors.text }]}>
-                {stats.overdueCount}
-              </Text>
-              <Text style={[styles.statLabel, isTablet && styles.tabletStatLabel, { color: colors.textMuted }]}>Overdue</Text>
-            </View>
-          </View>
+          )}
         </View>
 
         {/* Search & Filters - Tablet inline, Mobile stacked */}
@@ -674,17 +811,17 @@ export default function FeesScreen() {
                   style={[
                     styles.tabletFilterChip,
                     {
-                      backgroundColor: selectedStatus !== 'All Status' ? colors.primaryLight : colors.surface,
-                      borderColor: selectedStatus !== 'All Status' ? colors.primary : colors.border
+                      backgroundColor: selectedStatus !== 'All' ? colors.primaryLight : colors.surface,
+                      borderColor: selectedStatus !== 'All' ? colors.primary : colors.border
                     }
                   ]}
                   onPress={() => setOpenDropdown(openDropdown === 'status' ? null : 'status')}
                 >
-                  <Ionicons name="funnel-outline" size={16} color={selectedStatus !== 'All Status' ? colors.primary : colors.textSecondary} />
-                  <Text style={[styles.tabletFilterChipText, { color: selectedStatus !== 'All Status' ? colors.primary : colors.text }]}>
-                    {selectedStatus === 'All Status' ? 'Status' : selectedStatus}
+                  <Ionicons name="funnel-outline" size={16} color={selectedStatus !== 'All' ? colors.primary : colors.textSecondary} />
+                  <Text style={[styles.tabletFilterChipText, { color: selectedStatus !== 'All' ? colors.primary : colors.text }]}>
+                    {selectedStatus === 'All' ? 'Status' : selectedStatus}
                   </Text>
-                  <Ionicons name={openDropdown === 'status' ? 'chevron-up' : 'chevron-down'} size={14} color={selectedStatus !== 'All Status' ? colors.primary : colors.textMuted} />
+                  <Ionicons name={openDropdown === 'status' ? 'chevron-up' : 'chevron-down'} size={14} color={selectedStatus !== 'All' ? colors.primary : colors.textMuted} />
                 </Pressable>
                 {openDropdown === 'status' && (
                   <View style={[styles.tabletDropdownMenuRight, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -706,7 +843,7 @@ export default function FeesScreen() {
               {hasActiveFilters && (
                 <Pressable
                   style={[styles.tabletClearFilters, { backgroundColor: colors.backgroundTertiary }]}
-                  onPress={() => { setSelectedStatus('All Status'); setSearchQuery(''); }}
+                  onPress={clearAllFilters}
                 >
                   <Ionicons name="close" size={16} color={colors.textSecondary} />
                   <Text style={[styles.tabletClearFiltersText, { color: colors.textSecondary }]}>Clear</Text>
@@ -761,7 +898,7 @@ export default function FeesScreen() {
                   <Text style={[styles.filterPanelTitle, { color: colors.text }]}>Filter by</Text>
                   {hasActiveFilters && (
                     <Pressable
-                      onPress={() => { setSelectedStatus('All Status'); setSearchQuery(''); }}
+                      onPress={clearAllFilters}
                       style={[styles.clearFiltersButton, { backgroundColor: colors.backgroundTertiary }]}
                     >
                       <Ionicons name="refresh-outline" size={14} color={colors.textSecondary} />
@@ -784,7 +921,7 @@ export default function FeesScreen() {
                   >
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.mobileDropdownLabel, { color: colors.textMuted }]}>Status</Text>
-                      <Text style={[styles.mobileDropdownValue, { color: selectedStatus !== 'All Status' ? colors.primary : colors.text }]}>{selectedStatus}</Text>
+                      <Text style={[styles.mobileDropdownValue, { color: selectedStatus !== 'All' ? colors.primary : colors.text }]}>{selectedStatus}</Text>
                     </View>
                     <View style={[styles.mobileDropdownIcon, { backgroundColor: openDropdown === 'status' ? colors.primary : colors.border + '60' }]}>
                       <Ionicons name={openDropdown === 'status' ? 'chevron-up' : 'chevron-down'} size={14} color={openDropdown === 'status' ? '#ffffff' : colors.textMuted} />
@@ -817,35 +954,49 @@ export default function FeesScreen() {
           </>
         )}
 
-        {/* Fee Records */}
+        {/* Current Term Fees */}
         <View style={[styles.feesList, isTablet && styles.tabletFeesList]}>
-          <View style={styles.feesListHeader}>
-            <Text style={[styles.sectionTitle, isTablet && styles.tabletSectionTitle, { color: colors.text }]}>
-              Fee Records
-            </Text>
-            <Text style={[styles.feesCount, { color: colors.textMuted }]}>
-              {filteredFees.length} {filteredFees.length === 1 ? 'record' : 'records'}
-            </Text>
+          {/* Current Term Header */}
+          <View style={[styles.currentTermHeader, { backgroundColor: isDark ? colors.backgroundTertiary : '#f8fafc', borderColor: colors.border }]}>
+            <View style={[styles.currentTermIconWrap, { backgroundColor: isDark ? colors.primaryLight : '#eff6ff' }]}>
+              <Ionicons name="calendar" size={isTablet ? 18 : 16} color={colors.primary} />
+            </View>
+            <View style={styles.currentTermInfo}>
+              <Text style={[styles.currentTermTitle, isTablet && styles.tabletCurrentTermTitle, { color: colors.text }]}>
+                {CURRENT_TERM} - {CURRENT_YEAR}
+              </Text>
+              <Text style={[styles.currentTermSubtitle, { color: colors.textSecondary }]}>
+                Current Term Fees
+              </Text>
+            </View>
+            <View style={[styles.currentTermBadge, { backgroundColor: isDark ? colors.surface : '#e2e8f0' }]}>
+              <Text style={[styles.currentTermBadgeText, { color: colors.textSecondary }]}>
+                {filteredFees.length} {filteredFees.length === 1 ? 'fee' : 'fees'}
+              </Text>
+            </View>
           </View>
 
+          {/* Fee Cards */}
           {filteredFees.length > 0 ? (
-            filteredFees.map((fee) => (
-              <FeeCard
-                key={fee.id}
-                fee={fee}
-                colors={colors}
-                isDark={isDark}
-                isTablet={isTablet}
-                currencySymbol={currencySymbol}
-                onPayNow={handlePayNow}
-              />
-            ))
+            <View style={styles.feesContainer}>
+              {filteredFees.map((fee) => (
+                <FeeCard
+                  key={fee.id}
+                  fee={fee}
+                  colors={colors}
+                  isDark={isDark}
+                  isTablet={isTablet}
+                  currencySymbol={currencySymbol}
+                  onPayNow={handlePayNow}
+                />
+              ))}
+            </View>
           ) : (
             <View style={[styles.emptyState, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Ionicons name="document-text-outline" size={48} color={colors.textMuted} />
               <Text style={[styles.emptyStateTitle, { color: colors.text }]}>No fees found</Text>
               <Text style={[styles.emptyStateSubtitle, { color: colors.textMuted }]}>
-                {hasActiveFilters ? 'Try adjusting your filters' : 'No fees for this child'}
+                {hasActiveFilters ? 'Try adjusting your filters' : 'No fees for this term'}
               </Text>
             </View>
           )}
@@ -952,20 +1103,46 @@ const styles = StyleSheet.create({
   overdueWarning: { flexDirection: 'row', alignItems: 'center', marginTop: 12, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, gap: 8 },
   overdueWarningText: { fontSize: 12, fontFamily: FONTS.medium, flex: 1 },
 
-  // Stats Section
+  // Stats Section - Dashboard style
   statsSection: { paddingHorizontal: 16, marginBottom: 16 },
   tabletStatsSection: { paddingHorizontal: 20, marginBottom: 20 },
-  statsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  tabletStatsRow: { gap: 12, flexWrap: 'nowrap' },
-  statCard: { width: (SCREEN_WIDTH - 40) / 2, padding: 12, borderRadius: 12, borderWidth: 1 },
-  tabletStatCard: { flex: 1, width: 'auto', padding: 14 },
-  statIconWrap: { width: 32, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  statValue: { fontSize: 15, fontFamily: FONTS.bold, marginBottom: 2 },
-  tabletStatValue: { fontSize: 17 },
-  statLabel: { fontSize: 11, fontFamily: FONTS.medium },
-  tabletStatLabel: { fontSize: 12 },
-  statBadge: { position: 'absolute', top: 8, right: 8, width: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
-  statBadgeText: { fontSize: 10, fontFamily: FONTS.bold },
+
+  // Mobile: 2x2 grid layout (matching dashboard)
+  mobileStatsGrid: { gap: 8 },
+  mobileStatsRow: { flexDirection: 'row', gap: 8 },
+
+  // Tablet: Single row layout
+  tabletStatsRow: { flexDirection: 'row', gap: 12 },
+
+  // StatTile styles (matching dashboard)
+  statTile: {
+    flex: 1,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minHeight: 80,
+  },
+  tabletStatTile: {
+    flex: 1,
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  statTileTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  statTileLabel: { fontSize: 10, fontFamily: FONTS.semiBold },
+  statTileIconWrap: {
+    height: 26,
+    width: 26,
+    borderRadius: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statTileValue: { marginTop: 4, fontSize: 18, fontFamily: FONTS.bold },
+  tabletStatTileValue: { marginTop: 8, fontSize: 20, fontFamily: FONTS.bold },
+  tileBadge: { position: 'absolute', top: 8, right: 8, width: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
+  tileBadgeText: { fontSize: 10, fontFamily: FONTS.bold },
 
   // Search & Filters - Tablet
   tabletSearchFilterContainer: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginBottom: 16, gap: 12 },
@@ -1013,6 +1190,17 @@ const styles = StyleSheet.create({
   tabletSectionTitle: { fontSize: 18 },
   feesCount: { fontSize: 12, fontFamily: FONTS.medium },
 
+  // Current Term Header Styles
+  currentTermHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12, borderRadius: 12, borderWidth: 1, marginBottom: 12 },
+  currentTermIconWrap: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  currentTermInfo: { flex: 1 },
+  currentTermTitle: { fontSize: 15, fontFamily: FONTS.bold },
+  tabletCurrentTermTitle: { fontSize: 17 },
+  currentTermSubtitle: { fontSize: 11, fontFamily: FONTS.medium, marginTop: 2 },
+  currentTermBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 },
+  currentTermBadgeText: { fontSize: 11, fontFamily: FONTS.semiBold },
+  feesContainer: { gap: 10 },
+
   // Fee Card
   feeCard: { padding: 12, borderRadius: 12, borderWidth: 1 },
   tabletFeeCard: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 14, borderWidth: 1 },
@@ -1031,6 +1219,20 @@ const styles = StyleSheet.create({
   tabletFeeType: { fontSize: 12, fontFamily: FONTS.medium },
   statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, gap: 4 },
   statusBadgeText: { fontSize: 10, fontFamily: FONTS.semiBold, textTransform: 'uppercase' },
+
+  // Progress Bar - Mobile
+  progressContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 10 },
+  progressBarBg: { flex: 1, height: 6, borderRadius: 3, overflow: 'hidden' },
+  progressBarFill: { height: '100%', borderRadius: 3 },
+  progressText: { fontSize: 11, fontFamily: FONTS.semiBold, minWidth: 50 },
+
+  // Progress Bar - Tablet
+  tabletProgressContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 8 },
+  tabletProgressBarBg: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
+  tabletProgressBarFill: { height: '100%', borderRadius: 4 },
+  tabletProgressText: { fontSize: 12, fontFamily: FONTS.semiBold, minWidth: 40 },
+  tabletFeeIconWrap: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+
   feeAmountRow: { flexDirection: 'row', marginBottom: 10 },
   feeAmountItem: { flex: 1 },
   feeAmountLabel: { fontSize: 10, fontFamily: FONTS.medium, marginBottom: 2 },
