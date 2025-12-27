@@ -84,7 +84,7 @@ export function PayFeesModal({
   const [selectedAmount, setSelectedAmount] = useState<number>(0);
   const [selectedFeeName, setSelectedFeeName] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(payment.defaultMethod);
-  const [showPaymentOptions, setShowPaymentOptions] = useState(false);
+  const [showPaymentOptions, setShowPaymentOptions] = useState(true);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [customAmountInput, setCustomAmountInput] = useState<string>('');
   const [maxPayableAmount, setMaxPayableAmount] = useState<number>(0);
@@ -105,7 +105,6 @@ export function PayFeesModal({
   // Auto-show payment options when modal opens with fees - default to "Pay All"
   useEffect(() => {
     if (visible && fees.length > 0) {
-      setShowPaymentOptions(true);
       // Default to "Pay All" mode
       setSelectedFee(null);
       setSelectedAmount(totalOutstanding);
@@ -380,24 +379,61 @@ export function PayFeesModal({
 
         {/* Fee Items */}
         <View style={styles.feesList}>
-          {/* Section Header with Pay All link */}
+          {/* Section Header with Fill All / Clear All buttons */}
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Outstanding Fees</Text>
-            {fees.length > 1 ? (
+            <View style={{ flexDirection: 'row', gap: 8 }}>
               <Pressable
-                onPress={handlePayAll}
+                onPress={() => {
+                  // Fill all fees with their full amounts
+                  const fullAllocations: Record<string, number> = {};
+                  const fullInputs: Record<string, string> = {};
+                  fees.forEach(fee => {
+                    fullAllocations[fee.id] = fee.amount;
+                    fullInputs[fee.id] = fee.amount.toString();
+                  });
+                  setFeeAllocations(fullAllocations);
+                  setFeeAllocationInputs(fullInputs);
+                  setSelectedAmount(totalOutstanding);
+                  setCustomAmountInput(totalOutstanding.toString());
+                }}
                 style={[
                   styles.payAllLink,
                   {
-                    backgroundColor: isPayingAll ? colors.primary : colors.primaryLight,
+                    backgroundColor: selectedAmount === totalOutstanding ? colors.primary : colors.primaryLight,
                     borderColor: colors.primary,
                   },
                 ]}
               >
-                <Ionicons name="wallet-outline" size={12} color={isPayingAll ? '#ffffff' : colors.primary} />
-                <Text style={[styles.payAllLinkText, { color: isPayingAll ? '#ffffff' : colors.primary }]}>Pay All</Text>
+                <Ionicons name="checkmark-done" size={12} color={selectedAmount === totalOutstanding ? '#ffffff' : colors.primary} />
+                <Text style={[styles.payAllLinkText, { color: selectedAmount === totalOutstanding ? '#ffffff' : colors.primary }]}>Fill All</Text>
               </Pressable>
-            ) : null}
+              <Pressable
+                onPress={() => {
+                  // Clear all allocations
+                  const emptyAllocations: Record<string, number> = {};
+                  const emptyInputs: Record<string, string> = {};
+                  fees.forEach(fee => {
+                    emptyAllocations[fee.id] = 0;
+                    emptyInputs[fee.id] = '';
+                  });
+                  setFeeAllocations(emptyAllocations);
+                  setFeeAllocationInputs(emptyInputs);
+                  setSelectedAmount(0);
+                  setCustomAmountInput('');
+                }}
+                style={[
+                  styles.payAllLink,
+                  {
+                    backgroundColor: selectedAmount === 0 ? colors.error : colors.backgroundTertiary,
+                    borderColor: selectedAmount === 0 ? colors.error : colors.border,
+                  },
+                ]}
+              >
+                <Ionicons name="close" size={12} color={selectedAmount === 0 ? '#ffffff' : colors.textMuted} />
+                <Text style={[styles.payAllLinkText, { color: selectedAmount === 0 ? '#ffffff' : colors.textMuted }]}>Clear</Text>
+              </Pressable>
+            </View>
           </View>
 
           {fees.map((fee) => {
@@ -411,18 +447,19 @@ export function PayFeesModal({
             const isPartialFee = currentAllocation > 0 && currentAllocation < remainingAmount;
 
             return (
-              <View key={fee.id} style={styles.feeItemContainer}>
-                <Pressable
-                  onPress={() => handlePayNow(fee.id, remainingAmount, fee.name)}
-                  style={[
-                    styles.feeItem,
-                    {
-                      backgroundColor: isSelected ? colors.primaryLight : colors.surface,
-                      borderColor: isSelected ? colors.primary : colors.border,
-                      borderWidth: isSelected ? 2 : 1,
-                    },
-                  ]}
-                >
+              <View
+                key={fee.id}
+                style={[
+                  styles.feeItemCard,
+                  {
+                    backgroundColor: isSelected ? colors.primaryLight : colors.surface,
+                    borderColor: isSelected ? colors.primary : colors.border,
+                    borderWidth: isSelected ? 2 : 1,
+                  },
+                ]}
+              >
+                {/* Fee Card Header */}
+                <View style={styles.feeItemCardHeader}>
                   <View style={styles.feeItemLeft}>
                     <View style={styles.feeItemHeader}>
                       <Text style={[styles.feeName, { color: isSelected ? colors.primary : colors.text }]} numberOfLines={1}>
@@ -445,33 +482,21 @@ export function PayFeesModal({
                     </View>
                   </View>
 
-                  <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                  <View style={{ alignItems: 'flex-end' }}>
                     <Text style={[styles.feeAmount, { color: isSelected ? colors.primary : colors.text }]}>
                       {formatCurrency(remainingAmount)}
                     </Text>
-                    {isSelected ? (
-                      <View style={[styles.selectedIndicator, { backgroundColor: colors.primary }]}>
-                        <Ionicons name="checkmark" size={12} color="#ffffff" />
-                        <Text style={styles.selectedText}>Selected</Text>
-                      </View>
-                    ) : (
-                      <View style={[styles.payButton, { backgroundColor: colors.primary }]}>
-                        <Ionicons name="card" size={12} color="#ffffff" />
-                        <Text style={styles.payButtonText}>Pay Now</Text>
-                      </View>
-                    )}
                   </View>
-                </Pressable>
+                </View>
 
-                {/* Individual Fee Allocation Input */}
-                {showPaymentOptions && isPayingAll && (
-                  <View style={[styles.feeAllocationRow, { backgroundColor: colors.backgroundSecondary }]}>
-                    <View style={styles.feeAllocationInputWrapper}>
-                      <Text style={[styles.feeAllocationLabel, { color: colors.textMuted }]}>Pay:</Text>
-                      <View style={[styles.feeAllocationInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                        <Text style={[styles.feeAllocationCurrency, { color: colors.textSecondary }]}>{currencySymbol}</Text>
+                {/* Inline Allocation Input - always shown */}
+                <View style={[styles.inlineAllocationRow, { borderTopColor: colors.border, backgroundColor: colors.backgroundTertiary }]}>
+                    <Text style={[styles.inlineAllocationLabel, { color: colors.textSecondary }]}>Amount to pay:</Text>
+                    <View style={styles.inlineAllocationRight}>
+                      <View style={[styles.inlineInputContainer, { backgroundColor: colors.surface, borderColor: colors.primary }]}>
+                        <Text style={[styles.inlineInputCurrency, { color: colors.primary }]}>{currencySymbol}</Text>
                         <TextInput
-                          style={[styles.feeAllocationInput, { color: colors.text }]}
+                          style={[styles.inlineInputField, { color: colors.text }]}
                           value={currentInputValue}
                           onChangeText={(text) => handleFeeAllocationChange(fee.id, text, remainingAmount)}
                           keyboardType="numeric"
@@ -479,129 +504,34 @@ export function PayFeesModal({
                           placeholderTextColor={colors.textMuted}
                         />
                       </View>
-                      <Text style={[styles.feeAllocationMax, { color: colors.textMuted }]}>
-                        / {formatCurrency(remainingAmount)}
-                      </Text>
+                      {/* Quick buttons */}
+                      <Pressable
+                        style={[
+                          styles.inlineQuickButton,
+                          { backgroundColor: isFullFee ? colors.primary : colors.backgroundTertiary },
+                        ]}
+                        onPress={() => handleFeeQuickAmount(fee.id, 100, remainingAmount)}
+                      >
+                        <Text style={[styles.inlineQuickButtonText, { color: isFullFee ? '#ffffff' : colors.text }]}>Full</Text>
+                      </Pressable>
+                      <Pressable
+                        style={[
+                          styles.inlineQuickButton,
+                          { backgroundColor: currentAllocation === 0 ? colors.error : colors.backgroundTertiary },
+                        ]}
+                        onPress={() => handleFeeQuickAmount(fee.id, 0, remainingAmount)}
+                      >
+                        <Ionicons name="close" size={12} color={currentAllocation === 0 ? '#ffffff' : colors.textMuted} />
+                      </Pressable>
                     </View>
-                    <View style={styles.feeAllocationQuickButtons}>
-                      {[50, 100].map((percent) => {
-                        const quickAmt = Math.floor(remainingAmount * (percent / 100));
-                        const isActive = currentAllocation === quickAmt;
-                        return (
-                          <Pressable
-                            key={percent}
-                            style={[
-                              styles.feeQuickButton,
-                              { backgroundColor: isActive ? colors.primary : colors.surface, borderColor: isActive ? colors.primary : colors.border },
-                            ]}
-                            onPress={() => handleFeeQuickAmount(fee.id, percent, remainingAmount)}
-                          >
-                            <Text style={[styles.feeQuickButtonText, { color: isActive ? '#ffffff' : colors.text }]}>
-                              {percent === 100 ? 'Full' : `${percent}%`}
-                            </Text>
-                          </Pressable>
-                        );
-                      })}
-                    </View>
-                    {/* Status indicator */}
-                    <View style={styles.feeAllocationStatus}>
-                      {isFullFee && (
-                        <View style={[styles.feeStatusBadge, { backgroundColor: colors.successLight }]}>
-                          <Ionicons name="checkmark-circle" size={10} color={colors.success} />
-                          <Text style={[styles.feeStatusText, { color: colors.success }]}>Full</Text>
-                        </View>
-                      )}
-                      {isPartialFee && (
-                        <View style={[styles.feeStatusBadge, { backgroundColor: colors.warningLight }]}>
-                          <Ionicons name="remove-circle" size={10} color={colors.warning} />
-                          <Text style={[styles.feeStatusText, { color: colors.warning }]}>Partial</Text>
-                        </View>
-                      )}
-                      {currentAllocation === 0 && (
-                        <View style={[styles.feeStatusBadge, { backgroundColor: colors.backgroundTertiary }]}>
-                          <Ionicons name="close-circle" size={10} color={colors.textMuted} />
-                          <Text style={[styles.feeStatusText, { color: colors.textMuted }]}>Skip</Text>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                )}
+                </View>
               </View>
             );
           })}
         </View>
 
-        {/* Payment Allocation Section - for partial payments (only show for single fee selection) */}
-        {showPaymentOptions && !isPayingAll && (
-          <View style={[styles.allocationSection, { backgroundColor: colors.backgroundSecondary }]}>
-            <View style={styles.allocationHeader}>
-              <View style={styles.allocationTitleRow}>
-                <Ionicons name="calculator-outline" size={16} color={colors.primary} />
-                <Text style={[styles.allocationTitle, { color: colors.text }]}>Payment Amount</Text>
-              </View>
-              <Text style={[styles.allocationSubtitle, { color: colors.textMuted }]}>
-                Enter amount or select a quick option
-              </Text>
-            </View>
-
-            {/* Amount Input */}
-            <View style={[styles.amountInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Text style={[styles.currencyPrefix, { color: colors.textSecondary }]}>{currencySymbol}</Text>
-              <TextInput
-                style={[styles.amountInput, { color: colors.text }]}
-                value={customAmountInput}
-                onChangeText={handleCustomAmountChange}
-                keyboardType="numeric"
-                placeholder="0"
-                placeholderTextColor={colors.textMuted}
-              />
-              <View style={styles.amountInputRight}>
-                <Text style={[styles.maxAmountText, { color: colors.textMuted }]}>
-                  of {formatCurrency(maxPayableAmount)}
-                </Text>
-              </View>
-            </View>
-
-            {/* Quick Amount Buttons */}
-            <View style={styles.quickAmountRow}>
-              {[25, 50, 75, 100].map((percent) => {
-                const quickAmount = Math.floor(maxPayableAmount * (percent / 100));
-                const isActive = selectedAmount === quickAmount;
-                return (
-                  <Pressable
-                    key={percent}
-                    style={[
-                      styles.quickAmountButton,
-                      { backgroundColor: isActive ? colors.primary : colors.surface, borderColor: isActive ? colors.primary : colors.border },
-                    ]}
-                    onPress={() => handleQuickAmount(percent)}
-                  >
-                    <Text style={[styles.quickAmountText, { color: isActive ? '#ffffff' : colors.text }]}>
-                      {percent === 100 ? 'Full' : `${percent}%`}
-                    </Text>
-                    <Text style={[styles.quickAmountValue, { color: isActive ? 'rgba(255,255,255,0.8)' : colors.textMuted }]}>
-                      {formatCurrency(quickAmount)}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            {/* Remaining Balance Info */}
-            {selectedAmount < maxPayableAmount && selectedAmount > 0 && (
-              <View style={[styles.remainingBalanceInfo, { backgroundColor: colors.warningLight }]}>
-                <Ionicons name="information-circle" size={14} color={colors.warning} />
-                <Text style={[styles.remainingBalanceText, { color: colors.warning }]}>
-                  Remaining after payment: {formatCurrency(maxPayableAmount - selectedAmount)}
-                </Text>
-              </View>
-            )}
-          </View>
-        )}
-
-        {/* Payment Summary Section - shown when "Pay All" is selected */}
-        {showPaymentOptions && isPayingAll && (
-          <View style={[styles.allocationSection, { backgroundColor: colors.backgroundSecondary }]}>
+        {/* Payment Summary Section */}
+        <View style={[styles.allocationSection, { backgroundColor: colors.backgroundSecondary }]}>
             <View style={styles.allocationHeader}>
               <View style={styles.allocationTitleRow}>
                 <Ionicons name="receipt-outline" size={16} color={colors.primary} />
@@ -650,12 +580,10 @@ export function PayFeesModal({
                 </Text>
               </View>
             ) : null}
-          </View>
-        )}
+        </View>
 
         {/* Payment Method Selection */}
-        {showPaymentOptions ? (
-          <View style={[styles.paymentMethodsSection, { backgroundColor: colors.backgroundSecondary }]}>
+        <View style={[styles.paymentMethodsSection, { backgroundColor: colors.backgroundSecondary }]}>
             <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Select Payment Method</Text>
 
             <View style={styles.paymentMethodsGrid}>
@@ -686,8 +614,7 @@ export function PayFeesModal({
                 </Pressable>
               ))}
             </View>
-          </View>
-        ) : null}
+        </View>
 
         {/* Payment History Link */}
         <Pressable
@@ -813,6 +740,18 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     borderWidth: 1,
+  },
+  // New fee card styles with inline input
+  feeItemCard: {
+    borderRadius: 10,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  feeItemCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 10,
   },
   feeItemLeft: {
     flex: 1,
@@ -1034,83 +973,55 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.medium,
     flex: 1,
   },
-  // Per-fee allocation styles
-  feeItemContainer: {
-    gap: 0,
-  },
-  feeAllocationRow: {
+  // Inline allocation styles (inside fee card)
+  inlineAllocationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
-    marginTop: -2,
-    gap: 8,
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderTopWidth: 1,
   },
-  feeAllocationInputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: 6,
-  },
-  feeAllocationLabel: {
+  inlineAllocationLabel: {
     fontSize: 11,
     fontFamily: FONTS.medium,
   },
-  feeAllocationInputContainer: {
+  inlineAllocationRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  inlineInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     gap: 2,
-    minWidth: 80,
+    minWidth: 100,
   },
-  feeAllocationCurrency: {
-    fontSize: 12,
+  inlineInputCurrency: {
+    fontSize: 14,
     fontFamily: FONTS.semiBold,
   },
-  feeAllocationInput: {
+  inlineInputField: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: FONTS.bold,
     paddingVertical: 0,
-    minWidth: 50,
+    minWidth: 60,
+    textAlign: 'right',
   },
-  feeAllocationMax: {
-    fontSize: 10,
-    fontFamily: FONTS.medium,
-  },
-  feeAllocationQuickButtons: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  feeQuickButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+  inlineQuickButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 6,
-    borderWidth: 1,
-  },
-  feeQuickButtonText: {
-    fontSize: 10,
-    fontFamily: FONTS.semiBold,
-  },
-  feeAllocationStatus: {
-    minWidth: 50,
-    alignItems: 'flex-end',
-  },
-  feeStatusBadge: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    gap: 3,
+    justifyContent: 'center',
   },
-  feeStatusText: {
-    fontSize: 9,
+  inlineQuickButtonText: {
+    fontSize: 11,
     fontFamily: FONTS.semiBold,
   },
   // Summary card styles

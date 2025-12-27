@@ -17,6 +17,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTenantSettings } from '../../contexts/TenantSettingsContext';
 import { PayFeesModal } from '../../components/modals/PayFeesModal';
+import { ContactBursaryModal } from '../../components/modals/ContactBursaryModal';
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 import { ChildSwitcher, type ChildData } from '../../components/ui/ChildSwitcher';
 
@@ -470,56 +471,6 @@ function StatTile({
   );
 }
 
-// Payment Method Card
-function PaymentMethodCard({
-  icon,
-  title,
-  subtitle,
-  color,
-  colors,
-  isDark,
-  isTablet,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  title: string;
-  subtitle: string;
-  color: string;
-  colors: any;
-  isDark: boolean;
-  isTablet: boolean;
-}) {
-  const bgColor = isDark ? `${color}20` : `${color}15`;
-
-  return (
-    <View
-      style={[
-        isTablet ? styles.tabletPaymentMethodCard : styles.paymentMethodCard,
-        { backgroundColor: colors.backgroundTertiary },
-      ]}
-    >
-      <View style={[styles.paymentMethodIcon, { backgroundColor: bgColor }]}>
-        <Ionicons name={icon} size={isTablet ? 24 : 20} color={color} />
-      </View>
-      <Text
-        style={[
-          isTablet ? styles.tabletPaymentMethodTitle : styles.paymentMethodTitle,
-          { color: colors.text },
-        ]}
-      >
-        {title}
-      </Text>
-      <Text
-        style={[
-          isTablet ? styles.tabletPaymentMethodSubtitle : styles.paymentMethodSubtitle,
-          { color: colors.textMuted },
-        ]}
-      >
-        {subtitle}
-      </Text>
-    </View>
-  );
-}
-
 export default function FeesScreen() {
   const { colors, isDark } = useTheme();
   const { settings } = useTenantSettings();
@@ -538,6 +489,7 @@ export default function FeesScreen() {
   const [selectedFeeForPayment, setSelectedFeeForPayment] = useState<FeeRecord | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [showContactBursaryModal, setShowContactBursaryModal] = useState(false);
 
   const selectedChild = MOCK_CHILDREN.find((c) => c.id === selectedChildId) || MOCK_CHILDREN[0];
 
@@ -604,7 +556,7 @@ export default function FeesScreen() {
         style={styles.scrollView}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: isTablet ? 120 : 100 },
+          { paddingBottom: isTablet ? 24 : 20 },
         ]}
         showsVerticalScrollIndicator={false}
         onTouchStart={() => openDropdown && setOpenDropdown(null)}
@@ -1002,33 +954,107 @@ export default function FeesScreen() {
           )}
         </View>
 
-        {/* Payment Methods Section */}
-        <View style={[styles.paymentMethodsSection, isTablet && styles.tabletPaymentMethodsSection]}>
-          <View
-            style={[
-              styles.paymentMethodsCard,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-              },
-            ]}
-          >
-            <View style={styles.paymentMethodsHeader}>
-              <View style={[styles.paymentMethodsIconWrap, { backgroundColor: isDark ? colors.infoLight : '#eff6ff' }]}>
-                <Ionicons name="card" size={20} color={isDark ? colors.info : '#3b82f6'} />
+        {/* Quick Actions Section */}
+        <View style={[styles.quickActionsSection, isTablet && styles.tabletQuickActionsSection]}>
+          {isTablet ? (
+            /* Tablet: Modern horizontal cards with gradient accent */
+            <View style={styles.tabletQuickActionsContainer}>
+              <View style={styles.tabletQuickActionsHeader}>
+                <Text style={[styles.tabletQuickActionsTitle, { color: colors.text }]}>Quick Actions</Text>
+                <Text style={[styles.tabletQuickActionsSubtitle, { color: colors.textMuted }]}>Get help & manage payments</Text>
               </View>
-              <Text style={[styles.paymentMethodsTitle, isTablet && styles.tabletPaymentMethodsTitle, { color: colors.text }]}>
-                Accepted Payment Methods
-              </Text>
+              <View style={styles.tabletQuickActionsGrid}>
+                {/* Contact Bursary Card */}
+                <Pressable
+                  style={[styles.tabletQuickActionCardModern, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  onPress={() => setShowContactBursaryModal(true)}
+                >
+                  <View style={[styles.tabletQuickActionAccent, { backgroundColor: '#2563eb' }]} />
+                  <View style={styles.tabletQuickActionContent}>
+                    <View style={[styles.tabletQuickActionIconModern, { backgroundColor: isDark ? '#1e3a5f' : '#dbeafe' }]}>
+                      <Ionicons name="call" size={20} color={isDark ? '#60a5fa' : '#2563eb'} />
+                    </View>
+                    <Text style={[styles.tabletQuickActionTitleModern, { color: colors.text }]}>Contact Bursary</Text>
+                    <Text style={[styles.tabletQuickActionDescModern, { color: colors.textMuted }]}>Call or email</Text>
+                  </View>
+                </Pressable>
+
+                {/* Payment History Card */}
+                <Pressable
+                  style={[styles.tabletQuickActionCardModern, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  onPress={() => router.push('/payment-history')}
+                >
+                  <View style={[styles.tabletQuickActionAccent, { backgroundColor: '#059669' }]} />
+                  <View style={styles.tabletQuickActionContent}>
+                    <View style={[styles.tabletQuickActionIconModern, { backgroundColor: isDark ? '#1e3a3a' : '#d1fae5' }]}>
+                      <Ionicons name="time" size={20} color={isDark ? '#34d399' : '#059669'} />
+                    </View>
+                    <Text style={[styles.tabletQuickActionTitleModern, { color: colors.text }]}>Payment History</Text>
+                    <Text style={[styles.tabletQuickActionDescModern, { color: colors.textMuted }]}>View transactions</Text>
+                  </View>
+                </Pressable>
+
+                {/* Download Statement Card */}
+                <Pressable
+                  style={[styles.tabletQuickActionCardModern, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  onPress={() => {/* Handle download */}}
+                >
+                  <View style={[styles.tabletQuickActionAccent, { backgroundColor: '#d97706' }]} />
+                  <View style={styles.tabletQuickActionContent}>
+                    <View style={[styles.tabletQuickActionIconModern, { backgroundColor: isDark ? '#3f2f1f' : '#fef3c7' }]}>
+                      <Ionicons name="download" size={20} color={isDark ? '#fbbf24' : '#d97706'} />
+                    </View>
+                    <Text style={[styles.tabletQuickActionTitleModern, { color: colors.text }]}>Download Statement</Text>
+                    <Text style={[styles.tabletQuickActionDescModern, { color: colors.textMuted }]}>Export breakdown</Text>
+                  </View>
+                </Pressable>
+              </View>
             </View>
-            <View style={[styles.paymentMethodsGrid, isTablet && styles.tabletPaymentMethodsGrid]}>
-              <PaymentMethodCard icon="card" title="Card Payment" subtitle="Visa, Mastercard" color="#3b82f6" colors={colors} isDark={isDark} isTablet={isTablet} />
-              <PaymentMethodCard icon="business" title="Bank Transfer" subtitle="All major banks" color="#10b981" colors={colors} isDark={isDark} isTablet={isTablet} />
-              <PaymentMethodCard icon="keypad" title="USSD" subtitle="*737#, *901#" color="#8b5cf6" colors={colors} isDark={isDark} isTablet={isTablet} />
-              <PaymentMethodCard icon="cash" title="Cash" subtitle="At school bursary" color="#f59e0b" colors={colors} isDark={isDark} isTablet={isTablet} />
+          ) : (
+            /* Mobile: Compact card with action items */
+            <View style={[styles.quickActionsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={styles.quickActionsHeader}>
+                <View style={[styles.quickActionsIconWrap, { backgroundColor: isDark ? colors.primaryLight : '#eff6ff' }]}>
+                  <Ionicons name="help-buoy-outline" size={18} color={colors.primary} />
+                </View>
+                <View style={styles.quickActionsHeaderText}>
+                  <Text style={[styles.quickActionsTitle, { color: colors.text }]}>Need Help?</Text>
+                  <Text style={[styles.quickActionsSubtitle, { color: colors.textSecondary }]}>Quick actions & support</Text>
+                </View>
+              </View>
+              <View style={styles.mobileQuickActionsButtons}>
+                <Pressable
+                  style={[styles.mobileQuickActionButton, { backgroundColor: isDark ? colors.backgroundTertiary : '#f8fafc' }]}
+                  onPress={() => setShowContactBursaryModal(true)}
+                >
+                  <View style={[styles.mobileQuickActionIcon, { backgroundColor: isDark ? '#1e3a5f' : '#dbeafe' }]}>
+                    <Ionicons name="call-outline" size={16} color={isDark ? '#60a5fa' : '#2563eb'} />
+                  </View>
+                  <Text style={[styles.mobileQuickActionLabel, { color: colors.text }]}>Contact{'\n'}Bursary</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.mobileQuickActionButton, { backgroundColor: isDark ? colors.backgroundTertiary : '#f8fafc' }]}
+                  onPress={() => router.push('/payment-history')}
+                >
+                  <View style={[styles.mobileQuickActionIcon, { backgroundColor: isDark ? '#1e3a3a' : '#d1fae5' }]}>
+                    <Ionicons name="time-outline" size={16} color={isDark ? '#34d399' : '#059669'} />
+                  </View>
+                  <Text style={[styles.mobileQuickActionLabel, { color: colors.text }]}>Payment{'\n'}History</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.mobileQuickActionButton, { backgroundColor: isDark ? colors.backgroundTertiary : '#f8fafc' }]}
+                  onPress={() => {/* Handle download */}}
+                >
+                  <View style={[styles.mobileQuickActionIcon, { backgroundColor: isDark ? '#3f2f1f' : '#fef3c7' }]}>
+                    <Ionicons name="download-outline" size={16} color={isDark ? '#fbbf24' : '#d97706'} />
+                  </View>
+                  <Text style={[styles.mobileQuickActionLabel, { color: colors.text }]}>Download{'\n'}Statement</Text>
+                </Pressable>
+              </View>
             </View>
-          </View>
+          )}
         </View>
+
       </ScrollView>
 
       {/* Pay Fees Modal - Updated */}
@@ -1054,6 +1080,13 @@ export default function FeesScreen() {
               paidAmount: f.paidAmount,
             }))
         }
+      />
+
+      {/* Contact Bursary Modal */}
+      <ContactBursaryModal
+        visible={showContactBursaryModal}
+        onClose={() => setShowContactBursaryModal(false)}
+        schoolName="Greenfield Academy"
       />
     </SafeAreaView>
   );
@@ -1259,21 +1292,33 @@ const styles = StyleSheet.create({
   emptyStateTitle: { fontSize: 16, fontFamily: FONTS.semiBold, marginTop: 12 },
   emptyStateSubtitle: { fontSize: 13, fontFamily: FONTS.medium, marginTop: 4 },
 
-  // Payment Methods
-  paymentMethodsSection: { paddingHorizontal: 16, marginBottom: 16 },
-  tabletPaymentMethodsSection: { paddingHorizontal: 20, marginBottom: 20 },
-  paymentMethodsCard: { padding: 16, borderRadius: 14, borderWidth: 1 },
-  paymentMethodsHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 },
-  paymentMethodsIconWrap: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  paymentMethodsTitle: { fontSize: 15, fontFamily: FONTS.semiBold },
-  tabletPaymentMethodsTitle: { fontSize: 17 },
-  paymentMethodsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  tabletPaymentMethodsGrid: { flexDirection: 'row', gap: 12 },
-  paymentMethodCard: { width: (SCREEN_WIDTH - 58) / 2, alignItems: 'center', padding: 14, borderRadius: 12 },
-  tabletPaymentMethodCard: { flex: 1, alignItems: 'center', padding: 16, borderRadius: 14 },
-  paymentMethodIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  paymentMethodTitle: { fontSize: 12, fontFamily: FONTS.semiBold, textAlign: 'center', marginBottom: 2 },
-  tabletPaymentMethodTitle: { fontSize: 14, fontFamily: FONTS.semiBold, textAlign: 'center', marginBottom: 2 },
-  paymentMethodSubtitle: { fontSize: 10, fontFamily: FONTS.medium, textAlign: 'center' },
-  tabletPaymentMethodSubtitle: { fontSize: 11, fontFamily: FONTS.medium, textAlign: 'center' },
+  // Quick Actions Section
+  quickActionsSection: { paddingHorizontal: 16, marginBottom: 0 },
+  tabletQuickActionsSection: { paddingHorizontal: 20, marginBottom: 0 },
+
+  // Mobile Quick Actions Card
+  quickActionsCard: { borderRadius: 12, borderWidth: 1, padding: 10, overflow: 'hidden' },
+  quickActionsHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  quickActionsIconWrap: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginRight: 8 },
+  quickActionsHeaderText: { flex: 1 },
+  quickActionsTitle: { fontSize: 13, fontFamily: FONTS.bold },
+  quickActionsSubtitle: { fontSize: 10, fontFamily: FONTS.medium, marginTop: 1 },
+  mobileQuickActionsButtons: { flexDirection: 'row', gap: 6 },
+  mobileQuickActionButton: { flex: 1, alignItems: 'center', paddingVertical: 8, paddingHorizontal: 4, borderRadius: 8 },
+  mobileQuickActionIcon: { width: 32, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  mobileQuickActionLabel: { fontSize: 9, fontFamily: FONTS.semiBold, textAlign: 'center', lineHeight: 12 },
+
+  // Tablet Quick Actions - Modern Design
+  tabletQuickActionsContainer: {},
+  tabletQuickActionsHeader: { marginBottom: 6 },
+  tabletQuickActionsTitle: { fontSize: 14, fontFamily: FONTS.bold },
+  tabletQuickActionsSubtitle: { fontSize: 10, fontFamily: FONTS.medium, marginTop: 1 },
+  tabletQuickActionsGrid: { flexDirection: 'row', gap: 8 },
+  tabletQuickActionCardModern: { flex: 1, borderRadius: 8, borderWidth: 1, overflow: 'hidden' },
+  tabletQuickActionAccent: { height: 2 },
+  tabletQuickActionContent: { padding: 8, alignItems: 'center' },
+  tabletQuickActionIconModern: { width: 34, height: 34, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
+  tabletQuickActionTitleModern: { fontSize: 11, fontFamily: FONTS.semiBold, textAlign: 'center' },
+  tabletQuickActionDescModern: { fontSize: 9, fontFamily: FONTS.medium, marginTop: 1, textAlign: 'center' },
+
 });
