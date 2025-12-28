@@ -784,22 +784,31 @@ export default function ParentHomeScreen() {
             </View>
           </Pressable>
 
-          {/* Fees Due Widget */}
-          <MobileWidgetCard title="Fees Due" icon="card-outline" linkHref="/(tabs)/fees" linkText="Pay now">
-            <View style={[styles.mutedBox, { backgroundColor: colors.backgroundSecondary }]}>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.mutedLabel, { color: colors.textSecondary }]}>{selectedChild.name.split(' ')[0]} • School Fees</Text>
-                <Text style={[styles.moneyText, { color: colors.text }]}>{feesDueFormatted}</Text>
-                <View style={styles.dueRow}>
-                  <View style={styles.duePill}>
-                    <Text style={styles.duePillText}>Due soon</Text>
+          {/* Fees Due Widget - Modern Compact Design */}
+          <MobileWidgetCard title="Fees Due" icon="card-outline" linkHref="/(tabs)/fees" linkText="View all">
+            <View style={[mobileStyles.feeCardCompact, { backgroundColor: isDark ? colors.backgroundSecondary : '#fafbfc', borderColor: isDark ? colors.border : '#e8eaed' }]}>
+              {/* Left: Amount & Details */}
+              <View style={mobileStyles.feeCardLeft}>
+                <View style={mobileStyles.feeCardTopRow}>
+                  <Text style={[mobileStyles.feeAmountCompact, { color: colors.text }]}>{feesDueFormatted}</Text>
+                  <View style={[mobileStyles.feeStatusCompact, { backgroundColor: isDark ? colors.warningLight : '#fef3c7' }]}>
+                    <View style={[mobileStyles.feeStatusDotCompact, { backgroundColor: '#f59e0b' }]} />
+                    <Text style={[mobileStyles.feeStatusTextCompact, { color: '#b45309' }]}>Due soon</Text>
                   </View>
-                  <Text style={[styles.dueText, { color: colors.textMuted }]}>Due: 15 Feb</Text>
+                </View>
+                <View style={mobileStyles.feeCardMeta}>
+                  <Text style={[mobileStyles.feeTypeCompact, { color: colors.textMuted }]}>{selectedChild.name.split(' ')[0]} • School Fees</Text>
+                  <View style={mobileStyles.feeDueDateCompact}>
+                    <Ionicons name="calendar-outline" size={10} color={colors.textMuted} />
+                    <Text style={[mobileStyles.feeDueDateTextCompact, { color: colors.textMuted }]}>15 Feb</Text>
+                  </View>
                 </View>
               </View>
+              {/* Right: Pay Button */}
               <Link href="/(tabs)/fees" asChild>
-                <Pressable style={[styles.payButton, { backgroundColor: colors.primary }]}>
-                  <Text style={styles.payButtonText}>Pay</Text>
+                <Pressable style={[mobileStyles.feePayBtnCompact, { backgroundColor: colors.primary }]}>
+                  <Ionicons name="wallet-outline" size={14} color="#ffffff" />
+                  <Text style={mobileStyles.feePayBtnText}>Pay</Text>
                 </Pressable>
               </Link>
             </View>
@@ -1251,23 +1260,32 @@ export default function ParentHomeScreen() {
 
           {/* Two-column widget grid */}
           <View style={styles.twoCol}>
-            {/* Fees Due Widget */}
+            {/* Fees Due Widget - Modern Compact Design */}
             <Card style={[styles.sectionCard, styles.twoColItem, { marginTop: 14 }]}>
               <RowHeader title="Fees Due" icon="card-outline" right={<Link href="/(tabs)/fees"><Text style={[styles.linkText, { color: colors.primary }]}>View all</Text></Link>} />
-              <View style={[styles.mutedBox, { backgroundColor: colors.backgroundSecondary }]}>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.mutedLabel, { color: colors.textSecondary }]}>{selectedChild.name.split(' ')[0]} • School Fees</Text>
-                  <Text style={[styles.moneyText, { color: colors.text }]}>{feesDueFormatted}</Text>
-                  <View style={styles.dueRow}>
-                    <View style={styles.duePill}>
-                      <Text style={styles.duePillText}>Due soon</Text>
+              <View style={[tabletStyles.feeCardCompact, { backgroundColor: isDark ? colors.backgroundSecondary : '#fafbfc', borderColor: isDark ? colors.border : '#e8eaed' }]}>
+                {/* Left: Amount & Details */}
+                <View style={tabletStyles.feeCardLeft}>
+                  <View style={tabletStyles.feeCardTopRow}>
+                    <Text style={[tabletStyles.feeAmountCompact, { color: colors.text }]}>{feesDueFormatted}</Text>
+                    <View style={[tabletStyles.feeStatusCompact, { backgroundColor: isDark ? colors.warningLight : '#fef3c7' }]}>
+                      <View style={[tabletStyles.feeStatusDotCompact, { backgroundColor: '#f59e0b' }]} />
+                      <Text style={[tabletStyles.feeStatusTextCompact, { color: '#b45309' }]}>Due soon</Text>
                     </View>
-                    <Text style={[styles.dueText, { color: colors.textMuted }]}>Due: 15 Feb</Text>
+                  </View>
+                  <View style={tabletStyles.feeCardMeta}>
+                    <Text style={[tabletStyles.feeTypeCompact, { color: colors.textMuted }]}>{selectedChild.name.split(' ')[0]} • School Fees</Text>
+                    <View style={tabletStyles.feeDueDateCompact}>
+                      <Ionicons name="calendar-outline" size={11} color={colors.textMuted} />
+                      <Text style={[tabletStyles.feeDueDateTextCompact, { color: colors.textMuted }]}>15 Feb</Text>
+                    </View>
                   </View>
                 </View>
+                {/* Right: Pay Button */}
                 <Link href="/(tabs)/fees" asChild>
-                  <Pressable style={[styles.payButton, { backgroundColor: colors.primary }]}>
-                    <Text style={styles.payButtonText}>Pay</Text>
+                  <Pressable style={[tabletStyles.feePayBtnCompact, { backgroundColor: colors.primary }]}>
+                    <Ionicons name="wallet-outline" size={16} color="#ffffff" />
+                    <Text style={tabletStyles.feePayBtnText}>Pay</Text>
                   </Pressable>
                 </Link>
               </View>
@@ -2257,6 +2275,191 @@ const mobileStyles = StyleSheet.create({
     fontSize: 10,
     fontFamily: FONTS.semiBold,
   },
+
+  // Fees Due Widget - Modern Design
+  feesDueContainer: {
+    marginTop: 10,
+  },
+  feeCard: {
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  feeCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  feeChildBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    gap: 4,
+  },
+  feeChildText: {
+    fontSize: 11,
+    fontFamily: FONTS.semiBold,
+  },
+  feeStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    gap: 4,
+  },
+  feeStatusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  feeStatusText: {
+    fontSize: 10,
+    fontFamily: FONTS.semiBold,
+  },
+  feeTypeText: {
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+    marginBottom: 4,
+  },
+  feeAmountRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  feeAmountValue: {
+    fontSize: 22,
+    fontFamily: FONTS.bold,
+    letterSpacing: -0.5,
+  },
+  feeDueDateBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    gap: 4,
+  },
+  feeDueDateText: {
+    fontSize: 10,
+    fontFamily: FONTS.medium,
+  },
+  feeProgressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 14,
+  },
+  feeProgressTrack: {
+    flex: 1,
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  feeProgressFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  feeProgressText: {
+    fontSize: 10,
+    fontFamily: FONTS.medium,
+  },
+  feePayButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 6,
+  },
+  feePayButtonText: {
+    fontSize: 13,
+    fontFamily: FONTS.semiBold,
+    color: COLORS.white,
+  },
+
+  // Compact Fee Card Styles
+  feeCardCompact: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+  },
+  feeCardLeft: {
+    flex: 1,
+    marginRight: 12,
+  },
+  feeCardTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  feeAmountCompact: {
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+    letterSpacing: -0.3,
+  },
+  feeStatusCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 6,
+    gap: 4,
+  },
+  feeStatusDotCompact: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+  },
+  feeStatusTextCompact: {
+    fontSize: 9,
+    fontFamily: FONTS.semiBold,
+  },
+  feeCardMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  feeTypeCompact: {
+    fontSize: 11,
+    fontFamily: FONTS.medium,
+  },
+  feeDueDateCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  feeDueDateTextCompact: {
+    fontSize: 10,
+    fontFamily: FONTS.medium,
+  },
+  feePayBtnCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+    gap: 5,
+  },
+  feePayBtnText: {
+    fontSize: 12,
+    fontFamily: FONTS.semiBold,
+    color: COLORS.white,
+  },
 });
 
 // ============================================================================
@@ -2665,5 +2868,190 @@ const tabletStyles = StyleSheet.create({
     fontSize: 12,
     fontFamily: FONTS.semiBold,
     color: COLORS.blue600,
+  },
+
+  // Fees Due Widget - Modern Design (Tablet)
+  feesDueContainer: {
+    marginTop: 10,
+  },
+  feeCard: {
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  feeCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  feeChildBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    gap: 5,
+  },
+  feeChildText: {
+    fontSize: 12,
+    fontFamily: FONTS.semiBold,
+  },
+  feeStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    gap: 5,
+  },
+  feeStatusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+  },
+  feeStatusText: {
+    fontSize: 11,
+    fontFamily: FONTS.semiBold,
+  },
+  feeTypeText: {
+    fontSize: 13,
+    fontFamily: FONTS.medium,
+    marginBottom: 6,
+  },
+  feeAmountRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  feeAmountValue: {
+    fontSize: 24,
+    fontFamily: FONTS.bold,
+    letterSpacing: -0.5,
+  },
+  feeDueDateBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    gap: 5,
+  },
+  feeDueDateText: {
+    fontSize: 11,
+    fontFamily: FONTS.medium,
+  },
+  feeProgressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 16,
+  },
+  feeProgressTrack: {
+    flex: 1,
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  feeProgressFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  feeProgressText: {
+    fontSize: 11,
+    fontFamily: FONTS.medium,
+  },
+  feePayButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
+  },
+  feePayButtonText: {
+    fontSize: 14,
+    fontFamily: FONTS.semiBold,
+    color: COLORS.white,
+  },
+
+  // Compact Fee Card Styles (Tablet)
+  feeCardCompact: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+  },
+  feeCardLeft: {
+    flex: 1,
+    marginRight: 14,
+  },
+  feeCardTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 6,
+  },
+  feeAmountCompact: {
+    fontSize: 20,
+    fontFamily: FONTS.bold,
+    letterSpacing: -0.3,
+  },
+  feeStatusCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    gap: 4,
+  },
+  feeStatusDotCompact: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  feeStatusTextCompact: {
+    fontSize: 10,
+    fontFamily: FONTS.semiBold,
+  },
+  feeCardMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  feeTypeCompact: {
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+  },
+  feeDueDateCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  feeDueDateTextCompact: {
+    fontSize: 11,
+    fontFamily: FONTS.medium,
+  },
+  feePayBtnCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 10,
+    gap: 6,
+  },
+  feePayBtnText: {
+    fontSize: 13,
+    fontFamily: FONTS.semiBold,
+    color: COLORS.white,
   },
 });
