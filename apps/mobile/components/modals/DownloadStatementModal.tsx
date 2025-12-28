@@ -160,12 +160,26 @@ export function DownloadStatementModal({
       year: 'numeric',
     });
 
+    const currentTime = new Date().toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
     const getStatusColor = (status: string) => {
       switch (status) {
         case 'paid': return '#16a34a';
         case 'partial': return '#f59e0b';
         case 'overdue': return '#dc2626';
         default: return '#6b7280';
+      }
+    };
+
+    const getStatusBgColor = (status: string) => {
+      switch (status) {
+        case 'paid': return '#dcfce7';
+        case 'partial': return '#fef3c7';
+        case 'overdue': return '#fee2e2';
+        default: return '#f3f4f6';
       }
     };
 
@@ -178,23 +192,26 @@ export function DownloadStatementModal({
       }
     };
 
-    const feeRows = fees.map(fee => `
-      <tr>
-        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
-          <div style="font-weight: 600; color: #1f2937;">${fee.name}</div>
-          <div style="font-size: 12px; color: #6b7280;">${fee.feeType}</div>
+    const feeRows = fees.map((fee, index) => `
+      <tr style="background-color: ${index % 2 === 0 ? '#ffffff' : '#fafafa'};">
+        <td style="padding: 16px 20px; border-bottom: 1px solid #e5e7eb;">
+          <div style="font-weight: 700; font-size: 15px; color: #111827; margin-bottom: 4px;">${fee.name}</div>
+          <div style="font-size: 13px; color: #6b7280; font-weight: 500;">${fee.feeType} • ${fee.term}</div>
         </td>
-        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">${formatCurrency(fee.total)}</td>
-        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; color: #16a34a;">${formatCurrency(fee.paid)}</td>
-        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; color: ${fee.balance > 0 ? '#dc2626' : '#16a34a'};">${formatCurrency(fee.balance)}</td>
-        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center;">
-          <span style="padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; background-color: ${getStatusColor(fee.status)}20; color: ${getStatusColor(fee.status)};">
+        <td style="padding: 16px 20px; border-bottom: 1px solid #e5e7eb; text-align: right; font-size: 15px; font-weight: 600; color: #374151;">${formatCurrency(fee.total)}</td>
+        <td style="padding: 16px 20px; border-bottom: 1px solid #e5e7eb; text-align: right; font-size: 15px; font-weight: 600; color: #16a34a;">${formatCurrency(fee.paid)}</td>
+        <td style="padding: 16px 20px; border-bottom: 1px solid #e5e7eb; text-align: right; font-size: 15px; font-weight: 700; color: ${fee.balance > 0 ? '#dc2626' : '#16a34a'};">${formatCurrency(fee.balance)}</td>
+        <td style="padding: 16px 20px; border-bottom: 1px solid #e5e7eb; text-align: center;">
+          <span style="display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; background-color: ${getStatusBgColor(fee.status)}; color: ${getStatusColor(fee.status)};">
             ${getStatusLabel(fee.status)}
           </span>
         </td>
-        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-size: 12px; color: #6b7280;">${formatDate(fee.dueDate)}</td>
+        <td style="padding: 16px 20px; border-bottom: 1px solid #e5e7eb; text-align: right; font-size: 14px; color: #6b7280; font-weight: 500;">${formatDate(fee.dueDate)}</td>
       </tr>
     `).join('');
+
+    // Calculate payment percentage
+    const paymentPercentage = totalAmount > 0 ? Math.round((totalPaid / totalAmount) * 100) : 0;
 
     return `
       <!DOCTYPE html>
@@ -204,98 +221,496 @@ export function DownloadStatementModal({
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Fee Statement - ${childName}</title>
         <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f9fafb; padding: 20px; }
-          .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-          .header { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 30px; }
-          .header h1 { font-size: 24px; margin-bottom: 4px; }
-          .header p { opacity: 0.9; font-size: 14px; }
-          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 24px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
-          .info-item label { display: block; font-size: 11px; text-transform: uppercase; color: #6b7280; margin-bottom: 4px; letter-spacing: 0.5px; }
-          .info-item span { font-size: 15px; font-weight: 600; color: #1f2937; }
-          .summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 24px; }
-          .summary-card { padding: 16px; border-radius: 10px; text-align: center; }
-          .summary-card.total { background: #eff6ff; }
-          .summary-card.paid { background: #f0fdf4; }
-          .summary-card.balance { background: #fef2f2; }
-          .summary-card label { display: block; font-size: 11px; text-transform: uppercase; color: #6b7280; margin-bottom: 6px; }
-          .summary-card span { font-size: 20px; font-weight: 700; }
-          .summary-card.total span { color: #2563eb; }
-          .summary-card.paid span { color: #16a34a; }
-          .summary-card.balance span { color: #dc2626; }
-          table { width: 100%; border-collapse: collapse; }
-          th { padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: #6b7280; background: #f9fafb; border-bottom: 2px solid #e5e7eb; letter-spacing: 0.5px; }
+          @page {
+            size: A4;
+            margin: 15mm 12mm;
+          }
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #ffffff;
+            color: #1f2937;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .page {
+            width: 100%;
+            min-height: auto;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+          }
+          /* Header with gradient */
+          .header {
+            background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
+            color: white;
+            padding: 40px 50px;
+            position: relative;
+            overflow: hidden;
+          }
+          .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+          }
+          .header::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 50%;
+          }
+          .header-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+          }
+          .header-left h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+          }
+          .header-left .subtitle {
+            font-size: 18px;
+            opacity: 0.95;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+          }
+          .header-right {
+            text-align: right;
+          }
+          .header-right .doc-type {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            opacity: 0.8;
+            margin-bottom: 6px;
+            font-weight: 600;
+          }
+          .header-right .doc-date {
+            font-size: 15px;
+            font-weight: 600;
+          }
+
+          /* Student Info Section */
+          .student-section {
+            padding: 35px 50px;
+            background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+            border-bottom: 2px solid #d1fae5;
+          }
+          .student-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+          }
+          .student-item {
+            padding: 18px 22px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+          }
+          .student-item label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #6b7280;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            font-weight: 700;
+          }
+          .student-item span {
+            font-size: 17px;
+            font-weight: 700;
+            color: #111827;
+            display: block;
+          }
+
+          /* Summary Section */
+          .summary-section {
+            padding: 35px 50px;
+            background: #ffffff;
+          }
+          .summary-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+          }
+          .summary-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 6px;
+          }
+          .summary-header p {
+            font-size: 14px;
+            color: #6b7280;
+          }
+          .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+          }
+          .summary-card {
+            padding: 28px;
+            border-radius: 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+          }
+          .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+          }
+          .summary-card.total {
+            background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+            border: 2px solid #bfdbfe;
+          }
+          .summary-card.total::before {
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+          }
+          .summary-card.paid {
+            background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid #bbf7d0;
+          }
+          .summary-card.paid::before {
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+          }
+          .summary-card.balance {
+            background: linear-gradient(180deg, #fef2f2 0%, #fecaca 100%);
+            border: 2px solid #fca5a5;
+          }
+          .summary-card.balance::before {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+          }
+          .summary-card label {
+            display: block;
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #6b7280;
+            margin-bottom: 12px;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+          }
+          .summary-card .amount {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+          }
+          .summary-card.total .amount { color: #1d4ed8; }
+          .summary-card.paid .amount { color: #15803d; }
+          .summary-card.balance .amount { color: #b91c1c; }
+          .summary-card .subtext {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 8px;
+            font-weight: 500;
+          }
+
+          /* Progress Bar */
+          .progress-section {
+            margin-top: 30px;
+            padding: 22px;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+          }
+          .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+          }
+          .progress-header span {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+          }
+          .progress-header strong {
+            font-size: 16px;
+            font-weight: 800;
+            color: ${paymentPercentage >= 100 ? '#16a34a' : paymentPercentage >= 50 ? '#f59e0b' : '#dc2626'};
+          }
+          .progress-bar {
+            height: 14px;
+            background: #e5e7eb;
+            border-radius: 7px;
+            overflow: hidden;
+          }
+          .progress-fill {
+            height: 100%;
+            width: ${paymentPercentage}%;
+            background: linear-gradient(90deg, ${paymentPercentage >= 100 ? '#22c55e, #16a34a' : paymentPercentage >= 50 ? '#fbbf24, #f59e0b' : '#f87171, #dc2626'});
+            border-radius: 7px;
+            transition: width 0.3s ease;
+          }
+
+          /* Fee Table Section */
+          .table-section {
+            padding: 0 50px 35px;
+            background: #ffffff;
+            flex: 1;
+          }
+          .table-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+          }
+          .table-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            page-break-inside: auto;
+          }
+          thead {
+            background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+            display: table-header-group;
+          }
+          th {
+            padding: 18px 20px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #ffffff;
+            letter-spacing: 1px;
+            font-weight: 700;
+          }
           th:not(:first-child) { text-align: right; }
           th:nth-child(5) { text-align: center; }
-          .footer { padding: 20px; background: #f9fafb; border-top: 1px solid #e5e7eb; text-align: center; }
-          .footer p { font-size: 12px; color: #6b7280; }
-          .footer .generated { font-size: 10px; margin-top: 8px; color: #9ca3af; }
+          tbody tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+          }
+          tbody tr:last-child td {
+            border-bottom: none;
+          }
+          tfoot {
+            display: table-footer-group;
+            page-break-inside: avoid;
+          }
+
+          /* Table Footer */
+          .table-footer {
+            background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+            border-top: 3px solid #e5e7eb;
+          }
+          .table-footer td {
+            padding: 20px !important;
+            font-weight: 700 !important;
+            font-size: 16px !important;
+          }
+          .table-footer .label {
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #374151;
+          }
+
+          /* Footer */
+          .footer {
+            padding: 30px 50px;
+            background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+            border-top: 2px solid #e5e7eb;
+            margin-top: auto;
+          }
+          .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .footer-left p {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 4px;
+          }
+          .footer-left .disclaimer {
+            font-size: 11px;
+            color: #9ca3af;
+            font-style: italic;
+          }
+          .footer-right {
+            text-align: right;
+          }
+          .footer-right .school-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #059669;
+            margin-bottom: 4px;
+          }
+          .footer-right .timestamp {
+            font-size: 12px;
+            color: #9ca3af;
+          }
+
+          /* Page break controls */
+          .header, .student-section, .summary-section, .footer {
+            page-break-inside: avoid;
+          }
+          .table-section {
+            page-break-before: auto;
+          }
+          .summary-cards {
+            page-break-inside: avoid;
+          }
+          .progress-section {
+            page-break-inside: avoid;
+          }
+
           @media print {
-            body { padding: 0; background: white; }
-            .container { box-shadow: none; }
+            html, body {
+              width: 210mm;
+              height: auto;
+            }
+            .page {
+              page-break-after: auto;
+            }
           }
         </style>
       </head>
       <body>
-        <div class="container">
+        <div class="page">
+          <!-- Header -->
           <div class="header">
-            <h1>${schoolName}</h1>
-            <p>Fee Statement</p>
-          </div>
-
-          <div class="info-grid">
-            <div class="info-item">
-              <label>Student Name</label>
-              <span>${childName}</span>
-            </div>
-            <div class="info-item">
-              <label>Class</label>
-              <span>${childClass}</span>
-            </div>
-            <div class="info-item">
-              <label>Term</label>
-              <span>${term}</span>
-            </div>
-            <div class="info-item">
-              <label>Academic Year</label>
-              <span>${academicYear}</span>
+            <div class="header-content">
+              <div class="header-left">
+                <h1>${schoolName}</h1>
+                <div class="subtitle">Student Fee Statement</div>
+              </div>
+              <div class="header-right">
+                <div class="doc-type">Official Document</div>
+                <div class="doc-date">${currentDate}</div>
+              </div>
             </div>
           </div>
 
-          <div class="summary-cards">
-            <div class="summary-card total">
-              <label>Total Fees</label>
-              <span>${formatCurrency(totalAmount)}</span>
-            </div>
-            <div class="summary-card paid">
-              <label>Amount Paid</label>
-              <span>${formatCurrency(totalPaid)}</span>
-            </div>
-            <div class="summary-card balance">
-              <label>Balance Due</label>
-              <span>${formatCurrency(totalBalance)}</span>
+          <!-- Student Information -->
+          <div class="student-section">
+            <div class="student-grid">
+              <div class="student-item">
+                <label>Student Name</label>
+                <span>${childName}</span>
+              </div>
+              <div class="student-item">
+                <label>Class</label>
+                <span>${childClass}</span>
+              </div>
+              <div class="student-item">
+                <label>Term</label>
+                <span>${term}</span>
+              </div>
+              <div class="student-item">
+                <label>Academic Year</label>
+                <span>${academicYear}</span>
+              </div>
             </div>
           </div>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Fee Description</th>
-                <th>Total</th>
-                <th>Paid</th>
-                <th>Balance</th>
-                <th>Status</th>
-                <th>Due Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${feeRows}
-            </tbody>
-          </table>
+          <!-- Financial Summary -->
+          <div class="summary-section">
+            <div class="summary-header">
+              <h2>Financial Summary</h2>
+              <p>Overview of fee payments and outstanding balance</p>
+            </div>
+            <div class="summary-cards">
+              <div class="summary-card total">
+                <label>Total Fees</label>
+                <div class="amount">${formatCurrency(totalAmount)}</div>
+                <div class="subtext">All assessed fees</div>
+              </div>
+              <div class="summary-card paid">
+                <label>Amount Paid</label>
+                <div class="amount">${formatCurrency(totalPaid)}</div>
+                <div class="subtext">Payments received</div>
+              </div>
+              <div class="summary-card balance">
+                <label>Balance Due</label>
+                <div class="amount">${formatCurrency(totalBalance)}</div>
+                <div class="subtext">Outstanding amount</div>
+              </div>
+            </div>
 
+            <!-- Payment Progress -->
+            <div class="progress-section">
+              <div class="progress-header">
+                <span>Payment Progress</span>
+                <strong>${paymentPercentage}% Complete</strong>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fee Breakdown Table -->
+          <div class="table-section">
+            <div class="table-header">
+              <h2>Fee Breakdown</h2>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Fee Description</th>
+                  <th>Total Amount</th>
+                  <th>Amount Paid</th>
+                  <th>Balance</th>
+                  <th>Status</th>
+                  <th>Due Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${feeRows}
+              </tbody>
+              <tfoot class="table-footer">
+                <tr>
+                  <td class="label">Grand Total</td>
+                  <td style="text-align: right; color: #1d4ed8;">${formatCurrency(totalAmount)}</td>
+                  <td style="text-align: right; color: #15803d;">${formatCurrency(totalPaid)}</td>
+                  <td style="text-align: right; color: #b91c1c;">${formatCurrency(totalBalance)}</td>
+                  <td colspan="2"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Footer -->
           <div class="footer">
-            <p>This is a computer-generated statement and does not require a signature.</p>
-            <p class="generated">Generated on ${currentDate}</p>
+            <div class="footer-content">
+              <div class="footer-left">
+                <p>This is a computer-generated statement and does not require a signature.</p>
+                <p class="disclaimer">Please contact the school bursary for any discrepancies or queries.</p>
+              </div>
+              <div class="footer-right">
+                <div class="school-name">${schoolName}</div>
+                <div class="timestamp">Generated: ${currentDate} at ${currentTime}</div>
+              </div>
+            </div>
           </div>
         </div>
       </body>
