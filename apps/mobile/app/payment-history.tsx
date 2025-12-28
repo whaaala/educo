@@ -3,6 +3,8 @@ import {
   View,
   Text,
   Pressable,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
   StyleSheet,
   ScrollView,
   Dimensions,
@@ -11,6 +13,7 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +23,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useTenantSettings } from '../contexts/TenantSettingsContext';
 import { ProfileAvatar } from '../components/ui/ProfileAvatar';
 import { ChildSwitcher, type ChildData } from '../components/ui/ChildSwitcher';
+import { ViewReceiptModal, PaymentReceiptData } from '../components/modals/ViewReceiptModal';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -346,6 +350,240 @@ function formatShortDate(dateString: string) {
   });
 }
 
+// Payment Card Component - extracted for proper touch handling
+function PaymentCard({
+  payment,
+  colors,
+  isDark,
+  isTablet,
+  currencySymbol,
+  onViewReceipt,
+}: {
+  payment: PaymentHistoryItem;
+  colors: any;
+  isDark: boolean;
+  isTablet: boolean;
+  currencySymbol: string;
+  onViewReceipt: (payment: PaymentHistoryItem) => void;
+}) {
+  const statusConfig = getStatusConfig(payment.status, colors);
+  const methodConfig = getMethodConfig(payment.paymentMethod, colors);
+
+  const formatCurrency = (amount: number) => `${currencySymbol}${amount.toLocaleString()}`;
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={() => onViewReceipt(payment)}
+      style={[
+        cardStyles.paymentCard,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+        isTablet && cardStyles.paymentCardTablet
+      ]}
+    >
+      {/* Card Header */}
+      <View style={cardStyles.paymentCardHeader}>
+        <View style={cardStyles.paymentCardHeaderLeft}>
+          <View style={[cardStyles.termBadge, { backgroundColor: colors.backgroundTertiary }]}>
+            <Text style={[cardStyles.termBadgeText, { color: colors.textSecondary }]}>{payment.term}</Text>
+          </View>
+          <Text style={[cardStyles.paymentFeeName, { color: colors.text }]} numberOfLines={1}>
+            {payment.feeName}
+          </Text>
+        </View>
+        <View style={[cardStyles.amountCircle, { backgroundColor: colors.successLight }]}>
+          <Text style={[cardStyles.amountCircleText, { color: colors.success }]}>
+            {currencySymbol}{(payment.paidAmount / 1000).toFixed(0)}k
+          </Text>
+        </View>
+      </View>
+
+      {/* Payment Details */}
+      <View style={[cardStyles.paymentStatsGrid, { backgroundColor: colors.backgroundSecondary }]}>
+        {/* Amount Card */}
+        <View style={[cardStyles.paymentStatCard, { backgroundColor: isDark ? colors.surface : '#f0fdf4' }]}>
+          <View style={cardStyles.paymentStatCardTop}>
+            <Text style={[cardStyles.paymentStatCardLabel, { color: isDark ? colors.success : '#16a34a' }]}>Amount</Text>
+            <View style={[cardStyles.paymentStatCardIcon, { backgroundColor: isDark ? colors.successLight : '#dcfce7' }]}>
+              <Ionicons name="cash" size={10} color={isDark ? colors.success : '#16a34a'} />
+            </View>
+          </View>
+          <Text style={[cardStyles.paymentStatCardValue, { color: isDark ? colors.text : '#14532d' }]}>
+            {formatCurrency(payment.paidAmount)}
+          </Text>
+        </View>
+
+        {/* Method Card */}
+        <View style={[cardStyles.paymentStatCard, { backgroundColor: isDark ? colors.surface : '#eff6ff' }]}>
+          <View style={cardStyles.paymentStatCardTop}>
+            <Text style={[cardStyles.paymentStatCardLabel, { color: isDark ? colors.info : '#2563eb' }]}>Method</Text>
+            <View style={[cardStyles.paymentStatCardIcon, { backgroundColor: isDark ? colors.infoLight : '#dbeafe' }]}>
+              <Ionicons name={methodConfig.icon} size={10} color={isDark ? colors.info : '#2563eb'} />
+            </View>
+          </View>
+          <Text style={[cardStyles.paymentStatCardValue, { color: isDark ? colors.text : '#1e3a8a' }]}>
+            {methodConfig.label}
+          </Text>
+        </View>
+
+        {/* Date Card */}
+        <View style={[cardStyles.paymentStatCard, { backgroundColor: isDark ? colors.surface : '#fefce8' }]}>
+          <View style={cardStyles.paymentStatCardTop}>
+            <Text style={[cardStyles.paymentStatCardLabel, { color: isDark ? colors.warning : '#ca8a04' }]}>Date</Text>
+            <View style={[cardStyles.paymentStatCardIcon, { backgroundColor: isDark ? colors.warningLight : '#fef9c3' }]}>
+              <Ionicons name="calendar" size={10} color={isDark ? colors.warning : '#ca8a04'} />
+            </View>
+          </View>
+          <Text style={[cardStyles.paymentStatCardValue, { color: isDark ? colors.text : '#713f12' }]}>
+            {formatShortDate(payment.paymentDate)}
+          </Text>
+        </View>
+
+        {/* Status Card */}
+        <View style={[cardStyles.paymentStatCard, { backgroundColor: isDark ? colors.surface : statusConfig.bgColor }]}>
+          <View style={cardStyles.paymentStatCardTop}>
+            <Text style={[cardStyles.paymentStatCardLabel, { color: statusConfig.textColor }]}>Status</Text>
+            <View style={[cardStyles.paymentStatCardIcon, { backgroundColor: statusConfig.bgColor }]}>
+              <Ionicons name={statusConfig.icon} size={10} color={statusConfig.textColor} />
+            </View>
+          </View>
+          <Text style={[cardStyles.paymentStatCardValue, { color: statusConfig.textColor }]}>
+            {statusConfig.label}
+          </Text>
+        </View>
+      </View>
+
+      {/* Transaction Reference & View Receipt */}
+      <View style={[cardStyles.paymentInfoRow, { borderTopColor: colors.border }]}>
+        <View style={cardStyles.paymentInfoLeft}>
+          <Ionicons name="document-text-outline" size={14} color={colors.textMuted} />
+          <Text style={[cardStyles.paymentRefText, { color: colors.textMuted }]}>
+            Ref: {payment.transactionRef}
+          </Text>
+        </View>
+        <View style={[cardStyles.viewReceiptButton, { backgroundColor: colors.successLight }]}>
+          <Text style={[cardStyles.viewReceiptText, { color: colors.success }]}>View Receipt</Text>
+          <Ionicons name="chevron-forward" size={14} color={colors.success} />
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+// Card-specific styles
+const cardStyles = StyleSheet.create({
+  paymentCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  paymentCardTablet: {
+    flexBasis: '48%',
+    flexGrow: 0,
+    flexShrink: 0,
+  },
+  paymentCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    padding: 14,
+  },
+  paymentCardHeaderLeft: {
+    flex: 1,
+    marginRight: 12,
+  },
+  termBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  termBadgeText: {
+    fontSize: 11,
+    fontFamily: FONTS.semiBold,
+  },
+  paymentFeeName: {
+    fontSize: 16,
+    fontFamily: FONTS.bold,
+  },
+  amountCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  amountCircleText: {
+    fontSize: 13,
+    fontFamily: FONTS.bold,
+  },
+  paymentStatsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    padding: 12,
+  },
+  paymentStatCard: {
+    width: '48%',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+  },
+  paymentStatCardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  paymentStatCardLabel: {
+    fontSize: 10,
+    fontFamily: FONTS.semiBold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  paymentStatCardIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  paymentStatCardValue: {
+    fontSize: 14,
+    fontFamily: FONTS.bold,
+    letterSpacing: -0.3,
+  },
+  paymentInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderTopWidth: 1,
+  },
+  paymentInfoLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  paymentRefText: {
+    fontSize: 11,
+    fontFamily: FONTS.medium,
+  },
+  viewReceiptButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 4,
+  },
+  viewReceiptText: {
+    fontSize: 12,
+    fontFamily: FONTS.semiBold,
+  },
+});
+
 export default function PaymentHistoryScreen() {
   const { colors, isDark } = useTheme();
   const { settings } = useTenantSettings();
@@ -372,6 +610,14 @@ export default function PaymentHistoryScreen() {
   const [methodFilter, setMethodFilter] = useState('All Methods');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [summaryExpanded, setSummaryExpanded] = useState(false);
+  const [receiptModalVisible, setReceiptModalVisible] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<PaymentHistoryItem | null>(null);
+
+  // Handle opening receipt modal
+  const handleViewReceipt = (paymentItem: PaymentHistoryItem) => {
+    setSelectedPayment(paymentItem);
+    setReceiptModalVisible(true);
+  };
 
   // Handle child selection
   const handleSelectChild = (childId: string) => {
@@ -476,6 +722,7 @@ export default function PaymentHistoryScreen() {
     (methodFilter !== 'All Methods' ? 1 : 0);
 
   return (
+    <>
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       {/* Fixed Header Bar - Back button only */}
       <View style={[styles.fixedHeader, { backgroundColor: colors.background }]}>
@@ -494,7 +741,6 @@ export default function PaymentHistoryScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContentFull}
         showsVerticalScrollIndicator={false}
-        onTouchStart={() => openDropdown && setOpenDropdown(null)}
       >
         {/* Header with Child Info */}
         {isTablet ? (
@@ -1212,107 +1458,17 @@ export default function PaymentHistoryScreen() {
 
                 {/* Payments Grid */}
                 <View style={[styles.paymentsGrid, isTablet && styles.paymentsGridTablet]}>
-                  {paymentsByYear[year].map((payment) => {
-                    const statusConfig = getStatusConfig(payment.status, colors);
-                    const methodConfig = getMethodConfig(payment.paymentMethod, colors);
-
-                    return (
-                      <View
-                        key={payment.id}
-                        style={[
-                          styles.paymentCard,
-                          { backgroundColor: colors.surface, borderColor: colors.border },
-                          isTablet && styles.paymentCardTablet
-                        ]}
-                      >
-                        {/* Card Header */}
-                        <View style={styles.paymentCardHeader}>
-                          <View style={styles.paymentCardHeaderLeft}>
-                            <View style={[styles.termBadge, { backgroundColor: colors.backgroundTertiary }]}>
-                              <Text style={[styles.termBadgeText, { color: colors.textSecondary }]}>{payment.term}</Text>
-                            </View>
-                            <Text style={[styles.paymentFeeName, { color: colors.text }]} numberOfLines={1}>
-                              {payment.feeName}
-                            </Text>
-                          </View>
-                          <View style={[styles.amountCircle, { backgroundColor: colors.successLight }]}>
-                            <Text style={[styles.amountCircleText, { color: colors.success }]}>
-                              {currencySymbol}{(payment.paidAmount / 1000).toFixed(0)}k
-                            </Text>
-                          </View>
-                        </View>
-
-                        {/* Payment Details */}
-                        <View style={[styles.paymentStatsGrid, { backgroundColor: colors.backgroundSecondary }]}>
-                          {/* Amount Card */}
-                          <View style={[styles.paymentStatCard, { backgroundColor: isDark ? colors.surface : '#f0fdf4' }]}>
-                            <View style={styles.paymentStatCardTop}>
-                              <Text style={[styles.paymentStatCardLabel, { color: isDark ? colors.success : '#16a34a' }]}>Amount</Text>
-                              <View style={[styles.paymentStatCardIcon, { backgroundColor: isDark ? colors.successLight : '#dcfce7' }]}>
-                                <Ionicons name="cash" size={10} color={isDark ? colors.success : '#16a34a'} />
-                              </View>
-                            </View>
-                            <Text style={[styles.paymentStatCardValue, { color: isDark ? colors.text : '#14532d' }]}>
-                              {formatCurrency(payment.paidAmount)}
-                            </Text>
-                          </View>
-
-                          {/* Method Card */}
-                          <View style={[styles.paymentStatCard, { backgroundColor: isDark ? colors.surface : '#eff6ff' }]}>
-                            <View style={styles.paymentStatCardTop}>
-                              <Text style={[styles.paymentStatCardLabel, { color: isDark ? colors.info : '#2563eb' }]}>Method</Text>
-                              <View style={[styles.paymentStatCardIcon, { backgroundColor: isDark ? colors.infoLight : '#dbeafe' }]}>
-                                <Ionicons name={methodConfig.icon} size={10} color={isDark ? colors.info : '#2563eb'} />
-                              </View>
-                            </View>
-                            <Text style={[styles.paymentStatCardValue, { color: isDark ? colors.text : '#1e3a8a' }]}>
-                              {methodConfig.label}
-                            </Text>
-                          </View>
-
-                          {/* Date Card */}
-                          <View style={[styles.paymentStatCard, { backgroundColor: isDark ? colors.surface : '#fefce8' }]}>
-                            <View style={styles.paymentStatCardTop}>
-                              <Text style={[styles.paymentStatCardLabel, { color: isDark ? colors.warning : '#ca8a04' }]}>Date</Text>
-                              <View style={[styles.paymentStatCardIcon, { backgroundColor: isDark ? colors.warningLight : '#fef9c3' }]}>
-                                <Ionicons name="calendar" size={10} color={isDark ? colors.warning : '#ca8a04'} />
-                              </View>
-                            </View>
-                            <Text style={[styles.paymentStatCardValue, { color: isDark ? colors.text : '#713f12' }]}>
-                              {formatShortDate(payment.paymentDate)}
-                            </Text>
-                          </View>
-
-                          {/* Status Card */}
-                          <View style={[styles.paymentStatCard, { backgroundColor: isDark ? colors.surface : statusConfig.bgColor }]}>
-                            <View style={styles.paymentStatCardTop}>
-                              <Text style={[styles.paymentStatCardLabel, { color: statusConfig.textColor }]}>Status</Text>
-                              <View style={[styles.paymentStatCardIcon, { backgroundColor: statusConfig.bgColor }]}>
-                                <Ionicons name={statusConfig.icon} size={10} color={statusConfig.textColor} />
-                              </View>
-                            </View>
-                            <Text style={[styles.paymentStatCardValue, { color: statusConfig.textColor }]}>
-                              {statusConfig.label}
-                            </Text>
-                          </View>
-                        </View>
-
-                        {/* Transaction Reference */}
-                        <View style={[styles.paymentInfoRow, { borderTopColor: colors.border }]}>
-                          <View style={styles.paymentInfoLeft}>
-                            <Ionicons name="document-text-outline" size={14} color={colors.textMuted} />
-                            <Text style={[styles.paymentRefText, { color: colors.textMuted }]}>
-                              Ref: {payment.transactionRef}
-                            </Text>
-                          </View>
-                          <Pressable style={[styles.viewReceiptButton, { backgroundColor: colors.successLight }]}>
-                            <Text style={[styles.viewReceiptText, { color: colors.success }]}>View Receipt</Text>
-                            <Ionicons name="chevron-forward" size={14} color={colors.success} />
-                          </Pressable>
-                        </View>
-                      </View>
-                    );
-                  })}
+                  {paymentsByYear[year].map((payment) => (
+                    <PaymentCard
+                      key={payment.id}
+                      payment={payment}
+                      colors={colors}
+                      isDark={isDark}
+                      isTablet={isTablet}
+                      currencySymbol={currencySymbol}
+                      onViewReceipt={handleViewReceipt}
+                    />
+                  ))}
                 </View>
               </View>
             ))
@@ -1322,7 +1478,18 @@ export default function PaymentHistoryScreen() {
         {/* Bottom Padding */}
         <View style={{ height: 40 }} />
       </ScrollView>
-    </SafeAreaView>
+
+      </SafeAreaView>
+
+      {/* View Receipt Modal - placed outside SafeAreaView */}
+      <ViewReceiptModal
+        visible={receiptModalVisible}
+        onClose={() => setReceiptModalVisible(false)}
+        payment={selectedPayment}
+        childName={childName}
+        childClass={childClass}
+      />
+    </>
   );
 }
 
@@ -1395,12 +1562,10 @@ const styles = StyleSheet.create({
   childSwitcherContainer: {
     marginLeft: 'auto',
     maxWidth: 200,
-    zIndex: 100,
   },
   mobileChildSwitcherContainer: {
     marginLeft: 'auto',
     maxWidth: 160,
-    zIndex: 100,
   },
   tabletProfileName: {
     fontSize: 22,
@@ -1508,7 +1673,6 @@ const styles = StyleSheet.create({
   },
   tabletFilterChipWrapper: {
     position: 'relative',
-    zIndex: 100,
   },
   tabletFilterChip: {
     flexDirection: 'row',
@@ -1830,118 +1994,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 16,
-  },
-  // Payment Card
-  paymentCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  paymentCardTablet: {
-    width: (SCREEN_WIDTH - 48 - 16) / 2,
-  },
-  paymentCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    padding: 14,
-  },
-  paymentCardHeaderLeft: {
-    flex: 1,
-    marginRight: 12,
-  },
-  termBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  termBadgeText: {
-    fontSize: 11,
-    fontFamily: FONTS.semiBold,
-  },
-  paymentFeeName: {
-    fontSize: 16,
-    fontFamily: FONTS.bold,
-  },
-  amountCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  amountCircleText: {
-    fontSize: 13,
-    fontFamily: FONTS.bold,
-  },
-  // Payment Stats Grid
-  paymentStatsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    padding: 12,
-  },
-  paymentStatCard: {
-    width: '48%',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-  },
-  paymentStatCardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  paymentStatCardLabel: {
-    fontSize: 10,
-    fontFamily: FONTS.semiBold,
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-  },
-  paymentStatCardIcon: {
-    width: 20,
-    height: 20,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  paymentStatCardValue: {
-    fontSize: 14,
-    fontFamily: FONTS.bold,
-    letterSpacing: -0.3,
-  },
-  // Payment Info Row
-  paymentInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderTopWidth: 1,
-  },
-  paymentInfoLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  paymentRefText: {
-    fontSize: 11,
-    fontFamily: FONTS.medium,
-  },
-  viewReceiptButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    gap: 4,
-  },
-  viewReceiptText: {
-    fontSize: 12,
-    fontFamily: FONTS.semiBold,
   },
   // Empty State
   emptyState: {

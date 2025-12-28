@@ -39,6 +39,13 @@ export interface PaymentSettings {
   supportPhone?: string;
 }
 
+export interface BrandingSettings {
+  primaryColor: string;
+  primaryColorDark: string;
+  accentColor: string;
+  logoUrl?: string;
+}
+
 export interface TenantSettings {
   country: string;
   currency: string;
@@ -48,6 +55,7 @@ export interface TenantSettings {
   schoolLogo?: string;
   schoolType: 'primary' | 'secondary' | 'tertiary' | 'other';
   payment: PaymentSettings;
+  branding: BrandingSettings;
 }
 
 interface TenantSettingsContextValue {
@@ -64,6 +72,11 @@ const defaultSettings: TenantSettings = {
   locale: 'en-NG',
   schoolName: 'Educo Academy',
   schoolType: 'secondary',
+  branding: {
+    primaryColor: '#059669',
+    primaryColorDark: '#047857',
+    accentColor: '#10b981',
+  },
   payment: {
     defaultMethod: 'card',
     supportEmail: 'payments@educo.com',

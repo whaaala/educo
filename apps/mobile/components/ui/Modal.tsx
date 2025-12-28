@@ -68,7 +68,7 @@ export function Modal({
   return (
     <RNModal
       visible={visible}
-      animationType={isTablet ? 'fade' : 'slide'}
+      animationType="slide"
       transparent
       onRequestClose={onClose}
       statusBarTranslucent
@@ -84,14 +84,13 @@ export function Modal({
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={isTablet ? styles.keyboardViewTablet : styles.keyboardView}
-          pointerEvents="box-none"
         >
-          <View style={isTablet ? styles.modalContainerTablet : styles.modalContainer} pointerEvents="box-none">
+          <View style={isTablet ? styles.modalContainerTablet : styles.modalContainer}>
             <View style={[
               isTablet ? styles.modalContentTablet : styles.modalContent,
               { backgroundColor: colors.modalBackground }
             ]}>
-              {/* Handle Bar - only show on mobile */}
+              {/* Handle Bar - only on mobile */}
               {!isTablet && (
                 <View style={styles.handleBarContainer}>
                   <View style={[styles.handleBar, { backgroundColor: colors.border }]} />
@@ -198,7 +197,7 @@ const styles = StyleSheet.create({
   },
   // Tablet styles - centered modal
   keyboardViewTablet: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
   },
