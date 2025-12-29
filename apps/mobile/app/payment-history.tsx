@@ -966,7 +966,7 @@ export default function PaymentHistoryScreen() {
                   <Ionicons name={openDropdown === 'method' ? 'chevron-up' : 'chevron-down'} size={14} color={methodFilter !== 'All Methods' ? colors.success : colors.textMuted} />
                 </Pressable>
                 {openDropdown === 'method' && (
-                  <View style={[styles.tabletDropdownMenu, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <View style={[styles.tabletDropdownMenuRight, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                     {METHOD_OPTIONS.map((option, idx) => (
                       <Pressable
                         key={option}
@@ -1654,16 +1654,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingVertical: 12,
-    gap: 16,
+    gap: 12,
   },
   tabletSearchInput: {
     flex: 1,
-    maxWidth: 320,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    height: 48,
-    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 44,
+    borderRadius: 12,
     borderWidth: 1,
   },
   tabletFilterChips: {
@@ -1673,15 +1672,17 @@ const styles = StyleSheet.create({
   },
   tabletFilterChipWrapper: {
     position: 'relative',
+    zIndex: 10,
   },
   tabletFilterChip: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: 10,
-    borderWidth: 1,
+    borderWidth: 1.5,
     gap: 6,
+    height: 44,
   },
   tabletFilterChipText: {
     fontSize: 13,
@@ -1689,30 +1690,44 @@ const styles = StyleSheet.create({
   },
   tabletDropdownMenu: {
     position: 'absolute',
-    top: '100%',
+    top: 48,
     left: 0,
-    minWidth: 160,
-    marginTop: 6,
-    borderRadius: 14,
+    minWidth: 140,
+    borderRadius: 12,
     borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.12,
     shadowRadius: 16,
     elevation: 12,
-    zIndex: 1000,
     overflow: 'hidden',
+    zIndex: 100,
+  },
+  tabletDropdownMenuRight: {
+    position: 'absolute',
+    top: 48,
+    right: 0,
+    minWidth: 140,
+    borderRadius: 12,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 12,
+    overflow: 'hidden',
+    zIndex: 100,
   },
   tabletDropdownOption: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
   },
   tabletDropdownOptionFirst: {
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
   tabletDropdownOptionText: {
     fontSize: 14,
@@ -1728,6 +1743,45 @@ const styles = StyleSheet.create({
   },
   resetChipText: {
     fontSize: 13,
+    fontFamily: FONTS.semiBold,
+  },
+  // Tablet Inline Summary (in search/filter bar)
+  tabletInlineSummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    gap: 6,
+    marginLeft: 'auto',
+    flexShrink: 0,
+  },
+  tabletInlineSummaryIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabletInlineSummaryText: {
+    gap: 1,
+  },
+  tabletInlineSummaryLabel: {
+    fontSize: 10,
+    fontFamily: FONTS.medium,
+  },
+  tabletInlineSummaryValue: {
+    fontSize: 12,
+    fontFamily: FONTS.semiBold,
+  },
+  tabletInlineSummaryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  tabletInlineSummaryBadgeText: {
+    fontSize: 10,
     fontFamily: FONTS.semiBold,
   },
   // Mobile Search & Filter
@@ -2032,3 +2086,4 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
 });
+

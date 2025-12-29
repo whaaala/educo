@@ -1260,32 +1260,45 @@ export default function ParentHomeScreen() {
 
           {/* Two-column widget grid */}
           <View style={styles.twoCol}>
-            {/* Fees Due Widget - Modern Compact Design */}
+            {/* Fees Due Widget - Modern Tablet Design */}
             <Card style={[styles.sectionCard, styles.twoColItem, { marginTop: 14 }]}>
               <RowHeader title="Fees Due" icon="card-outline" right={<Link href="/(tabs)/fees"><Text style={[styles.linkText, { color: colors.primary }]}>View all</Text></Link>} />
-              <View style={[tabletStyles.feeCardCompact, { backgroundColor: isDark ? colors.backgroundSecondary : '#fafbfc', borderColor: isDark ? colors.border : '#e8eaed' }]}>
-                {/* Left: Amount & Details */}
-                <View style={tabletStyles.feeCardLeft}>
-                  <View style={tabletStyles.feeCardTopRow}>
-                    <Text style={[tabletStyles.feeAmountCompact, { color: colors.text }]}>{feesDueFormatted}</Text>
-                    <View style={[tabletStyles.feeStatusCompact, { backgroundColor: isDark ? colors.warningLight : '#fef3c7' }]}>
-                      <View style={[tabletStyles.feeStatusDotCompact, { backgroundColor: '#f59e0b' }]} />
-                      <Text style={[tabletStyles.feeStatusTextCompact, { color: '#b45309' }]}>Due soon</Text>
+              <View style={[tabletStyles.feeWidgetCard, { backgroundColor: isDark ? colors.backgroundSecondary : '#f8f9fa' }]}>
+                {/* Left accent bar */}
+                <View style={[tabletStyles.feeAccentBar, { backgroundColor: colors.warning }]} />
+
+                {/* Content */}
+                <View style={tabletStyles.feeWidgetContent}>
+                  {/* Top: Amount */}
+                  <View style={tabletStyles.feeWidgetAmountRow}>
+                    <Text style={[tabletStyles.feeWidgetAmount, { color: colors.text }]}>{feesDueFormatted}</Text>
+                    <View style={[tabletStyles.feeWidgetStatusBadge, { backgroundColor: isDark ? colors.warningLight : '#fef3c7' }]}>
+                      <View style={[tabletStyles.feeWidgetStatusDot, { backgroundColor: '#f59e0b' }]} />
+                      <Text style={[tabletStyles.feeWidgetStatusText, { color: '#b45309' }]}>Due soon</Text>
                     </View>
                   </View>
-                  <View style={tabletStyles.feeCardMeta}>
-                    <Text style={[tabletStyles.feeTypeCompact, { color: colors.textMuted }]}>{selectedChild.name.split(' ')[0]} • School Fees</Text>
-                    <View style={tabletStyles.feeDueDateCompact}>
-                      <Ionicons name="calendar-outline" size={11} color={colors.textMuted} />
-                      <Text style={[tabletStyles.feeDueDateTextCompact, { color: colors.textMuted }]}>15 Feb</Text>
+
+                  {/* Bottom: Meta info */}
+                  <View style={tabletStyles.feeWidgetMeta}>
+                    <View style={tabletStyles.feeWidgetMetaItem}>
+                      <Ionicons name="person-outline" size={12} color={colors.textMuted} />
+                      <Text style={[tabletStyles.feeWidgetMetaText, { color: colors.textMuted }]}>{selectedChild.name.split(' ')[0]}</Text>
+                    </View>
+                    <View style={[tabletStyles.feeWidgetMetaDot, { backgroundColor: colors.textMuted }]} />
+                    <Text style={[tabletStyles.feeWidgetMetaText, { color: colors.textMuted }]}>School Fees</Text>
+                    <View style={[tabletStyles.feeWidgetMetaDot, { backgroundColor: colors.textMuted }]} />
+                    <View style={tabletStyles.feeWidgetMetaItem}>
+                      <Ionicons name="calendar-outline" size={12} color={colors.textMuted} />
+                      <Text style={[tabletStyles.feeWidgetMetaText, { color: colors.textMuted }]}>15 Feb</Text>
                     </View>
                   </View>
                 </View>
-                {/* Right: Pay Button */}
+
+                {/* Pay Button */}
                 <Link href="/(tabs)/fees" asChild>
-                  <Pressable style={[tabletStyles.feePayBtnCompact, { backgroundColor: colors.primary }]}>
+                  <Pressable style={[tabletStyles.feeWidgetPayBtn, { backgroundColor: colors.primary }]}>
                     <Ionicons name="wallet-outline" size={16} color="#ffffff" />
-                    <Text style={tabletStyles.feePayBtnText}>Pay</Text>
+                    <Text style={tabletStyles.feeWidgetPayBtnText}>Pay Now</Text>
                   </Pressable>
                 </Link>
               </View>
@@ -3050,6 +3063,86 @@ const tabletStyles = StyleSheet.create({
     gap: 6,
   },
   feePayBtnText: {
+    fontSize: 13,
+    fontFamily: FONTS.semiBold,
+    color: COLORS.white,
+  },
+
+  // Modern Fee Widget Styles (Tablet)
+  feeWidgetCard: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  feeAccentBar: {
+    width: 4,
+    alignSelf: 'stretch',
+  },
+  feeWidgetContent: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+  },
+  feeWidgetAmountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 6,
+  },
+  feeWidgetAmount: {
+    fontSize: 22,
+    fontFamily: FONTS.bold,
+    letterSpacing: -0.5,
+  },
+  feeWidgetStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    gap: 4,
+  },
+  feeWidgetStatusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  feeWidgetStatusText: {
+    fontSize: 10,
+    fontFamily: FONTS.semiBold,
+  },
+  feeWidgetMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  feeWidgetMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  feeWidgetMetaText: {
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+  },
+  feeWidgetMetaDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 2,
+    opacity: 0.5,
+  },
+  feeWidgetPayBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginRight: 12,
+    borderRadius: 10,
+    gap: 6,
+  },
+  feeWidgetPayBtnText: {
     fontSize: 13,
     fontFamily: FONTS.semiBold,
     color: COLORS.white,

@@ -15,7 +15,9 @@
       "Bash(C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb -s emulator-5556 shell am start -a android.intent.action.VIEW -d \"exp://localhost:8081\")",
       "Bash(C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb -s emulator-5554 shell \"wget -q -O - http://localhost:8081/status 2>&1 || echo ''Failed''\")",
       "Bash(C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb -s emulator-5554 reverse --list)",
-      "Bash(npx expo:*)"
+      "Bash(npx expo:*)",
+      "Bash(taskkill:*)",
+      "Bash(tasklist:*)"
     ],
     "deny": [],
     "ask": []
