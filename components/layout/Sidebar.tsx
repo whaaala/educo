@@ -37,11 +37,7 @@ import {
 } from "lucide-react";
 import TenantSwitcher from "@/components/admin/TenantSwitcher";
 import { useUser } from "@/contexts/UserContext";
-
-// Custom Naira Icon Component
-const NairaIcon = ({ className }: { className?: string }) => (
-  <span className={className} style={{ fontSize: '1rem', fontWeight: 'bold' }}>₦</span>
-);
+import CurrencyIcon from "@/components/shared/CurrencyIcon";
 import { cn } from "@/lib/utils";
 
 interface MenuItem {
@@ -101,7 +97,7 @@ const menuItems: MenuItem[] = [
         children: [
           { id: "parent-dashboard", label: "Parent Dashboard", icon: <LayoutDashboard className="w-4 h-4" />, href: "/parents" },
           { id: "my-children", label: "My Children", icon: <GraduationCap className="w-4 h-4" />, href: "/parents/children" },
-          { id: "parent-fees", label: "Fees & Payments", icon: <Receipt className="w-4 h-4" />, href: "/parents/fees" },
+          { id: "parent-fees", label: "Fees & Payments", icon: <CurrencyIcon className="w-4 h-4 text-inherit" />, href: "/parents/fees" },
           { id: "parent-messages", label: "Messages", icon: <MessageSquare className="w-4 h-4" />, href: "/parents/messages" },
           { id: "parent-meetings", label: "Video Calls & Meetings", icon: <Video className="w-4 h-4" />, href: "/parents/meetings" },
         ]
@@ -148,7 +144,7 @@ const menuItems: MenuItem[] = [
       {
         id: "fees",
         label: "Finance",
-        icon: <NairaIcon className="w-4 h-4" />,
+        icon: <CurrencyIcon className="w-4 h-4 text-inherit" />,
         children: [
           { id: "fee-structure", label: "Fee Structure", icon: <FileText className="w-4 h-4" />, href: "/finance/fee-structure" },
           { id: "installment-plans", label: "Installment Plans", icon: <Boxes className="w-4 h-4" />, href: "/finance/installments" },
@@ -208,7 +204,7 @@ const parentMenuItems: MenuItem[] = [
   {
     id: "parent-fees",
     label: "Fees & Payments",
-    icon: <Receipt className="w-5 h-5" />,
+    icon: <CurrencyIcon className="w-5 h-5 text-inherit" />,
     href: "/parents/fees",
   },
   {

@@ -17,7 +17,8 @@
       "Bash(C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb -s emulator-5554 reverse --list)",
       "Bash(npx expo:*)",
       "Bash(taskkill:*)",
-      "Bash(tasklist:*)"
+      "Bash(tasklist:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []
