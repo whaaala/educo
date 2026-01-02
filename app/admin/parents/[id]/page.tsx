@@ -67,12 +67,15 @@ import {
   UserPlus,
   ChevronRight,
   Award,
+  Video,
+  Mic,
 } from "lucide-react";
 import Modal from "@/components/shared/Modal";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormInput from "@/components/shared/FormInput";
 import FormButton from "@/components/shared/FormButton";
 import FormTextarea from "@/components/shared/FormTextarea";
+import ScheduleMeetingModal, { ScheduledMeetingData, MeetingChildReference } from "@/components/shared/ScheduleMeetingModal";
 
 // Tab type definition for parent detail page
 type ParentTabType = "details" | "meetings" | "leave" | "fees" | "communications" | "events";
@@ -99,6 +102,7 @@ export default function AdminParentDetailPage() {
   const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
   const [isExtendDueDateModalOpen, setIsExtendDueDateModalOpen] = useState(false);
+  const [isScheduleMeetingModalOpen, setIsScheduleMeetingModalOpen] = useState(false);
 
   // Currency formatter
   const currencyCode = settings.currency || "NGN";
@@ -161,6 +165,45 @@ export default function AdminParentDetailPage() {
   }
 
   const fullName = `${parent.firstName} ${parent.lastName}`;
+
+  // Handle scheduling a new meeting
+  const handleScheduleMeeting = (meetingData: ScheduledMeetingData) => {
+    // Create new meeting with proper structure
+    const newMeeting: ParentTeacherMeeting = {
+      id: `meet-${Date.now()}`,
+      parentId: parent.id,
+      childId: meetingData.childId || parent.children[0]?.id || "",
+      childName: meetingData.childName || parent.children[0]?.fullName || "",
+      childClass: meetingData.childClass || parent.children[0]?.classLevel || "",
+      teacherName: meetingData.teacherName || "",
+      teacherRole: meetingData.teacherRole || "",
+      meetingType: meetingData.meetingType,
+      customMeetingType: meetingData.customMeetingType,
+      meetingFormat: meetingData.meetingFormat,
+      virtualType: meetingData.virtualType,
+      meetingLink: meetingData.meetingLink,
+      subject: meetingData.subject,
+      date: meetingData.date,
+      time: meetingData.time,
+      duration: meetingData.duration,
+      status: "upcoming",
+      location: meetingData.location,
+      notes: meetingData.notes,
+    };
+
+    // Add to meetings list (at the beginning so it appears first)
+    setMeetings((prev) => [newMeeting, ...prev]);
+
+    // Show success feedback (you could use a toast notification here)
+    console.log("Meeting scheduled successfully:", newMeeting);
+  };
+
+  // Prepare children data for the meeting modal
+  const meetingChildrenData: MeetingChildReference[] = parent.children.map((child) => ({
+    id: child.id,
+    name: child.fullName,
+    classLevel: child.classLevel,
+  }));
 
   // Define tabs for parent detail page
   const tabs = [
@@ -272,7 +315,7 @@ export default function AdminParentDetailPage() {
               )}
 
               {activeTab === "meetings" && (
-                <MeetingsSection meetings={meetings} />
+                <MeetingsSection meetings={meetings} onScheduleMeeting={() => setIsScheduleMeetingModalOpen(true)} />
               )}
 
               {activeTab === "leave" && (
@@ -356,6 +399,23 @@ export default function AdminParentDetailPage() {
         parentName={fullName}
         feeRecords={feeRecords}
         money={money}
+      />
+
+      {/* Schedule Meeting Modal */}
+      <ScheduleMeetingModal
+        isOpen={isScheduleMeetingModalOpen}
+        onClose={() => setIsScheduleMeetingModalOpen(false)}
+        onSchedule={handleScheduleMeeting}
+        context="parent"
+        primaryParticipant={{
+          id: parent.id,
+          name: fullName,
+          type: "parent",
+          role: parent.relationship,
+          email: parent.email,
+          photo: parent.profilePhoto,
+        }}
+        children={meetingChildrenData}
       />
     </MainLayout>
   );
@@ -1134,7 +1194,7 @@ function FeeActionsCard({
 }
 
 // ===== MEETINGS SECTION =====
-function MeetingsSection({ meetings }: { meetings: ParentTeacherMeeting[] }) {
+function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeacherMeeting[]; onScheduleMeeting: () => void }) {
   const [showAll, setShowAll] = useState(false);
   const upcomingMeetings = meetings.filter((m) => m.status === "upcoming");
   const pastMeetings = meetings.filter((m) => m.status !== "upcoming").slice(0, 5);
@@ -1151,6 +1211,21 @@ function MeetingsSection({ meetings }: { meetings: ParentTeacherMeeting[] }) {
     return <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${c.bg} ${c.text}`}>{c.label}</span>;
   };
 
+  const getMeetingTypeBadge = (meeting: ParentTeacherMeeting) => {
+    const typeConfig = {
+      scheduled: { bg: "bg-indigo-100 dark:bg-indigo-900/30", text: "text-indigo-700 dark:text-indigo-300", label: "Scheduled" },
+      requested: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-300", label: "Requested" },
+      follow_up: { bg: "bg-cyan-100 dark:bg-cyan-900/30", text: "text-cyan-700 dark:text-cyan-300", label: "Follow-up" },
+      emergency: { bg: "bg-rose-100 dark:bg-rose-900/30", text: "text-rose-700 dark:text-rose-300", label: "Emergency" },
+      custom: { bg: "bg-violet-100 dark:bg-violet-900/30", text: "text-violet-700 dark:text-violet-300", label: "" },
+    };
+    const c = typeConfig[meeting.meetingType] || typeConfig.scheduled;
+    const label = meeting.meetingType === "custom" && meeting.customMeetingType
+      ? meeting.customMeetingType
+      : c.label;
+    return <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${c.bg} ${c.text}`}>{label}</span>;
+  };
+
   return (
     <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4">
@@ -1161,7 +1236,10 @@ function MeetingsSection({ meetings }: { meetings: ParentTeacherMeeting[] }) {
           </h3>
           <div className="flex items-center gap-2">
             <span className="text-xs text-green-600 dark:text-green-400 font-semibold">{upcomingMeetings.length} Upcoming</span>
-            <button className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
+            <button
+              onClick={onScheduleMeeting}
+              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+            >
               + Schedule Meeting
             </button>
           </div>
@@ -1182,8 +1260,9 @@ function MeetingsSection({ meetings }: { meetings: ParentTeacherMeeting[] }) {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className="text-xs font-bold text-gray-900 dark:text-white truncate">{meeting.subject}</span>
+                      {getMeetingTypeBadge(meeting)}
                       {getStatusBadge(meeting.status)}
                     </div>
                     <div className="flex items-center gap-3 text-[10px] text-gray-500 dark:text-gray-400">
@@ -1196,8 +1275,19 @@ function MeetingsSection({ meetings }: { meetings: ParentTeacherMeeting[] }) {
                     <div className="text-[10px] text-gray-600 dark:text-gray-400 mt-1">
                       <span className="font-semibold">{meeting.teacherName}</span> ({meeting.teacherRole}) • {meeting.childName}
                     </div>
-                    <div className="text-[10px] text-gray-500 dark:text-gray-500 mt-0.5">
-                      📍 {meeting.location}
+                    <div className="flex items-center gap-2 text-[10px] text-gray-500 dark:text-gray-500 mt-0.5">
+                      {meeting.meetingFormat === "virtual" ? (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium">
+                          {meeting.virtualType === "video" ? <Video className="w-2.5 h-2.5" /> : <Mic className="w-2.5 h-2.5" />}
+                          {meeting.virtualType === "video" ? "Video" : "Audio"}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium">
+                          <Building2 className="w-2.5 h-2.5" />
+                          In-Person
+                        </span>
+                      )}
+                      <span>📍 {meeting.location}</span>
                     </div>
                     {meeting.outcome && (
                       <div className="text-[10px] text-green-600 dark:text-green-400 mt-1 italic">{meeting.outcome}</div>

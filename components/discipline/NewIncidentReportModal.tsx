@@ -1,7 +1,7 @@
 "use client";
 
 import { X, User, AlertTriangle, Calendar, MapPin, FileText, Clock, Building2, Users } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { IncidentType, IncidentSeverity, INCIDENT_TYPES } from "@/types/discipline";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormInput from "@/components/shared/FormInput";
@@ -73,6 +73,54 @@ export default function NewIncidentReportModal({
     department: "",
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Form field refs for scroll-to-error functionality
+  const formFieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Field order for scroll-to-first-error (in display order)
+  const fieldOrder = [
+    "staffId",
+    "incidentType",
+    "severity",
+    "incidentDate",
+    "incidentLocation",
+    "incidentDescription",
+  ];
+
+  // Scroll to first error field
+  const scrollToFirstError = (errorFields: string[]) => {
+    const firstErrorField = fieldOrder.find((field) => errorFields.includes(field));
+    if (firstErrorField && formFieldRefs.current[firstErrorField]) {
+      formFieldRefs.current[firstErrorField]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  };
+
+  // Validate form
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.staffId) newErrors.staffId = "Please select a staff member";
+    if (!formData.incidentType) newErrors.incidentType = "Incident type is required";
+    if (!formData.severity) newErrors.severity = "Severity is required";
+    if (!formData.incidentDate) newErrors.incidentDate = "Incident date is required";
+    if (!formData.incidentLocation) newErrors.incidentLocation = "Location is required";
+    if (!formData.incidentDescription) newErrors.incidentDescription = "Description is required";
+
+    setErrors(newErrors);
+
+    // Scroll to first error if validation fails
+    const errorFields = Object.keys(newErrors);
+    if (errorFields.length > 0) {
+      scrollToFirstError(errorFields);
+    }
+
+    return errorFields.length === 0;
+  };
+
   if (!isOpen) return null;
 
   const getStaffDepartments = () => {
@@ -102,14 +150,7 @@ export default function NewIncidentReportModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !formData.staffId ||
-      !formData.incidentType ||
-      !formData.incidentDate ||
-      !formData.incidentLocation ||
-      !formData.severity ||
-      !formData.incidentDescription
-    ) {
+    if (!validateForm()) {
       return;
     }
 
@@ -227,18 +268,21 @@ export default function NewIncidentReportModal({
                 </div>
               </div>
 
-              <FormDropdown
-                label="Select Staff Member"
-                icon={<User className="w-4 h-4" />}
-                value={formData.staffId}
-                onChange={handleStaffChange}
-                options={getFilteredStaff().map((staff) => ({
-                  label: `${staff.name} - ${staff.position}`,
-                  value: staff.id,
-                }))}
-                placeholder={getFilteredStaff().length === 0 ? "No staff match the selected filters" : "Select a staff member"}
-                required
-              />
+              <div ref={(el) => { formFieldRefs.current.staffId = el; }}>
+                <FormDropdown
+                  label="Select Staff Member"
+                  icon={<User className="w-4 h-4" />}
+                  value={formData.staffId}
+                  onChange={handleStaffChange}
+                  options={getFilteredStaff().map((staff) => ({
+                    label: `${staff.name} - ${staff.position}`,
+                    value: staff.id,
+                  }))}
+                  placeholder={getFilteredStaff().length === 0 ? "No staff match the selected filters" : "Select a staff member"}
+                  required
+                  error={errors.staffId}
+                />
+              </div>
               {formData.staffId && selectedStaff && (
                 <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <div className="grid grid-cols-2 gap-2 text-xs">
@@ -277,40 +321,49 @@ export default function NewIncidentReportModal({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormDropdown
-                  label="Incident Type"
-                  icon={<AlertTriangle className="w-4 h-4" />}
-                  value={formData.incidentType}
-                  onChange={(value) => setFormData({ ...formData, incidentType: value as IncidentType })}
-                  options={INCIDENT_TYPES}
-                  placeholder="Select incident type"
-                  required
-                />
-                <FormDropdown
-                  label="Severity"
-                  icon={<AlertTriangle className="w-4 h-4" />}
-                  value={formData.severity}
-                  onChange={(value) => setFormData({ ...formData, severity: value as IncidentSeverity })}
-                  options={[
-                    { label: "Minor", value: "minor" },
-                    { label: "Moderate", value: "moderate" },
-                    { label: "Serious", value: "serious" },
-                    { label: "Critical", value: "critical" },
-                  ]}
-                  placeholder="Select severity level"
-                  required
-                />
+                <div ref={(el) => { formFieldRefs.current.incidentType = el; }}>
+                  <FormDropdown
+                    label="Incident Type"
+                    icon={<AlertTriangle className="w-4 h-4" />}
+                    value={formData.incidentType}
+                    onChange={(value) => setFormData({ ...formData, incidentType: value as IncidentType })}
+                    options={INCIDENT_TYPES}
+                    placeholder="Select incident type"
+                    required
+                    error={errors.incidentType}
+                  />
+                </div>
+                <div ref={(el) => { formFieldRefs.current.severity = el; }}>
+                  <FormDropdown
+                    label="Severity"
+                    icon={<AlertTriangle className="w-4 h-4" />}
+                    value={formData.severity}
+                    onChange={(value) => setFormData({ ...formData, severity: value as IncidentSeverity })}
+                    options={[
+                      { label: "Minor", value: "minor" },
+                      { label: "Moderate", value: "moderate" },
+                      { label: "Serious", value: "serious" },
+                      { label: "Critical", value: "critical" },
+                    ]}
+                    placeholder="Select severity level"
+                    required
+                    error={errors.severity}
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                <FormInput
-                  label="Incident Date"
-                  icon={<Calendar className="w-4 h-4" />}
-                  type="date"
-                  value={formData.incidentDate}
-                  onChange={(value) => setFormData({ ...formData, incidentDate: value })}
-                  required
-                />
+                <div ref={(el) => { formFieldRefs.current.incidentDate = el; }}>
+                  <FormInput
+                    label="Incident Date"
+                    icon={<Calendar className="w-4 h-4" />}
+                    type="date"
+                    value={formData.incidentDate}
+                    onChange={(value) => setFormData({ ...formData, incidentDate: value })}
+                    required
+                    error={errors.incidentDate}
+                  />
+                </div>
                 <FormInput
                   label="Incident Time (Optional)"
                   icon={<Clock className="w-4 h-4" />}
@@ -322,7 +375,7 @@ export default function NewIncidentReportModal({
                 />
               </div>
 
-              <div className="mt-4">
+              <div className="mt-4" ref={(el) => { formFieldRefs.current.incidentLocation = el; }}>
                 <FormInput
                   label="Location"
                   icon={<MapPin className="w-4 h-4" />}
@@ -331,6 +384,7 @@ export default function NewIncidentReportModal({
                   onChange={(value) => setFormData({ ...formData, incidentLocation: value })}
                   placeholder="e.g., Classroom 2B, Main Gate, Staff Room"
                   required
+                  error={errors.incidentLocation}
                 />
               </div>
             </div>
@@ -346,15 +400,18 @@ export default function NewIncidentReportModal({
                 </h4>
               </div>
 
-              <FormTextarea
-                label="Detailed Description"
-                icon={<FileText className="w-4 h-4" />}
-                value={formData.incidentDescription}
-                onChange={(value) => setFormData({ ...formData, incidentDescription: value })}
-                placeholder="Provide a detailed description of the incident, including what happened, when, and any relevant context..."
-                rows={4}
-                required
-              />
+              <div ref={(el) => { formFieldRefs.current.incidentDescription = el; }}>
+                <FormTextarea
+                  label="Detailed Description"
+                  icon={<FileText className="w-4 h-4" />}
+                  value={formData.incidentDescription}
+                  onChange={(value) => setFormData({ ...formData, incidentDescription: value })}
+                  placeholder="Provide a detailed description of the incident, including what happened, when, and any relevant context..."
+                  rows={4}
+                  required
+                  error={errors.incidentDescription}
+                />
+              </div>
 
               <div className="mt-4">
                 <FormInput

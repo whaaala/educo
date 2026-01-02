@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Modal from "@/components/shared/Modal";
 import Button from "@/components/shared/Button";
 import FormInput from "@/components/shared/FormInput";
@@ -135,6 +135,31 @@ export default function AddBookModal({
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
+  // Form field refs for scroll-to-error functionality
+  const formFieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Field order for scroll-to-first-error (in display order)
+  const fieldOrder: (keyof FormData)[] = [
+    "isbn",
+    "title",
+    "author",
+    "publisher",
+    "publishYear",
+    "totalCopies",
+    "location",
+  ];
+
+  // Scroll to first error field
+  const scrollToFirstError = (errorFields: string[]) => {
+    const firstErrorField = fieldOrder.find((field) => errorFields.includes(field));
+    if (firstErrorField && formFieldRefs.current[firstErrorField]) {
+      formFieldRefs.current[firstErrorField]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  };
+
   // Populate form when editing
   useEffect(() => {
     if (editingBook) {
@@ -187,7 +212,14 @@ export default function AddBookModal({
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    // Scroll to first error if validation fails
+    const errorFields = Object.keys(newErrors);
+    if (errorFields.length > 0) {
+      scrollToFirstError(errorFields);
+    }
+
+    return errorFields.length === 0;
   };
 
   const handleSubmit = () => {
@@ -262,52 +294,62 @@ export default function AddBookModal({
           icon={<BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormInput
-              label="ISBN"
-              icon={<Hash className="w-full h-full" />}
-              value={formData.isbn}
-              onChange={(val) => handleChange("isbn", val)}
-              placeholder="e.g., 978-0-13-468599-1"
-              required
-              error={errors.isbn}
-            />
-            <FormInput
-              label="Title"
-              icon={<BookOpen className="w-full h-full" />}
-              value={formData.title}
-              onChange={(val) => handleChange("title", val)}
-              placeholder="Book title"
-              required
-              error={errors.title}
-            />
-            <FormInput
-              label="Author"
-              icon={<User className="w-full h-full" />}
-              value={formData.author}
-              onChange={(val) => handleChange("author", val)}
-              placeholder="Author name"
-              required
-              error={errors.author}
-            />
-            <FormInput
-              label="Publisher"
-              icon={<Building2 className="w-full h-full" />}
-              value={formData.publisher}
-              onChange={(val) => handleChange("publisher", val)}
-              placeholder="Publisher name"
-              required
-              error={errors.publisher}
-            />
-            <FormInput
-              label="Publish Year"
-              icon={<Calendar className="w-full h-full" />}
-              value={formData.publishYear}
-              onChange={(val) => handleChange("publishYear", val)}
-              placeholder="e.g., 2024"
-              type="number"
-              required
-              error={errors.publishYear}
-            />
+            <div ref={(el) => { formFieldRefs.current.isbn = el; }}>
+              <FormInput
+                label="ISBN"
+                icon={<Hash className="w-full h-full" />}
+                value={formData.isbn}
+                onChange={(val) => handleChange("isbn", val)}
+                placeholder="e.g., 978-0-13-468599-1"
+                required
+                error={errors.isbn}
+              />
+            </div>
+            <div ref={(el) => { formFieldRefs.current.title = el; }}>
+              <FormInput
+                label="Title"
+                icon={<BookOpen className="w-full h-full" />}
+                value={formData.title}
+                onChange={(val) => handleChange("title", val)}
+                placeholder="Book title"
+                required
+                error={errors.title}
+              />
+            </div>
+            <div ref={(el) => { formFieldRefs.current.author = el; }}>
+              <FormInput
+                label="Author"
+                icon={<User className="w-full h-full" />}
+                value={formData.author}
+                onChange={(val) => handleChange("author", val)}
+                placeholder="Author name"
+                required
+                error={errors.author}
+              />
+            </div>
+            <div ref={(el) => { formFieldRefs.current.publisher = el; }}>
+              <FormInput
+                label="Publisher"
+                icon={<Building2 className="w-full h-full" />}
+                value={formData.publisher}
+                onChange={(val) => handleChange("publisher", val)}
+                placeholder="Publisher name"
+                required
+                error={errors.publisher}
+              />
+            </div>
+            <div ref={(el) => { formFieldRefs.current.publishYear = el; }}>
+              <FormInput
+                label="Publish Year"
+                icon={<Calendar className="w-full h-full" />}
+                value={formData.publishYear}
+                onChange={(val) => handleChange("publishYear", val)}
+                placeholder="e.g., 2024"
+                type="number"
+                required
+                error={errors.publishYear}
+              />
+            </div>
             <FormInput
               label="Edition"
               icon={<Layers className="w-full h-full" />}
@@ -360,25 +402,29 @@ export default function AddBookModal({
           icon={<BookCopy className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <FormInput
-              label="Total Copies"
-              icon={<BookCopy className="w-full h-full" />}
-              value={formData.totalCopies}
-              onChange={(val) => handleChange("totalCopies", val)}
-              placeholder="Number of copies"
-              type="number"
-              required
-              error={errors.totalCopies}
-            />
-            <FormInput
-              label="Location"
-              icon={<MapPin className="w-full h-full" />}
-              value={formData.location}
-              onChange={(val) => handleChange("location", val)}
-              placeholder="e.g., Section A, Shelf 3"
-              required
-              error={errors.location}
-            />
+            <div ref={(el) => { formFieldRefs.current.totalCopies = el; }}>
+              <FormInput
+                label="Total Copies"
+                icon={<BookCopy className="w-full h-full" />}
+                value={formData.totalCopies}
+                onChange={(val) => handleChange("totalCopies", val)}
+                placeholder="Number of copies"
+                type="number"
+                required
+                error={errors.totalCopies}
+              />
+            </div>
+            <div ref={(el) => { formFieldRefs.current.location = el; }}>
+              <FormInput
+                label="Location"
+                icon={<MapPin className="w-full h-full" />}
+                value={formData.location}
+                onChange={(val) => handleChange("location", val)}
+                placeholder="e.g., Section A, Shelf 3"
+                required
+                error={errors.location}
+              />
+            </div>
             <FormDropdown
               label="Condition"
               icon={<Tag className="w-full h-full" />}

@@ -1286,7 +1286,11 @@ export interface ParentTeacherMeeting {
   childClass: string;
   teacherName: string;
   teacherRole: string;
-  meetingType: "scheduled" | "requested" | "follow_up" | "emergency";
+  meetingType: "scheduled" | "requested" | "follow_up" | "emergency" | "custom";
+  customMeetingType?: string;
+  meetingFormat?: "in_person" | "virtual";
+  virtualType?: "video" | "audio";
+  meetingLink?: string;
   subject: string;
   date: string;
   time: string;
