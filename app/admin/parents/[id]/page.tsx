@@ -686,7 +686,7 @@ function ChildrenSection({
         href={`/students/${child.id}?from=parent&parentId=${parent.id}&parentName=${encodeURIComponent(`${parent.firstName} ${parent.lastName}`)}`}
         className="group block"
       >
-        <div className="relative rounded-xl border border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 bg-white dark:bg-gray-800/40 hover:shadow-sm transition-all duration-200 p-4">
+        <div className="relative rounded-xl border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-800/40 midnight:bg-gray-900/40 purple:bg-gray-900/40 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 p-4">
           {/* Avatar with status indicator */}
           <div className="flex justify-center mb-3">
             <div className="relative">
@@ -741,7 +741,7 @@ function ChildrenSection({
       href={`/students/${child.id}?from=parent&parentId=${parent.id}&parentName=${encodeURIComponent(`${parent.firstName} ${parent.lastName}`)}`}
       className="group block"
     >
-      <div className="relative rounded-xl border border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 bg-white dark:bg-gray-800/40 hover:shadow-sm transition-all duration-200 p-4 h-full">
+      <div className="relative rounded-xl border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-800/40 midnight:bg-gray-900/40 purple:bg-gray-900/40 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 p-4 h-full">
         {/* Avatar with status indicator */}
         <div className="flex justify-center mb-3">
           <div className="relative">
@@ -793,7 +793,7 @@ function ChildrenSection({
   const CompactChildCard = ({ child }: { child: AdminParent["children"][0] }) => (
     <Link
       href={`/students/${child.id}?from=parent&parentId=${parent.id}&parentName=${encodeURIComponent(`${parent.firstName} ${parent.lastName}`)}`}
-      className="group flex items-center gap-3 p-3 rounded-lg border border-gray-100 dark:border-gray-800/60 hover:border-gray-200 dark:hover:border-gray-700 bg-white/60 dark:bg-gray-800/20 hover:bg-gray-50/80 dark:hover:bg-gray-800/40 transition-all duration-200"
+      className="group flex items-center gap-3 p-3 rounded-lg border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/60 dark:bg-gray-800/20 midnight:bg-gray-900/20 purple:bg-gray-900/20 hover:bg-gray-50/80 dark:hover:bg-gray-800/40 midnight:hover:bg-gray-800/30 purple:hover:bg-gray-800/30 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
     >
       {/* Profile Image */}
       <div className="relative flex-shrink-0">
@@ -829,7 +829,7 @@ function ChildrenSection({
   );
 
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4 sm:p-5">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
@@ -1008,7 +1008,7 @@ function FeesSection({
   ];
 
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 p-4 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <DataTable<AdminFeeRecord>
         data={feeRecords}
         columns={columns}
@@ -1028,7 +1028,7 @@ function FeesSection({
 // Address Card
 function AddressCard({ parent }: { parent: AdminParent }) {
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4">
         <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 flex items-center gap-2">
           <MapPin className="w-4 h-4 text-purple-600 dark:text-purple-400" />
@@ -1084,7 +1084,7 @@ function AdminActionsCard({
   onExtendDueDate: () => void;
 }) {
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4">
         <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 flex items-center gap-2">
           <KeyRound className="w-4 h-4 text-amber-600 dark:text-amber-400" />
@@ -1173,7 +1173,7 @@ function MeetingsSection({ meetings }: { meetings: ParentTeacherMeeting[] }) {
   };
 
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60">
+    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -1195,10 +1195,10 @@ function MeetingsSection({ meetings }: { meetings: ParentTeacherMeeting[] }) {
             {displayMeetings.map((meeting) => (
               <div
                 key={meeting.id}
-                className={`p-3 rounded-xl border transition-all ${
+                className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 ${
                   meeting.status === "upcoming"
-                    ? "bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 dark:border-blue-800/30"
-                    : "bg-gray-50/50 dark:bg-gray-800/20 border-gray-200/40 dark:border-gray-700/40"
+                    ? "bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 border-blue-200/50 dark:border-blue-800/30 midnight:border-cyan-800/30 purple:border-pink-800/30 hover:border-blue-300 dark:hover:border-blue-700 midnight:hover:border-cyan-600 purple:hover:border-pink-600 hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20"
+                    : "bg-gray-50/50 dark:bg-gray-800/20 midnight:bg-gray-800/20 purple:bg-gray-800/20 border-gray-200/40 dark:border-gray-700/40 midnight:border-gray-700/40 purple:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -1310,7 +1310,7 @@ function LeaveRequestsSection({
   };
 
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60">
+    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -1331,10 +1331,10 @@ function LeaveRequestsSection({
             {displayRequests.map((request) => (
               <div
                 key={request.id}
-                className={`p-3 rounded-xl border transition-all ${
+                className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 ${
                   request.status === "pending"
-                    ? "bg-yellow-50/50 dark:bg-yellow-900/10 border-yellow-200/50 dark:border-yellow-800/30"
-                    : "bg-gray-50/50 dark:bg-gray-800/20 border-gray-200/40 dark:border-gray-700/40"
+                    ? "bg-yellow-50/50 dark:bg-yellow-900/10 midnight:bg-yellow-900/10 purple:bg-yellow-900/10 border-yellow-200/50 dark:border-yellow-800/30 midnight:border-yellow-800/30 purple:border-yellow-800/30 hover:border-yellow-300 dark:hover:border-yellow-700 midnight:hover:border-yellow-600 purple:hover:border-yellow-600 hover:shadow-yellow-500/10 dark:hover:shadow-yellow-500/20 midnight:hover:shadow-yellow-500/20 purple:hover:shadow-yellow-500/20"
+                    : "bg-gray-50/50 dark:bg-gray-800/20 midnight:bg-gray-800/20 purple:bg-gray-800/20 border-gray-200/40 dark:border-gray-700/40 midnight:border-gray-700/40 purple:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -1433,7 +1433,7 @@ function PaymentHistorySection({
   };
 
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60">
+    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -1452,12 +1452,12 @@ function PaymentHistorySection({
             {displayPayments.map((payment) => (
               <div
                 key={payment.id}
-                className="p-3 rounded-xl bg-gray-50/50 dark:bg-gray-800/20 border border-gray-200/40 dark:border-gray-700/40"
+                className="p-3 rounded-xl bg-gray-50/50 dark:bg-gray-800/20 midnight:bg-gray-800/20 purple:bg-gray-800/20 border border-gray-200/40 dark:border-gray-700/40 midnight:border-gray-700/40 purple:border-gray-700/40 transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-bold text-gray-900 dark:text-white">{payment.feeType}</span>
+                      <span className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{payment.feeType}</span>
                       {getStatusBadge(payment.status)}
                     </div>
                     <div className="flex items-center gap-3 text-[10px] text-gray-500 dark:text-gray-400">
@@ -1536,7 +1536,7 @@ function CommunicationsSection({ communications }: { communications: Communicati
   };
 
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60">
+    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -1557,10 +1557,10 @@ function CommunicationsSection({ communications }: { communications: Communicati
             {displayComms.map((comm) => (
               <div
                 key={comm.id}
-                className={`p-3 rounded-xl border transition-all ${
+                className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 ${
                   comm.status === "open" || comm.status === "in_progress"
-                    ? "bg-yellow-50/50 dark:bg-yellow-900/10 border-yellow-200/50 dark:border-yellow-800/30"
-                    : "bg-gray-50/50 dark:bg-gray-800/20 border-gray-200/40 dark:border-gray-700/40"
+                    ? "bg-yellow-50/50 dark:bg-yellow-900/10 midnight:bg-yellow-900/10 purple:bg-yellow-900/10 border-yellow-200/50 dark:border-yellow-800/30 midnight:border-yellow-800/30 purple:border-yellow-800/30 hover:border-yellow-300 dark:hover:border-yellow-700 midnight:hover:border-yellow-600 purple:hover:border-yellow-600 hover:shadow-yellow-500/10 dark:hover:shadow-yellow-500/20 midnight:hover:shadow-yellow-500/20 purple:hover:shadow-yellow-500/20"
+                    : "bg-gray-50/50 dark:bg-gray-800/20 midnight:bg-gray-800/20 purple:bg-gray-800/20 border-gray-200/40 dark:border-gray-700/40 midnight:border-gray-700/40 purple:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
                 }`}
               >
                 <div className="flex items-start gap-2">
@@ -1609,7 +1609,7 @@ function EventAttendanceSection({ eventAttendance }: { eventAttendance: ParentEv
   const displayEvents = showAll ? eventAttendance : eventAttendance.slice(0, 5);
 
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60">
+    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -1634,7 +1634,7 @@ function EventAttendanceSection({ eventAttendance }: { eventAttendance: ParentEv
             {displayEvents.map((event) => (
               <div
                 key={event.id}
-                className="flex items-center justify-between p-2 rounded-lg bg-gray-50/50 dark:bg-gray-800/20 border border-gray-200/40 dark:border-gray-700/40"
+                className="flex items-center justify-between p-2 rounded-lg bg-gray-50/50 dark:bg-gray-800/20 midnight:bg-gray-800/20 purple:bg-gray-800/20 border border-gray-200/40 dark:border-gray-700/40 midnight:border-gray-700/40 purple:border-gray-700/40 transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{event.eventName}</p>
@@ -1696,7 +1696,7 @@ function LibraryPaymentsSection({
   };
 
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60">
+    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -1717,7 +1717,7 @@ function LibraryPaymentsSection({
             {displayPayments.map((payment) => (
               <div
                 key={payment.id}
-                className="flex items-center justify-between p-2 rounded-lg bg-gray-50/50 dark:bg-gray-800/20 border border-gray-200/40 dark:border-gray-700/40"
+                className="flex items-center justify-between p-2 rounded-lg bg-gray-50/50 dark:bg-gray-800/20 midnight:bg-gray-800/20 purple:bg-gray-800/20 border border-gray-200/40 dark:border-gray-700/40 midnight:border-gray-700/40 purple:border-gray-700/40 transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
@@ -2042,10 +2042,10 @@ function LinkChildModal({
                   key={student.id}
                   type="button"
                   onClick={() => setSelectedStudent(student)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 ${
                     selectedStudent?.id === student.id
-                      ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 border-blue-300 dark:border-blue-600 midnight:border-cyan-500 purple:border-pink-500 ring-1 ring-blue-300 dark:ring-blue-600 midnight:ring-cyan-500 purple:ring-pink-500"
-                      : "bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-200 dark:hover:border-blue-700 midnight:hover:border-cyan-500/50 purple:hover:border-pink-500/50"
+                      ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 border-blue-300 dark:border-blue-600 midnight:border-cyan-500 purple:border-pink-500 ring-1 ring-blue-300 dark:ring-blue-600 midnight:ring-cyan-500 purple:ring-pink-500 shadow-md shadow-blue-500/10 dark:shadow-blue-500/20"
+                      : "bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-300 dark:hover:border-blue-600 midnight:hover:border-cyan-500/50 purple:hover:border-pink-500/50 hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20"
                   }`}
                 >
                   <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
