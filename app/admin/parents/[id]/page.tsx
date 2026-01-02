@@ -72,6 +72,7 @@ import Modal from "@/components/shared/Modal";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormInput from "@/components/shared/FormInput";
 import FormButton from "@/components/shared/FormButton";
+import FormTextarea from "@/components/shared/FormTextarea";
 
 // Tab type definition for parent detail page
 type ParentTabType = "details" | "meetings" | "leave" | "fees" | "communications" | "events";
@@ -262,15 +263,7 @@ export default function AdminParentDetailPage() {
                   />
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <AddressCard parent={parent} />
-                    <AdminActionsCard
-                      parent={parent}
-                      parentId={parentId}
-                      onEdit={() => router.push(`/admin/parents/edit/${parentId}`)}
-                      onResetPassword={() => setIsResetPasswordModalOpen(true)}
-                      onStatement={() => setActiveTab("fees")}
-                      onToggleStatus={() => console.log("Toggle status")}
-                      onMessage={() => console.log("Send message")}
-                      onDelete={() => setIsDeleteModalOpen(true)}
+                    <FeeActionsCard
                       onGiveDiscount={() => setIsDiscountModalOpen(true)}
                       onExtendDueDate={() => setIsExtendDueDateModalOpen(true)}
                     />
@@ -1059,94 +1052,80 @@ function AddressCard({ parent }: { parent: AdminParent }) {
   );
 }
 
-// Admin Actions Card with functional handlers
-function AdminActionsCard({
-  parent,
-  parentId,
-  onEdit,
-  onResetPassword,
-  onStatement,
-  onToggleStatus,
-  onMessage,
-  onDelete,
+// Fee Management Actions Card - Modern sleek design with smooth animations
+function FeeActionsCard({
   onGiveDiscount,
   onExtendDueDate,
 }: {
-  parent: AdminParent;
-  parentId: string;
-  onEdit: () => void;
-  onResetPassword: () => void;
-  onStatement: () => void;
-  onToggleStatus: () => void;
-  onMessage: () => void;
-  onDelete: () => void;
   onGiveDiscount: () => void;
   onExtendDueDate: () => void;
 }) {
   return (
-    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
+    <div className="group bg-gradient-to-br from-white to-gray-50/50 dark:from-[#1a1d23] dark:to-[#1a1d23]/80 midnight:from-[#0f1729] midnight:to-[#0f1729]/80 purple:from-[#2a1a3e] purple:to-[#2a1a3e]/80 rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4">
-        <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 flex items-center gap-2">
-          <KeyRound className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-          Quick Actions
-        </h3>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={onEdit}
-            className="flex items-center gap-2 p-2.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-100 dark:border-blue-800/30 transition-all cursor-pointer group"
-          >
-            <Edit className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
-            <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-400">Edit</span>
-          </button>
-          <button
-            onClick={onResetPassword}
-            className="flex items-center gap-2 p-2.5 rounded-lg bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 border border-purple-100 dark:border-purple-800/30 transition-all cursor-pointer group"
-          >
-            <KeyRound className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform" />
-            <span className="text-[11px] font-semibold text-purple-700 dark:text-purple-400">Reset Password</span>
-          </button>
-          <button
-            onClick={onStatement}
-            className="flex items-center gap-2 p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800/30 transition-all cursor-pointer group"
-          >
-            <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
-            <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">Statement</span>
-          </button>
-          <button
-            onClick={onToggleStatus}
-            className="flex items-center gap-2 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 border border-amber-100 dark:border-amber-800/30 transition-all cursor-pointer group"
-          >
-            <AlertCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
-            <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-400">{parent.status === "Active" ? "Deactivate" : "Activate"}</span>
-          </button>
-          <button
-            onClick={onMessage}
-            className="flex items-center gap-2 p-2.5 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 border border-cyan-100 dark:border-cyan-800/30 transition-all cursor-pointer group"
-          >
-            <Send className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 group-hover:scale-110 transition-transform" />
-            <span className="text-[11px] font-semibold text-cyan-700 dark:text-cyan-400">Message</span>
-          </button>
-          <button
-            onClick={onDelete}
-            className="flex items-center gap-2 p-2.5 rounded-lg bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-100 dark:border-red-800/30 transition-all cursor-pointer group"
-          >
-            <Trash2 className="w-3.5 h-3.5 text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform" />
-            <span className="text-[11px] font-semibold text-red-700 dark:text-red-400">Delete</span>
-          </button>
-          {/* Fee Management Actions */}
+        {/* Header with gradient icon */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 dark:from-emerald-400 dark:to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/25 dark:shadow-emerald-500/20">
+            <CreditCard className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              Fee Management
+            </h3>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+              Manage discounts & due dates
+            </p>
+          </div>
+        </div>
+
+        {/* Action buttons with modern design */}
+        <div className="space-y-2">
+          {/* Give Discount Button */}
           <button
             onClick={onGiveDiscount}
-            className="flex items-center gap-2 p-2.5 rounded-lg bg-pink-50 dark:bg-pink-900/20 hover:bg-pink-100 dark:hover:bg-pink-900/30 border border-pink-100 dark:border-pink-800/30 transition-all cursor-pointer group"
+            className="w-full group/btn relative overflow-hidden rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/20 midnight:from-rose-900/20 midnight:to-pink-900/20 purple:from-rose-900/20 purple:to-pink-900/20 border border-rose-200/50 dark:border-rose-700/30 midnight:border-rose-700/30 purple:border-rose-700/30 p-3 transition-all duration-300 cursor-pointer hover:shadow-lg hover:shadow-rose-500/15 dark:hover:shadow-rose-500/20 hover:-translate-y-0.5 hover:border-rose-300 dark:hover:border-rose-600 active:scale-[0.98]"
           >
-            <Percent className="w-3.5 h-3.5 text-pink-600 dark:text-pink-400 group-hover:scale-110 transition-transform" />
-            <span className="text-[11px] font-semibold text-pink-700 dark:text-pink-400">Give Discount</span>
+            {/* Animated gradient background on hover */}
+            <div className="absolute inset-0 bg-gradient-to-r from-rose-100 to-pink-100 dark:from-rose-800/30 dark:to-pink-800/30 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
+
+            <div className="relative flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-md shadow-rose-500/25 group-hover/btn:shadow-lg group-hover/btn:shadow-rose-500/30 group-hover/btn:scale-110 transition-all duration-300">
+                <Percent className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1 text-left">
+                <span className="block text-sm font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 group-hover/btn:text-rose-700 dark:group-hover/btn:text-rose-300 transition-colors">
+                  Give Discount
+                </span>
+                <span className="block text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+                  Apply percentage or fixed discount
+                </span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover/btn:text-rose-500 dark:group-hover/btn:text-rose-400 group-hover/btn:translate-x-1 transition-all duration-300" />
+            </div>
           </button>
+
+          {/* Extend Due Date Button */}
           <button
             onClick={onExtendDueDate}
-            className="flex items-center gap-2 p-2.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/30 transition-all cursor-pointer group"
+            className="w-full group/btn relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/20 dark:to-violet-900/20 midnight:from-indigo-900/20 midnight:to-violet-900/20 purple:from-indigo-900/20 purple:to-violet-900/20 border border-indigo-200/50 dark:border-indigo-700/30 midnight:border-indigo-700/30 purple:border-indigo-700/30 p-3 transition-all duration-300 cursor-pointer hover:shadow-lg hover:shadow-indigo-500/15 dark:hover:shadow-indigo-500/20 hover:-translate-y-0.5 hover:border-indigo-300 dark:hover:border-indigo-600 active:scale-[0.98]"
           >
-            <CalendarPlus className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
-            <span className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-400">Extend Due Date</span>
+            {/* Animated gradient background on hover */}
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-100 to-violet-100 dark:from-indigo-800/30 dark:to-violet-800/30 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
+
+            <div className="relative flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md shadow-indigo-500/25 group-hover/btn:shadow-lg group-hover/btn:shadow-indigo-500/30 group-hover/btn:scale-110 transition-all duration-300">
+                <CalendarPlus className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1 text-left">
+                <span className="block text-sm font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 group-hover/btn:text-indigo-700 dark:group-hover/btn:text-indigo-300 transition-colors">
+                  Extend Due Date
+                </span>
+                <span className="block text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+                  Postpone payment deadline
+                </span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover/btn:text-indigo-500 dark:group-hover/btn:text-indigo-400 group-hover/btn:translate-x-1 transition-all duration-300" />
+            </div>
           </button>
         </div>
       </div>
@@ -2225,6 +2204,12 @@ function GiveDiscountModal({
 
   const unpaidFees = feeRecords.filter((f) => f.status !== "paid");
 
+  // Create fee options for dropdown
+  const feeOptions = unpaidFees.map((fee) => ({
+    value: fee.id,
+    label: `${fee.childName} - ${fee.feeType} (${money(fee.balance)} outstanding)`,
+  }));
+
   const handleApply = async () => {
     if (!selectedFee || !discountValue) return;
     setIsApplying(true);
@@ -2249,107 +2234,145 @@ function GiveDiscountModal({
       maxWidth="lg"
       footer={
         <div className="flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer"
-          >
+          <FormButton variant="secondary" onClick={onClose}>
             Cancel
-          </button>
-          <button
+          </FormButton>
+          <FormButton
             onClick={handleApply}
-            disabled={!selectedFee || !discountValue || isApplying}
-            className="px-4 py-2 text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 disabled:bg-pink-400 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer flex items-center gap-2"
-          >
-            {isApplying ? (
-              <>
+            icon={
+              isApplying ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Applying...
-              </>
-            ) : (
-              <>
+              ) : (
                 <Percent className="w-4 h-4" />
-                Apply Discount
-              </>
-            )}
-          </button>
+              )
+            }
+            className={!selectedFee || !discountValue || isApplying ? "opacity-50 cursor-not-allowed" : ""}
+          >
+            {isApplying ? "Applying..." : "Apply Discount"}
+          </FormButton>
         </div>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-5">
         {/* Fee Selection */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Fee</label>
-          <select
-            value={selectedFee}
-            onChange={(e) => setSelectedFee(e.target.value)}
-            className="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 text-gray-900 dark:text-white"
-          >
-            <option value="">Select a fee to discount</option>
-            {unpaidFees.map((fee) => (
-              <option key={fee.id} value={fee.id}>
-                {fee.childName} - {fee.feeType} ({money(fee.balance)} outstanding)
-              </option>
-            ))}
-          </select>
-        </div>
+        <FormDropdown
+          label="Select Fee"
+          icon={<CreditCard className="w-full h-full" />}
+          iconBgColor="bg-rose-100 dark:bg-rose-900/30 midnight:bg-rose-900/30 purple:bg-rose-900/30"
+          iconColor="text-rose-600 dark:text-rose-400 midnight:text-rose-400 purple:text-rose-400"
+          value={selectedFee}
+          onChange={setSelectedFee}
+          options={feeOptions}
+          placeholder="Select a fee to discount"
+          required
+        />
 
-        {/* Discount Type */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Discount Type</label>
-          <div className="flex gap-2">
+        {/* Discount Type - Custom Toggle */}
+        <div className="group">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
+            <div className="w-4 h-4 rounded bg-amber-100 dark:bg-amber-900/30 midnight:bg-amber-900/30 purple:bg-amber-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+              <div className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">
+                <Percent className="w-full h-full" />
+              </div>
+            </div>
+            <span>Discount Type</span>
+            <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>
+          </label>
+          <div className="flex gap-3">
             <button
+              type="button"
               onClick={() => setDiscountType("percentage")}
-              className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all cursor-pointer ${
+              className={`flex-1 group/btn relative overflow-hidden px-4 py-3 text-sm font-semibold rounded-xl border-2 transition-all duration-300 cursor-pointer ${
                 discountType === "percentage"
-                  ? "bg-pink-50 dark:bg-pink-900/20 border-pink-300 dark:border-pink-700 text-pink-700 dark:text-pink-300"
-                  : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                  ? "bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-900/30 dark:to-pink-900/30 midnight:from-rose-900/30 midnight:to-pink-900/30 purple:from-rose-900/30 purple:to-pink-900/30 border-rose-400 dark:border-rose-500 midnight:border-rose-500 purple:border-rose-500 text-rose-700 dark:text-rose-300 midnight:text-rose-300 purple:text-rose-300 shadow-md shadow-rose-500/10"
+                  : "bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 hover:border-rose-300 dark:hover:border-rose-600 hover:bg-rose-50/50 dark:hover:bg-rose-900/10"
               }`}
             >
-              Percentage (%)
+              <div className="flex items-center justify-center gap-2">
+                <Percent className={`w-4 h-4 ${discountType === "percentage" ? "text-rose-600 dark:text-rose-400" : "text-gray-400"}`} />
+                <span>Percentage (%)</span>
+              </div>
+              {discountType === "percentage" && (
+                <div className="absolute top-1 right-1">
+                  <CheckCircle2 className="w-4 h-4 text-rose-500" />
+                </div>
+              )}
             </button>
             <button
+              type="button"
               onClick={() => setDiscountType("fixed")}
-              className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all cursor-pointer ${
+              className={`flex-1 group/btn relative overflow-hidden px-4 py-3 text-sm font-semibold rounded-xl border-2 transition-all duration-300 cursor-pointer ${
                 discountType === "fixed"
-                  ? "bg-pink-50 dark:bg-pink-900/20 border-pink-300 dark:border-pink-700 text-pink-700 dark:text-pink-300"
-                  : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                  ? "bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-900/30 dark:to-pink-900/30 midnight:from-rose-900/30 midnight:to-pink-900/30 purple:from-rose-900/30 purple:to-pink-900/30 border-rose-400 dark:border-rose-500 midnight:border-rose-500 purple:border-rose-500 text-rose-700 dark:text-rose-300 midnight:text-rose-300 purple:text-rose-300 shadow-md shadow-rose-500/10"
+                  : "bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 hover:border-rose-300 dark:hover:border-rose-600 hover:bg-rose-50/50 dark:hover:bg-rose-900/10"
               }`}
             >
-              Fixed Amount
+              <div className="flex items-center justify-center gap-2">
+                <CreditCard className={`w-4 h-4 ${discountType === "fixed" ? "text-rose-600 dark:text-rose-400" : "text-gray-400"}`} />
+                <span>Fixed Amount</span>
+              </div>
+              {discountType === "fixed" && (
+                <div className="absolute top-1 right-1">
+                  <CheckCircle2 className="w-4 h-4 text-rose-500" />
+                </div>
+              )}
             </button>
           </div>
         </div>
 
         {/* Discount Value */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {discountType === "percentage" ? "Discount Percentage" : "Discount Amount"}
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+        <FormInput
+          label={discountType === "percentage" ? "Discount Percentage" : "Discount Amount"}
+          icon={discountType === "percentage" ? <Percent className="w-full h-full" /> : <CreditCard className="w-full h-full" />}
+          iconBgColor="bg-emerald-100 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30"
+          iconColor="text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400"
+          value={discountValue}
+          onChange={setDiscountValue}
+          placeholder={discountType === "percentage" ? "e.g., 10" : "e.g., 5000"}
+          type="number"
+          leftIcon={
+            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
               {discountType === "percentage" ? "%" : "₦"}
             </span>
-            <input
-              type="number"
-              value={discountValue}
-              onChange={(e) => setDiscountValue(e.target.value)}
-              placeholder={discountType === "percentage" ? "e.g., 10" : "e.g., 5000"}
-              className="w-full pl-8 pr-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 text-gray-900 dark:text-white"
-            />
-          </div>
-        </div>
+          }
+          leftIconBg="bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800"
+          required
+        />
 
         {/* Reason */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason (Optional)</label>
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Enter reason for discount..."
-            rows={2}
-            className="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 text-gray-900 dark:text-white resize-none"
-          />
-        </div>
+        <FormTextarea
+          label="Reason"
+          icon={<FileText className="w-full h-full" />}
+          iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-blue-900/30 purple:bg-blue-900/30"
+          iconColor="text-blue-600 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400"
+          value={reason}
+          onChange={setReason}
+          placeholder="Enter reason for discount..."
+          rows={2}
+          optional
+        />
+
+        {/* Info Box */}
+        {selectedFee && discountValue && (
+          <div className="p-4 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/20 midnight:from-rose-900/20 midnight:to-pink-900/20 purple:from-rose-900/20 purple:to-pink-900/20 border border-rose-200/50 dark:border-rose-700/30 midnight:border-rose-700/30 purple:border-rose-700/30">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-800/30 flex items-center justify-center flex-shrink-0">
+                <Percent className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-rose-800 dark:text-rose-200 midnight:text-rose-200 purple:text-rose-200">
+                  Discount Preview
+                </p>
+                <p className="text-xs text-rose-600 dark:text-rose-300 midnight:text-rose-300 purple:text-rose-300 mt-0.5">
+                  {discountType === "percentage"
+                    ? `${discountValue}% discount will be applied to the selected fee`
+                    : `₦${Number(discountValue).toLocaleString()} discount will be applied to the selected fee`
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Modal>
   );
@@ -2376,6 +2399,15 @@ function ExtendDueDateModal({
 
   const unpaidFees = feeRecords.filter((f) => f.status !== "paid");
 
+  // Create fee options for dropdown
+  const feeOptions = unpaidFees.map((fee) => ({
+    value: fee.id,
+    label: `${fee.childName} - ${fee.feeType} (${money(fee.balance)} - Due: ${fee.dueDate})`,
+  }));
+
+  // Get selected fee details
+  const selectedFeeDetails = unpaidFees.find((f) => f.id === selectedFee);
+
   const handleExtend = async () => {
     if (!selectedFee || !newDueDate) return;
     setIsExtending(true);
@@ -2400,79 +2432,97 @@ function ExtendDueDateModal({
       maxWidth="lg"
       footer={
         <div className="flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer"
-          >
+          <FormButton variant="secondary" onClick={onClose}>
             Cancel
-          </button>
-          <button
+          </FormButton>
+          <FormButton
             onClick={handleExtend}
-            disabled={!selectedFee || !newDueDate || isExtending}
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer flex items-center gap-2"
-          >
-            {isExtending ? (
-              <>
+            icon={
+              isExtending ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Extending...
-              </>
-            ) : (
-              <>
+              ) : (
                 <CalendarPlus className="w-4 h-4" />
-                Extend Due Date
-              </>
-            )}
-          </button>
+              )
+            }
+            className={!selectedFee || !newDueDate || isExtending ? "opacity-50 cursor-not-allowed" : ""}
+          >
+            {isExtending ? "Extending..." : "Extend Due Date"}
+          </FormButton>
         </div>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-5">
         {/* Fee Selection */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Fee</label>
-          <select
-            value={selectedFee}
-            onChange={(e) => setSelectedFee(e.target.value)}
-            className="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white"
-          >
-            <option value="">Select a fee to extend</option>
-            {unpaidFees.map((fee) => (
-              <option key={fee.id} value={fee.id}>
-                {fee.childName} - {fee.feeType} ({money(fee.balance)} - Due: {fee.dueDate})
-              </option>
-            ))}
-          </select>
-        </div>
+        <FormDropdown
+          label="Select Fee"
+          icon={<CreditCard className="w-full h-full" />}
+          iconBgColor="bg-indigo-100 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-indigo-900/30"
+          iconColor="text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-indigo-400"
+          value={selectedFee}
+          onChange={setSelectedFee}
+          options={feeOptions}
+          placeholder="Select a fee to extend"
+          required
+        />
+
+        {/* Current Due Date Info - Show when fee is selected */}
+        {selectedFeeDetails && (
+          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 midnight:bg-amber-900/20 purple:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/30">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                Current Due Date: <span className="font-bold">{selectedFeeDetails.dueDate}</span>
+              </span>
+              {selectedFeeDetails.status === "overdue" && (
+                <span className="px-2 py-0.5 text-[10px] font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
+                  OVERDUE
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* New Due Date */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Due Date</label>
-          <input
-            type="date"
-            value={newDueDate}
-            onChange={(e) => setNewDueDate(e.target.value)}
-            min={new Date().toISOString().split("T")[0]}
-            className="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white"
-          />
-        </div>
+        <FormInput
+          label="New Due Date"
+          icon={<CalendarPlus className="w-full h-full" />}
+          iconBgColor="bg-emerald-100 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30"
+          iconColor="text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400"
+          value={newDueDate}
+          onChange={setNewDueDate}
+          type="date"
+          placeholder="Select new due date"
+          required
+        />
 
         {/* Reason */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason (Optional)</label>
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Enter reason for extension..."
-            rows={2}
-            className="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white resize-none"
-          />
-        </div>
+        <FormTextarea
+          label="Reason"
+          icon={<FileText className="w-full h-full" />}
+          iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-blue-900/30 purple:bg-blue-900/30"
+          iconColor="text-blue-600 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400"
+          value={reason}
+          onChange={setReason}
+          placeholder="Enter reason for extension..."
+          rows={2}
+          optional
+        />
 
         {/* Info Box */}
-        <div className="p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/30">
-          <p className="text-xs text-indigo-700 dark:text-indigo-300">
-            <strong>Note:</strong> Extending the due date will update the fee status and remove any overdue penalties that may have been applied.
-          </p>
+        <div className="p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/20 dark:to-violet-900/20 midnight:from-indigo-900/20 midnight:to-violet-900/20 purple:from-indigo-900/20 purple:to-violet-900/20 border border-indigo-200/50 dark:border-indigo-700/30 midnight:border-indigo-700/30 purple:border-indigo-700/30">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-800/30 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-indigo-800 dark:text-indigo-200 midnight:text-indigo-200 purple:text-indigo-200">
+                Important Note
+              </p>
+              <p className="text-xs text-indigo-600 dark:text-indigo-300 midnight:text-indigo-300 purple:text-indigo-300 mt-0.5">
+                Extending the due date will update the fee status and remove any overdue penalties that may have been applied.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </Modal>
