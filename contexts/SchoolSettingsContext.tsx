@@ -104,23 +104,55 @@ export function SchoolSettingsProvider({ children }: { children: ReactNode }) {
   const [currentTenant, setCurrentTenant] = useState<Tenant | undefined>(undefined);
 
   // Load tenant data and sync with settings
+  // NOTE: localStorage values (user-configured) take priority over tenant defaults
   useEffect(() => {
     const tenantId = settings.tenantId || "educo-default";
     const tenant = getTenantById(tenantId);
     setCurrentTenant(tenant);
 
     // Sync tenant config to settings if tenant exists
+    // But check localStorage first for user-configured values
     if (tenant) {
+      const savedLevels = localStorage.getItem("educationLevels");
+      const savedInstitutionType = localStorage.getItem("institutionType");
+      const savedTertiaryType = localStorage.getItem("tertiaryType");
+      const savedScheduleType = localStorage.getItem("scheduleType");
+
+      // Parse localStorage values
+      let userSupportedLevels: EducationLevel[] | null = null;
+      if (savedLevels) {
+        try {
+          userSupportedLevels = JSON.parse(savedLevels) as EducationLevel[];
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
+
+      // Map tenant education levels to context education levels
+      const mapTenantLevels = (levels: string[]): EducationLevel[] => {
+        return levels.map(level => {
+          // Map "Junior Secondary" to "Secondary" for context compatibility
+          if (level === "Junior Secondary") return "Secondary";
+          return level as EducationLevel;
+        }).filter((level): level is EducationLevel =>
+          ["Primary", "Secondary", "Tertiary"].includes(level)
+        );
+      };
+
+      const tenantLevels = mapTenantLevels(tenant.config.supportedLevels as string[]);
+      const finalSupportedLevels = userSupportedLevels || tenantLevels;
+
       setSettings((prev) => ({
         ...prev,
         tenantId: tenant.id,
         schoolName: tenant.name,
-        supportedLevels: tenant.config.supportedLevels,
-        defaultEducationLevel: tenant.config.defaultEducationLevel,
-        institutionType: tenant.config.institutionType,
-        tertiaryType: tenant.config.tertiaryType,
-        scheduleType: tenant.config.scheduleType,
-        supportsMultipleLevels: tenant.config.supportsMultipleLevels,
+        // User-configured values take priority over tenant defaults
+        supportedLevels: finalSupportedLevels,
+        defaultEducationLevel: finalSupportedLevels[0] || "Secondary",
+        institutionType: (savedInstitutionType as InstitutionType) || tenant.config.institutionType as InstitutionType,
+        tertiaryType: savedTertiaryType || tenant.config.tertiaryType,
+        scheduleType: (savedScheduleType as SchoolScheduleType) || tenant.config.scheduleType as SchoolScheduleType,
+        supportsMultipleLevels: finalSupportedLevels.length > 1,
         region: tenant.config.region,
         subdomain: tenant.subdomain,
         currency: tenant.config.currency,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAttendance } from "@/contexts/AttendanceContext";
 import MainLayout from "@/components/layout/MainLayout";
 import PageLoader from "@/components/shared/PageLoader";
@@ -77,7 +77,13 @@ export default function ViewStudentPage() {
   const params = useParams();
   const studentId = params?.id as string;
   const router = useRouter();
+  const searchParams = useSearchParams();
   const isLoading = usePageLoad(600);
+
+  // Get navigation source from query params
+  const fromSource = searchParams.get("from");
+  const parentId = searchParams.get("parentId");
+  const parentName = searchParams.get("parentName");
   const { addTransferRequest } = useTransfers();
   const { addTranscriptRequest } = useTranscripts();
   const [studentData, setStudentData] = useState<ExtendedStudentData | null>(null);
@@ -291,17 +297,32 @@ export default function ViewStudentPage() {
               <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
                 Student Details
               </h1>
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 flex-wrap">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 flex-wrap">
                 <a href="/" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
                   Dashboard
                 </a>
                 <span>/</span>
-                <a href="/students" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
-                  Student
-                </a>
-                <span>/</span>
-                <span className="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium">
-                  Student Details
+                {fromSource === "parent" && parentId ? (
+                  <>
+                    <a href="/admin/parents" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
+                      Parents
+                    </a>
+                    <span>/</span>
+                    <a href={`/admin/parents/${parentId}`} className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors max-w-[120px] sm:max-w-none truncate inline-block">
+                      {parentName || "Parent Details"}
+                    </a>
+                    <span>/</span>
+                  </>
+                ) : (
+                  <>
+                    <a href="/students" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
+                      Students
+                    </a>
+                    <span>/</span>
+                  </>
+                )}
+                <span className="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium max-w-[100px] sm:max-w-none truncate inline-block">
+                  {studentData ? `${studentData.firstName} ${studentData.lastName}` : "Student Details"}
                 </span>
               </div>
             </div>

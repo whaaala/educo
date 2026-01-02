@@ -1,0 +1,605 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import MainLayout from "@/components/layout/MainLayout";
+import ParentCard from "@/components/admin/parents/ParentCard";
+import ParentsTable from "@/components/admin/parents/ParentsTable";
+import LoadMoreButton from "@/components/shared/LoadMoreButton";
+import DateRangePicker from "@/components/shared/DateRangePicker";
+import FilterButton, { FilterField, FilterValues } from "@/components/shared/FilterButton";
+import SortButton from "@/components/shared/SortButton";
+import ViewToggle from "@/components/shared/ViewToggle";
+import PageHeader from "@/components/shared/PageHeader";
+import PageActions from "@/components/shared/PageActions";
+import PageSpinner from "@/components/shared/PageSpinner";
+import PageLoader from "@/components/shared/PageLoader";
+import DeleteAllButton from "@/components/shared/DeleteAllButton";
+import BulkDeleteModal, { BulkDeleteItem } from "@/components/shared/BulkDeleteModal";
+import { usePageLoad } from "@/hooks/usePageLoad";
+import { getAllParents, type AdminParent } from "@/lib/mockParents";
+import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+
+export default function AdminParentsPage() {
+  const { settings } = useSchoolSettings();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const basePageLoading = usePageLoad(600);
+
+  // Get view mode from URL, default to grid
+  const urlView = searchParams.get("view");
+  const initialView = urlView === "list" ? "list" : "grid";
+
+  const [parents] = useState<AdminParent[]>(getAllParents());
+  const [viewMode, setViewMode] = useState<"grid" | "list">(initialView);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
+  const [displayedCount, setDisplayedCount] = useState(8);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isSwitchingView, setIsSwitchingView] = useState(false);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const previousCountRef = useRef(8);
+
+  const isPageLoading = basePageLoading && !isSwitchingView;
+
+  // Handler to update view mode and URL
+  const handleViewModeChange = (newMode: "grid" | "list") => {
+    setIsSwitchingView(true);
+    setViewMode(newMode);
+    router.push(`/admin/parents?view=${newMode}`);
+
+    setTimeout(() => {
+      setIsSwitchingView(false);
+    }, 700);
+  };
+
+  // Sync view mode with URL changes
+  useEffect(() => {
+    const urlView = searchParams.get("view");
+    const newViewMode = urlView === "list" ? "list" : "grid";
+    setViewMode(newViewMode);
+  }, [searchParams]);
+
+  // Filter fields configuration
+  const filterFields: FilterField[] = [
+    {
+      id: "relationship",
+      label: "Relationship",
+      options: ["Father", "Mother", "Guardian", "Sponsor"],
+      width: "half",
+    },
+    {
+      id: "status",
+      label: "Status",
+      options: ["Active", "Inactive"],
+      width: "half",
+    },
+    {
+      id: "feeStatus",
+      label: "Fee Status",
+      options: ["Paid Up", "Pending", "High Balance"],
+      width: "full",
+    },
+    {
+      id: "childrenCount",
+      label: "Children",
+      options: ["1 Child", "2 Children", "3+ Children"],
+      width: "full",
+    },
+  ];
+
+  // Filter state
+  const [filters, setFilters] = useState<FilterValues>({});
+  const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string } | null>(null);
+  const [isFiltering, setIsFiltering] = useState(false);
+
+  // Sort state
+  const [sortOption, setSortOption] = useState<string>("ascending");
+  const [isSorting, setIsSorting] = useState(false);
+
+  // Refresh state
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Bulk delete modal state
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [itemsToDelete, setItemsToDelete] = useState<BulkDeleteItem[]>([]);
+
+  // Sort options
+  const sortOptions = [
+    { label: "A-Z", value: "ascending" },
+    { label: "Z-A", value: "descending" },
+    { label: "Recently Added", value: "recently_added" },
+    { label: "Highest Balance", value: "highest_balance" },
+    { label: "Most Children", value: "most_children" },
+  ];
+
+  const handleDateRangeChange = (startDate: string, endDate: string) => {
+    setIsFiltering(true);
+    setTimeout(() => {
+      setDateRange({ startDate, endDate });
+      const initialCount = viewMode === "grid" ? 8 : 10;
+      setDisplayedCount(initialCount);
+      setTimeout(() => {
+        setIsFiltering(false);
+      }, 100);
+    }, 300);
+  };
+
+  const handleFilterChange = (updatedFilters: FilterValues) => {
+    setIsFiltering(true);
+    setTimeout(() => {
+      setFilters(updatedFilters);
+      const initialCount = viewMode === "grid" ? 8 : 10;
+      setDisplayedCount(initialCount);
+      setTimeout(() => {
+        setIsFiltering(false);
+      }, 100);
+    }, 300);
+  };
+
+  const handleClearFilters = () => {
+    setIsFiltering(true);
+    setTimeout(() => {
+      setFilters({});
+      setDateRange(null);
+      const initialCount = viewMode === "grid" ? 8 : 10;
+      setDisplayedCount(initialCount);
+      setTimeout(() => {
+        setIsFiltering(false);
+      }, 100);
+    }, 300);
+  };
+
+  const handleDeleteAll = () => {
+    if (selectedIds.size > 0) {
+      const selectedParents = filteredParents.filter((parent) => selectedIds.has(parent.id));
+
+      const items: BulkDeleteItem[] = selectedParents.map((parent) => ({
+        id: parent.id,
+        name: `${parent.firstName} ${parent.lastName}`,
+        subtitle: parent.email,
+        avatar: parent.profilePhoto,
+      }));
+
+      setItemsToDelete(items);
+      setIsBulkDeleteModalOpen(true);
+    }
+  };
+
+  const handleRemoveFromDeleteList = (itemId: string) => {
+    setItemsToDelete((prevItems) => prevItems.filter((item) => item.id !== itemId));
+    setSelectedIds((prevIds) => {
+      const newIds = new Set(prevIds);
+      newIds.delete(itemId);
+      return newIds;
+    });
+  };
+
+  const handleConfirmBulkDelete = (itemIds: string[]) => {
+    console.log("Deleting parents:", itemIds);
+    setSelectedIds(new Set());
+    setIsBulkDeleteModalOpen(false);
+    setItemsToDelete([]);
+  };
+
+  const handleCloseBulkDeleteModal = () => {
+    setIsBulkDeleteModalOpen(false);
+  };
+
+  const handleRestoreItem = (item: BulkDeleteItem) => {
+    setItemsToDelete((prevItems) => [...prevItems, item]);
+    setSelectedIds((prevIds) => {
+      const newIds = new Set(prevIds);
+      newIds.add(item.id);
+      return newIds;
+    });
+  };
+
+  const handleRestoreAll = (items: BulkDeleteItem[]) => {
+    setItemsToDelete((prevItems) => [...prevItems, ...items]);
+    setSelectedIds((prevIds) => {
+      const newIds = new Set(prevIds);
+      items.forEach((item) => newIds.add(item.id));
+      return newIds;
+    });
+  };
+
+  // Check if there are active filters
+  const hasActiveFilters =
+    Object.values(filters).some((values) => values && values.length > 0) || dateRange !== null;
+
+  const handleSortChange = (sortValue: string) => {
+    setIsSorting(true);
+    setTimeout(() => {
+      setSortOption(sortValue);
+      setTimeout(() => {
+        setIsSorting(false);
+      }, 100);
+    }, 300);
+  };
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setSearchQuery("");
+    setDateRange(null);
+    setFilters({});
+    setSortOption("ascending");
+    setSelectedIds(new Set());
+    setResetKey((prev) => prev + 1);
+    setTimeout(() => {
+      const initialCount = viewMode === "grid" ? 8 : 10;
+      setDisplayedCount(initialCount);
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 100);
+    }, 300);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleExportPDF = () => {
+    console.log("Export to PDF");
+  };
+
+  const handleExportExcel = () => {
+    console.log("Export to Excel");
+  };
+
+  const handleAddParent = () => {
+    router.push("/admin/parents/add");
+  };
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Reset displayedCount when view mode changes
+  useEffect(() => {
+    if (isMounted) {
+      const initialCount = viewMode === "grid" ? 8 : 10;
+      setDisplayedCount(initialCount);
+      previousCountRef.current = initialCount;
+    }
+  }, [viewMode, isMounted]);
+
+  useEffect(() => {
+    if (displayedCount > previousCountRef.current && gridRef.current) {
+      const cards = gridRef.current.children;
+      const firstNewCardIndex = previousCountRef.current;
+
+      if (cards[firstNewCardIndex]) {
+        setTimeout(() => {
+          (cards[firstNewCardIndex] as HTMLElement).scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }, 100);
+      }
+
+      previousCountRef.current = displayedCount;
+    }
+  }, [displayedCount]);
+
+  const handleLoadMore = () => {
+    setIsLoadingMore(true);
+    setTimeout(() => {
+      setDisplayedCount((prev) => prev + 8);
+      setIsLoadingMore(false);
+    }, 500);
+  };
+
+  // Apply sorting
+  const sortedParents = [...parents].sort((a, b) => {
+    switch (sortOption) {
+      case "ascending":
+        return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+      case "descending":
+        return `${b.firstName} ${b.lastName}`.localeCompare(`${a.firstName} ${a.lastName}`);
+      case "recently_added":
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      case "highest_balance":
+        return b.totalOutstandingFees - a.totalOutstandingFees;
+      case "most_children":
+        return b.children.length - a.children.length;
+      default:
+        return 0;
+    }
+  });
+
+  // Apply filters
+  const filteredParents = sortedParents.filter((parent) => {
+    const hasFilters = Object.values(filters).some((values) => values && values.length > 0);
+    if (!hasFilters) return true;
+
+    const matchesRelationship =
+      !filters.relationship ||
+      filters.relationship.length === 0 ||
+      filters.relationship.includes(parent.relationship);
+
+    const matchesStatus =
+      !filters.status || filters.status.length === 0 || filters.status.includes(parent.status);
+
+    const matchesFeeStatus =
+      !filters.feeStatus ||
+      filters.feeStatus.length === 0 ||
+      filters.feeStatus.some((status) => {
+        if (status === "Paid Up") return parent.totalOutstandingFees === 0;
+        if (status === "High Balance") return parent.totalOutstandingFees > 100000;
+        if (status === "Pending") return parent.totalOutstandingFees > 0 && parent.totalOutstandingFees <= 100000;
+        return false;
+      });
+
+    const matchesChildrenCount =
+      !filters.childrenCount ||
+      filters.childrenCount.length === 0 ||
+      filters.childrenCount.some((count) => {
+        if (count === "1 Child") return parent.children.length === 1;
+        if (count === "2 Children") return parent.children.length === 2;
+        if (count === "3+ Children") return parent.children.length >= 3;
+        return false;
+      });
+
+    return matchesRelationship && matchesStatus && matchesFeeStatus && matchesChildrenCount;
+  });
+
+  const displayedParents = filteredParents.slice(0, displayedCount);
+  const hasMore = displayedCount < filteredParents.length;
+
+  const isLoading = isFiltering || isSorting || isRefreshing || isSwitchingView;
+
+  if (!isMounted) {
+    return null;
+  }
+
+  return (
+    <MainLayout>
+      <PageLoader isLoading={isPageLoading} loadingText="Loading Parents" />
+
+      <div className={`transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-0 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
+          <PageHeader
+            title="Parents"
+            breadcrumbs={[
+              { label: "Dashboard", href: "/" },
+              { label: "Admin" },
+              { label: viewMode === "grid" ? "Parents Grid" : "Parents Table", isActive: true },
+            ]}
+          />
+
+          <PageActions
+            addButtonLabel="Add Parent"
+            exportDescription="Download parent data"
+            onAdd={handleAddParent}
+            onRefresh={handleRefresh}
+            onPrint={handlePrint}
+            onExportPDF={handleExportPDF}
+            onExportExcel={handleExportExcel}
+          />
+        </div>
+
+        {/* Filters Bar */}
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out mb-6">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
+            <div className="flex items-center gap-2 sm:gap-3 lg:flex-1">
+              <DateRangePicker onChange={handleDateRangeChange} resetKey={resetKey} />
+              <FilterButton fields={filterFields} onFilterChange={handleFilterChange} resetKey={resetKey} />
+
+              {viewMode === "list" && selectedIds.size > 0 && (
+                <DeleteAllButton selectedCount={selectedIds.size} onDeleteAll={handleDeleteAll} />
+              )}
+
+              {viewMode === "grid" && (
+                <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+                  <span className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                    1 to {Math.min(displayedCount, filteredParents.length)} of {filteredParents.length}
+                  </span>
+                </div>
+              )}
+
+              {viewMode === "grid" && selectedIds.size > 0 && (
+                <div className="hidden sm:flex items-center gap-2">
+                  <DeleteAllButton selectedCount={selectedIds.size} onDeleteAll={handleDeleteAll} />
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 lg:flex-1">
+              {viewMode === "grid" && selectedIds.size > 0 && (
+                <div className="flex sm:hidden items-center gap-2">
+                  <DeleteAllButton selectedCount={selectedIds.size} onDeleteAll={handleDeleteAll} />
+                </div>
+              )}
+
+              {viewMode === "grid" && (
+                <div className="flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm">
+                  <input
+                    type="checkbox"
+                    ref={(el) => {
+                      if (el) {
+                        const isSomeSelected = selectedIds.size > 0 && selectedIds.size < displayedParents.length;
+                        el.indeterminate = isSomeSelected;
+                      }
+                    }}
+                    checked={selectedIds.size === displayedParents.length && displayedParents.length > 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedIds(new Set(displayedParents.map((p) => p.id)));
+                      } else {
+                        setSelectedIds(new Set());
+                      }
+                    }}
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                  />
+                  <span className="hidden sm:inline text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Select All
+                  </span>
+                </div>
+              )}
+
+              <ViewToggle viewMode={viewMode} onViewModeChange={handleViewModeChange} />
+              <SortButton
+                options={sortOptions}
+                defaultOption="ascending"
+                onSortChange={handleSortChange}
+                resetKey={resetKey}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div
+          className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out"
+          style={{ overflow: "visible" }}
+        >
+          <div className="relative min-h-[400px]" style={{ overflow: "visible" }}>
+            {viewMode === "grid" ? (
+              <div
+                key={`grid-view-${isFiltering ? "filtering" : "filtered"}-${sortOption}`}
+                className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms]"
+                style={{ overflow: "visible" }}
+              >
+                {isLoading ? (
+                  <PageSpinner
+                    message={
+                      isSwitchingView
+                        ? "Switching view..."
+                        : isRefreshing
+                        ? "Refreshing..."
+                        : isSorting
+                        ? "Sorting..."
+                        : "Filtering..."
+                    }
+                    size="md"
+                  />
+                ) : displayedParents.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <div className="relative mb-4">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 animate-pulse" />
+                      </div>
+                      <div className="relative z-10 flex items-center justify-center w-16 h-16">
+                        <svg
+                          className="w-8 h-8 text-gray-400 dark:text-gray-500"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-1">No data available</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {hasActiveFilters
+                        ? "No results match the current filters. Try adjusting your filters."
+                        : "No parents found"}
+                    </p>
+                    {hasActiveFilters && (
+                      <button
+                        onClick={handleClearFilters}
+                        className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer transition-colors duration-200"
+                      >
+                        Clear filters
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <div
+                      ref={gridRef}
+                      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2 pr-2 md:pr-0"
+                      style={{ overflow: "visible" }}
+                    >
+                      {displayedParents.map((parent, index) => (
+                        <div
+                          key={parent.id}
+                          style={{
+                            transition: "opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                            transitionDelay: `${index / 40}s`,
+                          }}
+                        >
+                          <ParentCard
+                            parent={parent}
+                            colorIndex={index}
+                            isSelected={selectedIds.has(parent.id)}
+                            onSelectionChange={(id, selected) => {
+                              const newSelectedIds = new Set(selectedIds);
+                              if (selected) {
+                                newSelectedIds.add(id);
+                              } else {
+                                newSelectedIds.delete(id);
+                              }
+                              setSelectedIds(newSelectedIds);
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    {hasMore && (
+                      <LoadMoreButton
+                        onClick={handleLoadMore}
+                        isLoading={isLoadingMore}
+                        text="Load More"
+                        loadingText="Loading..."
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+            ) : (
+              <div
+                key={`list-view-${isFiltering ? "filtering" : "filtered"}-${sortOption}`}
+                className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms]"
+              >
+                <ParentsTable
+                  parents={filteredParents}
+                  isLoading={isLoading}
+                  loadingMessage={
+                    isSwitchingView
+                      ? "Switching view..."
+                      : isRefreshing
+                      ? "Refreshing..."
+                      : isSorting
+                      ? "Sorting..."
+                      : "Filtering..."
+                  }
+                  onClearFilters={handleClearFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  totalParentsCount={parents.length}
+                  selectedIds={selectedIds}
+                  onSelectionChange={setSelectedIds}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Bulk Delete Modal */}
+        <BulkDeleteModal
+          isOpen={isBulkDeleteModalOpen}
+          onClose={handleCloseBulkDeleteModal}
+          onConfirm={handleConfirmBulkDelete}
+          items={itemsToDelete}
+          onRemoveItem={handleRemoveFromDeleteList}
+          onRestoreItem={handleRestoreItem}
+          onRestoreAll={handleRestoreAll}
+          title="Delete Parents"
+          warningMessage="This will permanently remove these parents and all associated data. This action cannot be undone."
+          confirmButtonText="Delete Parents"
+        />
+      </div>
+    </MainLayout>
+  );
+}

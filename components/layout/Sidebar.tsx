@@ -95,11 +95,12 @@ const menuItems: MenuItem[] = [
         label: "Parents",
         icon: <Users className="w-4 h-4" />,
         children: [
-          { id: "parent-dashboard", label: "Parent Dashboard", icon: <LayoutDashboard className="w-4 h-4" />, href: "/parents" },
-          { id: "my-children", label: "My Children", icon: <GraduationCap className="w-4 h-4" />, href: "/parents/children" },
-          { id: "parent-fees", label: "Fees & Payments", icon: <CurrencyIcon className="w-4 h-4 text-inherit" />, href: "/parents/fees" },
-          { id: "parent-messages", label: "Messages", icon: <MessageSquare className="w-4 h-4" />, href: "/parents/messages" },
-          { id: "parent-meetings", label: "Video Calls & Meetings", icon: <Video className="w-4 h-4" />, href: "/parents/meetings" },
+          { id: "parents-overview", label: "Overview", icon: <LayoutDashboard className="w-4 h-4" />, href: "/admin/parents/dashboard" },
+          { id: "all-parents", label: "All Parents", icon: <Users className="w-4 h-4" />, href: "/admin/parents?view=grid" },
+          { id: "parent-list", label: "Parent List", icon: <Users className="w-4 h-4" />, href: "/admin/parents?view=list" },
+          { id: "parent-fees", label: "Fee Records", icon: <CurrencyIcon className="w-4 h-4 text-inherit" />, href: "/admin/parents/fees" },
+          { id: "parent-messages", label: "Messages", icon: <MessageSquare className="w-4 h-4" />, href: "/admin/parents/messages" },
+          { id: "parent-events", label: "Events", icon: <Calendar className="w-4 h-4" />, href: "/admin/parents/events" },
         ]
       },
       {
