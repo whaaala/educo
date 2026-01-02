@@ -10,6 +10,7 @@ import ScheduleMeetingModal, {
   MeetingChildReference,
   MeetingParticipant,
 } from "@/components/shared/ScheduleMeetingModal";
+import MeetingDetailsModal, { MeetingDetails, RescheduleMeetingData } from "@/components/shared/MeetingDetailsModal";
 import { useMeetings, Meeting as ContextMeeting, MeetingPlatform as ContextPlatform } from "@/contexts/MeetingsContext";
 import {
   Video,
@@ -27,6 +28,7 @@ import {
   Copy,
   PhoneCall,
   VideoIcon,
+  Eye,
 } from "lucide-react";
 
 // Platform icons
@@ -336,9 +338,11 @@ export default function ParentMeetingsPage() {
   const [selectedPlatform, setSelectedPlatform] = useState<MeetingPlatform | "all">("all");
   const [selectedStatus, setSelectedStatus] = useState<MeetingStatus | "all">("all");
   const [isRequestMeetingModalOpen, setIsRequestMeetingModalOpen] = useState(false);
+  const [selectedMeeting, setSelectedMeeting] = useState<MeetingDetails | null>(null);
+  const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] = useState(false);
 
   // Use the meetings context
-  const { meetings: contextMeetings, addMeeting, getMeetingsByParent } = useMeetings();
+  const { meetings: contextMeetings, addMeeting, getMeetingsByParent, rescheduleMeeting, acceptMeeting } = useMeetings();
 
   // Get meetings for this parent (using MOCK_PARENT.id)
   const parentMeetings = useMemo(() => {
@@ -429,6 +433,54 @@ export default function ParentMeetingsPage() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
+  };
+
+  // Open meeting details modal
+  const handleViewMeetingDetails = (meeting: Meeting) => {
+    // Find the original meeting from context to get notes and outcome
+    const originalMeeting = parentMeetings.find(m => m.id === meeting.id);
+
+    const meetingDetails: MeetingDetails = {
+      id: meeting.id,
+      title: meeting.title,
+      description: meeting.description,
+      platform: meeting.platform,
+      hostName: meeting.hostName,
+      hostRole: meeting.hostRole,
+      hostPhoto: meeting.hostPhoto,
+      childName: meeting.childName,
+      scheduledDate: meeting.scheduledDate,
+      scheduledTime: meeting.scheduledTime,
+      duration: meeting.duration,
+      status: originalMeeting?.status === "pending_approval" ? "pending_approval" : meeting.status,
+      meetingLink: meeting.meetingLink,
+      meetingId: meeting.meetingId,
+      passcode: meeting.passcode,
+      notes: originalMeeting?.notes,
+      outcome: originalMeeting?.outcome,
+      cancellationReason: originalMeeting?.cancellationReason,
+      cancelledBy: originalMeeting?.cancelledBy,
+      cancelledByName: originalMeeting?.cancelledByName,
+      cancelledAt: originalMeeting?.cancelledAt,
+    };
+    setSelectedMeeting(meetingDetails);
+    setIsMeetingDetailsModalOpen(true);
+  };
+
+  // Handle reschedule request (parents can request reschedule)
+  const handleRescheduleMeeting = (meetingId: string, data: RescheduleMeetingData) => {
+    rescheduleMeeting(meetingId, {
+      newDate: data.newDate,
+      newTime: data.newTime,
+      reason: data.reason,
+      requestedBy: "parent",
+      requestedByName: MOCK_PARENT.name,
+    });
+  };
+
+  // Handle accept meeting
+  const handleAcceptMeeting = (meetingId: string) => {
+    acceptMeeting(meetingId);
   };
 
   return (
@@ -655,6 +707,14 @@ export default function ParentMeetingsPage() {
                                 {meeting.platform === "whatsapp-video" ? "Video Call" : "Voice Call"}
                               </button>
                             )}
+                            {/* View Details button for upcoming meetings */}
+                            <button
+                              onClick={() => handleViewMeetingDetails(meeting)}
+                              className="flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                            >
+                              <Eye className="w-4 h-4" />
+                              Details
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -761,6 +821,13 @@ export default function ParentMeetingsPage() {
                         <span className={`px-2 py-1 rounded-lg text-[10px] font-semibold ${platformInfo.bgClass} ${platformInfo.textClass}`}>
                           {platformInfo.name}
                         </span>
+                        <button
+                          onClick={() => handleViewMeetingDetails(meeting)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          View Details
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -801,6 +868,20 @@ export default function ParentMeetingsPage() {
           primaryParticipant={MOCK_PARENT}
           children={MOCK_CHILDREN}
           availableTeachers={AVAILABLE_TEACHERS}
+        />
+
+        {/* Meeting Details Modal */}
+        <MeetingDetailsModal
+          isOpen={isMeetingDetailsModalOpen}
+          onClose={() => {
+            setIsMeetingDetailsModalOpen(false);
+            setSelectedMeeting(null);
+          }}
+          meeting={selectedMeeting}
+          viewContext="parent"
+          currentUserName={MOCK_PARENT.name}
+          onReschedule={handleRescheduleMeeting}
+          onAccept={handleAcceptMeeting}
         />
       </div>
     </MainLayout>

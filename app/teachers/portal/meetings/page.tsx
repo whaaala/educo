@@ -12,6 +12,7 @@ import ScheduleMeetingModal, {
   MeetingChildReference,
   MeetingParticipant,
 } from "@/components/shared/ScheduleMeetingModal";
+import MeetingDetailsModal, { MeetingDetails, CancelMeetingData, RescheduleMeetingData, AdditionalParticipant } from "@/components/shared/MeetingDetailsModal";
 import {
   Video,
   Phone,
@@ -27,6 +28,7 @@ import {
   Copy,
   User,
   GraduationCap,
+  Eye,
 } from "lucide-react";
 
 // Platform icons
@@ -115,6 +117,17 @@ const MOCK_STUDENTS: MeetingChildReference[] = MOCK_STUDENTS_WITH_PARENTS.map(({
   name,
   classLevel,
 }));
+
+// Available staff that can be invited to meetings
+const AVAILABLE_STAFF: AdditionalParticipant[] = [
+  { id: "tch-002", name: "Mr. Chidi Okoro", role: "Chemistry Teacher", type: "teacher", photo: "https://i.pravatar.cc/150?u=teacher-chidi" },
+  { id: "tch-003", name: "Mr. Tunde Adeyemi", role: "Mathematics Teacher", type: "teacher", photo: "https://i.pravatar.cc/150?u=teacher-tunde" },
+  { id: "tch-004", name: "Coach Emeka", role: "Physical Education", type: "teacher", photo: "https://i.pravatar.cc/150?u=coach-emeka" },
+  { id: "tch-005", name: "Dr. Amaka Obi", role: "Principal", type: "admin", photo: "https://i.pravatar.cc/150?u=principal" },
+  { id: "tch-006", name: "Mrs. Funke Adeleke", role: "Academic Counselor", type: "counselor", photo: "https://i.pravatar.cc/150?u=counselor-funke" },
+  { id: "tch-007", name: "Mrs. Ada Nwosu", role: "Science Teacher", type: "teacher", photo: "https://i.pravatar.cc/150?u=teacher-ada" },
+  { id: "admin-001", name: "Mr. James Okafor", role: "Vice Principal", type: "admin", photo: "https://i.pravatar.cc/150?u=admin-james" },
+];
 
 // Helper functions
 function getPlatformInfo(platform: MeetingPlatform) {
@@ -254,9 +267,11 @@ export default function TeacherMeetingsPage() {
   const [selectedPlatform, setSelectedPlatform] = useState<MeetingPlatform | "all">("all");
   const [selectedStatus, setSelectedStatus] = useState<MeetingStatus | "all">("all");
   const [isScheduleMeetingModalOpen, setIsScheduleMeetingModalOpen] = useState(false);
+  const [selectedMeeting, setSelectedMeeting] = useState<MeetingDetails | null>(null);
+  const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] = useState(false);
 
   // Use the meetings context
-  const { meetings: contextMeetings, addMeeting, getMeetingsByTeacher } = useMeetings();
+  const { meetings: contextMeetings, addMeeting, getMeetingsByTeacher, updateMeeting, cancelMeeting, rescheduleMeeting, acceptMeeting, inviteParticipant, removeParticipant } = useMeetings();
 
   // Get meetings for this teacher
   const teacherMeetings = useMemo(() => {
@@ -340,6 +355,102 @@ export default function TeacherMeetingsPage() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
+  };
+
+  // Open meeting details modal
+  const handleViewMeetingDetails = (meeting: DisplayMeeting) => {
+    // Find the original meeting to get notes and outcome
+    const originalMeeting = teacherMeetings.find(m => m.id === meeting.id);
+
+    const meetingDetails: MeetingDetails = {
+      id: meeting.id,
+      title: meeting.title,
+      description: meeting.description,
+      platform: meeting.platform,
+      parentName: meeting.parentName,
+      parentPhoto: meeting.parentPhoto,
+      childName: meeting.childName,
+      childClass: meeting.childClass,
+      scheduledDate: meeting.scheduledDate,
+      scheduledTime: meeting.scheduledTime,
+      duration: meeting.duration,
+      status: meeting.status,
+      meetingLink: meeting.meetingLink,
+      meetingId: meeting.meetingId,
+      passcode: meeting.passcode,
+      location: meeting.location,
+      requestedBy: meeting.requestedBy,
+      notes: originalMeeting?.notes,
+      outcome: originalMeeting?.outcome,
+      cancellationReason: originalMeeting?.cancellationReason,
+      cancelledBy: originalMeeting?.cancelledBy,
+      cancelledByName: originalMeeting?.cancelledByName,
+      cancelledAt: originalMeeting?.cancelledAt,
+      additionalParticipants: originalMeeting?.additionalParticipants,
+    };
+    setSelectedMeeting(meetingDetails);
+    setIsMeetingDetailsModalOpen(true);
+  };
+
+  // Handle updating meeting notes/outcome
+  const handleUpdateMeeting = (meetingId: string, updates: { notes?: string; outcome?: string }) => {
+    updateMeeting(meetingId, updates);
+    // Update the selected meeting to reflect changes immediately
+    if (selectedMeeting && selectedMeeting.id === meetingId) {
+      setSelectedMeeting({
+        ...selectedMeeting,
+        ...updates,
+      });
+    }
+  };
+
+  // Handle cancel meeting (teachers can cancel)
+  const handleCancelMeeting = (meetingId: string, data: CancelMeetingData) => {
+    cancelMeeting(meetingId, {
+      reason: data.reason,
+      cancelledBy: "teacher",
+      cancelledByName: MOCK_TEACHER.name,
+    });
+  };
+
+  // Handle reschedule meeting
+  const handleRescheduleMeeting = (meetingId: string, data: RescheduleMeetingData) => {
+    rescheduleMeeting(meetingId, {
+      newDate: data.newDate,
+      newTime: data.newTime,
+      reason: data.reason,
+      requestedBy: "teacher",
+      requestedByName: MOCK_TEACHER.name,
+    });
+  };
+
+  // Handle accept meeting
+  const handleAcceptMeeting = (meetingId: string) => {
+    acceptMeeting(meetingId);
+  };
+
+  // Handle invite participant
+  const handleInviteParticipant = (meetingId: string, participant: AdditionalParticipant) => {
+    inviteParticipant(meetingId, participant);
+    // Update the selected meeting to reflect changes immediately
+    if (selectedMeeting && selectedMeeting.id === meetingId) {
+      setSelectedMeeting({
+        ...selectedMeeting,
+        additionalParticipants: [...(selectedMeeting.additionalParticipants || []), participant],
+      });
+    }
+  };
+
+  // Handle remove participant
+  const handleRemoveParticipant = (meetingId: string, participantId: string) => {
+    removeParticipant(meetingId, participantId);
+    // Update the selected meeting to reflect changes immediately
+    if (selectedMeeting && selectedMeeting.id === meetingId) {
+      setSelectedMeeting({
+        ...selectedMeeting,
+        additionalParticipants: (selectedMeeting.additionalParticipants || []).filter(p => p.id !== participantId),
+      });
+    }
   };
 
   return (
@@ -578,11 +689,22 @@ export default function TeacherMeetingsPage() {
                               </a>
                             )}
                             {meeting.status === "pending_approval" && (
-                              <button className="flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-green-500/25 transition-all duration-200 hover:-translate-y-0.5">
+                              <button
+                                onClick={() => handleAcceptMeeting(meeting.id)}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-green-500/25 transition-all duration-200 hover:-translate-y-0.5"
+                              >
                                 <CheckCircle2 className="w-4 h-4" />
                                 Approve
                               </button>
                             )}
+                            {/* View Details button for upcoming meetings */}
+                            <button
+                              onClick={() => handleViewMeetingDetails(meeting)}
+                              className="flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                            >
+                              <Eye className="w-4 h-4" />
+                              Details
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -683,9 +805,18 @@ export default function TeacherMeetingsPage() {
                         </p>
                       </div>
 
-                      <span className={`px-2 py-1 rounded-lg text-[10px] font-semibold ${platformInfo.bgClass} ${platformInfo.textClass}`}>
-                        {platformInfo.name}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-1 rounded-lg text-[10px] font-semibold ${platformInfo.bgClass} ${platformInfo.textClass}`}>
+                          {platformInfo.name}
+                        </span>
+                        <button
+                          onClick={() => handleViewMeetingDetails(meeting)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          View Details
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -724,6 +855,25 @@ export default function TeacherMeetingsPage() {
           context="teacher"
           primaryParticipant={MOCK_TEACHER}
           children={MOCK_STUDENTS}
+        />
+
+        {/* Meeting Details Modal */}
+        <MeetingDetailsModal
+          isOpen={isMeetingDetailsModalOpen}
+          onClose={() => {
+            setIsMeetingDetailsModalOpen(false);
+            setSelectedMeeting(null);
+          }}
+          meeting={selectedMeeting}
+          viewContext="teacher"
+          currentUserName={MOCK_TEACHER.name}
+          onUpdate={handleUpdateMeeting}
+          onCancel={handleCancelMeeting}
+          onReschedule={handleRescheduleMeeting}
+          onAccept={handleAcceptMeeting}
+          onInviteParticipant={handleInviteParticipant}
+          onRemoveParticipant={handleRemoveParticipant}
+          availableParticipants={AVAILABLE_STAFF.filter(s => s.id !== MOCK_TEACHER.id)}
         />
       </div>
     </MainLayout>

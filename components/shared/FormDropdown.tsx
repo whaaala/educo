@@ -39,6 +39,7 @@ export default function FormDropdown({
 }: FormDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Click outside handler
   useEffect(() => {
@@ -55,7 +56,20 @@ export default function FormDropdown({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
+  // Scroll dropdown menu into view when opened
+  useEffect(() => {
+    if (isOpen && menuRef.current) {
+      // Small delay to allow the menu to render
+      setTimeout(() => {
+        menuRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 50);
+    }
+  }, [isOpen]);
+
   const selectedOption = options.find((opt) => opt.value === value);
+
+  // Calculate the height needed for the dropdown menu (max 256px or actual height)
+  const menuHeight = Math.min(options.length * 48, 256); // ~48px per option, max 256px
 
   return (
     <div className="group">
@@ -70,7 +84,11 @@ export default function FormDropdown({
           </label>
         </Tooltip>
       )}
-      <div className="relative" ref={dropdownRef}>
+      <div
+        className="relative"
+        ref={dropdownRef}
+        style={{ marginBottom: isOpen ? menuHeight + 8 : 0 }}
+      >
         {/* Custom Dropdown Button */}
         <Tooltip content={selectedOption?.label || placeholder} block>
           <button
@@ -90,7 +108,10 @@ export default function FormDropdown({
 
         {/* Custom Dropdown Menu */}
         {isOpen && (
-          <div className="absolute top-full mt-1 left-0 right-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 max-h-64 overflow-y-auto z-[10000]">
+          <div
+            ref={menuRef}
+            className="absolute top-full mt-1 left-0 right-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 max-h-64 overflow-y-auto z-50"
+          >
             {options.map((option) => (
               <Tooltip key={option.value} content={option.label}>
                 <button

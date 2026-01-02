@@ -76,6 +76,7 @@ import FormInput from "@/components/shared/FormInput";
 import FormButton from "@/components/shared/FormButton";
 import FormTextarea from "@/components/shared/FormTextarea";
 import ScheduleMeetingModal, { ScheduledMeetingData, MeetingChildReference } from "@/components/shared/ScheduleMeetingModal";
+import MeetingDetailsModal, { MeetingDetails, CancelMeetingData, RescheduleMeetingData, AdditionalParticipant } from "@/components/shared/MeetingDetailsModal";
 import { useMeetings, Meeting as ContextMeeting } from "@/contexts/MeetingsContext";
 
 // Tab type definition for parent detail page
@@ -1237,11 +1238,120 @@ function FeeActionsCard({
 }
 
 // ===== MEETINGS SECTION =====
+// Available staff for inviting to meetings
+const AVAILABLE_STAFF: AdditionalParticipant[] = [
+  { id: "admin-002", name: "Mrs. Adaeze Okonkwo", role: "Vice Principal", type: "admin", photo: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=150" },
+  { id: "tch-001", name: "Mr. Emeka Obi", role: "Class Teacher", type: "teacher", photo: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=150" },
+  { id: "tch-002", name: "Mr. Chidi Okoro", role: "Chemistry Teacher", type: "teacher", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" },
+  { id: "tch-003", name: "Mrs. Ngozi Eze", role: "English Teacher", type: "teacher", photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150" },
+  { id: "counselor-001", name: "Dr. Amaka Nwosu", role: "School Counselor", type: "counselor", photo: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=150" },
+];
+
 function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeacherMeeting[]; onScheduleMeeting: () => void }) {
   const [showAll, setShowAll] = useState(false);
+  const [selectedMeeting, setSelectedMeeting] = useState<MeetingDetails | null>(null);
+  const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] = useState(false);
   const upcomingMeetings = meetings.filter((m) => m.status === "upcoming");
   const pastMeetings = meetings.filter((m) => m.status !== "upcoming").slice(0, 5);
   const displayMeetings = showAll ? meetings : [...upcomingMeetings, ...pastMeetings].slice(0, 6);
+
+  // Get meetings context for actions
+  const { cancelMeeting, rescheduleMeeting, acceptMeeting, inviteParticipant, removeParticipant } = useMeetings();
+
+  // Handler for cancelling a meeting
+  const handleCancelMeeting = (meetingId: string, data: CancelMeetingData) => {
+    cancelMeeting(meetingId, data);
+    // Update the selected meeting to reflect the cancellation
+    if (selectedMeeting && selectedMeeting.id === meetingId) {
+      setSelectedMeeting({
+        ...selectedMeeting,
+        status: "cancelled",
+        cancellationReason: data.reason,
+        cancelledBy: data.cancelledBy,
+        cancelledByName: data.cancelledByName,
+      });
+    }
+  };
+
+  // Handler for rescheduling a meeting
+  const handleRescheduleMeeting = (meetingId: string, data: RescheduleMeetingData) => {
+    rescheduleMeeting(meetingId, data);
+    // Update the selected meeting to reflect the reschedule request
+    if (selectedMeeting && selectedMeeting.id === meetingId) {
+      setSelectedMeeting({
+        ...selectedMeeting,
+        rescheduleRequest: {
+          newDate: data.newDate,
+          newTime: data.newTime,
+          reason: data.reason,
+          requestedBy: data.requestedBy,
+          requestedByName: data.requestedByName,
+          requestedAt: new Date().toISOString(),
+        },
+      });
+    }
+  };
+
+  // Handler for accepting a meeting
+  const handleAcceptMeeting = (meetingId: string) => {
+    acceptMeeting(meetingId);
+    // Update the selected meeting to reflect the acceptance
+    if (selectedMeeting && selectedMeeting.id === meetingId) {
+      setSelectedMeeting({
+        ...selectedMeeting,
+        status: "scheduled",
+      });
+    }
+  };
+
+  // Handler for inviting a participant
+  const handleInviteParticipant = (meetingId: string, participant: AdditionalParticipant) => {
+    inviteParticipant(meetingId, participant);
+    // Update the selected meeting to add the participant
+    if (selectedMeeting && selectedMeeting.id === meetingId) {
+      const currentParticipants = selectedMeeting.additionalParticipants || [];
+      setSelectedMeeting({
+        ...selectedMeeting,
+        additionalParticipants: [...currentParticipants, participant],
+      });
+    }
+  };
+
+  // Handler for removing a participant
+  const handleRemoveParticipant = (meetingId: string, participantId: string) => {
+    removeParticipant(meetingId, participantId);
+    // Update the selected meeting to remove the participant
+    if (selectedMeeting && selectedMeeting.id === meetingId) {
+      const currentParticipants = selectedMeeting.additionalParticipants || [];
+      setSelectedMeeting({
+        ...selectedMeeting,
+        additionalParticipants: currentParticipants.filter(p => p.id !== participantId),
+      });
+    }
+  };
+
+  // Open meeting details modal
+  const handleViewMeetingDetails = (meeting: ParentTeacherMeeting) => {
+    const meetingDetails: MeetingDetails = {
+      id: meeting.id,
+      title: meeting.subject,
+      description: meeting.notes,
+      platform: meeting.meetingFormat === "virtual" ? (meeting.virtualType === "video" ? "zoom" : "whatsapp-voice") : "in-person",
+      hostName: meeting.teacherName,
+      hostRole: meeting.teacherRole,
+      childName: meeting.childName,
+      scheduledDate: meeting.date,
+      scheduledTime: meeting.time,
+      duration: meeting.duration,
+      status: meeting.status === "upcoming" ? "scheduled" : meeting.status === "no_show" ? "cancelled" : meeting.status,
+      location: meeting.location,
+      meetingType: meeting.meetingType,
+      outcome: meeting.outcome,
+      notes: meeting.notes,
+    };
+    setSelectedMeeting(meetingDetails);
+    setIsMeetingDetailsModalOpen(true);
+  };
 
   const getStatusBadge = (status: ParentTeacherMeeting["status"]) => {
     const config = {
@@ -1336,11 +1446,29 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
                       <div className="text-[10px] text-green-600 dark:text-green-400 mt-1 italic">{meeting.outcome}</div>
                     )}
                   </div>
-                  {meeting.status === "upcoming" && (
-                    <button className="px-2 py-1 text-[10px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors cursor-pointer">
-                      Cancel
+                  <div className="flex items-center gap-2">
+                    {meeting.status === "upcoming" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewMeetingDetails(meeting);
+                        }}
+                        className="px-2 py-1 text-[10px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewMeetingDetails(meeting);
+                      }}
+                      className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
+                    >
+                      <Eye className="w-3 h-3" />
+                      View
                     </button>
-                  )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -1357,6 +1485,24 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
           </button>
         )}
       </div>
+
+      {/* Meeting Details Modal */}
+      <MeetingDetailsModal
+        isOpen={isMeetingDetailsModalOpen}
+        onClose={() => {
+          setIsMeetingDetailsModalOpen(false);
+          setSelectedMeeting(null);
+        }}
+        meeting={selectedMeeting}
+        viewContext="admin"
+        currentUserName="Admin"
+        onCancel={handleCancelMeeting}
+        onReschedule={handleRescheduleMeeting}
+        onAccept={handleAcceptMeeting}
+        onInviteParticipant={handleInviteParticipant}
+        onRemoveParticipant={handleRemoveParticipant}
+        availableParticipants={AVAILABLE_STAFF}
+      />
     </div>
   );
 }

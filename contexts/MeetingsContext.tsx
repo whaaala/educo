@@ -47,8 +47,25 @@ export interface Meeting {
   outcome?: string;
   followUpRequired?: boolean;
   followUpDate?: string;
+  // Cancellation info
+  cancellationReason?: string;
+  cancelledBy?: "parent" | "teacher" | "admin";
+  cancelledByName?: string;
+  cancelledAt?: string;
+  // Additional participants
+  additionalParticipants?: AdditionalParticipant[];
   createdAt: string;
   updatedAt: string;
+}
+
+// Additional participant type for inviting more people to a meeting
+export interface AdditionalParticipant {
+  id: string;
+  name: string;
+  role: string;
+  type: "teacher" | "admin" | "counselor" | "other";
+  email?: string;
+  photo?: string;
 }
 
 // Data for creating a new meeting
@@ -79,11 +96,32 @@ export interface CreateMeetingData {
   notes?: string;
 }
 
+// Data for cancelling a meeting
+export interface CancelMeetingData {
+  reason: string;
+  cancelledBy: "teacher" | "admin";
+  cancelledByName: string;
+}
+
+// Data for requesting reschedule (parents can request, teachers/admins can directly reschedule)
+export interface RescheduleMeetingData {
+  newDate: string;
+  newTime: string;
+  reason?: string;
+  requestedBy: "parent" | "teacher" | "admin";
+  requestedByName: string;
+}
+
 interface MeetingsContextType {
   meetings: Meeting[];
   addMeeting: (meetingData: CreateMeetingData) => Meeting;
   updateMeeting: (id: string, updates: Partial<Meeting>) => void;
   deleteMeeting: (id: string) => void;
+  cancelMeeting: (id: string, data: CancelMeetingData) => void;
+  rescheduleMeeting: (id: string, data: RescheduleMeetingData) => void;
+  acceptMeeting: (id: string) => void;
+  inviteParticipant: (id: string, participant: AdditionalParticipant) => void;
+  removeParticipant: (meetingId: string, participantId: string) => void;
   getMeetingsByParent: (parentId: string) => Meeting[];
   getMeetingsByTeacher: (teacherId: string) => Meeting[];
   getMeetingsByChild: (childId: string) => Meeting[];
@@ -412,6 +450,97 @@ export function MeetingsProvider({ children }: { children: ReactNode }) {
     setMeetings((prev) => prev.filter((meeting) => meeting.id !== id));
   };
 
+  const cancelMeeting = (id: string, data: CancelMeetingData) => {
+    setMeetings((prev) =>
+      prev.map((meeting) =>
+        meeting.id === id
+          ? {
+              ...meeting,
+              status: "cancelled" as MeetingStatus,
+              cancellationReason: data.reason,
+              cancelledBy: data.cancelledBy,
+              cancelledByName: data.cancelledByName,
+              cancelledAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            }
+          : meeting
+      )
+    );
+    console.log("MeetingsContext: Meeting cancelled", id, data);
+  };
+
+  const rescheduleMeeting = (id: string, data: RescheduleMeetingData) => {
+    setMeetings((prev) =>
+      prev.map((meeting) =>
+        meeting.id === id
+          ? {
+              ...meeting,
+              scheduledDate: data.newDate,
+              scheduledTime: data.newTime,
+              notes: data.reason
+                ? `${meeting.notes ? meeting.notes + "\n\n" : ""}Rescheduled by ${data.requestedByName}: ${data.reason}`
+                : meeting.notes,
+              updatedAt: new Date().toISOString(),
+            }
+          : meeting
+      )
+    );
+    console.log("MeetingsContext: Meeting rescheduled", id, data);
+  };
+
+  const acceptMeeting = (id: string) => {
+    setMeetings((prev) =>
+      prev.map((meeting) =>
+        meeting.id === id
+          ? {
+              ...meeting,
+              status: "scheduled" as MeetingStatus,
+              updatedAt: new Date().toISOString(),
+            }
+          : meeting
+      )
+    );
+    console.log("MeetingsContext: Meeting accepted", id);
+  };
+
+  const inviteParticipant = (id: string, participant: AdditionalParticipant) => {
+    setMeetings((prev) =>
+      prev.map((meeting) => {
+        if (meeting.id !== id) return meeting;
+
+        const existingParticipants = meeting.additionalParticipants || [];
+        // Check if participant already exists
+        if (existingParticipants.some(p => p.id === participant.id)) {
+          return meeting;
+        }
+
+        return {
+          ...meeting,
+          additionalParticipants: [...existingParticipants, participant],
+          updatedAt: new Date().toISOString(),
+        };
+      })
+    );
+    console.log("MeetingsContext: Participant invited", id, participant);
+  };
+
+  const removeParticipant = (meetingId: string, participantId: string) => {
+    setMeetings((prev) =>
+      prev.map((meeting) => {
+        if (meeting.id !== meetingId) return meeting;
+
+        return {
+          ...meeting,
+          additionalParticipants: (meeting.additionalParticipants || []).filter(
+            p => p.id !== participantId
+          ),
+          updatedAt: new Date().toISOString(),
+        };
+      })
+    );
+    console.log("MeetingsContext: Participant removed", meetingId, participantId);
+  };
+
   const getMeetingsByParent = (parentId: string) => {
     return meetings.filter((meeting) => meeting.parentId === parentId);
   };
@@ -443,6 +572,11 @@ export function MeetingsProvider({ children }: { children: ReactNode }) {
         addMeeting,
         updateMeeting,
         deleteMeeting,
+        cancelMeeting,
+        rescheduleMeeting,
+        acceptMeeting,
+        inviteParticipant,
+        removeParticipant,
         getMeetingsByParent,
         getMeetingsByTeacher,
         getMeetingsByChild,
