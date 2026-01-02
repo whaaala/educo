@@ -76,6 +76,7 @@ import FormInput from "@/components/shared/FormInput";
 import FormButton from "@/components/shared/FormButton";
 import FormTextarea from "@/components/shared/FormTextarea";
 import ScheduleMeetingModal, { ScheduledMeetingData, MeetingChildReference } from "@/components/shared/ScheduleMeetingModal";
+import { useMeetings, Meeting as ContextMeeting } from "@/contexts/MeetingsContext";
 
 // Tab type definition for parent detail page
 type ParentTabType = "details" | "meetings" | "leave" | "fees" | "communications" | "events";
@@ -94,8 +95,11 @@ export default function AdminParentDetailPage() {
   const [eventAttendance, setEventAttendance] = useState<ParentEventAttendance[]>([]);
   const [libraryPayments, setLibraryPayments] = useState<LibraryPayment[]>([]);
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
-  const [meetings, setMeetings] = useState<ParentTeacherMeeting[]>([]);
+  const [mockMeetings, setMockMeetings] = useState<ParentTeacherMeeting[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
+
+  // Use the meetings context for shared state across portals
+  const { meetings: contextMeetings, addMeeting, getMeetingsByParent } = useMeetings();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<ParentTabType>("details");
   const [isLinkChildModalOpen, setIsLinkChildModalOpen] = useState(false);
@@ -128,7 +132,7 @@ export default function AdminParentDetailPage() {
           setEventAttendance(getEventAttendanceByParentId(parentId));
           setLibraryPayments(getLibraryPaymentsByParentId(parentId));
           setLeaveRequests(getLeaveRequestsByParentId(parentId));
-          setMeetings(getMeetingsByParentId(parentId));
+          setMockMeetings(getMeetingsByParentId(parentId));
         } else {
           router.push("/admin/parents");
         }
@@ -156,6 +160,45 @@ export default function AdminParentDetailPage() {
     router.push("/admin/parents");
   };
 
+  // Get meetings from context for this parent (must be before early return to follow hooks rules)
+  const parentContextMeetings = useMemo(() => {
+    if (!parent) return [];
+    return getMeetingsByParent(parent.id);
+  }, [contextMeetings, getMeetingsByParent, parent]);
+
+  // Convert context meetings to ParentTeacherMeeting format and combine with mock meetings
+  const meetings: ParentTeacherMeeting[] = useMemo(() => {
+    // Convert context meetings to local format
+    const convertedContextMeetings: ParentTeacherMeeting[] = parentContextMeetings.map((m) => ({
+      id: m.id,
+      parentId: m.parentId,
+      childId: m.childId || "",
+      childName: m.childName || "",
+      childClass: m.childClass || "",
+      teacherName: m.teacherName,
+      teacherRole: m.teacherRole || "",
+      meetingType: m.meetingType,
+      customMeetingType: m.customMeetingType,
+      meetingFormat: m.meetingFormat,
+      virtualType: m.virtualType,
+      meetingLink: m.meetingLink,
+      subject: m.title,
+      date: m.scheduledDate,
+      time: m.scheduledTime,
+      duration: m.duration,
+      status: m.status === "scheduled" || m.status === "pending_approval" ? "upcoming" : m.status === "in-progress" ? "in-progress" : m.status,
+      location: m.location,
+      notes: m.notes,
+      outcome: m.outcome,
+    }));
+
+    // Combine with mock meetings, avoiding duplicates by ID
+    const contextIds = new Set(convertedContextMeetings.map((m) => m.id));
+    const uniqueMockMeetings = mockMeetings.filter((m) => !contextIds.has(m.id));
+
+    return [...convertedContextMeetings, ...uniqueMockMeetings];
+  }, [parentContextMeetings, mockMeetings]);
+
   if (isLoading || isLoadingData || !parent) {
     return (
       <MainLayout>
@@ -168,34 +211,34 @@ export default function AdminParentDetailPage() {
 
   // Handle scheduling a new meeting
   const handleScheduleMeeting = (meetingData: ScheduledMeetingData) => {
-    // Create new meeting with proper structure
-    const newMeeting: ParentTeacherMeeting = {
-      id: `meet-${Date.now()}`,
-      parentId: parent.id,
-      childId: meetingData.childId || parent.children[0]?.id || "",
-      childName: meetingData.childName || parent.children[0]?.fullName || "",
-      childClass: meetingData.childClass || parent.children[0]?.classLevel || "",
-      teacherName: meetingData.teacherName || "",
-      teacherRole: meetingData.teacherRole || "",
-      meetingType: meetingData.meetingType,
+    // Add meeting via context for shared state across portals
+    addMeeting({
+      title: meetingData.subject,
+      description: meetingData.notes,
+      meetingType: meetingData.meetingType === "custom" ? "scheduled" : meetingData.meetingType,
       customMeetingType: meetingData.customMeetingType,
       meetingFormat: meetingData.meetingFormat,
       virtualType: meetingData.virtualType,
-      meetingLink: meetingData.meetingLink,
-      subject: meetingData.subject,
-      date: meetingData.date,
-      time: meetingData.time,
+      scheduledDate: meetingData.date,
+      scheduledTime: meetingData.time,
       duration: meetingData.duration,
-      status: "upcoming",
       location: meetingData.location,
+      meetingLink: meetingData.meetingLink,
+      parentId: parent.id,
+      parentName: fullName,
+      childId: meetingData.childId || parent.children[0]?.id || "",
+      childName: meetingData.childName || parent.children[0]?.fullName || "",
+      childClass: meetingData.childClass || parent.children[0]?.classLevel || "",
+      teacherId: meetingData.teacherId || "",
+      teacherName: meetingData.teacherName || "",
+      teacherRole: meetingData.teacherRole,
+      requestedBy: "admin",
+      requestedByName: "Admin",
       notes: meetingData.notes,
-    };
-
-    // Add to meetings list (at the beginning so it appears first)
-    setMeetings((prev) => [newMeeting, ...prev]);
+    });
 
     // Show success feedback (you could use a toast notification here)
-    console.log("Meeting scheduled successfully:", newMeeting);
+    console.log("Meeting scheduled successfully via context");
   };
 
   // Prepare children data for the meeting modal

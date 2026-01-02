@@ -15,6 +15,7 @@ import { LeaveProvider } from "@/contexts/LeaveContext";
 import { PerformanceProvider } from "@/contexts/PerformanceContext";
 import { DisciplineProvider } from "@/contexts/DisciplineContext";
 import { UserProvider } from "@/contexts/UserContext";
+import { MeetingsProvider } from "@/contexts/MeetingsContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,9 +49,11 @@ export default function RootLayout({
                           <DisciplineProvider>
                             <TranscriptProvider>
                               <AttendanceProvider>
-                                <SidebarProvider>
-                                  {children}
-                                </SidebarProvider>
+                                <MeetingsProvider>
+                                  <SidebarProvider>
+                                    {children}
+                                  </SidebarProvider>
+                                </MeetingsProvider>
                               </AttendanceProvider>
                             </TranscriptProvider>
                           </DisciplineProvider>

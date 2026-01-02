@@ -19,7 +19,9 @@ import {
   AlertCircle,
   Award,
   GraduationCap,
+  Video,
 } from "lucide-react";
+import { useMeetings } from "@/contexts/MeetingsContext";
 import Link from "next/link";
 
 // Mock data - In production, this would come from API/context
@@ -106,6 +108,16 @@ const mockTeacherData = {
 export default function TeacherDashboardPage() {
   const isLoading = usePageLoad(600);
   const [teacherData] = useState(mockTeacherData);
+
+  // Get meetings from context
+  const { getMeetingsByTeacher, meetings: contextMeetings } = useMeetings();
+  const teacherMeetings = useMemo(() => {
+    return getMeetingsByTeacher("tch-001"); // Mock teacher ID
+  }, [contextMeetings, getMeetingsByTeacher]);
+
+  const upcomingMeetingsCount = useMemo(() => {
+    return teacherMeetings.filter(m => m.status === "scheduled" || m.status === "pending_approval").length;
+  }, [teacherMeetings]);
 
   const totalStudents = useMemo(() => {
     return teacherData.classes.reduce((sum, cls) => sum + cls.students, 0);
@@ -230,6 +242,62 @@ export default function TeacherDashboardPage() {
               </div>
             </div>
 
+            {/* Upcoming Parent Meetings */}
+            {teacherMeetings.filter(m => m.status === "scheduled" || m.status === "pending_approval").length > 0 && (
+              <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 flex items-center gap-2">
+                    <Video className="w-5 h-5" />
+                    Upcoming Parent Meetings
+                    <span className="text-xs font-bold text-white bg-indigo-600 px-2 py-0.5 rounded-full">
+                      {upcomingMeetingsCount}
+                    </span>
+                  </h2>
+                  <Link
+                    href="/teachers/portal/meetings"
+                    className="text-sm text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline"
+                  >
+                    View All
+                  </Link>
+                </div>
+
+                <div className="space-y-3">
+                  {teacherMeetings
+                    .filter(m => m.status === "scheduled" || m.status === "pending_approval")
+                    .slice(0, 3)
+                    .map((meeting) => (
+                      <div
+                        key={meeting.id}
+                        className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                      >
+                        <div className="flex-shrink-0">
+                          <Video className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
+                            {meeting.title}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {meeting.parentName} - {meeting.childName} - {new Date(meeting.scheduledDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} at {meeting.scheduledTime}
+                          </p>
+                        </div>
+                        {meeting.status === "pending_approval" && (
+                          <span className="px-2 py-1 text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded">
+                            Pending
+                          </span>
+                        )}
+                        <Link
+                          href="/teachers/portal/meetings"
+                          className="flex-shrink-0 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400 bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-cyan-500/10 purple:bg-pink-500/10 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+                        >
+                          View Details
+                        </Link>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
             {/* My Classes */}
             <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 p-6">
               <div className="flex items-center justify-between mb-4">
@@ -321,6 +389,21 @@ export default function TeacherDashboardPage() {
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Upload Materials
                   </span>
+                </Link>
+
+                <Link
+                  href="/teachers/portal/meetings"
+                  className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                >
+                  <Video className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Parent Meetings
+                  </span>
+                  {upcomingMeetingsCount > 0 && (
+                    <span className="ml-auto px-2 py-0.5 text-xs font-bold bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full">
+                      {upcomingMeetingsCount}
+                    </span>
+                  )}
                 </Link>
               </div>
             </div>
