@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Modal from "@/components/shared/Modal";
 import FormDropdown from "@/components/shared/FormDropdown";
@@ -150,6 +150,7 @@ interface MeetingDetailsModalProps {
   meeting: MeetingDetails | null;
   viewContext: "parent" | "teacher" | "admin";
   currentUserName?: string; // Name of the current user for cancel/reschedule attribution
+  initialAction?: "view" | "cancel" | "reschedule" | "invite"; // Initial action to show when modal opens
   onUpdate?: (meetingId: string, updates: MeetingUpdateData) => void;
   onCancel?: (meetingId: string, data: CancelMeetingData) => void;
   onReschedule?: (meetingId: string, data: RescheduleMeetingData) => void;
@@ -283,6 +284,7 @@ export default function MeetingDetailsModal({
   meeting,
   viewContext,
   currentUserName = "User",
+  initialAction = "view",
   onUpdate,
   onCancel,
   onReschedule,
@@ -297,12 +299,12 @@ export default function MeetingDetailsModal({
   const [isSaving, setIsSaving] = useState(false);
 
   // Cancel meeting state
-  const [showCancelForm, setShowCancelForm] = useState(false);
+  const [showCancelForm, setShowCancelForm] = useState(initialAction === "cancel");
   const [cancelReason, setCancelReason] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
 
   // Reschedule meeting state
-  const [showRescheduleForm, setShowRescheduleForm] = useState(false);
+  const [showRescheduleForm, setShowRescheduleForm] = useState(initialAction === "reschedule");
   const [rescheduleDate, setRescheduleDate] = useState("");
   const [rescheduleTime, setRescheduleTime] = useState("");
   const [rescheduleReason, setRescheduleReason] = useState("");
@@ -312,11 +314,26 @@ export default function MeetingDetailsModal({
   const [isAccepting, setIsAccepting] = useState(false);
 
   // Invite participant state
-  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [showInviteForm, setShowInviteForm] = useState(initialAction === "invite");
   const [selectedParticipantId, setSelectedParticipantId] = useState("");
 
   // Copy feedback
   const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  // Reset form states when modal opens/closes or initialAction changes
+  useEffect(() => {
+    if (isOpen) {
+      setShowCancelForm(initialAction === "cancel");
+      setShowRescheduleForm(initialAction === "reschedule");
+      setShowInviteForm(initialAction === "invite");
+      setIsEditing(false);
+      setCancelReason("");
+      setRescheduleDate("");
+      setRescheduleTime("");
+      setRescheduleReason("");
+      setSelectedParticipantId("");
+    }
+  }, [isOpen, initialAction]);
 
   if (!meeting) return null;
 

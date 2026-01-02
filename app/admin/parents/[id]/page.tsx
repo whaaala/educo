@@ -1251,6 +1251,7 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
   const [showAll, setShowAll] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState<MeetingDetails | null>(null);
   const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] = useState(false);
+  const [modalInitialAction, setModalInitialAction] = useState<"view" | "cancel" | "reschedule" | "invite">("view");
   const upcomingMeetings = meetings.filter((m) => m.status === "upcoming");
   const pastMeetings = meetings.filter((m) => m.status !== "upcoming").slice(0, 5);
   const displayMeetings = showAll ? meetings : [...upcomingMeetings, ...pastMeetings].slice(0, 6);
@@ -1331,7 +1332,7 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
   };
 
   // Open meeting details modal
-  const handleViewMeetingDetails = (meeting: ParentTeacherMeeting) => {
+  const handleViewMeetingDetails = (meeting: ParentTeacherMeeting, action: "view" | "cancel" | "reschedule" | "invite" = "view") => {
     const meetingDetails: MeetingDetails = {
       id: meeting.id,
       title: meeting.subject,
@@ -1350,6 +1351,7 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
       notes: meeting.notes,
     };
     setSelectedMeeting(meetingDetails);
+    setModalInitialAction(action);
     setIsMeetingDetailsModalOpen(true);
   };
 
@@ -1451,7 +1453,7 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleViewMeetingDetails(meeting);
+                          handleViewMeetingDetails(meeting, "cancel");
                         }}
                         className="px-2 py-1 text-[10px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
                       >
@@ -1461,7 +1463,7 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleViewMeetingDetails(meeting);
+                        handleViewMeetingDetails(meeting, "view");
                       }}
                       className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
                     >
@@ -1492,10 +1494,12 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
         onClose={() => {
           setIsMeetingDetailsModalOpen(false);
           setSelectedMeeting(null);
+          setModalInitialAction("view");
         }}
         meeting={selectedMeeting}
         viewContext="admin"
         currentUserName="Admin"
+        initialAction={modalInitialAction}
         onCancel={handleCancelMeeting}
         onReschedule={handleRescheduleMeeting}
         onAccept={handleAcceptMeeting}
