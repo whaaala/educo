@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MessageCircle, Phone, Mail, CreditCard, Users, Eye, Pencil, Trash2 } from "lucide-react";
+import { MessageCircle, Phone, Mail, CreditCard, Users, Eye, Pencil, Trash2, Video } from "lucide-react";
 import ProfileCard from "@/components/shared/ProfileCard";
 import type { AdminParent } from "@/lib/mockParents";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { useCall } from "@/hooks/useCall";
 
 interface ParentCardProps {
   parent: AdminParent;
@@ -18,6 +19,17 @@ export default function ParentCard({ parent, colorIndex, isSelected, onSelection
   const router = useRouter();
   const { settings } = useSchoolSettings();
   const currencySymbol = settings.currency?.symbol || "₦";
+  const { startCall, startVideoCall, startVoiceCall, startChat } = useCall();
+
+  // Create participant object for calls
+  const parentParticipant = {
+    id: parent.id,
+    name: `${parent.firstName} ${parent.lastName}`,
+    avatar: parent.profilePhoto,
+    role: parent.relationship,
+    phone: parent.phone,
+    email: parent.email,
+  };
 
   const handleEdit = (id: string) => {
     router.push(`/admin/parents/edit/${id}`);
@@ -44,14 +56,19 @@ export default function ParentCard({ parent, colorIndex, isSelected, onSelection
   const buildCustomActions = () => {
     return [
       {
-        icon: MessageCircle,
-        label: "Send Message",
-        onClick: () => console.log("Send message to parent"),
+        icon: Video,
+        label: "Video Call",
+        onClick: () => startVideoCall(parentParticipant, { callContext: `Video call with ${parent.firstName}` }),
       },
       {
         icon: Phone,
-        label: "Call",
-        onClick: () => window.open(`tel:${parent.phone.replace(/\s/g, "")}`),
+        label: "Voice Call",
+        onClick: () => startVoiceCall(parentParticipant, { callContext: `Voice call with ${parent.firstName}` }),
+      },
+      {
+        icon: MessageCircle,
+        label: "Chat",
+        onClick: () => startChat(parentParticipant, { callContext: `Chat with ${parent.firstName}` }),
       },
       {
         icon: Mail,

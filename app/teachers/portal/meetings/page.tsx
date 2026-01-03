@@ -7,6 +7,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import PageLoader from "@/components/shared/PageLoader";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useMeetings, Meeting as ContextMeeting } from "@/contexts/MeetingsContext";
+import { useCall } from "@/hooks/useCall";
 import ScheduleMeetingModal, {
   ScheduledMeetingData,
   MeetingChildReference,
@@ -29,6 +30,7 @@ import {
   User,
   GraduationCap,
   Eye,
+  MessageSquare,
 } from "lucide-react";
 
 // Platform icons
@@ -270,6 +272,9 @@ export default function TeacherMeetingsPage() {
   const [selectedMeeting, setSelectedMeeting] = useState<MeetingDetails | null>(null);
   const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] = useState(false);
 
+  // Use the call hook for WebRTC calls
+  const { startVideoCall, startVoiceCall, startChat } = useCall();
+
   // Use the meetings context
   const { meetings: contextMeetings, addMeeting, getMeetingsByTeacher, updateMeeting, cancelMeeting, rescheduleMeeting, acceptMeeting, inviteParticipant, removeParticipant } = useMeetings();
 
@@ -352,6 +357,27 @@ export default function TeacherMeetingsPage() {
     (m) => m.status === "scheduled" || m.status === "in-progress" || m.status === "pending_approval"
   );
   const pastMeetings = filteredMeetings.filter((m) => m.status === "completed" || m.status === "cancelled");
+
+  // Helper to start a WebRTC call for a meeting
+  const handleStartMeetingCall = (meeting: DisplayMeeting, callType: "video" | "voice" | "chat") => {
+    const parentParticipant = {
+      id: `parent-${meeting.parentName.replace(/\s/g, "-").toLowerCase()}`,
+      name: meeting.parentName,
+      avatar: meeting.parentPhoto,
+      role: "Parent",
+    };
+
+    const roomId = `meeting-${meeting.id}`;
+    const callContext = `${meeting.title} - ${meeting.childName || "Meeting"}`;
+
+    if (callType === "video") {
+      startVideoCall(parentParticipant, { roomId, callContext });
+    } else if (callType === "voice") {
+      startVoiceCall(parentParticipant, { roomId, callContext });
+    } else {
+      startChat(parentParticipant, { roomId, callContext });
+    }
+  };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -668,15 +694,39 @@ export default function TeacherMeetingsPage() {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            {meeting.meetingLink && (
+                            {/* Educo Meet - Use WebRTC */}
+                            {meeting.platform === "educo-meet" && (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleStartMeetingCall(meeting, "video")}
+                                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25"
+                                >
+                                  <Video className="w-4 h-4" />
+                                  Video
+                                </button>
+                                <button
+                                  onClick={() => handleStartMeetingCall(meeting, "voice")}
+                                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shadow-lg shadow-emerald-500/25"
+                                >
+                                  <Phone className="w-4 h-4" />
+                                  Voice
+                                </button>
+                                <button
+                                  onClick={() => handleStartMeetingCall(meeting, "chat")}
+                                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg shadow-purple-500/25"
+                                >
+                                  <MessageSquare className="w-4 h-4" />
+                                </button>
+                              </div>
+                            )}
+                            {/* External platforms - Open link */}
+                            {meeting.meetingLink && meeting.platform !== "educo-meet" && (
                               <a
                                 href={meeting.meetingLink}
-                                target={meeting.platform === "educo-meet" ? "_self" : "_blank"}
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 ${
-                                  meeting.platform === "educo-meet"
-                                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25"
-                                    : meeting.platform === "zoom"
+                                  meeting.platform === "zoom"
                                     ? "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25"
                                     : meeting.platform === "google-meet"
                                     ? "bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-500/25"
@@ -685,7 +735,7 @@ export default function TeacherMeetingsPage() {
                               >
                                 <Video className="w-4 h-4" />
                                 Join
-                                {meeting.platform !== "educo-meet" && <ExternalLink className="w-3.5 h-3.5" />}
+                                <ExternalLink className="w-3.5 h-3.5" />
                               </a>
                             )}
                             {meeting.status === "pending_approval" && (

@@ -30,6 +30,8 @@ import {
   UserPlus,
   Trash2,
   Sparkles,
+  MessageSquare,
+  Headphones,
 } from "lucide-react";
 
 // Platform icons
@@ -150,6 +152,8 @@ interface MeetingDetailsModalProps {
   meeting: MeetingDetails | null;
   viewContext: "parent" | "teacher" | "admin";
   currentUserName?: string; // Name of the current user for cancel/reschedule attribution
+  currentUserId?: string; // ID of the current user for calls
+  currentUserAvatar?: string; // Avatar of the current user for calls
   initialAction?: "view" | "cancel" | "reschedule" | "invite"; // Initial action to show when modal opens
   onUpdate?: (meetingId: string, updates: MeetingUpdateData) => void;
   onCancel?: (meetingId: string, data: CancelMeetingData) => void;
@@ -158,6 +162,10 @@ interface MeetingDetailsModalProps {
   onInviteParticipant?: (meetingId: string, participant: AdditionalParticipant) => void;
   onRemoveParticipant?: (meetingId: string, participantId: string) => void;
   availableParticipants?: AdditionalParticipant[]; // List of people that can be invited
+  // In-app communication callbacks
+  onStartVideoCall?: (meetingId: string, roomId: string) => void;
+  onStartVoiceCall?: (meetingId: string, roomId: string) => void;
+  onStartChat?: (meetingId: string, roomId: string) => void;
 }
 
 function getPlatformInfo(platform: MeetingPlatform) {
@@ -284,6 +292,8 @@ export default function MeetingDetailsModal({
   meeting,
   viewContext,
   currentUserName = "User",
+  currentUserId,
+  currentUserAvatar,
   initialAction = "view",
   onUpdate,
   onCancel,
@@ -292,6 +302,9 @@ export default function MeetingDetailsModal({
   onInviteParticipant,
   onRemoveParticipant,
   availableParticipants = [],
+  onStartVideoCall,
+  onStartVoiceCall,
+  onStartChat,
 }: MeetingDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editNotes, setEditNotes] = useState("");
@@ -655,16 +668,66 @@ export default function MeetingDetailsModal({
                 </div>
               )}
 
-              {meeting.meetingLink && meeting.status !== "completed" && meeting.status !== "cancelled" && (
+              {/* Join Meeting Button - for external platforms */}
+              {meeting.meetingLink && meeting.status !== "completed" && meeting.status !== "cancelled" && meeting.platform !== "educo-meet" && (
                 <a
                   href={meeting.meetingLink}
-                  target={meeting.platform === "educo-meet" ? "_self" : "_blank"}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-blue-500/25 transition-all duration-200 hover:-translate-y-0.5"
                 >
                   <Video className="w-4 h-4" />
                   Join Meeting
-                  {meeting.platform !== "educo-meet" && <ExternalLink className="w-3.5 h-3.5" />}
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
+
+              {/* In-App Communication Options - for Educo Meet */}
+              {meeting.platform === "educo-meet" && meeting.status !== "completed" && meeting.status !== "cancelled" && (
+                <div className="space-y-2">
+                  <p className="text-xs text-center text-slate-500 dark:text-slate-400 mb-2">Join meeting in-app</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* Video Call Button */}
+                    <button
+                      onClick={() => onStartVideoCall?.(meeting.id, `meeting-${meeting.id}`)}
+                      className="flex flex-col items-center gap-1.5 px-3 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl text-xs font-semibold shadow-lg shadow-blue-500/25 transition-all duration-200 hover:-translate-y-0.5"
+                    >
+                      <Video className="w-5 h-5" />
+                      Video
+                    </button>
+
+                    {/* Voice Call Button */}
+                    <button
+                      onClick={() => onStartVoiceCall?.(meeting.id, `meeting-${meeting.id}`)}
+                      className="flex flex-col items-center gap-1.5 px-3 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:-translate-y-0.5"
+                    >
+                      <Headphones className="w-5 h-5" />
+                      Voice
+                    </button>
+
+                    {/* Chat Button */}
+                    <button
+                      onClick={() => onStartChat?.(meeting.id, `meeting-${meeting.id}`)}
+                      className="flex flex-col items-center gap-1.5 px-3 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl text-xs font-semibold shadow-lg shadow-purple-500/25 transition-all duration-200 hover:-translate-y-0.5"
+                    >
+                      <MessageSquare className="w-5 h-5" />
+                      Chat
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* WhatsApp Call Options */}
+              {(meeting.platform === "whatsapp-video" || meeting.platform === "whatsapp-voice") && meeting.status !== "completed" && meeting.status !== "cancelled" && (
+                <a
+                  href={meeting.meetingLink || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  {meeting.platform === "whatsapp-video" ? <Video className="w-4 h-4" /> : <Phone className="w-4 h-4" />}
+                  {meeting.platform === "whatsapp-video" ? "Video Call on WhatsApp" : "Voice Call on WhatsApp"}
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               )}
             </div>

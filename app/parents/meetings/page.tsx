@@ -12,6 +12,7 @@ import ScheduleMeetingModal, {
 } from "@/components/shared/ScheduleMeetingModal";
 import MeetingDetailsModal, { MeetingDetails, RescheduleMeetingData } from "@/components/shared/MeetingDetailsModal";
 import { useMeetings, Meeting as ContextMeeting, MeetingPlatform as ContextPlatform } from "@/contexts/MeetingsContext";
+import { useCall } from "@/hooks/useCall";
 import {
   Video,
   Phone,
@@ -29,6 +30,7 @@ import {
   PhoneCall,
   VideoIcon,
   Eye,
+  MessageSquare,
 } from "lucide-react";
 
 // Platform icons
@@ -341,6 +343,9 @@ export default function ParentMeetingsPage() {
   const [selectedMeeting, setSelectedMeeting] = useState<MeetingDetails | null>(null);
   const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] = useState(false);
 
+  // Use the call hook for WebRTC calls
+  const { startVideoCall, startVoiceCall, startChat, startCall } = useCall();
+
   // Use the meetings context
   const { meetings: contextMeetings, addMeeting, getMeetingsByParent, rescheduleMeeting, acceptMeeting } = useMeetings();
 
@@ -431,6 +436,52 @@ export default function ParentMeetingsPage() {
   const upcomingMeetings = filteredMeetings.filter((m) => m.status === "scheduled" || m.status === "in-progress");
   const pastMeetings = filteredMeetings.filter((m) => m.status === "completed" || m.status === "cancelled");
 
+  // Helper to start a WebRTC call for a meeting
+  const handleStartMeetingCall = (meeting: Meeting, callType: "video" | "voice" | "chat") => {
+    const teacherParticipant = {
+      id: `teacher-${meeting.hostName.replace(/\s/g, "-").toLowerCase()}`,
+      name: meeting.hostName,
+      avatar: meeting.hostPhoto,
+      role: meeting.hostRole,
+    };
+
+    const roomId = `meeting-${meeting.id}`;
+    const callContext = `${meeting.title} - ${meeting.childName || "Meeting"}`;
+
+    if (callType === "video") {
+      startVideoCall(teacherParticipant, { roomId, callContext });
+    } else if (callType === "voice") {
+      startVoiceCall(teacherParticipant, { roomId, callContext });
+    } else {
+      startChat(teacherParticipant, { roomId, callContext });
+    }
+  };
+
+  // Start a quick call with a teacher (not tied to specific meeting)
+  const handleQuickCall = (callType: "video" | "voice" | "chat") => {
+    // Default to first available teacher for quick calls
+    const teacher = AVAILABLE_TEACHERS[0];
+    if (!teacher) return;
+
+    const teacherParticipant = {
+      id: teacher.id,
+      name: teacher.name,
+      avatar: teacher.photo,
+      role: teacher.role,
+    };
+
+    const roomId = `quick-call-${Date.now()}`;
+    const callContext = `Quick ${callType === "video" ? "Video" : callType === "voice" ? "Voice" : "Chat"} with ${teacher.name}`;
+
+    if (callType === "video") {
+      startVideoCall(teacherParticipant, { roomId, callContext });
+    } else if (callType === "voice") {
+      startVoiceCall(teacherParticipant, { roomId, callContext });
+    } else {
+      startChat(teacherParticipant, { roomId, callContext });
+    }
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
@@ -509,47 +560,59 @@ export default function ParentMeetingsPage() {
 
         {/* Quick Actions - Communication Options */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Educo Meet - School's Own Platform */}
-          <button className="group flex items-center gap-4 p-4 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-900/20 dark:to-gray-800 rounded-2xl border border-indigo-100 dark:border-indigo-700/30 shadow-sm hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-600/50 transition-all duration-200">
+          {/* Educo Meet - Video Call */}
+          <button
+            onClick={() => handleQuickCall("video")}
+            className="group flex items-center gap-4 p-4 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-900/20 dark:to-gray-800 rounded-2xl border border-indigo-100 dark:border-indigo-700/30 shadow-sm hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-600/50 transition-all duration-200"
+          >
             <div className="p-3 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
-              <EducoMeetIcon />
+              <Video className="w-5 h-5" />
             </div>
             <div className="text-left">
-              <p className="font-semibold text-gray-900 dark:text-white text-sm">Educo Meet</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">School video platform</p>
+              <p className="font-semibold text-gray-900 dark:text-white text-sm">Video Call</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Start video meeting</p>
             </div>
             <ChevronRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
           </button>
 
+          {/* Voice Call */}
+          <button
+            onClick={() => handleQuickCall("voice")}
+            className="group flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:border-emerald-300 dark:hover:border-emerald-600/50 transition-all duration-200"
+          >
+            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+              <PhoneCall className="w-5 h-5" />
+            </div>
+            <div className="text-left">
+              <p className="font-semibold text-gray-900 dark:text-white text-sm">Voice Call</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Start audio call</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+          </button>
+
+          {/* Chat */}
+          <button
+            onClick={() => handleQuickCall("chat")}
+            className="group flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:border-purple-300 dark:hover:border-purple-600/50 transition-all duration-200"
+          >
+            <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
+              <MessageSquare className="w-5 h-5" />
+            </div>
+            <div className="text-left">
+              <p className="font-semibold text-gray-900 dark:text-white text-sm">Chat</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Send instant message</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-purple-500 group-hover:translate-x-1 transition-all" />
+          </button>
+
+          {/* WhatsApp (External) */}
           <button className="group flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:border-emerald-300 dark:hover:border-emerald-600/50 transition-all duration-200">
             <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
               <WhatsAppIcon />
             </div>
             <div className="text-left">
-              <p className="font-semibold text-gray-900 dark:text-white text-sm">WhatsApp Message</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Send message to teacher</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
-          </button>
-
-          <button className="group flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:border-emerald-300 dark:hover:border-emerald-600/50 transition-all duration-200">
-            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
-              <PhoneCall className="w-5 h-5" />
-            </div>
-            <div className="text-left">
-              <p className="font-semibold text-gray-900 dark:text-white text-sm">WhatsApp Call</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Voice call via WhatsApp</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
-          </button>
-
-          <button className="group flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:border-emerald-300 dark:hover:border-emerald-600/50 transition-all duration-200">
-            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
-              <VideoIcon className="w-5 h-5" />
-            </div>
-            <div className="text-left">
-              <p className="font-semibold text-gray-900 dark:text-white text-sm">WhatsApp Video</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Video call via WhatsApp</p>
+              <p className="font-semibold text-gray-900 dark:text-white text-sm">WhatsApp</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">External messaging</p>
             </div>
             <ChevronRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
           </button>
@@ -675,15 +738,33 @@ export default function ParentMeetingsPage() {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            {meeting.meetingLink && meeting.platform === "educo-meet" ? (
-                              <a
-                                href={meeting.meetingLink}
-                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25"
-                              >
-                                <Video className="w-4 h-4" />
-                                Join Educo Meet
-                              </a>
-                            ) : meeting.meetingLink && (
+                            {/* Educo Meet - Use WebRTC */}
+                            {meeting.platform === "educo-meet" && (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleStartMeetingCall(meeting, "video")}
+                                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25"
+                                >
+                                  <Video className="w-4 h-4" />
+                                  Video
+                                </button>
+                                <button
+                                  onClick={() => handleStartMeetingCall(meeting, "voice")}
+                                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shadow-lg shadow-emerald-500/25"
+                                >
+                                  <Phone className="w-4 h-4" />
+                                  Voice
+                                </button>
+                                <button
+                                  onClick={() => handleStartMeetingCall(meeting, "chat")}
+                                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg shadow-purple-500/25"
+                                >
+                                  <MessageSquare className="w-4 h-4" />
+                                </button>
+                              </div>
+                            )}
+                            {/* External platforms - Open link */}
+                            {meeting.meetingLink && meeting.platform !== "educo-meet" && !meeting.platform.includes("whatsapp") && (
                               <a
                                 href={meeting.meetingLink}
                                 target="_blank"
@@ -701,8 +782,12 @@ export default function ParentMeetingsPage() {
                                 <ExternalLink className="w-3.5 h-3.5" />
                               </a>
                             )}
-                            {!meeting.meetingLink && meeting.platform.includes("whatsapp") && (
-                              <button className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:-translate-y-0.5">
+                            {/* WhatsApp - Use WebRTC for now */}
+                            {meeting.platform.includes("whatsapp") && (
+                              <button
+                                onClick={() => handleStartMeetingCall(meeting, meeting.platform === "whatsapp-video" ? "video" : "voice")}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:-translate-y-0.5"
+                              >
                                 {meeting.platform === "whatsapp-video" ? <Video className="w-4 h-4" /> : <Phone className="w-4 h-4" />}
                                 {meeting.platform === "whatsapp-video" ? "Video Call" : "Voice Call"}
                               </button>

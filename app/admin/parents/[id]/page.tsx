@@ -78,6 +78,7 @@ import FormTextarea from "@/components/shared/FormTextarea";
 import ScheduleMeetingModal, { ScheduledMeetingData, MeetingChildReference } from "@/components/shared/ScheduleMeetingModal";
 import MeetingDetailsModal, { MeetingDetails, CancelMeetingData, RescheduleMeetingData, AdditionalParticipant } from "@/components/shared/MeetingDetailsModal";
 import { useMeetings, Meeting as ContextMeeting } from "@/contexts/MeetingsContext";
+import { useCall } from "@/hooks/useCall";
 
 // Tab type definition for parent detail page
 type ParentTabType = "details" | "meetings" | "leave" | "fees" | "communications" | "events";
@@ -101,6 +102,10 @@ export default function AdminParentDetailPage() {
 
   // Use the meetings context for shared state across portals
   const { meetings: contextMeetings, addMeeting, getMeetingsByParent } = useMeetings();
+
+  // Use the call hook for WebRTC calls
+  const { startVideoCall, startVoiceCall, startChat, startCall } = useCall();
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<ParentTabType>("details");
   const [isLinkChildModalOpen, setIsLinkChildModalOpen] = useState(false);
@@ -209,6 +214,28 @@ export default function AdminParentDetailPage() {
   }
 
   const fullName = `${parent.firstName} ${parent.lastName}`;
+
+  // Create participant object for WebRTC calls
+  const parentParticipant = {
+    id: parent.id,
+    name: fullName,
+    avatar: parent.profilePhoto,
+    role: parent.relationship,
+    phone: parent.phone,
+    email: parent.email,
+  };
+
+  // Handle starting a WebRTC call with the parent
+  const handleStartCall = (callType: "video" | "voice" | "chat") => {
+    const callContext = `Call with ${fullName}`;
+    if (callType === "video") {
+      startVideoCall(parentParticipant, { callContext });
+    } else if (callType === "voice") {
+      startVoiceCall(parentParticipant, { callContext });
+    } else {
+      startChat(parentParticipant, { callContext });
+    }
+  };
 
   // Handle scheduling a new meeting
   const handleScheduleMeeting = (meetingData: ScheduledMeetingData) => {
@@ -328,6 +355,7 @@ export default function AdminParentDetailPage() {
               fullName={fullName}
               feeStats={feeStats}
               money={money}
+              onStartCall={handleStartCall}
             />
           </div>
 
@@ -471,11 +499,13 @@ function ParentSidebar({
   fullName,
   feeStats,
   money,
+  onStartCall,
 }: {
   parent: AdminParent;
   fullName: string;
   feeStats: { total: number; paid: number; outstanding: number; overdue: number };
   money: (amount: number) => string;
+  onStartCall: (callType: "video" | "voice" | "chat") => void;
 }) {
   return (
     <div className="flex flex-col">
@@ -646,6 +676,51 @@ function ParentSidebar({
                 </div>
               </div>
             </a>
+
+            {/* Quick Communication Buttons */}
+            <div className="pt-2 sm:pt-3 mt-2 sm:mt-3 border-t border-gray-200/50 dark:border-gray-700/50">
+              <div className="text-[10px] sm:text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                Quick Communication
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onStartCall("video");
+                  }}
+                  className="flex flex-col items-center gap-1 p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  <Video className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="text-[10px] sm:text-xs font-semibold">Video</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onStartCall("voice");
+                  }}
+                  className="flex flex-col items-center gap-1 p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="text-[10px] sm:text-xs font-semibold">Voice</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onStartCall("chat");
+                  }}
+                  className="flex flex-col items-center gap-1 p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="text-[10px] sm:text-xs font-semibold">Chat</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

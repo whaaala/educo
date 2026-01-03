@@ -92,6 +92,7 @@ export const mockTenants: Tenant[] = [
 
     branding: {
       motto: "Excellence in Education",
+      logo: "https://api.dicebear.com/7.x/shapes/svg?seed=educo&backgroundColor=2563eb&size=64",
       primaryColor: "#2563eb",
       secondaryColor: "#1e40af",
       theme: "auto",
@@ -368,6 +369,7 @@ export const mockTenants: Tenant[] = [
     branding: {
       motto: "Building Global Leaders",
       mission: "To provide world-class education",
+      logo: "https://api.dicebear.com/7.x/shapes/svg?seed=greenfield&backgroundColor=059669&size=64",
       primaryColor: "#059669",
       secondaryColor: "#047857",
       theme: "light",
@@ -621,6 +623,7 @@ export const mockTenants: Tenant[] = [
 
     branding: {
       motto: "Wisdom, Character, Excellence",
+      logo: "https://api.dicebear.com/7.x/shapes/svg?seed=royaloak&backgroundColor=7c2d12&size=64",
       primaryColor: "#7c2d12",
       secondaryColor: "#92400e",
       theme: "light",
@@ -902,6 +905,7 @@ export const mockTenants: Tenant[] = [
     branding: {
       motto: "Innovation Through Education",
       mission: "Empowering the next generation of tech leaders",
+      logo: "https://api.dicebear.com/7.x/shapes/svg?seed=techbridge&backgroundColor=6366f1&size=64",
       primaryColor: "#6366f1",
       secondaryColor: "#4f46e5",
       theme: "dark",

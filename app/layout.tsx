@@ -16,6 +16,8 @@ import { PerformanceProvider } from "@/contexts/PerformanceContext";
 import { DisciplineProvider } from "@/contexts/DisciplineContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { MeetingsProvider } from "@/contexts/MeetingsContext";
+import { CommunicationProvider } from "@/contexts/CommunicationContext";
+import { CallProvider } from "@/hooks/useCall";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,9 +52,19 @@ export default function RootLayout({
                             <TranscriptProvider>
                               <AttendanceProvider>
                                 <MeetingsProvider>
-                                  <SidebarProvider>
-                                    {children}
-                                  </SidebarProvider>
+                                  <CommunicationProvider>
+                                    <CallProvider
+                                      currentUser={{
+                                        id: "current-user-id",
+                                        name: "School Staff",
+                                        role: "Staff",
+                                      }}
+                                    >
+                                      <SidebarProvider>
+                                        {children}
+                                      </SidebarProvider>
+                                    </CallProvider>
+                                  </CommunicationProvider>
                                 </MeetingsProvider>
                               </AttendanceProvider>
                             </TranscriptProvider>
