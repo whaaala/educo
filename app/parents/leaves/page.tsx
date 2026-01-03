@@ -10,20 +10,17 @@ import SearchFilterBar from "@/components/shared/SearchFilterBar";
 import FormInput from "@/components/shared/FormInput";
 import FormTextarea from "@/components/shared/FormTextarea";
 import AddButton from "@/components/shared/AddButton";
+import ChildLeaveRequestDetailsModal, { LeaveHistoryEntry } from "@/components/shared/ChildLeaveRequestDetailsModal";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import {
   CalendarDays,
   CalendarCheck,
-  ChevronRight,
-  ChevronDown,
   Clock,
   CheckCircle2,
   XCircle,
   AlertTriangle,
   Plus,
   Calendar,
-  User,
-  Search,
   X,
   FileText,
   Send,
@@ -249,6 +246,40 @@ function calculateDays(from: string, to: string): number {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 }
 
+function generateLeaveHistory(leave: ChildLeaveRequest): LeaveHistoryEntry[] {
+  const history: LeaveHistoryEntry[] = [
+    {
+      id: "1",
+      action: "submitted",
+      timestamp: leave.appliedDate || new Date().toISOString(),
+      by: "Parent",
+      notes: `Leave request submitted for ${leave.childName} (${leave.leaveType} - ${leave.days} day${leave.days === 1 ? '' : 's'})`,
+    },
+  ];
+
+  if (leave.status === "approved" && leave.approvedBy) {
+    history.push({
+      id: "2",
+      action: "approved",
+      timestamp: leave.approvedDate || new Date().toISOString(),
+      by: leave.approvedBy,
+      notes: "Leave request has been approved. Student is excused from classes during the specified period.",
+    });
+  }
+
+  if (leave.status === "declined") {
+    history.push({
+      id: "2",
+      action: "rejected",
+      timestamp: leave.approvedDate || new Date().toISOString(),
+      by: leave.approvedBy || "School Administration",
+      notes: leave.remarks || "Leave request was declined.",
+    });
+  }
+
+  return history;
+}
+
 // ============================================
 // MAIN COMPONENT
 // ============================================
@@ -454,7 +485,29 @@ export default function ParentLeavesPage() {
 
       {/* View Leave Modal */}
       {selectedLeave && (
-        <LeaveDetailModal leave={selectedLeave} onClose={() => setSelectedLeave(null)} />
+        <ChildLeaveRequestDetailsModal
+          leave={{
+            id: selectedLeave.id,
+            childId: selectedLeave.childId,
+            childName: selectedLeave.childName,
+            childPhoto: selectedLeave.childPhoto,
+            classLevel: selectedLeave.classLevel,
+            leaveType: selectedLeave.leaveType,
+            fromDate: selectedLeave.fromDate,
+            toDate: selectedLeave.toDate,
+            days: selectedLeave.days,
+            reason: selectedLeave.reason,
+            status: selectedLeave.status,
+            appliedDate: selectedLeave.appliedDate,
+            approvedBy: selectedLeave.approvedBy,
+            approvedDate: selectedLeave.approvedDate,
+            remarks: selectedLeave.remarks,
+            documents: selectedLeave.documents,
+          }}
+          onClose={() => setSelectedLeave(null)}
+          isAdmin={false}
+          history={generateLeaveHistory(selectedLeave)}
+        />
       )}
 
       {/* Apply Leave Modal */}
@@ -694,147 +747,6 @@ function LeaveCard({ leave, onClick, showChildInfo = true }: { leave: ChildLeave
         </div>
       </div>
     </button>
-  );
-}
-
-// ============================================
-// LEAVE DETAIL MODAL
-// ============================================
-
-function LeaveDetailModal({ leave, onClose }: { leave: ChildLeaveRequest; onClose: () => void }) {
-  const [mounted, setMounted] = useState(false);
-  const modalRef = useRef<HTMLDivElement>(null);
-  const status = getStatusConfig(leave.status);
-  const type = getLeaveTypeConfig(leave.leaveType);
-  const StatusIcon = status.icon;
-  const TypeIcon = type.icon;
-
-  useEffect(() => {
-    setMounted(true);
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
-  }, []);
-
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [onClose]);
-
-  if (!mounted) return null;
-
-  return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
-      <div
-        ref={modalRef}
-        onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
-      >
-        {/* Header */}
-        <div className={`relative px-4 sm:px-6 py-4 sm:py-5 ${status.bg} border-b ${status.border}`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-xl bg-white/80 dark:bg-gray-800/80`}>
-                <StatusIcon className={`w-5 h-5 ${status.text}`} />
-              </div>
-              <div>
-                <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Leave Details</h2>
-                <span className={`text-xs font-semibold ${status.text}`}>{status.label}</span>
-              </div>
-            </div>
-            <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-700/50 transition-colors">
-              <X className="w-5 h-5 text-gray-500" />
-            </button>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto max-h-[calc(90vh-180px)]">
-          {/* Type Badge */}
-          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${type.bg}`}>
-            <TypeIcon className={`w-4 h-4 ${type.text}`} />
-            <span className={`text-sm font-medium ${type.text}`}>{leave.leaveType} Leave</span>
-          </div>
-
-          {/* Reason */}
-          <div>
-            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reason</label>
-            <p className="mt-1 text-sm sm:text-base text-gray-900 dark:text-white font-medium">{leave.reason}</p>
-          </div>
-
-          {/* Child Info */}
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700/50">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
-              {leave.childName.split(" ").map((n) => n[0]).join("")}
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white">{leave.childName}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{leave.classLevel}</p>
-            </div>
-          </div>
-
-          {/* Date Range */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700/50">
-              <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider mb-1">From</p>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white">{formatDate(leave.fromDate)}</p>
-            </div>
-            <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700/50">
-              <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider mb-1">To</p>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white">{formatDate(leave.toDate)}</p>
-            </div>
-          </div>
-
-          {/* Duration & Applied */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-100 dark:border-cyan-500/20">
-            <div>
-              <p className="text-xs text-cyan-600 dark:text-cyan-400">Duration</p>
-              <p className="text-lg font-bold text-cyan-700 dark:text-cyan-300">{leave.days} {leave.days === 1 ? "Day" : "Days"}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-gray-500">Applied on</p>
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{formatDate(leave.appliedDate)}</p>
-            </div>
-          </div>
-
-          {/* Approval Info */}
-          {leave.status === "approved" && leave.approvedBy && (
-            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20">
-              <div className="flex items-center gap-2 mb-1">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Approved</p>
-              </div>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                By <span className="font-semibold">{leave.approvedBy}</span>
-                {leave.approvedDate && <span className="text-gray-500"> on {formatDate(leave.approvedDate)}</span>}
-              </p>
-            </div>
-          )}
-
-          {/* Decline Reason */}
-          {leave.status === "declined" && leave.remarks && (
-            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20">
-              <div className="flex items-center gap-2 mb-1">
-                <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-                <p className="text-xs font-medium text-rose-600 dark:text-rose-400">Reason for Decline</p>
-              </div>
-              <p className="text-sm text-gray-700 dark:text-gray-300">{leave.remarks}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="px-4 sm:px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700/50">
-          <button
-            onClick={onClose}
-            className="w-full py-2.5 rounded-xl bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-semibold transition-colors"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body
   );
 }
 

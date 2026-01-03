@@ -1,12 +1,29 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { CheckCheck, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { CheckCheck, Trash2, Clock, ChevronRight, FileText, CheckCircle2, XCircle, Bell, Calendar, Users, AlertTriangle } from "lucide-react";
 import Image from "next/image";
+
+type NotificationType =
+  | "general"
+  | "performance"
+  | "appointment"
+  | "record"
+  | "leave_submitted"
+  | "leave_approved"
+  | "leave_rejected"
+  | "meeting_scheduled"
+  | "meeting_cancelled"
+  | "payment"
+  | "message"
+  | "alert"
+  | "success"
+  | "warning"
+  | "info";
 
 interface NotificationCardProps {
   id: string;
-  type: "performance" | "appointment" | "record" | "general";
+  type: NotificationType;
   message: string;
   time: string;
   avatar?: string;
@@ -16,6 +33,7 @@ interface NotificationCardProps {
   onMarkAsRead?: (id: string) => void;
   onDelete?: (id: string) => void;
   isOdd?: boolean;
+  onClick?: () => void;
 }
 
 export default function NotificationCard({
@@ -29,228 +47,297 @@ export default function NotificationCard({
   actions,
   onMarkAsRead,
   onDelete,
-  isOdd = false,
+  onClick,
 }: NotificationCardProps) {
-  const [isAvatarHovered, setIsAvatarHovered] = useState(false);
-  const [expandedPosition, setExpandedPosition] = useState({ top: 0, left: 0 });
   const [isMounted, setIsMounted] = useState(false);
-  const avatarRef = useRef<HTMLDivElement>(null);
 
-  // Ensure client-side only rendering for hover effects
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Calculate position to keep expanded avatar within viewport
-  const handleMouseEnter = () => {
-    if (!isMounted || typeof window === 'undefined') return;
-
-    setIsAvatarHovered(true);
-    if (avatarRef.current) {
-      const rect = avatarRef.current.getBoundingClientRect();
-      const expandedWidth = 224; // 56 * 4 = 224px (w-56)
-      const expandedHeight = 224 + 60; // 224px + name card height
-      const margin = 16; // ml-4 = 16px
-
-      // Calculate horizontal position (prefer right side)
-      let left = rect.right + margin;
-      const spaceOnRight = window.innerWidth - rect.right;
-      if (spaceOnRight < (expandedWidth + margin + 20)) {
-        // Not enough space on right, position to fit within viewport
-        left = window.innerWidth - expandedWidth - 20; // 20px padding from edge
-      }
-
-      // Calculate vertical position (align with avatar top, but adjust if needed)
-      let top = rect.top;
-      const bottomMargin = 40; // Margin from bottom edge
-      const spaceBelow = window.innerHeight - rect.top;
-      if (spaceBelow < expandedHeight + bottomMargin) {
-        // Not enough space below, adjust upward with bottom margin
-        top = Math.max(20, window.innerHeight - expandedHeight - bottomMargin);
-      }
-
-      setExpandedPosition({ top, left });
-    }
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
-  const getNotificationColor = (type: string) => {
+  const getTypeConfig = (type: NotificationType) => {
     switch (type) {
       case "performance":
-        return "from-red-500 to-orange-500";
+        return {
+          icon: AlertTriangle,
+          gradient: "from-amber-500 to-orange-500",
+          bg: "bg-amber-50/80 dark:bg-amber-500/10",
+          text: "text-amber-600 dark:text-amber-400",
+          border: "border-amber-100/50 dark:border-amber-500/20",
+          label: "Performance",
+        };
       case "appointment":
-        return "from-purple-500 to-pink-500";
+        return {
+          icon: Calendar,
+          gradient: "from-purple-500 to-pink-500",
+          bg: "bg-purple-50/80 dark:bg-purple-500/10",
+          text: "text-purple-600 dark:text-purple-400",
+          border: "border-purple-100/50 dark:border-purple-500/20",
+          label: "Appointment",
+        };
       case "record":
-        return "from-blue-500 to-indigo-500";
+        return {
+          icon: Users,
+          gradient: "from-blue-500 to-indigo-500",
+          bg: "bg-blue-50/80 dark:bg-blue-500/10",
+          text: "text-blue-600 dark:text-blue-400",
+          border: "border-blue-100/50 dark:border-blue-500/20",
+          label: "Record",
+        };
+      case "leave_submitted":
+        return {
+          icon: FileText,
+          gradient: "from-cyan-500 to-blue-500",
+          bg: "bg-cyan-50/80 dark:bg-cyan-500/10",
+          text: "text-cyan-600 dark:text-cyan-400",
+          border: "border-cyan-100/50 dark:border-cyan-500/20",
+          label: "Leave Request",
+        };
+      case "leave_approved":
+        return {
+          icon: CheckCircle2,
+          gradient: "from-emerald-500 to-green-500",
+          bg: "bg-emerald-50/80 dark:bg-emerald-500/10",
+          text: "text-emerald-600 dark:text-emerald-400",
+          border: "border-emerald-100/50 dark:border-emerald-500/20",
+          label: "Leave Approved",
+        };
+      case "leave_rejected":
+        return {
+          icon: XCircle,
+          gradient: "from-rose-500 to-red-500",
+          bg: "bg-rose-50/80 dark:bg-rose-500/10",
+          text: "text-rose-600 dark:text-rose-400",
+          border: "border-rose-100/50 dark:border-rose-500/20",
+          label: "Leave Rejected",
+        };
+      case "meeting_scheduled":
+        return {
+          icon: Calendar,
+          gradient: "from-indigo-500 to-purple-500",
+          bg: "bg-indigo-50/80 dark:bg-indigo-500/10",
+          text: "text-indigo-600 dark:text-indigo-400",
+          border: "border-indigo-100/50 dark:border-indigo-500/20",
+          label: "Meeting",
+        };
+      case "meeting_cancelled":
+        return {
+          icon: XCircle,
+          gradient: "from-rose-500 to-red-500",
+          bg: "bg-rose-50/80 dark:bg-rose-500/10",
+          text: "text-rose-600 dark:text-rose-400",
+          border: "border-rose-100/50 dark:border-rose-500/20",
+          label: "Cancelled",
+        };
+      case "payment":
+        return {
+          icon: CheckCircle2,
+          gradient: "from-green-500 to-emerald-500",
+          bg: "bg-green-50/80 dark:bg-green-500/10",
+          text: "text-green-600 dark:text-green-400",
+          border: "border-green-100/50 dark:border-green-500/20",
+          label: "Payment",
+        };
+      case "message":
+        return {
+          icon: Bell,
+          gradient: "from-blue-500 to-cyan-500",
+          bg: "bg-blue-50/80 dark:bg-blue-500/10",
+          text: "text-blue-600 dark:text-blue-400",
+          border: "border-blue-100/50 dark:border-blue-500/20",
+          label: "Message",
+        };
+      case "alert":
+        return {
+          icon: AlertTriangle,
+          gradient: "from-red-500 to-rose-500",
+          bg: "bg-red-50/80 dark:bg-red-500/10",
+          text: "text-red-600 dark:text-red-400",
+          border: "border-red-100/50 dark:border-red-500/20",
+          label: "Alert",
+        };
+      case "success":
+        return {
+          icon: CheckCircle2,
+          gradient: "from-emerald-500 to-green-500",
+          bg: "bg-emerald-50/80 dark:bg-emerald-500/10",
+          text: "text-emerald-600 dark:text-emerald-400",
+          border: "border-emerald-100/50 dark:border-emerald-500/20",
+          label: "Success",
+        };
+      case "warning":
+        return {
+          icon: AlertTriangle,
+          gradient: "from-amber-500 to-yellow-500",
+          bg: "bg-amber-50/80 dark:bg-amber-500/10",
+          text: "text-amber-600 dark:text-amber-400",
+          border: "border-amber-100/50 dark:border-amber-500/20",
+          label: "Warning",
+        };
+      case "info":
+        return {
+          icon: Bell,
+          gradient: "from-blue-500 to-indigo-500",
+          bg: "bg-blue-50/80 dark:bg-blue-500/10",
+          text: "text-blue-600 dark:text-blue-400",
+          border: "border-blue-100/50 dark:border-blue-500/20",
+          label: "Info",
+        };
       default:
-        return "from-gray-500 to-gray-600";
+        return {
+          icon: Bell,
+          gradient: "from-gray-500 to-gray-600",
+          bg: "bg-gray-50/80 dark:bg-gray-500/10",
+          text: "text-gray-600 dark:text-gray-400",
+          border: "border-gray-100/50 dark:border-gray-500/20",
+          label: "General",
+        };
     }
   };
 
-  const bgColor = isOdd
-    ? "bg-transparent"
-    : "bg-gray-50/50 dark:bg-[#1e2128]/50 midnight:bg-[#141b2e]/50 purple:bg-[#231533]/50";
+  const config = getTypeConfig(type);
+  const TypeIcon = config.icon;
 
-  // Don't render anything until mounted to avoid hydration issues
   if (!isMounted) {
     return (
-      <div className={`${bgColor} rounded-xl shadow-sm border border-gray-200 dark:border-gray-800/50 h-24 animate-pulse`}></div>
+      <div className="p-4 animate-pulse">
+        <div className="flex gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-gray-700"></div>
+          <div className="flex-1">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+          </div>
+        </div>
+      </div>
     );
   }
 
+  const handleMarkAsRead = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onMarkAsRead?.(id);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete?.(id);
+  };
+
   return (
     <div
-      className={`${bgColor} rounded-xl shadow-sm border ${
+      className={`group relative p-4 transition-all duration-200 ${onClick ? "cursor-pointer" : ""} ${
         unread
-          ? "border-blue-200 dark:border-blue-500/30 midnight:border-cyan-500/30 purple:border-pink-500/30"
-          : "border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20"
-      } hover:shadow-md transition-all duration-200 group`}
+          ? "bg-gradient-to-r from-blue-50/50 via-transparent to-transparent dark:from-blue-500/5 dark:via-transparent"
+          : ""
+      } hover:bg-gray-50/50 dark:hover:bg-gray-800/30`}
       suppressHydrationWarning
+      onClick={onClick}
     >
-      <div className="p-4" suppressHydrationWarning>
-        <div className="flex gap-3" suppressHydrationWarning>
-          {/* Avatar */}
-          <div
-            ref={avatarRef}
-            className="flex-shrink-0 relative group/avatar cursor-pointer"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={() => setIsAvatarHovered(false)}
-          >
-            <div
-              className={`w-14 h-14 rounded-xl bg-gradient-to-br ${getNotificationColor(
-                type
-              )} flex items-center justify-center text-white font-bold text-lg shadow-md relative transition-all overflow-hidden`}
-            >
-              {avatar ? (
-                <Image
-                  src={avatar}
-                  alt={userName || "User"}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                userName ? getInitials(userName) : "N"
-              )}
-              {unread && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full border-2 border-white dark:border-[#252930] z-10"></div>
-              )}
+      {/* Unread indicator line */}
+      {unread && (
+        <div className="absolute left-0 top-4 bottom-4 w-[3px] bg-gradient-to-b from-blue-500 to-cyan-500 rounded-r-full" />
+      )}
+
+      <div className="flex gap-4" suppressHydrationWarning>
+        {/* Avatar / Icon */}
+        <div className="flex-shrink-0 relative">
+          {avatar ? (
+            <div className="w-12 h-12 rounded-xl overflow-hidden shadow-sm ring-2 ring-white/80 dark:ring-gray-700/50">
+              <Image
+                src={avatar}
+                alt={userName || "User"}
+                width={48}
+                height={48}
+                className="object-cover w-full h-full"
+              />
             </div>
-
-            {/* Expanded Avatar Preview on Hover */}
-            {isMounted && isAvatarHovered && (
-              <div
-                className="fixed z-[100] pointer-events-none"
-                style={{
-                  top: `${expandedPosition.top}px`,
-                  left: `${expandedPosition.left}px`
-                }}
-              >
-                <div className="relative w-56 h-56 rounded-2xl overflow-hidden shadow-2xl border-4 border-white dark:border-gray-800 animate-in fade-in zoom-in-95 duration-200">
-                  {/* Profile Image or Gradient Background */}
-                  {avatar ? (
-                    <Image
-                      src={avatar}
-                      alt={userName || "User"}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div
-                      className={`w-full h-full bg-gradient-to-br ${getNotificationColor(
-                        type
-                      )} flex items-center justify-center relative`}
-                    >
-                      {/* Decorative pattern background */}
-                      <div className="absolute inset-0 opacity-20">
-                        <svg width="100%" height="100%" className="text-white">
-                          <pattern id={`pattern-${id}`} x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                            <line x1="0" y1="0" x2="40" y2="40" stroke="currentColor" strokeWidth="1"/>
-                            <line x1="40" y1="0" x2="0" y2="40" stroke="currentColor" strokeWidth="1"/>
-                          </pattern>
-                          <rect width="100%" height="100%" fill={`url(#pattern-${id})`} />
-                        </svg>
-                      </div>
-                      {/* Large initials */}
-                      <span className="relative text-white font-bold text-8xl z-10">
-                        {userName ? getInitials(userName) : "N"}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="mt-3 text-center bg-white dark:bg-gray-800 rounded-lg p-3 shadow-lg">
-                  <p className="text-base font-bold text-gray-900 dark:text-white">
-                    {userName || "User"}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
-                    {type}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 min-w-0" suppressHydrationWarning>
-            {/* Message and Actions Row */}
-            <div className="flex items-start justify-between gap-4 mb-0.5" suppressHydrationWarning>
-              <p className="text-base font-normal text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 leading-tight">
-                {message}
-              </p>
-
-              {/* Quick Actions */}
-              <div className="flex items-center gap-1 flex-shrink-0">
-                {unread && onMarkAsRead && (
-                  <button
-                    onClick={() => onMarkAsRead(id)}
-                    className="p-1.5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all cursor-pointer"
-                    title="Mark as read"
-                  >
-                    <CheckCheck className="w-4 h-4" />
-                  </button>
-                )}
-                {onDelete && (
-                  <button
-                    onClick={() => onDelete(id)}
-                    className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
+          ) : (
+            <div className={`w-12 h-12 rounded-xl ${config.bg} ${config.border} border flex items-center justify-center shadow-sm`}>
+              <TypeIcon className={`w-5 h-5 ${config.text}`} />
             </div>
-
-            {/* Time */}
-            <div className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 mb-3">
-              {time}
-            </div>
-
-            {/* Action Buttons */}
-            {isMounted && actions && actions.length > 0 && (
-              <div className="flex gap-2">
-                {actions.map((action, index) => (
-                  <button
-                    key={`${id}-${action.label}-${index}`}
-                    className={`px-5 py-2 text-sm font-semibold rounded-lg transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md active:scale-95 ${
-                      action.variant === "primary"
-                        ? "text-white bg-blue-600 hover:bg-blue-700 ring-1 ring-blue-600 hover:ring-blue-700"
-                        : "text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-600/50 ring-1 ring-gray-300 dark:ring-gray-600"
-                    }`}
-                  >
-                    {action.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
+          {/* Unread dot */}
+          {unread && (
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full ring-2 ring-white dark:ring-gray-900" />
+          )}
         </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0" suppressHydrationWarning>
+          {/* Type Badge & Time */}
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider ${config.bg} ${config.text}`}>
+              {config.label}
+            </span>
+            <div className="flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500">
+              <Clock className="w-3 h-3" />
+              <span>{time}</span>
+            </div>
+          </div>
+
+          {/* Message */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              {userName && (
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {userName}{" "}
+                </span>
+              )}
+              <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                {message}
+              </span>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              {unread && onMarkAsRead && (
+                <button
+                  onClick={handleMarkAsRead}
+                  className="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-all cursor-pointer"
+                  title="Mark as read"
+                >
+                  <CheckCheck className="w-4 h-4" />
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={handleDelete}
+                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all cursor-pointer"
+                  title="Delete"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          {actions && actions.length > 0 && (
+            <div className="flex items-center gap-2 mt-3">
+              {actions.map((action, index) => (
+                <button
+                  key={`${id}-${action.label}-${index}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+                    action.variant === "primary"
+                      ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-sm hover:shadow-md"
+                      : "text-gray-700 dark:text-gray-200 bg-gray-100/80 dark:bg-gray-700/50 hover:bg-gray-200/80 dark:hover:bg-gray-600/50 border border-gray-200/50 dark:border-gray-600/50"
+                  }`}
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Clickable indicator */}
+        {onClick && (
+          <div className="flex-shrink-0 self-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="p-1.5 rounded-lg bg-gray-100/80 dark:bg-gray-700/50">
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -77,6 +77,7 @@ import FormButton from "@/components/shared/FormButton";
 import FormTextarea from "@/components/shared/FormTextarea";
 import ScheduleMeetingModal, { ScheduledMeetingData, MeetingChildReference } from "@/components/shared/ScheduleMeetingModal";
 import MeetingDetailsModal, { MeetingDetails, CancelMeetingData, RescheduleMeetingData, AdditionalParticipant } from "@/components/shared/MeetingDetailsModal";
+import ChildLeaveRequestDetailsModal from "@/components/shared/ChildLeaveRequestDetailsModal";
 import { useMeetings, Meeting as ContextMeeting } from "@/contexts/MeetingsContext";
 import { useCall } from "@/hooks/useCall";
 
@@ -1595,24 +1596,38 @@ function LeaveRequestsSection({
   setLeaveRequests: React.Dispatch<React.SetStateAction<LeaveRequest[]>>;
 }) {
   const [showAll, setShowAll] = useState(false);
+  const [selectedLeave, setSelectedLeave] = useState<LeaveRequest | null>(null);
+  const [showRejectFormInitially, setShowRejectFormInitially] = useState(false);
   const pendingRequests = leaveRequests.filter((r) => r.status === "pending");
   const displayRequests = showAll ? leaveRequests : leaveRequests.slice(0, 5);
 
-  const handleApprove = (requestId: string) => {
+  const handleApprove = (requestId: string, notes?: string) => {
     setLeaveRequests((prev) =>
       prev.map((r) =>
         r.id === requestId
-          ? { ...r, status: "approved" as const, processedAt: new Date().toISOString(), processedBy: "Admin" }
+          ? {
+              ...r,
+              status: "approved" as const,
+              processedAt: new Date().toISOString(),
+              processedBy: "Admin",
+              adminNotes: notes || undefined,
+            }
           : r
       )
     );
   };
 
-  const handleReject = (requestId: string) => {
+  const handleReject = (requestId: string, reason: string) => {
     setLeaveRequests((prev) =>
       prev.map((r) =>
         r.id === requestId
-          ? { ...r, status: "rejected" as const, processedAt: new Date().toISOString(), processedBy: "Admin", adminNotes: "Request not approved." }
+          ? {
+              ...r,
+              status: "rejected" as const,
+              processedAt: new Date().toISOString(),
+              processedBy: "Admin",
+              adminNotes: reason,
+            }
           : r
       )
     );
@@ -1647,88 +1662,129 @@ function LeaveRequestsSection({
   };
 
   return (
-    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <CalendarX className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-            Leave Requests ({leaveRequests.length})
-          </h3>
-          {pendingRequests.length > 0 && (
-            <span className="px-2 py-1 text-[10px] font-bold text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-              {pendingRequests.length} Pending Approval
-            </span>
-          )}
-        </div>
+    <>
+      <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <CalendarX className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+              Leave Requests ({leaveRequests.length})
+            </h3>
+            {pendingRequests.length > 0 && (
+              <span className="px-2 py-1 text-[10px] font-bold text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+                {pendingRequests.length} Pending Approval
+              </span>
+            )}
+          </div>
 
-        {displayRequests.length === 0 ? (
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center py-4">No leave requests</p>
-        ) : (
-          <div className="space-y-2">
-            {displayRequests.map((request) => (
-              <div
-                key={request.id}
-                className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 ${
-                  request.status === "pending"
-                    ? "bg-yellow-50/50 dark:bg-yellow-900/10 midnight:bg-yellow-900/10 purple:bg-yellow-900/10 border-yellow-200/50 dark:border-yellow-800/30 midnight:border-yellow-800/30 purple:border-yellow-800/30 hover:border-yellow-300 dark:hover:border-yellow-700 midnight:hover:border-yellow-600 purple:hover:border-yellow-600 hover:shadow-yellow-500/10 dark:hover:shadow-yellow-500/20 midnight:hover:shadow-yellow-500/20 purple:hover:shadow-yellow-500/20"
-                    : "bg-gray-50/50 dark:bg-gray-800/20 midnight:bg-gray-800/20 purple:bg-gray-800/20 border-gray-200/40 dark:border-gray-700/40 midnight:border-gray-700/40 purple:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-xs font-bold text-gray-900 dark:text-white">{request.childName}</span>
-                      <span className="text-[10px] text-gray-500 dark:text-gray-400">({request.childClass})</span>
-                      {getLeaveTypeBadge(request.leaveType)}
-                      {getStatusBadge(request.status)}
+          {displayRequests.length === 0 ? (
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center py-4">No leave requests</p>
+          ) : (
+            <div className="space-y-2">
+              {displayRequests.map((request) => (
+                <div
+                  key={request.id}
+                  onClick={() => setSelectedLeave(request)}
+                  className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 ${
+                    request.status === "pending"
+                      ? "bg-yellow-50/50 dark:bg-yellow-900/10 midnight:bg-yellow-900/10 purple:bg-yellow-900/10 border-yellow-200/50 dark:border-yellow-800/30 midnight:border-yellow-800/30 purple:border-yellow-800/30 hover:border-yellow-300 dark:hover:border-yellow-700 midnight:hover:border-yellow-600 purple:hover:border-yellow-600 hover:shadow-yellow-500/10 dark:hover:shadow-yellow-500/20 midnight:hover:shadow-yellow-500/20 purple:hover:shadow-yellow-500/20"
+                      : "bg-gray-50/50 dark:bg-gray-800/20 midnight:bg-gray-800/20 purple:bg-gray-800/20 border-gray-200/40 dark:border-gray-700/40 midnight:border-gray-700/40 purple:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="text-xs font-bold text-gray-900 dark:text-white">{request.childName}</span>
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400">({request.childClass})</span>
+                        {getLeaveTypeBadge(request.leaveType)}
+                        {getStatusBadge(request.status)}
+                      </div>
+                      <div className="flex items-center gap-2 text-[10px] text-gray-600 dark:text-gray-400">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(request.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} -{" "}
+                        {new Date(request.endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      </div>
+                      <p className="text-[10px] text-gray-600 dark:text-gray-400 mt-1 line-clamp-1">{request.reason}</p>
+                      {request.processedBy && (
+                        <p className="text-[10px] text-gray-500 dark:text-gray-500 mt-1 italic">
+                          Processed by {request.processedBy}
+                        </p>
+                      )}
+                      {request.status === "rejected" && request.adminNotes && (
+                        <p className="text-[10px] text-red-600 dark:text-red-400 mt-1 italic line-clamp-1">
+                          Reason: {request.adminNotes}
+                        </p>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] text-gray-600 dark:text-gray-400">
-                      <Calendar className="w-3 h-3" />
-                      {new Date(request.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} -{" "}
-                      {new Date(request.endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                    </div>
-                    <p className="text-[10px] text-gray-600 dark:text-gray-400 mt-1">{request.reason}</p>
-                    {request.processedBy && (
-                      <p className="text-[10px] text-gray-500 dark:text-gray-500 mt-1 italic">
-                        Processed by {request.processedBy}
-                      </p>
+                    {request.status === "pending" && (
+                      <div className="flex gap-1.5 flex-shrink-0">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleApprove(request.id); }}
+                          className="px-2.5 py-1.5 text-[10px] font-semibold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors cursor-pointer flex items-center gap-1"
+                        >
+                          <CheckCircle2 className="w-3 h-3" />
+                          Approve
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setShowRejectFormInitially(true); setSelectedLeave(request); }}
+                          className="px-2.5 py-1.5 text-[10px] font-semibold text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/30 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors cursor-pointer flex items-center gap-1"
+                        >
+                          <XCircle className="w-3 h-3" />
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                    {request.status !== "pending" && (
+                      <div className="flex items-center gap-1 text-[10px] text-blue-600 dark:text-blue-400">
+                        <Eye className="w-3 h-3" />
+                        <span>View</span>
+                      </div>
                     )}
                   </div>
-                  {request.status === "pending" && (
-                    <div className="flex gap-1.5 flex-shrink-0">
-                      <button
-                        onClick={() => handleApprove(request.id)}
-                        className="px-2.5 py-1.5 text-[10px] font-semibold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors cursor-pointer flex items-center gap-1"
-                      >
-                        <CheckCircle2 className="w-3 h-3" />
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleReject(request.id)}
-                        className="px-2.5 py-1.5 text-[10px] font-semibold text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/30 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors cursor-pointer flex items-center gap-1"
-                      >
-                        <XCircle className="w-3 h-3" />
-                        Reject
-                      </button>
-                    </div>
-                  )}
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
 
-        {leaveRequests.length > 5 && (
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="w-full mt-3 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
-          >
-            {showAll ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            {showAll ? "Show Less" : `Show All ${leaveRequests.length} Requests`}
-          </button>
-        )}
+          {leaveRequests.length > 5 && (
+            <button
+              onClick={() => setShowAll(!showAll)}
+              className="w-full mt-3 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+            >
+              {showAll ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              {showAll ? "Show Less" : `Show All ${leaveRequests.length} Requests`}
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* Leave Request Details Modal */}
+      {selectedLeave && (
+        <ChildLeaveRequestDetailsModal
+          leave={{
+            id: selectedLeave.id,
+            childId: selectedLeave.childId,
+            childName: selectedLeave.childName,
+            childClass: selectedLeave.childClass,
+            leaveType: selectedLeave.leaveType,
+            startDate: selectedLeave.startDate,
+            endDate: selectedLeave.endDate,
+            reason: selectedLeave.reason,
+            status: selectedLeave.status,
+            requestedAt: selectedLeave.requestedAt,
+            processedAt: selectedLeave.processedAt,
+            processedBy: selectedLeave.processedBy,
+            adminNotes: selectedLeave.adminNotes,
+            documents: selectedLeave.documents,
+          }}
+          onClose={() => { setSelectedLeave(null); setShowRejectFormInitially(false); }}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          isAdmin={true}
+          showRejectFormInitially={showRejectFormInitially}
+        />
+      )}
+    </>
   );
 }
 

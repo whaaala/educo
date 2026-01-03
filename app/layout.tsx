@@ -12,12 +12,14 @@ import { TranscriptProvider } from "@/contexts/TranscriptContext";
 import { AttendanceProvider } from "@/contexts/AttendanceContext";
 import { GradingProvider } from "@/contexts/GradingContext";
 import { LeaveProvider } from "@/contexts/LeaveContext";
+import { ChildLeaveProvider } from "@/contexts/ChildLeaveContext";
 import { PerformanceProvider } from "@/contexts/PerformanceContext";
 import { DisciplineProvider } from "@/contexts/DisciplineContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { MeetingsProvider } from "@/contexts/MeetingsContext";
 import { CommunicationProvider } from "@/contexts/CommunicationContext";
 import { CallProvider } from "@/hooks/useCall";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,13 +49,15 @@ export default function RootLayout({
                   <GradingProvider>
                     <TransferProvider>
                       <LeaveProvider>
-                        <PerformanceProvider>
+                        <ChildLeaveProvider>
+                          <PerformanceProvider>
                           <DisciplineProvider>
                             <TranscriptProvider>
                               <AttendanceProvider>
                                 <MeetingsProvider>
-                                  <CommunicationProvider>
-                                    <CallProvider
+                                  <NotificationProvider>
+                                    <CommunicationProvider>
+                                      <CallProvider
                                       currentUser={{
                                         id: "current-user-id",
                                         name: "School Staff",
@@ -64,12 +68,14 @@ export default function RootLayout({
                                         {children}
                                       </SidebarProvider>
                                     </CallProvider>
-                                  </CommunicationProvider>
+                                    </CommunicationProvider>
+                                  </NotificationProvider>
                                 </MeetingsProvider>
                               </AttendanceProvider>
                             </TranscriptProvider>
                           </DisciplineProvider>
-                        </PerformanceProvider>
+                          </PerformanceProvider>
+                        </ChildLeaveProvider>
                       </LeaveProvider>
                     </TransferProvider>
                   </GradingProvider>
