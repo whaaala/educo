@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import MainLayout from "@/components/layout/MainLayout";
@@ -69,6 +69,17 @@ import {
   Award,
   Video,
   Mic,
+  MoreVertical,
+  Receipt,
+  Banknote,
+  Filter,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  History,
+  ExternalLink,
+  Wallet,
+  BadgeCheck,
 } from "lucide-react";
 import Modal from "@/components/shared/Modal";
 import FormDropdown from "@/components/shared/FormDropdown";
@@ -107,13 +118,30 @@ export default function AdminParentDetailPage() {
   // Use the call hook for WebRTC calls
   const { startVideoCall, startVoiceCall, startChat, startCall } = useCall();
 
+  const searchParams = useSearchParams();
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<ParentTabType>("details");
   const [isLinkChildModalOpen, setIsLinkChildModalOpen] = useState(false);
+
+  // Read tab from URL search params
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam && ["details", "meetings", "leave", "fees", "communications", "events"].includes(tabParam)) {
+      setActiveTab(tabParam as ParentTabType);
+    }
+  }, [searchParams]);
   const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
   const [isExtendDueDateModalOpen, setIsExtendDueDateModalOpen] = useState(false);
   const [isScheduleMeetingModalOpen, setIsScheduleMeetingModalOpen] = useState(false);
+
+  // Fee management state
+  const [selectedFeeRecord, setSelectedFeeRecord] = useState<AdminFeeRecord | null>(null);
+  const [isFeeDetailsModalOpen, setIsFeeDetailsModalOpen] = useState(false);
+  const [isRecordPaymentModalOpen, setIsRecordPaymentModalOpen] = useState(false);
+  const [isPaymentDetailsModalOpen, setIsPaymentDetailsModalOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<PaymentRecord | null>(null);
 
   // Currency formatter
   const currencyCode = settings.currency || "NGN";
@@ -397,8 +425,35 @@ export default function AdminParentDetailPage() {
 
               {activeTab === "fees" && (
                 <>
-                  <FeesSection feeRecords={feeRecords} money={money} />
-                  <PaymentHistorySection payments={payments} money={money} />
+                  <FeesSection
+                    feeRecords={feeRecords}
+                    money={money}
+                    onViewDetails={(record) => {
+                      setSelectedFeeRecord(record);
+                      setIsFeeDetailsModalOpen(true);
+                    }}
+                    onApprovePayment={(record) => {
+                      setSelectedFeeRecord(record);
+                      setIsRecordPaymentModalOpen(true);
+                    }}
+                    onGiveDiscount={(record) => {
+                      setSelectedFeeRecord(record);
+                      setIsDiscountModalOpen(true);
+                    }}
+                    onExtendDueDate={(record) => {
+                      setSelectedFeeRecord(record);
+                      setIsExtendDueDateModalOpen(true);
+                    }}
+                  />
+                  <PaymentHistorySection
+                    payments={payments}
+                    money={money}
+                    feeRecords={feeRecords}
+                    onViewPaymentDetails={(payment) => {
+                      setSelectedPayment(payment);
+                      setIsPaymentDetailsModalOpen(true);
+                    }}
+                  />
                 </>
               )}
 
@@ -471,6 +526,42 @@ export default function AdminParentDetailPage() {
         onClose={() => setIsExtendDueDateModalOpen(false)}
         parentName={fullName}
         feeRecords={feeRecords}
+        money={money}
+      />
+
+      {/* Fee Record Details Modal */}
+      <FeeRecordDetailsModal
+        isOpen={isFeeDetailsModalOpen}
+        onClose={() => {
+          setIsFeeDetailsModalOpen(false);
+          setSelectedFeeRecord(null);
+        }}
+        feeRecord={selectedFeeRecord}
+        money={money}
+        onRecordPayment={() => setIsRecordPaymentModalOpen(true)}
+        onGiveDiscount={() => setIsDiscountModalOpen(true)}
+        onExtendDueDate={() => setIsExtendDueDateModalOpen(true)}
+      />
+
+      {/* Record Payment Modal */}
+      <RecordPaymentModal
+        isOpen={isRecordPaymentModalOpen}
+        onClose={() => {
+          setIsRecordPaymentModalOpen(false);
+          setSelectedFeeRecord(null);
+        }}
+        feeRecord={selectedFeeRecord}
+        money={money}
+      />
+
+      {/* Payment Details Modal */}
+      <PaymentDetailsModal
+        isOpen={isPaymentDetailsModalOpen}
+        onClose={() => {
+          setIsPaymentDetailsModalOpen(false);
+          setSelectedPayment(null);
+        }}
+        payment={selectedPayment}
         money={money}
       />
 
@@ -1090,14 +1181,63 @@ function ChildrenSection({
   );
 }
 
-// Fees Section - Compact table display
+// Fees Section - Enhanced with child filter, due date, and row actions
 function FeesSection({
   feeRecords,
   money,
+  onViewDetails,
+  onApprovePayment,
+  onGiveDiscount,
+  onExtendDueDate,
 }: {
   feeRecords: AdminFeeRecord[];
   money: (amount: number) => string;
+  onViewDetails?: (record: AdminFeeRecord) => void;
+  onApprovePayment?: (record: AdminFeeRecord) => void;
+  onGiveDiscount?: (record: AdminFeeRecord) => void;
+  onExtendDueDate?: (record: AdminFeeRecord) => void;
 }) {
+  const [selectedChild, setSelectedChild] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
+
+  // Get unique children for filter
+  const children = useMemo(() => {
+    const uniqueChildren = new Map<string, { id: string; name: string; class: string }>();
+    feeRecords.forEach((record) => {
+      if (!uniqueChildren.has(record.childId)) {
+        uniqueChildren.set(record.childId, {
+          id: record.childId,
+          name: record.childName,
+          class: record.childClass,
+        });
+      }
+    });
+    return Array.from(uniqueChildren.values());
+  }, [feeRecords]);
+
+  // Filter records based on selected child and status
+  const filteredRecords = useMemo(() => {
+    return feeRecords.filter((record) => {
+      const childMatch = selectedChild === "all" || record.childId === selectedChild;
+      const statusMatch = selectedStatus === "all" || record.status === selectedStatus;
+      return childMatch && statusMatch;
+    });
+  }, [feeRecords, selectedChild, selectedStatus]);
+
+  // Calculate summary stats
+  const summaryStats = useMemo(() => {
+    const records = selectedChild === "all" ? feeRecords : feeRecords.filter((r) => r.childId === selectedChild);
+    return {
+      total: records.reduce((sum, r) => sum + r.amount, 0),
+      paid: records.reduce((sum, r) => sum + r.paidAmount, 0),
+      outstanding: records.reduce((sum, r) => sum + r.balance, 0),
+      overdue: records.filter((r) => r.status === "overdue").length,
+      pending: records.filter((r) => r.status === "pending").length,
+      partial: records.filter((r) => r.status === "partial").length,
+    };
+  }, [feeRecords, selectedChild]);
+
   // Get status badge
   const getStatusBadge = (status: AdminFeeRecord["status"]) => {
     const config = {
@@ -1115,85 +1255,321 @@ function FeesSection({
     );
   };
 
-  const columns: ColumnConfig<AdminFeeRecord>[] = [
-    {
-      key: "child",
-      label: "Student",
-      sortable: true,
-      render: (record) => (
-        <div className="flex items-center gap-2">
-          <div className="relative w-7 h-7 rounded-md overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
-            <Image
-              src={`https://i.pravatar.cc/150?u=${record.childId}`}
-              alt={record.childName}
-              fill
-              className="object-cover"
-              unoptimized
-            />
-          </div>
-          <div>
-            <p className="font-semibold text-gray-900 dark:text-white text-xs">{record.childName}</p>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400">{record.childClass}</p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "feeType",
-      label: "Fee Type",
-      sortable: true,
-      render: (record) => (
-        <span className="text-xs font-semibold text-gray-900 dark:text-white">{record.feeType}</span>
-      ),
-    },
-    {
-      key: "term",
-      label: "Term",
-      sortable: true,
-      render: (record) => (
-        <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400">{record.term}</span>
-      ),
-    },
-    {
-      key: "amount",
-      label: "Amount",
-      sortable: true,
-      render: (record) => (
-        <span className="text-xs font-bold text-gray-900 dark:text-white">{money(record.amount)}</span>
-      ),
-    },
-    {
-      key: "balance",
-      label: "Balance",
-      sortable: true,
-      render: (record) => (
-        <span className={`text-xs font-bold ${record.balance > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
-          {money(record.balance)}
+  // Format due date with overdue indicator
+  const formatDueDate = (dueDate: string, status: AdminFeeRecord["status"]) => {
+    const date = new Date(dueDate);
+    const formattedDate = date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    const isOverdue = status === "overdue";
+
+    return (
+      <div className="flex flex-col">
+        <span className={`text-[10px] font-medium ${isOverdue ? "text-red-600 dark:text-red-400" : "text-gray-600 dark:text-gray-400"}`}>
+          {formattedDate}
         </span>
-      ),
-    },
-    {
-      key: "status",
-      label: "Status",
-      sortable: true,
-      render: (record) => getStatusBadge(record.status),
-    },
-  ];
+        {isOverdue && (
+          <span className="text-[9px] text-red-500 dark:text-red-400 font-medium">Overdue</span>
+        )}
+      </div>
+    );
+  };
+
+  // State for dropdown menu position (using fixed positioning)
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
+  const [activeRecord, setActiveRecord] = useState<AdminFeeRecord | null>(null);
+
+  // Handle action menu open with fixed position calculation
+  const handleActionMenuOpen = (record: AdminFeeRecord, buttonElement: HTMLButtonElement) => {
+    if (actionMenuOpen === record.id) {
+      setActionMenuOpen(null);
+      setActiveRecord(null);
+      setMenuPosition(null);
+      return;
+    }
+
+    const rect = buttonElement.getBoundingClientRect();
+    const menuHeight = record.status === "paid" ? 44 : 176; // Approximate height based on options
+    const menuWidth = 192;
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+
+    // Calculate position - show above if not enough space below
+    let top = rect.bottom + 4;
+    if (top + menuHeight > viewportHeight - 10) {
+      top = rect.top - menuHeight - 4;
+    }
+
+    // Ensure menu doesn't go off-screen to the right
+    let left = rect.right - menuWidth;
+    if (left < 10) {
+      left = 10;
+    }
+
+    setMenuPosition({ top, left });
+    setActiveRecord(record);
+    setActionMenuOpen(record.id);
+  };
+
+  // Close menu handler
+  const closeActionMenu = () => {
+    setActionMenuOpen(null);
+    setActiveRecord(null);
+    setMenuPosition(null);
+  };
 
   return (
-    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 p-4 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
+    <div className="space-y-4">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/40 dark:to-blue-900/20 rounded-xl p-3.5 border border-blue-200/60 dark:border-blue-800/40 shadow-sm">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-8 h-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center ring-1 ring-blue-500/20">
+              <Wallet className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <span className="text-[10px] font-semibold text-blue-600/80 dark:text-blue-400/80 uppercase tracking-wider">Total Fees</span>
+          </div>
+          <p className="text-xl font-bold text-blue-900 dark:text-blue-100">{money(summaryStats.total)}</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/40 dark:to-emerald-900/20 rounded-xl p-3.5 border border-emerald-200/60 dark:border-emerald-800/40 shadow-sm">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center ring-1 ring-emerald-500/20">
+              <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <span className="text-[10px] font-semibold text-emerald-600/80 dark:text-emerald-400/80 uppercase tracking-wider">Paid</span>
+          </div>
+          <p className="text-xl font-bold text-emerald-900 dark:text-emerald-100">{money(summaryStats.paid)}</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/40 dark:to-amber-900/20 rounded-xl p-3.5 border border-amber-200/60 dark:border-amber-800/40 shadow-sm">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center ring-1 ring-amber-500/20">
+              <TrendingDown className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            </div>
+            <span className="text-[10px] font-semibold text-amber-600/80 dark:text-amber-400/80 uppercase tracking-wider">Outstanding</span>
+          </div>
+          <p className="text-xl font-bold text-amber-900 dark:text-amber-100">{money(summaryStats.outstanding)}</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/40 dark:to-red-900/20 rounded-xl p-3.5 border border-red-200/60 dark:border-red-800/40 shadow-sm">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-8 h-8 rounded-lg bg-red-500/10 dark:bg-red-500/20 flex items-center justify-center ring-1 ring-red-500/20">
+              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+            </div>
+            <span className="text-[10px] font-semibold text-red-600/80 dark:text-red-400/80 uppercase tracking-wider">Overdue</span>
+          </div>
+          <p className="text-xl font-bold text-red-900 dark:text-red-100">{summaryStats.overdue}</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Child Filter */}
+        {children.length > 1 && (
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-gray-400" />
+            <select
+              value={selectedChild}
+              onChange={(e) => setSelectedChild(e.target.value)}
+              className="text-xs font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+            >
+              <option value="all">All Children</option>
+              {children.map((child) => (
+                <option key={child.id} value={child.id}>
+                  {child.name} ({child.class})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Status Filter */}
+        <div className="flex items-center gap-1.5 bg-gray-100/80 dark:bg-gray-800/80 rounded-lg p-1">
+          {[
+            { value: "all", label: "All" },
+            { value: "pending", label: "Pending" },
+            { value: "partial", label: "Partial" },
+            { value: "overdue", label: "Overdue" },
+            { value: "paid", label: "Paid" },
+          ].map((status) => (
+            <button
+              key={status.value}
+              onClick={() => setSelectedStatus(status.value)}
+              className={`px-3 py-1.5 text-[10px] font-semibold rounded-md transition-all duration-200 cursor-pointer ${
+                selectedStatus === status.value
+                  ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              }`}
+            >
+              {status.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Table */}
       <DataTable<AdminFeeRecord>
-        data={feeRecords}
-        columns={columns}
+        data={filteredRecords}
+        columns={[
+          {
+            key: "child",
+            label: "Student",
+            sortable: true,
+            render: (record) => (
+              <div className="flex items-center gap-2">
+                <div className="relative w-7 h-7 rounded-md overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+                  <Image
+                    src={`https://i.pravatar.cc/150?u=${record.childId}`}
+                    alt={record.childName}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-white text-xs">{record.childName}</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">{record.childClass}</p>
+                </div>
+              </div>
+            ),
+          },
+          {
+            key: "feeType",
+            label: "Fee Type",
+            sortable: true,
+            render: (record) => (
+              <span className="text-xs font-semibold text-gray-900 dark:text-white">{record.feeType}</span>
+            ),
+          },
+          {
+            key: "term",
+            label: "Term",
+            sortable: true,
+            render: (record) => (
+              <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400">{record.term}</span>
+            ),
+          },
+          {
+            key: "dueDate",
+            label: "Due Date",
+            sortable: true,
+            render: (record) => formatDueDate(record.dueDate, record.status),
+          },
+          {
+            key: "amount",
+            label: "Amount",
+            sortable: true,
+            render: (record) => (
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-gray-900 dark:text-white">{money(record.amount)}</span>
+                {record.paidAmount > 0 && record.paidAmount < record.amount && (
+                  <span className="text-[9px] text-green-600 dark:text-green-400">Paid: {money(record.paidAmount)}</span>
+                )}
+              </div>
+            ),
+          },
+          {
+            key: "balance",
+            label: "Balance",
+            sortable: true,
+            render: (record) => (
+              <span className={`text-xs font-bold ${record.balance > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
+                {money(record.balance)}
+              </span>
+            ),
+          },
+          {
+            key: "status",
+            label: "Status",
+            sortable: true,
+            render: (record) => getStatusBadge(record.status),
+          },
+          {
+            key: "actions",
+            label: "",
+            sortable: false,
+            render: (record) => (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleActionMenuOpen(record, e.currentTarget as HTMLButtonElement);
+                }}
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              >
+                <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              </button>
+            ),
+          },
+        ]}
         title="Fee Records"
         searchPlaceholder="Search fee records..."
-        showSearch={true}
-        defaultItemsPerPage={5}
+        showSearch={false}
+        defaultItemsPerPage={4}
         getRowKey={(item) => item.id}
         emptyMessage="No fee records found"
         enablePagination={true}
         enableItemsPerPage={false}
       />
+
+      {/* Fixed Position Action Menu (Portal-like) */}
+      {actionMenuOpen && menuPosition && activeRecord && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-[9998]"
+            onClick={closeActionMenu}
+          />
+          {/* Menu */}
+          <div
+            className="fixed z-[9999] w-48 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 py-1.5 overflow-hidden"
+            style={{ top: menuPosition.top, left: menuPosition.left }}
+          >
+            <button
+              onClick={() => {
+                onViewDetails?.(activeRecord);
+                closeActionMenu();
+              }}
+              className="w-full px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center gap-2 transition-colors cursor-pointer"
+            >
+              <Eye className="w-3.5 h-3.5 text-blue-500" />
+              View Details
+            </button>
+            {activeRecord.status !== "paid" && (
+              <>
+                <button
+                  onClick={() => {
+                    onApprovePayment?.(activeRecord);
+                    closeActionMenu();
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center gap-2 transition-colors cursor-pointer"
+                >
+                  <BadgeCheck className="w-3.5 h-3.5 text-green-500" />
+                  Record Payment
+                </button>
+                <button
+                  onClick={() => {
+                    onGiveDiscount?.(activeRecord);
+                    closeActionMenu();
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center gap-2 transition-colors cursor-pointer"
+                >
+                  <Percent className="w-3.5 h-3.5 text-rose-500" />
+                  Give Discount
+                </button>
+                <button
+                  onClick={() => {
+                    onExtendDueDate?.(activeRecord);
+                    closeActionMenu();
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center gap-2 transition-colors cursor-pointer"
+                >
+                  <CalendarPlus className="w-3.5 h-3.5 text-indigo-500" />
+                  Extend Due Date
+                </button>
+              </>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -1792,12 +2168,53 @@ function LeaveRequestsSection({
 function PaymentHistorySection({
   payments,
   money,
+  feeRecords,
+  onViewPaymentDetails,
 }: {
   payments: PaymentRecord[];
   money: (amount: number) => string;
+  feeRecords: AdminFeeRecord[];
+  onViewPaymentDetails?: (payment: PaymentRecord) => void;
 }) {
   const [showAll, setShowAll] = useState(false);
-  const displayPayments = showAll ? payments : payments.slice(0, 5);
+  const [selectedChild, setSelectedChild] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+
+  // Get unique children from payments
+  const children = useMemo(() => {
+    const uniqueChildren = new Map<string, { id: string; name: string }>();
+    payments.forEach((payment) => {
+      if (!uniqueChildren.has(payment.childId)) {
+        uniqueChildren.set(payment.childId, {
+          id: payment.childId,
+          name: payment.childName,
+        });
+      }
+    });
+    return Array.from(uniqueChildren.values());
+  }, [payments]);
+
+  // Filter payments
+  const filteredPayments = useMemo(() => {
+    return payments.filter((payment) => {
+      const childMatch = selectedChild === "all" || payment.childId === selectedChild;
+      const statusMatch = selectedStatus === "all" || payment.status === selectedStatus;
+      return childMatch && statusMatch;
+    });
+  }, [payments, selectedChild, selectedStatus]);
+
+  const displayPayments = showAll ? filteredPayments : filteredPayments.slice(0, 5);
+
+  // Calculate payment stats
+  const paymentStats = useMemo(() => {
+    const records = selectedChild === "all" ? payments : payments.filter((p) => p.childId === selectedChild);
+    return {
+      totalPaid: records.filter((p) => p.status === "completed").reduce((sum, p) => sum + p.amount, 0),
+      totalPayments: records.filter((p) => p.status === "completed").length,
+      pending: records.filter((p) => p.status === "pending").length,
+      failed: records.filter((p) => p.status === "failed").length,
+    };
+  }, [payments, selectedChild]);
 
   const getStatusBadge = (status: PaymentRecord["status"]) => {
     const config = {
@@ -1825,63 +2242,224 @@ function PaymentHistorySection({
     return icons[method];
   };
 
+  // Find related fee record for a payment
+  const getRelatedFeeRecord = (payment: PaymentRecord) => {
+    return feeRecords.find(
+      (fee) => fee.childId === payment.childId && fee.feeType === payment.feeType
+    );
+  };
+
   return (
-    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <CreditCard className="w-4 h-4 text-green-600 dark:text-green-400" />
-            Payment History ({payments.length})
-          </h3>
-          <button className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
+    <div className="mt-4 space-y-4">
+      {/* Payment Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/40 dark:to-emerald-900/20 rounded-xl p-3.5 border border-emerald-200/60 dark:border-emerald-800/40 shadow-sm">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center ring-1 ring-emerald-500/20">
+              <Banknote className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <span className="text-[10px] font-semibold text-emerald-600/80 dark:text-emerald-400/80 uppercase tracking-wider">Total Paid</span>
+          </div>
+          <p className="text-xl font-bold text-emerald-900 dark:text-emerald-100">{money(paymentStats.totalPaid)}</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/40 dark:to-blue-900/20 rounded-xl p-3.5 border border-blue-200/60 dark:border-blue-800/40 shadow-sm">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-8 h-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center ring-1 ring-blue-500/20">
+              <Receipt className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <span className="text-[10px] font-semibold text-blue-600/80 dark:text-blue-400/80 uppercase tracking-wider">Transactions</span>
+          </div>
+          <p className="text-xl font-bold text-blue-900 dark:text-blue-100">{paymentStats.totalPayments}</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/40 dark:to-amber-900/20 rounded-xl p-3.5 border border-amber-200/60 dark:border-amber-800/40 shadow-sm">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center ring-1 ring-amber-500/20">
+              <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            </div>
+            <span className="text-[10px] font-semibold text-amber-600/80 dark:text-amber-400/80 uppercase tracking-wider">Pending</span>
+          </div>
+          <p className="text-xl font-bold text-amber-900 dark:text-amber-100">{paymentStats.pending}</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/40 dark:to-red-900/20 rounded-xl p-3.5 border border-red-200/60 dark:border-red-800/40 shadow-sm">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-8 h-8 rounded-lg bg-red-500/10 dark:bg-red-500/20 flex items-center justify-center ring-1 ring-red-500/20">
+              <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+            </div>
+            <span className="text-[10px] font-semibold text-red-600/80 dark:text-red-400/80 uppercase tracking-wider">Failed</span>
+          </div>
+          <p className="text-xl font-bold text-red-900 dark:text-red-100">{paymentStats.failed}</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Child Filter */}
+        {children.length > 1 && (
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-gray-400" />
+            <select
+              value={selectedChild}
+              onChange={(e) => setSelectedChild(e.target.value)}
+              className="text-xs font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+            >
+              <option value="all">All Children</option>
+              {children.map((child) => (
+                <option key={child.id} value={child.id}>
+                  {child.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Status Filter */}
+        <div className="flex items-center gap-1.5 bg-gray-100/80 dark:bg-gray-800/80 rounded-lg p-1">
+          {[
+            { value: "all", label: "All" },
+            { value: "completed", label: "Completed" },
+            { value: "pending", label: "Pending" },
+            { value: "failed", label: "Failed" },
+          ].map((status) => (
+            <button
+              key={status.value}
+              onClick={() => setSelectedStatus(status.value)}
+              className={`px-3 py-1.5 text-[10px] font-semibold rounded-md transition-all duration-200 cursor-pointer ${
+                selectedStatus === status.value
+                  ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              }`}
+            >
+              {status.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Payment List */}
+      <div className="bg-white dark:bg-[#1a1d23] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 overflow-hidden">
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CreditCard className="w-4 h-4 text-gray-400" />
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Payment History</h3>
+            <span className="px-2 py-0.5 text-[10px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full">
+              {filteredPayments.length} {filteredPayments.length === 1 ? "payment" : "payments"}
+            </span>
+          </div>
+          <button className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-2 py-1 rounded-lg transition-colors cursor-pointer">
             Export
           </button>
         </div>
 
-        {displayPayments.length === 0 ? (
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center py-4">No payment records</p>
-        ) : (
-          <div className="space-y-2">
-            {displayPayments.map((payment) => (
-              <div
-                key={payment.id}
-                className="p-3 rounded-xl bg-gray-50/50 dark:bg-gray-800/20 midnight:bg-gray-800/20 purple:bg-gray-800/20 border border-gray-200/40 dark:border-gray-700/40 midnight:border-gray-700/40 purple:border-gray-700/40 transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
+        {/* Content */}
+        {filteredPayments.length === 0 ? (
+          /* Empty State */
+          <div className="flex flex-col items-center justify-center py-12 px-4">
+            <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+              <CreditCard className="w-8 h-8 text-gray-400" />
+            </div>
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">No payment records found</h4>
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center max-w-[250px]">
+              {selectedChild !== "all" || selectedStatus !== "all"
+                ? "Try adjusting your filters to see more payments."
+                : "There are no payment records for this parent yet."}
+            </p>
+            {(selectedChild !== "all" || selectedStatus !== "all") && (
+              <button
+                onClick={() => {
+                  setSelectedChild("all");
+                  setSelectedStatus("all");
+                }}
+                className="mt-3 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors cursor-pointer"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{payment.feeType}</span>
-                      {getStatusBadge(payment.status)}
-                    </div>
-                    <div className="flex items-center gap-3 text-[10px] text-gray-500 dark:text-gray-400">
-                      <span>{payment.childName}</span>
-                      <span>•</span>
-                      <span>{new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
-                      <span>•</span>
-                      <span>{getMethodIcon(payment.paymentMethod)} {payment.paymentMethod}</span>
-                    </div>
-                    <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
-                      Ref: {payment.reference}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-green-600 dark:text-green-400">{money(payment.amount)}</p>
-                    <p className="text-[10px] text-gray-500 dark:text-gray-400">{payment.receiptNumber}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+                Clear filters
+              </button>
+            )}
           </div>
-        )}
+        ) : (
+          <>
+            {/* Scrollable Payment List - Fixed height for 4 items */}
+            <div className="max-h-[320px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+              {displayPayments.map((payment, index) => {
+                const relatedFee = getRelatedFeeRecord(payment);
+                return (
+                  <div
+                    key={payment.id}
+                    onClick={() => onViewPaymentDetails?.(payment)}
+                    className={`px-4 py-3 flex items-center justify-between border-b border-gray-100 dark:border-gray-800/50 last:border-b-0 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer ${
+                      payment.status === "failed" ? "bg-red-50/30 dark:bg-red-900/5" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      {/* Payment Method Icon */}
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        payment.status === "completed"
+                          ? "bg-emerald-100 dark:bg-emerald-900/30"
+                          : payment.status === "pending"
+                          ? "bg-amber-100 dark:bg-amber-900/30"
+                          : "bg-red-100 dark:bg-red-900/30"
+                      }`}>
+                        <span className="text-lg">{getMethodIcon(payment.paymentMethod)}</span>
+                      </div>
 
-        {payments.length > 5 && (
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="w-full mt-3 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
-          >
-            {showAll ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            {showAll ? "Show Less" : `Show All ${payments.length} Payments`}
-          </button>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-xs font-bold text-gray-900 dark:text-white truncate">{payment.feeType}</span>
+                          {getStatusBadge(payment.status)}
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] text-gray-500 dark:text-gray-400">
+                          <span className="truncate">{payment.childName}</span>
+                          <span className="text-gray-300 dark:text-gray-600">•</span>
+                          <span>{new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+                          <span>Ref: {payment.reference}</span>
+                          {relatedFee && relatedFee.balance > 0 && (
+                            <>
+                              <span className="text-gray-300 dark:text-gray-600">•</span>
+                              <span className="text-amber-600 dark:text-amber-400 font-medium">Balance: {money(relatedFee.balance)}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-right flex items-center gap-3 flex-shrink-0">
+                      <div>
+                        <p className={`text-sm font-bold ${
+                          payment.status === "completed"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : payment.status === "pending"
+                            ? "text-amber-600 dark:text-amber-400"
+                            : "text-red-600 dark:text-red-400"
+                        }`}>{money(payment.amount)}</p>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400">{payment.receiptNumber}</p>
+                      </div>
+                      <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                        <Eye className="w-4 h-4 text-gray-400" />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Show More Button */}
+            {filteredPayments.length > 5 && (
+              <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
+                <button
+                  onClick={() => setShowAll(!showAll)}
+                  className="w-full py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  {showAll ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  {showAll ? "Show Less" : `View All ${filteredPayments.length} Payments`}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -2592,6 +3170,451 @@ function ResetPasswordModal({
           </div>
         </div>
       )}
+    </Modal>
+  );
+}
+
+// ===== FEE RECORD DETAILS MODAL =====
+function FeeRecordDetailsModal({
+  isOpen,
+  onClose,
+  feeRecord,
+  money,
+  onRecordPayment,
+  onGiveDiscount,
+  onExtendDueDate,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  feeRecord: AdminFeeRecord | null;
+  money: (amount: number) => string;
+  onRecordPayment?: () => void;
+  onGiveDiscount?: () => void;
+  onExtendDueDate?: () => void;
+}) {
+  if (!feeRecord) return null;
+
+  const getStatusConfig = (status: AdminFeeRecord["status"]) => {
+    const config = {
+      paid: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-300", label: "Paid" },
+      partial: { bg: "bg-yellow-100 dark:bg-yellow-900/30", text: "text-yellow-700 dark:text-yellow-300", label: "Partial Payment" },
+      pending: { bg: "bg-cyan-100 dark:bg-cyan-900/30", text: "text-cyan-700 dark:text-cyan-300", label: "Pending" },
+      overdue: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-300", label: "Overdue" },
+    };
+    return config[status];
+  };
+
+  const statusConfig = getStatusConfig(feeRecord.status);
+  const progressPercentage = feeRecord.amount > 0 ? ((feeRecord.paidAmount / feeRecord.amount) * 100).toFixed(0) : 0;
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Fee Record Details"
+      subtitle={`${feeRecord.feeType} - ${feeRecord.term}`}
+      icon={<CreditCard className="w-5 h-5" />}
+      maxWidth="lg"
+    >
+      <div className="space-y-5">
+        {/* Status Badge */}
+        <div className="flex items-center gap-2">
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${statusConfig.bg} ${statusConfig.text}`}>
+            {feeRecord.status === "paid" && <CheckCircle2 className="w-3.5 h-3.5" />}
+            {feeRecord.status === "partial" && <Clock className="w-3.5 h-3.5" />}
+            {feeRecord.status === "pending" && <Clock className="w-3.5 h-3.5" />}
+            {feeRecord.status === "overdue" && <AlertCircle className="w-3.5 h-3.5" />}
+            {statusConfig.label}
+          </span>
+        </div>
+
+        {/* Student Info */}
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-200/50 dark:border-gray-700/50">
+          <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-700">
+            <Image
+              src={`https://i.pravatar.cc/150?u=${feeRecord.childId}`}
+              alt={feeRecord.childName}
+              fill
+              className="object-cover"
+              unoptimized
+            />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-gray-900 dark:text-white">{feeRecord.childName}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{feeRecord.childClass}</p>
+          </div>
+        </div>
+
+        {/* Fee Details Grid */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/30">
+            <p className="text-[10px] font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-1">Total Amount</p>
+            <p className="text-lg font-bold text-blue-700 dark:text-blue-300">{money(feeRecord.amount)}</p>
+          </div>
+          <div className="p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200/50 dark:border-green-700/30">
+            <p className="text-[10px] font-medium text-green-600 dark:text-green-400 uppercase tracking-wide mb-1">Paid Amount</p>
+            <p className="text-lg font-bold text-green-700 dark:text-green-300">{money(feeRecord.paidAmount)}</p>
+          </div>
+          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/30">
+            <p className="text-[10px] font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide mb-1">Balance</p>
+            <p className="text-lg font-bold text-amber-700 dark:text-amber-300">{money(feeRecord.balance)}</p>
+          </div>
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-200/50 dark:border-gray-700/30">
+            <p className="text-[10px] font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1">Due Date</p>
+            <p className={`text-sm font-bold ${feeRecord.status === "overdue" ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>
+              {new Date(feeRecord.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+            </p>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        {feeRecord.status !== "paid" && (
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-200/50 dark:border-gray-700/30">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Payment Progress</p>
+              <p className="text-xs font-bold text-gray-900 dark:text-white">{progressPercentage}%</p>
+            </div>
+            <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500"
+                style={{ width: `${progressPercentage}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Payment History */}
+        {feeRecord.paymentHistory && feeRecord.paymentHistory.length > 0 && (
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-200/50 dark:border-gray-700/30">
+            <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3">Payment History</p>
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {feeRecord.paymentHistory.map((payment) => (
+                <div key={payment.id} className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-gray-800/50 border border-gray-200/40 dark:border-gray-700/40">
+                  <div>
+                    <p className="text-xs font-medium text-gray-900 dark:text-white">{money(payment.amount)}</p>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                      {new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} • {payment.method}
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500">{payment.receiptNumber}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        {feeRecord.status !== "paid" && (
+          <div className="flex flex-wrap gap-2 pt-2">
+            <button
+              onClick={() => {
+                onClose();
+                onRecordPayment?.();
+              }}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl shadow-lg shadow-green-500/25 transition-all cursor-pointer"
+            >
+              <BadgeCheck className="w-4 h-4" />
+              Record Payment
+            </button>
+            <button
+              onClick={() => {
+                onClose();
+                onGiveDiscount?.();
+              }}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-rose-700 dark:text-rose-300 bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-900/50 rounded-xl transition-all cursor-pointer"
+            >
+              <Percent className="w-4 h-4" />
+              Discount
+            </button>
+            <button
+              onClick={() => {
+                onClose();
+                onExtendDueDate?.();
+              }}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 rounded-xl transition-all cursor-pointer"
+            >
+              <CalendarPlus className="w-4 h-4" />
+              Extend
+            </button>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+}
+
+// ===== RECORD PAYMENT MODAL =====
+function RecordPaymentModal({
+  isOpen,
+  onClose,
+  feeRecord,
+  money,
+  onSuccess,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  feeRecord: AdminFeeRecord | null;
+  money: (amount: number) => string;
+  onSuccess?: () => void;
+}) {
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<string>("");
+  const [reference, setReference] = useState("");
+  const [notes, setNotes] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Reset form when modal opens
+  useEffect(() => {
+    if (isOpen && feeRecord) {
+      setPaymentAmount(feeRecord.balance.toString());
+      setPaymentMethod("");
+      setReference("");
+      setNotes("");
+    }
+  }, [isOpen, feeRecord]);
+
+  if (!feeRecord) return null;
+
+  const handleSubmit = async () => {
+    if (!paymentAmount || !paymentMethod) return;
+
+    setIsProcessing(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log("Recording payment:", { paymentAmount, paymentMethod, reference, notes });
+    setIsProcessing(false);
+    onSuccess?.();
+    onClose();
+  };
+
+  const paymentMethodOptions = [
+    { value: "Bank Transfer", label: "Bank Transfer" },
+    { value: "Card", label: "Card Payment" },
+    { value: "Cash", label: "Cash" },
+    { value: "USSD", label: "USSD" },
+    { value: "POS", label: "POS Terminal" },
+  ];
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Record Payment"
+      subtitle={`${feeRecord.feeType} - ${feeRecord.childName}`}
+      icon={<Banknote className="w-5 h-5" />}
+      maxWidth="lg"
+      footer={
+        <div className="flex justify-end gap-3">
+          <FormButton variant="secondary" onClick={onClose}>
+            Cancel
+          </FormButton>
+          <FormButton
+            onClick={handleSubmit}
+            icon={
+              isProcessing ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <BadgeCheck className="w-4 h-4" />
+              )
+            }
+            className={!paymentAmount || !paymentMethod || isProcessing ? "opacity-50 cursor-not-allowed" : ""}
+          >
+            {isProcessing ? "Processing..." : "Record Payment"}
+          </FormButton>
+        </div>
+      }
+    >
+      <div className="space-y-5">
+        {/* Fee Summary */}
+        <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-200/50 dark:border-gray-700/30">
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase">Total Fee</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">{money(feeRecord.amount)}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase">Paid</p>
+              <p className="text-sm font-bold text-green-600 dark:text-green-400">{money(feeRecord.paidAmount)}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase">Balance</p>
+              <p className="text-sm font-bold text-amber-600 dark:text-amber-400">{money(feeRecord.balance)}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Amount */}
+        <FormInput
+          label="Payment Amount"
+          icon={<DollarSign className="w-full h-full" />}
+          iconBgColor="bg-green-100 dark:bg-green-900/30"
+          iconColor="text-green-600 dark:text-green-400"
+          type="number"
+          value={paymentAmount}
+          onChange={setPaymentAmount}
+          placeholder="Enter amount"
+          required
+        />
+
+        {/* Payment Method */}
+        <FormDropdown
+          label="Payment Method"
+          icon={<CreditCard className="w-full h-full" />}
+          iconBgColor="bg-blue-100 dark:bg-blue-900/30"
+          iconColor="text-blue-600 dark:text-blue-400"
+          value={paymentMethod}
+          onChange={setPaymentMethod}
+          options={paymentMethodOptions}
+          placeholder="Select payment method"
+          required
+        />
+
+        {/* Reference */}
+        <FormInput
+          label="Reference / Transaction ID"
+          icon={<FileText className="w-full h-full" />}
+          iconBgColor="bg-gray-100 dark:bg-gray-800/30"
+          iconColor="text-gray-600 dark:text-gray-400"
+          type="text"
+          value={reference}
+          onChange={setReference}
+          placeholder="e.g., TRX123456789"
+        />
+
+        {/* Notes */}
+        <FormTextarea
+          label="Notes (Optional)"
+          icon={<FileText className="w-full h-full" />}
+          value={notes}
+          onChange={setNotes}
+          placeholder="Add any notes about this payment..."
+          rows={2}
+        />
+      </div>
+    </Modal>
+  );
+}
+
+// ===== PAYMENT DETAILS MODAL =====
+function PaymentDetailsModal({
+  isOpen,
+  onClose,
+  payment,
+  money,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  payment: PaymentRecord | null;
+  money: (amount: number) => string;
+}) {
+  if (!payment) return null;
+
+  const getStatusConfig = (status: PaymentRecord["status"]) => {
+    const config = {
+      completed: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-300", label: "Completed" },
+      pending: { bg: "bg-yellow-100 dark:bg-yellow-900/30", text: "text-yellow-700 dark:text-yellow-300", label: "Pending" },
+      failed: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-300", label: "Failed" },
+    };
+    return config[status];
+  };
+
+  const getMethodIcon = (method: PaymentRecord["paymentMethod"]) => {
+    const icons = {
+      "Bank Transfer": "🏦",
+      Card: "💳",
+      Cash: "💵",
+      USSD: "📱",
+      POS: "🖥️",
+    };
+    return icons[method];
+  };
+
+  const statusConfig = getStatusConfig(payment.status);
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Payment Details"
+      subtitle={payment.feeType}
+      icon={<Receipt className="w-5 h-5" />}
+      maxWidth="lg"
+    >
+      <div className="space-y-5">
+        {/* Status Badge */}
+        <div className="flex items-center gap-2">
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${statusConfig.bg} ${statusConfig.text}`}>
+            {payment.status === "completed" && <CheckCircle2 className="w-3.5 h-3.5" />}
+            {payment.status === "pending" && <Clock className="w-3.5 h-3.5" />}
+            {payment.status === "failed" && <XCircle className="w-3.5 h-3.5" />}
+            {statusConfig.label}
+          </span>
+        </div>
+
+        {/* Amount */}
+        <div className="p-4 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200/50 dark:border-green-700/30 text-center">
+          <p className="text-[10px] font-medium text-green-600 dark:text-green-400 uppercase tracking-wide mb-1">Amount Paid</p>
+          <p className="text-2xl font-bold text-green-700 dark:text-green-300">{money(payment.amount)}</p>
+        </div>
+
+        {/* Details Grid */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-200/50 dark:border-gray-700/30">
+            <div className="flex items-center gap-2">
+              <GraduationCap className="w-4 h-4 text-gray-400" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">Student</span>
+            </div>
+            <span className="text-xs font-semibold text-gray-900 dark:text-white">{payment.childName}</span>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-200/50 dark:border-gray-700/30">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-gray-400" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">Date</span>
+            </div>
+            <span className="text-xs font-semibold text-gray-900 dark:text-white">
+              {new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-200/50 dark:border-gray-700/30">
+            <div className="flex items-center gap-2">
+              <CreditCard className="w-4 h-4 text-gray-400" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">Payment Method</span>
+            </div>
+            <span className="text-xs font-semibold text-gray-900 dark:text-white">
+              {getMethodIcon(payment.paymentMethod)} {payment.paymentMethod}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-200/50 dark:border-gray-700/30">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-gray-400" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">Reference</span>
+            </div>
+            <span className="text-xs font-mono font-semibold text-gray-900 dark:text-white">{payment.reference}</span>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-200/50 dark:border-gray-700/30">
+            <div className="flex items-center gap-2">
+              <Receipt className="w-4 h-4 text-gray-400" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">Receipt Number</span>
+            </div>
+            <span className="text-xs font-mono font-semibold text-gray-900 dark:text-white">{payment.receiptNumber}</span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2 pt-2">
+          <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 rounded-xl transition-all cursor-pointer">
+            <FileText className="w-4 h-4" />
+            Download Receipt
+          </button>
+          <button className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-700/50 rounded-xl transition-all cursor-pointer">
+            <ExternalLink className="w-4 h-4" />
+            Print
+          </button>
+        </div>
+      </div>
     </Modal>
   );
 }

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { X, Video, Phone, MessageSquare, User, Users } from "lucide-react";
+import { X, Video, Phone, MessageSquare, Users } from "lucide-react";
 import dynamic from "next/dynamic";
 import { stopAllMediaTracks } from "@/lib/utils/stopAllMedia";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 // Dynamic imports to avoid SSR issues with WebRTC
 const VideoCallRoom = dynamic(() => import("./VideoCallRoom"), {
@@ -82,6 +83,11 @@ export default function CallModal({
   );
   const [isInCall, setIsInCall] = useState(!showTypeSelection);
 
+  // Get sidebar state to position the call correctly
+  const { isCollapsed } = useSidebar();
+  // Calculate sidebar width: 80px when collapsed, 288px when expanded (on desktop)
+  const sidebarWidth = isCollapsed ? 80 : 288;
+
   // Sync state with props when modal opens or call type changes
   useEffect(() => {
     if (isOpen) {
@@ -138,10 +144,18 @@ export default function CallModal({
   if (!isOpen) return null;
 
   // Show the active call interface
+  // Position next to sidebar on desktop (lg breakpoint), full screen on mobile
   if (isInCall && selectedCallType) {
+    const callContainerStyle = {
+      left: `${sidebarWidth}px`,
+    };
+
     if (selectedCallType === "video") {
       return (
-        <div className="fixed inset-0 z-50">
+        <div
+          className="fixed top-[64px] bottom-0 right-0 z-40 bg-gray-900 left-0 lg:left-auto"
+          style={callContainerStyle}
+        >
           <VideoCallRoom
             roomId={roomId}
             userId={currentUser.id}
@@ -162,7 +176,10 @@ export default function CallModal({
 
     if (selectedCallType === "voice") {
       return (
-        <div className="fixed inset-0 z-50">
+        <div
+          className="fixed top-[64px] bottom-0 right-0 z-40 bg-gray-900 left-0 lg:left-auto"
+          style={callContainerStyle}
+        >
           <VoiceCallRoom
             roomId={roomId}
             userId={currentUser.id}
@@ -188,7 +205,10 @@ export default function CallModal({
 
     if (selectedCallType === "chat") {
       return (
-        <div className="fixed inset-0 z-50 bg-gray-900">
+        <div
+          className="fixed top-[64px] bottom-0 right-0 z-40 bg-gray-900 left-0 lg:left-auto"
+          style={callContainerStyle}
+        >
           <ChatRoom
             roomId={roomId}
             userId={currentUser.id}

@@ -52,6 +52,20 @@ export interface ProfileCardProps {
   customActions?: ProfileAction[];
   customDropdownItems?: DropdownMenuItem[];
   showDetailsInDropdown?: boolean; // New prop to show detailed info in dropdown
+  /** Label for the "View" action in dropdown - defaults to "View Student" */
+  viewLabel?: string;
+  /** Whether to show the "Promote" option (only for students) */
+  showPromoteOption?: boolean;
+  /** Whether to show the default "Edit" option in dropdown - defaults to true */
+  showEditOption?: boolean;
+  /** Whether to show the default "Delete" option in dropdown - defaults to true */
+  showDeleteOption?: boolean;
+  /** Custom title for delete modal - defaults to "Delete Student" */
+  deleteModalTitle?: string;
+  /** Custom warning message for delete modal */
+  deleteModalWarning?: string;
+  /** Custom confirm button text for delete modal - defaults to "Delete Student" */
+  deleteModalConfirmText?: string;
   onMenuClick?: () => void;
   onEdit?: (id: string) => void;
   onView?: (id: string) => void;
@@ -72,6 +86,13 @@ export default function ProfileCard({
   customActions,
   customDropdownItems,
   showDetailsInDropdown = false,
+  viewLabel = "View Student",
+  showPromoteOption = true,
+  showEditOption = true,
+  showDeleteOption = true,
+  deleteModalTitle = "Delete Student",
+  deleteModalWarning = "This will permanently remove this student and all associated data. This action cannot be undone.",
+  deleteModalConfirmText = "Delete Student",
   onMenuClick,
   onEdit,
   onView,
@@ -433,35 +454,39 @@ export default function ProfileCard({
                     style={{ cursor: "pointer" }}
                   >
                     <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-                    <span>View Student</span>
+                    <span>{viewLabel}</span>
                   </button>
                 )}
 
-            <button
-              onClick={() => {
-                setIsMenuOpen(false);
-                if (onEdit) {
-                  onEdit(id);
-                }
-              }}
-              className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
-              style={{ cursor: "pointer" }}
-            >
-              <Edit className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-              <span>Edit</span>
-            </button>
+            {showEditOption && (
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  if (onEdit) {
+                    onEdit(id);
+                  }
+                }}
+                className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
+                style={{ cursor: "pointer" }}
+              >
+                <Edit className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
+                <span>Edit</span>
+              </button>
+            )}
 
-            <button
-              onClick={() => {
-                setIsMenuOpen(false);
-                // Handle promote action
-              }}
-              className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
-              style={{ cursor: "pointer" }}
-            >
-              <TrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-              <span>Promote Student</span>
-            </button>
+            {showPromoteOption && (
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  // Handle promote action
+                }}
+                className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
+                style={{ cursor: "pointer" }}
+              >
+                <TrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
+                <span>Promote Student</span>
+              </button>
+            )}
 
             {/* Custom Dropdown Items */}
             {customDropdownItems?.map((item, index) => (
@@ -487,17 +512,23 @@ export default function ProfileCard({
               </button>
             ))}
 
-            <button
-              onClick={() => {
-                setIsMenuOpen(false);
-                setIsDeleteModalOpen(true);
-              }}
-              className="w-full px-4 py-2 text-left text-sm font-normal text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 flex items-center gap-3 transition-all duration-200"
-              style={{ cursor: "pointer" }}
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>Delete</span>
-            </button>
+            {showDeleteOption && (
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  if (onDelete) {
+                    onDelete(id);
+                  } else {
+                    setIsDeleteModalOpen(true);
+                  }
+                }}
+                className="w-full px-4 py-2 text-left text-sm font-normal text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 flex items-center gap-3 transition-all duration-200"
+                style={{ cursor: "pointer" }}
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Delete</span>
+              </button>
+            )}
               </>
             )}
           </div>
@@ -524,11 +555,11 @@ export default function ProfileCard({
         isOpen={isDeleteModalOpen}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        title="Delete Student"
+        title={deleteModalTitle}
         itemName={name}
         itemId={id}
-        warningMessage="This will permanently remove this student and all associated data. This action cannot be undone."
-        confirmButtonText="Delete Student"
+        warningMessage={deleteModalWarning}
+        confirmButtonText={deleteModalConfirmText}
       />
     </>
   );

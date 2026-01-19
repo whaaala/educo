@@ -295,7 +295,7 @@ export default function VoiceCallRoom({
   if (isConnecting) {
     return (
       <div
-        className="flex items-center justify-center min-h-screen"
+        className="flex items-center justify-center h-full"
         style={{
           background: `linear-gradient(135deg, ${primaryColor}22 0%, ${secondaryColor}22 100%)`,
         }}
@@ -362,7 +362,7 @@ export default function VoiceCallRoom({
   if (error) {
     return (
       <div
-        className="flex items-center justify-center min-h-screen"
+        className="flex items-center justify-center h-full"
         style={{
           background: `linear-gradient(135deg, ${primaryColor}11 0%, ${secondaryColor}11 100%)`,
         }}
@@ -398,7 +398,7 @@ export default function VoiceCallRoom({
 
   return (
     <div
-      className="relative flex flex-col min-h-screen"
+      className="relative flex flex-col h-full"
       style={{
         background: `linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)`,
       }}

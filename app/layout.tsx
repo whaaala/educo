@@ -57,17 +57,17 @@ export default function RootLayout({
                                 <MeetingsProvider>
                                   <NotificationProvider>
                                     <CommunicationProvider>
-                                      <CallProvider
-                                      currentUser={{
-                                        id: "current-user-id",
-                                        name: "School Staff",
-                                        role: "Staff",
-                                      }}
-                                    >
                                       <SidebarProvider>
-                                        {children}
+                                        <CallProvider
+                                          currentUser={{
+                                            id: "current-user-id",
+                                            name: "School Staff",
+                                            role: "Staff",
+                                          }}
+                                        >
+                                          {children}
+                                        </CallProvider>
                                       </SidebarProvider>
-                                    </CallProvider>
                                     </CommunicationProvider>
                                   </NotificationProvider>
                                 </MeetingsProvider>

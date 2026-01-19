@@ -727,7 +727,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
           // Mobile visibility
           isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
-        style={isCollapsed && isMobile === false ? { overflow: 'visible' } : undefined}
+        style={{
+          ...(isCollapsed && isMobile === false ? { overflow: 'visible' } : {}),
+          // Set CSS variable for sidebar width so other components can use it
+          '--sidebar-width': isMobile ? '0px' : (isCollapsed ? '80px' : '288px'),
+        } as React.CSSProperties}
       >
         <div className="flex flex-col h-full" style={isCollapsed && isMobile === false ? { overflow: 'visible' } : undefined}>
           {/* Logo Section */}

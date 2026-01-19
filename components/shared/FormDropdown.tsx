@@ -68,9 +68,6 @@ export default function FormDropdown({
 
   const selectedOption = options.find((opt) => opt.value === value);
 
-  // Calculate the height needed for the dropdown menu (max 256px or actual height)
-  const menuHeight = Math.min(options.length * 48, 256); // ~48px per option, max 256px
-
   return (
     <div className="group">
       {label && (
@@ -87,7 +84,6 @@ export default function FormDropdown({
       <div
         className="relative"
         ref={dropdownRef}
-        style={{ marginBottom: isOpen ? menuHeight + 8 : 0 }}
       >
         {/* Custom Dropdown Button */}
         <Tooltip content={selectedOption?.label || placeholder} block>
@@ -120,7 +116,7 @@ export default function FormDropdown({
                     onChange(option.value);
                     setIsOpen(false);
                   }}
-                  className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors cursor-pointer break-words hyphens-auto leading-relaxed ${
+                  className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
                     value === option.value
                       ? "bg-blue-600 text-white"
                       : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"

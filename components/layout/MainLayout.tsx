@@ -11,8 +11,14 @@ interface MainLayoutProps {
 export default function MainLayout({ children }: MainLayoutProps) {
   const { isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen } = useSidebar();
 
+  // Calculate sidebar width for CSS variable (used by call overlays)
+  const sidebarWidth = isCollapsed ? "80px" : "288px";
+
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] transition-colors duration-300">
+    <div
+      className="flex h-screen bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] transition-colors duration-300"
+      style={{ '--sidebar-width': sidebarWidth } as React.CSSProperties}
+    >
       <Sidebar
         isCollapsed={isCollapsed}
         setIsCollapsed={setIsCollapsed}

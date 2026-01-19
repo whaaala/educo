@@ -465,7 +465,7 @@ export default function VideoCallRoom({
   if (isConnecting) {
     return (
       <div
-        className="flex items-center justify-center min-h-screen"
+        className="flex items-center justify-center h-full"
         style={{
           background: `linear-gradient(135deg, #0f172a 0%, #1e293b 100%)`,
         }}
@@ -516,7 +516,7 @@ export default function VideoCallRoom({
   if (error) {
     return (
       <div
-        className="flex items-center justify-center min-h-screen"
+        className="flex items-center justify-center h-full"
         style={{
           background: `linear-gradient(135deg, #0f172a 0%, #1e293b 100%)`,
         }}
@@ -564,7 +564,7 @@ export default function VideoCallRoom({
   return (
     <div
       ref={containerRef}
-      className="relative flex flex-col h-screen text-white overflow-hidden"
+      className="relative flex flex-col h-full text-white overflow-hidden"
       style={{
         background: selectedBackground.type !== "none" && selectedBackground.type !== "blur"
           ? undefined
