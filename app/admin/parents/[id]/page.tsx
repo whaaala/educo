@@ -3207,6 +3207,42 @@ function FeeRecordDetailsModal({
   const statusConfig = getStatusConfig(feeRecord.status);
   const progressPercentage = feeRecord.amount > 0 ? ((feeRecord.paidAmount / feeRecord.amount) * 100).toFixed(0) : 0;
 
+  // Footer actions for the modal
+  const footerContent = feeRecord.status !== "paid" ? (
+    <div className="flex items-center justify-end gap-3">
+      <button
+        onClick={() => {
+          onClose();
+          onExtendDueDate?.();
+        }}
+        className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 rounded-xl transition-all cursor-pointer"
+      >
+        <CalendarPlus className="w-4 h-4" />
+        Extend Due Date
+      </button>
+      <button
+        onClick={() => {
+          onClose();
+          onGiveDiscount?.();
+        }}
+        className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-rose-700 dark:text-rose-300 bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-900/50 rounded-xl transition-all cursor-pointer border border-rose-200 dark:border-rose-800/50"
+      >
+        <Percent className="w-4 h-4" />
+        Apply Discount
+      </button>
+      <button
+        onClick={() => {
+          onClose();
+          onRecordPayment?.();
+        }}
+        className="flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl shadow-lg shadow-green-500/25 transition-all cursor-pointer"
+      >
+        <BadgeCheck className="w-4 h-4" />
+        Record Payment
+      </button>
+    </div>
+  ) : null;
+
   return (
     <Modal
       isOpen={isOpen}
@@ -3214,12 +3250,28 @@ function FeeRecordDetailsModal({
       title="Fee Record Details"
       subtitle={`${feeRecord.feeType} - ${feeRecord.term}`}
       icon={<CreditCard className="w-5 h-5" />}
-      maxWidth="lg"
+      maxWidth="2xl"
+      footer={footerContent}
     >
-      <div className="space-y-5">
-        {/* Status Badge */}
-        <div className="flex items-center gap-2">
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${statusConfig.bg} ${statusConfig.text}`}>
+      <div className="space-y-6">
+        {/* Top Section: Student Info + Status */}
+        <div className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200/60 dark:border-gray-700/50">
+          <div className="flex items-center gap-4">
+            <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-700 ring-2 ring-white dark:ring-gray-700 shadow-lg">
+              <Image
+                src={`https://i.pravatar.cc/150?u=${feeRecord.childId}`}
+                alt={feeRecord.childName}
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+            <div>
+              <p className="text-base font-bold text-gray-900 dark:text-white">{feeRecord.childName}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{feeRecord.childClass}</p>
+            </div>
+          </div>
+          <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold ${statusConfig.bg} ${statusConfig.text}`}>
             {feeRecord.status === "paid" && <CheckCircle2 className="w-3.5 h-3.5" />}
             {feeRecord.status === "partial" && <Clock className="w-3.5 h-3.5" />}
             {feeRecord.status === "pending" && <Clock className="w-3.5 h-3.5" />}
@@ -3228,53 +3280,36 @@ function FeeRecordDetailsModal({
           </span>
         </div>
 
-        {/* Student Info */}
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-200/50 dark:border-gray-700/50">
-          <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-700">
-            <Image
-              src={`https://i.pravatar.cc/150?u=${feeRecord.childId}`}
-              alt={feeRecord.childName}
-              fill
-              className="object-cover"
-              unoptimized
-            />
+        {/* Fee Details Grid - 2x2 Layout */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/30 dark:to-blue-900/10 border border-blue-200/60 dark:border-blue-700/40">
+            <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-2">Total Amount</p>
+            <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{money(feeRecord.amount)}</p>
           </div>
-          <div>
-            <p className="text-sm font-bold text-gray-900 dark:text-white">{feeRecord.childName}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{feeRecord.childClass}</p>
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/30 dark:to-green-900/10 border border-green-200/60 dark:border-green-700/40">
+            <p className="text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider mb-2">Paid Amount</p>
+            <p className="text-2xl font-bold text-green-700 dark:text-green-300">{money(feeRecord.paidAmount)}</p>
           </div>
-        </div>
-
-        {/* Fee Details Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/30">
-            <p className="text-[10px] font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-1">Total Amount</p>
-            <p className="text-lg font-bold text-blue-700 dark:text-blue-300">{money(feeRecord.amount)}</p>
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/30 dark:to-amber-900/10 border border-amber-200/60 dark:border-amber-700/40">
+            <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-2">Balance Due</p>
+            <p className="text-2xl font-bold text-amber-700 dark:text-amber-300">{money(feeRecord.balance)}</p>
           </div>
-          <div className="p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200/50 dark:border-green-700/30">
-            <p className="text-[10px] font-medium text-green-600 dark:text-green-400 uppercase tracking-wide mb-1">Paid Amount</p>
-            <p className="text-lg font-bold text-green-700 dark:text-green-300">{money(feeRecord.paidAmount)}</p>
-          </div>
-          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/30">
-            <p className="text-[10px] font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide mb-1">Balance</p>
-            <p className="text-lg font-bold text-amber-700 dark:text-amber-300">{money(feeRecord.balance)}</p>
-          </div>
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-200/50 dark:border-gray-700/30">
-            <p className="text-[10px] font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1">Due Date</p>
-            <p className={`text-sm font-bold ${feeRecord.status === "overdue" ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/20 border border-gray-200/60 dark:border-gray-700/40">
+            <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">Due Date</p>
+            <p className={`text-lg font-bold ${feeRecord.status === "overdue" ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>
               {new Date(feeRecord.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </p>
           </div>
         </div>
 
-        {/* Progress Bar */}
+        {/* Progress Bar - Only show if not fully paid */}
         {feeRecord.status !== "paid" && (
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-200/50 dark:border-gray-700/30">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Payment Progress</p>
-              <p className="text-xs font-bold text-gray-900 dark:text-white">{progressPercentage}%</p>
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200/60 dark:border-gray-700/50">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Payment Progress</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">{progressPercentage}%</p>
             </div>
-            <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500"
                 style={{ width: `${progressPercentage}%` }}
@@ -3285,57 +3320,26 @@ function FeeRecordDetailsModal({
 
         {/* Payment History */}
         {feeRecord.paymentHistory && feeRecord.paymentHistory.length > 0 && (
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-200/50 dark:border-gray-700/30">
-            <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3">Payment History</p>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200/60 dark:border-gray-700/50">
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Payment History</p>
+            <div className="space-y-3 max-h-48 overflow-y-auto pr-2">
               {feeRecord.paymentHistory.map((payment) => (
-                <div key={payment.id} className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-gray-800/50 border border-gray-200/40 dark:border-gray-700/40">
-                  <div>
-                    <p className="text-xs font-medium text-gray-900 dark:text-white">{money(payment.amount)}</p>
-                    <p className="text-[10px] text-gray-500 dark:text-gray-400">
-                      {new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} • {payment.method}
-                    </p>
+                <div key={payment.id} className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                      <BadgeCheck className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white">{money(payment.amount)}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} • {payment.method}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500">{payment.receiptNumber}</p>
+                  <p className="text-xs font-medium text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700/50 px-2 py-1 rounded-md">{payment.receiptNumber}</p>
                 </div>
               ))}
             </div>
-          </div>
-        )}
-
-        {/* Actions */}
-        {feeRecord.status !== "paid" && (
-          <div className="flex flex-wrap gap-2 pt-2">
-            <button
-              onClick={() => {
-                onClose();
-                onRecordPayment?.();
-              }}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl shadow-lg shadow-green-500/25 transition-all cursor-pointer"
-            >
-              <BadgeCheck className="w-4 h-4" />
-              Record Payment
-            </button>
-            <button
-              onClick={() => {
-                onClose();
-                onGiveDiscount?.();
-              }}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-rose-700 dark:text-rose-300 bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-900/50 rounded-xl transition-all cursor-pointer"
-            >
-              <Percent className="w-4 h-4" />
-              Discount
-            </button>
-            <button
-              onClick={() => {
-                onClose();
-                onExtendDueDate?.();
-              }}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 rounded-xl transition-all cursor-pointer"
-            >
-              <CalendarPlus className="w-4 h-4" />
-              Extend
-            </button>
           </div>
         )}
       </div>
