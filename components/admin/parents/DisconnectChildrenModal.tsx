@@ -67,11 +67,11 @@ export default function DisconnectChildrenModal({
       subtitle={`From ${parent.firstName} ${parent.lastName}`}
       icon={<UserMinus className="w-5 h-5" />}
       footer={
-        <div className="flex items-center justify-between w-full">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-3">
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {selectedChildren.length} of {parent.children.length} selected
           </p>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             <FormButton type="button" variant="secondary" onClick={handleClose}>
               Cancel
             </FormButton>
@@ -79,7 +79,7 @@ export default function DisconnectChildrenModal({
               type="button"
               onClick={handleConfirm}
               disabled={selectedChildren.length === 0 || isConfirming}
-              className="px-4 sm:px-6 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 sm:px-6 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
               {isConfirming ? "Processing..." : "Disconnect Selected"}
             </button>

@@ -41,6 +41,7 @@ import CallSettings, {
   VirtualBackground,
   VideoQualityPreset,
 } from "./CallSettings";
+import AddParticipantModal from "./AddParticipantModal";
 
 interface VideoCallRoomProps {
   roomId: string;
@@ -92,6 +93,7 @@ export default function VideoCallRoom({
   const [showControls, setShowControls] = useState(true);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showBackgroundMenu, setShowBackgroundMenu] = useState(false);
+  const [showAddParticipant, setShowAddParticipant] = useState(false);
 
   // Layout
   const [layout, setLayout] = useState<"grid" | "spotlight">("grid");
@@ -120,6 +122,8 @@ export default function VideoCallRoom({
   const [screenShareStream, setScreenShareStream] = useState<MediaStream | null>(null);
   const [screenShareParticipantId, setScreenShareParticipantId] = useState<string | null>(null);
   const screenShareVideoRef = useRef<HTMLVideoElement>(null);
+  const screenShareStreamRef = useRef<MediaStream | null>(null);
+  const isTogglingScreenShare = useRef(false);
 
   // Call timer
   useEffect(() => {
@@ -277,6 +281,10 @@ export default function VideoCallRoom({
   useEffect(() => {
     if (screenShareVideoRef.current && screenShareStream) {
       screenShareVideoRef.current.srcObject = screenShareStream;
+      // Ensure video plays after stream is attached
+      screenShareVideoRef.current.play().catch(err => {
+        console.error("Screen share video play failed:", err);
+      });
     }
   }, [screenShareStream]);
 
@@ -298,52 +306,104 @@ export default function VideoCallRoom({
     }
   }, [isVideoOff]);
 
-  // Toggle screen share
-  const toggleScreenShare = useCallback(async () => {
+  // Stop screen share helper
+  const stopScreenShare = useCallback(async () => {
     const service = manager.getCurrentService();
+    const currentStream = screenShareStreamRef.current;
+
+    if (currentStream) {
+      console.log("Stopping screen share");
+      currentStream.getTracks().forEach(track => track.stop());
+    }
+
+    screenShareStreamRef.current = null;
+    setScreenShareStream(null);
+    setScreenShareParticipantId(null);
+    setIsScreenSharing(false);
+
     if (service) {
       try {
-        if (!isScreenSharing) {
-          // Start screen sharing
-          const screenStream = await navigator.mediaDevices.getDisplayMedia({
-            video: {
-              cursor: "always",
-              displaySurface: "monitor",
-            },
-            audio: false,
-          });
-
-          // Set the screen share stream for display
-          setScreenShareStream(screenStream);
-          setScreenShareParticipantId(userId);
-
-          // Handle when user stops sharing via browser UI
-          screenStream.getVideoTracks()[0].onended = () => {
-            setIsScreenSharing(false);
-            setScreenShareStream(null);
-            setScreenShareParticipantId(null);
-          };
-
-          await service.toggleScreenShare(true);
-          setIsScreenSharing(true);
-        } else {
-          // Stop screen sharing
-          if (screenShareStream) {
-            screenShareStream.getTracks().forEach(track => track.stop());
-          }
-          setScreenShareStream(null);
-          setScreenShareParticipantId(null);
-          await service.toggleScreenShare(false);
-          setIsScreenSharing(false);
-        }
-      } catch (err) {
-        console.error("Screen share failed:", err);
-        setIsScreenSharing(false);
-        setScreenShareStream(null);
-        setScreenShareParticipantId(null);
+        await service.toggleScreenShare(false);
+      } catch (e) {
+        // Ignore errors when stopping
       }
     }
-  }, [isScreenSharing, screenShareStream, userId]);
+  }, []);
+
+  // Toggle screen share
+  const toggleScreenShare = useCallback(async () => {
+    // Prevent multiple rapid clicks
+    if (isTogglingScreenShare.current) {
+      console.log("Screen share toggle already in progress");
+      return;
+    }
+
+    isTogglingScreenShare.current = true;
+
+    try {
+      // Check if currently sharing using ref (most reliable)
+      if (screenShareStreamRef.current) {
+        await stopScreenShare();
+        return;
+      }
+
+      // Also check if isScreenSharing state is true (backup check)
+      if (isScreenSharing) {
+        await stopScreenShare();
+        return;
+      }
+
+      const service = manager.getCurrentService();
+      if (!service) {
+        return;
+      }
+
+      console.log("Starting new screen share");
+      // Start screen sharing
+      const newScreenStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true,
+      });
+
+      // Check if user cancelled (stream has no tracks)
+      if (!newScreenStream || newScreenStream.getTracks().length === 0) {
+        console.log("Screen share cancelled by user");
+        return;
+      }
+
+      // Store in ref immediately for reliable checking
+      screenShareStreamRef.current = newScreenStream;
+
+      // Set the screen share stream for display
+      setScreenShareStream(newScreenStream);
+      setScreenShareParticipantId(userId);
+      setIsScreenSharing(true);
+
+      // Handle when user stops sharing via browser UI (clicking "Stop sharing")
+      const videoTrack = newScreenStream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.onended = () => {
+          console.log("Screen share ended via browser UI");
+          stopScreenShare();
+        };
+      }
+
+      // Note: We don't call service.toggleScreenShare(true) here because
+      // we already have the stream and the service would try to call getDisplayMedia again.
+      console.log("Screen share started successfully");
+    } catch (err: unknown) {
+      // User cancelled the picker or permission denied - this is expected, don't log as error
+      const error = err as Error;
+      if (error.name === "NotAllowedError" || error.name === "AbortError") {
+        // User clicked Cancel - this is normal, don't show any error
+        console.log("Screen share picker was cancelled");
+      } else {
+        console.error("Screen share failed:", err);
+      }
+    } finally {
+      isTogglingScreenShare.current = false;
+    }
+  }, [userId, isScreenSharing, stopScreenShare]);
 
   // End call - SYNCHRONOUSLY stop all tracks first, then notify parent
   const endCall = useCallback(() => {
@@ -394,18 +454,39 @@ export default function VideoCallRoom({
   const sendMessage = useCallback(async () => {
     if (!newMessage.trim() || !session) return;
 
+    const messageContent = newMessage.trim();
+    const newChatMessage: ChatMessage = {
+      id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      roomId: session.roomId,
+      senderId: userId,
+      senderName: userName,
+      senderAvatar: userAvatar,
+      content: messageContent,
+      type: "text",
+      timestamp: new Date(),
+      isRead: true,
+    };
+
+    // Add message locally immediately for instant feedback
+    setMessages((prev) => [...prev, newChatMessage]);
+    setNewMessage("");
+
+    // Also send through service for other participants
     const service = manager.getCurrentService();
     if (service) {
-      await service.sendChatMessage({
-        roomId: session.roomId,
-        senderId: userId,
-        senderName: userName,
-        senderAvatar: userAvatar,
-        content: newMessage.trim(),
-        type: "text",
-        isRead: false,
-      });
-      setNewMessage("");
+      try {
+        await service.sendChatMessage({
+          roomId: session.roomId,
+          senderId: userId,
+          senderName: userName,
+          senderAvatar: userAvatar,
+          content: messageContent,
+          type: "text",
+          isRead: false,
+        });
+      } catch (err) {
+        console.error("Failed to send message through service:", err);
+      }
     }
   }, [newMessage, session, userId, userName, userAvatar]);
 
@@ -683,7 +764,11 @@ export default function VideoCallRoom({
                     <span>Copy Room ID</span>
                   </button>
                   <button
-                    className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors"
+                    onClick={() => {
+                      setShowMoreMenu(false);
+                      setShowAddParticipant(true);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors cursor-pointer"
                   >
                     <UserPlus className="w-4 h-4" />
                     <span>Add Participant</span>
@@ -757,6 +842,7 @@ export default function VideoCallRoom({
               <video
                 ref={screenShareVideoRef}
                 autoPlay
+                muted
                 playsInline
                 className="w-full h-full object-contain"
               />
@@ -779,7 +865,7 @@ export default function VideoCallRoom({
               {screenShareParticipantId === userId && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
                   <button
-                    onClick={toggleScreenShare}
+                    onClick={stopScreenShare}
                     className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500 hover:bg-red-600 text-white text-sm font-medium shadow-lg shadow-red-500/30 transition-all"
                   >
                     <MonitorOff className="w-4 h-4" />
@@ -1138,7 +1224,7 @@ export default function VideoCallRoom({
             {/* Mute - Pill button */}
             <button
               onClick={toggleMute}
-              className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 ${
+              className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 cursor-pointer ${
                 isMuted
                   ? "bg-red-500/90 text-white shadow-lg shadow-red-500/20"
                   : "bg-white/10 hover:bg-white/15 text-white/90 hover:text-white"
@@ -1153,7 +1239,7 @@ export default function VideoCallRoom({
             {callType === "video" && (
               <button
                 onClick={toggleVideo}
-                className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 ${
+                className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 cursor-pointer ${
                   isVideoOff
                     ? "bg-red-500/90 text-white shadow-lg shadow-red-500/20"
                     : "bg-white/10 hover:bg-white/15 text-white/90 hover:text-white"
@@ -1167,8 +1253,8 @@ export default function VideoCallRoom({
 
             {/* Screen share - Pill button */}
             <button
-              onClick={toggleScreenShare}
-              className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 ${
+              onClick={isScreenSharing ? stopScreenShare : toggleScreenShare}
+              className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 cursor-pointer ${
                 isScreenSharing
                   ? "text-white shadow-lg"
                   : "bg-white/10 hover:bg-white/15 text-white/90 hover:text-white"
@@ -1186,7 +1272,7 @@ export default function VideoCallRoom({
             {/* End call - Prominent pill */}
             <button
               onClick={endCall}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-red-500 hover:bg-red-600 transition-all duration-200 shadow-lg shadow-red-500/30 hover:shadow-red-500/40"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-red-500 hover:bg-red-600 transition-all duration-200 shadow-lg shadow-red-500/30 hover:shadow-red-500/40 cursor-pointer"
               title="End call"
             >
               <PhoneOff className="w-[18px] h-[18px] text-white" />
@@ -1202,7 +1288,7 @@ export default function VideoCallRoom({
                 setShowChat(!showChat);
                 setShowParticipants(false);
               }}
-              className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 ${
+              className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 cursor-pointer ${
                 showChat
                   ? "text-white shadow-lg"
                   : "bg-white/10 hover:bg-white/15 text-white/90 hover:text-white"
@@ -1225,7 +1311,7 @@ export default function VideoCallRoom({
                 setShowParticipants(!showParticipants);
                 setShowChat(false);
               }}
-              className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 ${
+              className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 cursor-pointer ${
                 showParticipants
                   ? "text-white shadow-lg"
                   : "bg-white/10 hover:bg-white/15 text-white/90 hover:text-white"
@@ -1245,7 +1331,7 @@ export default function VideoCallRoom({
             {/* Fullscreen - Icon only pill */}
             <button
               onClick={toggleFullscreen}
-              className="p-2.5 rounded-full bg-white/10 hover:bg-white/15 transition-all duration-200 text-white/90 hover:text-white"
+              className="p-2.5 rounded-full bg-white/10 hover:bg-white/15 transition-all duration-200 text-white/90 hover:text-white cursor-pointer"
               title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
             >
               {isFullscreen ? <Minimize2 className="w-[18px] h-[18px]" /> : <Maximize2 className="w-[18px] h-[18px]" />}
@@ -1256,7 +1342,7 @@ export default function VideoCallRoom({
 
       {/* Chat Panel */}
       {showChat && (
-        <div className="absolute right-0 top-0 bottom-0 w-96 bg-gray-900/98 backdrop-blur-xl border-l border-white/10 flex flex-col z-10">
+        <div className="absolute right-0 top-16 bottom-0 w-96 bg-gray-900/98 backdrop-blur-xl border-l border-white/10 flex flex-col z-10">
           <div className="p-5 border-b border-white/10 flex items-center justify-between">
             <h3 className="font-semibold text-white text-lg">Chat</h3>
             <button
@@ -1311,11 +1397,11 @@ export default function VideoCallRoom({
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && sendMessage()}
                 placeholder="Type a message..."
-                className="flex-1 px-4 py-3 bg-white/10 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent"
+                className="flex-1 px-4 py-3 bg-white/10 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <button
                 onClick={sendMessage}
-                className="px-5 py-3 text-white rounded-xl transition-all hover:opacity-90"
+                className="px-5 py-3 text-white rounded-xl transition-all hover:opacity-90 cursor-pointer"
                 style={{
                   background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
                 }}
@@ -1329,7 +1415,7 @@ export default function VideoCallRoom({
 
       {/* Participants Panel */}
       {showParticipants && (
-        <div className="absolute right-0 top-0 bottom-0 w-96 bg-gray-900/98 backdrop-blur-xl border-l border-white/10 flex flex-col z-10">
+        <div className="absolute right-0 top-16 bottom-0 w-96 bg-gray-900/98 backdrop-blur-xl border-l border-white/10 flex flex-col z-10">
           <div className="p-5 border-b border-white/10 flex items-center justify-between">
             <h3 className="font-semibold text-white text-lg">
               Participants ({totalParticipants})
@@ -1390,7 +1476,11 @@ export default function VideoCallRoom({
           {/* Add participant button */}
           <div className="p-4 border-t border-white/10">
             <button
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 text-white rounded-xl transition-all hover:opacity-90"
+              onClick={() => {
+                setShowParticipants(false);
+                setShowAddParticipant(true);
+              }}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 text-white rounded-xl transition-all hover:opacity-90 cursor-pointer"
               style={{
                 background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
               }}
@@ -1412,6 +1502,20 @@ export default function VideoCallRoom({
           selectedQuality,
         }}
         showVideoSettings={true}
+      />
+
+      {/* Add Participant Modal */}
+      <AddParticipantModal
+        isOpen={showAddParticipant}
+        onClose={() => setShowAddParticipant(false)}
+        roomId={roomId}
+        meetingTitle="Video Call"
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
+        onAddParticipant={(participant) => {
+          console.log("Invited participant:", participant);
+          // In a real app, this would send an invite notification to the participant
+        }}
       />
 
       {/* Click outside to close menus */}
