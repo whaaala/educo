@@ -15,8 +15,9 @@ import { useState, useRef, useEffect } from "react";
 import CollectFeesModal from "./CollectFeesModal";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import AddFeesButton from "./AddFeesButton";
-import NameLabel from "./NameLabel";
+import Tooltip from "./Tooltip";
 import { getEducationLevelColor, getInstitutionTypeColor } from "@/utils/educationLevel";
+// NameLabel removed - using Tooltip component instead
 
 export interface ProfileDetail {
   label: string;
@@ -224,7 +225,7 @@ export default function ProfileCard({
                 {status}
               </span>
             </div>
-            <div className="relative group/moremenu">
+            <Tooltip content="More Options" delay={200}>
               <button
                 ref={buttonRef}
                 onClick={(e) => {
@@ -248,11 +249,7 @@ export default function ProfileCard({
                   }`}
                 />
               </button>
-              {/* Hover Label */}
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/moremenu:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-                <NameLabel name="More" variant="compact" />
-              </div>
-            </div>
+            </Tooltip>
           </div>
         </div>
 
@@ -343,48 +340,42 @@ export default function ProfileCard({
         </div>
 
         {/* Action Buttons */}
-        <div className="px-2 sm:px-4 pb-3 sm:pb-2.5 pt-0 flex items-center justify-between gap-1 sm:gap-3 border-t border-white/40 group-hover:border-white/60 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 mt-2 pt-2.5 sm:pt-2 relative z-10 transition-all duration-200">
-          <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink min-w-0">
+        <div className="px-2 sm:px-4 pb-3 sm:pb-2.5 pt-0 flex items-center justify-between gap-1.5 sm:gap-2 border-t border-white/40 group-hover:border-white/60 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 mt-2 pt-2.5 sm:pt-2 relative z-10 transition-all duration-200">
+          <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
             {actions.map((action, index) => (
-              <div key={index} className="relative group/action flex-shrink-0">
+              <Tooltip key={index} content={action.label} delay={200}>
                 <button
                   onClick={action.onClick}
-                  style={{ cursor: "pointer", zIndex: 11111 }}
-                  className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-white/60 group-hover:border-white/80 dark:border-gray-600/50 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white/70 backdrop-blur-sm group-hover:bg-white/95 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30 group-hover:shadow-md dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 shadow-sm"
+                  style={{ cursor: "pointer" }}
+                  className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-white/60 hover:border-blue-400 dark:border-gray-600/50 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white/70 backdrop-blur-sm hover:bg-blue-50 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30 hover:shadow-md dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 shadow-sm"
                 >
                   <action.icon
                     style={{ cursor: "pointer" }}
-                    className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-gray-700 group-hover:text-gray-900 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 transition-colors"
+                    className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-600 hover:text-blue-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 transition-colors"
                   />
                 </button>
-                {/* Hover Label */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/action:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-                  <NameLabel name={action.label} variant="compact" />
-                </div>
-              </div>
+              </Tooltip>
             ))}
           </div>
           {primaryAction && (
-            <div className="relative group/primaryaction flex-shrink-0">
-              <AddFeesButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (primaryAction.label === "Add Fees") {
-                    setIsFeesModalOpen(true);
-                  } else if (primaryAction.onClick) {
-                    primaryAction.onClick();
-                  }
-                }}
-                label={primaryAction.label}
-                size="sm"
-                currency="₦"
-                className="sm:!px-3 sm:!py-1.5 sm:!text-xs"
-              />
-              {/* Hover Label */}
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/primaryaction:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-                <NameLabel name={primaryAction.label} variant="compact" />
+            <Tooltip content={primaryAction.label} delay={200}>
+              <div className="flex-shrink min-w-0">
+                <AddFeesButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (primaryAction.label === "Add Fees") {
+                      setIsFeesModalOpen(true);
+                    } else if (primaryAction.onClick) {
+                      primaryAction.onClick();
+                    }
+                  }}
+                  label={primaryAction.label}
+                  size="sm"
+                  currency="₦"
+                  className="!px-2 !py-1 !text-[10px] sm:!px-2.5 sm:!py-1.5 sm:!text-xs whitespace-nowrap"
+                />
               </div>
-            </div>
+            </Tooltip>
           )}
         </div>
         </div>

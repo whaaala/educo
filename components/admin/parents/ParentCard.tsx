@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MessageCircle, Phone, Mail, Video, CalendarPlus, Receipt, Banknote, UserCog, UserMinus, AlertTriangle, GraduationCap } from "lucide-react";
+import { MessageCircle, Phone, Mail, Video, CalendarPlus, FileText, Banknote, UserCog, UserMinus, AlertTriangle, GraduationCap } from "lucide-react";
 import Modal from "@/components/shared/Modal";
 import FormButton from "@/components/shared/FormButton";
 import ProfileCard from "@/components/shared/ProfileCard";
@@ -210,7 +210,7 @@ export default function ParentCard({
         onClick: () => setIsScheduleMeetingOpen(true),
       },
       {
-        icon: Receipt,
+        icon: FileText,
         label: "View Fee Statement",
         onClick: () => setIsFeeStatementOpen(true),
       },

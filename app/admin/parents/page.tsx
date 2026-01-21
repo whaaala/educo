@@ -23,6 +23,8 @@ import { usePageLoad } from "@/hooks/usePageLoad";
 import { getAllParents, type AdminParent } from "@/lib/mockParents";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useNotifications } from "@/contexts/NotificationContext";
+import { exportParentsToPDF } from "@/utils/parentsPdfExport";
+import { exportParentsToExcel } from "@/utils/parentsExcelExport";
 
 export default function AdminParentsPage() {
   const { settings } = useSchoolSettings();
@@ -408,11 +410,51 @@ export default function AdminParentsPage() {
   };
 
   const handleExportPDF = () => {
-    console.log("Export to PDF");
+    // Get currency symbol from settings
+    const currencyCode = settings.currency || "NGN";
+    let currencySymbol = "₦";
+    try {
+      const formatter = new Intl.NumberFormat(undefined, { style: "currency", currency: currencyCode });
+      const parts = formatter.formatToParts(0);
+      currencySymbol = parts.find((p) => p.type === "currency")?.value || "₦";
+    } catch {
+      currencySymbol = "₦";
+    }
+
+    const dateStr = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).replace(/\//g, "-");
+
+    exportParentsToPDF(filteredParents, `parents_${dateStr}.pdf`, {
+      currencySymbol,
+      schoolName: settings.schoolName || "School Management System",
+    });
   };
 
   const handleExportExcel = () => {
-    console.log("Export to Excel");
+    // Get currency symbol from settings
+    const currencyCode = settings.currency || "NGN";
+    let currencySymbol = "₦";
+    try {
+      const formatter = new Intl.NumberFormat(undefined, { style: "currency", currency: currencyCode });
+      const parts = formatter.formatToParts(0);
+      currencySymbol = parts.find((p) => p.type === "currency")?.value || "₦";
+    } catch {
+      currencySymbol = "₦";
+    }
+
+    const dateStr = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).replace(/\//g, "-");
+
+    exportParentsToExcel(filteredParents, `parents_${dateStr}.xlsx`, {
+      currencySymbol,
+      schoolName: settings.schoolName || "School Management System",
+    });
   };
 
   const handleAddParent = () => {

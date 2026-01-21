@@ -1,15 +1,22 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { MoreVertical, MessageCircle, Phone, Mail, Eye, Edit, CreditCard, Users, Trash2, Lock } from "lucide-react";
+import { MoreVertical, MessageCircle, Phone, Mail, Eye, Trash2, Video, CalendarPlus, FileText, Banknote, UserCog, UserMinus, AlertTriangle, GraduationCap } from "lucide-react";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
+import Modal from "@/components/shared/Modal";
+import FormButton from "@/components/shared/FormButton";
 import Tooltip from "@/components/shared/Tooltip";
-import NameLabel from "@/components/shared/NameLabel";
-import { useSidebar } from "@/contexts/SidebarContext";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { useCall } from "@/hooks/useCall";
+import { useNotifications } from "@/contexts/NotificationContext";
+import ScheduleMeetingModal, { ScheduledMeetingData } from "@/components/shared/ScheduleMeetingModal";
+import QuickRecordPaymentModal from "./QuickRecordPaymentModal";
+import EditParentContactModal from "./EditParentContactModal";
+import ViewFeeStatementModal from "./ViewFeeStatementModal";
+import DisconnectChildrenModal from "./DisconnectChildrenModal";
 import type { AdminParent } from "@/lib/mockParents";
 
 interface ParentsTableProps {
@@ -34,9 +41,21 @@ export default function ParentsTable({
   onSelectionChange,
 }: ParentsTableProps) {
   const router = useRouter();
-  const { isCollapsed } = useSidebar();
   const { settings } = useSchoolSettings();
-  const currencySymbol = settings.currency?.symbol || "₦";
+  const { startVideoCall, startVoiceCall } = useCall();
+  const { addNotification } = useNotifications();
+
+  // Get currency symbol from settings
+  const currencySymbol = useMemo(() => {
+    const currencyCode = settings.currency || "NGN";
+    try {
+      const formatter = new Intl.NumberFormat(undefined, { style: "currency", currency: currencyCode });
+      const parts = formatter.formatToParts(0);
+      return parts.find((p) => p.type === "currency")?.value || "₦";
+    } catch {
+      return "₦";
+    }
+  }, [settings.currency]);
 
   const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
   const [openMenuParentId, setOpenMenuParentId] = useState<string | null>(null);
@@ -44,6 +63,15 @@ export default function ParentsTable({
   const [parentToDelete, setParentToDelete] = useState<AdminParent | null>(null);
   const [menuPosition, setMenuPosition] = useState<"bottom" | "top">("bottom");
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Modal states for parent actions
+  const [activeParent, setActiveParent] = useState<AdminParent | null>(null);
+  const [isScheduleMeetingOpen, setIsScheduleMeetingOpen] = useState(false);
+  const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false);
+  const [isEditContactOpen, setIsEditContactOpen] = useState(false);
+  const [isFeeStatementOpen, setIsFeeStatementOpen] = useState(false);
+  const [isDisconnectChildrenOpen, setIsDisconnectChildrenOpen] = useState(false);
+  const [isCannotDeleteOpen, setIsCannotDeleteOpen] = useState(false);
 
   // Use external state if provided, otherwise use internal state
   const selectedIds = externalSelectedIds ?? internalSelectedIds;
@@ -102,27 +130,97 @@ export default function ParentsTable({
   };
 
   const handleMenuItemClick = (action: string, parent: AdminParent) => {
-    if (action === "Delete") {
-      setParentToDelete(parent);
-      setIsDeleteModalOpen(true);
-      setOpenMenuParentId(null);
-    } else if (action === "Edit") {
-      router.push(`/admin/parents/edit/${parent.id}`);
-      setOpenMenuParentId(null);
-    } else if (action === "View Parent") {
-      router.push(`/admin/parents/${parent.id}`);
-      setOpenMenuParentId(null);
-    } else if (action === "View Fees") {
-      router.push(`/admin/parents/${parent.id}/fees`);
-      setOpenMenuParentId(null);
-    } else if (action === "View Children") {
-      router.push(`/admin/parents/${parent.id}/children`);
-      setOpenMenuParentId(null);
-    } else {
-      console.log(`${action} clicked for parent:`, parent.id);
-      setOpenMenuParentId(null);
+    setOpenMenuParentId(null);
+    setActiveParent(parent);
+
+    switch (action) {
+      case "Delete":
+        // Check if parent has children
+        if (parent.children && parent.children.length > 0) {
+          setIsCannotDeleteOpen(true);
+        } else {
+          setParentToDelete(parent);
+          setIsDeleteModalOpen(true);
+        }
+        break;
+      case "View Profile":
+        router.push(`/admin/parents/${parent.id}`);
+        break;
+      case "Schedule Meeting":
+        setIsScheduleMeetingOpen(true);
+        break;
+      case "View Fee Statement":
+        setIsFeeStatementOpen(true);
+        break;
+      case "Record Payment":
+        setIsRecordPaymentOpen(true);
+        break;
+      case "Edit Contact Info":
+        setIsEditContactOpen(true);
+        break;
+      case "Disconnect Children":
+        setIsDisconnectChildrenOpen(true);
+        break;
+      default:
+        console.log(`${action} clicked for parent:`, parent.id);
     }
   };
+
+  // Handler functions for modals
+  const handleScheduleMeeting = (meetingData: ScheduledMeetingData) => {
+    console.log("Meeting scheduled:", meetingData);
+    setIsScheduleMeetingOpen(false);
+    if (activeParent) {
+      addNotification({
+        type: "meeting_scheduled",
+        title: "Meeting Scheduled",
+        message: `Meeting with ${activeParent.firstName} ${activeParent.lastName} has been scheduled for ${meetingData.date} at ${meetingData.time}.`,
+      });
+    }
+  };
+
+  const handleRecordPayment = (paymentData: { amount: number; childId: string; feeType: string; paymentMethod: string; reference: string }) => {
+    console.log("Payment recorded:", paymentData);
+    setIsRecordPaymentOpen(false);
+    addNotification({
+      type: "payment",
+      title: "Payment Recorded",
+      message: `Payment of ${currencySymbol}${paymentData.amount.toLocaleString()} has been recorded successfully.`,
+    });
+  };
+
+  const handleUpdateContact = (updatedData: Partial<AdminParent>) => {
+    console.log("Contact updated:", updatedData);
+    setIsEditContactOpen(false);
+    if (activeParent) {
+      addNotification({
+        type: "success",
+        title: "Contact Updated",
+        message: `${activeParent.firstName} ${activeParent.lastName}'s contact information has been updated.`,
+      });
+    }
+  };
+
+  const handleDisconnectChildren = (disconnectedChildIds: string[]) => {
+    setIsDisconnectChildrenOpen(false);
+    if (activeParent) {
+      addNotification({
+        type: "success",
+        title: "Children Disconnected",
+        message: `${disconnectedChildIds.length} ${disconnectedChildIds.length === 1 ? "child has" : "children have"} been disconnected from ${activeParent.firstName} ${activeParent.lastName}.`,
+      });
+    }
+  };
+
+  // Create participant object for calls
+  const createParticipant = (parent: AdminParent) => ({
+    id: parent.id,
+    name: `${parent.firstName} ${parent.lastName}`,
+    avatar: parent.profilePhoto,
+    role: parent.relationship,
+    phone: parent.phone,
+    email: parent.email,
+  });
 
   const handleConfirmDelete = () => {
     if (parentToDelete) {
@@ -214,7 +312,7 @@ export default function ParentsTable({
             </div>
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex flex-col">
             <Tooltip content={`${parent.firstName} ${parent.lastName}`}>
               <span
                 onClick={(e) => {
@@ -226,7 +324,7 @@ export default function ParentsTable({
                 {parent.firstName} {parent.lastName}
               </span>
             </Tooltip>
-            <span className="text-xs text-gray-500 dark:text-gray-400">{parent.relationship}</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 block">{parent.relationship}</span>
           </div>
         </div>
       ),
@@ -326,35 +424,32 @@ export default function ParentsTable({
       className: "text-left w-[20%] md:w-[18%] !overflow-visible",
       render: (parent) => (
         <div className="flex items-center justify-start gap-1 md:gap-1.5">
-          <div className="relative group/msg flex-shrink-0">
+          {/* Chat Icon */}
+          <Tooltip content="Chat" delay={200}>
             <button
               className="p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-500/20 transition-all duration-200 hover:scale-105 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                console.log("Message", parent.id);
+                router.push(`/admin/parents/chat/${parent.id}`);
               }}
             >
-              <MessageCircle className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400 group-hover/msg:text-blue-600" />
+              <MessageCircle className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400 hover:text-blue-600" />
             </button>
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/msg:opacity-100 transition-opacity pointer-events-none z-[99999]">
-              <NameLabel name="Message" variant="compact" />
-            </div>
-          </div>
-          <div className="relative group/call flex-shrink-0">
+          </Tooltip>
+          {/* Voice Call Icon */}
+          <Tooltip content="Voice Call" delay={200}>
             <button
               className="p-1 rounded-md hover:bg-green-50 dark:hover:bg-green-500/20 transition-all duration-200 hover:scale-105 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                window.open(`tel:${parent.phone.replace(/\s/g, "")}`);
+                startVoiceCall(createParticipant(parent), { callContext: `Voice call with ${parent.firstName}` });
               }}
             >
-              <Phone className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400 group-hover/call:text-green-600" />
+              <Phone className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400 hover:text-green-600" />
             </button>
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/call:opacity-100 transition-opacity pointer-events-none z-[99999]">
-              <NameLabel name="Call" variant="compact" />
-            </div>
-          </div>
-          <div className="relative group/email flex-shrink-0">
+          </Tooltip>
+          {/* Email Icon */}
+          <Tooltip content="Send Email" delay={200}>
             <button
               className="p-1 rounded-md hover:bg-purple-50 dark:hover:bg-purple-500/20 transition-all duration-200 hover:scale-105 cursor-pointer"
               onClick={(e) => {
@@ -362,43 +457,38 @@ export default function ParentsTable({
                 window.open(`mailto:${parent.email}`);
               }}
             >
-              <Mail className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400 group-hover/email:text-purple-600" />
+              <Mail className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400 hover:text-purple-600" />
             </button>
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/email:opacity-100 transition-opacity pointer-events-none z-[99999]">
-              <NameLabel name="Email" variant="compact" />
-            </div>
-          </div>
-          <div className="relative group/fees flex-shrink-0">
+          </Tooltip>
+          {/* Video Call Icon */}
+          <Tooltip content="Video Call" delay={200}>
             <button
-              className="p-1 rounded-md hover:bg-amber-50 dark:hover:bg-amber-500/20 transition-all duration-200 hover:scale-105 cursor-pointer"
+              className="p-1 rounded-md hover:bg-cyan-50 dark:hover:bg-cyan-500/20 transition-all duration-200 hover:scale-105 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                router.push(`/admin/parents/${parent.id}/fees`);
+                startVideoCall(createParticipant(parent), { callContext: `Video call with ${parent.firstName}` });
               }}
             >
-              <CreditCard className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400 group-hover/fees:text-amber-600" />
+              <Video className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400 hover:text-cyan-600" />
             </button>
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/fees:opacity-100 transition-opacity pointer-events-none z-[99999]">
-              <NameLabel name="View Fees" variant="compact" />
-            </div>
-          </div>
+          </Tooltip>
+          {/* More Options */}
           <div
-            className="relative flex-shrink-0 overflow-visible group/more"
+            className="relative flex-shrink-0 overflow-visible"
             ref={openMenuParentId === parent.id ? menuRef : null}
           >
-            <button
-              className={`p-1 rounded-md transition-all duration-200 hover:scale-105 cursor-pointer ${
-                openMenuParentId === parent.id
-                  ? "bg-gray-200 dark:bg-gray-600"
-                  : "hover:bg-gray-100 dark:hover:bg-gray-500/20"
-              }`}
-              onClick={(e) => handleMenuToggle(parent.id, e)}
-            >
-              <MoreVertical className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400" />
-            </button>
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/more:opacity-100 transition-opacity pointer-events-none z-[99999]">
-              <NameLabel name="More" variant="compact" />
-            </div>
+            <Tooltip content="More Options" delay={200}>
+              <button
+                className={`p-1 rounded-md transition-all duration-200 hover:scale-105 cursor-pointer ${
+                  openMenuParentId === parent.id
+                    ? "bg-gray-200 dark:bg-gray-600"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-500/20"
+                }`}
+                onClick={(e) => handleMenuToggle(parent.id, e)}
+              >
+                <MoreVertical className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400" />
+              </button>
+            </Tooltip>
 
             {openMenuParentId === parent.id && (
               <div
@@ -410,40 +500,49 @@ export default function ParentsTable({
                 }`}
               >
                 <button
-                  onClick={() => handleMenuItemClick("View Parent", parent)}
+                  onClick={() => handleMenuItemClick("View Profile", parent)}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                 >
                   <Eye className="w-4 h-4" />
-                  <span>View Parent</span>
+                  <span>View Profile</span>
                 </button>
                 <button
-                  onClick={() => handleMenuItemClick("Edit", parent)}
+                  onClick={() => handleMenuItemClick("Schedule Meeting", parent)}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                 >
-                  <Edit className="w-4 h-4" />
-                  <span>Edit</span>
+                  <CalendarPlus className="w-4 h-4" />
+                  <span>Schedule Meeting</span>
                 </button>
                 <button
-                  onClick={() => handleMenuItemClick("View Children", parent)}
+                  onClick={() => handleMenuItemClick("View Fee Statement", parent)}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                 >
-                  <Users className="w-4 h-4" />
-                  <span>View Children</span>
+                  <FileText className="w-4 h-4" />
+                  <span>View Fee Statement</span>
                 </button>
                 <button
-                  onClick={() => handleMenuItemClick("View Fees", parent)}
+                  onClick={() => handleMenuItemClick("Record Payment", parent)}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                 >
-                  <CreditCard className="w-4 h-4" />
-                  <span>View Fees</span>
+                  <Banknote className="w-4 h-4" />
+                  <span>Record Payment</span>
                 </button>
                 <button
-                  onClick={() => handleMenuItemClick("Login Details", parent)}
+                  onClick={() => handleMenuItemClick("Edit Contact Info", parent)}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                 >
-                  <Lock className="w-4 h-4" />
-                  <span>Login Details</span>
+                  <UserCog className="w-4 h-4" />
+                  <span>Edit Contact Info</span>
                 </button>
+                {parent.children && parent.children.length > 0 && (
+                  <button
+                    onClick={() => handleMenuItemClick("Disconnect Children", parent)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                  >
+                    <UserMinus className="w-4 h-4" />
+                    <span>Disconnect Children</span>
+                  </button>
+                )}
                 <button
                   onClick={() => handleMenuItemClick("Delete", parent)}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
@@ -490,6 +589,147 @@ export default function ParentsTable({
           warningMessage="This will permanently remove this parent and all associated data. This action cannot be undone."
           confirmButtonText="Delete Parent"
         />
+      )}
+
+      {/* Schedule Meeting Modal */}
+      {activeParent && (
+        <ScheduleMeetingModal
+          isOpen={isScheduleMeetingOpen}
+          onClose={() => setIsScheduleMeetingOpen(false)}
+          onSchedule={handleScheduleMeeting}
+          context="parent"
+          primaryParticipant={{
+            id: activeParent.id,
+            name: `${activeParent.firstName} ${activeParent.lastName}`,
+            type: "parent",
+            role: activeParent.relationship,
+            email: activeParent.email,
+            photo: activeParent.profilePhoto,
+          }}
+          children={activeParent.children.map((child) => ({
+            id: child.id,
+            name: `${child.firstName} ${child.lastName}`,
+            classLevel: child.classLevel,
+          }))}
+        />
+      )}
+
+      {/* Quick Record Payment Modal */}
+      {activeParent && (
+        <QuickRecordPaymentModal
+          isOpen={isRecordPaymentOpen}
+          onClose={() => setIsRecordPaymentOpen(false)}
+          onSubmit={handleRecordPayment}
+          parent={activeParent}
+          currencySymbol={currencySymbol}
+        />
+      )}
+
+      {/* Edit Contact Info Modal */}
+      {activeParent && (
+        <EditParentContactModal
+          isOpen={isEditContactOpen}
+          onClose={() => setIsEditContactOpen(false)}
+          onSave={handleUpdateContact}
+          parent={activeParent}
+        />
+      )}
+
+      {/* View Fee Statement Modal */}
+      {activeParent && (
+        <ViewFeeStatementModal
+          isOpen={isFeeStatementOpen}
+          onClose={() => setIsFeeStatementOpen(false)}
+          parent={activeParent}
+        />
+      )}
+
+      {/* Disconnect Children Modal */}
+      {activeParent && (
+        <DisconnectChildrenModal
+          isOpen={isDisconnectChildrenOpen}
+          onClose={() => setIsDisconnectChildrenOpen(false)}
+          onConfirm={handleDisconnectChildren}
+          parent={activeParent}
+        />
+      )}
+
+      {/* Cannot Delete Modal - shown when trying to delete parent with children */}
+      {activeParent && (
+        <Modal
+          isOpen={isCannotDeleteOpen}
+          onClose={() => setIsCannotDeleteOpen(false)}
+          maxWidth="md"
+          title="Cannot Delete Parent"
+          subtitle="Active children detected"
+          icon={<AlertTriangle className="w-5 h-5" />}
+        >
+          <div className="space-y-4">
+            {/* Warning Message */}
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                  This parent cannot be deleted
+                </p>
+                <p className="text-sm text-red-700 dark:text-red-400 mt-1">
+                  {activeParent.firstName} {activeParent.lastName} is currently connected to {activeParent.children.length} {activeParent.children.length === 1 ? "child" : "children"} in the system.
+                </p>
+              </div>
+            </div>
+
+            {/* Connected Children List */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Connected Children:
+              </h4>
+              <div className="space-y-2 max-h-[150px] overflow-y-auto">
+                {activeParent.children.map((child) => (
+                  <div
+                    key={child.id}
+                    className="flex items-center gap-3 p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/20 flex items-center justify-center flex-shrink-0">
+                      <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        {child.firstName} {child.lastName}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {child.classLevel}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Instructions */}
+            <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                To delete this parent, you must first disconnect all children using the <strong>&quot;Disconnect Children&quot;</strong> option from the dropdown menu.
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <FormButton type="button" variant="secondary" onClick={() => setIsCannotDeleteOpen(false)}>
+                Close
+              </FormButton>
+              <FormButton
+                type="button"
+                variant="primary"
+                onClick={() => {
+                  setIsCannotDeleteOpen(false);
+                  setIsDisconnectChildrenOpen(true);
+                }}
+              >
+                Disconnect Children
+              </FormButton>
+            </div>
+          </div>
+        </Modal>
       )}
     </>
   );
