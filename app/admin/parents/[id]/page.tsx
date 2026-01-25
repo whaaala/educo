@@ -465,6 +465,7 @@ export default function AdminParentDetailPage() {
               {activeTab === "support" && (
                 <SupportTicketsSection
                   communications={communications}
+                  setCommunications={setCommunications}
                   parentName={`${parent.firstName} ${parent.lastName}`}
                 />
               )}
@@ -2724,8 +2725,9 @@ function PaymentHistorySection({
 }
 
 // ===== SUPPORT TICKETS SECTION =====
-function SupportTicketsSection({ communications, parentName }: {
+function SupportTicketsSection({ communications, setCommunications, parentName }: {
   communications: CommunicationRecord[];
+  setCommunications: React.Dispatch<React.SetStateAction<CommunicationRecord[]>>;
   parentName: string;
 }) {
   const [selectedType, setSelectedType] = useState<string>("all");
@@ -2857,17 +2859,43 @@ function SupportTicketsSection({ communications, parentName }: {
 
   const handleViewTicket = (ticket: CommunicationRecord) => {
     setSelectedTicket(ticket);
+    setNewStatus(ticket.status); // Initialize status dropdown to current ticket status
     setIsTicketModalOpen(true);
   };
 
   const handleSendReply = () => {
     if (!replyText.trim() || !selectedTicket) return;
     setIsReplying(true);
+
+    // Create the new response
+    const newResponse = {
+      from: "admin" as const,
+      message: replyText.trim(),
+      date: new Date().toISOString(),
+    };
+
     // Simulate sending reply
     setTimeout(() => {
+      // Update selectedTicket with the new response and status
+      setSelectedTicket(prev => prev ? {
+        ...prev,
+        responses: [...prev.responses, newResponse],
+        status: newStatus as typeof prev.status,
+      } : null);
+
+      // Update the communications list
+      setCommunications(prev => prev.map(t =>
+        t.id === selectedTicket.id
+          ? {
+              ...t,
+              responses: [...t.responses, newResponse],
+              status: newStatus as typeof t.status,
+            }
+          : t
+      ));
+
       setIsReplying(false);
       setReplyText("");
-      // In real app, this would update the ticket with the new response
     }, 1000);
   };
 
@@ -3082,6 +3110,71 @@ function SupportTicketsSection({ communications, parentName }: {
           subtitle={`Ticket #${selectedTicket.id}`}
           icon={<MessageSquare className="w-5 h-5" />}
           maxWidth="2xl"
+          footer={(selectedTicket.status === "open" || selectedTicket.status === "in_progress") ? (
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Update Status:</span>
+                <CustomDropdown
+                  value={newStatus}
+                  onChange={(value) => {
+                    const status = value as string;
+                    setNewStatus(status);
+                    // Update selectedTicket with new status
+                    setSelectedTicket(prev => prev ? {
+                      ...prev,
+                      status: status as typeof prev.status,
+                    } : null);
+                    // Update communications list
+                    setCommunications(prev => prev.map(t =>
+                      t.id === selectedTicket.id
+                        ? { ...t, status: status as typeof t.status }
+                        : t
+                    ));
+                  }}
+                  options={[
+                    { value: "open", label: "Open" },
+                    { value: "in_progress", label: "In Progress" },
+                    { value: "resolved", label: "Resolved" },
+                    { value: "closed", label: "Closed" },
+                  ]}
+                  variant="blue"
+                  dropup
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setIsTicketModalOpen(false);
+                    setSelectedTicket(null);
+                    setReplyText("");
+                  }}
+                  className="px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl transition-all cursor-pointer"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={handleSendReply}
+                  disabled={!replyText.trim() || isReplying}
+                  className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg hover:shadow-xl"
+                >
+                {isReplying ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Send Response
+                  </>
+                )}
+                </button>
+              </div>
+            </div>
+          ) : undefined}
         >
           <div className="space-y-4">
             {/* Ticket Info */}
@@ -3107,8 +3200,18 @@ function SupportTicketsSection({ communications, parentName }: {
                   value={assignableStaff.find(s => s.label === selectedTicket.assignedTo)?.value || ""}
                   onChange={(value) => {
                     const staff = assignableStaff.find(s => s.value === value);
-                    // In a real app, this would update the ticket in the database
-                    console.log("Assigning ticket to:", staff?.label || "Unassigned");
+                    // Update the selectedTicket state with the new assignedTo value
+                    setSelectedTicket(prev => prev ? {
+                      ...prev,
+                      assignedTo: staff?.label || undefined,
+                      status: staff ? "in_progress" : prev.status,
+                    } : null);
+                    // Also update the communications list
+                    setCommunications(prev => prev.map(t =>
+                      t.id === selectedTicket.id
+                        ? { ...t, assignedTo: staff?.label || undefined, status: staff ? "in_progress" : t.status }
+                        : t
+                    ));
                   }}
                   options={assignableStaff.map((staff) => ({
                     value: staff.value,
@@ -3172,55 +3275,18 @@ function SupportTicketsSection({ communications, parentName }: {
               </div>
             )}
 
-            {/* Reply Input */}
+            {/* Reply Input - in scrollable area */}
             {(selectedTicket.status === "open" || selectedTicket.status === "in_progress") && (
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
-                <FormTextarea
-                  label="Your Response"
-                  icon={<Send className="w-full h-full" />}
-                  iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-                  iconColor="text-blue-600 dark:text-blue-400"
-                  value={replyText}
-                  onChange={setReplyText}
-                  placeholder="Type your response to the ticket..."
-                  rows={3}
-                />
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Update Status:</span>
-                    <CustomDropdown
-                      value={newStatus}
-                      onChange={(value) => setNewStatus(value as string)}
-                      options={[
-                        { value: "in_progress", label: "In Progress" },
-                        { value: "resolved", label: "Resolved" },
-                        { value: "closed", label: "Closed" },
-                      ]}
-                      variant="blue"
-                    />
-                  </div>
-                  <button
-                    onClick={handleSendReply}
-                    disabled={!replyText.trim() || isReplying}
-                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg hover:shadow-xl"
-                  >
-                    {isReplying ? (
-                      <>
-                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4" />
-                        Send Response
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
+              <FormTextarea
+                label="Your Response"
+                icon={<Send className="w-full h-full" />}
+                iconBgColor="bg-blue-100 dark:bg-blue-900/30"
+                iconColor="text-blue-600 dark:text-blue-400"
+                value={replyText}
+                onChange={setReplyText}
+                placeholder="Type your response to the ticket..."
+                rows={3}
+              />
             )}
           </div>
         </Modal>
