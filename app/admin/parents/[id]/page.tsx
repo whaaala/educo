@@ -81,6 +81,8 @@ import {
   ExternalLink,
   Wallet,
   BadgeCheck,
+  Trophy,
+  AlertTriangle,
 } from "lucide-react";
 import Modal from "@/components/shared/Modal";
 import FormDropdown from "@/components/shared/FormDropdown";
@@ -3451,72 +3453,416 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
 
 // ===== EVENT ATTENDANCE SECTION =====
 function EventAttendanceSection({ eventAttendance }: { eventAttendance: ParentEventAttendance[] }) {
-  const [showAll, setShowAll] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<ParentEventAttendance | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const attendedCount = eventAttendance.filter((e) => e.attended).length;
+  const absentCount = eventAttendance.length - attendedCount;
   const attendanceRate = eventAttendance.length > 0 ? Math.round((attendedCount / eventAttendance.length) * 100) : 0;
-  const displayEvents = showAll ? eventAttendance : eventAttendance.slice(0, 5);
+  const displayEvents = eventAttendance.slice(0, 4);
+
+  const getEventTypeConfig = (type: ParentEventAttendance["eventType"]) => {
+    const config = {
+      parent_teacher_meeting: { icon: Users, bg: "from-blue-500 to-indigo-600", lightBg: "bg-blue-50 dark:bg-blue-900/20", text: "text-blue-600 dark:text-blue-400", label: "PTA Meeting" },
+      open_day: { icon: Calendar, bg: "from-emerald-500 to-teal-600", lightBg: "bg-emerald-50 dark:bg-emerald-900/20", text: "text-emerald-600 dark:text-emerald-400", label: "Open Day" },
+      result_collection: { icon: FileText, bg: "from-purple-500 to-violet-600", lightBg: "bg-purple-50 dark:bg-purple-900/20", text: "text-purple-600 dark:text-purple-400", label: "Results" },
+      workshop: { icon: Award, bg: "from-amber-500 to-orange-600", lightBg: "bg-amber-50 dark:bg-amber-900/20", text: "text-amber-600 dark:text-amber-400", label: "Workshop" },
+      sports_day: { icon: Trophy, bg: "from-rose-500 to-pink-600", lightBg: "bg-rose-50 dark:bg-rose-900/20", text: "text-rose-600 dark:text-rose-400", label: "Sports Day" },
+      graduation: { icon: GraduationCap, bg: "from-cyan-500 to-blue-600", lightBg: "bg-cyan-50 dark:bg-cyan-900/20", text: "text-cyan-600 dark:text-cyan-400", label: "Graduation" },
+    };
+    return config[type] || config.open_day;
+  };
+
+  const handleViewEvent = (event: ParentEventAttendance) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
 
   return (
-    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <CalendarCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            Event Attendance
-          </h3>
-          <span className={`px-2 py-1 text-[10px] font-bold rounded-lg ${
-            attendanceRate >= 70
-              ? "text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/30"
-              : attendanceRate >= 50
-              ? "text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/30"
-              : "text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30"
-          }`}>
-            {attendanceRate}% Attendance
-          </span>
+    <>
+      <div className="bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+        {/* Header with gradient */}
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-cyan-500/10 dark:from-emerald-500/20 dark:via-teal-500/10 dark:to-cyan-500/20" />
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-400/10 dark:bg-emerald-400/20 rounded-full blur-2xl" />
+
+          <div className="relative px-5 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="absolute inset-0 bg-emerald-500/20 rounded-xl blur-md" />
+                <div className="relative w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+                  <CalendarCheck className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white">Event Attendance</h3>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">{eventAttendance.length} total events</p>
+              </div>
+            </div>
+
+            {/* Attendance Rate Circle */}
+            <div className="relative">
+              <svg className="w-14 h-14 -rotate-90">
+                <circle cx="28" cy="28" r="24" stroke="currentColor" strokeWidth="4" fill="none" className="text-gray-200 dark:text-gray-700" />
+                <circle
+                  cx="28" cy="28" r="24"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={`${attendanceRate * 1.51} 151`}
+                  className={attendanceRate >= 70 ? "text-emerald-500" : attendanceRate >= 50 ? "text-amber-500" : "text-red-500"}
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className={`text-xs font-bold ${attendanceRate >= 70 ? "text-emerald-600 dark:text-emerald-400" : attendanceRate >= 50 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}`}>
+                  {attendanceRate}%
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {displayEvents.length === 0 ? (
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center py-4">No events recorded</p>
-        ) : (
-          <div className="space-y-1.5">
-            {displayEvents.map((event) => (
-              <div
-                key={event.id}
-                className="flex items-center justify-between p-2 rounded-lg bg-gray-50/50 dark:bg-gray-800/20 midnight:bg-gray-800/20 purple:bg-gray-800/20 border border-gray-200/40 dark:border-gray-700/40 midnight:border-gray-700/40 purple:border-gray-700/40 transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{event.eventName}</p>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400">
-                    {event.childName} • {new Date(event.eventDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                  </p>
-                </div>
-                {event.attended ? (
-                  <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/30 rounded">
-                    <CheckCircle2 className="w-3 h-3" />
-                    Attended
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 rounded">
-                    <XCircle className="w-3 h-3" />
-                    Absent
-                  </span>
-                )}
+        {/* Stats Row */}
+        <div className="px-5 py-3 grid grid-cols-3 gap-3 border-b border-gray-100 dark:border-gray-700/50">
+          <div className="text-center">
+            <p className="text-lg font-bold text-gray-900 dark:text-white">{eventAttendance.length}</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total</p>
+          </div>
+          <div className="text-center border-x border-gray-100 dark:border-gray-700/50">
+            <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{attendedCount}</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Attended</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-bold text-red-500 dark:text-red-400">{absentCount}</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Missed</p>
+          </div>
+        </div>
+
+        {/* Events List */}
+        <div className="p-4">
+          {displayEvents.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
+                <CalendarCheck className="w-7 h-7 text-gray-400" />
               </div>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No events recorded</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {displayEvents.map((event) => {
+                const config = getEventTypeConfig(event.eventType);
+                const EventIcon = config.icon;
+                return (
+                  <div
+                    key={event.id}
+                    onClick={() => handleViewEvent(event)}
+                    className="group/item flex items-center gap-3 p-3 rounded-xl bg-gray-50/80 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 border border-transparent hover:border-emerald-200 dark:hover:border-emerald-500/30 transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5"
+                  >
+                    <div className={`w-10 h-10 rounded-xl ${config.lightBg} flex items-center justify-center flex-shrink-0`}>
+                      <EventIcon className={`w-5 h-5 ${config.text}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-gray-900 dark:text-white truncate group-hover/item:text-emerald-600 dark:group-hover/item:text-emerald-400 transition-colors">
+                        {event.eventName}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400">{event.childName}</span>
+                        <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                          {new Date(event.eventDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                        </span>
+                      </div>
+                    </div>
+                    {event.attended ? (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300">Present</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-100 dark:bg-red-500/20">
+                        <XCircle className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                        <span className="text-[10px] font-bold text-red-700 dark:text-red-300">Absent</span>
+                      </div>
+                    )}
+                    <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {eventAttendance.length > 4 && (
+            <button
+              onClick={() => {
+                setSelectedEvent(null);
+                setIsModalOpen(true);
+              }}
+              className="w-full mt-4 py-2.5 text-xs font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30"
+            >
+              <Eye className="w-4 h-4" />
+              View All {eventAttendance.length} Events
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Event Details Modal */}
+      <EventAttendanceModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedEvent(null);
+        }}
+        events={eventAttendance}
+        selectedEvent={selectedEvent}
+        getEventTypeConfig={getEventTypeConfig}
+      />
+    </>
+  );
+}
+
+// ===== EVENT ATTENDANCE MODAL =====
+function EventAttendanceModal({
+  isOpen,
+  onClose,
+  events,
+  selectedEvent,
+  getEventTypeConfig,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  events: ParentEventAttendance[];
+  selectedEvent: ParentEventAttendance | null;
+  getEventTypeConfig: (type: ParentEventAttendance["eventType"]) => { icon: React.ComponentType<{ className?: string }>; bg: string; lightBg: string; text: string; label: string };
+}) {
+  const [filter, setFilter] = useState<"all" | "attended" | "absent">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredEvents = useMemo(() => {
+    return events.filter((event) => {
+      const matchesFilter = filter === "all" || (filter === "attended" ? event.attended : !event.attended);
+      const matchesSearch = event.eventName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.childName.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesFilter && matchesSearch;
+    });
+  }, [events, filter, searchQuery]);
+
+  const attendedCount = events.filter((e) => e.attended).length;
+  const attendanceRate = events.length > 0 ? Math.round((attendedCount / events.length) * 100) : 0;
+
+  if (!isOpen) return null;
+
+  // If a specific event is selected, show its details
+  if (selectedEvent) {
+    const config = getEventTypeConfig(selectedEvent.eventType);
+    const EventIcon = config.icon;
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Event Details"
+        icon={<CalendarCheck className="w-5 h-5" />}
+        maxWidth="lg"
+      >
+        <div className="space-y-5">
+          {/* Event Header */}
+          <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${config.bg} p-6`}>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+
+            <div className="relative flex items-start gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <EventIcon className="w-7 h-7 text-white" />
+              </div>
+              <div className="flex-1">
+                <span className="inline-block px-2.5 py-1 rounded-lg bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider mb-2">
+                  {config.label}
+                </span>
+                <h3 className="text-lg font-bold text-white">{selectedEvent.eventName}</h3>
+                <p className="text-sm text-white/80 mt-1">
+                  {new Date(selectedEvent.eventDate).toLocaleDateString("en-GB", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric"
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Attendance Status */}
+          <div className={`p-4 rounded-xl ${selectedEvent.attended ? "bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30" : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30"}`}>
+            <div className="flex items-center gap-3">
+              {selectedEvent.attended ? (
+                <>
+                  <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-500/30 flex items-center justify-center">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">Attended</p>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400">Parent was present at this event</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-500/30 flex items-center justify-center">
+                    <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-red-700 dark:text-red-300">Absent</p>
+                    <p className="text-xs text-red-600 dark:text-red-400">Parent did not attend this event</p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Event Details */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex items-center gap-2 mb-2">
+                <User className="w-4 h-4 text-gray-400" />
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Child</p>
+              </div>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedEvent.childName}</p>
+            </div>
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-4 h-4 text-gray-400" />
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Date</p>
+              </div>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                {new Date(selectedEvent.eventDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+              </p>
+            </div>
+          </div>
+
+          {selectedEvent.notes && (
+            <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-500/30">
+              <div className="flex items-center gap-2 mb-2">
+                <FileText className="w-4 h-4 text-amber-500" />
+                <p className="text-[10px] text-amber-600 dark:text-amber-400 uppercase tracking-wider font-medium">Notes</p>
+              </div>
+              <p className="text-sm text-amber-700 dark:text-amber-300">{selectedEvent.notes}</p>
+            </div>
+          )}
+
+          <button
+            onClick={() => onClose()}
+            className="w-full py-3 text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-xl transition-all cursor-pointer shadow-lg"
+          >
+            Close
+          </button>
+        </div>
+      </Modal>
+    );
+  }
+
+  // Show all events list
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="All Events"
+      subtitle={`${attendanceRate}% attendance rate`}
+      icon={<CalendarCheck className="w-5 h-5" />}
+      maxWidth="2xl"
+    >
+      <div className="space-y-4">
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-500/20 text-center">
+            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{events.length}</p>
+            <p className="text-[10px] text-blue-600/70 dark:text-blue-400/70 uppercase tracking-wider font-medium">Total Events</p>
+          </div>
+          <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-100 dark:border-emerald-500/20 text-center">
+            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{attendedCount}</p>
+            <p className="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-wider font-medium">Attended</p>
+          </div>
+          <div className="p-4 rounded-xl bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border border-red-100 dark:border-red-500/20 text-center">
+            <p className="text-2xl font-bold text-red-600 dark:text-red-400">{events.length - attendedCount}</p>
+            <p className="text-[10px] text-red-600/70 dark:text-red-400/70 uppercase tracking-wider font-medium">Missed</p>
+          </div>
+        </div>
+
+        {/* Search and Filter */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search events..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            />
+          </div>
+          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+            {(["all", "attended", "absent"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  filter === f
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+              >
+                {f === "all" ? "All" : f === "attended" ? "Attended" : "Absent"}
+              </button>
             ))}
           </div>
-        )}
+        </div>
 
-        {eventAttendance.length > 5 && (
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="w-full mt-3 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
-          >
-            {showAll ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            {showAll ? "Show Less" : `Show All ${eventAttendance.length} Events`}
-          </button>
-        )}
+        {/* Events List */}
+        <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+          {filteredEvents.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <CalendarCheck className="w-10 h-10 text-gray-300 dark:text-gray-600 mb-2" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">No events found</p>
+            </div>
+          ) : (
+            filteredEvents.map((event) => {
+              const config = getEventTypeConfig(event.eventType);
+              const EventIcon = config.icon;
+              return (
+                <div
+                  key={event.id}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 hover:border-emerald-200 dark:hover:border-emerald-500/30 transition-all cursor-pointer hover:shadow-md"
+                >
+                  <div className={`w-11 h-11 rounded-xl ${config.lightBg} flex items-center justify-center flex-shrink-0`}>
+                    <EventIcon className={`w-5 h-5 ${config.text}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{event.eventName}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[11px] text-gray-500 dark:text-gray-400">{event.childName}</span>
+                      <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+                      <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                        {new Date(event.eventDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      </span>
+                    </div>
+                  </div>
+                  {event.attended ? (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">Present</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-100 dark:bg-red-500/20">
+                      <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                      <span className="text-xs font-bold text-red-700 dark:text-red-300">Absent</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -3528,80 +3874,413 @@ function LibraryPaymentsSection({
   libraryPayments: LibraryPayment[];
   money: (amount: number) => string;
 }) {
-  const [showAll, setShowAll] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<LibraryPayment | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const pendingPayments = libraryPayments.filter((p) => p.status === "pending");
-  const displayPayments = showAll ? libraryPayments : libraryPayments.slice(0, 5);
+  const paidPayments = libraryPayments.filter((p) => p.status === "paid");
+  const displayPayments = libraryPayments.slice(0, 4);
+  const totalPending = pendingPayments.reduce((sum, p) => sum + p.amount, 0);
+  const totalPaid = paidPayments.reduce((sum, p) => sum + p.amount, 0);
 
-  const getTypeBadge = (type: LibraryPayment["paymentType"]) => {
+  const getPaymentTypeConfig = (type: LibraryPayment["paymentType"]) => {
     const config = {
-      book_purchase: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-300", label: "Purchase" },
-      late_fee: { bg: "bg-yellow-100 dark:bg-yellow-900/30", text: "text-yellow-700 dark:text-yellow-300", label: "Late Fee" },
-      damage_fee: { bg: "bg-orange-100 dark:bg-orange-900/30", text: "text-orange-700 dark:text-orange-300", label: "Damage" },
-      lost_book: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-300", label: "Lost Book" },
+      book_purchase: { icon: BookOpen, bg: "from-blue-500 to-indigo-600", lightBg: "bg-blue-50 dark:bg-blue-900/20", text: "text-blue-600 dark:text-blue-400", label: "Purchase" },
+      late_fee: { icon: Clock, bg: "from-amber-500 to-orange-600", lightBg: "bg-amber-50 dark:bg-amber-900/20", text: "text-amber-600 dark:text-amber-400", label: "Late Fee" },
+      damage_fee: { icon: AlertTriangle, bg: "from-orange-500 to-red-600", lightBg: "bg-orange-50 dark:bg-orange-900/20", text: "text-orange-600 dark:text-orange-400", label: "Damage" },
+      lost_book: { icon: XCircle, bg: "from-red-500 to-rose-600", lightBg: "bg-red-50 dark:bg-red-900/20", text: "text-red-600 dark:text-red-400", label: "Lost Book" },
     };
-    const c = config[type];
-    return <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${c.bg} ${c.text}`}>{c.label}</span>;
+    return config[type] || config.book_purchase;
+  };
+
+  const handleViewPayment = (payment: LibraryPayment) => {
+    setSelectedPayment(payment);
+    setIsModalOpen(true);
   };
 
   return (
-    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            Library Payments
-          </h3>
-          {pendingPayments.length > 0 && (
-            <span className="px-2 py-1 text-[10px] font-bold text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-              {pendingPayments.length} Pending
-            </span>
-          )}
-        </div>
+    <>
+      <div className="bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+        {/* Header with gradient */}
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-violet-500/10 dark:from-indigo-500/20 dark:via-purple-500/10 dark:to-violet-500/20" />
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-400/10 dark:bg-indigo-400/20 rounded-full blur-2xl" />
 
-        {displayPayments.length === 0 ? (
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center py-4">No library payments</p>
-        ) : (
-          <div className="space-y-1.5">
-            {displayPayments.map((payment) => (
-              <div
-                key={payment.id}
-                className="flex items-center justify-between p-2 rounded-lg bg-gray-50/50 dark:bg-gray-800/20 midnight:bg-gray-800/20 purple:bg-gray-800/20 border border-gray-200/40 dark:border-gray-700/40 midnight:border-gray-700/40 purple:border-gray-700/40 transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{payment.bookTitle}</p>
-                    {getTypeBadge(payment.paymentType)}
-                  </div>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400">
-                    {payment.childName} • {new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                  </p>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="text-xs font-bold text-gray-900 dark:text-white">{money(payment.amount)}</p>
-                  <span className={`text-[10px] font-semibold ${
-                    payment.status === "paid"
-                      ? "text-green-600 dark:text-green-400"
-                      : "text-yellow-600 dark:text-yellow-400"
-                  }`}>
-                    {payment.status === "paid" ? "Paid" : "Pending"}
-                  </span>
+          <div className="relative px-5 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="absolute inset-0 bg-indigo-500/20 rounded-xl blur-md" />
+                <div className="relative w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                  <BookOpen className="w-5 h-5 text-white" />
                 </div>
               </div>
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white">Library Payments</h3>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">{libraryPayments.length} transactions</p>
+              </div>
+            </div>
+
+            {/* Pending Badge */}
+            {pendingPayments.length > 0 && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-100 dark:bg-amber-500/20 border border-amber-200 dark:border-amber-500/30">
+                <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">{pendingPayments.length} Pending</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Stats Row */}
+        <div className="px-5 py-3 grid grid-cols-3 gap-3 border-b border-gray-100 dark:border-gray-700/50">
+          <div className="text-center">
+            <p className="text-lg font-bold text-gray-900 dark:text-white">{libraryPayments.length}</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total</p>
+          </div>
+          <div className="text-center border-x border-gray-100 dark:border-gray-700/50">
+            <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{money(totalPaid)}</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Paid</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{money(totalPending)}</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Pending</p>
+          </div>
+        </div>
+
+        {/* Payments List */}
+        <div className="p-4">
+          {displayPayments.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
+                <BookOpen className="w-7 h-7 text-gray-400" />
+              </div>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No library payments</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {displayPayments.map((payment) => {
+                const config = getPaymentTypeConfig(payment.paymentType);
+                const PaymentIcon = config.icon;
+                return (
+                  <div
+                    key={payment.id}
+                    onClick={() => handleViewPayment(payment)}
+                    className="group/item flex items-center gap-3 p-3 rounded-xl bg-gray-50/80 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 border border-transparent hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5"
+                  >
+                    <div className={`w-10 h-10 rounded-xl ${config.lightBg} flex items-center justify-center flex-shrink-0`}>
+                      <PaymentIcon className={`w-5 h-5 ${config.text}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className="text-xs font-semibold text-gray-900 dark:text-white truncate group-hover/item:text-indigo-600 dark:group-hover/item:text-indigo-400 transition-colors">
+                          {payment.bookTitle}
+                        </p>
+                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${config.lightBg} ${config.text}`}>
+                          {config.label}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400">{payment.childName}</span>
+                        <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                          {new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">{money(payment.amount)}</p>
+                      {payment.status === "paid" ? (
+                        <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">Paid</span>
+                      ) : (
+                        <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">Pending</span>
+                      )}
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {libraryPayments.length > 4 && (
+            <button
+              onClick={() => {
+                setSelectedPayment(null);
+                setIsModalOpen(true);
+              }}
+              className="w-full mt-4 py-2.5 text-xs font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30"
+            >
+              <Eye className="w-4 h-4" />
+              View All {libraryPayments.length} Payments
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Library Payment Modal */}
+      <LibraryPaymentModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedPayment(null);
+        }}
+        payments={libraryPayments}
+        selectedPayment={selectedPayment}
+        money={money}
+        getPaymentTypeConfig={getPaymentTypeConfig}
+      />
+    </>
+  );
+}
+
+// ===== LIBRARY PAYMENT MODAL =====
+function LibraryPaymentModal({
+  isOpen,
+  onClose,
+  payments,
+  selectedPayment,
+  money,
+  getPaymentTypeConfig,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  payments: LibraryPayment[];
+  selectedPayment: LibraryPayment | null;
+  money: (amount: number) => string;
+  getPaymentTypeConfig: (type: LibraryPayment["paymentType"]) => { icon: React.ComponentType<{ className?: string }>; bg: string; lightBg: string; text: string; label: string };
+}) {
+  const [filter, setFilter] = useState<"all" | "paid" | "pending">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredPayments = useMemo(() => {
+    return payments.filter((payment) => {
+      const matchesFilter = filter === "all" || payment.status === filter;
+      const matchesSearch = payment.bookTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        payment.childName.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesFilter && matchesSearch;
+    });
+  }, [payments, filter, searchQuery]);
+
+  const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
+  const paidAmount = payments.filter((p) => p.status === "paid").reduce((sum, p) => sum + p.amount, 0);
+  const pendingAmount = payments.filter((p) => p.status === "pending").reduce((sum, p) => sum + p.amount, 0);
+
+  if (!isOpen) return null;
+
+  // If a specific payment is selected, show its details
+  if (selectedPayment) {
+    const config = getPaymentTypeConfig(selectedPayment.paymentType);
+    const PaymentIcon = config.icon;
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Payment Details"
+        icon={<BookOpen className="w-5 h-5" />}
+        maxWidth="lg"
+      >
+        <div className="space-y-5">
+          {/* Payment Header */}
+          <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${config.bg} p-6`}>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+
+            <div className="relative flex items-start gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <PaymentIcon className="w-7 h-7 text-white" />
+              </div>
+              <div className="flex-1">
+                <span className="inline-block px-2.5 py-1 rounded-lg bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider mb-2">
+                  {config.label}
+                </span>
+                <h3 className="text-lg font-bold text-white">{selectedPayment.bookTitle}</h3>
+                <p className="text-2xl font-bold text-white mt-2">{money(selectedPayment.amount)}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Status */}
+          <div className={`p-4 rounded-xl ${selectedPayment.status === "paid" ? "bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30" : "bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-500/30"}`}>
+            <div className="flex items-center gap-3">
+              {selectedPayment.status === "paid" ? (
+                <>
+                  <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-500/30 flex items-center justify-center">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">Paid</p>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400">This payment has been completed</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-500/30 flex items-center justify-center">
+                    <Clock className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-amber-700 dark:text-amber-300">Pending</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400">This payment is awaiting completion</p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Payment Details */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex items-center gap-2 mb-2">
+                <User className="w-4 h-4 text-gray-400" />
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Child</p>
+              </div>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedPayment.childName}</p>
+            </div>
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-4 h-4 text-gray-400" />
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Date</p>
+              </div>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                {new Date(selectedPayment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex items-center gap-2 mb-2">
+                <BookOpen className="w-4 h-4 text-gray-400" />
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Book ID</p>
+              </div>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedPayment.bookId}</p>
+            </div>
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex items-center gap-2 mb-2">
+                <FileText className="w-4 h-4 text-gray-400" />
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Type</p>
+              </div>
+              <p className={`text-sm font-semibold ${config.text}`}>{config.label}</p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => onClose()}
+            className="w-full py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-xl transition-all cursor-pointer shadow-lg"
+          >
+            Close
+          </button>
+        </div>
+      </Modal>
+    );
+  }
+
+  // Show all payments list
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="All Library Payments"
+      subtitle={`Total: ${money(totalAmount)}`}
+      icon={<BookOpen className="w-5 h-5" />}
+      maxWidth="2xl"
+    >
+      <div className="space-y-4">
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-500/20 text-center">
+            <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{money(totalAmount)}</p>
+            <p className="text-[10px] text-blue-600/70 dark:text-blue-400/70 uppercase tracking-wider font-medium">Total</p>
+          </div>
+          <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-100 dark:border-emerald-500/20 text-center">
+            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{money(paidAmount)}</p>
+            <p className="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-wider font-medium">Paid</p>
+          </div>
+          <div className="p-4 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-100 dark:border-amber-500/20 text-center">
+            <p className="text-xl font-bold text-amber-600 dark:text-amber-400">{money(pendingAmount)}</p>
+            <p className="text-[10px] text-amber-600/70 dark:text-amber-400/70 uppercase tracking-wider font-medium">Pending</p>
+          </div>
+        </div>
+
+        {/* Search and Filter */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search payments..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+            />
+          </div>
+          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+            {(["all", "paid", "pending"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  filter === f
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+              >
+                {f === "all" ? "All" : f === "paid" ? "Paid" : "Pending"}
+              </button>
             ))}
           </div>
-        )}
+        </div>
 
-        {libraryPayments.length > 5 && (
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="w-full mt-3 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
-          >
-            {showAll ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            {showAll ? "Show Less" : `Show All ${libraryPayments.length} Payments`}
-          </button>
-        )}
+        {/* Payments List */}
+        <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+          {filteredPayments.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <BookOpen className="w-10 h-10 text-gray-300 dark:text-gray-600 mb-2" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">No payments found</p>
+            </div>
+          ) : (
+            filteredPayments.map((payment) => {
+              const config = getPaymentTypeConfig(payment.paymentType);
+              const PaymentIcon = config.icon;
+              return (
+                <div
+                  key={payment.id}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all cursor-pointer hover:shadow-md"
+                >
+                  <div className={`w-11 h-11 rounded-xl ${config.lightBg} flex items-center justify-center flex-shrink-0`}>
+                    <PaymentIcon className={`w-5 h-5 ${config.text}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{payment.bookTitle}</p>
+                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${config.lightBg} ${config.text}`}>
+                        {config.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] text-gray-500 dark:text-gray-400">{payment.childName}</span>
+                      <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+                      <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                        {new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{money(payment.amount)}</p>
+                    {payment.status === "paid" ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Paid
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                        <Clock className="w-3 h-3" />
+                        Pending
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
