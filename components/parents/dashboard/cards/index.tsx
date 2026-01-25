@@ -18,6 +18,7 @@ import {
   CreditCard,
   Eye,
   GraduationCap,
+  LifeBuoy,
   Mail,
   Minus,
   Phone,
@@ -199,6 +200,17 @@ export function QuickActionsCard() {
             Message Teacher
           </span>
         </button>
+        <Link
+          href="/parents/support"
+          className="group flex items-center gap-2 p-2.5 rounded-xl bg-gradient-to-r from-orange-50/80 to-amber-50/50 dark:from-orange-900/20 dark:to-amber-900/10 midnight:from-orange-900/20 midnight:to-amber-900/10 purple:from-orange-900/20 purple:to-amber-900/10 border border-orange-100/50 dark:border-orange-800/30 midnight:border-orange-500/20 purple:border-orange-500/20 hover:border-orange-300 dark:hover:border-orange-600/50 hover:shadow-md transition-all duration-200 col-span-2"
+        >
+          <div className="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-900/50 midnight:bg-orange-900/50 purple:bg-orange-900/50 group-hover:scale-105 transition-transform duration-200">
+            <LifeBuoy className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400" />
+          </div>
+          <span className="text-[10px] font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+            Support Ticket
+          </span>
+        </Link>
       </div>
     </div>
   );

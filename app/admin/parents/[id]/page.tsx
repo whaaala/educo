@@ -463,7 +463,10 @@ export default function AdminParentDetailPage() {
               )}
 
               {activeTab === "support" && (
-                <SupportTicketsSection communications={communications} parentName={`${parent.firstName} ${parent.lastName}`} />
+                <SupportTicketsSection
+                  communications={communications}
+                  parentName={`${parent.firstName} ${parent.lastName}`}
+                />
               )}
 
               {activeTab === "events" && (
@@ -2721,7 +2724,10 @@ function PaymentHistorySection({
 }
 
 // ===== SUPPORT TICKETS SECTION =====
-function SupportTicketsSection({ communications, parentName }: { communications: CommunicationRecord[]; parentName: string }) {
+function SupportTicketsSection({ communications, parentName }: {
+  communications: CommunicationRecord[];
+  parentName: string;
+}) {
   const [selectedType, setSelectedType] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -2730,6 +2736,31 @@ function SupportTicketsSection({ communications, parentName }: { communications:
   const [replyText, setReplyText] = useState("");
   const [isReplying, setIsReplying] = useState(false);
   const [newStatus, setNewStatus] = useState<string>("in_progress");
+
+  // New ticket creation state
+  const [isNewTicketModalOpen, setIsNewTicketModalOpen] = useState(false);
+  const [isCreatingTicket, setIsCreatingTicket] = useState(false);
+  const [newTicket, setNewTicket] = useState({
+    subject: "",
+    type: "inquiry" as CommunicationRecord["type"],
+    priority: "medium" as CommunicationRecord["priority"],
+    message: "",
+    assignedTo: "",
+  });
+
+  // Mock assignable staff members
+  const assignableStaff = useMemo(() => [
+    { value: "", label: "Unassigned", role: "" },
+    { value: "admin-001", label: "John Smith", role: "Admin" },
+    { value: "admin-002", label: "Sarah Johnson", role: "Admin" },
+    { value: "teacher-001", label: "Mrs. Okonkwo", role: "Teacher" },
+    { value: "teacher-002", label: "Mr. Adeyemi", role: "Teacher" },
+    { value: "teacher-003", label: "Dr. Williams", role: "HOD" },
+    { value: "support-001", label: "David Chen", role: "Support Staff" },
+    { value: "support-002", label: "Grace Eze", role: "Counselor" },
+    { value: "bursar-001", label: "Mr. Thompson", role: "Bursar" },
+  ], []);
+
 
   // Filter tickets
   const filteredTickets = useMemo(() => {
@@ -2751,6 +2782,39 @@ function SupportTicketsSection({ communications, parentName }: { communications:
     resolved: communications.filter((c) => c.status === "resolved").length,
     closed: communications.filter((c) => c.status === "closed").length,
   }), [communications]);
+
+  const handleCreateTicket = () => {
+    if (!newTicket.subject.trim() || !newTicket.message.trim()) return;
+    setIsCreatingTicket(true);
+
+    // Find the assigned staff name
+    const assignedStaff = assignableStaff.find((s) => s.value === newTicket.assignedTo);
+
+    // Simulate API call - in real app, this would create the ticket
+    setTimeout(() => {
+      console.log("Creating ticket:", {
+        subject: newTicket.subject,
+        type: newTicket.type,
+        priority: newTicket.priority,
+        message: newTicket.message,
+        status: newTicket.assignedTo ? "in_progress" : "open",
+        assignedTo: assignedStaff?.label || undefined,
+      });
+      setIsCreatingTicket(false);
+      setIsNewTicketModalOpen(false);
+      resetNewTicketForm();
+    }, 1000);
+  };
+
+  const resetNewTicketForm = () => {
+    setNewTicket({
+      subject: "",
+      type: "inquiry",
+      priority: "medium",
+      message: "",
+      assignedTo: "",
+    });
+  };
 
   const getTypeBadge = (type: CommunicationRecord["type"]) => {
     const config = {
@@ -2918,6 +2982,13 @@ function SupportTicketsSection({ communications, parentName }: { communications:
               {filteredTickets.length}
             </span>
           </h3>
+          <button
+            onClick={() => setIsNewTicketModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-lg transition-all shadow-sm hover:shadow-md cursor-pointer"
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            Log Ticket
+          </button>
         </div>
 
         {filteredTickets.length === 0 ? (
@@ -3031,8 +3102,21 @@ function SupportTicketsSection({ communications, parentName }: { communications:
                 </p>
               </div>
               <div>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase">Assigned To</p>
-                <p className="text-xs font-medium text-gray-900 dark:text-white">{selectedTicket.assignedTo || "Unassigned"}</p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase mb-1">Assign To</p>
+                <CustomDropdown
+                  value={assignableStaff.find(s => s.label === selectedTicket.assignedTo)?.value || ""}
+                  onChange={(value) => {
+                    const staff = assignableStaff.find(s => s.value === value);
+                    // In a real app, this would update the ticket in the database
+                    console.log("Assigning ticket to:", staff?.label || "Unassigned");
+                  }}
+                  options={assignableStaff.map((staff) => ({
+                    value: staff.value,
+                    label: staff.role ? `${staff.label} (${staff.role})` : staff.label,
+                  }))}
+                  variant="blue"
+                  className="min-w-[140px]"
+                />
               </div>
             </div>
 
@@ -3058,24 +3142,24 @@ function SupportTicketsSection({ communications, parentName }: { communications:
                   <div
                     key={index}
                     className={`p-4 rounded-xl border ${
-                      response.sender === "admin"
+                      response.from === "admin"
                         ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700/30"
                         : "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700"
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        response.sender === "admin" ? "bg-green-200 dark:bg-green-800" : "bg-gray-200 dark:bg-gray-700"
+                        response.from === "admin" ? "bg-green-200 dark:bg-green-800" : "bg-gray-200 dark:bg-gray-700"
                       }`}>
                         <span className={`text-xs font-bold ${
-                          response.sender === "admin" ? "text-green-700 dark:text-green-300" : "text-gray-700 dark:text-gray-300"
+                          response.from === "admin" ? "text-green-700 dark:text-green-300" : "text-gray-700 dark:text-gray-300"
                         }`}>
-                          {response.sender === "admin" ? "A" : parentName.charAt(0)}
+                          {response.from === "admin" ? "A" : parentName.charAt(0)}
                         </span>
                       </div>
                       <div>
                         <p className="text-xs font-semibold text-gray-900 dark:text-white">
-                          {response.sender === "admin" ? "Admin" : parentName}
+                          {response.from === "admin" ? "Admin" : parentName}
                         </p>
                         <p className="text-[10px] text-gray-500 dark:text-gray-400">
                           {new Date(response.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
@@ -3141,6 +3225,160 @@ function SupportTicketsSection({ communications, parentName }: { communications:
           </div>
         </Modal>
       )}
+
+      {/* New Ticket Modal */}
+      <Modal
+        isOpen={isNewTicketModalOpen}
+        onClose={() => {
+          setIsNewTicketModalOpen(false);
+          resetNewTicketForm();
+        }}
+        title="Log Support Ticket"
+        subtitle="Create a new support ticket for this parent"
+        icon={<MessageSquare className="w-5 h-5" />}
+        maxWidth="lg"
+      >
+        <div className="space-y-4">
+          {/* Subject */}
+          <FormInput
+            label="Subject"
+            icon={<MessageSquare className="w-full h-full" />}
+            iconBgColor="bg-blue-100 dark:bg-blue-900/30"
+            iconColor="text-blue-600 dark:text-blue-400"
+            value={newTicket.subject}
+            onChange={(value) => setNewTicket((prev) => ({ ...prev, subject: value }))}
+            placeholder="Enter ticket subject..."
+            required
+          />
+
+          {/* Type and Priority Row */}
+          <div className="grid grid-cols-2 gap-4">
+            <FormDropdown
+              label="Ticket Type"
+              icon={<Filter className="w-full h-full" />}
+              iconBgColor="bg-purple-100 dark:bg-purple-900/30"
+              iconColor="text-purple-600 dark:text-purple-400"
+              value={newTicket.type}
+              onChange={(value) => setNewTicket((prev) => ({ ...prev, type: value as CommunicationRecord["type"] }))}
+              options={[
+                { value: "inquiry", label: "Inquiry" },
+                { value: "complaint", label: "Complaint" },
+                { value: "feedback", label: "Feedback" },
+                { value: "request", label: "Request" },
+                { value: "meeting_request", label: "Meeting Request" },
+              ]}
+              required
+            />
+
+            <FormDropdown
+              label="Priority"
+              icon={<AlertCircle className="w-full h-full" />}
+              iconBgColor="bg-amber-100 dark:bg-amber-900/30"
+              iconColor="text-amber-600 dark:text-amber-400"
+              value={newTicket.priority}
+              onChange={(value) => setNewTicket((prev) => ({ ...prev, priority: value as CommunicationRecord["priority"] }))}
+              options={[
+                { value: "low", label: "Low" },
+                { value: "medium", label: "Medium" },
+                { value: "high", label: "High" },
+              ]}
+              required
+            />
+          </div>
+
+          {/* Assign To */}
+          <FormDropdown
+            label="Assign To"
+            icon={<User className="w-full h-full" />}
+            iconBgColor="bg-emerald-100 dark:bg-emerald-900/30"
+            iconColor="text-emerald-600 dark:text-emerald-400"
+            value={newTicket.assignedTo}
+            onChange={(value) => setNewTicket((prev) => ({ ...prev, assignedTo: value }))}
+            placeholder="Select staff member (optional)"
+            options={assignableStaff.map((staff) => ({
+              value: staff.value,
+              label: staff.role ? `${staff.label} (${staff.role})` : staff.label,
+            }))}
+          />
+
+          {/* Message */}
+          <FormTextarea
+            label="Message"
+            icon={<FileText className="w-full h-full" />}
+            iconBgColor="bg-gray-100 dark:bg-gray-700"
+            iconColor="text-gray-600 dark:text-gray-400"
+            value={newTicket.message}
+            onChange={(value) => setNewTicket((prev) => ({ ...prev, message: value }))}
+            placeholder="Describe the issue or request in detail..."
+            rows={4}
+            required
+          />
+
+          {/* Preview Card */}
+          {newTicket.subject && (
+            <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+              <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">Preview</p>
+              <div className="flex items-center gap-2 flex-wrap mb-2">
+                <span className="text-xs font-bold text-gray-900 dark:text-white">{newTicket.subject || "No subject"}</span>
+                {getTypeBadge(newTicket.type)}
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getPriorityConfig(newTicket.priority).textColor} bg-gray-100 dark:bg-gray-700`}>
+                  {getPriorityConfig(newTicket.priority).label} Priority
+                </span>
+              </div>
+              {newTicket.assignedTo && (
+                <div className="flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-400">
+                  <User className="w-3 h-3" />
+                  <span className="font-medium">
+                    Assigned to: {assignableStaff.find((s) => s.value === newTicket.assignedTo)?.label}
+                  </span>
+                  <span className="text-gray-400">
+                    ({assignableStaff.find((s) => s.value === newTicket.assignedTo)?.role})
+                  </span>
+                </div>
+              )}
+              {!newTicket.assignedTo && (
+                <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400">
+                  <User className="w-3 h-3" />
+                  <span>Unassigned - Will be set to Open status</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => {
+                setIsNewTicketModalOpen(false);
+                resetNewTicketForm();
+              }}
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCreateTicket}
+              disabled={!newTicket.subject.trim() || !newTicket.message.trim() || isCreatingTicket}
+              className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg hover:shadow-xl"
+            >
+              {isCreatingTicket ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <MessageSquare className="w-4 h-4" />
+                  Create Ticket
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

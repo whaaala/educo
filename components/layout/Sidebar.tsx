@@ -34,6 +34,7 @@ import {
   MessageSquare,
   Receipt,
   Video,
+  LifeBuoy,
 } from "lucide-react";
 import TenantSwitcher from "@/components/admin/TenantSwitcher";
 import { useUser } from "@/contexts/UserContext";
@@ -232,6 +233,12 @@ const parentMenuItems: MenuItem[] = [
     label: "Results",
     icon: <FileText className="w-5 h-5" />,
     href: "/parents/results",
+  },
+  {
+    id: "parent-support",
+    label: "Support",
+    icon: <LifeBuoy className="w-5 h-5" />,
+    href: "/parents/support",
   },
 ];
 
