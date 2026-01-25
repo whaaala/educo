@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import jsPDF from "jspdf";
 import MainLayout from "@/components/layout/MainLayout";
 import PageLoader from "@/components/shared/PageLoader";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
@@ -87,13 +88,14 @@ import FormInput from "@/components/shared/FormInput";
 import FormButton from "@/components/shared/FormButton";
 import FormTextarea from "@/components/shared/FormTextarea";
 import ScheduleMeetingModal, { ScheduledMeetingData, MeetingChildReference } from "@/components/shared/ScheduleMeetingModal";
+import CustomDropdown from "@/components/shared/CustomDropdown";
 import MeetingDetailsModal, { MeetingDetails, CancelMeetingData, RescheduleMeetingData, AdditionalParticipant } from "@/components/shared/MeetingDetailsModal";
 import ChildLeaveRequestDetailsModal from "@/components/shared/ChildLeaveRequestDetailsModal";
 import { useMeetings, Meeting as ContextMeeting } from "@/contexts/MeetingsContext";
 import { useCall } from "@/hooks/useCall";
 
 // Tab type definition for parent detail page
-type ParentTabType = "details" | "meetings" | "leave" | "fees" | "communications" | "events";
+type ParentTabType = "details" | "meetings" | "leave" | "fees" | "support" | "events";
 
 export default function AdminParentDetailPage() {
   const params = useParams();
@@ -311,7 +313,7 @@ export default function AdminParentDetailPage() {
     { id: "meetings" as ParentTabType, label: "Meetings", icon: Users },
     { id: "leave" as ParentTabType, label: "Leave Requests", icon: CalendarX },
     { id: "fees" as ParentTabType, label: "Fees & Payments", icon: CreditCard },
-    { id: "communications" as ParentTabType, label: "Communications", icon: MessageSquare },
+    { id: "support" as ParentTabType, label: "Support Tickets", icon: MessageSquare },
     { id: "events" as ParentTabType, label: "Events & Library", icon: CalendarCheck },
   ];
 
@@ -453,12 +455,15 @@ export default function AdminParentDetailPage() {
                       setSelectedPayment(payment);
                       setIsPaymentDetailsModalOpen(true);
                     }}
+                    currencyCode={settings.currency || "NGN"}
+                    schoolName={settings.schoolName || "School"}
+                    parentName={`${parent.firstName} ${parent.lastName}`}
                   />
                 </>
               )}
 
-              {activeTab === "communications" && (
-                <CommunicationsSection communications={communications} />
+              {activeTab === "support" && (
+                <SupportTicketsSection communications={communications} parentName={`${parent.firstName} ${parent.lastName}`} />
               )}
 
               {activeTab === "events" && (
@@ -563,6 +568,8 @@ export default function AdminParentDetailPage() {
         }}
         payment={selectedPayment}
         money={money}
+        currencyCode={settings.currency || "NGN"}
+        schoolName={settings.schoolName || "School"}
       />
 
       {/* Schedule Meeting Modal */}
@@ -2170,15 +2177,34 @@ function PaymentHistorySection({
   money,
   feeRecords,
   onViewPaymentDetails,
+  currencyCode,
+  schoolName,
+  parentName,
 }: {
   payments: PaymentRecord[];
   money: (amount: number) => string;
   feeRecords: AdminFeeRecord[];
   onViewPaymentDetails?: (payment: PaymentRecord) => void;
+  currencyCode: string;
+  schoolName: string;
+  parentName: string;
 }) {
   const [showAll, setShowAll] = useState(false);
   const [selectedChild, setSelectedChild] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
+  const exportDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target as Node)) {
+        setIsExportDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Get unique children from payments
   const children = useMemo(() => {
@@ -2204,6 +2230,205 @@ function PaymentHistorySection({
   }, [payments, selectedChild, selectedStatus]);
 
   const displayPayments = showAll ? filteredPayments : filteredPayments.slice(0, 5);
+
+  // Export to PDF
+  const handleExportPDF = useCallback(() => {
+    if (filteredPayments.length === 0) return;
+    setIsExportDropdownOpen(false);
+
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    let y = 20;
+
+    // Header
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(31, 41, 55);
+    doc.text("Payment History Report", pageWidth / 2, y, { align: "center" });
+    y += 6;
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(107, 114, 128);
+    doc.text(schoolName || "School", pageWidth / 2, y, { align: "center" });
+    y += 5;
+
+    doc.setFontSize(9);
+    doc.text(`Parent: ${parentName}`, pageWidth / 2, y, { align: "center" });
+    y += 8;
+
+    // Stats Summary
+    const stats = {
+      total: filteredPayments.reduce((sum, p) => sum + (p.status === "completed" ? p.amount : 0), 0),
+      count: filteredPayments.filter((p) => p.status === "completed").length,
+      pending: filteredPayments.filter((p) => p.status === "pending").length,
+      failed: filteredPayments.filter((p) => p.status === "failed").length,
+    };
+
+    doc.setFillColor(34, 197, 94);
+    doc.roundedRect(margin, y, pageWidth - margin * 2, 16, 2, 2, "F");
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text(`Total Paid: ${currencyCode} ${stats.total.toLocaleString()}`, margin + 8, y + 7);
+    doc.text(`${stats.count} Completed | ${stats.pending} Pending | ${stats.failed} Failed`, margin + 8, y + 13);
+    y += 22;
+
+    // Table Header
+    const colWidths = [55, 30, 25, 35, 35];
+    const headers = ["Fee Type / Student", "Date", "Method", "Amount", "Status"];
+
+    doc.setFillColor(249, 250, 251);
+    doc.setDrawColor(229, 231, 235);
+    doc.rect(margin, y, pageWidth - margin * 2, 8, "FD");
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(107, 114, 128);
+    let x = margin + 3;
+    headers.forEach((header, i) => {
+      doc.text(header, x, y + 5.5);
+      x += colWidths[i];
+    });
+    y += 10;
+
+    // Table Rows
+    doc.setFont("helvetica", "normal");
+    filteredPayments.forEach((payment, index) => {
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+
+      const rowHeight = 12;
+      if (index % 2 === 0) {
+        doc.setFillColor(249, 250, 251);
+        doc.rect(margin, y - 2, pageWidth - margin * 2, rowHeight, "F");
+      }
+
+      doc.setTextColor(31, 41, 55);
+      doc.setFontSize(8);
+
+      x = margin + 3;
+      // Fee Type & Student
+      doc.setFont("helvetica", "bold");
+      doc.text(payment.feeType.substring(0, 20), x, y + 3);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(107, 114, 128);
+      doc.text(payment.childName.substring(0, 25), x, y + 7);
+      x += colWidths[0];
+
+      // Date
+      doc.setFontSize(8);
+      doc.setTextColor(31, 41, 55);
+      doc.text(new Date(payment.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" }), x, y + 5);
+      x += colWidths[1];
+
+      // Method
+      doc.text(payment.paymentMethod, x, y + 5);
+      x += colWidths[2];
+
+      // Amount
+      doc.setFont("helvetica", "bold");
+      doc.text(`${currencyCode} ${payment.amount.toLocaleString()}`, x, y + 5);
+      x += colWidths[3];
+
+      // Status
+      const statusColors: Record<string, { r: number; g: number; b: number }> = {
+        completed: { r: 5, g: 150, b: 105 },
+        pending: { r: 217, g: 119, b: 6 },
+        failed: { r: 220, g: 38, b: 38 },
+      };
+      const color = statusColors[payment.status] || statusColors.completed;
+      doc.setTextColor(color.r, color.g, color.b);
+      doc.text(payment.status.charAt(0).toUpperCase() + payment.status.slice(1), x, y + 5);
+
+      y += rowHeight;
+    });
+
+    // Footer
+    y += 10;
+    doc.setFontSize(7);
+    doc.setTextColor(156, 163, 175);
+    doc.text(`Generated on ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`, pageWidth / 2, y, { align: "center" });
+
+    const dateStr = new Date().toISOString().split("T")[0];
+    doc.save(`payment-history-${parentName.replace(/\s+/g, "-").toLowerCase()}-${dateStr}.pdf`);
+  }, [filteredPayments, currencyCode, schoolName, parentName]);
+
+  // Export to Excel
+  const handleExportExcel = useCallback(async () => {
+    if (filteredPayments.length === 0) return;
+    setIsExportDropdownOpen(false);
+
+    const XLSX = await import("xlsx");
+
+    // Prepare data
+    const data = filteredPayments.map((payment) => ({
+      "Fee Type": payment.feeType,
+      "Student": payment.childName,
+      "Date": new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
+      "Payment Method": payment.paymentMethod,
+      "Amount": payment.amount,
+      "Status": payment.status.charAt(0).toUpperCase() + payment.status.slice(1),
+      "Reference": payment.reference,
+      "Receipt Number": payment.receiptNumber,
+    }));
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+
+    // Payments sheet
+    const ws = XLSX.utils.json_to_sheet(data);
+
+    // Set column widths
+    ws["!cols"] = [
+      { wch: 20 }, // Fee Type
+      { wch: 18 }, // Student
+      { wch: 15 }, // Date
+      { wch: 15 }, // Payment Method
+      { wch: 12 }, // Amount
+      { wch: 12 }, // Status
+      { wch: 25 }, // Reference
+      { wch: 18 }, // Receipt Number
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, "Payment History");
+
+    // Summary sheet
+    const stats = {
+      totalPaid: filteredPayments.filter((p) => p.status === "completed").reduce((sum, p) => sum + p.amount, 0),
+      completedCount: filteredPayments.filter((p) => p.status === "completed").length,
+      pendingCount: filteredPayments.filter((p) => p.status === "pending").length,
+      failedCount: filteredPayments.filter((p) => p.status === "failed").length,
+    };
+
+    const summaryData = [
+      { "Metric": "Parent Name", "Value": parentName },
+      { "Metric": "School", "Value": schoolName },
+      { "Metric": "Report Date", "Value": new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) },
+      { "Metric": "", "Value": "" },
+      { "Metric": "Total Paid", "Value": `${currencyCode} ${stats.totalPaid.toLocaleString()}` },
+      { "Metric": "Completed Payments", "Value": stats.completedCount },
+      { "Metric": "Pending Payments", "Value": stats.pendingCount },
+      { "Metric": "Failed Payments", "Value": stats.failedCount },
+      { "Metric": "Total Records", "Value": filteredPayments.length },
+    ];
+
+    const summaryWs = XLSX.utils.json_to_sheet(summaryData);
+    summaryWs["!cols"] = [{ wch: 20 }, { wch: 30 }];
+    XLSX.utils.book_append_sheet(wb, summaryWs, "Summary");
+
+    const dateStr = new Date().toISOString().split("T")[0];
+    XLSX.writeFile(wb, `payment-history-${parentName.replace(/\s+/g, "-").toLowerCase()}-${dateStr}.xlsx`);
+  }, [filteredPayments, currencyCode, schoolName, parentName]);
 
   // Calculate payment stats
   const paymentStats = useMemo(() => {
@@ -2349,9 +2574,33 @@ function PaymentHistorySection({
               {filteredPayments.length} {filteredPayments.length === 1 ? "payment" : "payments"}
             </span>
           </div>
-          <button className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-2 py-1 rounded-lg transition-colors cursor-pointer">
-            Export
-          </button>
+          <div className="relative" ref={exportDropdownRef}>
+            <button
+              onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
+              disabled={filteredPayments.length === 0}
+              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-2 py-1 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Export
+            </button>
+            {isExportDropdownOpen && (
+              <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-[140px] z-20">
+                <button
+                  onClick={handleExportPDF}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                >
+                  <FileText className="w-3.5 h-3.5 text-red-500" />
+                  Export as PDF
+                </button>
+                <button
+                  onClick={handleExportExcel}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                >
+                  <FileText className="w-3.5 h-3.5 text-green-500" />
+                  Export as Excel
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Content */}
@@ -2382,53 +2631,57 @@ function PaymentHistorySection({
         ) : (
           <>
             {/* Scrollable Payment List - Fixed height for 4 items */}
-            <div className="max-h-[320px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+            <div className="max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent p-3 space-y-2">
               {displayPayments.map((payment, index) => {
                 const relatedFee = getRelatedFeeRecord(payment);
                 return (
                   <div
                     key={payment.id}
                     onClick={() => onViewPaymentDetails?.(payment)}
-                    className={`px-4 py-3 flex items-center justify-between border-b border-gray-100 dark:border-gray-800/50 last:border-b-0 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer ${
-                      payment.status === "failed" ? "bg-red-50/30 dark:bg-red-900/5" : ""
+                    className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 ${
+                      payment.status === "completed"
+                        ? "bg-emerald-50/50 dark:bg-emerald-900/10 midnight:bg-emerald-900/10 purple:bg-emerald-900/10 border-emerald-200/50 dark:border-emerald-800/30 midnight:border-emerald-800/30 purple:border-emerald-800/30 hover:border-emerald-300 dark:hover:border-emerald-700 midnight:hover:border-emerald-600 purple:hover:border-emerald-600 hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/20 midnight:hover:shadow-emerald-500/20 purple:hover:shadow-emerald-500/20"
+                        : payment.status === "pending"
+                        ? "bg-amber-50/50 dark:bg-amber-900/10 midnight:bg-amber-900/10 purple:bg-amber-900/10 border-amber-200/50 dark:border-amber-800/30 midnight:border-amber-800/30 purple:border-amber-800/30 hover:border-amber-300 dark:hover:border-amber-700 midnight:hover:border-amber-600 purple:hover:border-amber-600 hover:shadow-amber-500/10 dark:hover:shadow-amber-500/20 midnight:hover:shadow-amber-500/20 purple:hover:shadow-amber-500/20"
+                        : "bg-red-50/50 dark:bg-red-900/10 midnight:bg-red-900/10 purple:bg-red-900/10 border-red-200/50 dark:border-red-800/30 midnight:border-red-800/30 purple:border-red-800/30 hover:border-red-300 dark:hover:border-red-700 midnight:hover:border-red-600 purple:hover:border-red-600 hover:shadow-red-500/10 dark:hover:shadow-red-500/20 midnight:hover:shadow-red-500/20 purple:hover:shadow-red-500/20"
                     }`}
                   >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      {/* Payment Method Icon */}
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                        payment.status === "completed"
-                          ? "bg-emerald-100 dark:bg-emerald-900/30"
-                          : payment.status === "pending"
-                          ? "bg-amber-100 dark:bg-amber-900/30"
-                          : "bg-red-100 dark:bg-red-900/30"
-                      }`}>
-                        <span className="text-lg">{getMethodIcon(payment.paymentMethod)}</span>
-                      </div>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        {/* Payment Method Icon */}
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ring-1 ${
+                          payment.status === "completed"
+                            ? "bg-emerald-100 dark:bg-emerald-900/30 ring-emerald-500/20"
+                            : payment.status === "pending"
+                            ? "bg-amber-100 dark:bg-amber-900/30 ring-amber-500/20"
+                            : "bg-red-100 dark:bg-red-900/30 ring-red-500/20"
+                        }`}>
+                          <span className="text-lg">{getMethodIcon(payment.paymentMethod)}</span>
+                        </div>
 
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <span className="text-xs font-bold text-gray-900 dark:text-white truncate">{payment.feeType}</span>
-                          {getStatusBadge(payment.status)}
-                        </div>
-                        <div className="flex items-center gap-2 text-[10px] text-gray-500 dark:text-gray-400">
-                          <span className="truncate">{payment.childName}</span>
-                          <span className="text-gray-300 dark:text-gray-600">•</span>
-                          <span>{new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
-                          <span>Ref: {payment.reference}</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <span className="text-xs font-bold text-gray-900 dark:text-white">{payment.feeType}</span>
+                            {getStatusBadge(payment.status)}
+                          </div>
+                          <div className="flex items-center gap-2 text-[10px] text-gray-600 dark:text-gray-400">
+                            <span className="font-medium">{payment.childName}</span>
+                            <span className="text-gray-300 dark:text-gray-600">•</span>
+                            <Calendar className="w-3 h-3" />
+                            <span>{new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+                          </div>
+                          <p className="text-[10px] text-gray-500 dark:text-gray-500 mt-1">
+                            Ref: {payment.reference}
+                          </p>
                           {relatedFee && relatedFee.balance > 0 && (
-                            <>
-                              <span className="text-gray-300 dark:text-gray-600">•</span>
-                              <span className="text-amber-600 dark:text-amber-400 font-medium">Balance: {money(relatedFee.balance)}</span>
-                            </>
+                            <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium mt-0.5">
+                              Outstanding Balance: {money(relatedFee.balance)}
+                            </p>
                           )}
                         </div>
                       </div>
-                    </div>
 
-                    <div className="text-right flex items-center gap-3 flex-shrink-0">
-                      <div>
+                      <div className="text-right flex-shrink-0">
                         <p className={`text-sm font-bold ${
                           payment.status === "completed"
                             ? "text-emerald-600 dark:text-emerald-400"
@@ -2436,10 +2689,11 @@ function PaymentHistorySection({
                             ? "text-amber-600 dark:text-amber-400"
                             : "text-red-600 dark:text-red-400"
                         }`}>{money(payment.amount)}</p>
-                        <p className="text-[10px] text-gray-500 dark:text-gray-400">{payment.receiptNumber}</p>
-                      </div>
-                      <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                        <Eye className="w-4 h-4 text-gray-400" />
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{payment.receiptNumber}</p>
+                        <div className="flex items-center gap-1 text-[10px] text-blue-600 dark:text-blue-400 mt-1.5 justify-end">
+                          <Eye className="w-3 h-3" />
+                          <span>View</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2466,19 +2720,45 @@ function PaymentHistorySection({
   );
 }
 
-// ===== COMMUNICATIONS SECTION =====
-function CommunicationsSection({ communications }: { communications: CommunicationRecord[] }) {
-  const [showAll, setShowAll] = useState(false);
-  const openComms = communications.filter((c) => c.status === "open" || c.status === "in_progress");
-  const displayComms = showAll ? communications : communications.slice(0, 4);
+// ===== SUPPORT TICKETS SECTION =====
+function SupportTicketsSection({ communications, parentName }: { communications: CommunicationRecord[]; parentName: string }) {
+  const [selectedType, setSelectedType] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTicket, setSelectedTicket] = useState<CommunicationRecord | null>(null);
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [isReplying, setIsReplying] = useState(false);
+  const [newStatus, setNewStatus] = useState<string>("in_progress");
+
+  // Filter tickets
+  const filteredTickets = useMemo(() => {
+    return communications.filter((comm) => {
+      const typeMatch = selectedType === "all" || comm.type === selectedType;
+      const statusMatch = selectedStatus === "all" || comm.status === selectedStatus;
+      const searchMatch = searchQuery === "" ||
+        comm.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        comm.message.toLowerCase().includes(searchQuery.toLowerCase());
+      return typeMatch && statusMatch && searchMatch;
+    });
+  }, [communications, selectedType, selectedStatus, searchQuery]);
+
+  // Calculate stats
+  const stats = useMemo(() => ({
+    total: communications.length,
+    open: communications.filter((c) => c.status === "open").length,
+    inProgress: communications.filter((c) => c.status === "in_progress").length,
+    resolved: communications.filter((c) => c.status === "resolved").length,
+    closed: communications.filter((c) => c.status === "closed").length,
+  }), [communications]);
 
   const getTypeBadge = (type: CommunicationRecord["type"]) => {
     const config = {
-      complaint: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-300" },
-      inquiry: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-300" },
-      feedback: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-300" },
-      request: { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-300" },
-      meeting_request: { bg: "bg-orange-100 dark:bg-orange-900/30", text: "text-orange-700 dark:text-orange-300" },
+      complaint: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-300", icon: "🔴" },
+      inquiry: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-300", icon: "❓" },
+      feedback: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-300", icon: "💬" },
+      request: { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-300", icon: "📝" },
+      meeting_request: { bg: "bg-orange-100 dark:bg-orange-900/30", text: "text-orange-700 dark:text-orange-300", icon: "📅" },
     };
     const c = config[type];
     const label = type.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase());
@@ -2487,87 +2767,380 @@ function CommunicationsSection({ communications }: { communications: Communicati
 
   const getStatusBadge = (status: CommunicationRecord["status"]) => {
     const config = {
-      open: { bg: "bg-yellow-100 dark:bg-yellow-900/30", text: "text-yellow-700 dark:text-yellow-300" },
-      in_progress: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-300" },
-      resolved: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-300" },
-      closed: { bg: "bg-gray-100 dark:bg-gray-700/30", text: "text-gray-600 dark:text-gray-400" },
+      open: { bg: "bg-yellow-100 dark:bg-yellow-900/30", text: "text-yellow-700 dark:text-yellow-300", icon: <Clock className="w-3 h-3" /> },
+      in_progress: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-300", icon: <Clock className="w-3 h-3" /> },
+      resolved: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-300", icon: <CheckCircle2 className="w-3 h-3" /> },
+      closed: { bg: "bg-gray-100 dark:bg-gray-700/30", text: "text-gray-600 dark:text-gray-400", icon: <XCircle className="w-3 h-3" /> },
     };
     const c = config[status];
     const label = status.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase());
-    return <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${c.bg} ${c.text}`}>{label}</span>;
+    return (
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${c.bg} ${c.text}`}>
+        {c.icon}
+        {label}
+      </span>
+    );
   };
 
-  const getPriorityDot = (priority: CommunicationRecord["priority"]) => {
-    const colors = {
-      low: "bg-green-500",
-      medium: "bg-yellow-500",
-      high: "bg-red-500",
+  const getPriorityConfig = (priority: CommunicationRecord["priority"]) => {
+    const config = {
+      low: { color: "bg-green-500", label: "Low", textColor: "text-green-600 dark:text-green-400" },
+      medium: { color: "bg-yellow-500", label: "Medium", textColor: "text-yellow-600 dark:text-yellow-400" },
+      high: { color: "bg-red-500", label: "High", textColor: "text-red-600 dark:text-red-400" },
     };
-    return <span className={`w-2 h-2 rounded-full ${colors[priority]}`} title={`${priority} priority`}></span>;
+    return config[priority];
+  };
+
+  const handleViewTicket = (ticket: CommunicationRecord) => {
+    setSelectedTicket(ticket);
+    setIsTicketModalOpen(true);
+  };
+
+  const handleSendReply = () => {
+    if (!replyText.trim() || !selectedTicket) return;
+    setIsReplying(true);
+    // Simulate sending reply
+    setTimeout(() => {
+      setIsReplying(false);
+      setReplyText("");
+      // In real app, this would update the ticket with the new response
+    }, 1000);
   };
 
   return (
-    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-            Communications ({communications.length})
-          </h3>
-          {openComms.length > 0 && (
-            <span className="px-2 py-1 text-[10px] font-bold text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-              {openComms.length} Open
-            </span>
-          )}
+    <div className="space-y-4">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/40 dark:to-amber-900/20 rounded-xl p-3.5 border border-amber-200/60 dark:border-amber-800/40 shadow-sm">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center ring-1 ring-amber-500/20">
+              <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            </div>
+            <span className="text-[10px] font-semibold text-amber-600/80 dark:text-amber-400/80 uppercase tracking-wider">Open</span>
+          </div>
+          <p className="text-xl font-bold text-amber-900 dark:text-amber-100">{stats.open}</p>
         </div>
 
-        {displayComms.length === 0 ? (
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center py-4">No communications</p>
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/40 dark:to-blue-900/20 rounded-xl p-3.5 border border-blue-200/60 dark:border-blue-800/40 shadow-sm">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-8 h-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center ring-1 ring-blue-500/20">
+              <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <span className="text-[10px] font-semibold text-blue-600/80 dark:text-blue-400/80 uppercase tracking-wider">In Progress</span>
+          </div>
+          <p className="text-xl font-bold text-blue-900 dark:text-blue-100">{stats.inProgress}</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/40 dark:to-emerald-900/20 rounded-xl p-3.5 border border-emerald-200/60 dark:border-emerald-800/40 shadow-sm">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center ring-1 ring-emerald-500/20">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <span className="text-[10px] font-semibold text-emerald-600/80 dark:text-emerald-400/80 uppercase tracking-wider">Resolved</span>
+          </div>
+          <p className="text-xl font-bold text-emerald-900 dark:text-emerald-100">{stats.resolved}</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-950/40 dark:to-slate-900/20 rounded-xl p-3.5 border border-slate-200/60 dark:border-slate-800/40 shadow-sm">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-8 h-8 rounded-lg bg-slate-500/10 dark:bg-slate-500/20 flex items-center justify-center ring-1 ring-slate-500/20">
+              <XCircle className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+            </div>
+            <span className="text-[10px] font-semibold text-slate-600/80 dark:text-slate-400/80 uppercase tracking-wider">Closed</span>
+          </div>
+          <p className="text-xl font-bold text-slate-900 dark:text-slate-100">{stats.closed}</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Search */}
+          <div className="md:col-span-2">
+            <FormInput
+              label="Search Tickets"
+              icon={<Search className="w-full h-full" />}
+              iconBgColor="bg-blue-100 dark:bg-blue-900/30"
+              iconColor="text-blue-600 dark:text-blue-400"
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search by subject or message..."
+              leftIcon={<Search className="w-4 h-4 text-gray-400" />}
+            />
+          </div>
+
+          {/* Type Filter */}
+          <FormDropdown
+            label="Ticket Type"
+            icon={<Filter className="w-full h-full" />}
+            iconBgColor="bg-purple-100 dark:bg-purple-900/30"
+            iconColor="text-purple-600 dark:text-purple-400"
+            value={selectedType}
+            onChange={setSelectedType}
+            placeholder="All Types"
+            options={[
+              { value: "all", label: "All Types" },
+              { value: "complaint", label: "Complaint" },
+              { value: "inquiry", label: "Inquiry" },
+              { value: "feedback", label: "Feedback" },
+              { value: "request", label: "Request" },
+              { value: "meeting_request", label: "Meeting Request" },
+            ]}
+          />
+
+          {/* Status Filter */}
+          <FormDropdown
+            label="Status"
+            icon={<CheckCircle2 className="w-full h-full" />}
+            iconBgColor="bg-green-100 dark:bg-green-900/30"
+            iconColor="text-green-600 dark:text-green-400"
+            value={selectedStatus}
+            onChange={setSelectedStatus}
+            placeholder="All Status"
+            options={[
+              { value: "all", label: "All Status" },
+              { value: "open", label: "Open" },
+              { value: "in_progress", label: "In Progress" },
+              { value: "resolved", label: "Resolved" },
+              { value: "closed", label: "Closed" },
+            ]}
+          />
+        </div>
+      </div>
+
+      {/* Tickets List */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            Support Tickets
+            <span className="px-2 py-0.5 text-[10px] font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">
+              {filteredTickets.length}
+            </span>
+          </h3>
+        </div>
+
+        {filteredTickets.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 px-4">
+            <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
+              <MessageSquare className="w-8 h-8 text-gray-400" />
+            </div>
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">No tickets found</h4>
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+              {searchQuery || selectedType !== "all" || selectedStatus !== "all"
+                ? "Try adjusting your filters."
+                : "No support tickets from this parent."}
+            </p>
+          </div>
         ) : (
-          <div className="space-y-2">
-            {displayComms.map((comm) => (
-              <div
-                key={comm.id}
-                className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 ${
-                  comm.status === "open" || comm.status === "in_progress"
-                    ? "bg-yellow-50/50 dark:bg-yellow-900/10 midnight:bg-yellow-900/10 purple:bg-yellow-900/10 border-yellow-200/50 dark:border-yellow-800/30 midnight:border-yellow-800/30 purple:border-yellow-800/30 hover:border-yellow-300 dark:hover:border-yellow-700 midnight:hover:border-yellow-600 purple:hover:border-yellow-600 hover:shadow-yellow-500/10 dark:hover:shadow-yellow-500/20 midnight:hover:shadow-yellow-500/20 purple:hover:shadow-yellow-500/20"
-                    : "bg-gray-50/50 dark:bg-gray-800/20 midnight:bg-gray-800/20 purple:bg-gray-800/20 border-gray-200/40 dark:border-gray-700/40 midnight:border-gray-700/40 purple:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
-                }`}
-              >
-                <div className="flex items-start gap-2">
-                  {getPriorityDot(comm.priority)}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-xs font-bold text-gray-900 dark:text-white truncate">{comm.subject}</span>
-                      {getTypeBadge(comm.type)}
-                      {getStatusBadge(comm.status)}
+          <div className="p-3 space-y-2">
+            {filteredTickets.map((ticket) => {
+              const priorityConfig = getPriorityConfig(ticket.priority);
+              return (
+                <div
+                  key={ticket.id}
+                  onClick={() => handleViewTicket(ticket)}
+                  className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 ${
+                    ticket.status === "open"
+                      ? "bg-amber-50/50 dark:bg-amber-900/10 midnight:bg-amber-900/10 purple:bg-amber-900/10 border-amber-200/50 dark:border-amber-800/30 midnight:border-amber-800/30 purple:border-amber-800/30 hover:border-amber-300 dark:hover:border-amber-700 midnight:hover:border-amber-600 purple:hover:border-amber-600 hover:shadow-amber-500/10 dark:hover:shadow-amber-500/20 midnight:hover:shadow-amber-500/20 purple:hover:shadow-amber-500/20"
+                      : ticket.status === "in_progress"
+                      ? "bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-blue-900/10 purple:bg-blue-900/10 border-blue-200/50 dark:border-blue-800/30 midnight:border-blue-800/30 purple:border-blue-800/30 hover:border-blue-300 dark:hover:border-blue-700 midnight:hover:border-blue-600 purple:hover:border-blue-600 hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-blue-500/20 purple:hover:shadow-blue-500/20"
+                      : ticket.status === "resolved"
+                      ? "bg-emerald-50/50 dark:bg-emerald-900/10 midnight:bg-emerald-900/10 purple:bg-emerald-900/10 border-emerald-200/50 dark:border-emerald-800/30 midnight:border-emerald-800/30 purple:border-emerald-800/30 hover:border-emerald-300 dark:hover:border-emerald-700 midnight:hover:border-emerald-600 purple:hover:border-emerald-600 hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/20 midnight:hover:shadow-emerald-500/20 purple:hover:shadow-emerald-500/20"
+                      : "bg-gray-50/50 dark:bg-gray-800/20 midnight:bg-gray-800/20 purple:bg-gray-800/20 border-gray-200/40 dark:border-gray-700/40 midnight:border-gray-700/40 purple:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      {/* Priority Indicator */}
+                      <div className="pt-0.5">
+                        <span className={`block w-2.5 h-2.5 rounded-full ${priorityConfig.color} ring-2 ring-white dark:ring-gray-800`} title={`${priorityConfig.label} priority`} />
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="text-xs font-bold text-gray-900 dark:text-white">{ticket.subject}</span>
+                          {getTypeBadge(ticket.type)}
+                          {getStatusBadge(ticket.status)}
+                        </div>
+                        <p className="text-[10px] text-gray-600 dark:text-gray-400 line-clamp-2 mb-1.5">{ticket.message}</p>
+                        <div className="flex items-center gap-3 text-[10px] text-gray-500 dark:text-gray-500 flex-wrap">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {new Date(ticket.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                          </span>
+                          {ticket.assignedTo && (
+                            <span className="flex items-center gap-1">
+                              <User className="w-3 h-3" />
+                              {ticket.assignedTo}
+                            </span>
+                          )}
+                          <span className="flex items-center gap-1">
+                            <MessageSquare className="w-3 h-3" />
+                            {ticket.responses.length} {ticket.responses.length === 1 ? "response" : "responses"}
+                          </span>
+                          <span className={`font-medium ${priorityConfig.textColor}`}>{priorityConfig.label} Priority</span>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-[10px] text-gray-600 dark:text-gray-400 line-clamp-2">{comm.message}</p>
-                    <div className="flex items-center gap-3 text-[10px] text-gray-500 dark:text-gray-500 mt-1">
-                      <span>{new Date(comm.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
-                      {comm.assignedTo && <span>• Assigned to {comm.assignedTo}</span>}
-                      {comm.responses.length > 0 && <span>• {comm.responses.length} responses</span>}
+
+                    {/* View Button */}
+                    <div className="flex items-center gap-1 text-[10px] text-blue-600 dark:text-blue-400 flex-shrink-0">
+                      <Eye className="w-3 h-3" />
+                      <span className="font-medium">View</span>
                     </div>
                   </div>
-                  <button className="px-2 py-1 text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer">
-                    View
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Ticket Details Modal */}
+      {selectedTicket && (
+        <Modal
+          isOpen={isTicketModalOpen}
+          onClose={() => {
+            setIsTicketModalOpen(false);
+            setSelectedTicket(null);
+            setReplyText("");
+          }}
+          title={selectedTicket.subject}
+          subtitle={`Ticket #${selectedTicket.id}`}
+          icon={<MessageSquare className="w-5 h-5" />}
+          maxWidth="2xl"
+        >
+          <div className="space-y-4">
+            {/* Ticket Info */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {getTypeBadge(selectedTicket.type)}
+              {getStatusBadge(selectedTicket.status)}
+              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getPriorityConfig(selectedTicket.priority).textColor} bg-gray-100 dark:bg-gray-700`}>
+                {getPriorityConfig(selectedTicket.priority).label} Priority
+              </span>
+            </div>
+
+            {/* Meta Info */}
+            <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+              <div>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase">Submitted</p>
+                <p className="text-xs font-medium text-gray-900 dark:text-white">
+                  {new Date(selectedTicket.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase">Assigned To</p>
+                <p className="text-xs font-medium text-gray-900 dark:text-white">{selectedTicket.assignedTo || "Unassigned"}</p>
+              </div>
+            </div>
+
+            {/* Original Message */}
+            <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/30">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-full bg-blue-200 dark:bg-blue-800 flex items-center justify-center">
+                  <span className="text-xs font-bold text-blue-700 dark:text-blue-300">{parentName.charAt(0)}</span>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-gray-900 dark:text-white">{parentName}</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">Original Message</p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{selectedTicket.message}</p>
+            </div>
+
+            {/* Responses */}
+            {selectedTicket.responses.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Responses ({selectedTicket.responses.length})</h4>
+                {selectedTicket.responses.map((response, index) => (
+                  <div
+                    key={index}
+                    className={`p-4 rounded-xl border ${
+                      response.sender === "admin"
+                        ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700/30"
+                        : "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        response.sender === "admin" ? "bg-green-200 dark:bg-green-800" : "bg-gray-200 dark:bg-gray-700"
+                      }`}>
+                        <span className={`text-xs font-bold ${
+                          response.sender === "admin" ? "text-green-700 dark:text-green-300" : "text-gray-700 dark:text-gray-300"
+                        }`}>
+                          {response.sender === "admin" ? "A" : parentName.charAt(0)}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-gray-900 dark:text-white">
+                          {response.sender === "admin" ? "Admin" : parentName}
+                        </p>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                          {new Date(response.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{response.message}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Reply Input */}
+            {(selectedTicket.status === "open" || selectedTicket.status === "in_progress") && (
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
+                <FormTextarea
+                  label="Your Response"
+                  icon={<Send className="w-full h-full" />}
+                  iconBgColor="bg-blue-100 dark:bg-blue-900/30"
+                  iconColor="text-blue-600 dark:text-blue-400"
+                  value={replyText}
+                  onChange={setReplyText}
+                  placeholder="Type your response to the ticket..."
+                  rows={3}
+                />
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Update Status:</span>
+                    <CustomDropdown
+                      value={newStatus}
+                      onChange={(value) => setNewStatus(value as string)}
+                      options={[
+                        { value: "in_progress", label: "In Progress" },
+                        { value: "resolved", label: "Resolved" },
+                        { value: "closed", label: "Closed" },
+                      ]}
+                      variant="blue"
+                    />
+                  </div>
+                  <button
+                    onClick={handleSendReply}
+                    disabled={!replyText.trim() || isReplying}
+                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg hover:shadow-xl"
+                  >
+                    {isReplying ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Send Response
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
-            ))}
+            )}
           </div>
-        )}
-
-        {communications.length > 4 && (
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="w-full mt-3 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
-          >
-            {showAll ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            {showAll ? "Show Less" : `Show All ${communications.length} Communications`}
-          </button>
-        )}
-      </div>
+        </Modal>
+      )}
     </div>
   );
 }
@@ -3504,13 +4077,17 @@ function PaymentDetailsModal({
   onClose,
   payment,
   money,
+  currencyCode,
+  schoolName,
 }: {
   isOpen: boolean;
   onClose: () => void;
   payment: PaymentRecord | null;
   money: (amount: number) => string;
+  currencyCode: string;
+  schoolName: string;
 }) {
-  if (!payment) return null;
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const getStatusConfig = (status: PaymentRecord["status"]) => {
     const config = {
@@ -3532,6 +4109,246 @@ function PaymentDetailsModal({
     return icons[method];
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  const formatCurrency = (amount: number) => {
+    return `${currencyCode} ${amount.toLocaleString()}`;
+  };
+
+  const handleDownload = useCallback(async () => {
+    if (!payment) return;
+    setIsDownloading(true);
+
+    try {
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      const contentWidth = pageWidth - margin * 2;
+      let y = 20;
+
+      // Status colors
+      const statusColors: Record<string, { r: number; g: number; b: number; label: string }> = {
+        completed: { r: 5, g: 150, b: 105, label: "COMPLETED" },
+        pending: { r: 217, g: 119, b: 6, label: "PENDING" },
+        failed: { r: 220, g: 38, b: 38, label: "FAILED" },
+      };
+      const statusConfig = statusColors[payment.status] || statusColors.completed;
+
+      // Header
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(31, 41, 55);
+      doc.text("Payment Receipt", pageWidth / 2, y, { align: "center" });
+      y += 6;
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(107, 114, 128);
+      doc.text(schoolName || "School", pageWidth / 2, y, { align: "center" });
+      y += 5;
+
+      doc.setFontSize(8);
+      doc.setTextColor(156, 163, 175);
+      doc.text(`Receipt #${payment.receiptNumber}`, pageWidth / 2, y, { align: "center" });
+      y += 8;
+
+      // Divider
+      doc.setDrawColor(229, 231, 235);
+      doc.setLineWidth(0.3);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 8;
+
+      // Status Banner
+      doc.setFillColor(statusConfig.r, statusConfig.g, statusConfig.b);
+      doc.roundedRect(margin, y, contentWidth, 22, 3, 3, "F");
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(255, 255, 255);
+      doc.text(statusConfig.label, margin + 8, y + 9);
+
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.text(formatDate(payment.date), margin + 8, y + 16);
+
+      doc.setFontSize(8);
+      doc.text("Amount Paid", pageWidth - margin - 8, y + 7, { align: "right" });
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text(formatCurrency(payment.amount), pageWidth - margin - 8, y + 16, { align: "right" });
+      y += 28;
+
+      // Details Section
+      const detailsStartY = y;
+      const cardHeight = 50;
+      const cardPadding = 6;
+
+      doc.setFillColor(249, 250, 251);
+      doc.setDrawColor(229, 231, 235);
+      doc.roundedRect(margin, detailsStartY, contentWidth, cardHeight, 2, 2, "FD");
+
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(107, 114, 128);
+      doc.text("PAYMENT DETAILS", margin + cardPadding, detailsStartY + 7);
+
+      const details = [
+        { label: "Student", value: payment.childName },
+        { label: "Fee Type", value: payment.feeType },
+        { label: "Payment Method", value: payment.paymentMethod },
+        { label: "Reference", value: payment.reference },
+      ];
+
+      let detailY = detailsStartY + 15;
+      details.forEach((detail) => {
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(107, 114, 128);
+        doc.text(detail.label, margin + cardPadding, detailY);
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(31, 41, 55);
+        doc.text(detail.value, pageWidth - margin - cardPadding, detailY, { align: "right" });
+        detailY += 8;
+      });
+
+      y = detailsStartY + cardHeight + 6;
+
+      // Transaction Reference
+      const refBoxHeight = 18;
+      doc.setFillColor(31, 41, 55);
+      doc.roundedRect(margin, y, contentWidth, refBoxHeight, 2, 2, "F");
+
+      doc.setFillColor(34, 197, 94);
+      doc.roundedRect(margin, y, 3, refBoxHeight, 2, 0, "F");
+      doc.rect(margin + 1.5, y, 1.5, refBoxHeight, "F");
+
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(156, 163, 175);
+      doc.text("RECEIPT NUMBER", margin + 10, y + 7);
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(255, 255, 255);
+      doc.text(payment.receiptNumber, margin + 10, y + 14);
+
+      y += refBoxHeight + 6;
+
+      // Footer
+      doc.setFillColor(249, 250, 251);
+      doc.setDrawColor(229, 231, 235);
+      doc.roundedRect(margin, y, contentWidth, 16, 2, 2, "FD");
+
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(107, 114, 128);
+      doc.text(`This is an official receipt from ${schoolName || "School"}`, pageWidth / 2, y + 6, { align: "center" });
+
+      doc.setFontSize(7);
+      doc.setTextColor(156, 163, 175);
+      doc.text(
+        `Generated on ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`,
+        pageWidth / 2,
+        y + 12,
+        { align: "center" }
+      );
+
+      doc.save(`Receipt-${payment.receiptNumber}.pdf`);
+    } catch (error) {
+      console.warn("Error generating PDF:", error);
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [payment, currencyCode, schoolName]);
+
+  const handlePrint = useCallback(() => {
+    if (!payment) return;
+
+    const statusColors = {
+      completed: { bg: "#d1fae5", text: "#065f46", label: "Completed" },
+      pending: { bg: "#fef3c7", text: "#92400e", label: "Pending" },
+      failed: { bg: "#fee2e2", text: "#991b1b", label: "Failed" },
+    };
+    const status = statusColors[payment.status] || statusColors.completed;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Receipt - ${payment.receiptNumber}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; max-width: 600px; margin: 0 auto; }
+          .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #e5e7eb; }
+          .header h1 { font-size: 24px; color: #1f2937; margin-bottom: 5px; }
+          .header p { font-size: 14px; color: #6b7280; }
+          .status-banner { padding: 20px; border-radius: 12px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; background: ${status.bg}; }
+          .status-badge { padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 14px; color: ${status.text}; background: white; }
+          .amount-paid .label { font-size: 12px; color: #6b7280; }
+          .amount-paid .value { font-size: 28px; font-weight: 700; color: ${status.text}; }
+          .details-card { padding: 20px; background: #f9fafb; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 20px; }
+          .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #e5e7eb; }
+          .detail-row:last-child { border-bottom: none; }
+          .detail-row .label { color: #6b7280; }
+          .detail-row .value { font-weight: 600; color: #1f2937; }
+          .footer { text-align: center; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Payment Receipt</h1>
+          <p>${schoolName || "School"}</p>
+          <p style="font-size: 12px; color: #9ca3af; margin-top: 5px;">Receipt #${payment.receiptNumber}</p>
+        </div>
+        <div class="status-banner">
+          <div>
+            <span class="status-badge">${status.label}</span>
+            <p style="margin-top: 8px; font-size: 13px; color: ${status.text};">${formatDate(payment.date)}</p>
+          </div>
+          <div class="amount-paid" style="text-align: right;">
+            <div class="label">Amount Paid</div>
+            <div class="value">${money(payment.amount)}</div>
+          </div>
+        </div>
+        <div class="details-card">
+          <div class="detail-row"><span class="label">Student</span><span class="value">${payment.childName}</span></div>
+          <div class="detail-row"><span class="label">Fee Type</span><span class="value">${payment.feeType}</span></div>
+          <div class="detail-row"><span class="label">Payment Method</span><span class="value">${payment.paymentMethod}</span></div>
+          <div class="detail-row"><span class="label">Reference</span><span class="value">${payment.reference}</span></div>
+          <div class="detail-row"><span class="label">Receipt Number</span><span class="value">${payment.receiptNumber}</span></div>
+        </div>
+        <div class="footer">
+          <p>This is an official receipt from <strong>${schoolName || "School"}</strong></p>
+          <p style="margin-top: 5px;">Generated on ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    }
+  }, [payment, money, schoolName]);
+
+  if (!payment) return null;
+
   const statusConfig = getStatusConfig(payment.status);
 
   return (
@@ -3540,7 +4357,7 @@ function PaymentDetailsModal({
       onClose={onClose}
       title="Payment Details"
       subtitle={payment.feeType}
-      icon={<Receipt className="w-5 h-5" />}
+      icon={<CreditCard className="w-5 h-5" />}
       maxWidth="lg"
     >
       <div className="space-y-5">
@@ -3609,11 +4426,30 @@ function PaymentDetailsModal({
 
         {/* Actions */}
         <div className="flex gap-2 pt-2">
-          <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 rounded-xl transition-all cursor-pointer">
-            <FileText className="w-4 h-4" />
-            Download Receipt
+          <button
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 rounded-xl transition-all cursor-pointer disabled:opacity-50"
+          >
+            {isDownloading ? (
+              <>
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                <span>Downloading...</span>
+              </>
+            ) : (
+              <>
+                <FileText className="w-4 h-4" />
+                Download Receipt
+              </>
+            )}
           </button>
-          <button className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-700/50 rounded-xl transition-all cursor-pointer">
+          <button
+            onClick={handlePrint}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-700/50 rounded-xl transition-all cursor-pointer"
+          >
             <ExternalLink className="w-4 h-4" />
             Print
           </button>
