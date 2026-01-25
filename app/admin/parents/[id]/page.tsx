@@ -83,6 +83,7 @@ import {
   BadgeCheck,
   Trophy,
   AlertTriangle,
+  Paperclip,
 } from "lucide-react";
 import Modal from "@/components/shared/Modal";
 import FormDropdown from "@/components/shared/FormDropdown";
@@ -91,6 +92,7 @@ import FormButton from "@/components/shared/FormButton";
 import FormTextarea from "@/components/shared/FormTextarea";
 import ScheduleMeetingModal, { ScheduledMeetingData, MeetingChildReference } from "@/components/shared/ScheduleMeetingModal";
 import CustomDropdown from "@/components/shared/CustomDropdown";
+import EmojiPickerPopover from "@/components/shared/EmojiPickerPopover";
 import MeetingDetailsModal, { MeetingDetails, CancelMeetingData, RescheduleMeetingData, AdditionalParticipant } from "@/components/shared/MeetingDetailsModal";
 import ChildLeaveRequestDetailsModal from "@/components/shared/ChildLeaveRequestDetailsModal";
 import { useMeetings, Meeting as ContextMeeting } from "@/contexts/MeetingsContext";
@@ -139,6 +141,11 @@ export default function AdminParentDetailPage() {
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
   const [isExtendDueDateModalOpen, setIsExtendDueDateModalOpen] = useState(false);
   const [isScheduleMeetingModalOpen, setIsScheduleMeetingModalOpen] = useState(false);
+
+  // New modal states
+  const [isEditParentModalOpen, setIsEditParentModalOpen] = useState(false);
+  const [isSendMessageModalOpen, setIsSendMessageModalOpen] = useState(false);
+  const [isLoginDetailsModalOpen, setIsLoginDetailsModalOpen] = useState(false);
 
   // Fee management state
   const [selectedFeeRecord, setSelectedFeeRecord] = useState<AdminFeeRecord | null>(null);
@@ -225,7 +232,7 @@ export default function AdminParentDetailPage() {
       date: m.scheduledDate,
       time: m.scheduledTime,
       duration: m.duration,
-      status: m.status === "scheduled" || m.status === "pending_approval" ? "upcoming" : m.status === "in-progress" ? "in-progress" : m.status,
+      status: m.status === "scheduled" || m.status === "pending_approval" || m.status === "in-progress" ? "upcoming" : m.status as "upcoming" | "completed" | "cancelled" | "no_show",
       location: m.location,
       notes: m.notes,
       outcome: m.outcome,
@@ -350,19 +357,19 @@ export default function AdminParentDetailPage() {
               <div className="flex flex-wrap sm:flex-nowrap gap-3">
                 <ActionButton
                   icon={Edit}
-                  onClick={() => router.push(`/admin/parents/edit/${parentId}`)}
+                  onClick={() => setIsEditParentModalOpen(true)}
                 >
                   Edit Parent
                 </ActionButton>
                 <SecondaryButton
                   label="Send Message"
                   icon={MessageSquare}
-                  onClick={() => console.log("Send message")}
+                  onClick={() => setIsSendMessageModalOpen(true)}
                 />
                 <SecondaryButton
                   label="Login Details"
                   icon={KeyRound}
-                  onClick={() => console.log("Login details")}
+                  onClick={() => setIsLoginDetailsModalOpen(true)}
                 />
               </div>
 
@@ -389,6 +396,7 @@ export default function AdminParentDetailPage() {
               feeStats={feeStats}
               money={money}
               onStartCall={handleStartCall}
+              onSendMessage={() => setIsSendMessageModalOpen(true)}
             />
           </div>
 
@@ -594,6 +602,33 @@ export default function AdminParentDetailPage() {
         }}
         children={meetingChildrenData}
       />
+
+      {/* Edit Parent Modal */}
+      <EditParentModal
+        isOpen={isEditParentModalOpen}
+        onClose={() => setIsEditParentModalOpen(false)}
+        parent={parent}
+        onSave={(updatedParent) => {
+          setParent(updatedParent);
+          setIsEditParentModalOpen(false);
+        }}
+      />
+
+      {/* Send Message Modal */}
+      <SendMessageModal
+        isOpen={isSendMessageModalOpen}
+        onClose={() => setIsSendMessageModalOpen(false)}
+        parent={parent}
+        parentName={fullName}
+      />
+
+      {/* Login Details Modal */}
+      <LoginDetailsModal
+        isOpen={isLoginDetailsModalOpen}
+        onClose={() => setIsLoginDetailsModalOpen(false)}
+        parent={parent}
+        parentName={fullName}
+      />
     </MainLayout>
   );
 }
@@ -605,12 +640,14 @@ function ParentSidebar({
   feeStats,
   money,
   onStartCall,
+  onSendMessage,
 }: {
   parent: AdminParent;
   fullName: string;
   feeStats: { total: number; paid: number; outstanding: number; overdue: number };
   money: (amount: number) => string;
   onStartCall: (callType: "video" | "voice" | "chat") => void;
+  onSendMessage: () => void;
 }) {
   return (
     <div className="flex flex-col">
@@ -729,7 +766,7 @@ function ParentSidebar({
           {/* Send Message Button */}
           <div className="p-3 sm:p-6 pt-0">
             <button
-              onClick={() => console.log("Send message")}
+              onClick={onSendMessage}
               className="w-full px-4 sm:px-5 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 text-white rounded-xl font-semibold text-xs sm:text-sm shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
             >
               Send Message
@@ -2871,6 +2908,7 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
 
     // Create the new response
     const newResponse = {
+      id: `response-${Date.now()}`,
       from: "admin" as const,
       message: replyText.trim(),
       date: new Date().toISOString(),
@@ -5784,6 +5822,1547 @@ function ExtendDueDateModal({
             </div>
           </div>
         </div>
+      </div>
+    </Modal>
+  );
+}
+
+// ===== EDIT PARENT MODAL =====
+function EditParentModal({
+  isOpen,
+  onClose,
+  parent,
+  onSave,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  parent: AdminParent;
+  onSave: (updatedParent: AdminParent) => void;
+}) {
+  const [formData, setFormData] = useState({
+    firstName: parent.firstName,
+    lastName: parent.lastName,
+    middleName: parent.middleName || "",
+    email: parent.email,
+    phone: parent.phone,
+    alternatePhone: parent.alternatePhone || "",
+    occupation: parent.occupation || "",
+    relationship: parent.relationship,
+    communicationPreference: parent.communicationPreference,
+    status: parent.status,
+    addressLine1: parent.address.line1,
+    addressLine2: parent.address.line2 || "",
+    city: parent.address.city,
+    state: parent.address.state,
+    postalCode: parent.address.postalCode || "",
+    country: parent.address.country,
+  });
+  const [isSaving, setIsSaving] = useState(false);
+  const [activeSection, setActiveSection] = useState<"personal" | "contact" | "address">("personal");
+
+  // Reset form when parent changes
+  useEffect(() => {
+    setFormData({
+      firstName: parent.firstName,
+      lastName: parent.lastName,
+      middleName: parent.middleName || "",
+      email: parent.email,
+      phone: parent.phone,
+      alternatePhone: parent.alternatePhone || "",
+      occupation: parent.occupation || "",
+      relationship: parent.relationship,
+      communicationPreference: parent.communicationPreference,
+      status: parent.status,
+      addressLine1: parent.address.line1,
+      addressLine2: parent.address.line2 || "",
+      city: parent.address.city,
+      state: parent.address.state,
+      postalCode: parent.address.postalCode || "",
+      country: parent.address.country,
+    });
+  }, [parent]);
+
+  const handleSave = () => {
+    setIsSaving(true);
+    // Simulate API call
+    setTimeout(() => {
+      const updatedParent: AdminParent = {
+        ...parent,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        middleName: formData.middleName || undefined,
+        email: formData.email,
+        phone: formData.phone,
+        alternatePhone: formData.alternatePhone || undefined,
+        occupation: formData.occupation || undefined,
+        relationship: formData.relationship,
+        communicationPreference: formData.communicationPreference,
+        status: formData.status,
+        address: {
+          line1: formData.addressLine1,
+          line2: formData.addressLine2 || undefined,
+          city: formData.city,
+          state: formData.state,
+          postalCode: formData.postalCode || undefined,
+          country: formData.country,
+        },
+        updatedAt: new Date().toISOString(),
+      };
+      onSave(updatedParent);
+      setIsSaving(false);
+    }, 1000);
+  };
+
+  const sections = [
+    { id: "personal" as const, label: "Personal Info", icon: User },
+    { id: "contact" as const, label: "Contact", icon: Phone },
+    { id: "address" as const, label: "Address", icon: MapPin },
+  ];
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Edit Parent"
+      subtitle={`${parent.firstName} ${parent.lastName}`}
+      icon={<Edit className="w-5 h-5" />}
+      maxWidth="2xl"
+    >
+      <div className="space-y-5">
+        {/* Section Tabs */}
+        <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+          {sections.map((section) => {
+            const Icon = section.icon;
+            return (
+              <button
+                key={section.id}
+                onClick={() => setActiveSection(section.id)}
+                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  activeSection === section.id
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {section.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Personal Info Section */}
+        {activeSection === "personal" && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormInput
+                label="First Name"
+                icon={<User className="w-full h-full" />}
+                value={formData.firstName}
+                onChange={(value) => setFormData({ ...formData, firstName: value })}
+                required
+              />
+              <FormInput
+                label="Last Name"
+                icon={<User className="w-full h-full" />}
+                value={formData.lastName}
+                onChange={(value) => setFormData({ ...formData, lastName: value })}
+                required
+              />
+            </div>
+            <FormInput
+              label="Middle Name"
+              icon={<User className="w-full h-full" />}
+              value={formData.middleName}
+              onChange={(value) => setFormData({ ...formData, middleName: value })}
+              placeholder="Optional"
+            />
+            <FormInput
+              label="Occupation"
+              icon={<Building2 className="w-full h-full" />}
+              value={formData.occupation}
+              onChange={(value) => setFormData({ ...formData, occupation: value })}
+              placeholder="e.g., Business Owner, Teacher"
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormDropdown
+                label="Relationship"
+                icon={<Heart className="w-full h-full" />}
+                value={formData.relationship}
+                onChange={(value) => setFormData({ ...formData, relationship: value as AdminParent["relationship"] })}
+                options={[
+                  { value: "Father", label: "Father" },
+                  { value: "Mother", label: "Mother" },
+                  { value: "Guardian", label: "Guardian" },
+                  { value: "Sponsor", label: "Sponsor" },
+                ]}
+                required
+              />
+              <FormDropdown
+                label="Status"
+                icon={<CheckCircle2 className="w-full h-full" />}
+                value={formData.status}
+                onChange={(value) => setFormData({ ...formData, status: value as AdminParent["status"] })}
+                options={[
+                  { value: "Active", label: "Active" },
+                  { value: "Inactive", label: "Inactive" },
+                ]}
+                required
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Contact Section */}
+        {activeSection === "contact" && (
+          <div className="space-y-4">
+            <FormInput
+              label="Email Address"
+              icon={<Mail className="w-full h-full" />}
+              value={formData.email}
+              onChange={(value) => setFormData({ ...formData, email: value })}
+              type="email"
+              required
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormInput
+                label="Phone Number"
+                icon={<Phone className="w-full h-full" />}
+                value={formData.phone}
+                onChange={(value) => setFormData({ ...formData, phone: value })}
+                required
+              />
+              <FormInput
+                label="Alternate Phone"
+                icon={<Phone className="w-full h-full" />}
+                value={formData.alternatePhone}
+                onChange={(value) => setFormData({ ...formData, alternatePhone: value })}
+                placeholder="Optional"
+              />
+            </div>
+            <FormDropdown
+              label="Communication Preference"
+              icon={<MessageSquare className="w-full h-full" />}
+              value={formData.communicationPreference}
+              onChange={(value) => setFormData({ ...formData, communicationPreference: value as AdminParent["communicationPreference"] })}
+              options={[
+                { value: "email", label: "Email Only" },
+                { value: "sms", label: "SMS Only" },
+                { value: "both", label: "Email & SMS" },
+              ]}
+              required
+            />
+          </div>
+        )}
+
+        {/* Address Section */}
+        {activeSection === "address" && (
+          <div className="space-y-4">
+            <FormInput
+              label="Address Line 1"
+              icon={<Home className="w-full h-full" />}
+              value={formData.addressLine1}
+              onChange={(value) => setFormData({ ...formData, addressLine1: value })}
+              required
+            />
+            <FormInput
+              label="Address Line 2"
+              icon={<Home className="w-full h-full" />}
+              value={formData.addressLine2}
+              onChange={(value) => setFormData({ ...formData, addressLine2: value })}
+              placeholder="Apartment, suite, etc. (optional)"
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormInput
+                label="City"
+                icon={<MapPin className="w-full h-full" />}
+                value={formData.city}
+                onChange={(value) => setFormData({ ...formData, city: value })}
+                required
+              />
+              <FormInput
+                label="State"
+                icon={<MapPin className="w-full h-full" />}
+                value={formData.state}
+                onChange={(value) => setFormData({ ...formData, state: value })}
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <FormInput
+                label="Postal Code"
+                icon={<MapPin className="w-full h-full" />}
+                value={formData.postalCode}
+                onChange={(value) => setFormData({ ...formData, postalCode: value })}
+                placeholder="Optional"
+              />
+              <FormInput
+                label="Country"
+                icon={<MapPin className="w-full h-full" />}
+                value={formData.country}
+                onChange={(value) => setFormData({ ...formData, country: value })}
+                required
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <button
+            onClick={onClose}
+            className="px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving || !formData.firstName || !formData.lastName || !formData.email || !formData.phone}
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg"
+          >
+            {isSaving ? (
+              <>
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Saving...
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="w-4 h-4" />
+                Save Changes
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// ===== SEND MESSAGE MODAL =====
+function SendMessageModal({
+  isOpen,
+  onClose,
+  parent,
+  parentName,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  parent: AdminParent;
+  parentName: string;
+}) {
+  const [activeTab, setActiveTab] = useState<"chat" | "email" | "sms">("chat");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [chatMessage, setChatMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [isSent, setIsSent] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const messageTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const chatInputRef = useRef<HTMLTextAreaElement>(null);
+  const smsTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const chatFileInputRef = useRef<HTMLInputElement>(null);
+  const smsFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Attachment states
+  const [emailAttachments, setEmailAttachments] = useState<File[]>([]);
+  const [chatAttachments, setChatAttachments] = useState<File[]>([]);
+  const [smsAttachments, setSmsAttachments] = useState<File[]>([]);
+
+  // Mock chat history
+  const [chatHistory, setChatHistory] = useState([
+    {
+      id: "1",
+      from: "parent" as const,
+      message: "Hello, I wanted to ask about the upcoming parent-teacher meeting.",
+      timestamp: new Date(Date.now() - 3600000 * 24 * 2).toISOString(),
+      read: true,
+    },
+    {
+      id: "2",
+      from: "admin" as const,
+      message: "Hi! The parent-teacher meeting is scheduled for next Friday at 2 PM. Would you like to book a slot?",
+      timestamp: new Date(Date.now() - 3600000 * 24 * 2 + 1800000).toISOString(),
+      read: true,
+    },
+    {
+      id: "3",
+      from: "parent" as const,
+      message: "Yes, please. Can I get the 3 PM slot?",
+      timestamp: new Date(Date.now() - 3600000 * 24).toISOString(),
+      read: true,
+    },
+    {
+      id: "4",
+      from: "admin" as const,
+      message: "Of course! I've booked the 3 PM slot for you. You'll receive a confirmation email shortly.",
+      timestamp: new Date(Date.now() - 3600000 * 23).toISOString(),
+      read: true,
+    },
+    {
+      id: "5",
+      from: "parent" as const,
+      message: "Thank you so much! Also, could you please share the latest fee statement?",
+      timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
+      read: true,
+    },
+  ]);
+
+  // Scroll to bottom of chat
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatHistory]);
+
+  const handleSendChat = () => {
+    if (!chatMessage.trim() && chatAttachments.length === 0) return;
+
+    const attachmentText = chatAttachments.length > 0
+      ? `📎 ${chatAttachments.length} attachment${chatAttachments.length > 1 ? "s" : ""}`
+      : "";
+
+    const newMessage = {
+      id: `msg-${Date.now()}`,
+      from: "admin" as const,
+      message: chatMessage.trim() + (chatMessage.trim() && attachmentText ? "\n\n" : "") + attachmentText,
+      timestamp: new Date().toISOString(),
+      read: false,
+    };
+
+    setChatHistory(prev => [...prev, newMessage]);
+    setChatMessage("");
+    setChatAttachments([]);
+
+    // Simulate parent typing response
+    setTimeout(() => {
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        setChatHistory(prev => [...prev, {
+          id: `msg-${Date.now()}`,
+          from: "parent" as const,
+          message: "Thank you for the quick response! I'll check it out.",
+          timestamp: new Date().toISOString(),
+          read: true,
+        }]);
+      }, 2000);
+    }, 1000);
+  };
+
+  const handleSendEmail = () => {
+    if (!message.trim() || !subject.trim()) return;
+    setIsSending(true);
+
+    setTimeout(() => {
+      console.log("Email sent:", { to: parentName, subject, message });
+      setIsSending(false);
+      setIsSent(true);
+      setTimeout(() => {
+        setIsSent(false);
+        setSubject("");
+        setMessage("");
+      }, 2000);
+    }, 1500);
+  };
+
+  const handleSendSMS = () => {
+    if (!message.trim()) return;
+    setIsSending(true);
+
+    setTimeout(() => {
+      console.log("SMS sent:", { to: parentName, message, attachments: smsAttachments.length });
+      setIsSending(false);
+      setIsSent(true);
+      setTimeout(() => {
+        setIsSent(false);
+        setMessage("");
+        setSmsAttachments([]);
+      }, 2000);
+    }, 1500);
+  };
+
+  // Email emoji handler
+  const handleEmailEmojiSelect = (emoji: string) => {
+    const textarea = messageTextareaRef.current;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newMessage = message.substring(0, start) + emoji + message.substring(end);
+      setMessage(newMessage);
+      // Set cursor position after emoji
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+        textarea.focus();
+      }, 0);
+    } else {
+      setMessage(prev => prev + emoji);
+    }
+  };
+
+  // Chat emoji handler
+  const handleChatEmojiSelect = (emoji: string) => {
+    const textarea = chatInputRef.current;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newMessage = chatMessage.substring(0, start) + emoji + chatMessage.substring(end);
+      setChatMessage(newMessage);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+        textarea.focus();
+      }, 0);
+    } else {
+      setChatMessage(prev => prev + emoji);
+    }
+  };
+
+  // Email attachment handlers
+  const handleEmailFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(file => file.size <= 10 * 1024 * 1024); // 10MB limit
+    setEmailAttachments(prev => [...prev, ...validFiles]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeEmailAttachment = (index: number) => {
+    setEmailAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Chat attachment handlers
+  const handleChatFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(file => file.size <= 10 * 1024 * 1024); // 10MB limit
+    setChatAttachments(prev => [...prev, ...validFiles]);
+    if (chatFileInputRef.current) chatFileInputRef.current.value = "";
+  };
+
+  const removeChatAttachment = (index: number) => {
+    setChatAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // SMS emoji handler
+  const handleSmsEmojiSelect = (emoji: string) => {
+    const textarea = smsTextareaRef.current;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newMessage = message.substring(0, start) + emoji + message.substring(end);
+      setMessage(newMessage);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+        textarea.focus();
+      }, 0);
+    } else {
+      setMessage(prev => prev + emoji);
+    }
+  };
+
+  // SMS attachment handlers
+  const handleSmsFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(file => file.size <= 5 * 1024 * 1024); // 5MB limit for MMS
+    setSmsAttachments(prev => [...prev, ...validFiles]);
+    if (smsFileInputRef.current) smsFileInputRef.current.value = "";
+  };
+
+  const removeSmsAttachment = (index: number) => {
+    setSmsAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Format file size
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  };
+
+  // Get file icon based on type
+  const getFileIcon = (file: File) => {
+    if (file.type.startsWith("image/")) return "🖼️";
+    if (file.type.startsWith("video/")) return "🎬";
+    if (file.type.includes("pdf")) return "📄";
+    if (file.type.includes("word") || file.type.includes("document")) return "📝";
+    if (file.type.includes("sheet") || file.type.includes("excel")) return "📊";
+    return "📎";
+  };
+
+  const messageTemplates = [
+    { label: "Fee Reminder", subject: "Fee Payment Reminder", message: "Dear Parent,\n\nThis is a friendly reminder that your child's school fees are due. Please ensure timely payment to avoid any inconvenience.\n\nThank you for your cooperation." },
+    { label: "Meeting Invite", subject: "Parent-Teacher Meeting", message: "Dear Parent,\n\nYou are cordially invited to attend the upcoming Parent-Teacher meeting scheduled for [DATE]. Your participation is important.\n\nWe look forward to seeing you." },
+    { label: "General Update", subject: "School Update", message: "Dear Parent,\n\nWe hope this message finds you well. We would like to inform you about the following update:\n\n[DETAILS]\n\nPlease feel free to contact us." },
+  ];
+
+  const formatTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    } else if (diffDays === 1) {
+      return "Yesterday";
+    } else if (diffDays < 7) {
+      return date.toLocaleDateString([], { weekday: "short" });
+    }
+    return date.toLocaleDateString([], { month: "short", day: "numeric" });
+  };
+
+  const tabs = [
+    { id: "chat" as const, label: "Chat", icon: MessageSquare, color: "emerald" },
+    { id: "email" as const, label: "Email", icon: Mail, color: "blue" },
+    { id: "sms" as const, label: "SMS", icon: Phone, color: "purple" },
+  ];
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Message Center"
+      subtitle={`Conversation with ${parentName}`}
+      icon={<MessageSquare className="w-5 h-5" />}
+      maxWidth="2xl"
+    >
+      <div className="flex flex-col h-[550px]">
+        {/* Header with recipient info and tabs */}
+        <div className="flex-shrink-0">
+          {/* Recipient Card */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-50 via-blue-50/50 to-indigo-50/30 dark:from-slate-800/50 dark:via-blue-900/20 dark:to-indigo-900/10 p-4 mb-4 border border-slate-200/60 dark:border-slate-700/50">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+            <div className="relative flex items-center gap-4">
+              <div className="relative">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
+                  <span className="text-xl font-bold text-white">{parent.firstName.charAt(0)}{parent.lastName.charAt(0)}</span>
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-gray-800 shadow-sm" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white truncate">{parentName}</h3>
+                <div className="flex items-center gap-4 mt-1.5">
+                  <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="w-5 h-5 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                      <Mail className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <span className="truncate max-w-[140px]">{parent.email}</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="w-5 h-5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                      <Phone className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    {parent.phone}
+                  </span>
+                </div>
+              </div>
+              <div className="flex-shrink-0 text-right">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Online
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="flex gap-2 p-1.5 rounded-2xl bg-gray-100/80 dark:bg-gray-800/50 mb-4">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all cursor-pointer ${
+                    isActive
+                      ? tab.color === "emerald"
+                        ? "bg-white dark:bg-gray-700 text-emerald-600 dark:text-emerald-400 shadow-sm"
+                        : tab.color === "blue"
+                        ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
+                        : "bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 shadow-sm"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {tab.label}
+                  {tab.id === "chat" && (
+                    <span className="ml-1 px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+                      {chatHistory.length}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-hidden">
+          {/* Chat Tab */}
+          {activeTab === "chat" && (
+            <div className="flex flex-col h-full">
+              {/* Chat Messages */}
+              <div className="flex-1 overflow-y-auto px-1 space-y-3 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                {chatHistory.map((msg, index) => {
+                  const isAdmin = msg.from === "admin";
+                  const showDate = index === 0 ||
+                    new Date(msg.timestamp).toDateString() !== new Date(chatHistory[index - 1].timestamp).toDateString();
+
+                  return (
+                    <div key={msg.id}>
+                      {showDate && (
+                        <div className="flex items-center justify-center my-4">
+                          <span className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-500 dark:text-gray-400">
+                            {new Date(msg.timestamp).toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" })}
+                          </span>
+                        </div>
+                      )}
+                      <div className={`flex ${isAdmin ? "justify-end" : "justify-start"}`}>
+                        <div className={`flex items-end gap-2 max-w-[75%] ${isAdmin ? "flex-row-reverse" : ""}`}>
+                          {!isAdmin && (
+                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                              <span className="text-xs font-bold text-white">{parent.firstName.charAt(0)}</span>
+                            </div>
+                          )}
+                          <div className={`group relative ${isAdmin ? "items-end" : "items-start"}`}>
+                            <div
+                              className={`px-4 py-2.5 rounded-2xl ${
+                                isAdmin
+                                  ? "bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-br-md"
+                                  : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-bl-md"
+                              }`}
+                            >
+                              <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+                            </div>
+                            <div className={`flex items-center gap-1.5 mt-1 ${isAdmin ? "justify-end" : "justify-start"}`}>
+                              <span className="text-[10px] text-gray-400 dark:text-gray-500">{formatTime(msg.timestamp)}</span>
+                              {isAdmin && (
+                                <CheckCircle2 className="w-3 h-3 text-blue-500" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Typing Indicator */}
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div className="flex items-end gap-2">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                        <span className="text-xs font-bold text-white">{parent.firstName.charAt(0)}</span>
+                      </div>
+                      <div className="px-4 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800 rounded-bl-md">
+                        <div className="flex gap-1">
+                          <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+                          <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+                          <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Chat Input */}
+              <div className="flex-shrink-0 pt-3 border-t border-gray-200 dark:border-gray-700 mt-3">
+                {/* Chat Attachments Preview */}
+                {chatAttachments.length > 0 && (
+                  <div className="flex gap-2 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                    {chatAttachments.map((file, index) => (
+                      <div
+                        key={index}
+                        className="relative flex-shrink-0 group"
+                      >
+                        {file.type.startsWith("image/") ? (
+                          <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={file.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center p-1">
+                            <span className="text-lg">{getFileIcon(file)}</span>
+                            <span className="text-[8px] text-gray-500 truncate w-full text-center">{file.name.slice(0, 8)}...</span>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeChatAttachment(index)}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center shadow-sm hover:bg-red-600 transition-colors cursor-pointer"
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex items-end gap-2">
+                  <div className="flex-1 relative">
+                    <textarea
+                      ref={chatInputRef}
+                      value={chatMessage}
+                      onChange={(e) => setChatMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendChat();
+                        }
+                      }}
+                      placeholder="Type a message..."
+                      rows={1}
+                      className="w-full px-4 py-3 pr-20 rounded-2xl bg-gray-100 dark:bg-gray-800 border-0 focus:ring-2 focus:ring-blue-500/50 resize-none text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
+                      style={{ minHeight: "48px", maxHeight: "120px" }}
+                    />
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                      <EmojiPickerPopover
+                        onEmojiSelect={handleChatEmojiSelect}
+                        position="top-right"
+                        buttonClassName="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                        pickerWidth={320}
+                        pickerHeight={350}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => chatFileInputRef.current?.click()}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                      >
+                        <Paperclip className="w-4 h-4" />
+                      </button>
+                      <input
+                        ref={chatFileInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                        onChange={handleChatFileSelect}
+                        className="hidden"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleSendChat}
+                    disabled={!chatMessage.trim() && chatAttachments.length === 0}
+                    className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-blue-500/25"
+                  >
+                    <Send className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Email Tab */}
+          {activeTab === "email" && (
+            <div className="h-full flex flex-col">
+              {isSent ? (
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-emerald-400/20 rounded-full blur-xl animate-pulse" />
+                    <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/40 dark:to-emerald-800/30 flex items-center justify-center mb-4">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-500 dark:text-emerald-400" />
+                    </div>
+                  </div>
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">Email Sent</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Delivered to {parentName}</p>
+                </div>
+              ) : (
+                <>
+                  {/* Scrollable Content */}
+                  <div className="flex-1 overflow-y-auto space-y-5 pr-1 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
+                    {/* Email Composer Header */}
+                    <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-gray-800">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/20 flex items-center justify-center">
+                        <Mail className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">Compose Email</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">Create and send an email to this parent</p>
+                      </div>
+                    </div>
+
+                    {/* Templates */}
+                    <div>
+                      <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-2.5">Templates</p>
+                      <div className="flex gap-2">
+                        {messageTemplates.map((template) => (
+                          <button
+                            key={template.label}
+                            onClick={() => {
+                              setSubject(template.subject);
+                              setMessage(template.message);
+                            }}
+                            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                              subject === template.subject
+                                ? "bg-blue-500 text-white shadow-sm"
+                                : "text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            }`}
+                          >
+                            {template.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* To Field (Read-only) */}
+                    <div>
+                      <label className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-2 block">To</label>
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center flex-shrink-0">
+                          <span className="text-[10px] font-bold text-white">{parent.firstName.charAt(0)}{parent.lastName.charAt(0)}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{parentName}</p>
+                        </div>
+                        <span className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[150px]">{parent.email}</span>
+                      </div>
+                    </div>
+
+                    {/* Subject Field */}
+                    <div>
+                      <label className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-2 block">
+                        Subject <span className="text-red-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
+                        placeholder="What's this email about?"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-gray-800/60 border border-gray-200/80 dark:border-gray-700/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-all outline-none"
+                      />
+                    </div>
+
+                    {/* Message Field */}
+                    <div className="flex-1">
+                      <label className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-2 block">
+                        Message <span className="text-red-400">*</span>
+                      </label>
+                      <div className="relative">
+                        <textarea
+                          ref={messageTextareaRef}
+                          value={message}
+                          onChange={(e) => setMessage(e.target.value)}
+                          placeholder="Write your message here..."
+                          rows={5}
+                          className="w-full px-3.5 py-3 pb-10 rounded-xl bg-white dark:bg-gray-800/60 border border-gray-200/80 dark:border-gray-700/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 resize-none text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-all outline-none leading-relaxed"
+                        />
+                        {/* Message toolbar */}
+                        <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <EmojiPickerPopover
+                              onEmojiSelect={handleEmailEmojiSelect}
+                              position="top"
+                              buttonClassName="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                              pickerWidth={320}
+                              pickerHeight={350}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                            >
+                              <Paperclip className="w-4 h-4" />
+                            </button>
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              multiple
+                              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                              onChange={handleEmailFileSelect}
+                              className="hidden"
+                            />
+                          </div>
+                          {message.length > 0 && (
+                            <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                              {message.length} chars
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Attachments Display */}
+                    {emailAttachments.length > 0 && (
+                      <div>
+                        <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-2">
+                          Attachments ({emailAttachments.length})
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {emailAttachments.map((file, index) => (
+                            <div
+                              key={index}
+                              className="group flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-200/80 dark:border-gray-700/60"
+                            >
+                              <span className="text-base">{getFileIcon(file)}</span>
+                              <div className="flex-1 min-w-0 max-w-[120px]">
+                                <p className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{file.name}</p>
+                                <p className="text-[10px] text-gray-400">{formatFileSize(file.size)}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeEmailAttachment(index)}
+                                className="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Fixed Footer */}
+                  <div className="flex-shrink-0 pt-4 mt-4 border-t border-gray-100 dark:border-gray-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500">
+                        {subject && message && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            <span>Ready to send</span>
+                          </div>
+                        )}
+                        {emailAttachments.length > 0 && (
+                          <div className="flex items-center gap-1.5">
+                            <Paperclip className="w-3 h-3" />
+                            <span>{emailAttachments.length} file{emailAttachments.length > 1 ? "s" : ""}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          onClick={() => {
+                            setSubject("");
+                            setMessage("");
+                            setEmailAttachments([]);
+                          }}
+                          disabled={!subject && !message && emailAttachments.length === 0}
+                          className="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          Clear
+                        </button>
+                        <button
+                          onClick={handleSendEmail}
+                          disabled={isSending || !message.trim() || !subject.trim()}
+                          className="flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-blue-500 hover:bg-blue-600 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm hover:shadow-md"
+                        >
+                          {isSending ? (
+                            <>
+                              <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                              </svg>
+                              <span>Sending...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Send className="w-3.5 h-3.5" />
+                              <span>Send Email</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* SMS Tab */}
+          {activeTab === "sms" && (
+            <div className="h-full flex flex-col">
+              {isSent ? (
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-purple-400/20 rounded-full blur-xl animate-pulse" />
+                    <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-800/30 flex items-center justify-center mb-4">
+                      <CheckCircle2 className="w-8 h-8 text-purple-500 dark:text-purple-400" />
+                    </div>
+                  </div>
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">SMS Sent</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Delivered to {parent.phone}</p>
+                </div>
+              ) : (
+                <>
+                  {/* Scrollable Content */}
+                  <div className="flex-1 overflow-y-auto space-y-5 pr-1 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
+                    {/* SMS Composer Header */}
+                    <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-gray-800">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/20 flex items-center justify-center">
+                        <Phone className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">Compose SMS</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">Send a text message to this parent</p>
+                      </div>
+                    </div>
+
+                    {/* Recipient Card */}
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-bold text-white">{parent.firstName.charAt(0)}{parent.lastName.charAt(0)}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{parentName}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">{parent.phone}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-purple-50 dark:bg-purple-900/30">
+                        <Phone className="w-3 h-3 text-purple-500" />
+                        <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400">SMS</span>
+                      </div>
+                    </div>
+
+                    {/* Templates */}
+                    <div>
+                      <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-2.5">Templates</p>
+                      <div className="flex gap-2">
+                        {[
+                          { label: "Fee Due", msg: "Dear Parent, This is a reminder that school fees are due. Please pay at your earliest convenience." },
+                          { label: "Meeting", msg: "Dear Parent, You're invited to a parent-teacher meeting. Please confirm your attendance." },
+                          { label: "Pickup", msg: "Dear Parent, Please pick up your child from school as soon as possible. Thank you." },
+                        ].map((template) => (
+                          <button
+                            key={template.label}
+                            onClick={() => setMessage(template.msg)}
+                            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                              message === template.msg
+                                ? "bg-purple-500 text-white shadow-sm"
+                                : "text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            }`}
+                          >
+                            {template.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Message Field */}
+                    <div>
+                      <label className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-2 block">
+                        Message <span className="text-red-400">*</span>
+                      </label>
+                      <div className="relative">
+                        <textarea
+                          ref={smsTextareaRef}
+                          value={message}
+                          onChange={(e) => setMessage(e.target.value)}
+                          placeholder="Type your SMS message here..."
+                          rows={4}
+                          maxLength={480}
+                          className="w-full px-3.5 py-3 pb-10 rounded-xl bg-white dark:bg-gray-800/60 border border-gray-200/80 dark:border-gray-700/60 focus:border-purple-400 dark:focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 resize-none text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-all outline-none leading-relaxed"
+                        />
+                        {/* Message toolbar */}
+                        <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <EmojiPickerPopover
+                              onEmojiSelect={handleSmsEmojiSelect}
+                              position="top"
+                              buttonClassName="p-1.5 rounded-lg text-gray-400 hover:text-purple-500 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors cursor-pointer"
+                              pickerWidth={320}
+                              pickerHeight={350}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => smsFileInputRef.current?.click()}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-purple-500 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors cursor-pointer"
+                              title="Attach file (converts to MMS)"
+                            >
+                              <Paperclip className="w-4 h-4" />
+                            </button>
+                            <input
+                              ref={smsFileInputRef}
+                              type="file"
+                              multiple
+                              accept="image/*,.pdf"
+                              onChange={handleSmsFileSelect}
+                              className="hidden"
+                            />
+                            <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1">
+                              {Math.ceil(message.length / 160) || 0} SMS
+                            </span>
+                          </div>
+                          <span className={`text-[10px] font-medium ${
+                            message.length > 400
+                              ? "text-amber-500"
+                              : message.length > 320
+                              ? "text-amber-400"
+                              : "text-gray-400 dark:text-gray-500"
+                          }`}>
+                            {message.length}/480
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* SMS Attachments Display */}
+                    {smsAttachments.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <p className="text-xs font-medium text-gray-400 dark:text-gray-500">
+                            Attachments ({smsAttachments.length})
+                          </p>
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                            MMS
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {smsAttachments.map((file, index) => (
+                            <div
+                              key={index}
+                              className="group relative"
+                            >
+                              {file.type.startsWith("image/") ? (
+                                <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                                  <img
+                                    src={URL.createObjectURL(file)}
+                                    alt={file.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-16 h-16 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200/80 dark:border-gray-700/60 flex flex-col items-center justify-center p-1">
+                                  <span className="text-lg">{getFileIcon(file)}</span>
+                                  <span className="text-[8px] text-gray-500 truncate w-full text-center mt-0.5">{file.name.slice(0, 8)}...</span>
+                                </div>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => removeSmsAttachment(index)}
+                                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center shadow-sm hover:bg-red-600 transition-colors cursor-pointer"
+                              >
+                                <XCircle className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Live Preview */}
+                    <div>
+                      <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-2.5">Preview</p>
+                      <div className="relative bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-800/50 rounded-2xl p-4 border border-gray-200/60 dark:border-gray-700/40">
+                        {/* Mini phone frame */}
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                            <span className="text-[10px] font-bold text-white">{parent.firstName.charAt(0)}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{parentName}</span>
+                              <span className="text-[10px] text-gray-400">now</span>
+                            </div>
+                            {message ? (
+                              <div className="bg-white dark:bg-gray-900 rounded-xl rounded-tl-sm px-3 py-2 shadow-sm border border-gray-200/60 dark:border-gray-700/40 max-w-[90%]">
+                                <p className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
+                                  {message.length > 150 ? message.substring(0, 150) + "..." : message}
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="bg-white dark:bg-gray-900 rounded-xl rounded-tl-sm px-3 py-2 shadow-sm border border-gray-200/60 dark:border-gray-700/40 border-dashed">
+                                <p className="text-xs text-gray-400 italic">Your message will appear here...</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Fixed Footer */}
+                  <div className="flex-shrink-0 pt-4 mt-4 border-t border-gray-100 dark:border-gray-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500">
+                        {(message.trim() || smsAttachments.length > 0) && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            <span>Ready to send</span>
+                          </div>
+                        )}
+                        {smsAttachments.length > 0 && (
+                          <div className="flex items-center gap-1.5 text-purple-500">
+                            <Paperclip className="w-3 h-3" />
+                            <span>{smsAttachments.length} file{smsAttachments.length > 1 ? "s" : ""} (MMS)</span>
+                          </div>
+                        )}
+                        {message.length > 160 && smsAttachments.length === 0 && (
+                          <div className="flex items-center gap-1.5 text-amber-500">
+                            <AlertCircle className="w-3 h-3" />
+                            <span>Multiple SMS</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          onClick={() => {
+                            setMessage("");
+                            setSmsAttachments([]);
+                          }}
+                          disabled={!message && smsAttachments.length === 0}
+                          className="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          Clear
+                        </button>
+                        <button
+                          onClick={handleSendSMS}
+                          disabled={isSending || (!message.trim() && smsAttachments.length === 0)}
+                          className="flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-purple-500 hover:bg-purple-600 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm hover:shadow-md"
+                        >
+                          {isSending ? (
+                            <>
+                              <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                              </svg>
+                              <span>Sending...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Send className="w-3.5 h-3.5" />
+                              <span>Send SMS</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// ===== LOGIN DETAILS MODAL =====
+function LoginDetailsModal({
+  isOpen,
+  onClose,
+  parent,
+  parentName,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  parent: AdminParent;
+  parentName: string;
+}) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [isResetSuccess, setIsResetSuccess] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  // Mock login details (in real app, these would come from the backend)
+  const loginDetails = {
+    username: parent.email,
+    password: "********", // Never show real password
+    lastLogin: parent.lastLoginDate || "Never",
+    portalUrl: `${typeof window !== "undefined" ? window.location.origin : ""}/parents/login`,
+    status: parent.status === "Active" ? "Active" : "Disabled",
+  };
+
+  const handleCopy = (field: string, value: string) => {
+    navigator.clipboard.writeText(value);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  const handleResetPassword = () => {
+    setIsResetting(true);
+    // Simulate password reset
+    setTimeout(() => {
+      setIsResetting(false);
+      setIsResetSuccess(true);
+      setTimeout(() => setIsResetSuccess(false), 3000);
+    }, 1500);
+  };
+
+  const handleSendCredentials = () => {
+    // In real app, this would send login credentials via email
+    console.log("Sending credentials to:", parent.email);
+    alert(`Login credentials will be sent to ${parent.email}`);
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Login Details"
+      subtitle={parentName}
+      icon={<KeyRound className="w-5 h-5" />}
+      maxWidth="lg"
+    >
+      <div className="space-y-5">
+        {/* Account Status */}
+        <div className={`p-4 rounded-xl ${
+          loginDetails.status === "Active"
+            ? "bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30"
+            : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30"
+        }`}>
+          <div className="flex items-center gap-3">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+              loginDetails.status === "Active"
+                ? "bg-emerald-100 dark:bg-emerald-500/30"
+                : "bg-red-100 dark:bg-red-500/30"
+            }`}>
+              {loginDetails.status === "Active" ? (
+                <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              ) : (
+                <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+              )}
+            </div>
+            <div>
+              <p className={`text-sm font-bold ${
+                loginDetails.status === "Active"
+                  ? "text-emerald-700 dark:text-emerald-300"
+                  : "text-red-700 dark:text-red-300"
+              }`}>
+                Account {loginDetails.status}
+              </p>
+              <p className={`text-xs ${
+                loginDetails.status === "Active"
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-red-600 dark:text-red-400"
+              }`}>
+                {loginDetails.status === "Active"
+                  ? "Parent can access the portal"
+                  : "Parent cannot login"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Login Credentials */}
+        <div className="space-y-3">
+          {/* Username/Email */}
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Username / Email</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{loginDetails.username}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => handleCopy("username", loginDetails.username)}
+                className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
+              >
+                {copiedField === "username" ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                ) : (
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Portal URL */}
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                  <ExternalLink className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Parent Portal URL</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[200px]">{loginDetails.portalUrl}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => handleCopy("url", loginDetails.portalUrl)}
+                className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
+              >
+                {copiedField === "url" ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                ) : (
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Last Login */}
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Last Login</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {loginDetails.lastLogin === "Never"
+                    ? "Never logged in"
+                    : new Date(loginDetails.lastLogin).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Reset Password Success */}
+        {isResetSuccess && (
+          <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                Password reset link sent to {parent.email}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={handleResetPassword}
+            disabled={isResetting}
+            className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 border border-amber-200 dark:border-amber-500/30 rounded-xl transition-all cursor-pointer"
+          >
+            {isResetting ? (
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            ) : (
+              <KeyRound className="w-4 h-4" />
+            )}
+            Reset Password
+          </button>
+          <button
+            onClick={handleSendCredentials}
+            className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-500/30 rounded-xl transition-all cursor-pointer"
+          >
+            <Send className="w-4 h-4" />
+            Send Credentials
+          </button>
+        </div>
+
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="w-full py-3 text-sm font-semibold text-white bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 rounded-xl transition-all cursor-pointer"
+        >
+          Close
+        </button>
       </div>
     </Modal>
   );
