@@ -63,6 +63,7 @@ import {
   CalendarPlus,
   ChevronDown,
   ChevronUp,
+  Check,
   User,
   Search,
   UserPlus,
@@ -84,6 +85,7 @@ import {
   Trophy,
   AlertTriangle,
   Paperclip,
+  UserMinus,
 } from "lucide-react";
 import Modal from "@/components/shared/Modal";
 import FormDropdown from "@/components/shared/FormDropdown";
@@ -127,6 +129,8 @@ export default function AdminParentDetailPage() {
   const searchParams = useSearchParams();
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isManageChildrenModalOpen, setIsManageChildrenModalOpen] = useState(false);
+  const [selectedChildrenToDisconnect, setSelectedChildrenToDisconnect] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<ParentTabType>("details");
   const [isLinkChildModalOpen, setIsLinkChildModalOpen] = useState(false);
 
@@ -201,8 +205,58 @@ export default function AdminParentDetailPage() {
     return { total, paid, outstanding, overdue };
   }, [feeRecords]);
 
+  // Handle delete button click - check if parent has children first
+  const handleDeleteButtonClick = () => {
+    if (parent && parent.children && parent.children.length > 0) {
+      // Parent has children, show manage children modal first
+      setIsManageChildrenModalOpen(true);
+    } else {
+      // No children, show normal delete confirmation
+      setIsDeleteModalOpen(true);
+    }
+  };
+
+  // Toggle child selection for disconnection
+  const toggleChildSelection = (childId: string) => {
+    setSelectedChildrenToDisconnect(prev =>
+      prev.includes(childId)
+        ? prev.filter(id => id !== childId)
+        : [...prev, childId]
+    );
+  };
+
+  // Select/deselect all children
+  const toggleSelectAllChildren = () => {
+    if (!parent) return;
+    if (selectedChildrenToDisconnect.length === parent.children.length) {
+      setSelectedChildrenToDisconnect([]);
+    } else {
+      setSelectedChildrenToDisconnect(parent.children.map(c => c.id));
+    }
+  };
+
+  // Disconnect selected children from parent
+  const handleDisconnectChildren = () => {
+    if (!parent || selectedChildrenToDisconnect.length === 0) return;
+
+    // Update parent state to remove disconnected children
+    setParent(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        children: prev.children.filter(c => !selectedChildrenToDisconnect.includes(c.id))
+      };
+    });
+
+    // Clear selection
+    setSelectedChildrenToDisconnect([]);
+  };
+
+  // Actually delete the parent
   const handleDeleteParent = () => {
     console.log("Deleting parent:", parentId);
+    setIsDeleteModalOpen(false);
+    setIsManageChildrenModalOpen(false);
     router.push("/admin/parents");
   };
 
@@ -376,7 +430,7 @@ export default function AdminParentDetailPage() {
               {/* Destructive Action - Separated */}
               <div className="w-full sm:w-auto sm:ml-auto">
                 <button
-                  onClick={() => setIsDeleteModalOpen(true)}
+                  onClick={handleDeleteButtonClick}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 border border-red-200 dark:border-red-800 midnight:border-red-700 purple:border-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 midnight:hover:bg-red-900/30 purple:hover:bg-red-900/30 transition-all duration-200 active:scale-95 cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -502,6 +556,172 @@ export default function AdminParentDetailPage() {
         warningMessage="This will permanently remove this parent and all associated data. This action cannot be undone."
         confirmButtonText="Delete Parent"
       />
+
+      {/* Manage Children Modal - shown before delete when parent has children */}
+      <Modal
+        isOpen={isManageChildrenModalOpen}
+        onClose={() => {
+          setIsManageChildrenModalOpen(false);
+          setSelectedChildrenToDisconnect([]);
+        }}
+        title="Manage Connected Children"
+        subtitle="You must disconnect all children before deleting this parent"
+        icon={<UserMinus className="w-5 h-5 sm:w-6 sm:h-6" />}
+        maxWidth="lg"
+        footer={
+          <div className="flex flex-col gap-3">
+            {/* Warning if children exist */}
+            {parent.children.length > 0 && (
+              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-xl">
+                <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  This parent has {parent.children.length} connected {parent.children.length === 1 ? "child" : "children"}.
+                  You must disconnect all children before deleting this parent account.
+                </p>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsManageChildrenModalOpen(false);
+                  setSelectedChildrenToDisconnect([]);
+                }}
+                className="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <div className="flex items-center gap-2">
+                {/* Disconnect Selected Button */}
+                {selectedChildrenToDisconnect.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleDisconnectChildren}
+                    className="px-4 py-2.5 text-sm font-medium text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 rounded-xl transition-colors flex items-center gap-2 cursor-pointer"
+                  >
+                    <UserMinus className="w-4 h-4" />
+                    Disconnect {selectedChildrenToDisconnect.length} {selectedChildrenToDisconnect.length === 1 ? "Child" : "Children"}
+                  </button>
+                )}
+
+                {/* Delete Parent Button - only enabled when no children */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsManageChildrenModalOpen(false);
+                    setIsDeleteModalOpen(true);
+                  }}
+                  disabled={parent.children.length > 0}
+                  className={`px-4 py-2.5 text-sm font-medium rounded-xl transition-colors flex items-center gap-2 ${
+                    parent.children.length > 0
+                      ? "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                      : "bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-500/25 cursor-pointer"
+                  }`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Parent
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          {/* Connected Children List */}
+          {parent.children.length > 0 ? (
+            <>
+              {/* Select All Header */}
+              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedChildrenToDisconnect.length === parent.children.length}
+                    onChange={toggleSelectAllChildren}
+                    className="w-4 h-4 text-blue-600 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Select All ({parent.children.length})
+                  </span>
+                </label>
+
+                {selectedChildrenToDisconnect.length > 0 && (
+                  <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                    {selectedChildrenToDisconnect.length} selected
+                  </span>
+                )}
+              </div>
+
+              {/* Children List */}
+              <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                {parent.children.map((child) => (
+                  <label
+                    key={child.id}
+                    className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      selectedChildrenToDisconnect.includes(child.id)
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedChildrenToDisconnect.includes(child.id)}
+                      onChange={() => toggleChildSelection(child.id)}
+                      className="w-4 h-4 text-blue-600 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500"
+                    />
+
+                    {/* Child Avatar */}
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+                      {child.profilePhoto ? (
+                        <img
+                          src={child.profilePhoto}
+                          alt={child.fullName}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-white font-semibold text-lg">
+                          {child.fullName?.split(" ").map(n => n[0]).join("").slice(0, 2) || child.firstName?.[0] || "?"}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Child Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 dark:text-white truncate">
+                        {child.fullName || `${child.firstName} ${child.lastName}`}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {child.classLevel || "No class assigned"} • {child.relationship || "Child"}
+                      </p>
+                    </div>
+
+                    {/* Selection Indicator */}
+                    {selectedChildrenToDisconnect.includes(child.id) && (
+                      <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                        <Check className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                  </label>
+                ))}
+              </div>
+            </>
+          ) : (
+            /* No Children - Ready to Delete */
+            <div className="text-center py-8">
+              <div className="w-16 h-16 mx-auto rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
+                <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                No Connected Children
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                All children have been disconnected. You can now proceed to delete this parent account.
+              </p>
+            </div>
+          )}
+        </div>
+      </Modal>
 
       {/* Link Child Modal */}
       <LinkChildModal
@@ -6432,9 +6652,15 @@ function SendMessageModal({
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
             <div className="relative flex items-center gap-4">
               <div className="relative">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
-                  <span className="text-xl font-bold text-white">{parent.firstName.charAt(0)}{parent.lastName.charAt(0)}</span>
-                </div>
+                {parent.profilePhoto ? (
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/25">
+                    <img src={parent.profilePhoto} alt={parentName} className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
+                    <span className="text-xl font-bold text-white">{parent.firstName.charAt(0)}{parent.lastName.charAt(0)}</span>
+                  </div>
+                )}
                 <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-gray-800 shadow-sm" />
               </div>
               <div className="flex-1 min-w-0">
@@ -6519,9 +6745,15 @@ function SendMessageModal({
                       <div className={`flex ${isAdmin ? "justify-end" : "justify-start"}`}>
                         <div className={`flex items-end gap-2 max-w-[75%] ${isAdmin ? "flex-row-reverse" : ""}`}>
                           {!isAdmin && (
-                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                              <span className="text-xs font-bold text-white">{parent.firstName.charAt(0)}</span>
-                            </div>
+                            parent.profilePhoto ? (
+                              <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden">
+                                <img src={parent.profilePhoto} alt={parentName} className="w-full h-full object-cover" />
+                              </div>
+                            ) : (
+                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                                <span className="text-xs font-bold text-white">{parent.firstName.charAt(0)}</span>
+                              </div>
+                            )
                           )}
                           <div className={`group relative ${isAdmin ? "items-end" : "items-start"}`}>
                             <div
@@ -6550,9 +6782,15 @@ function SendMessageModal({
                 {isTyping && (
                   <div className="flex justify-start">
                     <div className="flex items-end gap-2">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                        <span className="text-xs font-bold text-white">{parent.firstName.charAt(0)}</span>
-                      </div>
+                      {parent.profilePhoto ? (
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden">
+                          <img src={parent.profilePhoto} alt={parentName} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                          <span className="text-xs font-bold text-white">{parent.firstName.charAt(0)}</span>
+                        </div>
+                      )}
                       <div className="px-4 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800 rounded-bl-md">
                         <div className="flex gap-1">
                           <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -6712,9 +6950,15 @@ function SendMessageModal({
                     <div>
                       <label className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-2 block">To</label>
                       <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800">
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center flex-shrink-0">
-                          <span className="text-[10px] font-bold text-white">{parent.firstName.charAt(0)}{parent.lastName.charAt(0)}</span>
-                        </div>
+                        {parent.profilePhoto ? (
+                          <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0">
+                            <img src={parent.profilePhoto} alt={parentName} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center flex-shrink-0">
+                            <span className="text-[10px] font-bold text-white">{parent.firstName.charAt(0)}{parent.lastName.charAt(0)}</span>
+                          </div>
+                        )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{parentName}</p>
                         </div>
@@ -6904,9 +7148,15 @@ function SendMessageModal({
 
                     {/* Recipient Card */}
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-bold text-white">{parent.firstName.charAt(0)}{parent.lastName.charAt(0)}</span>
-                      </div>
+                      {parent.profilePhoto ? (
+                        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                          <img src={parent.profilePhoto} alt={parentName} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-bold text-white">{parent.firstName.charAt(0)}{parent.lastName.charAt(0)}</span>
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{parentName}</p>
                         <p className="text-xs text-gray-400 dark:text-gray-500">{parent.phone}</p>
@@ -7049,9 +7299,15 @@ function SendMessageModal({
                       <div className="relative bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-800/50 rounded-2xl p-4 border border-gray-200/60 dark:border-gray-700/40">
                         {/* Mini phone frame */}
                         <div className="flex items-start gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                            <span className="text-[10px] font-bold text-white">{parent.firstName.charAt(0)}</span>
-                          </div>
+                          {parent.profilePhoto ? (
+                            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                              <img src={parent.profilePhoto} alt={parentName} className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                              <span className="text-[10px] font-bold text-white">{parent.firstName.charAt(0)}</span>
+                            </div>
+                          )}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{parentName}</span>
