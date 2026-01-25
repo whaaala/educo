@@ -165,9 +165,9 @@ export default function CallModal({
             callType="video"
             onCallEnd={handleEndCall}
             onError={(error) => {
-              console.error("Video call error:", error);
-              alert(`Error: ${error.message}`);
-              handleEndCall();
+              // Don't use console.error as it triggers Next.js error overlay
+              // The VideoCallRoom component already shows a nice error UI
+              console.warn("Video call error:", error.message);
             }}
           />
         </div>
@@ -194,9 +194,9 @@ export default function CallModal({
               setSelectedCallType("video");
             }}
             onError={(error) => {
-              console.error("Voice call error:", error);
-              alert(`Error: ${error.message}`);
-              handleEndCall();
+              // Don't use console.error as it triggers Next.js error overlay
+              // The VoiceCallRoom component already shows a nice error UI
+              console.warn("Voice call error:", error.message);
             }}
           />
         </div>

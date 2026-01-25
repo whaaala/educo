@@ -512,18 +512,30 @@ export class WebRTCService implements ICommunicationService {
       await this.initialize();
     }
 
+    // Determine which media to request based on call type
+    const needsVideo = options.type === "video" && options.enableVideo !== false;
+    const needsAudio = options.enableAudio !== false;
+
     // Get local media stream
     try {
       this.localStream = await navigator.mediaDevices.getUserMedia({
-        video: options.type === "video" && options.enableVideo !== false,
-        audio: options.enableAudio !== false,
+        video: needsVideo,
+        audio: needsAudio,
       });
       // Register stream for nuclear cleanup tracking
       registerStream(this.localStream);
       console.log('[WebRTCService] Registered localStream for tracking');
     } catch (error) {
-      console.error("Failed to get local media:", error);
-      throw new Error("Failed to access camera/microphone. Please check permissions.");
+      // Use console.warn instead of console.error to avoid triggering Next.js error overlay
+      console.warn("Failed to get local media:", error);
+      // Provide specific error message based on what was requested
+      if (needsVideo && needsAudio) {
+        throw new Error("Failed to access camera/microphone. Please check permissions.");
+      } else if (needsVideo) {
+        throw new Error("Failed to access camera. Please check permissions.");
+      } else {
+        throw new Error("Failed to access microphone. Please check permissions.");
+      }
     }
 
     // Create local participant
