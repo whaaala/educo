@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { Smile } from "lucide-react";
 import type { EmojiClickData, Theme } from "emoji-picker-react";
+import Portal from "./Portal";
 
 // Dynamically import emoji picker to avoid SSR issues
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
@@ -38,12 +39,72 @@ export default function EmojiPickerPopover({
   disabled = false,
 }: EmojiPickerPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [pickerPosition, setPickerPosition] = useState({ top: 0, left: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  // Calculate picker position based on button position
+  const calculatePosition = useCallback(() => {
+    if (!buttonRef.current) return;
+
+    const buttonRect = buttonRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+
+    let top = 0;
+    let left = 0;
+
+    // Calculate vertical position
+    if (position === "top" || position === "top-right") {
+      // Position above the button
+      top = buttonRect.top - pickerHeight - 8;
+      // If not enough space above, position below
+      if (top < 10) {
+        top = buttonRect.bottom + 8;
+      }
+    } else {
+      // Position below the button
+      top = buttonRect.bottom + 8;
+      // If not enough space below, position above
+      if (top + pickerHeight > viewportHeight - 10) {
+        top = buttonRect.top - pickerHeight - 8;
+      }
+    }
+
+    // Calculate horizontal position
+    if (position === "top-right" || position === "bottom-right") {
+      // Align to right edge of button
+      left = buttonRect.right - pickerWidth;
+      // If goes off left edge, align to left edge of button
+      if (left < 10) {
+        left = buttonRect.left;
+      }
+    } else {
+      // Align to left edge of button
+      left = buttonRect.left;
+      // If goes off right edge, align to right edge of button
+      if (left + pickerWidth > viewportWidth - 10) {
+        left = buttonRect.right - pickerWidth;
+      }
+    }
+
+    // Ensure picker stays within viewport
+    top = Math.max(10, Math.min(top, viewportHeight - pickerHeight - 10));
+    left = Math.max(10, Math.min(left, viewportWidth - pickerWidth - 10));
+
+    setPickerPosition({ top, left });
+  }, [position, pickerWidth, pickerHeight]);
 
   // Close on click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        buttonRef.current &&
+        !buttonRef.current.contains(target) &&
+        pickerRef.current &&
+        !pickerRef.current.contains(target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -54,28 +115,46 @@ export default function EmojiPickerPopover({
       }
     };
 
+    const handleScroll = () => {
+      if (isOpen) {
+        calculatePosition();
+      }
+    };
+
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
       document.addEventListener("keydown", handleEscape);
+      window.addEventListener("scroll", handleScroll, true);
+      window.addEventListener("resize", calculatePosition);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", calculatePosition);
     };
-  }, [isOpen]);
+  }, [isOpen, calculatePosition]);
+
+  // Calculate position when opening
+  useEffect(() => {
+    if (isOpen) {
+      calculatePosition();
+    }
+  }, [isOpen, calculatePosition]);
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     onEmojiSelect(emojiData.emoji);
     setIsOpen(false);
   };
 
-  // Determine picker position classes
-  const positionClasses = {
-    top: "bottom-full left-0 mb-2",
-    bottom: "top-full left-0 mt-2",
-    "top-right": "bottom-full right-0 mb-2",
-    "bottom-right": "top-full right-0 mt-2",
+  const handleButtonClick = () => {
+    if (!disabled) {
+      if (!isOpen) {
+        calculatePosition();
+      }
+      setIsOpen(!isOpen);
+    }
   };
 
   // Determine theme
@@ -90,10 +169,11 @@ export default function EmojiPickerPopover({
   };
 
   return (
-    <div className="relative" ref={containerRef}>
+    <>
       <button
+        ref={buttonRef}
         type="button"
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={handleButtonClick}
         disabled={disabled}
         className={
           buttonClassName ||
@@ -109,25 +189,32 @@ export default function EmojiPickerPopover({
       </button>
 
       {isOpen && (
-        <div
-          className={`absolute ${positionClasses[position]} z-50 animate-in fade-in slide-in-from-bottom-2 duration-200`}
-        >
-          <EmojiPicker
-            onEmojiClick={handleEmojiClick}
-            width={pickerWidth}
-            height={pickerHeight}
-            theme={getTheme()}
-            searchPlaceHolder="Search emojis..."
-            previewConfig={{
-              showPreview: true,
-              defaultCaption: "Pick an emoji",
-              defaultEmoji: "1f60a",
+        <Portal>
+          <div
+            ref={pickerRef}
+            className="fixed z-[99999] animate-in fade-in zoom-in-95 duration-200"
+            style={{
+              top: pickerPosition.top,
+              left: pickerPosition.left,
             }}
-            skinTonesDisabled={false}
-            lazyLoadEmojis={true}
-          />
-        </div>
+          >
+            <EmojiPicker
+              onEmojiClick={handleEmojiClick}
+              width={pickerWidth}
+              height={pickerHeight}
+              theme={getTheme()}
+              searchPlaceHolder="Search emojis..."
+              previewConfig={{
+                showPreview: true,
+                defaultCaption: "Pick an emoji",
+                defaultEmoji: "1f60a",
+              }}
+              skinTonesDisabled={false}
+              lazyLoadEmojis={true}
+            />
+          </div>
+        </Portal>
       )}
-    </div>
+    </>
   );
 }

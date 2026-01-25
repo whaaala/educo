@@ -371,7 +371,7 @@ export default function ProfileCard({
                   }}
                   label={primaryAction.label}
                   size="sm"
-                  currency="₦"
+                  currency={primaryAction.label === "Add Fees" ? "₦" : ""}
                   className="!px-2 !py-1 !text-[10px] sm:!px-2.5 sm:!py-1.5 sm:!text-xs whitespace-nowrap"
                 />
               </div>
