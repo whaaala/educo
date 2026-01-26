@@ -231,7 +231,7 @@ export default function LinkStudentsSection({
           isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
         }`}
       >
-        <div className="overflow-hidden">
+        <div className={isExpanded ? "overflow-visible" : "overflow-hidden"}>
           <div className="p-4 sm:p-6 space-y-6">
             {/* Info Note */}
             <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">

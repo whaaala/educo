@@ -108,7 +108,7 @@ export default function ParentsGuardianSection({
           isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
         }`}
       >
-        <div className="overflow-hidden">
+        <div className={isExpanded ? "overflow-visible" : "overflow-hidden"}>
           <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10">
             {/* Info Box - At least one parent/guardian required */}
             <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 midnight:bg-purple-900/20 purple:bg-pink-900/20 border border-purple-200 dark:border-purple-800/30 midnight:border-purple-800/30 purple:border-pink-800/30">

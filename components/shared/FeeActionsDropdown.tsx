@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   MoreHorizontal,
   Edit,
@@ -42,39 +43,91 @@ export default function FeeActionsDropdown({
   hasPayments = false,
 }: FeeActionsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [openUpward, setOpenUpward] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Track if component is mounted (for portal)
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Calculate dropdown position when it opens
+  useEffect(() => {
+    if (isOpen && buttonRef.current && typeof window !== "undefined") {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      const dropdownHeight = 320;
+      const dropdownWidth = 192;
+
+      // Determine if we should open upward
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      let openUpward = false;
+
+      if (spaceBelow >= dropdownHeight) {
+        openUpward = false;
+      } else if (spaceAbove >= dropdownHeight) {
+        openUpward = true;
+      } else {
+        openUpward = spaceAbove > spaceBelow;
+      }
+
+      // Calculate left position (align to right edge of button)
+      let left = rect.right - dropdownWidth;
+      if (left < 8) left = 8;
+      if (left + dropdownWidth > viewportWidth - 8) {
+        left = viewportWidth - dropdownWidth - 8;
+      }
+
+      setDropdownStyle({
+        position: "fixed",
+        top: openUpward ? "auto" : `${rect.bottom + 4}px`,
+        bottom: openUpward ? `${viewportHeight - rect.top + 4}px` : "auto",
+        left: `${left}px`,
+        zIndex: 99999,
+      });
+    }
+  }, [isOpen]);
+
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const targetNode = event.target as Node | null;
+      if (!targetNode) return;
+
+      const clickedButton = !!buttonRef.current?.contains(targetNode);
+      const clickedDropdown = !!dropdownRef.current?.contains(targetNode);
+
+      if (!clickedButton && !clickedDropdown) {
+        setIsOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
         setIsOpen(false);
       }
     };
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
+      // Delay adding the listener to avoid catching the same click that opened the menu
+      const timeoutId = setTimeout(() => {
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleEscape);
+      }, 0);
 
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () => {
+        clearTimeout(timeoutId);
+        document.removeEventListener("mousedown", handleClickOutside);
+        document.removeEventListener("keydown", handleEscape);
+      };
+    }
   }, [isOpen]);
 
-  // Calculate dropdown position when opening
-  const handleToggle = () => {
-    if (!isOpen && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const spaceBelow = viewportHeight - rect.bottom;
-      const dropdownHeight = 320; // Approximate max dropdown height
-
-      // Open upward if not enough space below
-      setOpenUpward(spaceBelow < dropdownHeight);
-    }
-    setIsOpen(!isOpen);
-  };
-
-  const handleAction = (action: () => void | undefined) => {
+  const handleAction = (action: (() => void) | undefined) => {
     if (action) {
       action();
     }
@@ -177,42 +230,49 @@ export default function FeeActionsDropdown({
   const visibleItems = menuItems.filter((item) => item.show);
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <>
       <button
         ref={buttonRef}
         type="button"
-        onClick={handleToggle}
+        onClick={() => setIsOpen(!isOpen)}
         className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
       >
         <MoreHorizontal className="w-4 h-4 text-gray-500 dark:text-gray-400" />
       </button>
 
-      {isOpen && (
-        <div className={`absolute right-0 w-48 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 z-[100] animate-in fade-in zoom-in-95 duration-150 ${openUpward ? "bottom-full mb-1" : "top-full mt-1"}`}>
-          {visibleItems.map((item) => {
-            if (item.type === "divider") {
-              return (
-                <div
-                  key={item.id}
-                  className="my-1 border-t border-gray-200 dark:border-gray-700"
-                />
-              );
-            }
+      {/* Dropdown Menu - Rendered via Portal */}
+      {isMounted && isOpen &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            style={dropdownStyle}
+            className="w-48 max-h-80 overflow-y-auto bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 animate-in fade-in zoom-in-95 duration-150"
+          >
+            {visibleItems.map((item) => {
+              if (item.type === "divider") {
+                return (
+                  <div
+                    key={item.id}
+                    className="my-1 border-t border-gray-200 dark:border-gray-700"
+                  />
+                );
+              }
 
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => handleAction(item.onClick!)}
-                className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${item.color}`}
-              >
-                {item.icon}
-                {item.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleAction(item.onClick)}
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${item.color}`}
+                >
+                  {item.icon}
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>,
+          document.body
+        )}
+    </>
   );
 }

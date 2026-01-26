@@ -18,7 +18,8 @@
       "Bash(npx expo:*)",
       "Bash(taskkill:*)",
       "Bash(tasklist:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

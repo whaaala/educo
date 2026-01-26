@@ -196,6 +196,68 @@ export default function ParentFeesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const tableWrapRef = useRef<HTMLDivElement | null>(null);
 
+  // Fees state - combines mock data with newly added fees from admin portal
+  const [fees, setFees] = useState<ParentFeeRecord[]>(MOCK_FEES);
+
+  // Load newly added fees from session storage
+  useEffect(() => {
+    const loadNewFees = () => {
+      try {
+        const newRecords = JSON.parse(sessionStorage.getItem("newFeeRecords") || "[]");
+        // Convert AdminFeeRecord to ParentFeeRecord format
+        const convertedFees: ParentFeeRecord[] = newRecords.map((record: {
+          id: string;
+          childId: string;
+          childName: string;
+          feeType: string;
+          term: string;
+          academicYear: string;
+          amount: number;
+          paidAmount: number;
+          balance: number;
+          dueDate: string;
+          status: "paid" | "partial" | "pending" | "overdue";
+          paymentHistory: { id: string; date: string; amount: number; method: string; reference: string; receiptNumber: string; }[];
+        }) => ({
+          id: record.id,
+          childId: record.childId,
+          childName: record.childName,
+          feeType: record.feeType,
+          term: record.term,
+          academicYear: record.academicYear,
+          amount: record.amount,
+          paidAmount: record.paidAmount,
+          balance: record.balance,
+          dueDate: record.dueDate,
+          status: record.status,
+          paymentHistory: record.paymentHistory.map((p: { id: string; date: string; amount: number; method: string; reference: string; receiptNumber: string; }) => ({
+            id: p.id,
+            date: p.date,
+            amount: p.amount,
+            method: p.method as "Cash" | "Card" | "Bank Transfer" | "Mobile Money",
+            reference: p.reference,
+            receiptNumber: p.receiptNumber,
+          })),
+        }));
+        setFees([...convertedFees, ...MOCK_FEES]);
+      } catch {
+        // Ignore errors
+      }
+    };
+
+    loadNewFees();
+
+    // Listen for storage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "newFeeRecords") {
+        loadNewFees();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   // Modal states
   const [payFeesModalOpen, setPayFeesModalOpen] = useState(false);
   const [selectedFeeIdForPayment, setSelectedFeeIdForPayment] = useState<string | null>(null);
@@ -211,7 +273,7 @@ export default function ParentFeesPage() {
 
   // Filter fees
   const filteredFees = useMemo(() => {
-    return MOCK_FEES.filter((fee) => {
+    return fees.filter((fee) => {
       const matchesChild = selectedChild === "all" || fee.childId === selectedChild;
       const matchesStatus = selectedStatus === "all" || fee.status === selectedStatus;
       const matchesSearch =
@@ -221,20 +283,20 @@ export default function ParentFeesPage() {
         fee.term.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesChild && matchesStatus && matchesSearch;
     });
-  }, [selectedChild, selectedStatus, searchQuery]);
+  }, [fees, selectedChild, selectedStatus, searchQuery]);
 
   // Calculate stats
   const stats = useMemo(() => {
-    const totalAmount = MOCK_FEES.reduce((sum, f) => sum + f.amount, 0);
-    const totalPaid = MOCK_FEES.reduce((sum, f) => sum + f.paidAmount, 0);
-    const totalBalance = MOCK_FEES.reduce((sum, f) => sum + f.balance, 0);
-    const overdueCount = MOCK_FEES.filter((f) => f.status === "overdue").length;
+    const totalAmount = fees.reduce((sum, f) => sum + f.amount, 0);
+    const totalPaid = fees.reduce((sum, f) => sum + f.paidAmount, 0);
+    const totalBalance = fees.reduce((sum, f) => sum + f.balance, 0);
+    const overdueCount = fees.filter((f) => f.status === "overdue").length;
     return { totalAmount, totalPaid, totalBalance, overdueCount };
-  }, []);
+  }, [fees]);
 
-  // Convert MOCK_FEES to format needed for PayFeesModal
+  // Convert fees to format needed for PayFeesModal
   const feesForPayModal = useMemo(() => {
-    return MOCK_FEES.filter(f => f.balance > 0).map(f => ({
+    return fees.filter(f => f.balance > 0).map(f => ({
       id: f.id,
       childName: f.childName,
       feeType: f.feeType,
@@ -246,12 +308,12 @@ export default function ParentFeesPage() {
       dueDate: f.dueDate,
       status: f.status,
     }));
-  }, []);
+  }, [fees]);
 
-  // Generate payment history data from MOCK_FEES
+  // Generate payment history data from fees
   const allPaymentHistory: PaymentReceiptData[] = useMemo(() => {
     const payments: PaymentReceiptData[] = [];
-    MOCK_FEES.forEach(fee => {
+    fees.forEach(fee => {
       fee.paymentHistory.forEach(payment => {
         payments.push({
           id: payment.id,
@@ -272,7 +334,7 @@ export default function ParentFeesPage() {
       });
     });
     return payments.sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime());
-  }, []);
+  }, [fees]);
 
   // Modal handlers
   const handleOpenPayModal = (feeId?: string) => {
@@ -439,7 +501,7 @@ export default function ParentFeesPage() {
     y += 12;
 
     // Table rows
-    MOCK_FEES.forEach((fee, index) => {
+    fees.forEach((fee, index) => {
       if (y > 260) {
         doc.addPage();
         y = 20;

@@ -3,6 +3,9 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 import MainLayout from "@/components/layout/MainLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import PageActions from "@/components/shared/PageActions";
@@ -61,7 +64,46 @@ export default function AdminParentFeesPage() {
   const urlView = searchParams.get("view");
   const initialView = urlView === "grid" ? "grid" : "list";
 
-  const [feeRecords] = useState<AdminFeeRecord[]>(getAllFeeRecords());
+  // Load fee records from mock data and session storage (newly added fees)
+  const [feeRecords, setFeeRecords] = useState<AdminFeeRecord[]>(() => {
+    const mockRecords = getAllFeeRecords();
+    // Check for new fee records added via the add page
+    if (typeof window !== "undefined") {
+      try {
+        const newRecords = JSON.parse(sessionStorage.getItem("newFeeRecords") || "[]") as AdminFeeRecord[];
+        return [...newRecords, ...mockRecords];
+      } catch {
+        return mockRecords;
+      }
+    }
+    return mockRecords;
+  });
+
+  // Refresh fee records when navigating back to this page
+  useEffect(() => {
+    const loadNewRecords = () => {
+      try {
+        const newRecords = JSON.parse(sessionStorage.getItem("newFeeRecords") || "[]") as AdminFeeRecord[];
+        const mockRecords = getAllFeeRecords();
+        setFeeRecords([...newRecords, ...mockRecords]);
+      } catch {
+        // Ignore errors
+      }
+    };
+
+    // Load on mount
+    loadNewRecords();
+
+    // Listen for storage changes (in case another tab adds a fee)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "newFeeRecords") {
+        loadNewRecords();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
   const [viewMode, setViewMode] = useState<"grid" | "list">(initialView);
   const [isMounted, setIsMounted] = useState(false);
   const [displayedCount, setDisplayedCount] = useState(12);
@@ -310,18 +352,6 @@ export default function AdminParentFeesPage() {
     }, 300);
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const handleExportPDF = () => {
-    console.log("Export to PDF");
-  };
-
-  const handleExportExcel = () => {
-    console.log("Export to Excel");
-  };
-
   const handleAddFee = () => {
     router.push("/admin/parents/fees/add");
   };
@@ -519,6 +549,271 @@ export default function AdminParentFeesPage() {
 
   const displayedRecords = filteredRecords.slice(0, displayedCount);
   const hasMore = displayedCount < filteredRecords.length;
+
+  // Export handlers (must be after filteredRecords is defined)
+  const handlePrint = () => {
+    // Generate printable HTML for fee records
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Parent Fee Records - ${settings.schoolName || "School"}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; color: #1f2937; }
+          .header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #3b82f6; }
+          .header h1 { font-size: 22px; color: #3b82f6; margin-bottom: 5px; }
+          .header p { font-size: 12px; color: #6b7280; }
+          .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+          .stat-card { background: #f9fafb; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #e5e7eb; }
+          .stat-card .label { font-size: 10px; color: #6b7280; text-transform: uppercase; margin-bottom: 4px; }
+          .stat-card .value { font-size: 18px; font-weight: 700; color: #1f2937; }
+          .stat-card .value.green { color: #10b981; }
+          .stat-card .value.red { color: #ef4444; }
+          table { width: 100%; border-collapse: collapse; font-size: 11px; }
+          th { background: #3b82f6; color: white; padding: 10px 8px; text-align: left; font-weight: 600; }
+          td { padding: 8px; border-bottom: 1px solid #e5e7eb; }
+          tr:nth-child(even) { background: #f9fafb; }
+          .status { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
+          .status.paid { background: #d1fae5; color: #065f46; }
+          .status.pending { background: #fef3c7; color: #92400e; }
+          .status.overdue { background: #fee2e2; color: #991b1b; }
+          .status.partial { background: #dbeafe; color: #1e40af; }
+          .footer { margin-top: 20px; text-align: center; font-size: 10px; color: #9ca3af; padding-top: 15px; border-top: 1px solid #e5e7eb; }
+          @media print { body { padding: 10px; } .stats { grid-template-columns: repeat(4, 1fr); } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Parent Fee Records</h1>
+          <p>${settings.schoolName || "School"} | Generated on ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>
+        </div>
+
+        <div class="stats">
+          <div class="stat-card">
+            <div class="label">Total Fees</div>
+            <div class="value">NGN ${stats.totalFees.toLocaleString()}</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Collected</div>
+            <div class="value green">NGN ${stats.totalCollected.toLocaleString()}</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Outstanding</div>
+            <div class="value red">NGN ${stats.totalOutstanding.toLocaleString()}</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Total Records</div>
+            <div class="value">${filteredRecords.length}</div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Parent</th>
+              <th>Student</th>
+              <th>Fee Type</th>
+              <th>Amount</th>
+              <th>Paid</th>
+              <th>Balance</th>
+              <th>Due Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredRecords.map(record => `
+              <tr>
+                <td>${record.parentName}</td>
+                <td>${record.childName}</td>
+                <td>${record.feeType}</td>
+                <td>NGN ${record.amount.toLocaleString()}</td>
+                <td>NGN ${record.paidAmount.toLocaleString()}</td>
+                <td>NGN ${record.balance.toLocaleString()}</td>
+                <td>${new Date(record.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</td>
+                <td><span class="status ${record.status.toLowerCase()}">${record.status}</span></td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p>This is a computer-generated document. | Total Records: ${filteredRecords.length}</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+      };
+    }
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Header with blue background
+    doc.setFillColor(59, 130, 246);
+    doc.rect(0, 0, pageWidth, 35, "F");
+
+    // Title
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text("Parent Fee Records", 14, 15);
+
+    // School name and date
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(settings.schoolName || "School", 14, 22);
+    doc.setFontSize(9);
+    doc.text(`Generated on: ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`, 14, 28);
+
+    // Summary statistics box
+    doc.setTextColor(0, 0, 0);
+    doc.setFillColor(245, 247, 250);
+    doc.rect(14, 40, pageWidth - 28, 20, "F");
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.text("Summary Statistics", 18, 47);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text(`Total Records: ${filteredRecords.length}`, 18, 53);
+    doc.text(`Total Fees: NGN ${stats.totalFees.toLocaleString()}`, 70, 53);
+    doc.text(`Collected: NGN ${stats.totalCollected.toLocaleString()}`, 140, 53);
+    doc.text(`Outstanding: NGN ${stats.totalOutstanding.toLocaleString()}`, 210, 53);
+
+    // Table data
+    const tableData = filteredRecords.map(record => [
+      record.parentName,
+      record.childName,
+      record.feeType,
+      `NGN ${record.amount.toLocaleString()}`,
+      `NGN ${record.paidAmount.toLocaleString()}`,
+      `NGN ${record.balance.toLocaleString()}`,
+      new Date(record.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
+      record.status,
+    ]);
+
+    autoTable(doc, {
+      head: [["Parent", "Student", "Fee Type", "Amount", "Paid", "Balance", "Due Date", "Status"]],
+      body: tableData,
+      startY: 65,
+      theme: "grid",
+      styles: {
+        fontSize: 8,
+        cellPadding: 3,
+        overflow: "linebreak",
+      },
+      headStyles: {
+        fillColor: [59, 130, 246],
+        textColor: 255,
+        fontStyle: "bold",
+        halign: "center",
+      },
+      columnStyles: {
+        0: { cellWidth: 35 },
+        1: { cellWidth: 30 },
+        2: { cellWidth: 30 },
+        3: { cellWidth: 28, halign: "right" },
+        4: { cellWidth: 28, halign: "right" },
+        5: { cellWidth: 28, halign: "right" },
+        6: { cellWidth: 25 },
+        7: { cellWidth: 20, halign: "center" },
+      },
+      alternateRowStyles: {
+        fillColor: [245, 247, 250],
+      },
+    });
+
+    // Page numbers
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(9);
+      doc.setTextColor(128, 128, 128);
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 30, doc.internal.pageSize.getHeight() - 10);
+    }
+
+    doc.save(`Fee_Records_${new Date().toISOString().split("T")[0]}.pdf`);
+  };
+
+  const handleExportExcel = () => {
+    // Build worksheet data
+    const worksheetData: (string | number)[][] = [];
+
+    // Title
+    worksheetData.push(["PARENT FEE RECORDS"]);
+    worksheetData.push([settings.schoolName || "School"]);
+    worksheetData.push([`Generated on: ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`]);
+    worksheetData.push([]);
+
+    // Summary
+    worksheetData.push(["SUMMARY STATISTICS"]);
+    worksheetData.push(["Total Records:", filteredRecords.length, "", "Total Fees:", stats.totalFees]);
+    worksheetData.push(["Collected:", stats.totalCollected, "", "Outstanding:", stats.totalOutstanding]);
+    worksheetData.push([]);
+    worksheetData.push([]);
+
+    // Header row
+    worksheetData.push(["Parent Name", "Parent Email", "Student Name", "Class", "Fee Type", "Term", "Amount", "Paid", "Balance", "Due Date", "Status"]);
+
+    // Data rows
+    filteredRecords.forEach(record => {
+      worksheetData.push([
+        record.parentName,
+        record.parentEmail,
+        record.childName,
+        record.childClass,
+        record.feeType,
+        record.term,
+        record.amount,
+        record.paidAmount,
+        record.balance,
+        new Date(record.dueDate).toLocaleDateString("en-GB"),
+        record.status,
+      ]);
+    });
+
+    // Create worksheet
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+    // Set column widths
+    worksheet["!cols"] = [
+      { wch: 25 }, // Parent Name
+      { wch: 30 }, // Parent Email
+      { wch: 20 }, // Student Name
+      { wch: 12 }, // Class
+      { wch: 15 }, // Fee Type
+      { wch: 15 }, // Term
+      { wch: 12 }, // Amount
+      { wch: 12 }, // Paid
+      { wch: 12 }, // Balance
+      { wch: 12 }, // Due Date
+      { wch: 10 }, // Status
+    ];
+
+    // Create workbook and add sheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Fee Records");
+
+    // Download
+    XLSX.writeFile(workbook, `Fee_Records_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
 
   const isLoading = isFiltering || isSorting || isRefreshing || isSwitchingView;
 

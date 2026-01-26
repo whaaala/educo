@@ -128,7 +128,7 @@ export default function PersonalInformationSection({
           isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
         }`}
       >
-        <div className="overflow-hidden">
+        <div className={isExpanded ? "overflow-visible" : "overflow-hidden"}>
           <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10">
             {/* Profile Photo Upload */}
             <div>
