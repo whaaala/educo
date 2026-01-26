@@ -69,24 +69,13 @@ export default function FeeActionsDropdown({
     const rect = buttonRef.current.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
-    const dropdownHeight = 350; // Estimated max height
+    const dropdownHeight = 300; // Estimated max height for menu
     const dropdownWidth = 192;
 
     // Determine if we should open upward
     const spaceBelow = viewportHeight - rect.bottom;
     const spaceAbove = rect.top;
     const openUpward = spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
-
-    // Calculate vertical position
-    let top: number;
-    if (openUpward) {
-      // Position above the button - we need to estimate dropdown height
-      // For upward opening, place dropdown so its bottom is at button's top
-      top = rect.top - dropdownHeight;
-      if (top < 8) top = 8; // Don't go off screen
-    } else {
-      top = rect.bottom + 4;
-    }
 
     // Calculate left position (align to right edge of button)
     let left = rect.right - dropdownWidth;
@@ -95,13 +84,28 @@ export default function FeeActionsDropdown({
       left = viewportWidth - dropdownWidth - 8;
     }
 
-    return {
-      position: "fixed",
-      visibility: "visible",
-      top: `${top}px`,
-      left: `${left}px`,
-      zIndex: 99999,
-    };
+    // Calculate vertical position
+    if (openUpward) {
+      // Position above the button using bottom positioning
+      const bottom = viewportHeight - rect.top + 4;
+      return {
+        position: "fixed",
+        visibility: "visible",
+        bottom: `${bottom}px`,
+        left: `${left}px`,
+        zIndex: 99999,
+      };
+    } else {
+      // Position below the button
+      const top = rect.bottom + 4;
+      return {
+        position: "fixed",
+        visibility: "visible",
+        top: `${top}px`,
+        left: `${left}px`,
+        zIndex: 99999,
+      };
+    }
   };
 
   const handleToggle = () => {
@@ -267,7 +271,7 @@ export default function FeeActionsDropdown({
           <div
             ref={dropdownRef}
             style={dropdownStyle}
-            className="w-48 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 animate-in fade-in zoom-in-95 duration-150"
+            className="w-48 max-h-[320px] overflow-y-auto bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 animate-in fade-in zoom-in-95 duration-150"
           >
             {visibleItems.map((item) => {
               if (item.type === "divider") {

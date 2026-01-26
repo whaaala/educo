@@ -402,11 +402,14 @@ export default function DataTable<T>({
                     const hasTextAlignment = column.className?.includes('text-left') || column.className?.includes('text-center') || column.className?.includes('text-right');
                     const defaultAlignment = hasTextAlignment ? '' : 'text-center';
 
+                    // Allow overflow visible for actions, parent, and child columns (for dropdowns and avatar hover)
+                    const allowOverflow = column.key === 'actions' || column.key === 'parent' || column.key === 'child';
+
                     return (
                     <td
                       key={column.key}
                       className={`px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 ${defaultAlignment} align-middle transition-colors duration-200 ${stickyClass} ${getHiddenClasses(column.hidden)} ${column.className || ''}`}
-                      style={{ overflow: 'visible' }}
+                      style={allowOverflow ? { overflow: 'visible' } : { overflow: 'hidden' }}
                     >
                       {column.render ? column.render(item, index) : (
                         <span className="text-[12px] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 block truncate">

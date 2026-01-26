@@ -1362,7 +1362,7 @@ export default function AdminParentFeesPage() {
     {
       key: "checkbox",
       label: "",
-      className: "w-12",
+      className: "w-10 min-w-[40px] max-w-[40px]",
       render: (record) => (
         <input
           type="checkbox"
@@ -1384,47 +1384,58 @@ export default function AdminParentFeesPage() {
       key: "parent",
       label: "Parent",
       sortable: true,
-      className: "min-w-[140px]",
+      className: "w-[160px] min-w-[160px] max-w-[160px] overflow-visible",
       render: (record) => (
-        <Tooltip content={`${record.parentName}\n${record.parentEmail}`}>
-          <div className="flex items-center gap-2">
-            <div className="relative w-7 h-7 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
-              <Image
-                src={`https://i.pravatar.cc/150?u=${record.parentId}`}
-                alt={record.parentName}
-                fill
-                className="object-cover"
-                unoptimized
-              />
+        <div className="flex items-center gap-2 max-w-[140px] overflow-visible">
+          <Tooltip content={`${record.parentName}\n${record.parentEmail}`}>
+            <div className="group relative flex-shrink-0">
+              <div className="relative w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 cursor-pointer transition-all duration-300 ease-out group-hover:scale-[2] group-hover:ring-3 group-hover:ring-blue-500 group-hover:shadow-xl group-hover:z-[9999]">
+                <Image
+                  src={`https://i.pravatar.cc/150?u=${record.parentId}`}
+                  alt={record.parentName}
+                  fill
+                  className="object-cover rounded-full"
+                  unoptimized
+                />
+              </div>
             </div>
+          </Tooltip>
+          <div className="min-w-0 flex-1 overflow-hidden max-w-[90px]">
             <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
               {record.parentName}
             </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+              {record.parentEmail}
+            </p>
           </div>
-        </Tooltip>
+        </div>
       ),
     },
     {
       key: "child",
       label: "Student",
       sortable: true,
-      className: "min-w-[120px]",
+      className: "w-[130px] min-w-[130px] max-w-[130px] overflow-visible",
       render: (record) => (
-        <div className="flex items-center gap-2">
-          <div className="relative w-7 h-7 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
-            <Image
-              src={`https://i.pravatar.cc/150?u=${record.childId}`}
-              alt={record.childName}
-              fill
-              className="object-cover"
-              unoptimized
-            />
-          </div>
-          <div className="min-w-0">
+        <div className="flex items-center gap-2 max-w-[110px] overflow-visible">
+          <Tooltip content={`${record.childName}\n${record.childClass}`}>
+            <div className="group relative flex-shrink-0">
+              <div className="relative w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 cursor-pointer transition-all duration-300 ease-out group-hover:scale-[2] group-hover:ring-3 group-hover:ring-green-500 group-hover:shadow-xl group-hover:z-[9999]">
+                <Image
+                  src={`https://i.pravatar.cc/150?u=${record.childId}`}
+                  alt={record.childName}
+                  fill
+                  className="object-cover rounded-full"
+                  unoptimized
+                />
+              </div>
+            </div>
+          </Tooltip>
+          <div className="min-w-0 flex-1 overflow-hidden max-w-[60px]">
             <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
               {record.childName}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
               {record.childClass}
             </p>
           </div>
@@ -1435,21 +1446,23 @@ export default function AdminParentFeesPage() {
       key: "feeType",
       label: "Fee Type",
       sortable: true,
-      className: "min-w-[90px]",
+      className: "w-[110px] min-w-[110px] max-w-[110px]",
       render: (record) => (
-        <div>
-          <p className="font-medium text-gray-900 dark:text-white text-sm">{record.feeType}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-            {record.term} - {record.academicYear}
-          </p>
-        </div>
+        <Tooltip content={`${record.feeType}\n${record.term} - ${record.academicYear}`}>
+          <div className="max-w-[90px] overflow-hidden">
+            <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{record.feeType}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+              {record.term} - {record.academicYear}
+            </p>
+          </div>
+        </Tooltip>
       ),
     },
     {
       key: "amount",
       label: "Amount",
       sortable: true,
-      className: "min-w-[80px]",
+      className: "w-[90px] min-w-[90px]",
       render: (record) => (
         <span className="font-semibold text-gray-900 dark:text-white text-sm whitespace-nowrap">
           {money(record.amount)}
@@ -1460,7 +1473,7 @@ export default function AdminParentFeesPage() {
       key: "paidAmount",
       label: "Paid",
       sortable: true,
-      className: "min-w-[70px]",
+      className: "w-[80px] min-w-[80px]",
       render: (record) => (
         <span className="font-medium text-green-600 dark:text-green-400 text-sm whitespace-nowrap">
           {money(record.paidAmount)}
@@ -1471,7 +1484,7 @@ export default function AdminParentFeesPage() {
       key: "balance",
       label: "Balance",
       sortable: true,
-      className: "min-w-[80px]",
+      className: "w-[90px] min-w-[90px]",
       render: (record) => (
         <span
           className={`font-semibold text-sm whitespace-nowrap ${
@@ -1486,7 +1499,7 @@ export default function AdminParentFeesPage() {
       key: "dueDate",
       label: "Due Date",
       sortable: true,
-      className: "min-w-[75px]",
+      className: "w-[95px] min-w-[95px]",
       render: (record) => (
         <span className="text-gray-700 dark:text-gray-300 text-sm whitespace-nowrap">
           {new Date(record.dueDate).toLocaleDateString("en-GB", {
@@ -1501,13 +1514,13 @@ export default function AdminParentFeesPage() {
       key: "status",
       label: "Status",
       sortable: true,
-      className: "min-w-[80px]",
+      className: "w-[85px] min-w-[85px]",
       render: (record) => getStatusBadge(record.status),
     },
     {
       key: "actions",
       label: "Actions",
-      className: "w-[140px] pr-3",
+      className: "w-[130px] min-w-[130px] pr-2",
       render: (record) => (
         <div className="flex items-center justify-end gap-0.5">
           <Tooltip content="View Details">
@@ -1713,7 +1726,7 @@ export default function AdminParentFeesPage() {
                   <div
                     ref={tableWrapRef}
                     key={`fees-table-${filterKey}`}
-                    className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden"
+                    className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-visible"
                   >
                     <DataTable
                       data={filteredRecords}
