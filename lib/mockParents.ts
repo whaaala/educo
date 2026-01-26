@@ -728,6 +728,8 @@ export interface AdminFeeRecord {
     method: "Bank Transfer" | "Card" | "Cash" | "USSD" | "POS";
     reference: string;
     receiptNumber: string;
+    discount?: number;
+    discountType?: "percentage" | "fixed";
   }[];
   createdAt: string;
   updatedAt: string;
@@ -861,6 +863,11 @@ const MOCK_FEE_RECORDS = generateFeeRecords();
 // Get all fee records
 export function getAllFeeRecords(): AdminFeeRecord[] {
   return MOCK_FEE_RECORDS;
+}
+
+// Get fee record by ID
+export function getFeeRecordById(id: string): AdminFeeRecord | undefined {
+  return MOCK_FEE_RECORDS.find((record) => record.id === id);
 }
 
 // Get fee records by parent ID

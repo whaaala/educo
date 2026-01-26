@@ -27,6 +27,8 @@ import SendFeeReminderModal from "@/components/shared/SendFeeReminderModal";
 import FeeActionsDropdown from "@/components/shared/FeeActionsDropdown";
 import FeeReminderHistoryModal from "@/components/shared/FeeReminderHistoryModal";
 import AutoReminderScheduleModal from "@/components/shared/AutoReminderScheduleModal";
+import RecordPaymentModal, { PaymentData } from "@/components/shared/RecordPaymentModal";
+import { useNotifications } from "@/contexts/NotificationContext";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import {
@@ -51,10 +53,12 @@ import {
   Send,
   History,
   CalendarClock,
+  FileText,
 } from "lucide-react";
 
 export default function AdminParentFeesPage() {
   const { settings } = useSchoolSettings();
+  const { addNotification } = useNotifications();
   const searchParams = useSearchParams();
   const router = useRouter();
   const basePageLoading = usePageLoad(600);
@@ -207,6 +211,7 @@ export default function AdminParentFeesPage() {
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [isReminderHistoryModalOpen, setIsReminderHistoryModalOpen] = useState(false);
   const [isAutoReminderModalOpen, setIsAutoReminderModalOpen] = useState(false);
+  const [isRecordPaymentModalOpen, setIsRecordPaymentModalOpen] = useState(false);
 
   // Reminder counts - initialize from mock data, will update when reminders are sent
   const [reminderCounts, setReminderCounts] = useState<Record<string, number>>(() => {
@@ -397,15 +402,512 @@ export default function AdminParentFeesPage() {
   };
 
   const handleDownloadStatement = (record: AdminFeeRecord) => {
-    console.log("Downloading statement for:", record.id);
+    // Generate professional PDF statement
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const contentWidth = pageWidth - margin * 2;
+
+    // Helper function to parse hex color to RGB
+    const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result
+        ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) }
+        : { r: 0, g: 0, b: 0 };
+    };
+
+    // Professional color palette
+    const colors = {
+      primary: hexToRgb("#1e40af"),      // Deep blue
+      primaryLight: hexToRgb("#3b82f6"), // Light blue
+      text: hexToRgb("#111827"),         // Near black
+      textLight: hexToRgb("#6b7280"),    // Gray
+      textMuted: hexToRgb("#9ca3af"),    // Light gray
+      success: hexToRgb("#059669"),      // Green
+      danger: hexToRgb("#dc2626"),       // Red
+      warning: hexToRgb("#d97706"),      // Amber
+      border: hexToRgb("#d1d5db"),       // Light border
+      bgLight: hexToRgb("#f9fafb"),      // Very light gray
+    };
+
+    // Currency formatting
+    const currencySymbol = settings.currency === "NGN" ? "NGN" : settings.currency === "USD" ? "USD" : settings.currency;
+    const formatCurrency = (amount: number) => `${currencySymbol} ${amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+    let y = margin;
+
+    // ════════════════════════════════════════════════════════════
+    // HEADER SECTION - School branding and statement title
+    // ════════════════════════════════════════════════════════════
+
+    // School name - left aligned, prominent
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(colors.primary.r, colors.primary.g, colors.primary.b);
+    doc.text((settings.schoolName || "EDUCO SCHOOL").toUpperCase(), margin, y);
+
+    // Statement badge - right aligned
+    const badgeText = "FEE STATEMENT";
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    const badgeWidth = doc.getTextWidth(badgeText) + 12;
+    doc.setFillColor(colors.primary.r, colors.primary.g, colors.primary.b);
+    doc.roundedRect(pageWidth - margin - badgeWidth, y - 6, badgeWidth, 10, 2, 2, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.text(badgeText, pageWidth - margin - badgeWidth + 6, y + 1);
+
+    y += 12;
+
+    // Thin accent line
+    doc.setDrawColor(colors.primary.r, colors.primary.g, colors.primary.b);
+    doc.setLineWidth(0.8);
+    doc.line(margin, y, margin + 40, y);
+
+    y += 15;
+
+    // ════════════════════════════════════════════════════════════
+    // TWO-COLUMN INFO SECTION - Bill To and Statement Details
+    // ════════════════════════════════════════════════════════════
+
+    const leftColX = margin;
+    const rightColX = pageWidth / 2 + 10;
+    let leftY = y;
+    let rightY = y;
+
+    // BILL TO section
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(colors.textMuted.r, colors.textMuted.g, colors.textMuted.b);
+    doc.text("BILL TO", leftColX, leftY);
+    leftY += 6;
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(colors.text.r, colors.text.g, colors.text.b);
+    doc.text(record.childName, leftColX, leftY);
+    leftY += 5;
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(colors.textLight.r, colors.textLight.g, colors.textLight.b);
+    doc.text(record.childClass, leftColX, leftY);
+    leftY += 6;
+
+    doc.setFontSize(8);
+    doc.text(`Parent: ${record.parentName}`, leftColX, leftY);
+    leftY += 4;
+    doc.text(record.parentEmail, leftColX, leftY);
+
+    // STATEMENT DETAILS section (right side)
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(colors.textMuted.r, colors.textMuted.g, colors.textMuted.b);
+    doc.text("STATEMENT DETAILS", rightColX, rightY);
+    rightY += 6;
+
+    const detailsData = [
+      ["Statement No:", record.id.toUpperCase()],
+      ["Issue Date:", new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })],
+      ["Due Date:", new Date(record.dueDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })],
+      ["Term:", record.term],
+      ["Academic Year:", record.academicYear],
+    ];
+
+    doc.setFontSize(9);
+    detailsData.forEach(([label, value]) => {
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(colors.textLight.r, colors.textLight.g, colors.textLight.b);
+      doc.text(label, rightColX, rightY);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(colors.text.r, colors.text.g, colors.text.b);
+      doc.text(value, rightColX + 35, rightY);
+      rightY += 5;
+    });
+
+    y = Math.max(leftY, rightY) + 12;
+
+    // ════════════════════════════════════════════════════════════
+    // FEE DETAILS TABLE
+    // ════════════════════════════════════════════════════════════
+
+    // Table header
+    const tableY = y;
+    doc.setFillColor(colors.bgLight.r, colors.bgLight.g, colors.bgLight.b);
+    doc.rect(margin, tableY, contentWidth, 10, "F");
+
+    // Header border
+    doc.setDrawColor(colors.border.r, colors.border.g, colors.border.b);
+    doc.setLineWidth(0.3);
+    doc.line(margin, tableY, margin + contentWidth, tableY);
+    doc.line(margin, tableY + 10, margin + contentWidth, tableY + 10);
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(colors.text.r, colors.text.g, colors.text.b);
+    doc.text("DESCRIPTION", margin + 4, tableY + 7);
+    doc.text("AMOUNT", pageWidth - margin - 4, tableY + 7, { align: "right" });
+
+    y = tableY + 14;
+
+    // Fee row
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(colors.text.r, colors.text.g, colors.text.b);
+    doc.text(record.feeType, margin + 4, y);
+    doc.setFont("helvetica", "bold");
+    doc.text(formatCurrency(record.amount), pageWidth - margin - 4, y, { align: "right" });
+
+    y += 8;
+
+    // Bottom border of table
+    doc.setDrawColor(colors.border.r, colors.border.g, colors.border.b);
+    doc.line(margin, y, margin + contentWidth, y);
+
+    y += 10;
+
+    // ════════════════════════════════════════════════════════════
+    // PAYMENT SUMMARY BOX - Right aligned totals
+    // ════════════════════════════════════════════════════════════
+
+    const summaryWidth = 80;
+    const summaryX = pageWidth - margin - summaryWidth;
+    let summaryY = y;
+
+    // Summary rows
+    const summaryRows = [
+      { label: "Subtotal", value: formatCurrency(record.amount), bold: false },
+      { label: "Amount Paid", value: formatCurrency(record.paidAmount), bold: false, color: colors.success },
+    ];
+
+    doc.setFontSize(9);
+    summaryRows.forEach((row) => {
+      doc.setFont("helvetica", row.bold ? "bold" : "normal");
+      doc.setTextColor(colors.textLight.r, colors.textLight.g, colors.textLight.b);
+      doc.text(row.label, summaryX, summaryY);
+      doc.setTextColor(row.color?.r ?? colors.text.r, row.color?.g ?? colors.text.g, row.color?.b ?? colors.text.b);
+      doc.text(row.value, pageWidth - margin - 4, summaryY, { align: "right" });
+      summaryY += 6;
+    });
+
+    // Balance Due - highlighted
+    summaryY += 2;
+    doc.setFillColor(colors.primary.r, colors.primary.g, colors.primary.b);
+    doc.roundedRect(summaryX - 4, summaryY - 5, summaryWidth + 4, 12, 2, 2, "F");
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text("BALANCE DUE", summaryX, summaryY + 2);
+    doc.text(formatCurrency(record.balance), pageWidth - margin - 4, summaryY + 2, { align: "right" });
+
+    y = summaryY + 20;
+
+    // Status indicator
+    const statusConfig: Record<string, { label: string; color: { r: number; g: number; b: number } }> = {
+      paid: { label: "PAID IN FULL", color: colors.success },
+      partial: { label: "PARTIALLY PAID", color: colors.warning },
+      pending: { label: "PAYMENT PENDING", color: colors.primaryLight },
+      overdue: { label: "OVERDUE", color: colors.danger },
+    };
+
+    const status = statusConfig[record.status] || statusConfig.pending;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(status.color.r, status.color.g, status.color.b);
+    doc.text(`Status: ${status.label}`, margin, y);
+
+    y += 15;
+
+    // ════════════════════════════════════════════════════════════
+    // PAYMENT HISTORY TABLE (if exists)
+    // ════════════════════════════════════════════════════════════
+
+    if (record.paymentHistory && record.paymentHistory.length > 0) {
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(colors.text.r, colors.text.g, colors.text.b);
+      doc.text("Payment History", margin, y);
+
+      y += 8;
+
+      // Table header
+      doc.setFillColor(colors.bgLight.r, colors.bgLight.g, colors.bgLight.b);
+      doc.rect(margin, y, contentWidth, 8, "F");
+      doc.setDrawColor(colors.border.r, colors.border.g, colors.border.b);
+      doc.setLineWidth(0.3);
+      doc.line(margin, y, margin + contentWidth, y);
+      doc.line(margin, y + 8, margin + contentWidth, y + 8);
+
+      const colPositions = [margin + 4, margin + 35, margin + 75, margin + 115];
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(colors.textLight.r, colors.textLight.g, colors.textLight.b);
+      doc.text("DATE", colPositions[0], y + 5.5);
+      doc.text("AMOUNT", colPositions[1], y + 5.5);
+      doc.text("METHOD", colPositions[2], y + 5.5);
+      doc.text("REFERENCE", colPositions[3], y + 5.5);
+
+      y += 10;
+
+      // Payment rows
+      record.paymentHistory.forEach((payment, index) => {
+        if (y > pageHeight - 50) return;
+
+        // Alternate row background
+        if (index % 2 === 0) {
+          doc.setFillColor(250, 250, 252);
+          doc.rect(margin, y - 1, contentWidth, 7, "F");
+        }
+
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(colors.text.r, colors.text.g, colors.text.b);
+        doc.text(new Date(payment.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }), colPositions[0], y + 3);
+
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(colors.success.r, colors.success.g, colors.success.b);
+        doc.text(formatCurrency(payment.amount), colPositions[1], y + 3);
+
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(colors.text.r, colors.text.g, colors.text.b);
+        doc.text(payment.method || "-", colPositions[2], y + 3);
+
+        doc.setTextColor(colors.textMuted.r, colors.textMuted.g, colors.textMuted.b);
+        doc.text(payment.reference?.substring(0, 20) || "-", colPositions[3], y + 3);
+
+        y += 7;
+      });
+
+      // Bottom border
+      doc.setDrawColor(colors.border.r, colors.border.g, colors.border.b);
+      doc.line(margin, y, margin + contentWidth, y);
+    }
+
+    // ════════════════════════════════════════════════════════════
+    // BANK DETAILS (if available)
+    // ════════════════════════════════════════════════════════════
+
+    if (settings.bankAccount && record.balance > 0) {
+      y += 15;
+
+      doc.setFillColor(colors.bgLight.r, colors.bgLight.g, colors.bgLight.b);
+      doc.roundedRect(margin, y, contentWidth, 25, 2, 2, "F");
+
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(colors.text.r, colors.text.g, colors.text.b);
+      doc.text("PAYMENT DETAILS", margin + 4, y + 6);
+
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(colors.textLight.r, colors.textLight.g, colors.textLight.b);
+      const bankInfo = [
+        `Bank: ${settings.bankAccount.bankName}`,
+        `Account Name: ${settings.bankAccount.accountName}`,
+        `Account Number: ${settings.bankAccount.accountNumber}`,
+      ];
+      let bankY = y + 12;
+      bankInfo.forEach((info) => {
+        doc.text(info, margin + 4, bankY);
+        bankY += 4;
+      });
+    }
+
+    // ════════════════════════════════════════════════════════════
+    // FOOTER
+    // ════════════════════════════════════════════════════════════
+
+    const footerY = pageHeight - 20;
+
+    // Footer line
+    doc.setDrawColor(colors.border.r, colors.border.g, colors.border.b);
+    doc.setLineWidth(0.3);
+    doc.line(margin, footerY, pageWidth - margin, footerY);
+
+    // Footer text
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(colors.textMuted.r, colors.textMuted.g, colors.textMuted.b);
+    doc.text("This is a computer-generated statement.", margin, footerY + 5);
+    doc.text(`Generated on ${new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })}`, pageWidth - margin, footerY + 5, { align: "right" });
+
+    // School contact (if questions)
+    doc.text("For enquiries, please contact the school administration.", margin, footerY + 10);
+
+    doc.save(`Fee_Statement_${record.childName.replace(/\s+/g, "_")}_${record.feeType.replace(/\s+/g, "_")}.pdf`);
+
+    addNotification({
+      type: "success",
+      title: "Statement Downloaded",
+      message: `Fee statement for ${record.childName} has been downloaded.`,
+    });
   };
 
   const handlePrintStatement = (record: AdminFeeRecord) => {
-    console.log("Printing statement for:", record.id);
+    // Generate printable HTML for individual fee record
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Fee Statement - ${record.childName}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 30px; color: #1f2937; }
+          .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #3b82f6; }
+          .header h1 { font-size: 24px; color: #3b82f6; margin-bottom: 8px; }
+          .header p { font-size: 14px; color: #6b7280; }
+          .section { margin-bottom: 25px; }
+          .section-title { font-size: 14px; font-weight: 600; color: #3b82f6; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+          .info-grid { display: grid; grid-template-columns: 150px 1fr; gap: 8px; }
+          .info-label { color: #6b7280; font-size: 13px; }
+          .info-value { color: #1f2937; font-size: 13px; font-weight: 500; }
+          .summary-box { background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; }
+          .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+          .summary-row:last-child { border-bottom: none; font-weight: 700; font-size: 16px; }
+          .amount-paid { color: #22c55e; }
+          .amount-due { color: #ef4444; }
+          .status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+          .status.paid { background: #d1fae5; color: #065f46; }
+          .status.pending { background: #dbeafe; color: #1e40af; }
+          .status.partial { background: #fef3c7; color: #92400e; }
+          .status.overdue { background: #fee2e2; color: #991b1b; }
+          .footer { margin-top: 40px; text-align: center; font-size: 11px; color: #9ca3af; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+          @media print { body { padding: 15px; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Fee Statement</h1>
+          <p>${settings.schoolName || "School"}</p>
+          <p>Generated on ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Student Information</div>
+          <div class="info-grid">
+            <span class="info-label">Student Name:</span>
+            <span class="info-value">${record.childName}</span>
+            <span class="info-label">Class:</span>
+            <span class="info-value">${record.childClass}</span>
+            <span class="info-label">Parent Name:</span>
+            <span class="info-value">${record.parentName}</span>
+            <span class="info-label">Email:</span>
+            <span class="info-value">${record.parentEmail}</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Fee Details</div>
+          <div class="info-grid">
+            <span class="info-label">Fee Type:</span>
+            <span class="info-value">${record.feeType}</span>
+            <span class="info-label">Term:</span>
+            <span class="info-value">${record.term}</span>
+            <span class="info-label">Academic Year:</span>
+            <span class="info-value">${record.academicYear}</span>
+            <span class="info-label">Due Date:</span>
+            <span class="info-value">${new Date(record.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</span>
+            <span class="info-label">Status:</span>
+            <span class="info-value"><span class="status ${record.status}">${record.status.charAt(0).toUpperCase() + record.status.slice(1)}</span></span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Payment Summary</div>
+          <div class="summary-box">
+            <div class="summary-row">
+              <span>Total Amount</span>
+              <span>${money(record.amount)}</span>
+            </div>
+            <div class="summary-row">
+              <span>Amount Paid</span>
+              <span class="amount-paid">${money(record.paidAmount)}</span>
+            </div>
+            <div class="summary-row">
+              <span>Outstanding Balance</span>
+              <span class="${record.balance > 0 ? 'amount-due' : 'amount-paid'}">${money(record.balance)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>This is a computer-generated statement. For any queries, please contact the school administration.</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+      };
+    }
   };
 
   const handleRecordPayment = (record: AdminFeeRecord) => {
-    console.log("Recording payment for:", record.id);
+    setSelectedRecord(record);
+    setIsRecordPaymentModalOpen(true);
+  };
+
+  const handlePaymentRecorded = (paymentData: PaymentData) => {
+    if (!selectedRecord) return;
+
+    // Calculate total deduction including discount
+    const totalDeduction = paymentData.amount + (paymentData.discount || 0);
+    const newPaidAmount = selectedRecord.paidAmount + totalDeduction;
+    const newBalance = Math.max(0, selectedRecord.amount - newPaidAmount);
+    const newStatus = newBalance <= 0 ? "paid" : newPaidAmount > 0 ? "partial" : selectedRecord.status;
+
+    // Update in state
+    setFeeRecords((prev) =>
+      prev.map((record) =>
+        record.id === selectedRecord.id
+          ? {
+              ...record,
+              paidAmount: newPaidAmount,
+              balance: newBalance,
+              status: newStatus,
+              paymentHistory: [
+                ...record.paymentHistory,
+                {
+                  id: `payment-${Date.now()}`,
+                  amount: paymentData.amount,
+                  date: paymentData.paymentDate,
+                  method: paymentData.paymentMethod as "Bank Transfer" | "Card" | "Cash" | "USSD" | "POS",
+                  reference: paymentData.referenceNumber || `REF-${Date.now()}`,
+                  receiptNumber: `RCP-${Date.now().toString().slice(-8)}`,
+                  ...(paymentData.discount > 0 && {
+                    discount: paymentData.discount,
+                    discountType: paymentData.discountType,
+                  }),
+                },
+              ],
+            }
+          : record
+      )
+    );
+
+    const discountMessage = paymentData.discount > 0
+      ? ` (with ${money(paymentData.discount)} discount)`
+      : "";
+    addNotification({
+      type: "success",
+      title: "Payment Recorded",
+      message: `${money(paymentData.amount)} payment recorded for ${selectedRecord.childName}${discountMessage}.`,
+    });
+
+    setIsRecordPaymentModalOpen(false);
+    setSelectedRecord(null);
   };
 
   const handleSendMessage = (record: AdminFeeRecord) => {
@@ -882,10 +1384,11 @@ export default function AdminParentFeesPage() {
       key: "parent",
       label: "Parent",
       sortable: true,
+      className: "min-w-[140px]",
       render: (record) => (
-        <div className="flex items-center gap-2">
-          <div className="relative cursor-pointer group/avatar flex-shrink-0">
-            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]">
+        <Tooltip content={`${record.parentName}\n${record.parentEmail}`}>
+          <div className="flex items-center gap-2">
+            <div className="relative w-7 h-7 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
               <Image
                 src={`https://i.pravatar.cc/150?u=${record.parentId}`}
                 alt={record.parentName}
@@ -894,38 +1397,28 @@ export default function AdminParentFeesPage() {
                 unoptimized
               />
             </div>
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 midnight:from-cyan-400 midnight:via-purple-400 midnight:to-cyan-400 purple:from-pink-400 purple:via-purple-400 purple:to-pink-400 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
-          </div>
-          <div className="min-w-0">
             <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
               {record.parentName}
             </p>
-            <Tooltip content={record.parentEmail}>
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[140px]">
-                {record.parentEmail}
-              </p>
-            </Tooltip>
           </div>
-        </div>
+        </Tooltip>
       ),
     },
     {
       key: "child",
       label: "Student",
       sortable: true,
+      className: "min-w-[120px]",
       render: (record) => (
         <div className="flex items-center gap-2">
-          <div className="relative cursor-pointer group/avatar flex-shrink-0">
-            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-2 ring-white/80 dark:ring-gray-700/50 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 group-hover/avatar:z-[100]">
-              <Image
-                src={`https://i.pravatar.cc/150?u=${record.childId}`}
-                alt={record.childName}
-                fill
-                className="object-cover"
-                unoptimized
-              />
-            </div>
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
+          <div className="relative w-7 h-7 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+            <Image
+              src={`https://i.pravatar.cc/150?u=${record.childId}`}
+              alt={record.childName}
+              fill
+              className="object-cover"
+              unoptimized
+            />
           </div>
           <div className="min-w-0">
             <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
@@ -942,10 +1435,11 @@ export default function AdminParentFeesPage() {
       key: "feeType",
       label: "Fee Type",
       sortable: true,
+      className: "min-w-[90px]",
       render: (record) => (
         <div>
           <p className="font-medium text-gray-900 dark:text-white text-sm">{record.feeType}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
             {record.term} - {record.academicYear}
           </p>
         </div>
@@ -955,8 +1449,9 @@ export default function AdminParentFeesPage() {
       key: "amount",
       label: "Amount",
       sortable: true,
+      className: "min-w-[80px]",
       render: (record) => (
-        <span className="font-semibold text-gray-900 dark:text-white text-sm">
+        <span className="font-semibold text-gray-900 dark:text-white text-sm whitespace-nowrap">
           {money(record.amount)}
         </span>
       ),
@@ -965,8 +1460,9 @@ export default function AdminParentFeesPage() {
       key: "paidAmount",
       label: "Paid",
       sortable: true,
+      className: "min-w-[70px]",
       render: (record) => (
-        <span className="font-medium text-green-600 dark:text-green-400 text-sm">
+        <span className="font-medium text-green-600 dark:text-green-400 text-sm whitespace-nowrap">
           {money(record.paidAmount)}
         </span>
       ),
@@ -975,9 +1471,10 @@ export default function AdminParentFeesPage() {
       key: "balance",
       label: "Balance",
       sortable: true,
+      className: "min-w-[80px]",
       render: (record) => (
         <span
-          className={`font-semibold text-sm ${
+          className={`font-semibold text-sm whitespace-nowrap ${
             record.balance > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
           }`}
         >
@@ -989,8 +1486,9 @@ export default function AdminParentFeesPage() {
       key: "dueDate",
       label: "Due Date",
       sortable: true,
+      className: "min-w-[75px]",
       render: (record) => (
-        <span className="text-gray-700 dark:text-gray-300 text-sm">
+        <span className="text-gray-700 dark:text-gray-300 text-sm whitespace-nowrap">
           {new Date(record.dueDate).toLocaleDateString("en-GB", {
             day: "numeric",
             month: "short",
@@ -1003,19 +1501,20 @@ export default function AdminParentFeesPage() {
       key: "status",
       label: "Status",
       sortable: true,
+      className: "min-w-[80px]",
       render: (record) => getStatusBadge(record.status),
     },
     {
       key: "actions",
       label: "Actions",
-      className: "text-center",
+      className: "w-[140px] pr-3",
       render: (record) => (
-        <div className="flex items-center justify-center gap-1">
+        <div className="flex items-center justify-end gap-0.5">
           <Tooltip content="View Details">
             <button
               type="button"
               onClick={() => handleViewDetails(record)}
-              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
             >
               <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
             </button>
@@ -1025,9 +1524,9 @@ export default function AdminParentFeesPage() {
               <button
                 type="button"
                 onClick={() => handleViewReceipt(record)}
-                className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
+                className="p-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
               >
-                <FileCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </button>
             </Tooltip>
           )}
@@ -1035,29 +1534,26 @@ export default function AdminParentFeesPage() {
             <button
               type="button"
               onClick={() => handleSendReminder(record)}
-              className="relative p-1.5 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors cursor-pointer"
+              className="relative p-1 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors cursor-pointer"
             >
               <Send className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-              {reminderCounts[record.id] > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 flex items-center justify-center text-[9px] font-bold bg-orange-500 text-white rounded-full">
-                  {reminderCounts[record.id] > 9 ? "9+" : reminderCounts[record.id]}
-                </span>
-              )}
             </button>
           </Tooltip>
           {reminderCounts[record.id] > 0 && (
-            <Tooltip content="View Reminder History">
+            <Tooltip content={`View Reminder History (${reminderCounts[record.id]} sent)`}>
               <button
                 type="button"
                 onClick={() => handleViewReminderHistory(record)}
-                className="p-1.5 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors cursor-pointer"
+                className="relative p-1 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors cursor-pointer"
               >
-                <History className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <History className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <span className="absolute -top-0.5 -right-0.5 min-w-[12px] h-3 px-0.5 flex items-center justify-center text-[8px] font-bold bg-purple-500 text-white rounded-full">
+                  {reminderCounts[record.id] > 9 ? "9+" : reminderCounts[record.id]}
+                </span>
               </button>
             </Tooltip>
           )}
           <FeeActionsDropdown
-            recordId={record.id}
             hasPayments={record.paymentHistory.length > 0}
             onEdit={() => handleEditRecord(record)}
             onDelete={() => handleDeleteRecord(record)}
@@ -1230,7 +1726,8 @@ export default function AdminParentFeesPage() {
                       itemsPerPageOptions={[10, 15, 25, 50]}
                       enablePagination={true}
                       enableItemsPerPage={true}
-                      stickyColumnCount={2}
+                      stickyColumnCount={0}
+                      disableHorizontalScroll={true}
                     />
                   </div>
                 )}
@@ -1478,6 +1975,28 @@ export default function AdminParentFeesPage() {
             }}
           />
         )}
+
+        {/* Record Payment Modal */}
+        {selectedRecord && (
+          <RecordPaymentModal
+            isOpen={isRecordPaymentModalOpen}
+            onClose={() => {
+              setIsRecordPaymentModalOpen(false);
+              setSelectedRecord(null);
+            }}
+            feeRecordId={selectedRecord.id}
+            parentName={selectedRecord.parentName}
+            parentId={selectedRecord.parentId}
+            childName={selectedRecord.childName}
+            childId={selectedRecord.childId}
+            feeType={selectedRecord.feeType}
+            amount={selectedRecord.amount}
+            paidAmount={selectedRecord.paidAmount}
+            balance={selectedRecord.balance}
+            money={money}
+            onRecordPayment={handlePaymentRecorded}
+          />
+        )}
       </div>
     </MainLayout>
   );
@@ -1652,7 +2171,6 @@ function FeeRecordCard({
           </button>
         </Tooltip>
         <FeeActionsDropdown
-          recordId={record.id}
           hasPayments={record.paymentHistory.length > 0}
           onEdit={() => onEdit(record)}
           onDelete={() => onDelete(record)}

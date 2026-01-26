@@ -124,6 +124,74 @@ export interface TenantReportCardConfig {
   }[];
 }
 
+// Fee Statement Design Configuration
+export interface FeeStatementDesignConfig {
+  // Layout options
+  template: "classic" | "modern" | "minimal" | "professional";
+  pageSize: "A4" | "letter";
+
+  // Colors (hex format)
+  primaryColor: string; // Main accent color (headers, accents)
+  secondaryColor: string; // Secondary text/elements
+  successColor: string; // Paid amounts, success states
+  dangerColor: string; // Outstanding balances, overdue states
+  backgroundColor: string; // Page/section backgrounds
+  textColor: string; // Primary text color
+  mutedTextColor: string; // Secondary/muted text
+
+  // Header configuration
+  headerStyle: "accent-top" | "full-header" | "minimal";
+  showSchoolLogo: boolean;
+  showSchoolAddress: boolean;
+  showSchoolContact: boolean;
+
+  // Content configuration
+  showPaymentHistory: boolean;
+  showPaymentProgress: boolean;
+  showDueDate: boolean;
+  showStatusBadge: boolean;
+
+  // Footer configuration
+  showFooterDisclaimer: boolean;
+  footerDisclaimerText: string;
+  showGeneratedBy: boolean;
+
+  // Typography
+  fontFamily: string;
+}
+
+export interface TenantFeeStatementConfig {
+  tenantId: string;
+  branding: SchoolBranding;
+  design: FeeStatementDesignConfig;
+  currencyPrefix: string; // e.g., "NGN", "USD", "$"
+}
+
+// Default fee statement configuration
+export const DEFAULT_FEE_STATEMENT_CONFIG: FeeStatementDesignConfig = {
+  template: "modern",
+  pageSize: "A4",
+  primaryColor: "#2563eb", // Blue-600
+  secondaryColor: "#6b7280", // Gray-500
+  successColor: "#16a34a", // Green-600
+  dangerColor: "#dc2626", // Red-600
+  backgroundColor: "#f9fafb", // Gray-50
+  textColor: "#111827", // Gray-900
+  mutedTextColor: "#9ca3af", // Gray-400
+  headerStyle: "accent-top",
+  showSchoolLogo: true,
+  showSchoolAddress: false,
+  showSchoolContact: false,
+  showPaymentHistory: true,
+  showPaymentProgress: true,
+  showDueDate: true,
+  showStatusBadge: true,
+  showFooterDisclaimer: true,
+  footerDisclaimerText: "This is a computer-generated statement and does not require a signature.",
+  showGeneratedBy: true,
+  fontFamily: "helvetica",
+};
+
 export interface TenantSettings {
   tenantId: string;
   schoolName: string;
@@ -131,4 +199,5 @@ export interface TenantSettings {
   bankAccount: BankAccountSettings;
   transcriptConfig?: TenantTranscriptConfig;
   reportCardConfig?: TenantReportCardConfig;
+  feeStatementConfig?: TenantFeeStatementConfig;
 }

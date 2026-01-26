@@ -11,7 +11,6 @@ import {
   MessageSquare,
   History,
   CreditCard,
-  Copy,
   CalendarClock,
 } from "lucide-react";
 
@@ -24,8 +23,6 @@ interface FeeActionsDropdownProps {
   onViewHistory?: () => void;
   onRecordPayment?: () => void;
   onAutoReminder?: () => void;
-  onCopyId?: () => void;
-  recordId?: string;
   hasPayments?: boolean;
 }
 
@@ -38,13 +35,17 @@ export default function FeeActionsDropdown({
   onViewHistory,
   onRecordPayment,
   onAutoReminder,
-  onCopyId,
-  recordId,
   hasPayments = false,
 }: FeeActionsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({
+    position: "fixed",
+    visibility: "hidden",
+    top: 0,
+    left: 0,
+    zIndex: 99999,
+  });
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -53,43 +54,79 @@ export default function FeeActionsDropdown({
     setIsMounted(true);
   }, []);
 
-  // Calculate dropdown position when it opens
-  useEffect(() => {
-    if (isOpen && buttonRef.current && typeof window !== "undefined") {
-      const rect = buttonRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const viewportWidth = window.innerWidth;
-      const dropdownHeight = 320;
-      const dropdownWidth = 192;
-
-      // Determine if we should open upward
-      const spaceBelow = viewportHeight - rect.bottom;
-      const spaceAbove = rect.top;
-      let openUpward = false;
-
-      if (spaceBelow >= dropdownHeight) {
-        openUpward = false;
-      } else if (spaceAbove >= dropdownHeight) {
-        openUpward = true;
-      } else {
-        openUpward = spaceAbove > spaceBelow;
-      }
-
-      // Calculate left position (align to right edge of button)
-      let left = rect.right - dropdownWidth;
-      if (left < 8) left = 8;
-      if (left + dropdownWidth > viewportWidth - 8) {
-        left = viewportWidth - dropdownWidth - 8;
-      }
-
-      setDropdownStyle({
+  // Calculate dropdown position
+  const calculatePosition = (): React.CSSProperties => {
+    if (!buttonRef.current || typeof window === "undefined") {
+      return {
         position: "fixed",
-        top: openUpward ? "auto" : `${rect.bottom + 4}px`,
-        bottom: openUpward ? `${viewportHeight - rect.top + 4}px` : "auto",
-        left: `${left}px`,
+        visibility: "hidden",
+        top: 0,
+        left: 0,
         zIndex: 99999,
-      });
+      };
     }
+
+    const rect = buttonRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const dropdownHeight = 350; // Estimated max height
+    const dropdownWidth = 192;
+
+    // Determine if we should open upward
+    const spaceBelow = viewportHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const openUpward = spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
+
+    // Calculate vertical position
+    let top: number;
+    if (openUpward) {
+      // Position above the button - we need to estimate dropdown height
+      // For upward opening, place dropdown so its bottom is at button's top
+      top = rect.top - dropdownHeight;
+      if (top < 8) top = 8; // Don't go off screen
+    } else {
+      top = rect.bottom + 4;
+    }
+
+    // Calculate left position (align to right edge of button)
+    let left = rect.right - dropdownWidth;
+    if (left < 8) left = 8;
+    if (left + dropdownWidth > viewportWidth - 8) {
+      left = viewportWidth - dropdownWidth - 8;
+    }
+
+    return {
+      position: "fixed",
+      visibility: "visible",
+      top: `${top}px`,
+      left: `${left}px`,
+      zIndex: 99999,
+    };
+  };
+
+  const handleToggle = () => {
+    if (!isOpen) {
+      // Calculate position BEFORE opening and set both states
+      const newStyle = calculatePosition();
+      setDropdownStyle(newStyle);
+    }
+    setIsOpen(!isOpen);
+  };
+
+  // Close dropdown on scroll (since fixed position doesn't follow scroll)
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleScroll = () => {
+      setIsOpen(false);
+    };
+
+    // Listen on window and any scrollable parent
+    window.addEventListener("scroll", handleScroll, true);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll, true);
+    };
   }, [isOpen]);
 
   // Close dropdown when clicking outside
@@ -131,14 +168,6 @@ export default function FeeActionsDropdown({
     if (action) {
       action();
     }
-    setIsOpen(false);
-  };
-
-  const handleCopyId = () => {
-    if (recordId) {
-      navigator.clipboard.writeText(recordId);
-    }
-    onCopyId?.();
     setIsOpen(false);
   };
 
@@ -186,7 +215,7 @@ export default function FeeActionsDropdown({
     {
       id: "divider1",
       type: "divider",
-      show: (!!onEdit || !!onRecordPayment || !!onViewHistory || !!onMessage || !!onAutoReminder) && (!!onDownload || !!onPrint || !!recordId),
+      show: (!!onEdit || !!onRecordPayment || !!onViewHistory || !!onMessage || !!onAutoReminder) && (!!onDownload || !!onPrint),
     },
     {
       id: "download",
@@ -205,17 +234,9 @@ export default function FeeActionsDropdown({
       show: !!onPrint,
     },
     {
-      id: "copy",
-      label: "Copy Record ID",
-      icon: <Copy className="w-4 h-4" />,
-      onClick: handleCopyId,
-      color: "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700",
-      show: !!recordId,
-    },
-    {
       id: "divider2",
       type: "divider",
-      show: !!onDelete && (!!onDownload || !!onPrint || !!recordId || !!onEdit || !!onRecordPayment),
+      show: !!onDelete && (!!onDownload || !!onPrint || !!onEdit || !!onRecordPayment),
     },
     {
       id: "delete",
@@ -234,7 +255,7 @@ export default function FeeActionsDropdown({
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
       >
         <MoreHorizontal className="w-4 h-4 text-gray-500 dark:text-gray-400" />
@@ -246,7 +267,7 @@ export default function FeeActionsDropdown({
           <div
             ref={dropdownRef}
             style={dropdownStyle}
-            className="w-48 max-h-80 overflow-y-auto bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 animate-in fade-in zoom-in-95 duration-150"
+            className="w-48 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 animate-in fade-in zoom-in-95 duration-150"
           >
             {visibleItems.map((item) => {
               if (item.type === "divider") {
