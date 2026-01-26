@@ -46,6 +46,10 @@ export interface DataTableProps<T> {
    * - 2: first two columns sticky (default, matches existing behavior)
    */
   stickyColumnCount?: 0 | 1 | 2;
+  /**
+   * Disable horizontal scrolling - use when columns are designed to fit.
+   */
+  disableHorizontalScroll?: boolean;
 }
 
 export default function DataTable<T>({
@@ -67,6 +71,7 @@ export default function DataTable<T>({
   hasActiveFilters = false,
   totalDataCount,
   stickyColumnCount = 2,
+  disableHorizontalScroll = false,
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -267,8 +272,11 @@ export default function DataTable<T>({
       )}
 
       {/* Table Body Container */}
-      <div className="overflow-x-auto -mx-px smooth-scroll snap-x snap-mandatory pb-16" style={{ overflowY: 'visible', overflowX: 'auto' }}>
-        <table className="w-full border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900" style={{ overflow: 'visible' }}>
+      <div
+        className={`-mx-px smooth-scroll pb-16 ${disableHorizontalScroll ? 'overflow-x-hidden' : 'overflow-x-auto snap-x snap-mandatory'}`}
+        style={{ overflowY: 'visible', overflowX: disableHorizontalScroll ? 'hidden' : 'auto' }}
+      >
+        <table className={`w-full border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 ${disableHorizontalScroll ? 'table-fixed' : ''}`} style={{ overflow: 'visible' }}>
           {/* Table Header */}
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border-b border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">

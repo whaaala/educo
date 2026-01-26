@@ -17,6 +17,7 @@ import ViewToggle from "@/components/shared/ViewToggle";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
 import DeleteAllButton from "@/components/shared/DeleteAllButton";
 import BulkDeleteModal, { BulkDeleteItem } from "@/components/shared/BulkDeleteModal";
+import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import Tooltip from "@/components/shared/Tooltip";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { getAllParents, type AdminParent } from "@/lib/mockParents";
@@ -252,6 +253,9 @@ export default function AdminParentMessagesPage() {
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const [itemsToDelete, setItemsToDelete] = useState<BulkDeleteItem[]>([]);
 
+  // Single delete modal state
+  const [messageToDelete, setMessageToDelete] = useState<AdminMessage | null>(null);
+
   // Animation trigger
   const filterKey = `${JSON.stringify(filters)}-${sortOption}`;
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
@@ -354,6 +358,42 @@ export default function AdminParentMessagesPage() {
       items.forEach((item) => newIds.add(item.id));
       return newIds;
     });
+  };
+
+  // Single message delete handlers
+  const handleDeleteClick = (msg: AdminMessage) => {
+    setMessageToDelete(msg);
+  };
+
+  const handleConfirmDelete = () => {
+    if (messageToDelete) {
+      console.log("Deleting message:", messageToDelete.id);
+      // In a real app, you would call an API to delete the message here
+      setMessageToDelete(null);
+    }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setMessageToDelete(null);
+  };
+
+  // Card action handlers
+  const handleCardSelect = (id: string, checked: boolean) => {
+    const newSelectedIds = new Set(selectedIds);
+    if (checked) {
+      newSelectedIds.add(id);
+    } else {
+      newSelectedIds.delete(id);
+    }
+    setSelectedIds(newSelectedIds);
+  };
+
+  const handleCardView = (msg: AdminMessage) => {
+    router.push(`/parents/messages?messageId=${msg.id}&from=admin&subject=${encodeURIComponent(msg.subject)}`);
+  };
+
+  const handleCardReply = (msg: AdminMessage) => {
+    router.push(`/parents/messages?messageId=${msg.id}&from=admin&subject=${encodeURIComponent(msg.subject)}&action=reply`);
   };
 
   // Check if there are active filters
@@ -582,12 +622,12 @@ export default function AdminParentMessagesPage() {
     return null;
   };
 
-  // Table columns
+  // Table columns - Optimized for no horizontal scroll
   const columns: ColumnConfig<AdminMessage>[] = [
     {
       key: "checkbox",
       label: "",
-      className: "w-12",
+      className: "w-10 px-2",
       render: (msg) => (
         <input
           type="checkbox"
@@ -607,85 +647,46 @@ export default function AdminParentMessagesPage() {
     },
     {
       key: "type",
-      label: "Type",
-      className: "w-20",
+      label: "",
+      className: "w-8 px-1",
       render: (msg) => (
-        <div className="flex items-center justify-center">
-          {msg.type === "received" ? (
-            <Tooltip content="Received">
-              <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <Inbox className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              </div>
-            </Tooltip>
-          ) : (
-            <Tooltip content="Sent">
-              <div className="p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                <Send className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              </div>
-            </Tooltip>
-          )}
-        </div>
+        <Tooltip content={msg.type === "received" ? "Received" : "Sent"}>
+          <div className={`p-1 rounded-md ${msg.type === "received" ? "bg-blue-100 dark:bg-blue-900/30" : "bg-emerald-100 dark:bg-emerald-900/30"}`}>
+            {msg.type === "received" ? (
+              <Inbox className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+            ) : (
+              <Send className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            )}
+          </div>
+        </Tooltip>
       ),
     },
     {
-      key: "from",
-      label: "From",
+      key: "participants",
+      label: "From → To",
+      className: "w-[180px] min-w-[160px]",
       sortable: true,
       render: (msg) => (
         <div className="flex items-center gap-2">
+          {/* Sender Avatar */}
           <div className="relative cursor-pointer group/avatar flex-shrink-0">
-            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-2 ring-white/80 dark:ring-gray-700/50 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 group-hover/avatar:z-[100]">
+            <div className="relative w-7 h-7 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-1 ring-white/80 dark:ring-gray-700/50 shadow-sm transition-all duration-300 ease-out group-hover/avatar:scale-125 group-hover/avatar:shadow-lg group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 group-hover/avatar:z-[100]">
               {msg.senderAvatar ? (
-                <Image
-                  src={msg.senderAvatar}
-                  alt={msg.senderName}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
+                <Image src={msg.senderAvatar} alt={msg.senderName} fill className="object-cover" unoptimized />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-gray-500" />
+                  <User className="w-3.5 h-3.5 text-gray-500" />
                 </div>
               )}
             </div>
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
           </div>
-          <div className="min-w-0">
-            <p className={`text-sm truncate ${!msg.isRead && msg.type === "received" ? "font-semibold text-gray-900 dark:text-white" : "font-medium text-gray-700 dark:text-gray-300"}`}>
+          <div className="min-w-0 flex-1">
+            <p className={`text-sm truncate leading-tight ${!msg.isRead && msg.type === "received" ? "font-semibold text-gray-900 dark:text-white" : "font-medium text-gray-700 dark:text-gray-300"}`}>
               {msg.senderName}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{msg.senderRole}</p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "to",
-      label: "To",
-      sortable: true,
-      render: (msg) => (
-        <div className="flex items-center gap-2">
-          <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
-            {msg.recipientAvatar ? (
-              <Image
-                src={msg.recipientAvatar}
-                alt={msg.recipientName}
-                fill
-                className="object-cover"
-                unoptimized
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <User className="w-4 h-4 text-gray-500" />
-              </div>
-            )}
-          </div>
-          <div className="min-w-0">
-            <p className="font-medium text-gray-700 dark:text-gray-300 text-sm truncate">
-              {msg.recipientName}
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate leading-tight">
+              <span className="text-gray-400 dark:text-gray-500">→</span> {msg.recipientName}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{msg.recipientRole}</p>
           </div>
         </div>
       ),
@@ -693,74 +694,75 @@ export default function AdminParentMessagesPage() {
     {
       key: "subject",
       label: "Subject",
+      className: "w-auto",
       sortable: true,
       render: (msg) => (
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
+        <div className="min-w-0 max-w-[350px]">
+          <div className="flex items-center gap-1.5">
             {getPriorityIndicator(msg.priority)}
             {!msg.isRead && msg.type === "received" && (
-              <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
             )}
-            <p className={`text-sm truncate ${!msg.isRead && msg.type === "received" ? "font-semibold text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"}`}>
+            <p className={`text-sm truncate leading-tight ${!msg.isRead && msg.type === "received" ? "font-semibold text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"}`}>
               {msg.subject}
             </p>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{msg.preview}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5 leading-tight">{msg.preview}</p>
         </div>
       ),
     },
     {
       key: "category",
       label: "Category",
+      className: "w-[85px]",
+      hidden: { mobile: true },
       render: (msg) => getCategoryBadge(msg.category),
     },
     {
       key: "student",
       label: "Student",
+      className: "w-[90px]",
+      hidden: { mobile: true, tablet: true },
       render: (msg) => (
         msg.childName ? (
-          <span className="text-sm text-gray-700 dark:text-gray-300">{msg.childName}</span>
+          <span className="text-xs text-gray-700 dark:text-gray-300 truncate block">{msg.childName.split(" ")[0]} {msg.childName.split(" ").slice(1).map(n => n[0]).join("")}</span>
         ) : (
-          <span className="text-sm text-gray-400">-</span>
+          <span className="text-xs text-gray-400">—</span>
         )
       ),
     },
     {
-      key: "date",
-      label: "Date",
-      sortable: true,
-      render: (msg) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">{formatTime(msg.timestamp)}</span>
-      ),
-    },
-    {
       key: "actions",
-      label: "Actions",
-      className: "text-center",
+      label: "",
+      className: "w-[130px] text-right pr-2",
       render: (msg) => (
-        <div className="flex items-center justify-center gap-1">
-          <Tooltip content="View Message">
+        <div className="flex items-center justify-end gap-0.5">
+          <span className="text-xs text-gray-500 dark:text-gray-400 mr-1.5 whitespace-nowrap">{formatTime(msg.timestamp)}</span>
+          <Tooltip content="View">
             <button
               type="button"
-              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              onClick={() => router.push(`/parents/messages?messageId=${msg.id}&from=admin&subject=${encodeURIComponent(msg.subject)}`)}
+              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
             >
-              <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <Eye className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
             </button>
           </Tooltip>
           <Tooltip content="Reply">
             <button
               type="button"
-              className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
+              onClick={() => router.push(`/parents/messages?messageId=${msg.id}&from=admin&subject=${encodeURIComponent(msg.subject)}&action=reply`)}
+              className="p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
             >
-              <Reply className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <Reply className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
             </button>
           </Tooltip>
           <Tooltip content="Delete">
             <button
               type="button"
-              className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
+              onClick={() => handleDeleteClick(msg)}
+              className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
             >
-              <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+              <Trash2 className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
             </button>
           </Tooltip>
         </div>
@@ -925,7 +927,8 @@ export default function AdminParentMessagesPage() {
                       itemsPerPageOptions={[10, 15, 25, 50]}
                       enablePagination={true}
                       enableItemsPerPage={true}
-                      stickyColumnCount={2}
+                      stickyColumnCount={0}
+                      disableHorizontalScroll={true}
                     />
                   </div>
                 )}
@@ -989,7 +992,16 @@ export default function AdminParentMessagesPage() {
                             transitionDelay: `${index / 40}s`,
                           }}
                         >
-                          <MessageCard message={msg} formatTime={formatTime} getCategoryBadge={getCategoryBadge} />
+                          <MessageCard
+                            message={msg}
+                            formatTime={formatTime}
+                            getCategoryBadge={getCategoryBadge}
+                            isSelected={selectedIds.has(msg.id)}
+                            onSelect={handleCardSelect}
+                            onView={handleCardView}
+                            onReply={handleCardReply}
+                            onDelete={handleDeleteClick}
+                          />
                         </div>
                       ))}
                     </div>
@@ -1022,6 +1034,18 @@ export default function AdminParentMessagesPage() {
           warningMessage="This will permanently remove these messages. This action cannot be undone."
           confirmButtonText="Delete Messages"
         />
+
+        {/* Single Delete Confirmation Modal */}
+        <DeleteConfirmationModal
+          isOpen={!!messageToDelete}
+          onClose={handleCloseDeleteModal}
+          onConfirm={handleConfirmDelete}
+          title="Delete Message"
+          itemName={messageToDelete?.subject || ""}
+          itemId={messageToDelete?.id || ""}
+          itemInitials={messageToDelete?.senderName?.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() || ""}
+          warningMessage="This will permanently delete this message. This action cannot be undone."
+        />
       </div>
     </MainLayout>
   );
@@ -1032,17 +1056,29 @@ interface MessageCardProps {
   message: AdminMessage;
   formatTime: (timestamp: string) => string;
   getCategoryBadge: (category: AdminMessage["category"]) => React.ReactNode;
+  isSelected: boolean;
+  onSelect: (id: string, checked: boolean) => void;
+  onView: (message: AdminMessage) => void;
+  onReply: (message: AdminMessage) => void;
+  onDelete: (message: AdminMessage) => void;
 }
 
-function MessageCard({ message, formatTime, getCategoryBadge }: MessageCardProps) {
+function MessageCard({ message, formatTime, getCategoryBadge, isSelected, onSelect, onView, onReply, onDelete }: MessageCardProps) {
   const isReceived = message.type === "received";
 
   return (
-    <div className={`bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border ${!message.isRead && isReceived ? "border-blue-300 dark:border-blue-500/50" : "border-gray-200 dark:border-gray-700"} shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden`}>
+    <div className={`bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border ${isSelected ? "border-blue-500 dark:border-blue-400 ring-2 ring-blue-500/20" : !message.isRead && isReceived ? "border-blue-300 dark:border-blue-500/50" : "border-gray-200 dark:border-gray-700"} shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden`}>
       {/* Header */}
       <div className="p-4 border-b border-gray-100 dark:border-gray-700">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-2">
+            {/* Checkbox for bulk selection */}
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={(e) => onSelect(message.id, e.target.checked)}
+              className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+            />
             {isReceived ? (
               <div className="p-1 rounded-md bg-blue-100 dark:bg-blue-900/30">
                 <Inbox className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
@@ -1115,13 +1151,30 @@ function MessageCard({ message, formatTime, getCategoryBadge }: MessageCardProps
           </span>
           <div className="flex items-center gap-1">
             <Tooltip content="View">
-              <button className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+              <button
+                type="button"
+                onClick={() => onView(message)}
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              >
                 <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </button>
             </Tooltip>
             <Tooltip content="Reply">
-              <button className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer">
+              <button
+                type="button"
+                onClick={() => onReply(message)}
+                className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
+              >
                 <Reply className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              </button>
+            </Tooltip>
+            <Tooltip content="Delete">
+              <button
+                type="button"
+                onClick={() => onDelete(message)}
+                className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
               </button>
             </Tooltip>
           </div>

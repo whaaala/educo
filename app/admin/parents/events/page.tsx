@@ -85,6 +85,8 @@ interface AdminEvent {
 const generateAdminEvents = (): AdminEvent[] => {
   const parents = getAllParents();
   const events: AdminEvent[] = [];
+  // Use fixed base date to avoid hydration mismatch
+  const BASE_DATE = new Date("2026-01-25T12:00:00");
 
   const eventData = [
     { title: "Parents Teacher Meet", type: "meeting" as EventType, image: "https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&h=300&fit=crop", location: "School Auditorium", important: true },
@@ -104,26 +106,28 @@ const generateAdminEvents = (): AdminEvent[] => {
 
   eventData.forEach((data, idx) => {
     const daysOffset = idx * 7 - 14;
-    const eventDate = new Date();
+    const eventDate = new Date(BASE_DATE);
     eventDate.setDate(eventDate.getDate() + daysOffset);
 
     const status = daysOffset < -7 ? "completed" : daysOffset < 0 ? "ongoing" : "upcoming";
-    const audience = audiences[Math.floor(Math.random() * audiences.length)];
+    const audience = audiences[idx % audiences.length];
 
-    // Generate RSVPs
+    // Generate RSVPs - use deterministic values based on idx
     const rsvps: ParentRSVP[] = [];
-    const numRsvps = Math.floor(Math.random() * Math.min(parents.length, 10)) + 3;
-    const shuffledParents = [...parents].sort(() => Math.random() - 0.5).slice(0, numRsvps);
+    const numRsvps = 3 + (idx % Math.min(parents.length, 10));
+    const selectedParents = parents.slice(0, numRsvps);
 
-    shuffledParents.forEach((parent) => {
-      const rsvpStatus = Math.random() > 0.3 ? "confirmed" : Math.random() > 0.5 ? "declined" : "pending";
+    selectedParents.forEach((parent, pIdx) => {
+      const rsvpStatusOptions: ParentRSVP["status"][] = ["confirmed", "confirmed", "declined", "pending"];
+      const rsvpStatus = rsvpStatusOptions[(idx + pIdx) % rsvpStatusOptions.length];
+      const daysAgoResponded = ((idx + pIdx) % 7) + 1;
       rsvps.push({
         parentId: parent.id,
         parentName: `${parent.firstName} ${parent.lastName}`,
         parentAvatar: parent.profilePhoto,
         status: rsvpStatus,
         childrenAttending: rsvpStatus === "confirmed" ? parent.children.map((c) => c.fullName) : [],
-        respondedAt: rsvpStatus !== "pending" ? new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString() : undefined,
+        respondedAt: rsvpStatus !== "pending" ? new Date(BASE_DATE.getTime() - daysAgoResponded * 24 * 60 * 60 * 1000).toISOString() : undefined,
       });
     });
 
@@ -134,14 +138,17 @@ const generateAdminEvents = (): AdminEvent[] => {
     const rsvpDeadline = new Date(eventDate);
     rsvpDeadline.setDate(rsvpDeadline.getDate() - 3);
 
+    const startHour = 8 + (idx % 3);
+    const endHour = 2 + (idx % 3);
+
     events.push({
       id: `evt-${String(idx + 1).padStart(3, "0")}`,
       title: data.title,
       description: `Join us for ${data.title.toLowerCase()}. This is an important event for all students and parents. Please confirm your attendance by the deadline.`,
       date: eventDate.toISOString().split("T")[0],
       endDate: data.type === "examination" || data.type === "holiday" ? new Date(eventDate.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] : undefined,
-      time: data.type !== "holiday" ? `${8 + Math.floor(Math.random() * 3)}:00 AM - ${2 + Math.floor(Math.random() * 3)}:00 PM` : undefined,
-      duration: Math.random() > 0.5 ? "Full Day" : "Half Day",
+      time: data.type !== "holiday" ? `${startHour}:00 AM - ${endHour}:00 PM` : undefined,
+      duration: idx % 2 === 0 ? "Full Day" : "Half Day",
       image: data.image,
       type: data.type,
       status,

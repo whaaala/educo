@@ -101,6 +101,7 @@ const menuItems: MenuItem[] = [
           { id: "parent-list", label: "Parent List", icon: <Users className="w-4 h-4" />, href: "/admin/parents?view=list" },
           { id: "parent-fees", label: "Fee Records", icon: <CurrencyIcon className="w-4 h-4 text-inherit" />, href: "/admin/parents/fees" },
           { id: "parent-messages", label: "Messages", icon: <MessageSquare className="w-4 h-4" />, href: "/admin/parents/messages" },
+          { id: "parent-chat", label: "Chat", icon: <MessageSquare className="w-4 h-4" />, href: "/admin/parents/chat" },
           { id: "parent-events", label: "Events", icon: <Calendar className="w-4 h-4" />, href: "/admin/parents/events" },
         ]
       },
@@ -215,6 +216,12 @@ const parentMenuItems: MenuItem[] = [
     label: "Messages",
     icon: <MessageSquare className="w-5 h-5" />,
     href: "/parents/messages",
+  },
+  {
+    id: "parent-chat",
+    label: "Chat",
+    icon: <MessageSquare className="w-5 h-5" />,
+    href: "/parents/chat",
   },
   {
     id: "parent-meetings",

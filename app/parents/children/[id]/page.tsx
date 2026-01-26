@@ -408,18 +408,21 @@ export default function ChildDetailPage() {
     return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
   };
 
-  // Mock subject/lecture attendance data
+  // Mock subject/lecture attendance data - use deterministic values to avoid hydration mismatch
   const subjectAttendanceData = useMemo(() => {
     if (!academicData?.subjectPerformance) return [];
+    const BASE_DATE = new Date("2026-01-25T12:00:00").getTime();
+    const teachers = ["Mr. Adebayo", "Mrs. Okonkwo", "Dr. Nwosu", "Miss Adeleke", "Prof. Chukwu"];
 
-    return academicData.subjectPerformance.map((subject) => {
-      const totalClasses = Math.floor(Math.random() * 15) + 30; // 30-45 classes
+    return academicData.subjectPerformance.map((subject, index) => {
+      const totalClasses = 30 + (index % 15); // 30-44 classes based on index
       const baseRate = attendanceData?.rate || 90;
-      const variance = (Math.random() - 0.5) * 10; // ±5% variance per subject
+      const variance = ((index % 10) - 5); // -5 to +4 variance per subject
       const attendanceRate = Math.min(100, Math.max(70, baseRate + variance));
       const classesAttended = Math.round((attendanceRate / 100) * totalClasses);
-      const classesLate = Math.floor(Math.random() * 3);
+      const classesLate = index % 3;
       const classesMissed = totalClasses - classesAttended;
+      const daysAgo = (index % 7) + 1;
 
       return {
         subject: subject.subject,
@@ -428,13 +431,11 @@ export default function ChildDetailPage() {
         late: classesLate,
         missed: classesMissed,
         rate: Math.round((classesAttended / totalClasses) * 100),
-        lastClass: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
+        lastClass: new Date(BASE_DATE - daysAgo * 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
         }),
-        teacher: ["Mr. Adebayo", "Mrs. Okonkwo", "Dr. Nwosu", "Miss Adeleke", "Prof. Chukwu"][
-          Math.floor(Math.random() * 5)
-        ],
+        teacher: teachers[index % teachers.length],
       };
     });
   }, [academicData?.subjectPerformance, attendanceData?.rate]);

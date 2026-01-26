@@ -62,41 +62,42 @@ export default function ParentCard({
   const [chatAttachments, setChatAttachments] = useState<File[]>([]);
   const [emailAttachments, setEmailAttachments] = useState<File[]>([]);
 
-  // Mock chat history
+  // Mock chat history - use fixed base date to avoid hydration mismatch
+  const BASE_DATE = new Date("2026-01-25T12:00:00").getTime();
   const [chatHistory, setChatHistory] = useState([
     {
       id: "1",
       from: "parent" as const,
       message: "Hello, I wanted to ask about the upcoming parent-teacher meeting.",
-      timestamp: new Date(Date.now() - 3600000 * 24 * 2).toISOString(),
+      timestamp: new Date(BASE_DATE - 3600000 * 24 * 2).toISOString(),
       read: true,
     },
     {
       id: "2",
       from: "admin" as const,
       message: "Hi! The parent-teacher meeting is scheduled for next Friday at 2 PM. Would you like to book a slot?",
-      timestamp: new Date(Date.now() - 3600000 * 24 * 2 + 1800000).toISOString(),
+      timestamp: new Date(BASE_DATE - 3600000 * 24 * 2 + 1800000).toISOString(),
       read: true,
     },
     {
       id: "3",
       from: "parent" as const,
       message: "Yes, please. Can I get the 3 PM slot?",
-      timestamp: new Date(Date.now() - 3600000 * 24).toISOString(),
+      timestamp: new Date(BASE_DATE - 3600000 * 24).toISOString(),
       read: true,
     },
     {
       id: "4",
       from: "admin" as const,
       message: "Of course! I've booked the 3 PM slot for you. You'll receive a confirmation email shortly.",
-      timestamp: new Date(Date.now() - 3600000 * 23).toISOString(),
+      timestamp: new Date(BASE_DATE - 3600000 * 23).toISOString(),
       read: true,
     },
     {
       id: "5",
       from: "parent" as const,
       message: "Thank you so much! Also, could you please share the latest fee statement?",
-      timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
+      timestamp: new Date(BASE_DATE - 3600000 * 2).toISOString(),
       read: true,
     },
   ]);

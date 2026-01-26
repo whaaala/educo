@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -33,6 +33,9 @@ import {
   Sparkles,
   ArrowLeft,
   X,
+  XCircle,
+  FileText,
+  Image as ImageIcon,
 } from "lucide-react";
 import type { ParentMessage } from "@/types/parent";
 
@@ -276,18 +279,44 @@ export default function ParentMessagesPage() {
   const [starredMessages, setStarredMessages] = useState<Set<string>>(new Set());
   const [replyText, setReplyText] = useState("");
   const [showMobileMessage, setShowMobileMessage] = useState(false);
+  const [replyAttachments, setReplyAttachments] = useState<File[]>([]);
+  const [isSendingReply, setIsSendingReply] = useState(false);
+
+  // Ref for file input
+  const replyFileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-select message from URL query param
   useEffect(() => {
-    const selectedId = searchParams.get("selected");
+    const selectedId = searchParams.get("selected") || searchParams.get("messageId");
+    const action = searchParams.get("action");
+    const fromAdmin = searchParams.get("from") === "admin";
+
     if (selectedId && !selectedMessage) {
-      const message = MOCK_MESSAGES.find((msg) => msg.id === selectedId);
+      // Try to find the message by ID
+      let message = MOCK_MESSAGES.find((msg) => msg.id === selectedId);
+
+      // If coming from admin and message not found, select the first received message as fallback
+      // (In a real app, IDs would match - this is just for demo purposes)
+      if (!message && fromAdmin) {
+        message = MOCK_RECEIVED_MESSAGES[0];
+      }
+
       if (message) {
         setSelectedMessage(message);
         setShowMobileMessage(true);
         // If it's a sent message, switch to sent filter
         if (message.type === "sent") {
           setSelectedFilter("sent");
+        }
+        // If action is reply, focus the reply textarea and scroll to it
+        if (action === "reply" && message.type !== "sent") {
+          setTimeout(() => {
+            const replyTextarea = document.querySelector('textarea[placeholder="Type your reply..."]') as HTMLTextAreaElement;
+            if (replyTextarea) {
+              replyTextarea.scrollIntoView({ behavior: "smooth", block: "center" });
+              replyTextarea.focus();
+            }
+          }, 300);
         }
       }
     }
@@ -408,6 +437,64 @@ export default function ParentMessagesPage() {
     setReplyText((prev) => prev + emoji);
   };
 
+  // Handle file selection for reply
+  const handleReplyFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setReplyAttachments((prev) => [...prev, ...files]);
+    if (replyFileInputRef.current) replyFileInputRef.current.value = "";
+  };
+
+  // Remove attachment
+  const removeReplyAttachment = (index: number) => {
+    setReplyAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Get file icon based on type
+  const getFileIcon = (file: File) => {
+    if (file.type.startsWith("image/")) return <ImageIcon className="w-4 h-4" />;
+    if (file.type.includes("pdf")) return <FileText className="w-4 h-4 text-red-500" />;
+    if (file.type.includes("word") || file.type.includes("document")) return <FileText className="w-4 h-4 text-blue-500" />;
+    return <FileText className="w-4 h-4" />;
+  };
+
+  // Format file size
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  };
+
+  // Send reply
+  const handleSendReply = () => {
+    if (!replyText.trim() && replyAttachments.length === 0) return;
+    setIsSendingReply(true);
+    // Simulate sending
+    setTimeout(() => {
+      setIsSendingReply(false);
+      setReplyText("");
+      setReplyAttachments([]);
+      // Show success (in real app, would update messages list)
+      alert("Reply sent successfully!");
+    }, 1500);
+  };
+
+  // Get navigation context from URL params
+  const fromAdmin = searchParams.get("from") === "admin";
+  const messageSubject = searchParams.get("subject");
+
+  // Build breadcrumbs based on navigation context
+  const breadcrumbs = fromAdmin
+    ? [
+        { label: "Dashboard", href: "/admin" },
+        { label: "Parents", href: "/admin/parents" },
+        { label: "Messages", href: "/admin/parents/messages" },
+        ...(messageSubject ? [{ label: messageSubject.length > 30 ? messageSubject.slice(0, 30) + "..." : messageSubject }] : []),
+      ]
+    : [
+        { label: "Parent Portal", href: "/parents" },
+        { label: "Messages" },
+      ];
+
   return (
     <MainLayout>
       <PageLoader isLoading={isPageLoading} loadingText="Loading Messages" />
@@ -422,10 +509,7 @@ export default function ParentMessagesPage() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
             <PageHeader
               title="Messages"
-              breadcrumbs={[
-                { label: "Parent Portal", href: "/parents" },
-                { label: "Messages" },
-              ]}
+              breadcrumbs={breadcrumbs}
             />
             <Link href="/parents/messages/compose">
               <ActionButton
@@ -904,29 +988,100 @@ export default function ParentMessagesPage() {
                       <textarea
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey && (replyText.trim() || replyAttachments.length > 0)) {
+                            e.preventDefault();
+                            handleSendReply();
+                          }
+                        }}
                         placeholder="Type your reply..."
                         rows={3}
                         className="w-full px-4 py-3 bg-transparent text-gray-900 dark:text-white placeholder:text-gray-400 text-sm resize-none focus:outline-none"
                       />
+
+                      {/* Attachment Preview */}
+                      {replyAttachments.length > 0 && (
+                        <div className="px-4 pb-3">
+                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+                            Attachments ({replyAttachments.length})
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {replyAttachments.map((file, index) => (
+                              <div
+                                key={index}
+                                className="group relative flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600"
+                              >
+                                {file.type.startsWith("image/") ? (
+                                  <div className="w-8 h-8 rounded overflow-hidden bg-gray-200 dark:bg-gray-600 flex-shrink-0">
+                                    <img
+                                      src={URL.createObjectURL(file)}
+                                      alt={file.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="w-8 h-8 rounded bg-gray-100 dark:bg-gray-600 flex items-center justify-center flex-shrink-0">
+                                    {getFileIcon(file)}
+                                  </div>
+                                )}
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate max-w-[120px]">
+                                    {file.name}
+                                  </p>
+                                  <p className="text-[10px] text-gray-400">{formatFileSize(file.size)}</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => removeReplyAttachment(index)}
+                                  className="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 border-t border-gray-100 dark:border-gray-700/50">
                         <div className="flex items-center gap-1">
                           <EmojiPickerPopover
                             onEmojiSelect={handleEmojiSelect}
                             position="top"
                           />
-                          <button className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+                          <button
+                            type="button"
+                            onClick={() => replyFileInputRef.current?.click()}
+                            className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                          >
                             <Paperclip className="w-5 h-5" />
                           </button>
+                          <input
+                            ref={replyFileInputRef}
+                            type="file"
+                            multiple
+                            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                            onChange={handleReplyFileSelect}
+                            className="hidden"
+                          />
                         </div>
-                        <ActionButton
-                          variant="primary"
-                          color="blue"
-                          size="sm"
-                          icon={<Send className="w-full h-full" />}
-                          disabled={!replyText.trim()}
+                        <button
+                          onClick={handleSendReply}
+                          disabled={(!replyText.trim() && replyAttachments.length === 0) || isSendingReply}
+                          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-medium rounded-xl disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-blue-500/25 transition-all"
                         >
-                          Send Reply
-                        </ActionButton>
+                          {isSendingReply ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              <span>Sending...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Send className="w-4 h-4" />
+                              <span>Send Reply</span>
+                            </>
+                          )}
+                        </button>
                       </div>
                     </div>
                   </div>
