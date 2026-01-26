@@ -18,9 +18,24 @@ import LoadMoreButton from "@/components/shared/LoadMoreButton";
 import DeleteAllButton from "@/components/shared/DeleteAllButton";
 import BulkDeleteModal, { BulkDeleteItem } from "@/components/shared/BulkDeleteModal";
 import Tooltip from "@/components/shared/Tooltip";
+import FeeDetailModal, { FeeDetailRecord } from "@/components/shared/FeeDetailModal";
+import PaymentHistoryModal from "@/components/shared/PaymentHistoryModal";
+import SendFeeReminderModal from "@/components/shared/SendFeeReminderModal";
+import FeeActionsDropdown from "@/components/shared/FeeActionsDropdown";
+import FeeReminderHistoryModal from "@/components/shared/FeeReminderHistoryModal";
+import AutoReminderScheduleModal from "@/components/shared/AutoReminderScheduleModal";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
-import { getAllFeeRecords, getFeeStats, type AdminFeeRecord } from "@/lib/mockParents";
+import {
+  getAllFeeRecords,
+  getFeeStats,
+  addFeeReminder,
+  getReminderCountByFeeRecordId,
+  getRemindersByFeeRecordId,
+  type AdminFeeRecord,
+  type ReminderChannel,
+  type FeeReminderRecord,
+} from "@/lib/mockParents";
 import {
   Banknote,
   CheckCircle2,
@@ -28,13 +43,11 @@ import {
   AlertCircle,
   TrendingUp,
   FileCheck,
-  Mail,
-  Phone,
-  MoreHorizontal,
   Eye,
   Receipt,
   Send,
-  MessageSquare,
+  History,
+  CalendarClock,
 } from "lucide-react";
 
 export default function AdminParentFeesPage() {
@@ -144,6 +157,23 @@ export default function AdminParentFeesPage() {
   // Bulk delete modal state
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const [itemsToDelete, setItemsToDelete] = useState<BulkDeleteItem[]>([]);
+
+  // Action modals state
+  const [selectedRecord, setSelectedRecord] = useState<AdminFeeRecord | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isPaymentHistoryModalOpen, setIsPaymentHistoryModalOpen] = useState(false);
+  const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
+  const [isReminderHistoryModalOpen, setIsReminderHistoryModalOpen] = useState(false);
+  const [isAutoReminderModalOpen, setIsAutoReminderModalOpen] = useState(false);
+
+  // Reminder counts - initialize from mock data, will update when reminders are sent
+  const [reminderCounts, setReminderCounts] = useState<Record<string, number>>(() => {
+    const counts: Record<string, number> = {};
+    feeRecords.forEach(record => {
+      counts[record.id] = getReminderCountByFeeRecordId(record.id);
+    });
+    return counts;
+  });
 
   // Animation trigger for table rows
   const filterKey = `${JSON.stringify(filters)}-${sortOption}`;
@@ -294,6 +324,62 @@ export default function AdminParentFeesPage() {
 
   const handleAddFee = () => {
     router.push("/admin/parents/fees/add");
+  };
+
+  // Action handlers for fee records
+  const handleViewDetails = (record: AdminFeeRecord) => {
+    setSelectedRecord(record);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleViewReceipt = (record: AdminFeeRecord) => {
+    setSelectedRecord(record);
+    setIsPaymentHistoryModalOpen(true);
+  };
+
+  const handleSendReminder = (record: AdminFeeRecord) => {
+    setSelectedRecord(record);
+    setIsReminderModalOpen(true);
+  };
+
+  const handleViewReminderHistory = (record: AdminFeeRecord) => {
+    setSelectedRecord(record);
+    setIsReminderHistoryModalOpen(true);
+  };
+
+  const handleAutoReminder = (record: AdminFeeRecord) => {
+    setSelectedRecord(record);
+    setIsAutoReminderModalOpen(true);
+  };
+
+  const handleEditRecord = (record: AdminFeeRecord) => {
+    router.push(`/admin/parents/fees/${record.id}/edit`);
+  };
+
+  const handleDeleteRecord = (record: AdminFeeRecord) => {
+    const items: BulkDeleteItem[] = [{
+      id: record.id,
+      name: `${record.childName} - ${record.feeType}`,
+      subtitle: `${record.parentName} | ${money(record.balance)} outstanding`,
+    }];
+    setItemsToDelete(items);
+    setIsBulkDeleteModalOpen(true);
+  };
+
+  const handleDownloadStatement = (record: AdminFeeRecord) => {
+    console.log("Downloading statement for:", record.id);
+  };
+
+  const handlePrintStatement = (record: AdminFeeRecord) => {
+    console.log("Printing statement for:", record.id);
+  };
+
+  const handleRecordPayment = (record: AdminFeeRecord) => {
+    console.log("Recording payment for:", record.id);
+  };
+
+  const handleSendMessage = (record: AdminFeeRecord) => {
+    router.push(`/parents/chat/compose?parentId=${record.parentId}&from=admin`);
   };
 
   useEffect(() => {
@@ -633,6 +719,7 @@ export default function AdminParentFeesPage() {
           <Tooltip content="View Details">
             <button
               type="button"
+              onClick={() => handleViewDetails(record)}
               className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
             >
               <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
@@ -642,28 +729,50 @@ export default function AdminParentFeesPage() {
             <Tooltip content="View Receipt">
               <button
                 type="button"
+                onClick={() => handleViewReceipt(record)}
                 className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
               >
                 <FileCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </button>
             </Tooltip>
           )}
-          <Tooltip content="Send Reminder">
+          <Tooltip content={reminderCounts[record.id] > 0 ? `Send Reminder (${reminderCounts[record.id]} sent)` : "Send Reminder"}>
             <button
               type="button"
-              className="p-1.5 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors cursor-pointer"
+              onClick={() => handleSendReminder(record)}
+              className="relative p-1.5 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors cursor-pointer"
             >
               <Send className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+              {reminderCounts[record.id] > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 flex items-center justify-center text-[9px] font-bold bg-orange-500 text-white rounded-full">
+                  {reminderCounts[record.id] > 9 ? "9+" : reminderCounts[record.id]}
+                </span>
+              )}
             </button>
           </Tooltip>
-          <div className="relative group">
-            <button
-              type="button"
-              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-            >
-              <MoreHorizontal className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-            </button>
-          </div>
+          {reminderCounts[record.id] > 0 && (
+            <Tooltip content="View Reminder History">
+              <button
+                type="button"
+                onClick={() => handleViewReminderHistory(record)}
+                className="p-1.5 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors cursor-pointer"
+              >
+                <History className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              </button>
+            </Tooltip>
+          )}
+          <FeeActionsDropdown
+            recordId={record.id}
+            hasPayments={record.paymentHistory.length > 0}
+            onEdit={() => handleEditRecord(record)}
+            onDelete={() => handleDeleteRecord(record)}
+            onDownload={() => handleDownloadStatement(record)}
+            onPrint={() => handlePrintStatement(record)}
+            onMessage={() => handleSendMessage(record)}
+            onViewHistory={() => handleViewReceipt(record)}
+            onRecordPayment={() => handleRecordPayment(record)}
+            onAutoReminder={() => handleAutoReminder(record)}
+          />
         </div>
       ),
     },
@@ -725,7 +834,7 @@ export default function AdminParentFeesPage() {
             icon={TrendingUp}
             label="Collection Rate"
             value={`${stats.collectionRate}%`}
-            color={stats.collectionRate >= 80 ? "green" : stats.collectionRate >= 50 ? "yellow" : "red"}
+            color={stats.collectionRate >= 80 ? "green" : stats.collectionRate >= 50 ? "amber" : "red"}
             badge={stats.overdueCount > 0 ? `${stats.overdueCount} Overdue` : undefined}
           />
         </div>
@@ -890,7 +999,23 @@ export default function AdminParentFeesPage() {
                             transitionDelay: `${index / 40}s`,
                           }}
                         >
-                          <FeeRecordCard record={record} money={money} getStatusBadge={getStatusBadge} />
+                          <FeeRecordCard
+                            record={record}
+                            money={money}
+                            getStatusBadge={getStatusBadge}
+                            reminderCount={reminderCounts[record.id] || 0}
+                            onViewDetails={handleViewDetails}
+                            onViewReceipt={handleViewReceipt}
+                            onSendReminder={handleSendReminder}
+                            onViewReminderHistory={handleViewReminderHistory}
+                            onAutoReminder={handleAutoReminder}
+                            onEdit={handleEditRecord}
+                            onDelete={handleDeleteRecord}
+                            onDownload={handleDownloadStatement}
+                            onPrint={handlePrintStatement}
+                            onMessage={handleSendMessage}
+                            onRecordPayment={handleRecordPayment}
+                          />
                         </div>
                       ))}
                     </div>
@@ -911,6 +1036,7 @@ export default function AdminParentFeesPage() {
         </div>
 
         {/* Bulk Delete Modal */}
+        {/* Bulk Delete Modal */}
         <BulkDeleteModal
           isOpen={isBulkDeleteModalOpen}
           onClose={handleCloseBulkDeleteModal}
@@ -923,6 +1049,140 @@ export default function AdminParentFeesPage() {
           warningMessage="This will permanently remove these fee records. This action cannot be undone."
           confirmButtonText="Delete Records"
         />
+
+        {/* Fee Detail Modal */}
+        <FeeDetailModal
+          isOpen={isDetailModalOpen}
+          onClose={() => {
+            setIsDetailModalOpen(false);
+            setSelectedRecord(null);
+          }}
+          record={selectedRecord as FeeDetailRecord}
+          money={money}
+        />
+
+        {/* Payment History Modal */}
+        {selectedRecord && (
+          <PaymentHistoryModal
+            isOpen={isPaymentHistoryModalOpen}
+            onClose={() => {
+              setIsPaymentHistoryModalOpen(false);
+              setSelectedRecord(null);
+            }}
+            payments={selectedRecord.paymentHistory}
+            studentName={selectedRecord.childName}
+            studentId={selectedRecord.childId}
+            feeType={selectedRecord.feeType}
+            term={selectedRecord.term}
+            totalAmount={selectedRecord.amount}
+            paidAmount={selectedRecord.paidAmount}
+            money={money}
+          />
+        )}
+
+        {/* Send Reminder Modal */}
+        {selectedRecord && (
+          <SendFeeReminderModal
+            isOpen={isReminderModalOpen}
+            onClose={() => {
+              setIsReminderModalOpen(false);
+              setSelectedRecord(null);
+            }}
+            parentName={selectedRecord.parentName}
+            parentEmail={selectedRecord.parentEmail}
+            parentPhone={selectedRecord.parentPhone}
+            parentId={selectedRecord.parentId}
+            childName={selectedRecord.childName}
+            childId={selectedRecord.childId}
+            feeRecordId={selectedRecord.id}
+            feeType={selectedRecord.feeType}
+            amount={selectedRecord.amount}
+            balance={selectedRecord.balance}
+            dueDate={selectedRecord.dueDate}
+            money={money}
+            onSend={(data) => {
+              // Save the reminder to our mock data store
+              const reminderMessages: Record<string, { subject?: string; message: string; attachmentCount?: number }> = {};
+              data.channels.forEach(channel => {
+                const msg = data.messages[channel];
+                reminderMessages[channel] = {
+                  subject: msg?.subject,
+                  message: msg?.message || "",
+                  attachmentCount: msg?.attachments?.length || 0,
+                };
+              });
+
+              addFeeReminder({
+                feeRecordId: data.feeRecordId,
+                parentId: data.parentId,
+                parentName: selectedRecord.parentName,
+                parentEmail: selectedRecord.parentEmail,
+                parentPhone: selectedRecord.parentPhone,
+                childId: data.childId,
+                childName: selectedRecord.childName,
+                feeType: selectedRecord.feeType,
+                amount: selectedRecord.amount,
+                balance: selectedRecord.balance,
+                channels: data.channels as ReminderChannel[],
+                status: data.scheduleDate ? "scheduled" : "sent",
+                sentAt: new Date().toISOString(),
+                scheduledFor: data.scheduleDate && data.scheduleTime
+                  ? `${data.scheduleDate}T${data.scheduleTime}`
+                  : undefined,
+                messages: reminderMessages,
+                sentBy: "Admin",
+              });
+
+              // Update reminder counts by forcing a re-render
+              setReminderCounts(prev => ({
+                ...prev,
+                [selectedRecord.id]: (prev[selectedRecord.id] || 0) + 1,
+              }));
+            }}
+          />
+        )}
+
+        {/* Reminder History Modal */}
+        {selectedRecord && (
+          <FeeReminderHistoryModal
+            isOpen={isReminderHistoryModalOpen}
+            onClose={() => {
+              setIsReminderHistoryModalOpen(false);
+              setSelectedRecord(null);
+            }}
+            reminders={getRemindersByFeeRecordId(selectedRecord.id)}
+            feeType={selectedRecord.feeType}
+            childName={selectedRecord.childName}
+            balance={selectedRecord.balance}
+            money={money}
+          />
+        )}
+
+        {/* Auto Reminder Schedule Modal */}
+        {selectedRecord && (
+          <AutoReminderScheduleModal
+            isOpen={isAutoReminderModalOpen}
+            onClose={() => {
+              setIsAutoReminderModalOpen(false);
+              setSelectedRecord(null);
+            }}
+            parentName={selectedRecord.parentName}
+            parentEmail={selectedRecord.parentEmail}
+            parentPhone={selectedRecord.parentPhone}
+            parentId={selectedRecord.parentId}
+            childName={selectedRecord.childName}
+            childId={selectedRecord.childId}
+            feeRecordId={selectedRecord.id}
+            feeType={selectedRecord.feeType}
+            balance={selectedRecord.balance}
+            dueDate={selectedRecord.dueDate}
+            money={money}
+            onSave={(schedule) => {
+              console.log("Auto reminder schedule saved:", schedule);
+              // In a real app, you would save this to your backend
+            }}
+          />
+        )}
       </div>
     </MainLayout>
   );
@@ -933,9 +1193,37 @@ interface FeeRecordCardProps {
   record: AdminFeeRecord;
   money: (amount: number) => string;
   getStatusBadge: (status: AdminFeeRecord["status"]) => React.ReactNode;
+  reminderCount: number;
+  onViewDetails: (record: AdminFeeRecord) => void;
+  onViewReceipt: (record: AdminFeeRecord) => void;
+  onSendReminder: (record: AdminFeeRecord) => void;
+  onViewReminderHistory: (record: AdminFeeRecord) => void;
+  onAutoReminder: (record: AdminFeeRecord) => void;
+  onEdit: (record: AdminFeeRecord) => void;
+  onDelete: (record: AdminFeeRecord) => void;
+  onDownload: (record: AdminFeeRecord) => void;
+  onPrint: (record: AdminFeeRecord) => void;
+  onMessage: (record: AdminFeeRecord) => void;
+  onRecordPayment: (record: AdminFeeRecord) => void;
 }
 
-function FeeRecordCard({ record, money, getStatusBadge }: FeeRecordCardProps) {
+function FeeRecordCard({
+  record,
+  money,
+  getStatusBadge,
+  reminderCount,
+  onViewDetails,
+  onViewReceipt,
+  onSendReminder,
+  onViewReminderHistory,
+  onAutoReminder,
+  onEdit,
+  onDelete,
+  onDownload,
+  onPrint,
+  onMessage,
+  onRecordPayment,
+}: FeeRecordCardProps) {
   return (
     <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
       {/* Header */}
@@ -1023,30 +1311,63 @@ function FeeRecordCard({ record, money, getStatusBadge }: FeeRecordCardProps) {
 
       {/* Actions */}
       <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex items-center justify-end gap-2">
-        <Tooltip content="Send Reminder">
+        <Tooltip content={reminderCount > 0 ? `Send Reminder (${reminderCount} sent)` : "Send Reminder"}>
           <button
             type="button"
-            className="p-2 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors cursor-pointer"
+            onClick={() => onSendReminder(record)}
+            className="relative p-2 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors cursor-pointer"
           >
             <Send className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+            {reminderCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 flex items-center justify-center text-[10px] font-bold bg-orange-500 text-white rounded-full">
+                {reminderCount > 9 ? "9+" : reminderCount}
+              </span>
+            )}
           </button>
         </Tooltip>
-        <Tooltip content="View Receipt">
-          <button
-            type="button"
-            className="p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
-          >
-            <FileCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          </button>
-        </Tooltip>
+        {reminderCount > 0 && (
+          <Tooltip content="View Reminder History">
+            <button
+              type="button"
+              onClick={() => onViewReminderHistory(record)}
+              className="p-2 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors cursor-pointer"
+            >
+              <History className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            </button>
+          </Tooltip>
+        )}
+        {record.paymentHistory.length > 0 && (
+          <Tooltip content="View Receipt">
+            <button
+              type="button"
+              onClick={() => onViewReceipt(record)}
+              className="p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
+            >
+              <FileCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </button>
+          </Tooltip>
+        )}
         <Tooltip content="View Details">
           <button
             type="button"
+            onClick={() => onViewDetails(record)}
             className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
           >
             <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400" />
           </button>
         </Tooltip>
+        <FeeActionsDropdown
+          recordId={record.id}
+          hasPayments={record.paymentHistory.length > 0}
+          onEdit={() => onEdit(record)}
+          onDelete={() => onDelete(record)}
+          onDownload={() => onDownload(record)}
+          onPrint={() => onPrint(record)}
+          onMessage={() => onMessage(record)}
+          onViewHistory={() => onViewReceipt(record)}
+          onRecordPayment={() => onRecordPayment(record)}
+          onAutoReminder={() => onAutoReminder(record)}
+        />
       </div>
     </div>
   );

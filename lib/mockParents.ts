@@ -1411,3 +1411,229 @@ export function getUpcomingMeetingsByParentId(parentId: string): ParentTeacherMe
 export function getPastMeetingsByParentId(parentId: string): ParentTeacherMeeting[] {
   return MOCK_MEETINGS.filter((m) => m.parentId === parentId && m.status !== "upcoming");
 }
+
+// ===== FEE REMINDERS =====
+export type ReminderChannel = "email" | "sms" | "push" | "whatsapp";
+
+export interface ReminderAttachment {
+  id: string;
+  name: string;
+  type: "pdf" | "image" | "document";
+  size: string;
+  url?: string;
+}
+
+export interface FeeReminderRecord {
+  id: string;
+  feeRecordId: string;
+  parentId: string;
+  parentName: string;
+  parentEmail: string;
+  parentPhone: string;
+  childId: string;
+  childName: string;
+  feeType: string;
+  amount: number;
+  balance: number;
+  channels: ReminderChannel[];
+  status: "sent" | "scheduled" | "failed" | "delivered";
+  sentAt: string;
+  scheduledFor?: string;
+  deliveredAt?: string;
+  messages: Record<string, {
+    subject?: string;
+    message: string;
+    attachmentCount?: number;
+    attachments?: ReminderAttachment[];
+  }>;
+  sentBy: string;
+}
+
+// In-memory storage for reminders (in a real app, this would be in a database)
+const MOCK_FEE_REMINDERS: FeeReminderRecord[] = [];
+
+// Generate some initial mock reminders for existing fee records
+const generateInitialReminders = () => {
+  const sampleFees = MOCK_FEE_RECORDS.slice(0, 15).filter(f => f.status !== "paid");
+  const channelOptions: ReminderChannel[][] = [
+    ["email"],
+    ["sms"],
+    ["email", "sms"],
+    ["email", "whatsapp"],
+    ["push"],
+    ["email", "sms", "push"],
+  ];
+
+  sampleFees.forEach((fee, index) => {
+    const channels = channelOptions[index % channelOptions.length];
+    const daysAgo = Math.floor(Math.random() * 14) + 1;
+    const sentDate = new Date();
+    sentDate.setDate(sentDate.getDate() - daysAgo);
+
+    const messages: Record<string, { subject?: string; message: string; attachmentCount?: number; attachments?: ReminderAttachment[] }> = {};
+    channels.forEach(channel => {
+      if (channel === "email") {
+        const hasAttachment = Math.random() > 0.7;
+        const attachments: ReminderAttachment[] = hasAttachment ? [
+          {
+            id: `att-${index}-email-1`,
+            name: `Fee_Statement_${fee.childName.replace(/\s/g, "_")}.pdf`,
+            type: "pdf",
+            size: "125 KB",
+          },
+        ] : [];
+        messages[channel] = {
+          subject: `Payment Reminder: ${fee.feeType}`,
+          message: `Dear ${fee.parentName}, this is a reminder about the outstanding balance of ${fee.balance} for ${fee.childName}.`,
+          attachmentCount: attachments.length,
+          attachments,
+        };
+      } else if (channel === "sms") {
+        messages[channel] = {
+          message: `Hi ${fee.parentName.split(" ")[0]}, reminder: Outstanding balance for ${fee.childName}. Please pay soon.`,
+        };
+      } else if (channel === "push") {
+        messages[channel] = {
+          subject: `Payment Due`,
+          message: `${fee.feeType} for ${fee.childName} is due. Tap to view details.`,
+        };
+      } else if (channel === "whatsapp") {
+        const hasAttachment = Math.random() > 0.8;
+        const attachments: ReminderAttachment[] = hasAttachment ? [
+          {
+            id: `att-${index}-whatsapp-1`,
+            name: `Payment_Receipt_${fee.feeType.replace(/\s/g, "_")}.pdf`,
+            type: "pdf",
+            size: "89 KB",
+          },
+        ] : [];
+        messages[channel] = {
+          message: `Hello ${fee.parentName}, this is a reminder about your outstanding fee balance.`,
+          attachmentCount: attachments.length,
+          attachments,
+        };
+      }
+    });
+
+    MOCK_FEE_REMINDERS.push({
+      id: `reminder-${String(index + 1).padStart(4, "0")}`,
+      feeRecordId: fee.id,
+      parentId: fee.parentId,
+      parentName: fee.parentName,
+      parentEmail: fee.parentEmail,
+      parentPhone: fee.parentPhone,
+      childId: fee.childId,
+      childName: fee.childName,
+      feeType: fee.feeType,
+      amount: fee.amount,
+      balance: fee.balance,
+      channels,
+      status: Math.random() > 0.1 ? "delivered" : "sent",
+      sentAt: sentDate.toISOString(),
+      deliveredAt: Math.random() > 0.2 ? new Date(sentDate.getTime() + 60000).toISOString() : undefined,
+      messages,
+      sentBy: "Admin",
+    });
+
+    // Add a second reminder for some records
+    if (Math.random() > 0.6 && daysAgo > 5) {
+      const secondDaysAgo = daysAgo - Math.floor(Math.random() * 4) - 1;
+      const secondSentDate = new Date();
+      secondSentDate.setDate(secondSentDate.getDate() - secondDaysAgo);
+
+      MOCK_FEE_REMINDERS.push({
+        id: `reminder-${String(MOCK_FEE_REMINDERS.length + 1).padStart(4, "0")}`,
+        feeRecordId: fee.id,
+        parentId: fee.parentId,
+        parentName: fee.parentName,
+        parentEmail: fee.parentEmail,
+        parentPhone: fee.parentPhone,
+        childId: fee.childId,
+        childName: fee.childName,
+        feeType: fee.feeType,
+        amount: fee.amount,
+        balance: fee.balance,
+        channels: ["email"],
+        status: "delivered",
+        sentAt: secondSentDate.toISOString(),
+        deliveredAt: new Date(secondSentDate.getTime() + 30000).toISOString(),
+        messages: {
+          email: {
+            subject: `Follow-up: ${fee.feeType} Payment`,
+            message: `Dear ${fee.parentName}, this is a follow-up reminder about your outstanding balance.`,
+          },
+        },
+        sentBy: "Admin",
+      });
+    }
+  });
+};
+
+// Initialize mock reminders
+generateInitialReminders();
+
+// Get all reminders
+export function getAllFeeReminders(): FeeReminderRecord[] {
+  return MOCK_FEE_REMINDERS.sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
+}
+
+// Get reminders by fee record ID
+export function getRemindersByFeeRecordId(feeRecordId: string): FeeReminderRecord[] {
+  return MOCK_FEE_REMINDERS.filter(r => r.feeRecordId === feeRecordId)
+    .sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
+}
+
+// Get reminders by parent ID
+export function getRemindersByParentId(parentId: string): FeeReminderRecord[] {
+  return MOCK_FEE_REMINDERS.filter(r => r.parentId === parentId)
+    .sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
+}
+
+// Get reminder count by fee record ID
+export function getReminderCountByFeeRecordId(feeRecordId: string): number {
+  return MOCK_FEE_REMINDERS.filter(r => r.feeRecordId === feeRecordId).length;
+}
+
+// Get reminder count by parent ID
+export function getReminderCountByParentId(parentId: string): number {
+  return MOCK_FEE_REMINDERS.filter(r => r.parentId === parentId).length;
+}
+
+// Get reminder stats by parent ID
+export function getReminderStatsByParentId(parentId: string): {
+  total: number;
+  byChannel: Record<ReminderChannel, number>;
+  lastSentAt?: string;
+} {
+  const parentReminders = MOCK_FEE_REMINDERS.filter(r => r.parentId === parentId);
+  const byChannel: Record<ReminderChannel, number> = {
+    email: 0,
+    sms: 0,
+    push: 0,
+    whatsapp: 0,
+  };
+
+  parentReminders.forEach(reminder => {
+    reminder.channels.forEach(channel => {
+      byChannel[channel]++;
+    });
+  });
+
+  const sorted = parentReminders.sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
+
+  return {
+    total: parentReminders.length,
+    byChannel,
+    lastSentAt: sorted[0]?.sentAt,
+  };
+}
+
+// Add a new reminder
+export function addFeeReminder(reminder: Omit<FeeReminderRecord, "id">): FeeReminderRecord {
+  const newReminder: FeeReminderRecord = {
+    ...reminder,
+    id: `reminder-${String(MOCK_FEE_REMINDERS.length + 1).padStart(4, "0")}-${Date.now()}`,
+  };
+  MOCK_FEE_REMINDERS.push(newReminder);
+  return newReminder;
+}

@@ -23,6 +23,8 @@ import {
   getLibraryPaymentsByParentId,
   getLeaveRequestsByParentId,
   getMeetingsByParentId,
+  getRemindersByParentId,
+  getReminderStatsByParentId,
   type AdminParent,
   type AdminFeeRecord,
   type PaymentRecord,
@@ -31,6 +33,7 @@ import {
   type LibraryPayment,
   type LeaveRequest,
   type ParentTeacherMeeting,
+  type FeeReminderRecord,
 } from "@/lib/mockParents";
 import { getAllStudents } from "@/lib/mockStudents";
 import type { ParentChild } from "@/types/parent";
@@ -65,6 +68,7 @@ import {
   ChevronUp,
   Check,
   User,
+  Bell,
   Search,
   UserPlus,
   ChevronRight,
@@ -118,6 +122,7 @@ export default function AdminParentDetailPage() {
   const [libraryPayments, setLibraryPayments] = useState<LibraryPayment[]>([]);
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [mockMeetings, setMockMeetings] = useState<ParentTeacherMeeting[]>([]);
+  const [feeReminders, setFeeReminders] = useState<FeeReminderRecord[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   // Use the meetings context for shared state across portals
@@ -183,6 +188,7 @@ export default function AdminParentDetailPage() {
           setLibraryPayments(getLibraryPaymentsByParentId(parentId));
           setLeaveRequests(getLeaveRequestsByParentId(parentId));
           setMockMeetings(getMeetingsByParentId(parentId));
+          setFeeReminders(getRemindersByParentId(parentId));
         } else {
           router.push("/admin/parents");
         }
@@ -522,6 +528,10 @@ export default function AdminParentDetailPage() {
                     currencyCode={settings.currency || "NGN"}
                     schoolName={settings.schoolName || "School"}
                     parentName={`${parent.firstName} ${parent.lastName}`}
+                  />
+                  <ReminderHistorySection
+                    reminders={feeReminders}
+                    money={money}
                   />
                 </>
               )}
@@ -4536,6 +4546,463 @@ function LibraryPaymentModal({
               );
             })
           )}
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// ===== REMINDER HISTORY SECTION =====
+function ReminderHistorySection({
+  reminders,
+  money,
+}: {
+  reminders: FeeReminderRecord[];
+  money: (amount: number) => string;
+}) {
+  const [selectedReminder, setSelectedReminder] = useState<FeeReminderRecord | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const displayReminders = reminders.slice(0, 4);
+
+  // Calculate stats
+  const totalReminders = reminders.length;
+  const channelStats = {
+    email: reminders.filter(r => r.channels.includes("email")).length,
+    sms: reminders.filter(r => r.channels.includes("sms")).length,
+    push: reminders.filter(r => r.channels.includes("push")).length,
+    whatsapp: reminders.filter(r => r.channels.includes("whatsapp")).length,
+  };
+
+  const getChannelConfig = (channel: string) => {
+    const config: Record<string, { icon: React.ComponentType<{ className?: string }>; bg: string; lightBg: string; text: string; label: string }> = {
+      email: { icon: Mail, bg: "from-blue-500 to-indigo-600", lightBg: "bg-blue-50 dark:bg-blue-900/20", text: "text-blue-600 dark:text-blue-400", label: "Email" },
+      sms: { icon: Phone, bg: "from-green-500 to-emerald-600", lightBg: "bg-green-50 dark:bg-green-900/20", text: "text-green-600 dark:text-green-400", label: "SMS" },
+      push: { icon: Bell, bg: "from-purple-500 to-violet-600", lightBg: "bg-purple-50 dark:bg-purple-900/20", text: "text-purple-600 dark:text-purple-400", label: "Push" },
+      whatsapp: { icon: MessageSquare, bg: "from-emerald-500 to-teal-600", lightBg: "bg-emerald-50 dark:bg-emerald-900/20", text: "text-emerald-600 dark:text-emerald-400", label: "WhatsApp" },
+    };
+    return config[channel] || config.email;
+  };
+
+  const formatDate = (dateStr: string, includeTime: boolean = true) => {
+    const date = new Date(dateStr);
+    if (includeTime) {
+      return date.toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    return date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  return (
+    <>
+      <div className="bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+        {/* Header with gradient */}
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-amber-500/5 to-yellow-500/10 dark:from-orange-500/20 dark:via-amber-500/10 dark:to-yellow-500/20" />
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-orange-400/10 dark:bg-orange-400/20 rounded-full blur-2xl" />
+
+          <div className="relative px-5 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="absolute inset-0 bg-orange-500/20 rounded-xl blur-md" />
+                <div className="relative w-11 h-11 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-orange-500/25">
+                  <Send className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white">Fee Reminders</h3>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">{totalReminders} reminders sent</p>
+              </div>
+            </div>
+
+            {/* Channel badges */}
+            <div className="flex items-center gap-1">
+              {channelStats.email > 0 && (
+                <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                  <Mail className="w-3 h-3" />
+                  {channelStats.email}
+                </span>
+              )}
+              {channelStats.sms > 0 && (
+                <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-100 dark:bg-green-900/30 text-[10px] font-bold text-green-600 dark:text-green-400">
+                  <Phone className="w-3 h-3" />
+                  {channelStats.sms}
+                </span>
+              )}
+              {channelStats.whatsapp > 0 && (
+                <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                  <MessageSquare className="w-3 h-3" />
+                  {channelStats.whatsapp}
+                </span>
+              )}
+              {channelStats.push > 0 && (
+                <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-[10px] font-bold text-purple-600 dark:text-purple-400">
+                  <Bell className="w-3 h-3" />
+                  {channelStats.push}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Reminders List */}
+        <div className="p-4">
+          {displayReminders.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
+                <Send className="w-7 h-7 text-gray-400" />
+              </div>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No reminders sent</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Send a reminder from the Fees page</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {displayReminders.map((reminder) => (
+                <div
+                  key={reminder.id}
+                  onClick={() => {
+                    setSelectedReminder(reminder);
+                    setIsModalOpen(true);
+                  }}
+                  className="group/item flex items-center gap-3 p-3 rounded-xl bg-gray-50/80 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 border border-transparent hover:border-orange-200 dark:hover:border-orange-500/30 transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5"
+                >
+                  {/* Channel icons */}
+                  <div className="flex -space-x-1">
+                    {reminder.channels.slice(0, 2).map((channel, idx) => {
+                      const config = getChannelConfig(channel);
+                      const ChannelIcon = config.icon;
+                      return (
+                        <div
+                          key={channel}
+                          className={`w-8 h-8 rounded-lg ${config.lightBg} flex items-center justify-center border-2 border-white dark:border-gray-800`}
+                          style={{ zIndex: 2 - idx }}
+                        >
+                          <ChannelIcon className={`w-4 h-4 ${config.text}`} />
+                        </div>
+                      );
+                    })}
+                    {reminder.channels.length > 2 && (
+                      <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center border-2 border-white dark:border-gray-800">
+                        <span className="text-[10px] font-bold text-gray-600 dark:text-gray-400">+{reminder.channels.length - 2}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-gray-900 dark:text-white truncate group-hover/item:text-orange-600 dark:group-hover/item:text-orange-400 transition-colors">
+                      {reminder.feeType}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[10px] text-gray-500 dark:text-gray-400">{reminder.childName}</span>
+                      <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+                      <span className="text-[10px] text-gray-500 dark:text-gray-400">{money(reminder.balance)}</span>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="text-[10px] font-medium text-gray-600 dark:text-gray-400">{formatDate(reminder.sentAt)}</p>
+                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold mt-1 ${
+                      reminder.status === "delivered"
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                        : reminder.status === "sent"
+                        ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                        : reminder.status === "scheduled"
+                        ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
+                        : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                    }`}>
+                      {reminder.status === "delivered" && <CheckCircle2 className="w-2.5 h-2.5" />}
+                      {reminder.status === "sent" && <Send className="w-2.5 h-2.5" />}
+                      {reminder.status === "scheduled" && <Clock className="w-2.5 h-2.5" />}
+                      {reminder.status === "failed" && <AlertCircle className="w-2.5 h-2.5" />}
+                      {reminder.status.charAt(0).toUpperCase() + reminder.status.slice(1)}
+                    </div>
+                  </div>
+
+                  <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {reminders.length > 4 && (
+            <button
+              onClick={() => {
+                setSelectedReminder(null);
+                setIsModalOpen(true);
+              }}
+              className="w-full mt-4 py-2.5 text-xs font-semibold text-white bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30"
+            >
+              <Eye className="w-4 h-4" />
+              View All {reminders.length} Reminders
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Reminder Detail Modal */}
+      <ReminderDetailModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedReminder(null);
+        }}
+        reminders={reminders}
+        selectedReminder={selectedReminder}
+        money={money}
+        getChannelConfig={getChannelConfig}
+        formatDate={formatDate}
+      />
+    </>
+  );
+}
+
+// ===== REMINDER DETAIL MODAL =====
+function ReminderDetailModal({
+  isOpen,
+  onClose,
+  reminders,
+  selectedReminder,
+  money,
+  getChannelConfig,
+  formatDate,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  reminders: FeeReminderRecord[];
+  selectedReminder: FeeReminderRecord | null;
+  money: (amount: number) => string;
+  getChannelConfig: (channel: string) => { icon: React.ComponentType<{ className?: string }>; bg: string; lightBg: string; text: string; label: string };
+  formatDate: (dateStr: string) => string;
+}) {
+  const [filter, setFilter] = useState<"all" | "email" | "sms" | "push" | "whatsapp">("all");
+
+  const filteredReminders = useMemo(() => {
+    if (filter === "all") return reminders;
+    return reminders.filter(r => r.channels.includes(filter));
+  }, [reminders, filter]);
+
+  if (!isOpen) return null;
+
+  // If a specific reminder is selected, show its details
+  if (selectedReminder) {
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Reminder Details"
+        icon={<Send className="w-5 h-5" />}
+        maxWidth="lg"
+      >
+        <div className="space-y-5">
+          {/* Header */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 p-6">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="relative">
+              <div className="flex items-center gap-3 mb-3">
+                {selectedReminder.channels.map((channel) => {
+                  const config = getChannelConfig(channel);
+                  const ChannelIcon = config.icon;
+                  return (
+                    <span key={channel} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/20 text-white text-xs font-semibold">
+                      <ChannelIcon className="w-3.5 h-3.5" />
+                      {config.label}
+                    </span>
+                  );
+                })}
+              </div>
+              <h3 className="text-lg font-bold text-white">{selectedReminder.feeType}</h3>
+              <p className="text-white/80 text-sm mt-1">{selectedReminder.childName}</p>
+              <p className="text-2xl font-bold text-white mt-2">{money(selectedReminder.balance)}</p>
+            </div>
+          </div>
+
+          {/* Status */}
+          <div className={`p-4 rounded-xl ${
+            selectedReminder.status === "delivered"
+              ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-500/30"
+              : selectedReminder.status === "sent"
+              ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-500/30"
+              : selectedReminder.status === "scheduled"
+              ? "bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-500/30"
+              : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30"
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                selectedReminder.status === "delivered"
+                  ? "bg-green-100 dark:bg-green-500/30"
+                  : selectedReminder.status === "sent"
+                  ? "bg-blue-100 dark:bg-blue-500/30"
+                  : selectedReminder.status === "scheduled"
+                  ? "bg-amber-100 dark:bg-amber-500/30"
+                  : "bg-red-100 dark:bg-red-500/30"
+              }`}>
+                {selectedReminder.status === "delivered" && <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />}
+                {selectedReminder.status === "sent" && <Send className="w-6 h-6 text-blue-600 dark:text-blue-400" />}
+                {selectedReminder.status === "scheduled" && <Clock className="w-6 h-6 text-amber-600 dark:text-amber-400" />}
+                {selectedReminder.status === "failed" && <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />}
+              </div>
+              <div>
+                <p className={`text-sm font-bold ${
+                  selectedReminder.status === "delivered" ? "text-green-700 dark:text-green-300" :
+                  selectedReminder.status === "sent" ? "text-blue-700 dark:text-blue-300" :
+                  selectedReminder.status === "scheduled" ? "text-amber-700 dark:text-amber-300" :
+                  "text-red-700 dark:text-red-300"
+                }`}>
+                  {selectedReminder.status.charAt(0).toUpperCase() + selectedReminder.status.slice(1)}
+                </p>
+                <p className={`text-xs ${
+                  selectedReminder.status === "delivered" ? "text-green-600 dark:text-green-400" :
+                  selectedReminder.status === "sent" ? "text-blue-600 dark:text-blue-400" :
+                  selectedReminder.status === "scheduled" ? "text-amber-600 dark:text-amber-400" :
+                  "text-red-600 dark:text-red-400"
+                }`}>
+                  Sent on {new Date(selectedReminder.sentAt).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Message Content */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Message Content</h4>
+            {selectedReminder.channels.map((channel) => {
+              const config = getChannelConfig(channel);
+              const ChannelIcon = config.icon;
+              const msg = selectedReminder.messages[channel];
+              if (!msg) return null;
+
+              return (
+                <div key={channel} className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-6 h-6 rounded-lg ${config.lightBg} flex items-center justify-center`}>
+                      <ChannelIcon className={`w-3.5 h-3.5 ${config.text}`} />
+                    </div>
+                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{config.label}</span>
+                    {msg.attachmentCount && msg.attachmentCount > 0 && (
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-[10px] font-medium text-gray-600 dark:text-gray-400">
+                        <Paperclip className="w-3 h-3" />
+                        {msg.attachmentCount} attachment{msg.attachmentCount > 1 ? "s" : ""}
+                      </span>
+                    )}
+                  </div>
+                  {msg.subject && (
+                    <p className="text-xs font-semibold text-gray-900 dark:text-white mb-1">{msg.subject}</p>
+                  )}
+                  <p className="text-xs text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{msg.message}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Sent By */}
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
+            <span className="text-xs text-gray-500 dark:text-gray-400">Sent by</span>
+            <span className="text-xs font-semibold text-gray-900 dark:text-white">{selectedReminder.sentBy}</span>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
+  // Show all reminders list
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="All Fee Reminders"
+      subtitle={`${reminders.length} reminders sent`}
+      icon={<Send className="w-5 h-5" />}
+      maxWidth="2xl"
+    >
+      <div className="space-y-4">
+        {/* Filter tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2">
+          {(["all", "email", "sms", "whatsapp", "push"] as const).map((f) => {
+            const count = f === "all" ? reminders.length : reminders.filter(r => r.channels.includes(f)).length;
+            if (count === 0 && f !== "all") return null;
+            const config = f !== "all" ? getChannelConfig(f) : null;
+            const Icon = config?.icon;
+
+            return (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap ${
+                  filter === f
+                    ? "bg-orange-500 text-white"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                }`}
+              >
+                {Icon && <Icon className="w-3.5 h-3.5" />}
+                {f === "all" ? "All" : config?.label}
+                <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${
+                  filter === f ? "bg-white/20" : "bg-gray-200 dark:bg-gray-700"
+                }`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Reminders list */}
+        <div className="space-y-2 max-h-[400px] overflow-y-auto">
+          {filteredReminders.map((reminder) => (
+            <div
+              key={reminder.id}
+              className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <div className="flex -space-x-1">
+                {reminder.channels.slice(0, 2).map((channel, idx) => {
+                  const config = getChannelConfig(channel);
+                  const ChannelIcon = config.icon;
+                  return (
+                    <div
+                      key={channel}
+                      className={`w-8 h-8 rounded-lg ${config.lightBg} flex items-center justify-center border-2 border-white dark:border-gray-800`}
+                      style={{ zIndex: 2 - idx }}
+                    >
+                      <ChannelIcon className={`w-4 h-4 ${config.text}`} />
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{reminder.feeType}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{reminder.childName} • {money(reminder.balance)}</p>
+              </div>
+
+              <div className="text-right">
+                <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(reminder.sentAt)}</p>
+                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 ${
+                  reminder.status === "delivered"
+                    ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                    : reminder.status === "sent"
+                    ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                    : "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
+                }`}>
+                  {reminder.status === "delivered" && <CheckCircle2 className="w-2.5 h-2.5" />}
+                  {reminder.status === "sent" && <Send className="w-2.5 h-2.5" />}
+                  {reminder.status.charAt(0).toUpperCase() + reminder.status.slice(1)}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </Modal>

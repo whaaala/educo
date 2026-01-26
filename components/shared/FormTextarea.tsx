@@ -1,8 +1,17 @@
 "use client";
 
-import { ReactNode, useRef, useEffect } from "react";
+import { ReactNode, useRef, useEffect, useState } from "react";
 import ErrorMessage from "./ErrorMessage";
 import Tooltip from "./Tooltip";
+import { Paperclip, X, FileText, Image as ImageIcon, File, FileSpreadsheet, FileVideo, FileAudio } from "lucide-react";
+
+export interface AttachmentFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  file?: File;
+}
 
 interface FormTextareaProps {
   label: string;
@@ -16,6 +25,17 @@ interface FormTextareaProps {
   optional?: boolean;
   required?: boolean;
   error?: string;
+  // Attachment props
+  showAttachments?: boolean;
+  attachments?: AttachmentFile[];
+  onAttachmentsChange?: (attachments: AttachmentFile[]) => void;
+  maxAttachments?: number;
+  maxFileSize?: number; // in MB
+  acceptedFileTypes?: string;
+  // Character count props
+  showCharacterCount?: boolean;
+  maxLength?: number;
+  characterCountPosition?: "top" | "bottom";
 }
 
 export default function FormTextarea({
@@ -30,8 +50,19 @@ export default function FormTextarea({
   optional = false,
   required = false,
   error,
+  showAttachments = false,
+  attachments = [],
+  onAttachmentsChange,
+  maxAttachments = 5,
+  maxFileSize = 10, // 10MB default
+  acceptedFileTypes = "image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt",
+  showCharacterCount = false,
+  maxLength,
+  characterCountPosition = "top",
 }: FormTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Calculate minimum height based on rows (approximately 2.5rem per row including padding)
   const minHeight = rows * 40; // 40px per row (2.5rem base + padding)
@@ -52,21 +83,118 @@ export default function FormTextarea({
     onChange(e.target.value);
   };
 
+  const handleFileSelect = (files: FileList | null) => {
+    if (!files || !onAttachmentsChange) return;
+
+    const newAttachments: AttachmentFile[] = [];
+    const currentCount = attachments.length;
+
+    Array.from(files).forEach((file) => {
+      // Check max attachments
+      if (currentCount + newAttachments.length >= maxAttachments) return;
+
+      // Check file size
+      if (file.size > maxFileSize * 1024 * 1024) {
+        console.warn(`File ${file.name} exceeds ${maxFileSize}MB limit`);
+        return;
+      }
+
+      newAttachments.push({
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        file,
+      });
+    });
+
+    if (newAttachments.length > 0) {
+      onAttachmentsChange([...attachments, ...newAttachments]);
+    }
+  };
+
+  const handleRemoveAttachment = (id: string) => {
+    if (onAttachmentsChange) {
+      onAttachmentsChange(attachments.filter((a) => a.id !== id));
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (showAttachments) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (showAttachments) {
+      handleFileSelect(e.dataTransfer.files);
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  const getFileIcon = (type: string) => {
+    if (type.startsWith("image/")) return <ImageIcon className="w-4 h-4" />;
+    if (type.includes("pdf")) return <FileText className="w-4 h-4" />;
+    if (type.includes("spreadsheet") || type.includes("excel") || type.includes("csv")) return <FileSpreadsheet className="w-4 h-4" />;
+    if (type.startsWith("video/")) return <FileVideo className="w-4 h-4" />;
+    if (type.startsWith("audio/")) return <FileAudio className="w-4 h-4" />;
+    return <File className="w-4 h-4" />;
+  };
+
+  const isOverLimit = maxLength && value.length > maxLength;
+
+  const characterCountDisplay = showCharacterCount && (
+    <span className={`text-xs ${isOverLimit ? "text-red-500 font-semibold" : "text-gray-400"}`}>
+      {value.length}{maxLength ? `/${maxLength}` : ""}
+    </span>
+  );
+
   return (
     <div className="group">
-      <Tooltip content={label}>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5 cursor-help">
-          <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
-            <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
-          </div>
-          <span>{label}</span>
-          {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
-          {optional && !required && (
-            <span className="text-xs text-gray-400 dark:text-gray-500">(Optional)</span>
-          )}
-        </label>
-      </Tooltip>
-      <div className="relative">
+      <div className="flex items-center justify-between mb-2">
+        <Tooltip content={label}>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 flex items-center gap-1.5 cursor-help">
+            <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
+              <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
+            </div>
+            <span>{label}</span>
+            {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
+            {optional && !required && (
+              <span className="text-xs text-gray-400 dark:text-gray-500">(Optional)</span>
+            )}
+          </label>
+        </Tooltip>
+        {showCharacterCount && characterCountPosition === "top" && characterCountDisplay}
+      </div>
+      <div
+        className={`relative rounded-xl border transition-all duration-200 ${
+          isDragging
+            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+            : error
+            ? "border-red-500 dark:border-red-400"
+            : isOverLimit
+            ? "border-red-500 dark:border-red-400"
+            : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500"
+        } bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
         <textarea
           ref={textareaRef}
           value={value}
@@ -74,9 +202,85 @@ export default function FormTextarea({
           placeholder={placeholder}
           rows={rows}
           style={{ minHeight: `${minHeight}px` }}
-          className={`w-full px-4 py-2.5 rounded-xl border ${error ? "border-red-500 dark:border-red-400" : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"} bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 placeholder:font-normal focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 resize-y overflow-hidden`}
+          className="w-full px-4 py-2.5 bg-transparent text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 placeholder:font-normal focus:ring-0 outline-none resize-y overflow-hidden border-0"
         />
+
+        {/* Attachments List */}
+        {showAttachments && attachments.length > 0 && (
+          <div className="px-4 pb-3 flex flex-wrap gap-2">
+            {attachments.map((attachment) => (
+              <div
+                key={attachment.id}
+                className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm group/attachment"
+              >
+                <span className="text-gray-500 dark:text-gray-400">
+                  {getFileIcon(attachment.type)}
+                </span>
+                <span className="text-gray-700 dark:text-gray-300 max-w-[150px] truncate">
+                  {attachment.name}
+                </span>
+                <span className="text-xs text-gray-400">
+                  ({formatFileSize(attachment.size)})
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveAttachment(attachment.id)}
+                  className="p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors opacity-60 group-hover/attachment:opacity-100 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Toolbar */}
+        {showAttachments && (
+          <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept={acceptedFileTypes}
+                onChange={(e) => handleFileSelect(e.target.files)}
+                className="hidden"
+              />
+              <Tooltip content={`Attach files (max ${maxAttachments}, ${maxFileSize}MB each)`}>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={attachments.length >= maxAttachments}
+                  className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                    attachments.length >= maxAttachments
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                  }`}
+                >
+                  <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                </button>
+              </Tooltip>
+              {attachments.length > 0 && (
+                <span className="text-xs text-gray-400">
+                  {attachments.length}/{maxAttachments} files
+                </span>
+              )}
+            </div>
+            {showCharacterCount && characterCountPosition === "bottom" && characterCountDisplay}
+          </div>
+        )}
       </div>
+
+      {/* Drag hint */}
+      {showAttachments && isDragging && (
+        <div className="absolute inset-0 flex items-center justify-center bg-blue-50/90 dark:bg-blue-900/50 rounded-xl border-2 border-dashed border-blue-500 pointer-events-none">
+          <div className="text-center">
+            <Paperclip className="w-8 h-8 mx-auto mb-2 text-blue-500" />
+            <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Drop files here</p>
+          </div>
+        </div>
+      )}
+
       <ErrorMessage message={error} />
     </div>
   );
