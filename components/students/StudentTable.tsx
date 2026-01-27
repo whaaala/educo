@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Student } from "./StudentCard";
-import { MoreVertical, MessageCircle, Phone, Mail, Eye, Edit, Lock, TrendingUp, Trash2, Plus, ArrowRight } from "lucide-react";
+import { MoreVertical, MessageCircle, Phone, Video, Mail, Eye, Edit, Lock, TrendingUp, Trash2, Plus, ArrowRight } from "lucide-react";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import CollectFeesModal from "@/components/shared/CollectFeesModal";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
@@ -14,6 +14,7 @@ import NameLabel from "@/components/shared/NameLabel";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { detectEducationLevelFromClass, getEducationLevelColor, getInstitutionTypeColor } from "@/utils/educationLevel";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { useCall } from "@/hooks/useCall";
 import { CreateTransferRequest } from "@/types/transfer";
 
 interface StudentTableProps {
@@ -31,6 +32,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
   const router = useRouter();
   const { isCollapsed } = useSidebar();
   const { canTransferStudents, tenantContext } = useFeatureFlags();
+  const { startVideoCall, startVoiceCall } = useCall();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
@@ -435,13 +437,37 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
               className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-green-50 dark:hover:bg-green-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                console.log("Call", student.id);
+                startVoiceCall({
+                  id: student.id,
+                  name: student.name,
+                  avatar: student.avatar,
+                  role: "Student",
+                }, { callContext: `Voice call with ${student.name}` });
               }}
             >
               <Phone className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/call:text-green-600 dark:group-hover/call:text-green-400 transition-colors" />
             </button>
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/call:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-              <NameLabel name="Call" variant="compact" />
+              <NameLabel name="Voice Call" variant="compact" />
+            </div>
+          </div>
+          <div className="relative group/video flex-shrink-0">
+            <button
+              className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-purple-50 dark:hover:bg-purple-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                startVideoCall({
+                  id: student.id,
+                  name: student.name,
+                  avatar: student.avatar,
+                  role: "Student",
+                }, { callContext: `Video call with ${student.name}` });
+              }}
+            >
+              <Video className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/video:text-purple-600 dark:group-hover/video:text-purple-400 transition-colors" />
+            </button>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/video:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
+              <NameLabel name="Video Call" variant="compact" />
             </div>
           </div>
           <div className="relative group/email flex-shrink-0">

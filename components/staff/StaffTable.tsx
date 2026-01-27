@@ -3,11 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Teacher } from "@/lib/mockTeachers";
-import { MoreVertical, MessageCircle, Phone, Mail, Eye, Edit, Lock, Trash2 } from "lucide-react";
+import { MoreVertical, MessageCircle, Phone, Video, Mail, Eye, Edit, Lock, Trash2 } from "lucide-react";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import Tooltip from "@/components/shared/Tooltip";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { useCall } from "@/hooks/useCall";
 
 interface StaffTableProps {
   staff: Teacher[];
@@ -32,6 +33,7 @@ export default function StaffTable({
 }: StaffTableProps) {
   const router = useRouter();
   const { isCollapsed } = useSidebar();
+  const { startVideoCall, startVoiceCall } = useCall();
   const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
   const [openMenuStaffId, setOpenMenuStaffId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -355,14 +357,42 @@ export default function StaffTable({
               className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-green-50 dark:hover:bg-green-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                console.log("Call", staffMember.id);
+                startVoiceCall({
+                  id: staffMember.id,
+                  name: `${staffMember.firstName} ${staffMember.lastName}`,
+                  avatar: staffMember.imageUrl,
+                  email: staffMember.email,
+                  role: "Staff",
+                }, { callContext: `Voice call with ${staffMember.firstName}` });
               }}
             >
               <Phone className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/call:text-green-600 dark:group-hover/call:text-green-400 transition-colors" />
             </button>
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/call:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
               <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">
-                Call
+                Voice Call
+              </div>
+            </div>
+          </div>
+          <div className="relative group/video flex-shrink-0">
+            <button
+              className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-purple-50 dark:hover:bg-purple-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                startVideoCall({
+                  id: staffMember.id,
+                  name: `${staffMember.firstName} ${staffMember.lastName}`,
+                  avatar: staffMember.imageUrl,
+                  email: staffMember.email,
+                  role: "Staff",
+                }, { callContext: `Video call with ${staffMember.firstName}` });
+              }}
+            >
+              <Video className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/video:text-purple-600 dark:group-hover/video:text-purple-400 transition-colors" />
+            </button>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/video:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
+              <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">
+                Video Call
               </div>
             </div>
           </div>

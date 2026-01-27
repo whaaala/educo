@@ -1357,12 +1357,13 @@ export default function AdminParentFeesPage() {
     );
   };
 
-  // Table columns
+  // Table columns - responsive with hidden properties for mobile/tablet
   const columns: ColumnConfig<AdminFeeRecord>[] = [
     {
       key: "checkbox",
       label: "",
-      className: "w-10 min-w-[40px] max-w-[40px]",
+      className: "w-10 min-w-[40px]",
+      hidden: { mobile: true }, // Hide checkbox on mobile
       render: (record) => (
         <input
           type="checkbox"
@@ -1384,9 +1385,9 @@ export default function AdminParentFeesPage() {
       key: "parent",
       label: "Parent",
       sortable: true,
-      className: "w-[160px] min-w-[160px] max-w-[160px] overflow-visible",
+      className: "min-w-[120px] md:min-w-[160px] overflow-visible",
       render: (record) => (
-        <div className="flex items-center gap-2 max-w-[140px] overflow-visible">
+        <div className="flex items-center gap-2 overflow-visible">
           <Tooltip content={`${record.parentName}\n${record.parentEmail}`}>
             <div className="group relative flex-shrink-0">
               <div className="relative w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 cursor-pointer transition-all duration-300 ease-out group-hover:scale-[2] group-hover:ring-3 group-hover:ring-blue-500 group-hover:shadow-xl group-hover:z-[9999]">
@@ -1400,11 +1401,11 @@ export default function AdminParentFeesPage() {
               </div>
             </div>
           </Tooltip>
-          <div className="min-w-0 flex-1 overflow-hidden max-w-[90px]">
-            <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm truncate">
               {record.parentName}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">
               {record.parentEmail}
             </p>
           </div>
@@ -1415,9 +1416,10 @@ export default function AdminParentFeesPage() {
       key: "child",
       label: "Student",
       sortable: true,
-      className: "w-[130px] min-w-[130px] max-w-[130px] overflow-visible",
+      className: "min-w-[100px] md:min-w-[130px] overflow-visible",
+      hidden: { mobile: true }, // Hide on mobile - parent is enough
       render: (record) => (
-        <div className="flex items-center gap-2 max-w-[110px] overflow-visible">
+        <div className="flex items-center gap-2 overflow-visible">
           <Tooltip content={`${record.childName}\n${record.childClass}`}>
             <div className="group relative flex-shrink-0">
               <div className="relative w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 cursor-pointer transition-all duration-300 ease-out group-hover:scale-[2] group-hover:ring-3 group-hover:ring-green-500 group-hover:shadow-xl group-hover:z-[9999]">
@@ -1431,11 +1433,11 @@ export default function AdminParentFeesPage() {
               </div>
             </div>
           </Tooltip>
-          <div className="min-w-0 flex-1 overflow-hidden max-w-[60px]">
-            <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm truncate">
               {record.childName}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">
               {record.childClass}
             </p>
           </div>
@@ -1446,12 +1448,13 @@ export default function AdminParentFeesPage() {
       key: "feeType",
       label: "Fee Type",
       sortable: true,
-      className: "w-[110px] min-w-[110px] max-w-[110px]",
+      className: "min-w-[80px] md:min-w-[110px]",
+      hidden: { mobile: true, tablet: true }, // Hide on mobile and tablet
       render: (record) => (
         <Tooltip content={`${record.feeType}\n${record.term} - ${record.academicYear}`}>
-          <div className="max-w-[90px] overflow-hidden">
-            <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{record.feeType}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+          <div className="overflow-hidden">
+            <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm truncate">{record.feeType}</p>
+            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">
               {record.term} - {record.academicYear}
             </p>
           </div>
@@ -1462,9 +1465,9 @@ export default function AdminParentFeesPage() {
       key: "amount",
       label: "Amount",
       sortable: true,
-      className: "w-[90px] min-w-[90px]",
+      className: "min-w-[70px] md:min-w-[90px]",
       render: (record) => (
-        <span className="font-semibold text-gray-900 dark:text-white text-sm whitespace-nowrap">
+        <span className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm whitespace-nowrap">
           {money(record.amount)}
         </span>
       ),
@@ -1473,9 +1476,10 @@ export default function AdminParentFeesPage() {
       key: "paidAmount",
       label: "Paid",
       sortable: true,
-      className: "w-[80px] min-w-[80px]",
+      className: "min-w-[60px] md:min-w-[80px]",
+      hidden: { mobile: true }, // Hide on mobile
       render: (record) => (
-        <span className="font-medium text-green-600 dark:text-green-400 text-sm whitespace-nowrap">
+        <span className="font-medium text-green-600 dark:text-green-400 text-xs sm:text-sm whitespace-nowrap">
           {money(record.paidAmount)}
         </span>
       ),
@@ -1484,10 +1488,10 @@ export default function AdminParentFeesPage() {
       key: "balance",
       label: "Balance",
       sortable: true,
-      className: "w-[90px] min-w-[90px]",
+      className: "min-w-[70px] md:min-w-[90px]",
       render: (record) => (
         <span
-          className={`font-semibold text-sm whitespace-nowrap ${
+          className={`font-semibold text-xs sm:text-sm whitespace-nowrap ${
             record.balance > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
           }`}
         >
@@ -1499,9 +1503,10 @@ export default function AdminParentFeesPage() {
       key: "dueDate",
       label: "Due Date",
       sortable: true,
-      className: "w-[95px] min-w-[95px]",
+      className: "min-w-[75px] md:min-w-[95px]",
+      hidden: { mobile: true }, // Hide on mobile
       render: (record) => (
-        <span className="text-gray-700 dark:text-gray-300 text-sm whitespace-nowrap">
+        <span className="text-gray-700 dark:text-gray-300 text-xs sm:text-sm whitespace-nowrap">
           {new Date(record.dueDate).toLocaleDateString("en-GB", {
             day: "numeric",
             month: "short",
@@ -1514,58 +1519,61 @@ export default function AdminParentFeesPage() {
       key: "status",
       label: "Status",
       sortable: true,
-      className: "w-[85px] min-w-[85px]",
+      className: "min-w-[70px] md:min-w-[85px]",
       render: (record) => getStatusBadge(record.status),
     },
     {
       key: "actions",
       label: "Actions",
-      className: "w-[130px] min-w-[130px] pr-2",
+      className: "min-w-[50px] md:min-w-[130px] pr-2",
       render: (record) => (
         <div className="flex items-center justify-end gap-0.5">
-          <Tooltip content="View Details">
-            <button
-              type="button"
-              onClick={() => handleViewDetails(record)}
-              className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-            >
-              <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-            </button>
-          </Tooltip>
-          {record.paymentHistory.length > 0 && (
-            <Tooltip content="View Receipt">
+          {/* Show only dropdown on mobile, full buttons on desktop */}
+          <div className="hidden md:flex items-center gap-0.5">
+            <Tooltip content="View Details">
               <button
                 type="button"
-                onClick={() => handleViewReceipt(record)}
-                className="p-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
+                onClick={() => handleViewDetails(record)}
+                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
               >
-                <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </button>
             </Tooltip>
-          )}
-          <Tooltip content={reminderCounts[record.id] > 0 ? `Send Reminder (${reminderCounts[record.id]} sent)` : "Send Reminder"}>
-            <button
-              type="button"
-              onClick={() => handleSendReminder(record)}
-              className="relative p-1 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors cursor-pointer"
-            >
-              <Send className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-            </button>
-          </Tooltip>
-          {reminderCounts[record.id] > 0 && (
-            <Tooltip content={`View Reminder History (${reminderCounts[record.id]} sent)`}>
+            {record.paymentHistory.length > 0 && (
+              <Tooltip content="View Receipt">
+                <button
+                  type="button"
+                  onClick={() => handleViewReceipt(record)}
+                  className="p-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
+                >
+                  <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </button>
+              </Tooltip>
+            )}
+            <Tooltip content={reminderCounts[record.id] > 0 ? `Send Reminder (${reminderCounts[record.id]} sent)` : "Send Reminder"}>
               <button
                 type="button"
-                onClick={() => handleViewReminderHistory(record)}
-                className="relative p-1 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors cursor-pointer"
+                onClick={() => handleSendReminder(record)}
+                className="relative p-1 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors cursor-pointer"
               >
-                <History className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                <span className="absolute -top-0.5 -right-0.5 min-w-[12px] h-3 px-0.5 flex items-center justify-center text-[8px] font-bold bg-purple-500 text-white rounded-full">
-                  {reminderCounts[record.id] > 9 ? "9+" : reminderCounts[record.id]}
-                </span>
+                <Send className="w-4 h-4 text-orange-600 dark:text-orange-400" />
               </button>
             </Tooltip>
-          )}
+            {reminderCounts[record.id] > 0 && (
+              <Tooltip content={`View Reminder History (${reminderCounts[record.id]} sent)`}>
+                <button
+                  type="button"
+                  onClick={() => handleViewReminderHistory(record)}
+                  className="relative p-1 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors cursor-pointer"
+                >
+                  <History className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[12px] h-3 px-0.5 flex items-center justify-center text-[8px] font-bold bg-purple-500 text-white rounded-full">
+                    {reminderCounts[record.id] > 9 ? "9+" : reminderCounts[record.id]}
+                  </span>
+                </button>
+              </Tooltip>
+            )}
+          </div>
           <FeeActionsDropdown
             hasPayments={record.paymentHistory.length > 0}
             onEdit={() => handleEditRecord(record)}
@@ -1726,8 +1734,10 @@ export default function AdminParentFeesPage() {
                   <div
                     ref={tableWrapRef}
                     key={`fees-table-${filterKey}`}
-                    className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-visible"
+                    className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm"
                   >
+                    {/* Mobile Scroll Indicator */}
+                    <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none rounded-r-xl" />
                     <DataTable
                       data={filteredRecords}
                       columns={columns}
@@ -1739,8 +1749,8 @@ export default function AdminParentFeesPage() {
                       itemsPerPageOptions={[10, 15, 25, 50]}
                       enablePagination={true}
                       enableItemsPerPage={true}
-                      stickyColumnCount={0}
-                      disableHorizontalScroll={true}
+                      stickyColumnCount={1}
+                      disableHorizontalScroll={false}
                     />
                   </div>
                 )}

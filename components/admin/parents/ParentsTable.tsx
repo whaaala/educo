@@ -17,6 +17,8 @@ import QuickRecordPaymentModal from "./QuickRecordPaymentModal";
 import EditParentContactModal from "./EditParentContactModal";
 import ViewFeeStatementModal from "./ViewFeeStatementModal";
 import DisconnectChildrenModal from "./DisconnectChildrenModal";
+import SendMessageModal from "@/components/shared/SendMessageModal";
+import SendChatModal from "@/components/shared/SendChatModal";
 import type { AdminParent } from "@/lib/mockParents";
 
 interface ParentsTableProps {
@@ -72,6 +74,10 @@ export default function ParentsTable({
   const [isFeeStatementOpen, setIsFeeStatementOpen] = useState(false);
   const [isDisconnectChildrenOpen, setIsDisconnectChildrenOpen] = useState(false);
   const [isCannotDeleteOpen, setIsCannotDeleteOpen] = useState(false);
+  const [isSendMessageOpen, setIsSendMessageOpen] = useState(false);
+  const [messageParent, setMessageParent] = useState<AdminParent | null>(null);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [chatParent, setChatParent] = useState<AdminParent | null>(null);
 
   // Use external state if provided, otherwise use internal state
   const selectedIds = externalSelectedIds ?? internalSelectedIds;
@@ -252,13 +258,14 @@ export default function ParentsTable({
   const isAllSelected = parents.length > 0 && selectedIds.size === parents.length;
   const isSomeSelected = selectedIds.size > 0 && selectedIds.size < parents.length;
 
-  // Define column configuration
+  // Define column configuration - responsive with hidden properties
   const columns: ColumnConfig<AdminParent>[] = [
     {
       key: "index",
       label: "",
       sortable: false,
-      className: "text-center w-[5%] md:w-[3%]",
+      className: "text-center w-8 sm:w-10 min-w-[32px] sm:min-w-[40px]",
+      // Checkbox visible on all screens for sticky positioning to work
       render: (parent) => (
         <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
           <input
@@ -290,7 +297,7 @@ export default function ParentsTable({
       key: "name",
       label: "Parent Name",
       sortable: true,
-      className: "text-left w-[25%] md:w-[18%]",
+      className: "text-left min-w-[140px] md:min-w-[180px]",
       sortValue: (parent) => `${parent.firstName} ${parent.lastName}`,
       render: (parent) => (
         <div className="flex items-center gap-2 min-w-0">
@@ -319,12 +326,12 @@ export default function ParentsTable({
                   e.stopPropagation();
                   router.push(`/admin/parents/${parent.id}`);
                 }}
-                className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer truncate block"
+                className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer truncate block"
               >
                 {parent.firstName} {parent.lastName}
               </span>
             </Tooltip>
-            <span className="text-xs text-gray-500 dark:text-gray-400 block">{parent.relationship}</span>
+            <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 block">{parent.relationship}</span>
           </div>
         </div>
       ),
@@ -334,10 +341,10 @@ export default function ParentsTable({
       label: "Email",
       sortable: true,
       hidden: { mobile: true, tablet: true },
-      className: "text-left w-[15%]",
+      className: "text-left min-w-[120px] md:min-w-[150px]",
       render: (parent) => (
         <Tooltip content={parent.email}>
-          <span className="text-sm text-gray-700 dark:text-gray-300 truncate block max-w-[150px]">
+          <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 truncate block">
             {parent.email}
           </span>
         </Tooltip>
@@ -347,27 +354,27 @@ export default function ParentsTable({
       key: "phone",
       label: "Phone",
       sortable: true,
-      hidden: { mobile: true },
-      className: "text-left w-[12%]",
+      hidden: { mobile: true, tablet: true },
+      className: "text-left min-w-[100px] md:min-w-[120px]",
       render: (parent) => (
-        <span className="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{parent.phone}</span>
+        <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{parent.phone}</span>
       ),
     },
     {
       key: "children",
       label: "Children",
       sortable: true,
-      className: "text-left w-[15%] md:w-[12%]",
+      className: "text-left min-w-[80px] md:min-w-[120px]",
       sortValue: (parent) => parent.children.length,
       render: (parent) => {
         const childrenNames = parent.children.map((c) => c.firstName).join(", ");
         return (
           <div className="flex items-center gap-1.5">
-            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold">
+            <span className="inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] sm:text-xs font-bold">
               {parent.children.length}
             </span>
             <Tooltip content={childrenNames}>
-              <span className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[80px]">
+              <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate max-w-[60px] sm:max-w-[80px] hidden sm:inline">
                 {childrenNames}
               </span>
             </Tooltip>
@@ -379,14 +386,14 @@ export default function ParentsTable({
       key: "outstanding",
       label: "Outstanding",
       sortable: true,
-      className: "text-left w-[12%]",
+      className: "text-left min-w-[80px] md:min-w-[100px]",
       sortValue: (parent) => parent.totalOutstandingFees,
       render: (parent) => {
         const hasBalance = parent.totalOutstandingFees > 0;
         const isHighBalance = parent.totalOutstandingFees > 100000;
         return (
           <span
-            className={`text-sm font-semibold ${
+            className={`text-xs sm:text-sm font-semibold whitespace-nowrap ${
               !hasBalance
                 ? "text-green-600 dark:text-green-400"
                 : isHighBalance
@@ -403,11 +410,11 @@ export default function ParentsTable({
       key: "status",
       label: "Status",
       sortable: true,
-      hidden: { mobile: true },
-      className: "text-left w-[8%]",
+      hidden: { mobile: true, tablet: true },
+      className: "text-left min-w-[70px] md:min-w-[80px]",
       render: (parent) => (
         <span
-          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+          className={`inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
             parent.status === "Active"
               ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
               : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
@@ -421,22 +428,23 @@ export default function ParentsTable({
       key: "actions",
       label: "Action",
       sortable: false,
-      className: "text-left w-[20%] md:w-[18%] !overflow-visible",
+      className: "text-left min-w-[130px] sm:min-w-[140px] md:min-w-[160px] !overflow-visible",
       render: (parent) => (
-        <div className="flex items-center justify-start gap-1 md:gap-1.5">
-          {/* Chat Icon */}
+        <div className="flex items-center justify-start gap-0.5 md:gap-1.5">
+          {/* Chat Icon - visible on all screens */}
           <Tooltip content="Chat" delay={200}>
             <button
               className="p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-500/20 transition-all duration-200 hover:scale-105 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                router.push(`/admin/parents/chat/${parent.id}`);
+                setChatParent(parent);
+                setIsChatModalOpen(true);
               }}
             >
-              <MessageCircle className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400 hover:text-blue-600" />
+              <MessageCircle className="w-4 h-4 text-gray-600 dark:text-gray-400 hover:text-blue-600" />
             </button>
           </Tooltip>
-          {/* Voice Call Icon */}
+          {/* Voice Call Icon - visible on all screens */}
           <Tooltip content="Voice Call" delay={200}>
             <button
               className="p-1 rounded-md hover:bg-green-50 dark:hover:bg-green-500/20 transition-all duration-200 hover:scale-105 cursor-pointer"
@@ -445,22 +453,23 @@ export default function ParentsTable({
                 startVoiceCall(createParticipant(parent), { callContext: `Voice call with ${parent.firstName}` });
               }}
             >
-              <Phone className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400 hover:text-green-600" />
+              <Phone className="w-4 h-4 text-gray-600 dark:text-gray-400 hover:text-green-600" />
             </button>
           </Tooltip>
-          {/* Email Icon */}
-          <Tooltip content="Send Email" delay={200}>
+          {/* Email Icon - visible on all screens */}
+          <Tooltip content="Send Message" delay={200}>
             <button
               className="p-1 rounded-md hover:bg-purple-50 dark:hover:bg-purple-500/20 transition-all duration-200 hover:scale-105 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                window.open(`mailto:${parent.email}`);
+                setMessageParent(parent);
+                setIsSendMessageOpen(true);
               }}
             >
-              <Mail className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400 hover:text-purple-600" />
+              <Mail className="w-4 h-4 text-gray-600 dark:text-gray-400 hover:text-purple-600" />
             </button>
           </Tooltip>
-          {/* Video Call Icon */}
+          {/* Video Call Icon - visible on all screens */}
           <Tooltip content="Video Call" delay={200}>
             <button
               className="p-1 rounded-md hover:bg-cyan-50 dark:hover:bg-cyan-500/20 transition-all duration-200 hover:scale-105 cursor-pointer"
@@ -469,10 +478,10 @@ export default function ParentsTable({
                 startVideoCall(createParticipant(parent), { callContext: `Video call with ${parent.firstName}` });
               }}
             >
-              <Video className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400 hover:text-cyan-600" />
+              <Video className="w-4 h-4 text-gray-600 dark:text-gray-400 hover:text-cyan-600" />
             </button>
           </Tooltip>
-          {/* More Options */}
+          {/* More Options - Always visible */}
           <div
             className="relative flex-shrink-0 overflow-visible"
             ref={openMenuParentId === parent.id ? menuRef : null}
@@ -486,7 +495,7 @@ export default function ParentsTable({
                 }`}
                 onClick={(e) => handleMenuToggle(parent.id, e)}
               >
-                <MoreVertical className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400" />
+                <MoreVertical className="w-4 h-4 text-gray-600 dark:text-gray-400" />
               </button>
             </Tooltip>
 
@@ -561,21 +570,27 @@ export default function ParentsTable({
 
   return (
     <>
-      <DataTable
-        data={parents}
-        columns={columns}
-        title="Parent Records"
-        searchPlaceholder="Search parents..."
-        getRowKey={(parent) => parent.id}
-        emptyMessage="No parents found"
-        isLoading={isLoading}
-        loadingMessage={loadingMessage}
-        onClearFilters={onClearFilters}
-        hasActiveFilters={hasActiveFilters}
-        totalDataCount={totalParentsCount}
-        defaultItemsPerPage={10}
-        itemsPerPageOptions={[10, 20, 50, 100]}
-      />
+      <div className="relative">
+        {/* Mobile Scroll Indicator */}
+        <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none rounded-r-xl" />
+        <DataTable
+          data={parents}
+          columns={columns}
+          title="Parent Records"
+          searchPlaceholder="Search parents..."
+          getRowKey={(parent) => parent.id}
+          emptyMessage="No parents found"
+          isLoading={isLoading}
+          loadingMessage={loadingMessage}
+          onClearFilters={onClearFilters}
+          hasActiveFilters={hasActiveFilters}
+          totalDataCount={totalParentsCount}
+          defaultItemsPerPage={10}
+          itemsPerPageOptions={[10, 20, 50, 100]}
+          stickyColumnCount={2}
+          disableHorizontalScroll={false}
+        />
+      </div>
 
       {/* Delete Confirmation Modal */}
       {parentToDelete && (
@@ -730,6 +745,50 @@ export default function ParentsTable({
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* Send Message Modal */}
+      {messageParent && (
+        <SendMessageModal
+          isOpen={isSendMessageOpen}
+          onClose={() => {
+            setIsSendMessageOpen(false);
+            setMessageParent(null);
+          }}
+          recipient={{
+            id: messageParent.id,
+            firstName: messageParent.firstName,
+            lastName: messageParent.lastName,
+            email: messageParent.email,
+            phone: messageParent.phone,
+            profilePhoto: messageParent.profilePhoto,
+            role: messageParent.relationship,
+          }}
+          messagesPageUrl="/admin/parents/messages"
+          recipientType="parent"
+        />
+      )}
+
+      {/* Send Chat Modal */}
+      {chatParent && (
+        <SendChatModal
+          isOpen={isChatModalOpen}
+          onClose={() => {
+            setIsChatModalOpen(false);
+            setChatParent(null);
+          }}
+          recipient={{
+            id: chatParent.id,
+            firstName: chatParent.firstName,
+            lastName: chatParent.lastName,
+            email: chatParent.email,
+            phone: chatParent.phone,
+            profilePhoto: chatParent.profilePhoto,
+            role: chatParent.relationship,
+          }}
+          chatPageUrl="/admin/parents/chat"
+          recipientType="parent"
+        />
       )}
     </>
   );

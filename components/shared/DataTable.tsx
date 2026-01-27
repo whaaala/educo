@@ -291,7 +291,7 @@ export default function DataTable<T>({
                   stickyColumnCount >= 1 && index === 0
                     ? 'md:relative md:left-auto sticky left-0 z-40 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800'
                     : stickyColumnCount >= 2 && index === 1
-                    ? 'md:relative md:left-auto sticky left-[80px] z-30 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800'
+                    ? 'md:relative md:left-auto sticky left-[40px] sm:left-[48px] z-30 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800'
                     : '';
 
                 return (
@@ -395,15 +395,15 @@ export default function DataTable<T>({
                       stickyColumnCount >= 1 && colIndex === 0
                         ? 'md:relative md:left-auto sticky left-0 z-30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none'
                         : stickyColumnCount >= 2 && colIndex === 1
-                        ? 'md:relative md:left-auto sticky left-[80px] z-20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none'
+                        ? 'md:relative md:left-auto sticky left-[40px] sm:left-[48px] z-20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none'
                         : '';
 
                     // Determine alignment from className - check if explicitly set, otherwise use center as default
                     const hasTextAlignment = column.className?.includes('text-left') || column.className?.includes('text-center') || column.className?.includes('text-right');
                     const defaultAlignment = hasTextAlignment ? '' : 'text-center';
 
-                    // Allow overflow visible for actions, parent, and child columns (for dropdowns and avatar hover)
-                    const allowOverflow = column.key === 'actions' || column.key === 'parent' || column.key === 'child';
+                    // Allow overflow visible for actions, parent, child, and name columns (for dropdowns and avatar hover)
+                    const allowOverflow = column.key === 'actions' || column.key === 'parent' || column.key === 'child' || column.key === 'name';
 
                     return (
                     <td
