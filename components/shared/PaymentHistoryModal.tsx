@@ -21,10 +21,11 @@ import {
   Smartphone,
   Building2,
   Wallet,
+  type LucideIcon,
 } from "lucide-react";
 import Tooltip from "./Tooltip";
 
-interface PaymentRecord {
+export interface PaymentRecord {
   id: string;
   date: string;
   amount: number;
@@ -33,7 +34,7 @@ interface PaymentRecord {
   receiptNumber: string;
 }
 
-interface PaymentHistoryModalProps {
+export interface PaymentHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   payments: PaymentRecord[];
@@ -44,6 +45,17 @@ interface PaymentHistoryModalProps {
   totalAmount: number;
   paidAmount: number;
   money: (amount: number) => string;
+  // Customization props
+  title?: string;
+  headerIcon?: LucideIcon;
+  showStudentImage?: boolean;
+  showProgressBar?: boolean;
+  showDownloadButton?: boolean;
+  showPrintButton?: boolean;
+  paymentRecordsTitle?: string;
+  emptyStateText?: string;
+  emptyStateSubtext?: string;
+  currencyLabel?: string;
 }
 
 export default function PaymentHistoryModal({
@@ -57,6 +69,17 @@ export default function PaymentHistoryModal({
   totalAmount,
   paidAmount,
   money,
+  // Customization props with defaults
+  title = "Payment History",
+  headerIcon: HeaderIcon = Receipt,
+  showStudentImage = true,
+  showProgressBar = true,
+  showDownloadButton = true,
+  showPrintButton = true,
+  paymentRecordsTitle = "Payment Records",
+  emptyStateText = "No payments recorded yet",
+  emptyStateSubtext = "Payments will appear here once made",
+  currencyLabel = "NGN",
 }: PaymentHistoryModalProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [expandedPayment, setExpandedPayment] = useState<string | null>(null);
@@ -341,7 +364,7 @@ export default function PaymentHistoryModal({
 
       // PDF-safe currency formatter (jsPDF doesn't support special currency symbols like ₦)
       const formatCurrency = (amount: number) => {
-        return `NGN ${amount.toLocaleString()}`;
+        return `${currencyLabel} ${amount.toLocaleString()}`;
       };
 
       const formattedDate = new Date(payment.date).toLocaleDateString("en-GB", {
@@ -621,9 +644,9 @@ export default function PaymentHistoryModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Payment History"
+      title={title}
       subtitle={`${feeType} • ${term}`}
-      icon={<Receipt className="w-5 h-5 sm:w-6 sm:h-6" />}
+      icon={<HeaderIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
       maxWidth="lg"
     >
       <div className="space-y-5">
@@ -632,15 +655,17 @@ export default function PaymentHistoryModal({
           {/* Top Section: Student Info + Amount */}
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="relative w-11 h-11 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-2 ring-white dark:ring-gray-800 flex-shrink-0">
-                <Image
-                  src={`https://i.pravatar.cc/150?u=${studentId}`}
-                  alt={studentName}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
-              </div>
+              {showStudentImage && (
+                <div className="relative w-11 h-11 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-2 ring-white dark:ring-gray-800 flex-shrink-0">
+                  <Image
+                    src={`https://i.pravatar.cc/150?u=${studentId}`}
+                    alt={studentName}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              )}
               <div className="min-w-0">
                 <p className="font-semibold text-gray-900 dark:text-white truncate">
                   {studentName}
@@ -662,6 +687,7 @@ export default function PaymentHistoryModal({
           </div>
 
           {/* Progress Section */}
+          {showProgressBar && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500 dark:text-gray-400">
@@ -686,6 +712,7 @@ export default function PaymentHistoryModal({
               </p>
             )}
           </div>
+          )}
         </div>
 
         {/* Payment Records Header */}
@@ -694,7 +721,7 @@ export default function PaymentHistoryModal({
             <CreditCard className="w-4 h-4 text-gray-600 dark:text-gray-400" />
           </div>
           <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
-            Payment Records
+            {paymentRecordsTitle}
           </h4>
         </div>
 
@@ -705,10 +732,10 @@ export default function PaymentHistoryModal({
               <Receipt className="w-8 h-8 text-gray-400" />
             </div>
             <p className="text-gray-500 dark:text-gray-400 font-medium">
-              No payments recorded yet
+              {emptyStateText}
             </p>
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-              Payments will appear here once made
+              {emptyStateSubtext}
             </p>
           </div>
         ) : (
@@ -771,6 +798,7 @@ export default function PaymentHistoryModal({
                             )}
                           </button>
                         </Tooltip>
+                        {showDownloadButton && (
                         <Tooltip
                           content={isDownloading ? "Downloading..." : "Download Receipt"}
                         >
@@ -787,6 +815,8 @@ export default function PaymentHistoryModal({
                             )}
                           </button>
                         </Tooltip>
+                        )}
+                        {showPrintButton && (
                         <Tooltip
                           content={isPrinting ? "Opening..." : "Print Receipt"}
                         >
@@ -803,6 +833,7 @@ export default function PaymentHistoryModal({
                             )}
                           </button>
                         </Tooltip>
+                        )}
                       </div>
                     </div>
 

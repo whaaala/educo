@@ -37,7 +37,7 @@ const getFileIcon = (type: ReminderAttachment["type"]) => {
   }
 };
 
-interface FeeReminderHistoryModalProps {
+export interface FeeReminderHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   reminders: FeeReminderRecord[];
@@ -45,6 +45,10 @@ interface FeeReminderHistoryModalProps {
   childName: string;
   balance: number;
   money: (amount: number) => string;
+  // Customization props
+  title?: string;
+  emptyStateText?: string;
+  emptyStateSubtext?: string;
 }
 
 // Helper function to get channel icon
@@ -454,6 +458,10 @@ export default function FeeReminderHistoryModal({
   childName,
   balance,
   money,
+  // Customization props with defaults
+  title = "Reminder History",
+  emptyStateText = "No reminders sent yet",
+  emptyStateSubtext = "Reminders will appear here once you send them",
 }: FeeReminderHistoryModalProps) {
   // Calculate channel stats
   const channelStats = {
@@ -467,7 +475,7 @@ export default function FeeReminderHistoryModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Reminder History"
+      title={title}
       subtitle={`${reminders.length} reminder${reminders.length !== 1 ? "s" : ""} sent`}
       icon={<Send className="w-5 h-5" />}
       maxWidth="xl"
@@ -521,8 +529,8 @@ export default function FeeReminderHistoryModal({
             <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
               <Send className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No reminders sent yet</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Send a reminder to see history here</p>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{emptyStateText}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{emptyStateSubtext}</p>
           </div>
         ) : (
           <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">

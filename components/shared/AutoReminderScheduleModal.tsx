@@ -54,7 +54,7 @@ export interface AutoReminderSchedule {
   createdAt: string;
 }
 
-interface AutoReminderScheduleModalProps {
+export interface AutoReminderScheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
   parentName: string;
@@ -71,6 +71,11 @@ interface AutoReminderScheduleModalProps {
   existingSchedule?: AutoReminderSchedule | null;
   onSave?: (schedule: Omit<AutoReminderSchedule, "id" | "createdAt">) => void;
   onDelete?: (scheduleId: string) => void;
+  // Customization props
+  title?: string;
+  subtitle?: string;
+  saveButtonText?: string;
+  deleteButtonText?: string;
 }
 
 export default function AutoReminderScheduleModal({
@@ -90,6 +95,11 @@ export default function AutoReminderScheduleModal({
   existingSchedule,
   onSave,
   onDelete,
+  // Customization props with defaults
+  title = "Auto-Schedule Reminders",
+  subtitle,
+  saveButtonText = "Save Schedule",
+  deleteButtonText = "Delete Schedule",
 }: AutoReminderScheduleModalProps) {
   // Mode: "manual" for picking individual dates, "interval" for auto-generate
   const [scheduleMode, setScheduleMode] = useState<"manual" | "interval">(
@@ -338,7 +348,7 @@ export default function AutoReminderScheduleModal({
         {existingSchedule && (
           <FormButton type="button" onClick={handleDelete} variant="secondary">
             <Trash2 className="w-4 h-4 mr-1" />
-            Delete
+            {deleteButtonText}
           </FormButton>
         )}
       </div>
@@ -356,8 +366,8 @@ export default function AutoReminderScheduleModal({
           {isSaving
             ? "Saving..."
             : existingSchedule
-            ? "Update Schedule"
-            : "Save Schedule"}
+            ? `Update ${saveButtonText.replace("Save ", "")}`
+            : saveButtonText}
         </FormButton>
       </div>
     </div>
@@ -371,13 +381,13 @@ export default function AutoReminderScheduleModal({
         isSaved
           ? "Schedule Saved!"
           : existingSchedule
-          ? "Edit Auto Reminders"
-          : "Schedule Auto Reminders"
+          ? `Edit ${title}`
+          : title
       }
       subtitle={
         isSaved
           ? "Automatic reminders have been scheduled"
-          : `Configure automated reminder schedule for ${feeType}`
+          : subtitle || `Configure automated reminder schedule for ${feeType}`
       }
       icon={
         isSaved ? (

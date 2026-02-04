@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
-  MoreHorizontal,
+  MoreVertical,
   Edit,
   Trash2,
   Download,
@@ -12,6 +12,9 @@ import {
   History,
   CreditCard,
   CalendarClock,
+  Eye,
+  Send,
+  Clock,
 } from "lucide-react";
 
 interface FeeActionsDropdownProps {
@@ -23,7 +26,11 @@ interface FeeActionsDropdownProps {
   onViewHistory?: () => void;
   onRecordPayment?: () => void;
   onAutoReminder?: () => void;
+  onViewDetails?: () => void;
+  onSendReminder?: () => void;
+  onViewReminderHistory?: () => void;
   hasPayments?: boolean;
+  hasReminders?: boolean;
 }
 
 export default function FeeActionsDropdown({
@@ -35,7 +42,11 @@ export default function FeeActionsDropdown({
   onViewHistory,
   onRecordPayment,
   onAutoReminder,
+  onViewDetails,
+  onSendReminder,
+  onViewReminderHistory,
   hasPayments = false,
+  hasReminders = false,
 }: FeeActionsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -177,6 +188,14 @@ export default function FeeActionsDropdown({
 
   const menuItems = [
     {
+      id: "viewDetails",
+      label: "View Details",
+      icon: <Eye className="w-4 h-4" />,
+      onClick: onViewDetails,
+      color: "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700",
+      show: !!onViewDetails,
+    },
+    {
       id: "edit",
       label: "Edit Record",
       icon: <Edit className="w-4 h-4" />,
@@ -201,11 +220,27 @@ export default function FeeActionsDropdown({
       show: !!onViewHistory && hasPayments,
     },
     {
+      id: "sendReminder",
+      label: "Send Reminder",
+      icon: <Send className="w-4 h-4" />,
+      onClick: onSendReminder,
+      color: "text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30",
+      show: !!onSendReminder,
+    },
+    {
+      id: "reminderHistory",
+      label: "Reminder History",
+      icon: <Clock className="w-4 h-4" />,
+      onClick: onViewReminderHistory,
+      color: "text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30",
+      show: !!onViewReminderHistory && hasReminders,
+    },
+    {
       id: "message",
       label: "Send Message",
       icon: <MessageSquare className="w-4 h-4" />,
       onClick: onMessage,
-      color: "text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30",
+      color: "text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30",
       show: !!onMessage,
     },
     {
@@ -213,7 +248,7 @@ export default function FeeActionsDropdown({
       label: "Auto Reminders",
       icon: <CalendarClock className="w-4 h-4" />,
       onClick: onAutoReminder,
-      color: "text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30",
+      color: "text-teal-700 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/30",
       show: !!onAutoReminder,
     },
     {
@@ -262,7 +297,7 @@ export default function FeeActionsDropdown({
         onClick={handleToggle}
         className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
       >
-        <MoreHorizontal className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+        <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400" />
       </button>
 
       {/* Dropdown Menu - Rendered via Portal */}
@@ -271,7 +306,7 @@ export default function FeeActionsDropdown({
           <div
             ref={dropdownRef}
             style={dropdownStyle}
-            className="w-48 max-h-[320px] overflow-y-auto bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 animate-in fade-in zoom-in-95 duration-150"
+            className="w-48 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 animate-in fade-in zoom-in-95 duration-150"
           >
             {visibleItems.map((item) => {
               if (item.type === "divider") {

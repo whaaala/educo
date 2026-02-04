@@ -19,9 +19,10 @@ import {
   Receipt,
   Percent,
   Tag,
+  type LucideIcon,
 } from "lucide-react";
 
-interface RecordPaymentModalProps {
+export interface RecordPaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   feeRecordId: string;
@@ -35,6 +36,26 @@ interface RecordPaymentModalProps {
   balance: number;
   money: (amount: number) => string;
   onRecordPayment?: (data: PaymentData) => void;
+  // Customization props
+  title?: string;
+  headerIcon?: LucideIcon;
+  successTitle?: string;
+  successMessage?: string;
+  submitButtonText?: string;
+  cancelButtonText?: string;
+  processingText?: string;
+  showDiscountSection?: boolean;
+  showProgressBar?: boolean;
+  showSummary?: boolean;
+  showQuickAmountButtons?: boolean;
+  discountSectionLabel?: string;
+  paymentAmountLabel?: string;
+  paymentMethodLabel?: string;
+  paymentDateLabel?: string;
+  referenceLabel?: string;
+  notesLabel?: string;
+  summaryLabel?: string;
+  currencyPrefix?: string;
 }
 
 export interface PaymentData {
@@ -69,6 +90,26 @@ export default function RecordPaymentModal({
   balance,
   money,
   onRecordPayment,
+  // Customization props with defaults
+  title = "Record Payment",
+  headerIcon: HeaderIcon = CreditCard,
+  successTitle = "Payment Recorded!",
+  successMessage,
+  submitButtonText = "Record Payment",
+  cancelButtonText = "Cancel",
+  processingText = "Processing...",
+  showDiscountSection = true,
+  showProgressBar = true,
+  showSummary = true,
+  showQuickAmountButtons = true,
+  discountSectionLabel = "Apply Discount",
+  paymentAmountLabel = "Payment Amount",
+  paymentMethodLabel = "Payment Method",
+  paymentDateLabel = "Payment Date",
+  referenceLabel = "Reference No.",
+  notesLabel = "Notes",
+  summaryLabel = "Payment Summary",
+  currencyPrefix = "NGN",
 }: RecordPaymentModalProps) {
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Cash");
@@ -208,10 +249,10 @@ export default function RecordPaymentModal({
             <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
           </div>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            Payment Recorded!
+            {successTitle}
           </h3>
           <p className="text-gray-500 dark:text-gray-400 text-center mb-2">
-            Successfully recorded {money(parseFloat(paymentAmount))} payment
+            {successMessage || `Successfully recorded ${money(parseFloat(paymentAmount))} payment`}
           </p>
           {discountAmount > 0 && (
             <p className="text-sm text-green-600 dark:text-green-400 mb-2">
@@ -235,7 +276,7 @@ export default function RecordPaymentModal({
         disabled={isProcessing}
         className="flex-1 py-3 rounded-xl font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 cursor-pointer"
       >
-        Cancel
+        {cancelButtonText}
       </button>
       <button
         type="button"
@@ -246,12 +287,12 @@ export default function RecordPaymentModal({
         {isProcessing ? (
           <>
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            Processing...
+            {processingText}
           </>
         ) : (
           <>
-            <CreditCard className="w-5 h-5" />
-            Record Payment
+            <HeaderIcon className="w-5 h-5" />
+            {submitButtonText}
           </>
         )}
       </button>
@@ -262,7 +303,7 @@ export default function RecordPaymentModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Record Payment"
+      title={title}
       maxWidth="md"
       footer={footerContent}
     >
@@ -290,6 +331,7 @@ export default function RecordPaymentModal({
           </div>
 
           {/* Progress bar */}
+          {showProgressBar && (
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
               <span>Paid: {money(paidAmount)}</span>
@@ -302,16 +344,18 @@ export default function RecordPaymentModal({
               />
             </div>
           </div>
+          )}
         </div>
 
         {/* Discount Section */}
+        {showDiscountSection && (
         <div className="bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-gray-800 dark:to-gray-800 rounded-xl p-4 border border-orange-100 dark:border-gray-700">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
                 <Tag className="w-4 h-4 text-orange-600 dark:text-orange-400" />
               </div>
-              <span className="font-medium text-gray-900 dark:text-white">Apply Discount</span>
+              <span className="font-medium text-gray-900 dark:text-white">{discountSectionLabel}</span>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -410,15 +454,16 @@ export default function RecordPaymentModal({
             </div>
           )}
         </div>
+        )}
 
         {/* Payment Amount */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Payment Amount <span className="text-red-500">*</span>
+            {paymentAmountLabel} <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-medium">
-              NGN
+              {currencyPrefix}
             </span>
             <input
               type="text"
@@ -450,6 +495,7 @@ export default function RecordPaymentModal({
           )}
 
           {/* Quick amount buttons */}
+          {showQuickAmountButtons && (
           <div className="flex gap-2 mt-2">
             <button
               type="button"
@@ -480,7 +526,8 @@ export default function RecordPaymentModal({
               Full
             </button>
           </div>
-          {enableDiscount && discountAmount > 0 && (
+          )}
+          {showDiscountSection && enableDiscount && discountAmount > 0 && (
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Effective balance after discount: <span className="font-semibold">{money(effectiveBalance)}</span>
             </p>
@@ -490,7 +537,7 @@ export default function RecordPaymentModal({
         {/* Payment Method */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Payment Method
+            {paymentMethodLabel}
           </label>
           <div className="grid grid-cols-2 gap-2">
             {PAYMENT_METHODS.map((method) => (
@@ -535,7 +582,7 @@ export default function RecordPaymentModal({
           {/* Payment Date */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Payment Date <span className="text-red-500">*</span>
+              {paymentDateLabel} <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <button
@@ -585,7 +632,7 @@ export default function RecordPaymentModal({
 
           {/* Reference Number */}
           <FormInput
-            label={`Reference No.${paymentMethod !== "Cash" ? " *" : ""}`}
+            label={`${referenceLabel}${paymentMethod !== "Cash" ? " *" : ""}`}
             icon={<Hash className="w-full h-full" />}
             value={referenceNumber}
             onChange={(value) => {
@@ -606,7 +653,7 @@ export default function RecordPaymentModal({
 
         {/* Notes */}
         <FormTextarea
-          label="Notes"
+          label={notesLabel}
           icon={<FileText className="w-full h-full" />}
           value={notes}
           onChange={setNotes}
@@ -616,11 +663,11 @@ export default function RecordPaymentModal({
         />
 
         {/* Summary */}
-        {paymentAmount && parseFloat(paymentAmount) > 0 && (
+        {showSummary && paymentAmount && parseFloat(paymentAmount) > 0 && (
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2 mb-3">
               <Receipt className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              <span className="font-medium text-gray-900 dark:text-white">Payment Summary</span>
+              <span className="font-medium text-gray-900 dark:text-white">{summaryLabel}</span>
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">

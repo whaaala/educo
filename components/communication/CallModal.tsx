@@ -146,15 +146,11 @@ export default function CallModal({
   // Show the active call interface
   // Position next to sidebar on desktop (lg breakpoint), full screen on mobile
   if (isInCall && selectedCallType) {
-    const callContainerStyle = {
-      left: `${sidebarWidth}px`,
-    };
-
     if (selectedCallType === "video") {
       return (
         <div
-          className="fixed top-[64px] bottom-0 right-0 z-40 bg-gray-900 left-0 lg:left-auto"
-          style={callContainerStyle}
+          className="fixed top-[64px] bottom-0 right-0 z-30 bg-gray-900 left-0 lg:left-[var(--sidebar-width)]"
+          style={{ "--sidebar-width": `${sidebarWidth}px` } as React.CSSProperties}
         >
           <VideoCallRoom
             roomId={roomId}
@@ -177,8 +173,8 @@ export default function CallModal({
     if (selectedCallType === "voice") {
       return (
         <div
-          className="fixed top-[64px] bottom-0 right-0 z-40 bg-gray-900 left-0 lg:left-auto"
-          style={callContainerStyle}
+          className="fixed top-[64px] bottom-0 right-0 z-30 bg-gray-900 left-0 lg:left-[var(--sidebar-width)]"
+          style={{ "--sidebar-width": `${sidebarWidth}px` } as React.CSSProperties}
         >
           <VoiceCallRoom
             roomId={roomId}
@@ -206,8 +202,8 @@ export default function CallModal({
     if (selectedCallType === "chat") {
       return (
         <div
-          className="fixed top-[64px] bottom-0 right-0 z-40 bg-gray-900 left-0 lg:left-auto"
-          style={callContainerStyle}
+          className="fixed top-[64px] bottom-0 right-0 z-30 bg-gray-900 left-0 lg:left-[var(--sidebar-width)]"
+          style={{ "--sidebar-width": `${sidebarWidth}px` } as React.CSSProperties}
         >
           <ChatRoom
             roomId={roomId}

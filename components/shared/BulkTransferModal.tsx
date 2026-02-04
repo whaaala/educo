@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import {
   X,
@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   RotateCcw,
+  type LucideIcon,
 } from "lucide-react";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormTextarea from "@/components/shared/FormTextarea";
@@ -21,6 +22,18 @@ import { TransferType, TRANSFER_REASONS } from "@/types/transfer";
 import { getEducationalLevels } from "@/config/countries";
 import { useCountry } from "@/contexts/CountryContext";
 
+// Generic item interface for reusable transfer modal
+export interface BulkTransferItem {
+  id: string;
+  name: string;
+  subtitle?: string;
+  secondaryInfo?: string;
+  avatar?: string;
+  badge?: string;
+  badgeColor?: "red" | "green" | "blue" | "orange" | "purple" | "gray";
+}
+
+// Keep backward compatibility with existing usage
 export interface BulkTransferStudent {
   id: string;
   name: string;
@@ -41,7 +54,61 @@ export interface BulkTransferFormData {
   notes: string;
 }
 
-interface BulkTransferModalProps {
+// Header color configurations
+const headerColorConfig = {
+  blue: {
+    gradient: "from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700",
+    iconBg: "bg-white/20",
+    button: "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-blue-500 dark:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 midnight:from-cyan-600 midnight:to-cyan-700 midnight:hover:from-cyan-700 midnight:hover:to-cyan-800 purple:from-pink-600 purple:to-pink-700 purple:hover:from-pink-700 purple:hover:to-pink-800",
+    infoBg: "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20",
+    infoBorder: "border-blue-200 dark:border-blue-800 midnight:border-cyan-700 purple:border-pink-700",
+    infoIcon: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
+    infoText: "text-blue-900 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300",
+    infoSubtext: "text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
+  },
+  green: {
+    gradient: "from-green-600 to-green-700 dark:from-green-500 dark:to-green-600 midnight:from-emerald-600 midnight:to-emerald-700 purple:from-emerald-600 purple:to-emerald-700",
+    iconBg: "bg-white/20",
+    button: "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 dark:from-green-500 dark:to-green-600 dark:hover:from-green-600 dark:hover:to-green-700 midnight:from-emerald-600 midnight:to-emerald-700 midnight:hover:from-emerald-700 midnight:hover:to-emerald-800 purple:from-emerald-600 purple:to-emerald-700 purple:hover:from-emerald-700 purple:hover:to-emerald-800",
+    infoBg: "bg-green-50 dark:bg-green-900/20 midnight:bg-emerald-900/20 purple:bg-emerald-900/20",
+    infoBorder: "border-green-200 dark:border-green-800 midnight:border-emerald-700 purple:border-emerald-700",
+    infoIcon: "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
+    infoText: "text-green-900 dark:text-green-300 midnight:text-emerald-300 purple:text-emerald-300",
+    infoSubtext: "text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
+  },
+  orange: {
+    gradient: "from-orange-600 to-orange-700 dark:from-orange-500 dark:to-orange-600 midnight:from-amber-600 midnight:to-amber-700 purple:from-amber-600 purple:to-amber-700",
+    iconBg: "bg-white/20",
+    button: "bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-600 dark:hover:to-orange-700 midnight:from-amber-600 midnight:to-amber-700 midnight:hover:from-amber-700 midnight:hover:to-amber-800 purple:from-amber-600 purple:to-amber-700 purple:hover:from-amber-700 purple:hover:to-amber-800",
+    infoBg: "bg-orange-50 dark:bg-orange-900/20 midnight:bg-amber-900/20 purple:bg-amber-900/20",
+    infoBorder: "border-orange-200 dark:border-orange-800 midnight:border-amber-700 purple:border-amber-700",
+    infoIcon: "text-orange-600 dark:text-orange-400 midnight:text-amber-400 purple:text-amber-400",
+    infoText: "text-orange-900 dark:text-orange-300 midnight:text-amber-300 purple:text-amber-300",
+    infoSubtext: "text-orange-700 dark:text-orange-400 midnight:text-amber-400 purple:text-amber-400",
+  },
+  purple: {
+    gradient: "from-purple-600 to-purple-700 dark:from-purple-500 dark:to-purple-600 midnight:from-violet-600 midnight:to-violet-700 purple:from-violet-600 purple:to-violet-700",
+    iconBg: "bg-white/20",
+    button: "bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 dark:from-purple-500 dark:to-purple-600 dark:hover:from-purple-600 dark:hover:to-purple-700 midnight:from-violet-600 midnight:to-violet-700 midnight:hover:from-violet-700 midnight:hover:to-violet-800 purple:from-violet-600 purple:to-violet-700 purple:hover:from-violet-700 purple:hover:to-violet-800",
+    infoBg: "bg-purple-50 dark:bg-purple-900/20 midnight:bg-violet-900/20 purple:bg-violet-900/20",
+    infoBorder: "border-purple-200 dark:border-purple-800 midnight:border-violet-700 purple:border-violet-700",
+    infoIcon: "text-purple-600 dark:text-purple-400 midnight:text-violet-400 purple:text-violet-400",
+    infoText: "text-purple-900 dark:text-purple-300 midnight:text-violet-300 purple:text-violet-300",
+    infoSubtext: "text-purple-700 dark:text-purple-400 midnight:text-violet-400 purple:text-violet-400",
+  },
+};
+
+// Badge color configurations
+const badgeColorConfig = {
+  red: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
+  green: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
+  blue: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
+  orange: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400",
+  purple: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
+  gray: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300",
+};
+
+export interface BulkTransferModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (students: BulkTransferStudent[], transferData: BulkTransferFormData) => void;
@@ -49,6 +116,17 @@ interface BulkTransferModalProps {
   onRemoveStudent: (studentId: string) => void;
   onRestoreStudent?: (student: BulkTransferStudent) => void;
   onRestoreAll?: (students: BulkTransferStudent[]) => void;
+  // Customization props
+  title?: string;
+  subtitle?: string | ReactNode;
+  headerIcon?: LucideIcon;
+  headerColor?: "blue" | "green" | "orange" | "purple";
+  itemsLabel?: string;
+  emptyStateText?: string;
+  confirmButtonText?: string;
+  confirmButtonIcon?: LucideIcon;
+  showSummary?: boolean;
+  summaryRenderer?: (students: BulkTransferStudent[], formData: BulkTransferFormData) => ReactNode;
 }
 
 export default function BulkTransferModal({
@@ -59,7 +137,19 @@ export default function BulkTransferModal({
   onRemoveStudent,
   onRestoreStudent,
   onRestoreAll,
+  // Customization props with defaults
+  title = "Bulk Transfer Students",
+  subtitle,
+  headerIcon: HeaderIcon = Users,
+  headerColor = "blue",
+  itemsLabel = "Students",
+  emptyStateText = "No students selected for transfer",
+  confirmButtonText,
+  confirmButtonIcon: ConfirmButtonIcon = ArrowRightLeft,
+  showSummary = true,
+  summaryRenderer,
 }: BulkTransferModalProps) {
+  const colors = headerColorConfig[headerColor];
   const { countryCode } = useCountry();
   const [mounted, setMounted] = useState(false);
   const [removedStudents, setRemovedStudents] = useState<BulkTransferStudent[]>([]);
@@ -202,15 +292,15 @@ export default function BulkTransferModal({
       {/* Modal */}
       <div className="relative w-full max-w-3xl bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header with gradient */}
-        <div className="relative bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 px-6 py-4 flex items-center justify-between">
+        <div className={`relative bg-gradient-to-r ${colors.gradient} px-6 py-4 flex items-center justify-between`}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-              <Users className="w-5 h-5 text-white" />
+            <div className={`w-10 h-10 rounded-xl ${colors.iconBg} flex items-center justify-center`}>
+              <HeaderIcon className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-white">Bulk Transfer Students</h2>
+              <h2 className="text-xl font-semibold text-white">{title}</h2>
               <p className="text-sm text-white/80">
-                Transfer {students.length} {students.length === 1 ? "student" : "students"} at once
+                {subtitle || `Transfer ${students.length} ${students.length === 1 ? itemsLabel.toLowerCase().slice(0, -1) : itemsLabel.toLowerCase()} at once`}
               </p>
             </div>
           </div>
@@ -228,7 +318,7 @@ export default function BulkTransferModal({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                Students to Transfer ({students.length})
+                {itemsLabel} to Transfer ({students.length})
               </label>
               {removedStudents.length > 0 && (
                 <button
@@ -245,7 +335,7 @@ export default function BulkTransferModal({
               <div className="p-4 bg-amber-50 dark:bg-amber-900/20 midnight:bg-amber-900/20 purple:bg-amber-900/20 border border-amber-200 dark:border-amber-800 midnight:border-amber-700 purple:border-amber-700 rounded-lg">
                 <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">
                   <AlertTriangle className="w-4 h-4" />
-                  <span className="text-sm font-medium">No students selected for transfer</span>
+                  <span className="text-sm font-medium">{emptyStateText}</span>
                 </div>
               </div>
             ) : (
@@ -398,31 +488,44 @@ export default function BulkTransferModal({
           />
 
           {/* Summary Info Box */}
-          {students.length > 0 && canSubmit() && (
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 border border-blue-200 dark:border-blue-800 midnight:border-cyan-700 purple:border-pink-700 rounded-lg">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 mt-0.5 flex-shrink-0" />
-                <div className="flex-1 text-sm">
-                  <p className="font-medium text-blue-900 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
-                    Ready to transfer {students.length} {students.length === 1 ? "student" : "students"}
-                  </p>
-                  <p className="mt-1 text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
-                    {transferType === "external"
-                      ? `To: ${destinationSchoolName}`
-                      : `To: Class ${destinationClass}, Section ${destinationSection}`}
-                    {" • "}
-                    Effective: {new Date(effectiveDate).toLocaleDateString()}
-                  </p>
+          {showSummary && students.length > 0 && canSubmit() && (
+            summaryRenderer ? (
+              summaryRenderer(students, {
+                transferType,
+                destinationClass,
+                destinationSection,
+                destinationSchoolName,
+                destinationSchoolAddress,
+                reason,
+                effectiveDate,
+                notes,
+              })
+            ) : (
+              <div className={`p-4 ${colors.infoBg} border ${colors.infoBorder} rounded-lg`}>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className={`w-5 h-5 ${colors.infoIcon} mt-0.5 flex-shrink-0`} />
+                  <div className="flex-1 text-sm">
+                    <p className={`font-medium ${colors.infoText}`}>
+                      Ready to transfer {students.length} {students.length === 1 ? itemsLabel.toLowerCase().slice(0, -1) : itemsLabel.toLowerCase()}
+                    </p>
+                    <p className={`mt-1 ${colors.infoSubtext}`}>
+                      {transferType === "external"
+                        ? `To: ${destinationSchoolName}`
+                        : `To: Class ${destinationClass}, Section ${destinationSection}`}
+                      {" • "}
+                      Effective: {new Date(effectiveDate).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )
           )}
         </div>
 
         {/* Footer */}
         <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 flex items-center justify-between gap-3">
           <div className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
-            {students.length} {students.length === 1 ? "student" : "students"} selected
+            {students.length} {students.length === 1 ? itemsLabel.toLowerCase().slice(0, -1) : itemsLabel.toLowerCase()} selected
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -436,12 +539,12 @@ export default function BulkTransferModal({
               disabled={!canSubmit()}
               className={`px-6 py-2.5 rounded-lg font-medium text-sm text-white transition-all duration-200 flex items-center gap-2 ${
                 canSubmit()
-                  ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-blue-500 dark:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 midnight:from-cyan-600 midnight:to-cyan-700 midnight:hover:from-cyan-700 midnight:hover:to-cyan-800 purple:from-pink-600 purple:to-pink-700 purple:hover:from-pink-700 purple:hover:to-pink-800 shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
+                  ? `${colors.button} shadow-md hover:shadow-lg active:scale-95 cursor-pointer`
                   : "bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-50"
               }`}
             >
-              <ArrowRightLeft className="w-4 h-4" />
-              Transfer {students.length} {students.length === 1 ? "Student" : "Students"}
+              <ConfirmButtonIcon className="w-4 h-4" />
+              {confirmButtonText || `Transfer ${students.length} ${students.length === 1 ? itemsLabel.slice(0, -1) : itemsLabel}`}
             </button>
           </div>
         </div>

@@ -273,10 +273,10 @@ export default function DataTable<T>({
 
       {/* Table Body Container */}
       <div
-        className={`-mx-px smooth-scroll pb-16 ${disableHorizontalScroll ? 'overflow-x-hidden' : 'overflow-x-auto snap-x snap-mandatory'}`}
-        style={{ overflowY: 'visible', overflowX: disableHorizontalScroll ? 'hidden' : 'auto' }}
+        className={`-mx-px smooth-scroll pb-16 ${disableHorizontalScroll ? 'overflow-visible' : 'overflow-x-auto snap-x snap-mandatory'}`}
+        style={{ overflow: disableHorizontalScroll ? 'visible' : undefined, overflowY: disableHorizontalScroll ? undefined : 'visible', overflowX: disableHorizontalScroll ? undefined : 'auto' }}
       >
-        <table className={`w-full border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 ${disableHorizontalScroll ? 'table-fixed' : ''}`} style={{ overflow: 'visible' }}>
+        <table className="w-full border-collapse bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 table-fixed" style={{ overflow: 'visible' }}>
           {/* Table Header */}
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border-b border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">

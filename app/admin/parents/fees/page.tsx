@@ -19,7 +19,9 @@ import SortButton from "@/components/shared/SortButton";
 import ViewToggle from "@/components/shared/ViewToggle";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
 import DeleteAllButton from "@/components/shared/DeleteAllButton";
+import BulkReminderButton from "@/components/shared/BulkReminderButton";
 import BulkDeleteModal, { BulkDeleteItem } from "@/components/shared/BulkDeleteModal";
+import BulkFeeReminderModal, { ChannelMessage, RecordCustomMessage } from "@/components/shared/BulkFeeReminderModal";
 import Tooltip from "@/components/shared/Tooltip";
 import FeeDetailModal, { FeeDetailRecord } from "@/components/shared/FeeDetailModal";
 import PaymentHistoryModal from "@/components/shared/PaymentHistoryModal";
@@ -204,6 +206,10 @@ export default function AdminParentFeesPage() {
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const [itemsToDelete, setItemsToDelete] = useState<BulkDeleteItem[]>([]);
 
+  // Bulk reminder modal state
+  const [isBulkReminderModalOpen, setIsBulkReminderModalOpen] = useState(false);
+  const [recordsToRemind, setRecordsToRemind] = useState<AdminFeeRecord[]>([]);
+
   // Action modals state
   const [selectedRecord, setSelectedRecord] = useState<AdminFeeRecord | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -325,6 +331,61 @@ export default function AdminParentFeesPage() {
       items.forEach((item) => newIds.add(item.id));
       return newIds;
     });
+  };
+
+  // Bulk reminder handlers
+  const handleBulkReminder = () => {
+    if (selectedIds.size > 0) {
+      const selectedRecords = filteredRecords.filter((record) => selectedIds.has(record.id));
+      // Only include records with outstanding balance
+      const recordsWithBalance = selectedRecords.filter((record) => record.balance > 0);
+      setRecordsToRemind(recordsWithBalance);
+      setIsBulkReminderModalOpen(true);
+    }
+  };
+
+  const handleCloseBulkReminderModal = () => {
+    setIsBulkReminderModalOpen(false);
+    setRecordsToRemind([]);
+  };
+
+  const handleConfirmBulkReminder = (
+    recordIds: string[],
+    channels: string[],
+    channelMessages: Record<string, ChannelMessage>,
+    customMessages: Record<string, RecordCustomMessage>
+  ) => {
+    // Log the data for debugging (in a real app, this would be sent to the backend)
+    console.log("Sending bulk reminders:", {
+      recordIds,
+      channels,
+      channelMessages,
+      customMessages,
+    });
+
+    // Update reminder counts for all sent reminders
+    setReminderCounts(prev => {
+      const newCounts = { ...prev };
+      recordIds.forEach(id => {
+        newCounts[id] = (newCounts[id] || 0) + 1;
+      });
+      return newCounts;
+    });
+
+    const channelText = channels.join(", ");
+    addNotification({
+      type: "success",
+      title: "Reminders Sent",
+      message: `Successfully sent ${channelText} reminders to ${recordIds.length} ${recordIds.length === 1 ? 'parent' : 'parents'}.`,
+    });
+
+    setSelectedIds(new Set());
+    setIsBulkReminderModalOpen(false);
+    setRecordsToRemind([]);
+  };
+
+  const handleRemoveFromReminderList = (recordId: string) => {
+    setRecordsToRemind((prev) => prev.filter((record) => record.id !== recordId));
   };
 
   // Check if there are active filters
@@ -1362,8 +1423,28 @@ export default function AdminParentFeesPage() {
     {
       key: "checkbox",
       label: "",
-      className: "w-10 min-w-[40px]",
+      className: "w-[3%]",
       hidden: { mobile: true }, // Hide checkbox on mobile
+      renderHeader: () => (
+        <input
+          type="checkbox"
+          ref={(el) => {
+            if (el) {
+              const isSomeSelected = selectedIds.size > 0 && selectedIds.size < filteredRecords.length;
+              el.indeterminate = isSomeSelected;
+            }
+          }}
+          checked={selectedIds.size === filteredRecords.length && filteredRecords.length > 0}
+          onChange={(e) => {
+            if (e.target.checked) {
+              setSelectedIds(new Set(filteredRecords.map(r => r.id)));
+            } else {
+              setSelectedIds(new Set());
+            }
+          }}
+          className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+        />
+      ),
       render: (record) => (
         <input
           type="checkbox"
@@ -1385,7 +1466,7 @@ export default function AdminParentFeesPage() {
       key: "parent",
       label: "Parent",
       sortable: true,
-      className: "min-w-[120px] md:min-w-[160px] overflow-visible",
+      className: "w-[20%] lg:w-[14%] overflow-visible",
       render: (record) => (
         <div className="flex items-center gap-2 overflow-visible">
           <Tooltip content={`${record.parentName}\n${record.parentEmail}`}>
@@ -1416,7 +1497,7 @@ export default function AdminParentFeesPage() {
       key: "child",
       label: "Student",
       sortable: true,
-      className: "min-w-[100px] md:min-w-[130px] overflow-visible",
+      className: "w-[10%] overflow-visible",
       hidden: { mobile: true }, // Hide on mobile - parent is enough
       render: (record) => (
         <div className="flex items-center gap-2 overflow-visible">
@@ -1448,13 +1529,13 @@ export default function AdminParentFeesPage() {
       key: "feeType",
       label: "Fee Type",
       sortable: true,
-      className: "min-w-[80px] md:min-w-[110px]",
-      hidden: { mobile: true, tablet: true }, // Hide on mobile and tablet
+      className: "w-[12%]",
+      hidden: { mobile: true, tablet: true, desktop: false }, // Hide on mobile and tablet, show on desktop
       render: (record) => (
         <Tooltip content={`${record.feeType}\n${record.term} - ${record.academicYear}`}>
           <div className="overflow-hidden">
             <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm truncate">{record.feeType}</p>
-            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">
+            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
               {record.term} - {record.academicYear}
             </p>
           </div>
@@ -1465,7 +1546,7 @@ export default function AdminParentFeesPage() {
       key: "amount",
       label: "Amount",
       sortable: true,
-      className: "min-w-[70px] md:min-w-[90px]",
+      className: "w-[15%] lg:w-[7%]",
       render: (record) => (
         <span className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm whitespace-nowrap">
           {money(record.amount)}
@@ -1476,8 +1557,8 @@ export default function AdminParentFeesPage() {
       key: "paidAmount",
       label: "Paid",
       sortable: true,
-      className: "min-w-[60px] md:min-w-[80px]",
-      hidden: { mobile: true }, // Hide on mobile
+      className: "w-[7%]",
+      hidden: { mobile: true, tablet: true }, // Hide on mobile and tablet
       render: (record) => (
         <span className="font-medium text-green-600 dark:text-green-400 text-xs sm:text-sm whitespace-nowrap">
           {money(record.paidAmount)}
@@ -1488,7 +1569,7 @@ export default function AdminParentFeesPage() {
       key: "balance",
       label: "Balance",
       sortable: true,
-      className: "min-w-[70px] md:min-w-[90px]",
+      className: "w-[15%] lg:w-[7%]",
       render: (record) => (
         <span
           className={`font-semibold text-xs sm:text-sm whitespace-nowrap ${
@@ -1503,8 +1584,8 @@ export default function AdminParentFeesPage() {
       key: "dueDate",
       label: "Due Date",
       sortable: true,
-      className: "min-w-[75px] md:min-w-[95px]",
-      hidden: { mobile: true }, // Hide on mobile
+      className: "w-[8%]",
+      hidden: { mobile: true, tablet: true }, // Hide on mobile and tablet
       render: (record) => (
         <span className="text-gray-700 dark:text-gray-300 text-xs sm:text-sm whitespace-nowrap">
           {new Date(record.dueDate).toLocaleDateString("en-GB", {
@@ -1519,17 +1600,17 @@ export default function AdminParentFeesPage() {
       key: "status",
       label: "Status",
       sortable: true,
-      className: "min-w-[70px] md:min-w-[85px]",
+      className: "w-[18%] lg:w-[10%]",
       render: (record) => getStatusBadge(record.status),
     },
     {
       key: "actions",
       label: "Actions",
-      className: "min-w-[50px] md:min-w-[130px] pr-2",
+      className: "w-[12%] lg:w-[12%]",
       render: (record) => (
-        <div className="flex items-center justify-end gap-0.5">
-          {/* Show only dropdown on mobile, full buttons on desktop */}
-          <div className="hidden md:flex items-center gap-0.5">
+        <div className="flex items-center justify-end gap-0">
+          {/* Action buttons - only visible on lg screens and above */}
+          <div className="hidden lg:flex items-center gap-0">
             <Tooltip content="View Details">
               <button
                 type="button"
@@ -1576,6 +1657,8 @@ export default function AdminParentFeesPage() {
           </div>
           <FeeActionsDropdown
             hasPayments={record.paymentHistory.length > 0}
+            hasReminders={reminderCounts[record.id] > 0}
+            onViewDetails={() => handleViewDetails(record)}
             onEdit={() => handleEditRecord(record)}
             onDelete={() => handleDeleteRecord(record)}
             onDownload={() => handleDownloadStatement(record)}
@@ -1584,6 +1667,8 @@ export default function AdminParentFeesPage() {
             onViewHistory={() => handleViewReceipt(record)}
             onRecordPayment={() => handleRecordPayment(record)}
             onAutoReminder={() => handleAutoReminder(record)}
+            onSendReminder={() => handleSendReminder(record)}
+            onViewReminderHistory={() => handleViewReminderHistory(record)}
           />
         </div>
       ),
@@ -1658,8 +1743,12 @@ export default function AdminParentFeesPage() {
               <DateRangePicker onChange={handleDateRangeChange} resetKey={resetKey} />
               <FilterButton fields={filterFields} onFilterChange={handleFilterChange} resetKey={resetKey} />
 
+              {/* Bulk Actions - Only show when items selected */}
               {selectedIds.size > 0 && (
-                <DeleteAllButton selectedCount={selectedIds.size} onDeleteAll={handleDeleteAll} />
+                <>
+                  <BulkReminderButton selectedCount={selectedIds.size} onBulkReminder={handleBulkReminder} />
+                  <DeleteAllButton selectedCount={selectedIds.size} onDeleteAll={handleDeleteAll} />
+                </>
               )}
 
               <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
@@ -1670,6 +1759,34 @@ export default function AdminParentFeesPage() {
             </div>
 
             <div className="flex items-center justify-end gap-3 lg:flex-1">
+              {/* Select All Checkbox - Only show in grid view */}
+              {viewMode === "grid" && (
+                <div className="flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 shadow-sm">
+                  <input
+                    type="checkbox"
+                    ref={(el) => {
+                      if (el) {
+                        const isSomeSelected = selectedIds.size > 0 && selectedIds.size < displayedRecords.length;
+                        el.indeterminate = isSomeSelected;
+                      }
+                    }}
+                    checked={selectedIds.size === displayedRecords.length && displayedRecords.length > 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        // Select all displayed records
+                        setSelectedIds(new Set(displayedRecords.map(r => r.id)));
+                      } else {
+                        // Deselect all
+                        setSelectedIds(new Set());
+                      }
+                    }}
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                  />
+                  <span className="hidden sm:inline text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
+                    Select All
+                  </span>
+                </div>
+              )}
               <ViewToggle viewMode={viewMode} onViewModeChange={handleViewModeChange} />
               <SortButton
                 options={sortOptions}
@@ -1750,7 +1867,7 @@ export default function AdminParentFeesPage() {
                       enablePagination={true}
                       enableItemsPerPage={true}
                       stickyColumnCount={1}
-                      disableHorizontalScroll={false}
+                      disableHorizontalScroll={true}
                     />
                   </div>
                 )}
@@ -1819,6 +1936,16 @@ export default function AdminParentFeesPage() {
                             money={money}
                             getStatusBadge={getStatusBadge}
                             reminderCount={reminderCounts[record.id] || 0}
+                            isSelected={selectedIds.has(record.id)}
+                            onSelectionChange={(id, selected) => {
+                              const newSelectedIds = new Set(selectedIds);
+                              if (selected) {
+                                newSelectedIds.add(id);
+                              } else {
+                                newSelectedIds.delete(id);
+                              }
+                              setSelectedIds(newSelectedIds);
+                            }}
                             onViewDetails={handleViewDetails}
                             onViewReceipt={handleViewReceipt}
                             onSendReminder={handleSendReminder}
@@ -1851,7 +1978,6 @@ export default function AdminParentFeesPage() {
         </div>
 
         {/* Bulk Delete Modal */}
-        {/* Bulk Delete Modal */}
         <BulkDeleteModal
           isOpen={isBulkDeleteModalOpen}
           onClose={handleCloseBulkDeleteModal}
@@ -1863,6 +1989,30 @@ export default function AdminParentFeesPage() {
           title="Delete Fee Records"
           warningMessage="This will permanently remove these fee records. This action cannot be undone."
           confirmButtonText="Delete Records"
+        />
+
+        {/* Bulk Fee Reminder Modal */}
+        <BulkFeeReminderModal
+          isOpen={isBulkReminderModalOpen}
+          onClose={handleCloseBulkReminderModal}
+          onConfirm={handleConfirmBulkReminder}
+          records={recordsToRemind.map(record => ({
+            id: record.id,
+            parentId: record.parentId,
+            parentName: record.parentName,
+            parentEmail: record.parentEmail,
+            parentPhone: record.parentPhone,
+            childId: record.childId,
+            childName: record.childName,
+            childClass: record.childClass,
+            feeType: record.feeType,
+            amount: record.amount,
+            balance: record.balance,
+            dueDate: record.dueDate,
+          }))}
+          onRemoveRecord={handleRemoveFromReminderList}
+          money={money}
+          title="Send Bulk Reminders"
         />
 
         {/* Fee Detail Modal */}
@@ -2031,6 +2181,8 @@ interface FeeRecordCardProps {
   money: (amount: number) => string;
   getStatusBadge: (status: AdminFeeRecord["status"]) => React.ReactNode;
   reminderCount: number;
+  isSelected?: boolean;
+  onSelectionChange?: (id: string, selected: boolean) => void;
   onViewDetails: (record: AdminFeeRecord) => void;
   onViewReceipt: (record: AdminFeeRecord) => void;
   onSendReminder: (record: AdminFeeRecord) => void;
@@ -2049,6 +2201,8 @@ function FeeRecordCard({
   money,
   getStatusBadge,
   reminderCount,
+  isSelected = false,
+  onSelectionChange,
   onViewDetails,
   onViewReceipt,
   onSendReminder,
@@ -2062,11 +2216,21 @@ function FeeRecordCard({
   onRecordPayment,
 }: FeeRecordCardProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
+    <div className={`bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border ${isSelected ? 'border-blue-500 dark:border-blue-400 ring-2 ring-blue-500/20' : 'border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20'} shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden`}>
       {/* Header */}
       <div className="p-4 border-b border-gray-100 dark:border-gray-700">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
+            {/* Selection Checkbox */}
+            {onSelectionChange && (
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={(e) => onSelectionChange(record.id, e.target.checked)}
+                className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer flex-shrink-0"
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
             <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
               <Image
                 src={`https://i.pravatar.cc/150?u=${record.childId}`}

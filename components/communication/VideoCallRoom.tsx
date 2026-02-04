@@ -22,7 +22,6 @@ import {
   Columns,
   Image as ImageIcon,
   Sparkles,
-  ChevronDown,
 } from "lucide-react";
 import Image from "next/image";
 import { useCommunication } from "@/contexts/CommunicationContext";
@@ -653,62 +652,58 @@ export default function VideoCallRoom({
         ...getBackgroundStyle(selectedBackground),
       }}
     >
-      {/* Header Bar */}
+      {/* Header Section - Matches PageHeader pattern */}
       <div
-        className={`absolute top-0 left-0 right-0 p-4 z-20 transition-opacity duration-300 ${
+        className={`bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-white/10 px-4 sm:px-6 py-3 sm:py-4 z-20 transition-opacity duration-300 ${
           showControls ? "opacity-100" : "opacity-0"
         }`}
       >
-        <div className="flex items-center justify-between">
-          {/* Left: Tenant branding & call info */}
-          <div className="flex items-center gap-4">
-            {/* Tenant Logo */}
-            {tenantLogo ? (
-              <img
-                src={tenantLogo}
-                alt={tenantName}
-                className="h-8 w-auto object-contain"
-              />
-            ) : (
-              <div
-                className="h-8 w-8 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: `${primaryColor}30` }}
-              >
-                <Video className="w-4 h-4" style={{ color: primaryColor }} />
-              </div>
-            )}
+        {/* Main row with title and actions */}
+        <div className="flex items-center justify-between gap-2">
+          {/* Left: Back button, Title, Duration */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {/* Back/Close Button */}
+            <button
+              onClick={endCall}
+              className="p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
+              title="End call and go back"
+            >
+              <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-white/70 hover:text-gray-700 dark:hover:text-white" />
+            </button>
 
-            {/* Call info */}
-            <div>
-              <p className="text-white/70 text-xs">{tenantName}</p>
-              <div className="flex items-center gap-2">
-                <p className="text-white text-sm font-medium">Video Call</p>
-                {session?.state === "connected" && (
-                  <span
-                    className="px-2 py-0.5 rounded-full text-xs font-medium text-white"
-                    style={{ backgroundColor: `${primaryColor}50` }}
-                  >
-                    {formatDuration(callDuration)}
-                  </span>
-                )}
-              </div>
+            {/* Page Title */}
+            <div className="flex items-center gap-2 min-w-0">
+              <Video className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" style={{ color: primaryColor }} />
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white truncate">
+                Video Call
+              </h1>
+              {session?.state === "connected" && (
+                <span
+                  className="px-2 py-0.5 rounded-full text-xs font-medium text-white flex-shrink-0"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  {formatDuration(callDuration)}
+                </span>
+              )}
             </div>
           </div>
 
-          {/* Center: Quality badge */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur rounded-full">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-white/80 text-xs font-medium">{selectedQuality.name}</span>
-          </div>
+          {/* Right: Actions */}
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            {/* Quality badge - Hidden on mobile */}
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-white/10 rounded-full">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span className="text-gray-700 dark:text-white/80 text-xs font-medium">{selectedQuality.name}</span>
+            </div>
 
-          {/* Right: Layout & more options */}
-          <div className="flex items-center gap-2">
-            {/* Layout toggle */}
-            <div className="hidden md:flex items-center bg-white/10 backdrop-blur rounded-lg p-1">
+            {/* Layout toggle - Hidden on mobile */}
+            <div className="hidden md:flex items-center bg-gray-100 dark:bg-white/10 rounded-lg p-1">
               <button
                 onClick={() => setLayout("grid")}
-                className={`p-2 rounded-md transition-colors ${
-                  layout === "grid" ? "bg-white/20 text-white" : "text-white/60 hover:text-white"
+                className={`p-1.5 rounded-md transition-colors cursor-pointer ${
+                  layout === "grid"
+                    ? "bg-white dark:bg-white/20 text-gray-900 dark:text-white shadow-sm"
+                    : "text-gray-500 dark:text-white/60 hover:text-gray-700 dark:hover:text-white"
                 }`}
                 title="Grid view"
               >
@@ -716,8 +711,10 @@ export default function VideoCallRoom({
               </button>
               <button
                 onClick={() => setLayout("spotlight")}
-                className={`p-2 rounded-md transition-colors ${
-                  layout === "spotlight" ? "bg-white/20 text-white" : "text-white/60 hover:text-white"
+                className={`p-1.5 rounded-md transition-colors cursor-pointer ${
+                  layout === "spotlight"
+                    ? "bg-white dark:bg-white/20 text-gray-900 dark:text-white shadow-sm"
+                    : "text-gray-500 dark:text-white/60 hover:text-gray-700 dark:hover:text-white"
                 }`}
                 title="Spotlight view"
               >
@@ -729,19 +726,19 @@ export default function VideoCallRoom({
             <div className="relative">
               <button
                 onClick={() => setShowMoreMenu(!showMoreMenu)}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                className="p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
               >
-                <MoreVertical className="w-5 h-5 text-white" />
+                <MoreVertical className="w-5 h-5 text-gray-500 dark:text-white/70" />
               </button>
 
               {showMoreMenu && (
-                <div className="absolute right-0 top-full mt-2 w-56 bg-gray-800/95 backdrop-blur-lg rounded-xl shadow-2xl border border-white/10 overflow-hidden z-30">
+                <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-white/10 overflow-hidden z-[100]">
                   <button
                     onClick={() => {
                       setShowSettings(true);
                       setShowMoreMenu(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 transition-colors cursor-pointer text-sm"
                   >
                     <Settings className="w-4 h-4" />
                     <span>Call Settings</span>
@@ -751,14 +748,14 @@ export default function VideoCallRoom({
                       setShowBackgroundMenu(!showBackgroundMenu);
                       setShowMoreMenu(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 transition-colors cursor-pointer text-sm"
                   >
                     <ImageIcon className="w-4 h-4" />
                     <span>Change Background</span>
                   </button>
                   <button
                     onClick={copyRoomId}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 transition-colors cursor-pointer text-sm"
                   >
                     <Copy className="w-4 h-4" />
                     <span>Copy Room ID</span>
@@ -768,15 +765,15 @@ export default function VideoCallRoom({
                       setShowMoreMenu(false);
                       setShowAddParticipant(true);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 transition-colors cursor-pointer text-sm"
                   >
                     <UserPlus className="w-4 h-4" />
                     <span>Add Participant</span>
                   </button>
-                  <div className="border-t border-white/10" />
+                  <div className="border-t border-gray-200 dark:border-white/10" />
                   <button
                     onClick={endCall}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer text-sm"
                   >
                     <PhoneOff className="w-4 h-4" />
                     <span>End Call</span>
@@ -786,11 +783,26 @@ export default function VideoCallRoom({
             </div>
           </div>
         </div>
+
+        {/* Breadcrumbs row */}
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 ml-9 sm:ml-11">
+          <span className="hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer transition-colors">
+            Dashboard
+          </span>
+          <span>/</span>
+          <span className="hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer transition-colors">
+            Communication
+          </span>
+          <span>/</span>
+          <span className="text-blue-600 dark:text-blue-400 font-medium">
+            Video Call
+          </span>
+        </div>
       </div>
 
       {/* Background selector dropdown */}
       {showBackgroundMenu && (
-        <div className="absolute top-16 right-4 w-80 bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 p-4 z-30">
+        <div className="absolute top-[72px] sm:top-[80px] right-2 sm:right-4 w-72 sm:w-80 bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 p-3 sm:p-4 z-30">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-white font-medium">Virtual Background</h3>
             <button
@@ -833,7 +845,7 @@ export default function VideoCallRoom({
       )}
 
       {/* Video Grid */}
-      <div className="flex-1 p-4 pb-28 pt-20">
+      <div className="flex-1 p-2 sm:p-4 pb-24 sm:pb-28">
         {/* Screen Share Display - Takes priority when active */}
         {screenShareStream && (
           <div className="h-full flex gap-4">
@@ -1215,46 +1227,46 @@ export default function VideoCallRoom({
 
       {/* Controls Bar - Modern Pill Design */}
       <div
-        className={`absolute bottom-0 left-0 right-0 p-4 sm:p-6 transition-all duration-300 ${
+        className={`absolute bottom-0 left-0 right-0 p-2 sm:p-4 md:p-6 transition-all duration-300 ${
           showControls ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
         }`}
       >
         <div className="flex justify-center">
-          <div className="bg-gray-900/90 backdrop-blur-2xl rounded-full px-3 py-2.5 shadow-2xl border border-white/10 flex items-center gap-1.5 sm:gap-2">
+          <div className="bg-gray-900/90 backdrop-blur-2xl rounded-full px-2 sm:px-3 py-2 sm:py-2.5 shadow-2xl border border-white/10 flex items-center gap-1 sm:gap-1.5 md:gap-2">
             {/* Mute - Pill button */}
             <button
               onClick={toggleMute}
-              className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 cursor-pointer ${
+              className={`group relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-200 cursor-pointer ${
                 isMuted
                   ? "bg-red-500/90 text-white shadow-lg shadow-red-500/20"
                   : "bg-white/10 hover:bg-white/15 text-white/90 hover:text-white"
               }`}
               title={isMuted ? "Unmute" : "Mute"}
             >
-              {isMuted ? <MicOff className="w-[18px] h-[18px]" /> : <Mic className="w-[18px] h-[18px]" />}
-              <span className="hidden sm:inline text-xs font-medium">{isMuted ? "Unmute" : "Mute"}</span>
+              {isMuted ? <MicOff className="w-4 h-4 sm:w-[18px] sm:h-[18px]" /> : <Mic className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />}
+              <span className="hidden md:inline text-xs font-medium">{isMuted ? "Unmute" : "Mute"}</span>
             </button>
 
             {/* Video toggle - Pill button */}
             {callType === "video" && (
               <button
                 onClick={toggleVideo}
-                className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 cursor-pointer ${
+                className={`group relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-200 cursor-pointer ${
                   isVideoOff
                     ? "bg-red-500/90 text-white shadow-lg shadow-red-500/20"
                     : "bg-white/10 hover:bg-white/15 text-white/90 hover:text-white"
                 }`}
                 title={isVideoOff ? "Turn on camera" : "Turn off camera"}
               >
-                {isVideoOff ? <VideoOff className="w-[18px] h-[18px]" /> : <Video className="w-[18px] h-[18px]" />}
-                <span className="hidden sm:inline text-xs font-medium">{isVideoOff ? "Start" : "Stop"}</span>
+                {isVideoOff ? <VideoOff className="w-4 h-4 sm:w-[18px] sm:h-[18px]" /> : <Video className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />}
+                <span className="hidden md:inline text-xs font-medium">{isVideoOff ? "Start" : "Stop"}</span>
               </button>
             )}
 
-            {/* Screen share - Pill button */}
+            {/* Screen share - Pill button - hidden on mobile */}
             <button
               onClick={isScreenSharing ? stopScreenShare : toggleScreenShare}
-              className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 cursor-pointer ${
+              className={`hidden sm:flex group relative items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-200 cursor-pointer ${
                 isScreenSharing
                   ? "text-white shadow-lg"
                   : "bg-white/10 hover:bg-white/15 text-white/90 hover:text-white"
@@ -1262,33 +1274,33 @@ export default function VideoCallRoom({
               style={isScreenSharing ? { backgroundColor: primaryColor, boxShadow: `0 4px 12px ${primaryColor}40` } : {}}
               title={isScreenSharing ? "Stop sharing" : "Share screen"}
             >
-              {isScreenSharing ? <MonitorOff className="w-[18px] h-[18px]" /> : <Monitor className="w-[18px] h-[18px]" />}
-              <span className="hidden sm:inline text-xs font-medium">{isScreenSharing ? "Stop" : "Share"}</span>
+              {isScreenSharing ? <MonitorOff className="w-4 h-4 sm:w-[18px] sm:h-[18px]" /> : <Monitor className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />}
+              <span className="hidden md:inline text-xs font-medium">{isScreenSharing ? "Stop" : "Share"}</span>
             </button>
 
             {/* Divider */}
-            <div className="w-px h-8 bg-white/10 mx-1" />
+            <div className="w-px h-6 sm:h-8 bg-white/10 mx-0.5 sm:mx-1" />
 
             {/* End call - Prominent pill */}
             <button
               onClick={endCall}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-red-500 hover:bg-red-600 transition-all duration-200 shadow-lg shadow-red-500/30 hover:shadow-red-500/40 cursor-pointer"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 rounded-full bg-red-500 hover:bg-red-600 transition-all duration-200 shadow-lg shadow-red-500/30 hover:shadow-red-500/40 cursor-pointer"
               title="End call"
             >
-              <PhoneOff className="w-[18px] h-[18px] text-white" />
-              <span className="hidden sm:inline text-xs font-medium text-white">End</span>
+              <PhoneOff className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-white" />
+              <span className="hidden md:inline text-xs font-medium text-white">End</span>
             </button>
 
-            {/* Divider */}
-            <div className="w-px h-8 bg-white/10 mx-1" />
+            {/* Divider - hidden on very small screens */}
+            <div className="hidden sm:block w-px h-6 sm:h-8 bg-white/10 mx-0.5 sm:mx-1" />
 
-            {/* Chat - Pill button */}
+            {/* Chat - Pill button - hidden on very small screens */}
             <button
               onClick={() => {
                 setShowChat(!showChat);
                 setShowParticipants(false);
               }}
-              className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 cursor-pointer ${
+              className={`hidden sm:flex group relative items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-200 cursor-pointer ${
                 showChat
                   ? "text-white shadow-lg"
                   : "bg-white/10 hover:bg-white/15 text-white/90 hover:text-white"
@@ -1296,22 +1308,22 @@ export default function VideoCallRoom({
               style={showChat ? { backgroundColor: primaryColor, boxShadow: `0 4px 12px ${primaryColor}40` } : {}}
               title="Chat"
             >
-              <MessageSquare className="w-[18px] h-[18px]" />
-              <span className="hidden sm:inline text-xs font-medium">Chat</span>
+              <MessageSquare className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+              <span className="hidden md:inline text-xs font-medium">Chat</span>
               {messages.filter((m) => !m.isRead && m.senderId !== userId).length > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 rounded-full text-[10px] flex items-center justify-center font-semibold px-1">
+                <span className="absolute -top-1 -right-1 min-w-[16px] sm:min-w-[18px] h-[16px] sm:h-[18px] bg-red-500 rounded-full text-[9px] sm:text-[10px] flex items-center justify-center font-semibold px-0.5 sm:px-1">
                   {messages.filter((m) => !m.isRead && m.senderId !== userId).length}
                 </span>
               )}
             </button>
 
-            {/* Participants - Pill button */}
+            {/* Participants - Pill button - hidden on very small screens */}
             <button
               onClick={() => {
                 setShowParticipants(!showParticipants);
                 setShowChat(false);
               }}
-              className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 cursor-pointer ${
+              className={`hidden sm:flex group relative items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-200 cursor-pointer ${
                 showParticipants
                   ? "text-white shadow-lg"
                   : "bg-white/10 hover:bg-white/15 text-white/90 hover:text-white"
@@ -1319,22 +1331,22 @@ export default function VideoCallRoom({
               style={showParticipants ? { backgroundColor: primaryColor, boxShadow: `0 4px 12px ${primaryColor}40` } : {}}
               title="Participants"
             >
-              <Users className="w-[18px] h-[18px]" />
+              <Users className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
               <span
-                className="min-w-[18px] h-[18px] rounded-full text-[10px] flex items-center justify-center font-semibold text-white px-1"
+                className="min-w-[16px] sm:min-w-[18px] h-[16px] sm:h-[18px] rounded-full text-[9px] sm:text-[10px] flex items-center justify-center font-semibold text-white px-0.5 sm:px-1"
                 style={{ backgroundColor: showParticipants ? 'rgba(255,255,255,0.2)' : primaryColor }}
               >
                 {totalParticipants}
               </span>
             </button>
 
-            {/* Fullscreen - Icon only pill */}
+            {/* Fullscreen - Icon only pill - hidden on very small screens */}
             <button
               onClick={toggleFullscreen}
-              className="p-2.5 rounded-full bg-white/10 hover:bg-white/15 transition-all duration-200 text-white/90 hover:text-white cursor-pointer"
+              className="hidden sm:flex p-2 sm:p-2.5 rounded-full bg-white/10 hover:bg-white/15 transition-all duration-200 text-white/90 hover:text-white cursor-pointer"
               title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
             >
-              {isFullscreen ? <Minimize2 className="w-[18px] h-[18px]" /> : <Maximize2 className="w-[18px] h-[18px]" />}
+              {isFullscreen ? <Minimize2 className="w-4 h-4 sm:w-[18px] sm:h-[18px]" /> : <Maximize2 className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />}
             </button>
           </div>
         </div>
@@ -1342,9 +1354,9 @@ export default function VideoCallRoom({
 
       {/* Chat Panel */}
       {showChat && (
-        <div className="absolute right-0 top-16 bottom-0 w-96 bg-gray-900/98 backdrop-blur-xl border-l border-white/10 flex flex-col z-10">
-          <div className="p-5 border-b border-white/10 flex items-center justify-between">
-            <h3 className="font-semibold text-white text-lg">Chat</h3>
+        <div className="absolute right-0 top-[72px] sm:top-[80px] bottom-0 w-full sm:w-80 md:w-96 bg-gray-900/98 backdrop-blur-xl border-l border-white/10 flex flex-col z-10">
+          <div className="p-3 sm:p-5 border-b border-white/10 flex items-center justify-between">
+            <h3 className="font-semibold text-white text-base sm:text-lg">Chat</h3>
             <button
               onClick={() => setShowChat(false)}
               className="p-2 hover:bg-white/10 rounded-full transition-colors"
@@ -1415,9 +1427,9 @@ export default function VideoCallRoom({
 
       {/* Participants Panel */}
       {showParticipants && (
-        <div className="absolute right-0 top-16 bottom-0 w-96 bg-gray-900/98 backdrop-blur-xl border-l border-white/10 flex flex-col z-10">
-          <div className="p-5 border-b border-white/10 flex items-center justify-between">
-            <h3 className="font-semibold text-white text-lg">
+        <div className="absolute right-0 top-[72px] sm:top-[80px] bottom-0 w-full sm:w-80 md:w-96 bg-gray-900/98 backdrop-blur-xl border-l border-white/10 flex flex-col z-10">
+          <div className="p-3 sm:p-5 border-b border-white/10 flex items-center justify-between">
+            <h3 className="font-semibold text-white text-base sm:text-lg">
               Participants ({totalParticipants})
             </h3>
             <button

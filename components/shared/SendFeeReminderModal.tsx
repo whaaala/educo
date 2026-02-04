@@ -23,7 +23,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-interface SendFeeReminderModalProps {
+export interface SendFeeReminderModalProps {
   isOpen: boolean;
   onClose: () => void;
   parentName: string;
@@ -39,6 +39,14 @@ interface SendFeeReminderModalProps {
   dueDate: string;
   money: (amount: number) => string;
   onSend?: (data: ReminderData & { feeRecordId: string; parentId: string; childId: string }) => void;
+  // Customization props
+  title?: string;
+  successTitle?: string;
+  sendButtonText?: string;
+  scheduleButtonText?: string;
+  channelSectionLabel?: string;
+  showScheduleOption?: boolean;
+  defaultChannels?: string[];
 }
 
 export interface ChannelMessage {
@@ -73,11 +81,19 @@ export default function SendFeeReminderModal({
   childId,
   feeRecordId,
   feeType,
-  amount,
+  amount: _amount,
   balance,
   dueDate,
   money,
   onSend,
+  // Customization props with defaults
+  title = "Send Payment Reminder",
+  successTitle = "Reminder Sent!",
+  sendButtonText = "Send Reminder",
+  scheduleButtonText = "Schedule Reminder",
+  channelSectionLabel = "Send via",
+  showScheduleOption = true,
+  defaultChannels = ["email"],
 }: SendFeeReminderModalProps) {
   // Generate default messages for each channel
   const getDefaultMessages = () => {
@@ -112,7 +128,7 @@ export default function SendFeeReminderModal({
     };
   };
 
-  const [channels, setChannels] = useState<string[]>(["email"]);
+  const [channels, setChannels] = useState<string[]>(defaultChannels);
   const [activeTab, setActiveTab] = useState<string>("email");
   const [messages, setMessages] = useState<Record<string, ChannelMessage>>(getDefaultMessages());
   const [scheduleDate, setScheduleDate] = useState("");
@@ -281,7 +297,7 @@ export default function SendFeeReminderModal({
           disabled={channels.length === 0 || isSending || hasOverLimitMessages || (isScheduled && (!scheduleDate || !scheduleTime))}
           icon={isSending ? undefined : <Send className="w-4 h-4" />}
         >
-          {isSending ? "Sending..." : isScheduled ? "Schedule Reminder" : "Send Reminder"}
+          {isSending ? "Sending..." : isScheduled ? scheduleButtonText : sendButtonText}
         </FormButton>
       </div>
     </div>
@@ -314,7 +330,7 @@ export default function SendFeeReminderModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={isSent ? "Reminder Sent!" : "Send Payment Reminder"}
+      title={isSent ? successTitle : title}
       subtitle={isSent ? "The reminder has been sent successfully" : `${feeType} - ${money(balance)} outstanding`}
       icon={isSent ? <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" /> : <Send className="w-5 h-5 sm:w-6 sm:h-6" />}
       maxWidth="2xl"
@@ -379,7 +395,7 @@ export default function SendFeeReminderModal({
           {/* Channel Selection */}
           <div>
             <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-              Send via
+              {channelSectionLabel}
             </label>
             <div className="grid grid-cols-2 gap-3">
               {channelOptions.map((channel) => (
@@ -535,6 +551,7 @@ export default function SendFeeReminderModal({
           )}
 
           {/* Schedule Option */}
+          {showScheduleOption && (
           <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
             <label className="flex items-center justify-between cursor-pointer">
               <div className="flex items-center gap-3">
@@ -634,6 +651,7 @@ export default function SendFeeReminderModal({
               </div>
             )}
           </div>
+          )}
         </div>
       )}
     </Modal>

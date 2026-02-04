@@ -16,7 +16,9 @@ import {
   Mail,
   Phone,
   Hash,
+  type LucideIcon,
 } from "lucide-react";
+import { type ReactNode } from "react";
 
 export interface FeeDetailRecord {
   id: string;
@@ -47,49 +49,96 @@ export interface FeeDetailRecord {
   updatedAt: string;
 }
 
-interface FeeDetailModalProps {
+// Status configuration type
+export interface StatusConfig {
+  bg: string;
+  text: string;
+  icon: ReactNode;
+  label: string;
+}
+
+// Custom status configurations that can be provided
+export type CustomStatusConfigs = Record<string, StatusConfig>;
+
+export interface FeeDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   record: FeeDetailRecord | null;
   money: (amount: number) => string;
+  // Customization props
+  title?: string;
+  headerIcon?: LucideIcon;
+  showStudentInfo?: boolean;
+  showParentInfo?: boolean;
+  showPaymentHistory?: boolean;
+  studentInfoTitle?: string;
+  parentInfoTitle?: string;
+  feeDetailsTitle?: string;
+  amountSummaryTitle?: string;
+  paymentsTitle?: string;
+  totalLabel?: string;
+  paidLabel?: string;
+  balanceLabel?: string;
+  customStatusConfigs?: CustomStatusConfigs;
+  maxPaymentsToShow?: number;
 }
+
+// Default status configurations
+const defaultStatusConfigs: Record<string, StatusConfig> = {
+  paid: {
+    bg: "bg-green-100 dark:bg-green-900/30",
+    text: "text-green-700 dark:text-green-400",
+    icon: <CheckCircle2 className="w-4 h-4" />,
+    label: "Paid",
+  },
+  partial: {
+    bg: "bg-yellow-100 dark:bg-yellow-900/30",
+    text: "text-yellow-700 dark:text-yellow-400",
+    icon: <Clock className="w-4 h-4" />,
+    label: "Partial",
+  },
+  pending: {
+    bg: "bg-blue-100 dark:bg-blue-900/30",
+    text: "text-blue-700 dark:text-blue-400",
+    icon: <Clock className="w-4 h-4" />,
+    label: "Pending",
+  },
+  overdue: {
+    bg: "bg-red-100 dark:bg-red-900/30",
+    text: "text-red-700 dark:text-red-400",
+    icon: <AlertCircle className="w-4 h-4" />,
+    label: "Overdue",
+  },
+};
 
 export default function FeeDetailModal({
   isOpen,
   onClose,
   record,
   money,
+  // Customization props with defaults
+  title = "Fee Record Details",
+  headerIcon: HeaderIcon = Receipt,
+  showStudentInfo = true,
+  showParentInfo = true,
+  showPaymentHistory = true,
+  studentInfoTitle = "Student Information",
+  parentInfoTitle = "Parent Information",
+  feeDetailsTitle = "Fee Details",
+  amountSummaryTitle = "Amount Summary",
+  paymentsTitle = "Recent Payments",
+  totalLabel = "Total Amount",
+  paidLabel = "Amount Paid",
+  balanceLabel = "Balance",
+  customStatusConfigs,
+  maxPaymentsToShow = 3,
 }: FeeDetailModalProps) {
   if (!record) return null;
 
   const getStatusConfig = (status: FeeDetailRecord["status"]) => {
-    const config = {
-      paid: {
-        bg: "bg-green-100 dark:bg-green-900/30",
-        text: "text-green-700 dark:text-green-400",
-        icon: <CheckCircle2 className="w-4 h-4" />,
-        label: "Paid",
-      },
-      partial: {
-        bg: "bg-yellow-100 dark:bg-yellow-900/30",
-        text: "text-yellow-700 dark:text-yellow-400",
-        icon: <Clock className="w-4 h-4" />,
-        label: "Partial",
-      },
-      pending: {
-        bg: "bg-blue-100 dark:bg-blue-900/30",
-        text: "text-blue-700 dark:text-blue-400",
-        icon: <Clock className="w-4 h-4" />,
-        label: "Pending",
-      },
-      overdue: {
-        bg: "bg-red-100 dark:bg-red-900/30",
-        text: "text-red-700 dark:text-red-400",
-        icon: <AlertCircle className="w-4 h-4" />,
-        label: "Overdue",
-      },
-    };
-    return config[status];
+    // Use custom configs if provided, otherwise use defaults
+    const configs = customStatusConfigs || defaultStatusConfigs;
+    return configs[status] || defaultStatusConfigs[status];
   };
 
   const statusConfig = getStatusConfig(record.status);
@@ -99,9 +148,9 @@ export default function FeeDetailModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Fee Record Details"
+      title={title}
       subtitle={`${record.feeType} - ${record.term}`}
-      icon={<Receipt className="w-5 h-5 sm:w-6 sm:h-6" />}
+      icon={<HeaderIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
       maxWidth="2xl"
     >
       <div className="space-y-6">
@@ -147,12 +196,14 @@ export default function FeeDetailModal({
         </div>
 
         {/* Student & Parent Info */}
+        {(showStudentInfo || showParentInfo) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Student Card */}
+          {showStudentInfo && (
           <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2 mb-3">
               <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Student Information</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{studentInfoTitle}</h4>
             </div>
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
@@ -170,12 +221,14 @@ export default function FeeDetailModal({
               </div>
             </div>
           </div>
+          )}
 
           {/* Parent Card */}
+          {showParentInfo && (
           <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2 mb-3">
               <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-              <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Parent Information</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{parentInfoTitle}</h4>
             </div>
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
@@ -200,13 +253,15 @@ export default function FeeDetailModal({
               </div>
             </div>
           </div>
+          )}
         </div>
+        )}
 
         {/* Fee Details */}
         <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2 mb-4">
             <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Fee Details</h4>
+            <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{feeDetailsTitle}</h4>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
@@ -252,19 +307,19 @@ export default function FeeDetailModal({
         <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800">
           <div className="flex items-center gap-2 mb-4">
             <Banknote className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Amount Summary</h4>
+            <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{amountSummaryTitle}</h4>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center p-3 rounded-lg bg-white/60 dark:bg-gray-800/60">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Amount</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{totalLabel}</p>
               <p className="text-lg font-bold text-gray-900 dark:text-white">{money(record.amount)}</p>
             </div>
             <div className="text-center p-3 rounded-lg bg-white/60 dark:bg-gray-800/60">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Amount Paid</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{paidLabel}</p>
               <p className="text-lg font-bold text-green-600 dark:text-green-400">{money(record.paidAmount)}</p>
             </div>
             <div className="text-center p-3 rounded-lg bg-white/60 dark:bg-gray-800/60">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Balance</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{balanceLabel}</p>
               <p className={`text-lg font-bold ${record.balance > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
                 {money(record.balance)}
               </p>
@@ -273,17 +328,17 @@ export default function FeeDetailModal({
         </div>
 
         {/* Recent Payments */}
-        {record.paymentHistory.length > 0 && (
+        {showPaymentHistory && record.paymentHistory.length > 0 && (
           <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2 mb-4">
               <CreditCard className="w-4 h-4 text-green-600 dark:text-green-400" />
-              <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Recent Payments</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{paymentsTitle}</h4>
               <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
                 {record.paymentHistory.length} payment(s)
               </span>
             </div>
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {record.paymentHistory.slice(0, 3).map((payment) => (
+              {record.paymentHistory.slice(0, maxPaymentsToShow).map((payment) => (
                 <div
                   key={payment.id}
                   className="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700"
