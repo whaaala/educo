@@ -21,7 +21,6 @@ import {
   ClipboardList,
   Boxes,
   Briefcase,
-  Globe,
   ArrowRight,
   AlertTriangle,
   UserCheck,
@@ -35,6 +34,7 @@ import {
   Receipt,
   Video,
   LifeBuoy,
+  ExternalLink,
 } from "lucide-react";
 import TenantSwitcher from "@/components/admin/TenantSwitcher";
 import { useUser } from "@/contexts/UserContext";
@@ -181,12 +181,11 @@ const menuItems: MenuItem[] = [
     icon: <Settings className="w-5 h-5" />,
     children: [
       { id: "overview", label: "Settings Overview", icon: <Settings className="w-4 h-4" />, href: "/settings" },
-      { id: "regional", label: "Regional Settings", icon: <Globe className="w-4 h-4" />, href: "/settings" },
       { id: "general", label: "General Settings", icon: <Settings className="w-4 h-4" />, href: "/settings/general" },
       { id: "communication", label: "Communication", icon: <Video className="w-4 h-4" />, href: "/admin/settings/communication" },
       { id: "schools", label: "Schools & Branches", icon: <Home className="w-4 h-4" />, href: "/settings/schools" },
-      { id: "tenants", label: "Tenant Management", icon: <Building2 className="w-4 h-4" />, href: "/admin/tenants" },
       { id: "users", label: "User Management", icon: <Users className="w-4 h-4" />, href: "/settings/users" },
+      { id: "admin-console", label: "Admin Console", icon: <ExternalLink className="w-4 h-4" />, href: "http://localhost:3001" },
     ],
   },
 ];
@@ -249,14 +248,18 @@ const parentMenuItems: MenuItem[] = [
   },
 ];
 
+export { type MenuItem };
+
 interface SidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
   isMobileSidebarOpen: boolean;
   setIsMobileSidebarOpen: (value: boolean) => void;
+  customMenuItems?: MenuItem[];
+  showTenantSwitcher?: boolean;
 }
 
-export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen }: SidebarProps) {
+export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen, customMenuItems, showTenantSwitcher = true }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { isParent } = useUser();
@@ -820,7 +823,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
             style={isCollapsed && isMobile === false ? { overflow: 'visible' } : { overflowY: 'auto', overflowX: 'hidden' }}
           >
             <div className="space-y-2">
-              {(isParent ? parentMenuItems : menuItems).map((item) => renderMenuItem(item))}
+              {(customMenuItems ?? (isParent ? parentMenuItems : menuItems)).map((item) => renderMenuItem(item))}
             </div>
           </nav>
 
@@ -828,7 +831,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
           {(isMobile === true || (isMobile === false && !isCollapsed)) && (
             <div className="p-4 border-t border-gray-200/80 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-500/5 dark:to-indigo-500/5 midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5 space-y-3">
               {/* Tenant Switcher */}
-              {!isParent && <TenantSwitcher />}
+              {showTenantSwitcher && !isParent && <TenantSwitcher />}
 
               {/* Help Section */}
               <div className="px-4 py-3.5 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-blue-600/10 midnight:from-cyan-500/10 midnight:via-blue-500/10 midnight:to-cyan-600/10 purple:from-pink-500/10 purple:via-purple-500/10 purple:to-pink-600/10 rounded-xl border border-blue-200/50 dark:border-blue-500/20 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-200">

@@ -1,0 +1,7 @@
+{
+  "/page": "app/page.js",
+  "/tenants/create/page": "app/tenants/create/page.js",
+  "/tenants/page": "app/tenants/page.js",
+  "/school-profile/page": "app/school-profile/page.js",
+  "/regional-settings/page": "app/regional-settings/page.js"
+}

@@ -21,7 +21,8 @@
       "Bash(dir:*)",
       "Bash(grep:*)",
       "Bash(npx next build:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
