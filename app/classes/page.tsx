@@ -1,46 +1,44 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageActions from "@/components/shared/PageActions";
-import PageLoader from "@/components/shared/PageLoader";
-import PageSpinner from "@/components/shared/PageSpinner";
-import StatCard from "@/components/shared/StatCard";
-import ViewToggle from "@/components/shared/ViewToggle";
-import SortButton from "@/components/shared/SortButton";
-import FilterButton, { FilterField, FilterValues } from "@/components/shared/FilterButton";
-import DeleteAllButton from "@/components/shared/DeleteAllButton";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { DataManagementPage } from "@/components/pages";
+import ClassCard from "@/components/classes/ClassCard";
+import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import BulkDeleteModal, { BulkDeleteItem } from "@/components/shared/BulkDeleteModal";
-import LoadMoreButton from "@/components/shared/LoadMoreButton";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import Tooltip from "@/components/shared/Tooltip";
+import NameLabel from "@/components/shared/NameLabel";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { useSidebar } from "@/contexts/SidebarContext";
+import { getEducationLevelColor } from "@/utils/educationLevel";
 import {
   BookOpen,
   Users,
-  GraduationCap,
   MapPin,
-  UserCheck,
-  ChevronRight,
   TrendingUp,
-  Sparkles,
-  Award,
-  Target,
-  Calendar,
+  UserPlus,
+  Eye,
+  Edit,
+  Trash2,
+  MoreVertical,
 } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
-import ClassCard from "@/components/classes/ClassCard";
-import ClassTable from "@/components/classes/ClassTable";
+import type { ColumnConfig, GridCardProps } from "@/types/components";
+import {
+  type ClassData,
+  getClassFilterFields,
+  classSortOptions,
+  sortClasses,
+  filterClasses,
+  filterByTenantLevels,
+} from "./config";
 
 // Mock data - In production, this would come from API
 // Following African Education Structure: Level + Section or Level-Track-Section or Programme-Dept-Level-Semester
-const mockClasses = [
+const mockClasses: ClassData[] = [
   {
-    id: "SSS1-SCI-A", // Senior Secondary 1, Science track, Section A
+    id: "SSS1-SCI-A",
     name: "SSS 1A",
-    level: "Secondary" as const,
+    level: "Secondary",
     section: "A",
     subjects: [
       { name: "Mathematics", teacher: { id: "TCH-001", name: "John Adebayo", image: "https://randomuser.me/api/portraits/men/1.jpg" } },
@@ -58,7 +56,7 @@ const mockClasses = [
     schedule: "Mon-Fri, 8:00 AM - 2:00 PM",
     academicYear: "2024/2025",
     term: "First Term",
-    status: "Active" as const,
+    status: "Active",
     averageGrade: 78,
     attendanceRate: 92,
     stream: "Science",
@@ -76,9 +74,9 @@ const mockClasses = [
     },
   },
   {
-    id: "SSS2-ART-B", // Senior Secondary 2, Arts track, Section B
+    id: "SSS2-ART-B",
     name: "SSS 2B",
-    level: "Secondary" as const,
+    level: "Secondary",
     section: "B",
     subjects: [
       { name: "Mathematics", teacher: { id: "TCH-002", name: "Mary Okonkwo", image: "https://randomuser.me/api/portraits/women/2.jpg" } },
@@ -98,7 +96,7 @@ const mockClasses = [
     schedule: "Mon-Fri, 8:00 AM - 2:00 PM",
     academicYear: "2024/2025",
     term: "First Term",
-    status: "Active" as const,
+    status: "Active",
     averageGrade: 85,
     attendanceRate: 88,
     stream: "Arts",
@@ -117,9 +115,9 @@ const mockClasses = [
     transportZone: "Zone A",
   },
   {
-    id: "SSS3-SCI-A", // Senior Secondary 3, Science track, Section A
+    id: "SSS3-SCI-A",
     name: "SSS 3A",
-    level: "Secondary" as const,
+    level: "Secondary",
     section: "A",
     subjects: [
       { name: "Mathematics", teacher: { id: "TCH-003", name: "Ahmed Yusuf", image: "https://randomuser.me/api/portraits/men/3.jpg" } },
@@ -136,15 +134,15 @@ const mockClasses = [
     schedule: "Mon-Fri, 8:00 AM - 2:00 PM",
     academicYear: "2024/2025",
     term: "First Term",
-    status: "Active" as const,
+    status: "Active",
     averageGrade: 91,
     attendanceRate: 95,
     stream: "Science",
   },
   {
-    id: "JSS3-B", // Junior Secondary 3, Section B
+    id: "JSS3-B",
     name: "JSS 3B",
-    level: "Junior Secondary" as const,
+    level: "Junior Secondary",
     section: "B",
     subjects: [
       { name: "Mathematics", teacher: { id: "TCH-004", name: "Grace Nkrumah", image: "https://randomuser.me/api/portraits/women/4.jpg" } },
@@ -161,14 +159,14 @@ const mockClasses = [
     schedule: "Mon-Fri, 8:00 AM - 2:00 PM",
     academicYear: "2024/2025",
     term: "First Term",
-    status: "Active" as const,
+    status: "Active",
     averageGrade: 73,
     attendanceRate: 90,
   },
   {
-    id: "PRY5-A", // Primary 5, Section A
+    id: "PRY5-A",
     name: "Primary 5A",
-    level: "Primary" as const,
+    level: "Primary",
     section: "A",
     subjects: [
       { name: "Mathematics", teacher: { id: "TCH-005", name: "Fatima Ibrahim", image: "https://randomuser.me/api/portraits/women/5.jpg" } },
@@ -187,14 +185,14 @@ const mockClasses = [
     schedule: "Mon-Fri, 8:00 AM - 1:00 PM",
     academicYear: "2024/2025",
     term: "First Term",
-    status: "Active" as const,
+    status: "Active",
     averageGrade: 80,
     attendanceRate: 94,
   },
   {
-    id: "PRY1-A", // Primary 1, Section A
+    id: "PRY1-A",
     name: "Primary 1A",
-    level: "Primary" as const,
+    level: "Primary",
     section: "A",
     subjects: [
       { name: "Mathematics", teacher: { id: "TCH-020", name: "Mrs. Blessing Eze", image: "https://randomuser.me/api/portraits/women/20.jpg" } },
@@ -210,14 +208,14 @@ const mockClasses = [
     schedule: "Mon-Fri, 8:00 AM - 12:00 PM",
     academicYear: "2024/2025",
     term: "First Term",
-    status: "Active" as const,
+    status: "Active",
     averageGrade: 75,
     attendanceRate: 96,
   },
   {
-    id: "JSS1-A", // Junior Secondary 1, Section A
+    id: "JSS1-A",
     name: "JSS 1A",
-    level: "Junior Secondary" as const,
+    level: "Junior Secondary",
     section: "A",
     subjects: [
       { name: "Mathematics", teacher: { id: "TCH-022", name: "Mr. Tunde Ajayi", image: "https://randomuser.me/api/portraits/men/22.jpg" } },
@@ -234,14 +232,14 @@ const mockClasses = [
     schedule: "Mon-Fri, 8:00 AM - 2:00 PM",
     academicYear: "2024/2025",
     term: "First Term",
-    status: "Active" as const,
+    status: "Active",
     averageGrade: 70,
     attendanceRate: 88,
   },
   {
-    id: "SSS2-COM-A", // Senior Secondary 2, Commercial track, Section A
+    id: "SSS2-COM-A",
     name: "SSS 2A",
-    level: "Secondary" as const,
+    level: "Secondary",
     section: "A",
     subjects: [
       { name: "Accounting", teacher: { id: "TCH-026", name: "Mr. Ibrahim Sule", image: "https://randomuser.me/api/portraits/men/24.jpg" } },
@@ -258,15 +256,15 @@ const mockClasses = [
     schedule: "Mon-Fri, 8:00 AM - 2:00 PM",
     academicYear: "2024/2025",
     term: "First Term",
-    status: "Active" as const,
+    status: "Active",
     averageGrade: 82,
     attendanceRate: 91,
     stream: "Commercial",
   },
   {
-    id: "SSS3-TEC-A", // Senior Secondary 3, Technical track, Section A
+    id: "SSS3-TEC-A",
     name: "SSS 3A",
-    level: "Secondary" as const,
+    level: "Secondary",
     section: "A",
     subjects: [
       { name: "Technical Drawing", teacher: { id: "TCH-030", name: "Engr. Bode Ajayi", image: "https://randomuser.me/api/portraits/men/34.jpg" } },
@@ -283,15 +281,15 @@ const mockClasses = [
     schedule: "Mon-Fri, 8:00 AM - 2:00 PM",
     academicYear: "2024/2025",
     term: "First Term",
-    status: "Active" as const,
+    status: "Active",
     averageGrade: 77,
     attendanceRate: 89,
     stream: "Technical",
   },
   {
-    id: "200L-CSC-SEM1", // 200 Level (University), Computer Science, Semester 1
+    id: "200L-CSC-SEM1",
     name: "Computer Science 201",
-    level: "Tertiary" as const,
+    level: "Tertiary",
     section: "A",
     subjects: [
       { name: "CSC 201 - Data Structures", teacher: { id: "LEC-001", name: "Dr. Kwame Nkrumah", image: "https://randomuser.me/api/portraits/men/20.jpg" } },
@@ -311,10 +309,9 @@ const mockClasses = [
     schedule: "Mon, Wed, Fri",
     academicYear: "2024/2025",
     term: "First Semester",
-    status: "Active" as const,
+    status: "Active",
     averageGrade: 72,
     attendanceRate: 85,
-    // Tertiary-specific fields
     faculty: "Engineering",
     department: "Computer Science",
     programme: "B.Sc",
@@ -335,9 +332,9 @@ const mockClasses = [
     hostelEligibility: true,
   },
   {
-    id: "ND2-CS-SEM2", // ND2 (Polytechnic), Computer Science, Semester 2
+    id: "ND2-CS-SEM2",
     name: "ND 2 Computer Science",
-    level: "Tertiary" as const,
+    level: "Tertiary",
     section: "A",
     subjects: [
       { name: "COM 213 - Software Engineering", teacher: { id: "LEC-005", name: "Mr. Adekunle Taiwo", image: "https://randomuser.me/api/portraits/men/26.jpg" } },
@@ -352,10 +349,9 @@ const mockClasses = [
     schedule: "Tue, Thu",
     academicYear: "2024/2025",
     term: "Second Semester",
-    status: "Active" as const,
+    status: "Active",
     averageGrade: 68,
     attendanceRate: 80,
-    // Tertiary-specific fields
     faculty: "School of Technology",
     department: "Computer Science",
     programme: "ND",
@@ -363,9 +359,9 @@ const mockClasses = [
     semester: "Second Semester",
   },
   {
-    id: "300L-EEE-SEM1", // 300 Level (University), Electrical Engineering, Semester 1
+    id: "300L-EEE-SEM1",
     name: "Electrical Engineering 301",
-    level: "Tertiary" as const,
+    level: "Tertiary",
     section: "A",
     subjects: [
       { name: "EEE 301 - Control Systems", teacher: { id: "LEC-009", name: "Prof. Adewale Ogunleye", image: "https://randomuser.me/api/portraits/men/29.jpg" } },
@@ -380,10 +376,9 @@ const mockClasses = [
     schedule: "Mon, Tue, Thu",
     academicYear: "2024/2025",
     term: "First Semester",
-    status: "Active" as const,
+    status: "Active",
     averageGrade: 75,
     attendanceRate: 87,
-    // Tertiary-specific fields
     faculty: "Engineering",
     department: "Electrical & Electronics Engineering",
     programme: "B.Eng",
@@ -391,9 +386,9 @@ const mockClasses = [
     semester: "First Semester",
   },
   {
-    id: "HND1-BA-SEM1", // HND1 (Polytechnic), Business Administration, Semester 1
+    id: "HND1-BA-SEM1",
     name: "HND 1 Business Admin",
-    level: "Tertiary" as const,
+    level: "Tertiary",
     section: "A",
     subjects: [
       { name: "BUS 311 - Strategic Management", teacher: { id: "LEC-013", name: "Dr. Olufemi Adeyemi", image: "https://randomuser.me/api/portraits/men/32.jpg" } },
@@ -408,10 +403,9 @@ const mockClasses = [
     schedule: "Mon, Wed, Fri",
     academicYear: "2024/2025",
     term: "First Semester",
-    status: "Active" as const,
+    status: "Active",
     averageGrade: 70,
     attendanceRate: 83,
-    // Tertiary-specific fields
     faculty: "School of Business Studies",
     department: "Business Administration",
     programme: "HND",
@@ -419,9 +413,9 @@ const mockClasses = [
     semester: "First Semester",
   },
   {
-    id: "ND2-SIWES", // ND2 SIWES (Student Industrial Work Experience Scheme)
+    id: "ND2-SIWES",
     name: "ND 2 SIWES Program",
-    level: "Tertiary" as const,
+    level: "Tertiary",
     section: "A",
     subjects: [
       { name: "Industrial Attachment", teacher: { id: "LEC-017", name: "Coord. Musa Abubakar", image: "https://randomuser.me/api/portraits/men/37.jpg" } },
@@ -434,10 +428,9 @@ const mockClasses = [
     schedule: "6 Months Attachment",
     academicYear: "2024/2025",
     term: "SIWES Program",
-    status: "Active" as const,
+    status: "Active",
     averageGrade: 75,
     attendanceRate: 92,
-    // Tertiary-specific fields
     faculty: "School of Technology",
     department: "All Departments",
     programme: "ND",
@@ -445,9 +438,9 @@ const mockClasses = [
     semester: "SIWES (6 Months)",
   },
   {
-    id: "400L-MED-SEM2", // 400 Level (University), Medicine, Semester 2
+    id: "400L-MED-SEM2",
     name: "Medicine 401",
-    level: "Tertiary" as const,
+    level: "Tertiary",
     section: "A",
     subjects: [
       { name: "MED 401 - Clinical Medicine", teacher: { id: "LEC-019", name: "Prof. Adebayo Adeleke", image: "https://randomuser.me/api/portraits/men/38.jpg" } },
@@ -462,10 +455,9 @@ const mockClasses = [
     schedule: "Mon-Fri",
     academicYear: "2024/2025",
     term: "Second Semester",
-    status: "Active" as const,
+    status: "Active",
     averageGrade: 78,
     attendanceRate: 94,
-    // Tertiary-specific fields
     faculty: "Medicine",
     department: "Medicine & Surgery",
     programme: "MBBS",
@@ -474,474 +466,433 @@ const mockClasses = [
   },
 ];
 
-export default function ClassesPage() {
-  const basePageLoading = usePageLoad(600);
+// Actions cell component for the table - encapsulates dropdown state
+function ClassActionsCell({ classData }: { classData: ClassData }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const urlView = searchParams.get("view");
-  const initialView = urlView === "list" ? "list" : "grid";
-  const { settings, currentTenant } = useSchoolSettings();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<'bottom' | 'top'>('bottom');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const [classes] = useState(mockClasses);
-  const [viewMode, setViewMode] = useState<"grid" | "list">(initialView);
-  const [displayedCount, setDisplayedCount] = useState(8);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isSwitchingView, setIsSwitchingView] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [filters, setFilters] = useState<FilterValues>({});
-  const [sortOption, setSortOption] = useState<string>("ascending");
-  const [isSorting, setIsSorting] = useState(false);
-  const [isFiltering, setIsFiltering] = useState(false);
-  const [resetKey, setResetKey] = useState(0);
-  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
-  const [itemsToDelete, setItemsToDelete] = useState<BulkDeleteItem[]>([]);
-  const gridRef = useRef<HTMLDivElement>(null);
-
-  // Only show full-screen loader if not switching view with toggle button
-  const isPageLoading = basePageLoading && !isSwitchingView;
-
-  // Filter fields - dynamically set based on tenant's supported levels
-  const filterFields: FilterField[] = [
-    {
-      id: "level",
-      label: "Education Level",
-      options: settings.supportedLevels.includes("Primary")
-        ? ["Primary", "Junior Secondary", "Secondary", "Tertiary"]
-        : settings.supportedLevels, // Only show supported levels
-      width: "half",
-    },
-    {
-      id: "section",
-      label: "Section",
-      options: ["A", "B", "C"],
-      width: "half",
-    },
-    {
-      id: "academicYear",
-      label: "Academic Year",
-      options: ["2024/2025", "2023/2024", "2022/2023"],
-      width: "half",
-    },
-    {
-      id: "term",
-      label: "Term/Semester",
-      options: settings.supportedLevels.includes("Tertiary")
-        ? ["First Term", "Second Term", "Third Term", "First Semester", "Second Semester", "SIWES"]
-        : ["First Term", "Second Term", "Third Term"],
-      width: "half",
-    },
-    {
-      id: "status",
-      label: "Status",
-      options: ["Active", "Inactive", "Archived"],
-      width: "full",
-    },
-  ];
-
-  // Sort options
-  const sortOptions = [
-    { label: "Ascending", value: "ascending" },
-    { label: "Descending", value: "descending" },
-    { label: "Recently Added", value: "recently_added" },
-  ];
-
-  // Filter classes by tenant's supported education levels first
-  const tenantClasses = useMemo(() => {
-    // Don't filter until settings are loaded
-    if (!settings.supportedLevels || settings.supportedLevels.length === 0) {
-      return [];
-    }
-
-    return classes.filter((cls) => {
-      // Exact string match for education level
-      return settings.supportedLevels.some(level => level === cls.level);
-    });
-  }, [classes, settings.supportedLevels]);
-
-  // Calculate stats from tenant-filtered classes only
-  const stats = useMemo(() => {
-    return {
-      total: tenantClasses.length,
-      students: tenantClasses.reduce((sum, cls) => sum + cls.students, 0),
-      capacity: tenantClasses.reduce((sum, cls) => sum + cls.capacity, 0),
-      active: tenantClasses.filter((cls) => cls.status === "Active").length,
-    };
-  }, [tenantClasses]);
-
-  // Handle view mode change
-  const handleViewModeChange = (newMode: "grid" | "list") => {
-    setIsSwitchingView(true);
-    setViewMode(newMode);
-    router.push(`/classes?view=${newMode}`);
-
-    // Keep isSwitchingView true for longer to prevent PageLoader from showing
-    setTimeout(() => {
-      setIsSwitchingView(false);
-    }, 700); // Longer than PageLoader delay (600ms)
-  };
-
-  // Sync view mode with URL
   useEffect(() => {
-    const urlView = searchParams.get("view");
-    const newViewMode = urlView === "list" ? "list" : "grid";
-    setViewMode(newViewMode);
-  }, [searchParams]);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  // Handle filter change
-  const handleFilterChange = (updatedFilters: FilterValues) => {
-    setIsFiltering(true);
-    setTimeout(() => {
-      setFilters(updatedFilters);
-      const initialCount = viewMode === "grid" ? 8 : 10;
-      setDisplayedCount(initialCount);
-      setTimeout(() => {
-        setIsFiltering(false);
-      }, 100);
-    }, 300);
-  };
-
-  // Handle sort change
-  const handleSortChange = (option: string) => {
-    setIsSorting(true);
-    setTimeout(() => {
-      setSortOption(option);
-      setTimeout(() => {
-        setIsSorting(false);
-      }, 100);
-    }, 300);
-  };
-
-  // Handle refresh
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setSelectedIds(new Set());
-    setFilters({});
-    setSortOption("ascending");
-    setResetKey((prev) => prev + 1);
-    setTimeout(() => {
-      const initialCount = viewMode === "grid" ? 8 : 10;
-      setDisplayedCount(initialCount);
-      setTimeout(() => {
-        setIsRefreshing(false);
-      }, 100);
-    }, 300);
-  };
-
-  // Handle load more
-  const handleLoadMore = () => {
-    setIsLoadingMore(true);
-    setTimeout(() => {
-      setDisplayedCount((prev) => prev + (viewMode === "grid" ? 8 : 10));
-      setIsLoadingMore(false);
-    }, 500);
-  };
-
-  // Handle delete all
-  const handleDeleteAll = () => {
-    if (selectedIds.size > 0) {
-      const selectedClasses = filteredClasses.filter((cls) =>
-        selectedIds.has(cls.id)
-      );
-
-      const items: BulkDeleteItem[] = selectedClasses.map((cls) => {
-        // Safely get teacher name: prefer classTeacher, fallback to first teacher in teachers array
-        const teacherName = cls.classTeacher?.name || 
-                           (cls.teachers && cls.teachers.length > 0 ? cls.teachers[0]?.name : null) || 
-                           "No teacher assigned";
-        
-        return {
-          id: cls.id,
-          name: cls.name,
-          subtitle: `${cls.students} students • ${teacherName}`,
-        };
-      });
-
-      setItemsToDelete(items);
-      setIsBulkDeleteModalOpen(true);
+  const handleMenuToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+      return;
     }
+    const button = e.currentTarget as HTMLElement;
+    const buttonRect = button.getBoundingClientRect();
+    const menuHeight = 240;
+    const spaceBelow = window.innerHeight - buttonRect.bottom;
+    const spaceAbove = buttonRect.top;
+    setMenuPosition(spaceBelow < menuHeight && spaceAbove > menuHeight ? 'top' : 'bottom');
+    setIsMenuOpen(true);
   };
-
-  // Apply sorting to tenant-filtered classes
-  const sortedClasses = [...tenantClasses].sort((a, b) => {
-    switch (sortOption) {
-      case "ascending":
-        return a.name.localeCompare(b.name);
-      case "descending":
-        return b.name.localeCompare(a.name);
-      case "recently_added":
-        return b.id.localeCompare(a.id);
-      default:
-        return 0;
-    }
-  });
-
-  // Apply user filters (tenant filtering already done in tenantClasses)
-  const filteredClasses = sortedClasses.filter((cls) => {
-    const hasFilters = Object.values(filters).some((values) => values && values.length > 0);
-    if (!hasFilters) return true;
-
-    const matchesLevel = !filters.level || filters.level.length === 0 || filters.level.includes(cls.level);
-    const matchesSection = !filters.section || filters.section.length === 0 || filters.section.includes(cls.section);
-    const matchesStatus = !filters.status || filters.status.length === 0 || filters.status.includes(cls.status);
-    const matchesAcademicYear = !filters.academicYear || filters.academicYear.length === 0 || filters.academicYear.includes(cls.academicYear);
-
-    // For term/semester, check both term and semester fields
-    const matchesTerm = !filters.term || filters.term.length === 0 ||
-      filters.term.includes(cls.term || "") ||
-      filters.term.includes(cls.semester || "");
-
-    return matchesLevel && matchesSection && matchesStatus && matchesAcademicYear && matchesTerm;
-  });
-
-  const displayedClasses = filteredClasses.slice(0, displayedCount);
-  const hasMore = displayedCount < filteredClasses.length;
-
-  // Determine terminology based on education level
-  const classLabel = settings.supportedLevels.includes("Tertiary") ? "Courses" : "Classes";
-  const singleClassLabel = settings.supportedLevels.includes("Tertiary") ? "Course" : "Class";
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText={`Loading ${classLabel}`} />
-
-      <div className={`transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Header with Tenant Info */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-0 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
-          <div>
-            <PageHeader
-              title={`${classLabel} Management`}
-              breadcrumbs={[
-                { label: "Dashboard", href: "/" },
-                { label: "Academic" },
-                { label: viewMode === "grid" ? `${classLabel} Grid` : `${classLabel} Table`, isActive: true },
-              ]}
-            />
-          </div>
-
-          <PageActions
-            addButtonLabel={`Add ${singleClassLabel}`}
-            exportDescription={`Download ${classLabel.toLowerCase()} data`}
-            onAdd={() => router.push("/classes/add")}
-            onRefresh={handleRefresh}
-            onPrint={() => console.log(`Print ${classLabel.toLowerCase()}`)}
-            onExportPDF={() => console.log("Export PDF")}
-            onExportExcel={() => console.log("Export Excel")}
-          />
-        </div>
-
-        {/* Filters Bar */}
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out mb-6 mt-6">
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
-            {/* Left Section - Filter */}
-            <div className="flex items-center gap-2 sm:gap-3 lg:flex-1">
-              <FilterButton fields={filterFields} onFilterChange={handleFilterChange} resetKey={resetKey} />
-
-              {viewMode === "list" && selectedIds.size > 0 && (
-                <DeleteAllButton selectedCount={selectedIds.size} onDeleteAll={handleDeleteAll} />
-              )}
-
-              {viewMode === "grid" && (
-                <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
-                  <span className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
-                    1 to {Math.min(displayedCount, filteredClasses.length)} of {filteredClasses.length}
-                  </span>
-                </div>
-              )}
-
-              {viewMode === "grid" && selectedIds.size > 0 && (
-                <div className="hidden sm:block">
-                  <DeleteAllButton selectedCount={selectedIds.size} onDeleteAll={handleDeleteAll} />
-                </div>
-              )}
-            </div>
-
-            {/* Right Section - View Toggle and Sort */}
-            <div className="flex items-center justify-end gap-3 lg:flex-1">
-              {viewMode === "grid" && selectedIds.size > 0 && (
-                <div className="block sm:hidden">
-                  <DeleteAllButton selectedCount={selectedIds.size} onDeleteAll={handleDeleteAll} />
-                </div>
-              )}
-
-              {viewMode === "grid" && (
-                <div className="flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 shadow-sm">
-                  <input
-                    type="checkbox"
-                    ref={(el) => {
-                      if (el) {
-                        const isSomeSelected = selectedIds.size > 0 && selectedIds.size < displayedClasses.length;
-                        el.indeterminate = isSomeSelected;
-                      }
-                    }}
-                    checked={selectedIds.size === displayedClasses.length && displayedClasses.length > 0}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedIds(new Set(displayedClasses.map((c) => c.id)));
-                      } else {
-                        setSelectedIds(new Set());
-                      }
-                    }}
-                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
-                  />
-                  <span className="hidden sm:inline text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                    Select All
-                  </span>
-                </div>
-              )}
-
-              <ViewToggle viewMode={viewMode} onViewModeChange={handleViewModeChange} />
-              <SortButton options={sortOptions} defaultOption="ascending" onSortChange={handleSortChange} resetKey={resetKey} />
-            </div>
+    <>
+      <div className="flex items-center justify-start gap-0.5 md:gap-1 lg:gap-1.5 xl:gap-2 pr-0.5 md:pr-2">
+        <div className="relative group/view flex-shrink-0">
+          <button
+            className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+            onClick={(e) => { e.stopPropagation(); router.push(`/classes/${classData.id}`); }}
+          >
+            <Eye className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/view:text-blue-600 dark:group-hover/view:text-blue-400 transition-colors" />
+          </button>
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/view:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
+            <NameLabel name="View" variant="compact" />
           </div>
         </div>
-
-        {/* Content */}
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out">
-          <div className="relative min-h-[400px]">
-            {/* Grid View */}
-            {viewMode === "grid" && (
-              <div
-                key={`grid-view-${isFiltering ? "filtering" : "filtered"}-${isSorting ? "sorting" : "sorted"}-${isRefreshing ? "refreshing" : "refreshed"}-${sortOption}`}
-                className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
-              >
-                {isFiltering || isSorting || isRefreshing || isSwitchingView ? (
-                  <PageSpinner
-                    message={
-                      isSwitchingView
-                        ? "Switching view..."
-                        : isRefreshing
-                        ? "Refreshing..."
-                        : isSorting
-                        ? "Sorting..."
-                        : "Filtering..."
-                    }
-                    size="md"
-                  />
-                ) : displayedClasses.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16">
-                    <BookOpen className="w-16 h-16 text-gray-400 mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                      No {classLabel} Found
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Try adjusting your filters or add a new {singleClassLabel.toLowerCase()}
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                      {displayedClasses.map((cls, index) => (
-                        <ClassCard
-                          key={cls.id}
-                          classData={cls}
-                          educationLevel={
-                            cls.level === "Tertiary" ? "Tertiary" :
-                            cls.level === "Primary" ? "Primary" : "Secondary"
-                          }
-                          isSelected={selectedIds.has(cls.id)}
-                          onSelectionChange={(id, selected) => {
-                            setSelectedIds((prev) => {
-                              const newIds = new Set(prev);
-                              if (selected) {
-                                newIds.add(id);
-                              } else {
-                                newIds.delete(id);
-                              }
-                              return newIds;
-                            });
-                          }}
-                          adviserImage={cls.classTeacher?.image || cls.teachers?.[0]?.image}
-                        />
-                      ))}
-                    </div>
-
-                    {hasMore && (
-                      <div className="flex justify-center pt-4">
-                        <LoadMoreButton onClick={handleLoadMore} isLoading={isLoadingMore} />
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* List View - Table */}
-            {viewMode === "list" && (
-              <div
-                key={`list-view-${isFiltering ? "filtering" : "filtered"}-${isSorting ? "sorting" : "sorted"}-${isRefreshing ? "refreshing" : "refreshed"}-${sortOption}`}
-                className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
-              >
-                {isFiltering || isSorting || isRefreshing || isSwitchingView ? (
-                  <PageSpinner
-                    message={
-                      isSwitchingView
-                        ? "Switching view..."
-                        : isRefreshing
-                        ? "Refreshing..."
-                        : isSorting
-                        ? "Sorting..."
-                        : "Filtering..."
-                    }
-                    size="md"
-                  />
-                ) : (
-                  <ClassTable
-                    classes={filteredClasses}
-                    isLoading={false}
-                    loadingMessage="Loading classes..."
-                    hasActiveFilters={Object.values(filters).some((values) => values && values.length > 0)}
-                    onClearFilters={handleRefresh}
-                    totalClassesCount={tenantClasses.length}
-                    selectedIds={selectedIds}
-                    onSelectionChange={setSelectedIds}
-                  />
-                )}
-              </div>
-            )}
+        <div className="relative group/subjects flex-shrink-0">
+          <button
+            className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-purple-50 dark:hover:bg-purple-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+            onClick={(e) => { e.stopPropagation(); router.push(`/classes/${classData.id}/subjects`); }}
+          >
+            <BookOpen className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/subjects:text-purple-600 dark:group-hover/subjects:text-purple-400 transition-colors" />
+          </button>
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/subjects:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
+            <NameLabel name="Subjects" variant="compact" />
           </div>
+        </div>
+        <div className="relative group/students flex-shrink-0">
+          <button
+            className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-green-50 dark:hover:bg-green-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+            onClick={(e) => { e.stopPropagation(); router.push(`/classes/${classData.id}/students/add`); }}
+          >
+            <UserPlus className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/students:text-green-600 dark:group-hover/students:text-green-400 transition-colors" />
+          </button>
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/students:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
+            <NameLabel name="Add Students" variant="compact" />
+          </div>
+        </div>
+        <div className="relative flex-shrink-0 overflow-visible group/more" ref={menuRef}>
+          <button
+            className={`p-0.5 md:p-1 xl:p-1.5 rounded-md transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer ${
+              isMenuOpen
+                ? 'bg-gray-200 dark:bg-gray-600 midnight:bg-cyan-500/30 purple:bg-pink-500/30'
+                : 'hover:bg-gray-100 dark:hover:bg-gray-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20'
+            }`}
+            title="More"
+            onClick={handleMenuToggle}
+          >
+            <MoreVertical className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors" />
+          </button>
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/more:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
+            <NameLabel name="More" variant="compact" />
+          </div>
+
+          {isMenuOpen && (
+            <div
+              className={`absolute right-0 w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[999999] py-1 animate-in fade-in duration-200 ${
+                menuPosition === 'top'
+                  ? 'bottom-full mb-1 slide-in-from-bottom-2'
+                  : 'top-full mt-1 slide-in-from-top-2'
+              }`}
+            >
+              <button onClick={() => { router.push(`/classes/${classData.id}`); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+                <Eye className="w-4 h-4" /><span>View Class</span>
+              </button>
+              <button onClick={() => { router.push(`/classes/${classData.id}/edit`); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+                <Edit className="w-4 h-4" /><span>Edit</span>
+              </button>
+              <button onClick={() => { router.push(`/classes/${classData.id}/subjects`); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+                <BookOpen className="w-4 h-4" /><span>Manage Subjects</span>
+              </button>
+              <button onClick={() => { router.push(`/classes/${classData.id}/students/add`); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+                <UserPlus className="w-4 h-4" /><span>Add Students</span>
+              </button>
+              <button onClick={() => { setIsDeleteModalOpen(true); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-500/10 purple:hover:bg-red-500/10 transition-colors cursor-pointer">
+                <Trash2 className="w-4 h-4" /><span>Delete</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Bulk Delete Modal */}
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={() => { console.log('Deleting class:', classData.id); setIsDeleteModalOpen(false); }}
+        title="Delete Class"
+        itemName={classData.name}
+        itemId={classData.id}
+        warningMessage="This will permanently remove this class and all associated data. This action cannot be undone."
+        confirmButtonText="Delete Class"
+      />
+    </>
+  );
+}
+
+// Grid card wrapper - adapts ClassCard to GridCardProps interface
+function ClassGridCard({ item, isSelected, onSelectionChange }: GridCardProps<ClassData>) {
+  return (
+    <ClassCard
+      classData={item}
+      educationLevel={
+        item.level === "Tertiary" ? "Tertiary" :
+        item.level === "Primary" ? "Primary" : "Secondary"
+      }
+      isSelected={isSelected}
+      onSelectionChange={(_id, selected) => onSelectionChange(selected)}
+      adviserImage={item.classTeacher?.image || item.teachers?.[0]?.image}
+    />
+  );
+}
+
+export default function ClassesPage() {
+  const router = useRouter();
+  const { settings } = useSchoolSettings();
+
+  const [classes] = useState(mockClasses);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [itemsToDelete, setItemsToDelete] = useState<BulkDeleteItem[]>([]);
+
+  // Filter by tenant supported levels
+  const tenantClasses = useMemo(() => {
+    return filterByTenantLevels(classes, settings.supportedLevels);
+  }, [classes, settings.supportedLevels]);
+
+  // Dynamic filter fields based on tenant settings
+  const filterFields = useMemo(() => {
+    return getClassFilterFields(settings.supportedLevels);
+  }, [settings.supportedLevels]);
+
+  // Dynamic labels
+  const classLabel = settings.supportedLevels.includes("Tertiary") ? "Courses" : "Classes";
+  const singleClassLabel = settings.supportedLevels.includes("Tertiary") ? "Course" : "Class";
+
+  // Column definitions - matching ClassTable exactly
+  const classColumns: ColumnConfig<ClassData>[] = useMemo(() => [
+    {
+      key: "id",
+      label: "Class Code",
+      sortable: true,
+      className: "text-left w-[15%] md:w-[12%]",
+      render: (classData: ClassData) => (
+        <span
+          onClick={(e) => { e.stopPropagation(); router.push(`/classes/${classData.id}`); }}
+          className="text-sm font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 block cursor-pointer whitespace-nowrap hover:underline transition-all duration-200"
+        >
+          {classData.id}
+        </span>
+      ),
+    },
+    {
+      key: "name",
+      label: "Class Name",
+      sortable: true,
+      className: "text-left w-[20%] md:w-[15%]",
+      render: (classData: ClassData) => (
+        <Tooltip content={classData.name}>
+          <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 truncate block">
+            {classData.name}
+          </span>
+        </Tooltip>
+      ),
+    },
+    {
+      key: "branch",
+      label: "Branch",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      className: "text-left w-[12%]",
+      render: (classData: ClassData) => (
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
+          {classData.branch || "—"}
+        </span>
+      ),
+    },
+    {
+      key: "classTeacher",
+      label: "Class Teacher",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      className: "text-left w-[15%]",
+      render: (classData: ClassData) => {
+        const isTertiary = classData.level === "Tertiary";
+        const teacherCount = classData.teachers?.length || 0;
+        if (isTertiary) {
+          return (
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
+              {teacherCount} Lecturer{teacherCount !== 1 ? "s" : ""}
+            </span>
+          );
+        }
+        if (classData.classTeacher) {
+          return (
+            <Tooltip content={classData.classTeacher.name}>
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 truncate block">
+                {classData.classTeacher.name}
+              </span>
+            </Tooltip>
+          );
+        }
+        return <span className="text-sm text-gray-400 dark:text-gray-500">Not assigned</span>;
+      },
+    },
+    {
+      key: "level",
+      label: "Level",
+      sortable: true,
+      hidden: { mobile: true },
+      className: "text-left w-[12%] md:w-[10%]",
+      render: (classData: ClassData) => {
+        const colors = getEducationLevelColor(classData.level);
+        return (
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold border ${colors.bg} ${colors.text} ${colors.border}`}>
+            {classData.level}
+          </span>
+        );
+      },
+    },
+    {
+      key: "students",
+      label: "Students",
+      sortable: true,
+      className: "text-left w-[12%] md:w-[10%]",
+      render: (classData: ClassData) => {
+        const isTertiary = classData.level === "Tertiary";
+        return (
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-gray-400" />
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
+              {isTertiary ? classData.students : `${classData.students}/${classData.capacity}`}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      key: "subjects",
+      label: "Subjects",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      className: "text-left w-[10%]",
+      render: (classData: ClassData) => {
+        const isTertiary = classData.level === "Tertiary";
+        const subjectCount = classData.subjects?.length || 0;
+        return (
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-gray-400" />
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
+              {subjectCount} {isTertiary ? "Course" : "Subject"}{subjectCount !== 1 ? "s" : ""}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      key: "room",
+      label: "Room",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      className: "text-left w-[10%]",
+      render: (classData: ClassData) => (
+        <div className="flex items-center gap-2">
+          <MapPin className="w-4 h-4 text-gray-400" />
+          <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
+            {classData.room}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "averageGrade",
+      label: "Avg Grade",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      className: "text-left w-[10%]",
+      render: (classData: ClassData) => (
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-green-500" />
+          <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
+            {classData.averageGrade}%
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      label: "Status",
+      sortable: true,
+      className: "text-left w-[15%] md:w-[10%]",
+      render: (classData: ClassData) => (
+        <div className="flex items-center justify-start">
+          <span
+            className={`inline-flex items-center justify-center px-2 md:px-3 xl:px-3.5 py-1 md:py-1.5 xl:py-2 rounded-full text-[10px] md:text-xs xl:text-sm font-semibold shadow-sm transition-all duration-300 whitespace-nowrap ${
+              classData.status === "Active"
+                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 midnight:bg-green-500/20 midnight:text-green-300 purple:bg-green-500/20 purple:text-green-300"
+                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 midnight:bg-red-500/20 midnight:text-red-300 purple:bg-red-500/20 purple:text-red-300"
+            }`}
+          >
+            {classData.status}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "actions",
+      label: "Action",
+      sortable: false,
+      searchable: false,
+      className: "text-left w-[20%] md:w-[15%] !overflow-visible",
+      render: (classData: ClassData) => <ClassActionsCell classData={classData} />,
+    },
+  ], [router]);
+
+  // Bulk delete handler
+  const handleBulkDelete = (selectedIds: Set<string>) => {
+    const selectedClasses = tenantClasses.filter((cls) => selectedIds.has(cls.id));
+    const items: BulkDeleteItem[] = selectedClasses.map((cls) => {
+      const teacherName = cls.classTeacher?.name ||
+        (cls.teachers && cls.teachers.length > 0 ? cls.teachers[0]?.name : null) ||
+        "No teacher assigned";
+      return {
+        id: cls.id,
+        name: cls.name,
+        subtitle: `${cls.students} students • ${teacherName}`,
+      };
+    });
+    setItemsToDelete(items);
+    setIsBulkDeleteModalOpen(true);
+  };
+
+  return (
+    <DataManagementPage<ClassData>
+      title={`${classLabel} Management`}
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Academic" },
+        { label: classLabel, isActive: true },
+      ]}
+      data={tenantClasses}
+      getRowKey={(item) => item.id}
+      columns={classColumns}
+      filterFields={filterFields}
+      filterFn={filterClasses}
+      sortOptions={classSortOptions}
+      sortFn={sortClasses}
+      defaultSort="ascending"
+      enableViewToggle
+      gridCardComponent={ClassGridCard}
+      gridColumns={{ sm: 1, md: 2, lg: 3, xl: 4 }}
+      enableSelection
+      bulkActions={[
+        {
+          id: "delete",
+          label: `Delete ${classLabel}`,
+          icon: Trash2,
+          variant: "danger",
+          onClick: handleBulkDelete,
+        },
+      ]}
+      addButtonConfig={{
+        label: `Add ${singleClassLabel}`,
+        onClick: () => router.push("/classes/add"),
+      }}
+      enableExport
+      exportConfig={{ filename: "classes" }}
+      onExportPDF={() => console.log("Export PDF")}
+      onExportExcel={() => console.log("Export Excel")}
+      itemLabel={singleClassLabel.toLowerCase()}
+      itemLabelPlural={classLabel.toLowerCase()}
+      emptyStateConfig={{
+        title: `No ${classLabel} Found`,
+        description: `Try adjusting your filters or add a new ${singleClassLabel.toLowerCase()}`,
+      }}
+    >
       <BulkDeleteModal
         isOpen={isBulkDeleteModalOpen}
         onClose={() => setIsBulkDeleteModalOpen(false)}
         onConfirm={(itemIds) => {
           console.log("Deleting classes:", itemIds);
-          setSelectedIds(new Set());
           setIsBulkDeleteModalOpen(false);
           setItemsToDelete([]);
         }}
         items={itemsToDelete}
         onRemoveItem={(itemId) => {
           setItemsToDelete((prev) => prev.filter((item) => item.id !== itemId));
-          setSelectedIds((prev) => {
-            const newIds = new Set(prev);
-            newIds.delete(itemId);
-            return newIds;
-          });
         }}
         onRestoreItem={(item) => {
           setItemsToDelete((prev) => [...prev, item]);
-          setSelectedIds((prev) => {
-            const newIds = new Set(prev);
-            newIds.add(item.id);
-            return newIds;
-          });
         }}
         onRestoreAll={(items) => {
           setItemsToDelete((prev) => [...prev, ...items]);
-          setSelectedIds((prev) => {
-            const newIds = new Set(prev);
-            items.forEach((item) => newIds.add(item.id));
-            return newIds;
-          });
         }}
         title={`Delete ${classLabel}`}
         warningMessage={`This will permanently remove these ${classLabel.toLowerCase()} and all associated data. This action cannot be undone.`}
         confirmButtonText={`Delete ${classLabel}`}
       />
-    </MainLayout>
+    </DataManagementPage>
   );
 }

@@ -33,6 +33,8 @@ export interface DataManagementPageProps<T> {
   // Required
   /** Page title */
   title: string;
+  /** Page subtitle */
+  subtitle?: string;
   /** Breadcrumb navigation items */
   breadcrumbs: BreadcrumbItem[];
   /** Data array to display */
@@ -85,6 +87,11 @@ export interface DataManagementPageProps<T> {
   onSelectionChange?: (ids: Set<string>) => void;
   /** Maximum number of items that can be selected */
   maxSelection?: number;
+  /** Controlled selection state (overrides internal selection) */
+  controlledSelection?: {
+    selectedIds: Set<string>;
+    onChange: (ids: Set<string>) => void;
+  };
 
   // Bulk Actions
   /** Bulk action configurations */
@@ -103,6 +110,12 @@ export interface DataManagementPageProps<T> {
   enableExport?: boolean;
   /** Export configuration */
   exportConfig?: ExportConfig<T>;
+  /** Custom print handler (overrides exportConfig) */
+  onPrint?: (items: T[]) => void;
+  /** Custom PDF export handler (overrides exportConfig) */
+  onExportPDF?: (items: T[]) => void;
+  /** Custom Excel export handler (overrides exportConfig) */
+  onExportExcel?: (items: T[]) => void;
 
   // Page Actions
   /** Page header actions */
@@ -153,6 +166,8 @@ export interface DataManagementPageProps<T> {
   headerContent?: ReactNode;
   /** Content to render below the action bar */
   beforeContent?: ReactNode;
+  /** Custom list view component (overrides default DataTable) */
+  customListComponent?: ReactNode;
   /** Modal children */
   children?: ReactNode;
 
@@ -192,6 +207,7 @@ export interface DataManagementPageProps<T> {
 export default function DataManagementPage<T>({
   // Required
   title,
+  subtitle,
   breadcrumbs,
   data,
   getRowKey,
@@ -223,6 +239,7 @@ export default function DataManagementPage<T>({
   enableSelection = true,
   onSelectionChange,
   maxSelection,
+  controlledSelection,
 
   // Bulk Actions
   bulkActions,
@@ -235,6 +252,9 @@ export default function DataManagementPage<T>({
   // Export
   enableExport = true,
   exportConfig,
+  onPrint: customPrint,
+  onExportPDF: customExportPDF,
+  onExportExcel: customExportExcel,
 
   // Page Actions
   pageActions,
@@ -265,6 +285,7 @@ export default function DataManagementPage<T>({
   // Custom Content
   headerContent,
   beforeContent,
+  customListComponent,
   children,
 
   // Styling
@@ -305,6 +326,7 @@ export default function DataManagementPage<T>({
   } = useSelection({
     items: processedData,
     getKey: getRowKey,
+    externalState: controlledSelection,
     onSelectionChange,
     maxSelection,
   });
@@ -430,13 +452,14 @@ export default function DataManagementPage<T>({
         {/* Page Header */}
         <PageHeader
           title={title}
+          subtitle={subtitle}
           breadcrumbs={breadcrumbs}
           actions={
             <PageActions
               onRefresh={handleRefresh}
-              onPrint={enableExport ? () => handlePrint(processedData) : undefined}
-              onExportPDF={enableExport ? () => handleExportPDF(processedData) : undefined}
-              onExportExcel={enableExport ? () => handleExportExcel(processedData) : undefined}
+              onPrint={enableExport ? () => (customPrint || handlePrint)(processedData) : undefined}
+              onExportPDF={enableExport ? () => (customExportPDF || handleExportPDF)(processedData) : undefined}
+              onExportExcel={enableExport ? () => (customExportExcel || handleExportExcel)(processedData) : undefined}
               addButtonLabel={addButtonConfig?.label}
               addButtonHref={addButtonConfig?.href}
               onAdd={addButtonConfig?.onClick}
@@ -512,6 +535,8 @@ export default function DataManagementPage<T>({
               onLoadMore={handleLoadMore}
               hasMore={displayedGridCount < processedData.length}
             />
+          ) : customListComponent ? (
+            customListComponent
           ) : (
             <DataTable
               data={processedData}

@@ -1,4 +1,4 @@
-import type { FilterField } from "@/components/shared/FilterButton";
+import type { FilterField, SortOption } from "@/types/components";
 import type { AdminParent } from "@/lib/mockParents";
 
 // Filter fields configuration
@@ -30,12 +30,12 @@ export const parentFilterFields: FilterField[] = [
 ];
 
 // Sort options configuration
-export const parentSortOptions = [
-  { label: "A-Z", value: "ascending" },
-  { label: "Z-A", value: "descending" },
-  { label: "Recently Added", value: "recently_added" },
-  { label: "Highest Balance", value: "highest_balance" },
-  { label: "Most Children", value: "most_children" },
+export const parentSortOptions: SortOption[] = [
+  { id: "ascending", label: "A-Z" },
+  { id: "descending", label: "Z-A" },
+  { id: "recently_added", label: "Recently Added" },
+  { id: "highest_balance", label: "Highest Balance" },
+  { id: "most_children", label: "Most Children" },
 ];
 
 // Sort function for parents

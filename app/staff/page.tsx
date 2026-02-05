@@ -1,642 +1,458 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
+import { useCall } from "@/hooks/useCall";
+import { DataManagementPage } from "@/components/pages";
 import StaffCard from "@/components/staff/StaffCard";
-import StaffTable from "@/components/staff/StaffTable";
-import LoadMoreButton from "@/components/shared/LoadMoreButton";
-import DateRangePicker from "@/components/shared/DateRangePicker";
-import FilterButton, { FilterField, FilterValues } from "@/components/shared/FilterButton";
-import SortButton from "@/components/shared/SortButton";
-import ViewToggle from "@/components/shared/ViewToggle";
-import PageHeader from "@/components/shared/PageHeader";
-import PageActions from "@/components/shared/PageActions";
-import PageSpinner from "@/components/shared/PageSpinner";
-import PageLoader from "@/components/shared/PageLoader";
-import DeleteAllButton from "@/components/shared/DeleteAllButton";
 import BulkDeleteModal, { BulkDeleteItem } from "@/components/shared/BulkDeleteModal";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import Tooltip from "@/components/shared/Tooltip";
 import { getAllTeachers, Teacher } from "@/lib/mockTeachers";
 import { exportStaffToPDF } from "@/utils/staffPdfExport";
 import { exportStaffToExcel } from "@/utils/staffExcelExport";
+import { MoreVertical, MessageCircle, Phone, Video, Mail, Eye, Edit, Lock, Trash2 } from "lucide-react";
+import type { ColumnConfig, GridCardProps } from "@/types/components";
 import {
-  Plus,
-  Download,
-  Upload,
-  RefreshCw,
-  Printer,
-} from "lucide-react";
+  getStaffCategories,
+  staffFilterFields,
+  staffSortOptions,
+  sortStaff,
+  filterStaff,
+  filterByCategory,
+  getRandomColor,
+} from "./config";
+
+// Grid card wrapper - adapts StaffCard to GridCardProps interface
+function StaffGridCard({ item, isSelected, onSelectionChange }: GridCardProps<Teacher>) {
+  const colorIndex = item.firstName.charCodeAt(0) + item.lastName.charCodeAt(0);
+  return (
+    <StaffCard
+      staff={item}
+      colorIndex={colorIndex}
+      isSelected={isSelected}
+      onSelectionChange={(_id, selected) => onSelectionChange(selected)}
+    />
+  );
+}
+
+// Inline action cell component (preserves the exact action buttons from StaffTable)
+function StaffActionsCell({ staff }: { staff: Teacher }) {
+  const router = useRouter();
+  const { startVideoCall, startVoiceCall } = useCall();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const handleMenuItemClick = (action: string) => {
+    setIsMenuOpen(false);
+    switch (action) {
+      case "View Staff":
+        router.push(`/staff/${staff.id}`);
+        break;
+      case "Edit":
+        router.push(`/staff/edit/${staff.id}`);
+        break;
+      case "Delete":
+        console.log("Delete staff:", staff.id);
+        break;
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-start gap-0.5 md:gap-1 lg:gap-1.5 xl:gap-2 pr-0.5 md:pr-2">
+      <div className="relative group/msg flex-shrink-0">
+        <button
+          className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+          onClick={(e) => { e.stopPropagation(); console.log("Message", staff.id); }}
+        >
+          <MessageCircle className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/msg:text-blue-600 dark:group-hover/msg:text-blue-400 transition-colors" />
+        </button>
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
+          <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">Message</div>
+        </div>
+      </div>
+      <div className="relative group/call flex-shrink-0">
+        <button
+          className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-green-50 dark:hover:bg-green-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            startVoiceCall({
+              id: staff.id,
+              name: `${staff.firstName} ${staff.lastName}`,
+              avatar: staff.imageUrl,
+              email: staff.email,
+              role: "Staff",
+            }, { callContext: `Voice call with ${staff.firstName}` });
+          }}
+        >
+          <Phone className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/call:text-green-600 dark:group-hover/call:text-green-400 transition-colors" />
+        </button>
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/call:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
+          <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">Voice Call</div>
+        </div>
+      </div>
+      <div className="relative group/video flex-shrink-0">
+        <button
+          className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-purple-50 dark:hover:bg-purple-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            startVideoCall({
+              id: staff.id,
+              name: `${staff.firstName} ${staff.lastName}`,
+              avatar: staff.imageUrl,
+              email: staff.email,
+              role: "Staff",
+            }, { callContext: `Video call with ${staff.firstName}` });
+          }}
+        >
+          <Video className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/video:text-purple-600 dark:group-hover/video:text-purple-400 transition-colors" />
+        </button>
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/video:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
+          <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">Video Call</div>
+        </div>
+      </div>
+      <div className="relative group/email flex-shrink-0">
+        <button
+          className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-purple-50 dark:hover:bg-purple-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+          onClick={(e) => { e.stopPropagation(); console.log("Email", staff.id); }}
+        >
+          <Mail className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/email:text-purple-600 dark:group-hover/email:text-purple-400 transition-colors" />
+        </button>
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/email:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
+          <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">Email</div>
+        </div>
+      </div>
+      <div className="relative flex-shrink-0 overflow-visible group/more">
+        <button
+          className={`p-0.5 md:p-1 xl:p-1.5 rounded-md transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer ${
+            isMenuOpen
+              ? 'bg-gray-200 dark:bg-gray-600 midnight:bg-cyan-500/30 purple:bg-pink-500/30'
+              : 'hover:bg-gray-100 dark:hover:bg-gray-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20'
+          }`}
+          title="More"
+          onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }}
+        >
+          <MoreVertical className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors" />
+        </button>
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/more:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
+          <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">More</div>
+        </div>
+
+        {isMenuOpen && (
+          <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[999999] py-1 animate-in fade-in slide-in-from-top-2 duration-200">
+            <button onClick={() => handleMenuItemClick('View Staff')} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+              <Eye className="w-4 h-4" /><span>View Staff</span>
+            </button>
+            <button onClick={() => handleMenuItemClick('Edit')} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+              <Edit className="w-4 h-4" /><span>Edit</span>
+            </button>
+            <button onClick={() => handleMenuItemClick('Login Details')} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+              <Lock className="w-4 h-4" /><span>Login Details</span>
+            </button>
+            <button onClick={() => handleMenuItemClick('Disable')} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+              <Lock className="w-4 h-4" /><span>Disable</span>
+            </button>
+            <button onClick={() => handleMenuItemClick('Delete')} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-500/10 purple:hover:bg-red-500/10 transition-colors cursor-pointer">
+              <Trash2 className="w-4 h-4" /><span>Delete</span>
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Badge color helpers
+const getRoleBadgeColor = (role: string) => {
+  const colors: Record<string, string> = {
+    Admin: "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+    Support: "bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800",
+    Management: "bg-purple-100 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800",
+  };
+  return colors[role] || colors.Admin;
+};
+
+const getStatusBadgeColor = (status: string) => {
+  const colors: Record<string, string> = {
+    Active: "bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800",
+    "On Leave": "bg-yellow-100 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800",
+    Suspended: "bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800",
+    Terminated: "bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800",
+  };
+  return colors[status] || colors.Active;
+};
 
 export default function StaffPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isPageLoading = usePageLoad(600);
 
-  // Get all staff (teaching and non-teaching)
+  // All staff data
   const [staff] = useState<Teacher[]>(getAllTeachers());
 
-  // Category filter state
+  // Category filter state (managed externally since DataManagementPage doesn't handle category tabs)
   const urlCategory = searchParams.get("category");
   const [selectedCategory, setSelectedCategory] = useState<string>(urlCategory || "all");
-
-  // Get view mode from URL, default to grid
-  const urlView = searchParams.get("view");
-  const initialView = urlView === "list" ? "list" : "grid";
-
-  const [viewMode, setViewMode] = useState<"grid" | "list">(initialView);
-  const [displayedCount, setDisplayedCount] = useState(8);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isSwitchingView, setIsSwitchingView] = useState(false);
-  const [isViewChangeLoading, setIsViewChangeLoading] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const gridRef = useRef<HTMLDivElement>(null);
-  const isButtonClick = useRef(false);
-
-  // Staff categories for filtering
-  const staffCategories = [
-    { value: "all", label: "All Personnel", count: staff.length },
-    { value: "Academic Staff", label: "Academic Staff", count: staff.filter(s => s.jobCategory === "Academic Staff").length },
-    { value: "Non-Academic Staff", label: "Administrative", count: staff.filter(s => s.jobCategory === "Non-Academic Staff").length },
-    { value: "Finance & Accounting", label: "Finance", count: staff.filter(s => s.jobCategory === "Finance & Accounting").length },
-    { value: "Technical & ICT", label: "ICT", count: staff.filter(s => s.jobCategory === "Technical & ICT").length },
-    { value: "Operations & Facility", label: "Operations", count: staff.filter(s => s.jobCategory === "Operations & Facility").length },
-  ];
-
-  // Filter fields
-  const filterFields: FilterField[] = [
-    {
-      id: "department",
-      label: "Department",
-      options: ["Administration", "IT", "HR", "Finance", "Operations"],
-      width: "half",
-    },
-    {
-      id: "role",
-      label: "Role",
-      options: ["Admin", "Support", "Management"],
-      width: "half",
-    },
-    {
-      id: "employmentType",
-      label: "Employment Type",
-      options: ["Full-Time", "Part-Time", "Contract"],
-      width: "half",
-    },
-    {
-      id: "status",
-      label: "Status",
-      options: ["Active", "On Leave", "Suspended", "Terminated"],
-      width: "half",
-    },
-  ];
-
-  // Filter state
-  const [filters, setFilters] = useState<FilterValues>({});
-  const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string } | null>(null);
-  const [isFiltering, setIsFiltering] = useState(false);
-
-  // Sort state
-  const [sortOption, setSortOption] = useState<string>("ascending");
-  const [isSorting, setIsSorting] = useState(false);
-  const [resetKey, setResetKey] = useState(0);
 
   // Bulk delete modal state
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const [itemsToDelete, setItemsToDelete] = useState<BulkDeleteItem[]>([]);
 
-  // Sort options
-  const sortOptions = [
-    { label: "Ascending", value: "ascending" },
-    { label: "Descending", value: "descending" },
-    { label: "Recently Added", value: "recently_added" },
-  ];
+  // Pre-filter by category before passing to DataManagementPage
+  const categoryFilteredStaff = useMemo(
+    () => filterByCategory(staff, selectedCategory),
+    [staff, selectedCategory]
+  );
 
-  // Handler to update view mode and URL (for button clicks)
-  const handleViewModeChange = (newMode: "grid" | "list") => {
-    // Mark this as a button click to prevent useEffect from triggering
-    isButtonClick.current = true;
-    setIsSwitchingView(true);
+  // Staff categories
+  const staffCategories = useMemo(() => getStaffCategories(staff), [staff]);
 
-    setTimeout(() => {
-      setViewMode(newMode);
-      router.push(`/staff?view=${newMode}`);
+  // Column definitions (matching StaffTable exactly)
+  const staffColumns: ColumnConfig<Teacher>[] = useMemo(() => [
+    {
+      key: "staffId",
+      label: "Staff ID",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      className: "text-left w-[10%]",
+      render: (staffMember) => (
+        <span
+          onClick={(e) => { e.stopPropagation(); router.push(`/staff/${staffMember.id}`); }}
+          className="text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 block cursor-pointer whitespace-nowrap transition-all duration-200"
+        >
+          {staffMember.staffId}
+        </span>
+      ),
+    },
+    {
+      key: "name",
+      label: "Name",
+      sortable: true,
+      className: "text-left w-[38%] md:w-[18%]",
+      render: (staffMember) => (
+        <div className="flex items-center gap-1.5 md:gap-2.5 min-w-0">
+          {staffMember.imageUrl ? (
+            <div className="relative cursor-pointer group/avatar flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+              <img
+                src={staffMember.imageUrl}
+                alt={`${staffMember.firstName} ${staffMember.lastName}`}
+                className="w-7 h-7 md:w-8 md:h-8 xl:w-9 xl:h-9 rounded-full object-cover shrink-0 ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
+                style={{ position: 'relative', transformOrigin: 'center center' }}
+              />
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 midnight:from-cyan-400 midnight:via-purple-400 midnight:to-cyan-400 purple:from-pink-400 purple:via-purple-400 purple:to-pink-400 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
+            </div>
+          ) : (
+            <div className="relative cursor-pointer group/avatar flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+              <div
+                className="w-7 h-7 md:w-8 md:h-8 xl:w-9 xl:h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs md:text-sm font-bold shrink-0 shadow-lg ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
+                style={{ position: 'relative', transformOrigin: 'center center' }}
+              >
+                {staffMember.firstName.charAt(0)}
+              </div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 midnight:from-cyan-400 midnight:via-purple-400 midnight:to-cyan-400 purple:from-pink-400 purple:via-purple-400 purple:to-pink-400 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
+            </div>
+          )}
+          <Tooltip content={`${staffMember.firstName} ${staffMember.lastName}`}>
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 md:truncate-none truncate">
+              <span className="md:hidden">{staffMember.firstName} {staffMember.lastName.charAt(0)}</span>
+              <span className="hidden md:inline">{staffMember.firstName} {staffMember.lastName}</span>
+            </span>
+          </Tooltip>
+        </div>
+      ),
+    },
+    {
+      key: "department",
+      label: "Department",
+      sortable: true,
+      hidden: { mobile: true },
+      className: "text-left w-[12%]",
+      render: (staffMember) => (
+        <span className="text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
+          {staffMember.department}
+        </span>
+      ),
+    },
+    {
+      key: "role",
+      label: "Role",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      className: "text-left w-[10%]",
+      render: (staffMember) => (
+        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold border ${getRoleBadgeColor(staffMember.role)}`}>
+          {staffMember.role}
+        </span>
+      ),
+    },
+    {
+      key: "employmentStatus",
+      label: "Status",
+      sortable: true,
+      className: "text-left w-[18%] md:w-[8%]",
+      render: (staffMember) => (
+        <div className="flex items-center justify-start">
+          <span className={`inline-flex items-center justify-center px-2 md:px-3 xl:px-3.5 py-1 md:py-1.5 xl:py-2 rounded-full text-[10px] md:text-xs xl:text-sm font-semibold shadow-sm transition-all duration-300 whitespace-nowrap ${getStatusBadgeColor(staffMember.employmentStatus)}`}>
+            {staffMember.employmentStatus}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "joinDate",
+      label: "Date of Join",
+      sortable: true,
+      hidden: { mobile: true, tablet: true },
+      className: "text-left w-[10%]",
+      render: (staffMember) => (
+        <span className="text-sm font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 whitespace-nowrap">
+          {new Date(staffMember.joinDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      label: "Action",
+      sortable: false,
+      searchable: false,
+      className: "text-left w-[39%] md:w-[21%] !overflow-visible",
+      render: (staffMember) => <StaffActionsCell staff={staffMember} />,
+    },
+  ], [router]);
 
-      setTimeout(() => {
-        setIsSwitchingView(false);
-      }, 100);
-    }, 300);
-  };
-
-  // Sync view mode with URL changes (only for menu link navigation, not button clicks)
-  useEffect(() => {
-    const urlView = searchParams.get("view");
-    const newViewMode = urlView === "list" ? "list" : "grid";
-
-    // Only trigger page loading if view mode changes AND it's not from button click
-    if (newViewMode !== viewMode) {
-      if (!isButtonClick.current) {
-        // Menu link navigation - show full page loading
-        setIsViewChangeLoading(true);
-        setTimeout(() => {
-          setViewMode(newViewMode);
-          setTimeout(() => {
-            setIsViewChangeLoading(false);
-          }, 600);
-        }, 100);
-      } else {
-        // Button click - reset the flag after the view mode has been set
-        isButtonClick.current = false;
-      }
-    }
-  }, [searchParams, viewMode]);
-
-  const handleDateRangeChange = (startDate: string, endDate: string) => {
-    setIsFiltering(true);
-    setTimeout(() => {
-      setDateRange({ startDate, endDate });
-      const initialCount = viewMode === "grid" ? 8 : 10;
-      setDisplayedCount(initialCount);
-      setTimeout(() => {
-        setIsFiltering(false);
-      }, 100);
-    }, 300);
-  };
-
-  const handleFilterChange = (updatedFilters: FilterValues) => {
-    setIsFiltering(true);
-    setTimeout(() => {
-      setFilters(updatedFilters);
-      const initialCount = viewMode === "grid" ? 8 : 10;
-      setDisplayedCount(initialCount);
-      setTimeout(() => {
-        setIsFiltering(false);
-      }, 100);
-    }, 300);
-  };
-
-  const handleSortChange = (option: string) => {
-    setIsSorting(true);
-    setTimeout(() => {
-      setSortOption(option);
-      setTimeout(() => {
-        setIsSorting(false);
-      }, 100);
-    }, 300);
-  };
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setSelectedIds(new Set());
-    setFilters({});
-    setDateRange(null);
-    setSortOption("ascending");
-    setResetKey(prev => prev + 1);
-    setTimeout(() => {
-      const initialCount = viewMode === "grid" ? 8 : 10;
-      setDisplayedCount(initialCount);
-      setTimeout(() => {
-        setIsRefreshing(false);
-      }, 100);
-    }, 300);
-  };
-
-  const handleExportPDF = () => {
-    // Export all filtered staff to PDF
+  // Export handlers
+  const handleExportPDF = (data: Teacher[]) => {
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
-    const filename = `staff_${dateStr}.pdf`;
-
-    exportStaffToPDF(filteredStaff, filename);
+    exportStaffToPDF(data, `staff_${dateStr}.pdf`);
   };
 
-  const handleExportExcel = () => {
-    // Export all filtered staff to Excel
+  const handleExportExcel = (data: Teacher[]) => {
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
-    const filename = `staff_${dateStr}.xlsx`;
-
-    exportStaffToExcel(filteredStaff, filename);
+    exportStaffToExcel(data, `staff_${dateStr}.xlsx`);
   };
 
-  const handleLoadMore = () => {
-    setIsLoadingMore(true);
-    setTimeout(() => {
-      setDisplayedCount((prev) => prev + (viewMode === "grid" ? 8 : 10));
-      setIsLoadingMore(false);
-    }, 500);
+  // Bulk delete handler
+  const handleBulkDelete = (selectedIds: Set<string>) => {
+    const selectedStaff = categoryFilteredStaff.filter(s => selectedIds.has(s.id));
+    const items: BulkDeleteItem[] = selectedStaff.map(s => ({
+      id: s.id,
+      name: `${s.firstName} ${s.lastName}`,
+      subtitle: s.staffId,
+      avatarColor: s.imageUrl ? undefined : getRandomColor(`${s.firstName} ${s.lastName}`),
+      avatar: s.imageUrl,
+    }));
+    setItemsToDelete(items);
+    setIsBulkDeleteModalOpen(true);
   };
 
-  const handleDeleteAll = () => {
-    if (selectedIds.size > 0) {
-      // Get the selected staff details
-      const selectedStaff = filteredStaff.filter(staffMember =>
-        selectedIds.has(staffMember.id)
-      );
-
-      // Convert to BulkDeleteItem format
-      const items: BulkDeleteItem[] = selectedStaff.map(staffMember => ({
-        id: staffMember.id,
-        name: `${staffMember.firstName} ${staffMember.lastName}`,
-        subtitle: staffMember.staffId,
-        avatarColor: staffMember.imageUrl ? undefined : getRandomColor(`${staffMember.firstName} ${staffMember.lastName}`),
-        avatar: staffMember.imageUrl,
-      }));
-
-      setItemsToDelete(items);
-      setIsBulkDeleteModalOpen(true);
-    }
-  };
-
-  // Helper function to get consistent color for a name
-  const getRandomColor = (name: string): string => {
-    const colors = [
-      '#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6',
-      '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#84CC16'
-    ];
-    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return colors[hash % colors.length];
-  };
-
-  const handleRemoveFromDeleteList = (itemId: string) => {
-    setItemsToDelete(prevItems => prevItems.filter(item => item.id !== itemId));
-    setSelectedIds(prevIds => {
-      const newIds = new Set(prevIds);
-      newIds.delete(itemId);
-      return newIds;
-    });
-  };
-
-  const handleConfirmBulkDelete = (itemIds: string[]) => {
-    console.log('Deleting staff:', itemIds);
-    // Add your bulk delete logic here
-    // For now, just clear the selection and close modal
-    setSelectedIds(new Set());
-    setIsBulkDeleteModalOpen(false);
-    setItemsToDelete([]);
-  };
-
-  const handleCloseBulkDeleteModal = () => {
-    setIsBulkDeleteModalOpen(false);
-  };
-
-  const handleRestoreItem = (item: BulkDeleteItem) => {
-    // Add item back to itemsToDelete
-    setItemsToDelete(prevItems => [...prevItems, item]);
-    // Add item back to selectedIds
-    setSelectedIds(prevIds => {
-      const newIds = new Set(prevIds);
-      newIds.add(item.id);
-      return newIds;
-    });
-  };
-
-  const handleRestoreAll = (items: BulkDeleteItem[]) => {
-    // Add all items back to itemsToDelete
-    setItemsToDelete(prevItems => [...prevItems, ...items]);
-    // Add all items back to selectedIds
-    setSelectedIds(prevIds => {
-      const newIds = new Set(prevIds);
-      items.forEach(item => newIds.add(item.id));
-      return newIds;
-    });
-  };
-
-  // Parse date helper
-  const parseDate = (dateStr: string): Date | null => {
-    try {
-      const parts = dateStr.split("/");
-      if (parts.length !== 3) return null;
-      const month = parseInt(parts[0]) - 1;
-      const day = parseInt(parts[1]);
-      const year = parseInt(parts[2]);
-      if (isNaN(month) || isNaN(day) || isNaN(year)) return null;
-      return new Date(year, month, day);
-    } catch {
-      return null;
-    }
-  };
-
-  // Apply sorting
-  const sortedStaff = [...staff].sort((a, b) => {
-    switch (sortOption) {
-      case "ascending":
-        return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
-      case "descending":
-        return `${b.firstName} ${b.lastName}`.localeCompare(`${a.firstName} ${a.lastName}`);
-      case "recently_added":
-        return new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime();
-      default:
-        return 0;
-    }
-  });
-
-  // Apply category filter first
-  const categoryFilteredStaff = selectedCategory === "all"
-    ? sortedStaff
-    : sortedStaff.filter(s => s.jobCategory === selectedCategory);
-
-  // Apply filters
-  const filteredStaff = categoryFilteredStaff.filter((staffMember) => {
-    // Check date range filter
-    if (dateRange) {
-      const joinedDate = new Date(staffMember.joinDate);
-      const startDate = parseDate(dateRange.startDate);
-      const endDate = parseDate(dateRange.endDate);
-      if (joinedDate && startDate && endDate) {
-        if (joinedDate < startDate || joinedDate > endDate) {
-          return false;
-        }
-      }
-    }
-
-    // Check other filters
-    const hasFilters = Object.values(filters).some((values) => values && values.length > 0);
-    if (!hasFilters) return true;
-
-    const matchesDepartment = !filters.department || filters.department.length === 0 || filters.department.includes(staffMember.department);
-    const matchesRole = !filters.role || filters.role.length === 0 || filters.role.includes(staffMember.role);
-    const matchesEmploymentType = !filters.employmentType || filters.employmentType.length === 0 || filters.employmentType.includes(staffMember.employmentType);
-    const matchesStatus = !filters.status || filters.status.length === 0 || filters.status.includes(staffMember.employmentStatus);
-
-    return matchesDepartment && matchesRole && matchesEmploymentType && matchesStatus;
-  });
-
-  const displayedStaff = filteredStaff.slice(0, displayedCount);
-  const hasMore = displayedCount < filteredStaff.length;
-
-  const combinedLoading = isPageLoading || isViewChangeLoading;
+  // Category tabs JSX
+  const categoryTabs = (
+    <div className="mb-4">
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+        {staffCategories.map((category) => (
+          <button
+            key={category.value}
+            onClick={() => {
+              setSelectedCategory(category.value);
+              const urlView = searchParams.get("view");
+              router.push(`/staff?category=${category.value}${urlView ? `&view=${urlView}` : ''}`);
+            }}
+            className={`
+              flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200
+              ${selectedCategory === category.value
+                ? 'bg-blue-600 text-white dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 shadow-lg'
+                : 'bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800'
+              }
+            `}
+          >
+            {category.label}
+            <span className={`
+              px-2 py-0.5 rounded-full text-xs font-semibold
+              ${selectedCategory === category.value
+                ? 'bg-white/20 text-white'
+                : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400'
+              }
+            `}>
+              {category.count}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={combinedLoading} loadingText={isViewChangeLoading ? "Switching view..." : "Loading Staff"} />
-
-      {/* Main Content - Fades in after loading */}
-      <div className={`transition-opacity duration-500 ${combinedLoading ? 'opacity-0' : 'opacity-100'}`}>
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-0 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
-        {/* Left Section - Title and Breadcrumb */}
-        <PageHeader
-          title="Personnel Management"
-          subtitle="Manage all teaching and non-teaching staff"
-          breadcrumbs={[
-            { label: "Dashboard", href: "/" },
-            { label: "Peoples" },
-            { label: viewMode === "grid" ? "Personnel Grid" : "Personnel Table", isActive: true },
-          ]}
-        />
-
-        {/* Right Section - Action Buttons */}
-        <PageActions
-          addButtonLabel="Add Personnel"
-          exportDescription="Download staff data"
-          onAdd={() => router.push("/staff/add")}
-          onRefresh={handleRefresh}
-          onPrint={() => console.log("Print staff")}
-          onExportPDF={handleExportPDF}
-          onExportExcel={handleExportExcel}
-        />
-      </div>
-
-        {/* Category Tabs */}
-        <div className="animate-in fade-in slide-in-from-top-2 duration-700 delay-100 ease-out mb-4">
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
-            {staffCategories.map((category) => (
-              <button
-                key={category.value}
-                onClick={() => {
-                  setSelectedCategory(category.value);
-                  router.push(`/staff?category=${category.value}${urlView ? `&view=${urlView}` : ''}`);
-                  setDisplayedCount(viewMode === "grid" ? 8 : 10);
-                }}
-                className={`
-                  flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200
-                  ${selectedCategory === category.value
-                    ? 'bg-blue-600 text-white dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 shadow-lg'
-                    : 'bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800'
-                  }
-                `}
-              >
-                {category.label}
-                <span className={`
-                  px-2 py-0.5 rounded-full text-xs font-semibold
-                  ${selectedCategory === category.value
-                    ? 'bg-white/20 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400'
-                  }
-                `}>
-                  {category.count}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Filters Bar */}
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out mb-6">
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
-          {/* Left Section - Date and Filter */}
-          <div className="flex items-center gap-2 sm:gap-3 lg:flex-1">
-            {/* Date Range Picker */}
-            <DateRangePicker onChange={handleDateRangeChange} resetKey={resetKey} />
-
-            {/* Filter */}
-            <FilterButton fields={filterFields} onFilterChange={handleFilterChange} resetKey={resetKey} />
-
-            {/* Delete All Button - Only show in table view when items are selected */}
-            {viewMode === "list" && selectedIds.size > 0 && (
-              <DeleteAllButton
-                selectedCount={selectedIds.size}
-                onDeleteAll={handleDeleteAll}
-              />
-            )}
-
-            {/* Staff Count Badge (Grid View Only) */}
-            {viewMode === "grid" && (
-              <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
-                <span className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
-                  1 to {Math.min(displayedCount, filteredStaff.length)} of {filteredStaff.length}
-                </span>
-              </div>
-            )}
-
-            {/* Delete All Button - Grid view (desktop: after count badge, mobile: hidden here) */}
-            {viewMode === "grid" && selectedIds.size > 0 && (
-              <div className="hidden sm:block">
-                <DeleteAllButton
-                  selectedCount={selectedIds.size}
-                  onDeleteAll={handleDeleteAll}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Right Section - View Toggle and Sort */}
-          <div className="flex items-center justify-end gap-3 lg:flex-1">
-            {/* Delete All Button - Grid view (mobile: before checkbox, far left) */}
-            {viewMode === "grid" && selectedIds.size > 0 && (
-              <div className="block sm:hidden">
-                <DeleteAllButton
-                  selectedCount={selectedIds.size}
-                  onDeleteAll={handleDeleteAll}
-                />
-              </div>
-            )}
-
-            {/* Select All Checkbox - Only show in grid view */}
-            {viewMode === "grid" && (
-              <div className="flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 shadow-sm">
-                <input
-                  type="checkbox"
-                  ref={(el) => {
-                    if (el) {
-                      const isSomeSelected = selectedIds.size > 0 && selectedIds.size < displayedStaff.length;
-                      el.indeterminate = isSomeSelected;
-                    }
-                  }}
-                  checked={selectedIds.size === displayedStaff.length && displayedStaff.length > 0}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      // Select all displayed staff
-                      setSelectedIds(new Set(displayedStaff.map(s => s.id)));
-                    } else {
-                      // Deselect all
-                      setSelectedIds(new Set());
-                    }
-                  }}
-                  className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
-                />
-                <span className="hidden sm:inline text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                  Select All
-                </span>
-              </div>
-            )}
-
-            {/* View Toggle */}
-            <ViewToggle viewMode={viewMode} onViewModeChange={handleViewModeChange} />
-
-            {/* Sort */}
-            <SortButton
-              options={sortOptions}
-              defaultOption="ascending"
-              onSortChange={handleSortChange}
-              resetKey={resetKey}
-            />
-          </div>
-        </div>
-      </div>
-
-        {/* Content */}
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out" style={{ overflow: 'visible' }}>
-          {/* Staff Grid or Table */}
-          <div className="relative min-h-[400px]" style={{ overflow: 'visible' }}>
-          {/* Grid View */}
-          {viewMode === "grid" && (
-            <div
-              key={`grid-view-${isFiltering ? 'filtering' : 'filtered'}-${isSorting ? 'sorting' : 'sorted'}-${isRefreshing ? 'refreshing' : 'refreshed'}-${sortOption}`}
-              className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
-              style={{ overflow: 'visible' }}
-            >
-              {(isFiltering || isSorting || isRefreshing || isSwitchingView) ? (
-                <PageSpinner message={isSwitchingView ? "Switching view..." : isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."} size="md" />
-              ) : displayedStaff.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16">
-                  {/* Icon with gradient background */}
-                  <div className="relative mb-4">
-                    {/* Gradient background circle */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 midnight:from-cyan-500/5 midnight:to-cyan-600/5 purple:from-pink-500/5 purple:to-pink-600/5 animate-pulse" />
-                    </div>
-
-                    {/* Icon */}
-                    <div className="relative z-10 flex items-center justify-center w-16 h-16">
-                      <svg className="w-8 h-8 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1">
-                    No data available
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-                    No staff found
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5" style={{ overflow: 'visible' }}>
-                    {displayedStaff.map((staffMember, index) => (
-                      <StaffCard
-                        key={staffMember.id}
-                        staff={staffMember}
-                        colorIndex={index}
-                        isSelected={selectedIds.has(staffMember.id)}
-                        onSelectionChange={(id, selected) => {
-                          const newIds = new Set(selectedIds);
-                          if (selected) {
-                            newIds.add(id);
-                          } else {
-                            newIds.delete(id);
-                          }
-                          setSelectedIds(newIds);
-                        }}
-                      />
-                    ))}
-                  </div>
-
-                  {hasMore && (
-                    <div className="flex justify-center pt-4">
-                      <LoadMoreButton onClick={handleLoadMore} isLoading={isLoadingMore} />
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-
-          {/* List View */}
-          {viewMode === "list" && (
-            <div
-              key={`list-view-${isFiltering ? 'filtering' : 'filtered'}-${isSorting ? 'sorting' : 'sorted'}-${isRefreshing ? 'refreshing' : 'refreshed'}-${sortOption}`}
-              className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
-            >
-              {isSwitchingView ? (
-                <PageSpinner message="Switching view..." size="md" />
-              ) : (
-                <StaffTable
-                  staff={filteredStaff}
-                  isLoading={isFiltering || isSorting || isRefreshing}
-                  loadingMessage={isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."}
-                  totalStaffCount={staff.length}
-                  selectedIds={selectedIds}
-                  onSelectionChange={setSelectedIds}
-                />
-              )}
-            </div>
-          )}
-          </div>
-        </div>
-      </div>
-
+    <DataManagementPage<Teacher>
+      title="Personnel Management"
+      subtitle="Manage all teaching and non-teaching staff"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Peoples" },
+        { label: "Personnel", isActive: true },
+      ]}
+      data={categoryFilteredStaff}
+      getRowKey={(item) => item.id}
+      columns={staffColumns}
+      filterFields={staffFilterFields}
+      filterFn={filterStaff}
+      sortOptions={staffSortOptions}
+      sortFn={sortStaff}
+      defaultSort="ascending"
+      enableDateRange
+      enableViewToggle
+      defaultViewMode="grid"
+      gridCardComponent={StaffGridCard}
+      gridColumns={{ sm: 1, md: 2, lg: 3, xl: 4 }}
+      enableSelection
+      enableLoadMore
+      initialGridCount={8}
+      loadMoreCount={8}
+      bulkActions={[
+        {
+          id: "delete",
+          label: "Delete Selected",
+          icon: Trash2,
+          variant: "danger",
+          onClick: handleBulkDelete,
+        },
+      ]}
+      addButtonConfig={{
+        label: "Add Personnel",
+        onClick: () => router.push("/staff/add"),
+      }}
+      exportConfig={{ filename: "staff" }}
+      onExportPDF={handleExportPDF}
+      onExportExcel={handleExportExcel}
+      itemLabel="staff member"
+      itemLabelPlural="staff members"
+      emptyStateConfig={{
+        title: "No staff found",
+        description: "No staff members match the current filters.",
+      }}
+      headerContent={categoryTabs}
+    >
       {/* Bulk Delete Modal */}
       <BulkDeleteModal
         isOpen={isBulkDeleteModalOpen}
-        onClose={handleCloseBulkDeleteModal}
-        onConfirm={handleConfirmBulkDelete}
+        onClose={() => setIsBulkDeleteModalOpen(false)}
+        onConfirm={(itemIds) => {
+          console.log('Deleting staff:', itemIds);
+          setIsBulkDeleteModalOpen(false);
+          setItemsToDelete([]);
+        }}
         items={itemsToDelete}
-        onRemoveItem={handleRemoveFromDeleteList}
-        onRestoreItem={handleRestoreItem}
-        onRestoreAll={handleRestoreAll}
+        onRemoveItem={(itemId) => {
+          setItemsToDelete(prev => prev.filter(item => item.id !== itemId));
+        }}
+        onRestoreItem={(item) => {
+          setItemsToDelete(prev => [...prev, item]);
+        }}
+        onRestoreAll={(items) => {
+          setItemsToDelete(prev => [...prev, ...items]);
+        }}
         title="Delete Staff"
         warningMessage="This will permanently remove these staff members and all associated data. This action cannot be undone."
         confirmButtonText="Delete Staff"
       />
-    </MainLayout>
+    </DataManagementPage>
   );
 }

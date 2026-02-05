@@ -1,4 +1,4 @@
-import type { FilterField } from "@/components/shared/FilterButton";
+import type { FilterField, SortOption } from "@/types/components";
 import type { Teacher } from "@/lib/mockTeachers";
 
 // Staff categories for filtering
@@ -40,10 +40,10 @@ export const staffFilterFields: FilterField[] = [
 ];
 
 // Sort options configuration
-export const staffSortOptions = [
-  { label: "Ascending", value: "ascending" },
-  { label: "Descending", value: "descending" },
-  { label: "Recently Added", value: "recently_added" },
+export const staffSortOptions: SortOption[] = [
+  { id: "ascending", label: "Ascending" },
+  { id: "descending", label: "Descending" },
+  { id: "recently_added", label: "Recently Added" },
 ];
 
 // Parse date helper for date range filtering
@@ -93,25 +93,12 @@ export const filterByCategory = (data: Teacher[], category: string): Teacher[] =
   return data.filter(s => s.jobCategory === category);
 };
 
-// Filter function for staff
+// Filter function for staff (compatible with DataManagementPage filterFn signature)
 export const filterStaff = (
   data: Teacher[],
   filters: Record<string, string[]>,
-  dateRange?: { startDate: string; endDate: string } | null
 ): Teacher[] => {
   return data.filter((staffMember) => {
-    // Check date range filter
-    if (dateRange) {
-      const joinedDate = new Date(staffMember.joinDate);
-      const startDate = parseDate(dateRange.startDate);
-      const endDate = parseDate(dateRange.endDate);
-      if (joinedDate && startDate && endDate) {
-        if (joinedDate < startDate || joinedDate > endDate) {
-          return false;
-        }
-      }
-    }
-
     // Check other filters
     const hasFilters = Object.values(filters).some((values) => values && values.length > 0);
     if (!hasFilters) return true;
