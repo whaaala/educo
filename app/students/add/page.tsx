@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import PersonalInformationSection from "@/components/students/form-sections/PersonalInformationSection";
 import ParentsGuardianSection from "@/components/students/form-sections/ParentsGuardianSection";
 import SiblingsSection from "@/components/students/form-sections/SiblingsSection";
@@ -15,7 +13,6 @@ import DocumentsSection from "@/components/students/form-sections/DocumentsSecti
 import MedicalHistorySection from "@/components/students/form-sections/MedicalHistorySection";
 import PreviousSchoolSection from "@/components/students/form-sections/PreviousSchoolSection";
 import OtherDetailsSection from "@/components/students/form-sections/OtherDetailsSection";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useAcademicYear } from "@/contexts/AcademicYearContext";
 import { validateForm, ValidationErrors } from "@/lib/validation";
@@ -34,7 +31,6 @@ export default function AddStudentPage() {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [showValidationModal, setShowValidationModal] = useState(false);
-  const isLoading = usePageLoad(800);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [isSticky, setIsSticky] = useState(true);
@@ -412,25 +408,16 @@ export default function AddStudentPage() {
   };
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Form" />
-
-      {/* Main Content - Fades in after loading */}
-      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-        {/* Header */}
-        <div className="py-4 mb-2">
-          <PageHeader
-            title="Add Student"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Students", href: "/students?view=grid" },
-              { label: "Add Student", isActive: true },
-            ]}
-          />
-        </div>
-
-                  {/* Form */}
+    <DashboardPage
+      title="Add Student"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Students", href: "/students?view=grid" },
+        { label: "Add Student", isActive: true },
+      ]}
+      loadingText="Loading Form"
+      afterStats={
+        <div className="mt-6">
           <form
             id="add-student-form"
             ref={formRef}
@@ -526,24 +513,24 @@ export default function AddStudentPage() {
             >
               Cancel
             </button>
-                          <button
-                type="submit"
-                form="add-student-form"
-                disabled={isSubmitting}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl cursor-pointer"
-              >
+            <button
+              type="submit"
+              form="add-student-form"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl cursor-pointer"
+            >
               {isSubmitting ? "Adding Student..." : "Add Student"}
             </button>
           </div>
         </div>
       </div>
-      
-      {/* Validation Errors Modal */}
+      }
+    >
       <ValidationErrorsModal
         isOpen={showValidationModal}
         onClose={() => setShowValidationModal(false)}
         errors={errors}
       />
-    </MainLayout>
+    </DashboardPage>
   );
 }

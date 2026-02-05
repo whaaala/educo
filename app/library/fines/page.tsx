@@ -1,20 +1,13 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import Image from "next/image";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import PageSpinner from "@/components/shared/PageSpinner";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DataManagementPage } from "@/components/pages";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useCountry } from "@/contexts/CountryContext";
 import { formatCurrency } from "@/config/countries";
 import Button from "@/components/shared/Button";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
-import PageActions from "@/components/shared/PageActions";
-import SearchFilterBar from "@/components/shared/SearchFilterBar";
-import StatCard from "@/components/shared/StatCard";
+import DataTable from "@/components/shared/DataTable";
 import Modal from "@/components/shared/Modal";
 import Tooltip from "@/components/shared/Tooltip";
 import FormInput from "@/components/shared/FormInput";
@@ -36,7 +29,16 @@ import {
   FileText,
 } from "lucide-react";
 import type { LibraryFine } from "@/types/library";
+import type { ColumnConfig } from "@/types/components";
 import { exportFinesToExcel, exportFinesToPDF } from "@/lib/export-utils";
+import {
+  fineFilterFields,
+  fineSortOptions,
+  filterFines,
+  sortFines,
+  searchFines,
+  getFineStats,
+} from "../config";
 
 // Mock Library Fines Data
 const MOCK_FINES: LibraryFine[] = [
@@ -162,32 +164,13 @@ const MOCK_FINES: LibraryFine[] = [
   },
 ];
 
-// Filter options
-const TYPE_OPTIONS = [
-  { value: "all", label: "All Types" },
-  { value: "overdue", label: "Overdue" },
-  { value: "lost", label: "Lost Book" },
-  { value: "damaged", label: "Damaged Book" },
-];
-
-const STATUS_OPTIONS = [
-  { value: "all", label: "All Status" },
-  { value: "pending", label: "Pending" },
-  { value: "paid", label: "Paid" },
-  { value: "waived", label: "Waived" },
-];
-
 export default function LibraryFinesPage() {
-  const isPageLoading = usePageLoad(600);
   const { settings } = useSchoolSettings();
   const { countryCode, countryConfig } = useCountry();
   const currencySymbol = countryConfig.currency.symbol;
 
   // State
   const [fines, setFines] = useState<LibraryFine[]>(MOCK_FINES);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState("all");
 
   // Modal states
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -212,100 +195,11 @@ export default function LibraryFinesPage() {
   const [autoCalculate, setAutoCalculate] = useState(true);
   const [selectedLoanId, setSelectedLoanId] = useState("");
 
-  // Loading states
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isFiltering, setIsFiltering] = useState(false);
-
-  // Animation trigger
-  const [animationTrigger, setAnimationTrigger] = useState(0);
-
-  // Create a filterKey to track filter/search changes
-  const filterKey = `${searchQuery}-${selectedType}-${selectedStatus}`;
-  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
-
-  // Handle filter changes with animation
-  const handleFilterChange = (setter: (val: string) => void, value: string) => {
-    setIsFiltering(true);
-    setTimeout(() => {
-      setter(value);
-      setTimeout(() => setIsFiltering(false), 100);
-    }, 200);
-  };
-
-  // Handle search change
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-  };
-
-  // Filter fines
-  const filteredFines = useMemo(() => {
-    return fines.filter((fine) => {
-      const matchesSearch =
-        searchQuery === "" ||
-        fine.memberName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        fine.bookTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        fine.paymentReference?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        fine.loanId.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesType = selectedType === "all" || fine.fineType === selectedType;
-      const matchesStatus =
-        selectedStatus === "all" ||
-        (selectedStatus === "pending" && !fine.isPaid) ||
-        (selectedStatus === "paid" && fine.isPaid && (!fine.waivedAmount || fine.waivedAmount === 0 || (fine.paidAmount && fine.paidAmount > 0))) ||
-        (selectedStatus === "waived" && fine.isPaid && fine.waivedAmount && fine.waivedAmount > 0 && (!fine.paidAmount || fine.paidAmount === 0));
-
-      return matchesSearch && matchesType && matchesStatus;
-    });
-  }, [fines, searchQuery, selectedType, selectedStatus]);
-
-  // Calculate statistics
-  const stats = useMemo(() => {
-    const totalFines = fines.length;
-    const pendingFines = fines.filter((f) => !f.isPaid).length;
-    const pendingAmount = fines.filter((f) => !f.isPaid).reduce((sum, f) => sum + f.amount, 0);
-    const collectedAmount = fines.filter((f) => f.isPaid).reduce((sum, f) => sum + (f.paidAmount || 0), 0);
-    const waivedAmount = fines.reduce((sum, f) => sum + (f.waivedAmount || 0), 0);
-
-    return { totalFines, pendingFines, pendingAmount, collectedAmount, waivedAmount };
-  }, [fines]);
-
-  // Trigger animation when filterKey changes
-  useEffect(() => {
-    if (filterKey !== prevFilterKey) {
-      setAnimationTrigger((prev) => prev + 1);
-      setPrevFilterKey(filterKey);
-    }
-  }, [filterKey, prevFilterKey]);
-
-  // Apply row animation when filter/search changes
-  useEffect(() => {
-    if (animationTrigger > 0) {
-      const timeoutId = setTimeout(() => {
-        const tables = document.querySelectorAll("table");
-        tables.forEach((table) => {
-          const rows = table.querySelectorAll("tbody tr");
-          rows.forEach((row, index) => {
-            const htmlRow = row as HTMLElement;
-            const delay = index / 80;
-            htmlRow.style.animation = `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${delay}s both`;
-          });
-        });
-
-        // Cleanup after animation completes
-        setTimeout(() => {
-          tables.forEach((table) => {
-            const rows = table.querySelectorAll("tbody tr");
-            rows.forEach((row) => {
-              const htmlRow = row as HTMLElement;
-              htmlRow.style.animation = "";
-            });
-          });
-        }, 600);
-      }, 50);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [animationTrigger]);
+  // Stats config
+  const fineStats = useMemo(
+    () => getFineStats(fines, (amount) => formatCurrency(amount, countryCode)),
+    [fines, countryCode]
+  );
 
   // Handle view fine
   const handleView = (fine: LibraryFine) => {
@@ -419,19 +313,10 @@ export default function LibraryFinesPage() {
     setSelectedLoanId("");
   };
 
-  // Handle refresh
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setSearchQuery("");
-    setSelectedType("all");
-    setSelectedStatus("all");
-    setTimeout(() => setIsRefreshing(false), 500);
-  };
-
   // Export to PDF
   const handleExportPDF = () => {
     exportFinesToPDF(
-      filteredFines,
+      fines,
       "library-fines",
       (amount) => formatCurrency(amount, countryCode),
       settings.schoolName
@@ -441,7 +326,7 @@ export default function LibraryFinesPage() {
   // Export to Excel
   const handleExportExcel = () => {
     exportFinesToExcel(
-      filteredFines,
+      fines,
       "library-fines",
       (amount) => formatCurrency(amount, countryCode)
     );
@@ -748,152 +633,53 @@ export default function LibraryFinesPage() {
     },
   ];
 
-  const isLoading = isRefreshing || isFiltering;
-
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Fines" />
-
-      <div
-        className={`space-y-6 transition-opacity duration-500 ${
-          isPageLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <PageHeader
-            title="Fines & Payments"
-            breadcrumbs={[
-              { label: "Library", href: "/library" },
-              { label: "Fines" },
-            ]}
-          />
-          <PageActions
-            onRefresh={handleRefresh}
-            onExportPDF={handleExportPDF}
-            onExportExcel={handleExportExcel}
-            onAdd={() => setIsIssueFineModalOpen(true)}
-            addButtonLabel="Add"
-            exportDescription="Export fine records"
-            showPrint={false}
-          />
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-          <StatCard
-            icon={Receipt}
-            label="Total Fines"
-            value={stats.totalFines.toString()}
-            color="blue"
-            badge={`${filteredFines.length} shown`}
-          />
-          <StatCard
-            icon={Clock}
-            label="Pending"
-            value={formatCurrency(stats.pendingAmount, countryCode)}
-            color="red"
-            badge={stats.pendingFines > 0 ? `${stats.pendingFines} fines` : "None"}
-          />
-          <StatCard
-            icon={CheckCircle2}
-            label="Collected"
-            value={formatCurrency(stats.collectedAmount, countryCode)}
-            color="green"
-          />
-          <StatCard
-            icon={Trash2}
-            label="Waived"
-            value={formatCurrency(stats.waivedAmount, countryCode)}
-            color="purple"
-          />
-        </div>
-
-        {/* Filters */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={handleSearchChange}
-          searchPlaceholder="Search by member, book title, or reference..."
-          filters={[
-            {
-              label: "Type",
-              value: selectedType,
-              onChange: (val) => handleFilterChange(setSelectedType, String(val)),
-              options: TYPE_OPTIONS,
-            },
-            {
-              label: "Status",
-              value: selectedStatus,
-              onChange: (val) => handleFilterChange(setSelectedStatus, String(val)),
-              options: STATUS_OPTIONS,
-            },
-          ]}
+    <DataManagementPage<LibraryFine>
+      title="Fines & Payments"
+      breadcrumbs={[
+        { label: "Library", href: "/library" },
+        { label: "Fines" },
+      ]}
+      data={fines}
+      getRowKey={(fine) => fine.id}
+      columns={columns}
+      stats={fineStats}
+      filterFields={fineFilterFields}
+      filterFn={filterFines}
+      sortOptions={fineSortOptions}
+      sortFn={sortFines}
+      searchFn={searchFines}
+      enableViewToggle={false}
+      enableSelection={false}
+      addButtonConfig={{
+        label: "Add",
+        onClick: () => setIsIssueFineModalOpen(true),
+      }}
+      onExportPDF={handleExportPDF}
+      onExportExcel={handleExportExcel}
+      customListComponent={
+        <DataTable
+          data={fines}
+          columns={columns}
+          getRowKey={(fine) => fine.id}
+          emptyMessage="No fines found"
+          title=""
+          showSearch={false}
+          defaultItemsPerPage={10}
+          itemsPerPageOptions={[5, 10, 15, 20, 25]}
+          enablePagination={true}
+          enableItemsPerPage={true}
+          onRowClick={handleView}
         />
-
-        {/* Table Section */}
-        <div>
-          {isLoading ? (
-            <PageSpinner
-              message={isRefreshing ? "Refreshing..." : "Filtering..."}
-              size="md"
-            />
-          ) : filteredFines.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-8 sm:p-12">
-              <div className="flex flex-col items-center justify-center">
-                <div className="relative mb-4">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 animate-pulse" />
-                  </div>
-                  <div className="relative z-10 flex items-center justify-center w-16 h-16">
-                    <Receipt className="w-8 h-8 text-gray-400 dark:text-gray-500" />
-                  </div>
-                </div>
-                <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 mb-1 text-center">
-                  No fines found
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
-                  {searchQuery
-                    ? "No results match your search. Try adjusting your filters."
-                    : "No fines have been recorded yet."}
-                </p>
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    Clear search
-                  </button>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="relative pb-16">
-              {/* Mobile Scroll Indicator */}
-              <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none" />
-
-              <div
-                key={`table-data-${filterKey}`}
-                className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-visible"
-              >
-                <DataTable
-                  data={filteredFines}
-                  columns={columns}
-                  getRowKey={(fine) => fine.id}
-                  emptyMessage="No fines found"
-                  title=""
-                  showSearch={false}
-                  defaultItemsPerPage={10}
-                  itemsPerPageOptions={[5, 10, 15, 20, 25]}
-                  enablePagination={true}
-                  enableItemsPerPage={true}
-                  onRowClick={handleView}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
+      }
+      enablePagination={true}
+      itemLabel="fine"
+      itemLabelPlural="fines"
+      emptyStateConfig={{
+        title: "No fines found",
+        description: "No fines have been recorded yet.",
+      }}
+    >
       {/* View Fine Modal */}
       {viewingFine && (
         <FineViewModal
@@ -1170,7 +956,7 @@ export default function LibraryFinesPage() {
         onSubmit={handleIssueFine}
         isSaving={isSaving}
       />
-    </MainLayout>
+    </DataManagementPage>
   );
 }
 

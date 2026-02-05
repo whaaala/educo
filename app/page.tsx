@@ -1,109 +1,147 @@
 "use client";
 
-import MainLayout from "@/components/layout/MainLayout";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import DashboardPage from "@/components/pages/DashboardPage";
+import { getAllStudents } from "@/lib/mockStudents";
+import { getAllTeachers } from "@/lib/mockTeachers";
+import { getAllParents } from "@/lib/mockParents";
+import {
+  Users,
+  GraduationCap,
+  UserCog,
+  Wallet,
+  Library,
+  CalendarCheck2,
+  Activity,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+} from "lucide-react";
+
+interface HomeDashboardMetrics {
+  students: number;
+  staff: number;
+  parents: number;
+}
 
 export default function Home() {
-  const isLoading = usePageLoad(600);
+  const metrics: HomeDashboardMetrics = {
+    students: getAllStudents().length,
+    staff: getAllTeachers().length,
+    parents: getAllParents().length,
+  };
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Dashboard" />
-
-      {/* Main Content - Fades in after loading */}
-      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-        <div className="w-full">
-        <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 mb-6 transition-colors duration-300">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
-            Component Testing: Header & User Menu
-          </h2>
-          <div className="space-y-3 text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
-            <p className="flex items-start gap-2">
-              <span className="text-green-600 font-semibold">✓</span>
-              <span className="font-semibold text-blue-600">NEW:</span>
-              <span>Header with search bar, notifications bell, and user menu</span>
-            </p>
-            <p className="flex items-start gap-2">
-              <span className="text-green-600 font-semibold">✓</span>
-              <span className="font-semibold text-blue-600">NEW:</span>
-              <span>User menu dropdown with profile, settings, and logout options</span>
-            </p>
-            <p className="flex items-start gap-2">
-              <span className="text-green-600 font-semibold">✓</span>
-              <span className="font-semibold text-blue-600">NEW:</span>
-              <span>Avatar with initials fallback (no image required)</span>
-            </p>
-            <p className="flex items-start gap-2">
-              <span className="text-green-600 font-semibold">✓</span>
-              <span className="font-semibold text-blue-600">NEW:</span>
-              <span>Click outside to close dropdown functionality</span>
-            </p>
-            <p className="flex items-start gap-2">
-              <span className="text-green-600 font-semibold">✓</span>
-              <span className="font-semibold text-blue-600">NEW:</span>
-              <span>Responsive design - User info hidden on mobile, shown in dropdown</span>
-            </p>
-          </div>
-
-          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10 border border-blue-200 dark:border-blue-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg transition-colors duration-300">
-            <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300 midnight:text-cyan-200 purple:text-pink-200 mb-2">
-              Header Testing Instructions:
-            </h3>
-            <ol className="text-sm text-blue-800 dark:text-blue-400 midnight:text-cyan-300 purple:text-pink-300 space-y-2 list-decimal list-inside">
-              <li>Click the user menu in the top-right corner to open dropdown</li>
-              <li>Test all menu items: My Profile, Settings, Logout</li>
-              <li>Click outside the dropdown to close it</li>
-              <li>Resize to mobile view - user info should hide on button, show in dropdown</li>
-              <li>Check notification bell has red dot indicator</li>
-              <li>Search bar should be visible on desktop, hidden on mobile</li>
-            </ol>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 transition-colors duration-300">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
-            Component Testing: Sidebar Navigation
-          </h2>
-          <div className="space-y-3 text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
-            <p className="flex items-start gap-2">
-              <span className="text-green-600 font-semibold">✓</span>
-              <span>Collapsible sidebar - Click the collapse icon in the sidebar header</span>
-            </p>
-            <p className="flex items-start gap-2">
-              <span className="text-green-600 font-semibold">✓</span>
-              <span>Mobile responsive - Use hamburger menu on mobile screens</span>
-            </p>
-            <p className="flex items-start gap-2">
-              <span className="text-green-600 font-semibold">✓</span>
-              <span>Expandable menu items - Click items with arrows to expand sub-menus</span>
-            </p>
-            <p className="flex items-start gap-2">
-              <span className="text-green-600 font-semibold">✓</span>
-              <span>Hover popovers - When collapsed, hover over items to see sub-menus</span>
-            </p>
-            <p className="flex items-start gap-2">
-              <span className="text-green-600 font-semibold">✓</span>
-              <span>Content area responsively adjusts to sidebar state</span>
-            </p>
-          </div>
-
-          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10 border border-blue-200 dark:border-blue-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg transition-colors duration-300">
-            <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300 midnight:text-cyan-200 purple:text-pink-200 mb-2">
-              Sidebar Testing Instructions:
-            </h3>
-            <ol className="text-sm text-blue-800 dark:text-blue-400 midnight:text-cyan-300 purple:text-pink-300 space-y-2 list-decimal list-inside">
-              <li>Test sidebar collapse/expand on desktop</li>
-              <li>Watch content area adjust width smoothly</li>
-              <li>Test mobile menu on small screens</li>
-              <li>Hover over collapsed menu items to see popovers</li>
-              <li>Test quick switching between menu items</li>
-            </ol>
-          </div>
-        </div>
-        </div>
-      </div>
-    </MainLayout>
+    <DashboardPage<HomeDashboardMetrics>
+      title="Dashboard"
+      breadcrumbs={[{ label: "Dashboard", href: "/", isActive: true }]}
+      data={[metrics]}
+      primaryStats={[
+        {
+          icon: GraduationCap,
+          label: "Students",
+          color: "blue",
+          getValue: (d) => d[0]?.students ?? 0,
+          href: "/students",
+        },
+        {
+          icon: UserCog,
+          label: "Staff",
+          color: "purple",
+          getValue: (d) => d[0]?.staff ?? 0,
+          href: "/staff",
+        },
+        {
+          icon: Users,
+          label: "Parents",
+          color: "green",
+          getValue: (d) => d[0]?.parents ?? 0,
+          href: "/admin/parents",
+        },
+        {
+          icon: Wallet,
+          label: "Finance",
+          color: "amber",
+          getValue: () => "View",
+          getSubtitle: () => "Receipts • Installments • Fee structure",
+          href: "/finance/fee-structure",
+        },
+      ]}
+      quickActions={[
+        {
+          title: "Students",
+          description: "Admissions, profiles, transfers, transcripts",
+          href: "/students",
+          icon: GraduationCap,
+          color: "blue",
+        },
+        {
+          title: "Staff",
+          description: "Personnel, attendance, leave, discipline",
+          href: "/staff",
+          icon: UserCog,
+          color: "purple",
+        },
+        {
+          title: "Library",
+          description: "Catalog, borrowing, members, fines",
+          href: "/library",
+          icon: Library,
+          color: "green",
+        },
+        {
+          title: "Finance",
+          description: "Fee structure, receipts, installment plans",
+          href: "/finance/fee-structure",
+          icon: Wallet,
+          color: "amber",
+        },
+      ]}
+      leftColumn={[
+        {
+          type: "activity",
+          title: "Recent Activity",
+          icon: Activity,
+          viewAllLink: "/",
+          activityItems: [
+            {
+              id: "act-1",
+              title: "New receipt generated",
+              description: "Finance • Receipt RCP-2024-0008",
+              timestamp: "2 min ago",
+              icon: CheckCircle2,
+              iconColor: "green",
+            },
+            {
+              id: "act-2",
+              title: "Leave request pending",
+              description: "Staff • 1 request needs review",
+              timestamp: "35 min ago",
+              icon: Clock,
+              iconColor: "amber",
+            },
+            {
+              id: "act-3",
+              title: "Overdue library loan",
+              description: "Library • 2 loans overdue",
+              timestamp: "Today",
+              icon: AlertCircle,
+              iconColor: "red",
+            },
+          ],
+        },
+      ]}
+      rightColumn={[
+        {
+          type: "list",
+          title: "Next up",
+          icon: CalendarCheck2,
+          listItems: [
+            { id: "n-1", title: "Approve leave requests", subtitle: "Staff module", value: "1" },
+            { id: "n-2", title: "Review discipline reports", subtitle: "Students & Staff", value: "3" },
+            { id: "n-3", title: "Send fee reminders", subtitle: "Finance", value: "8" },
+          ],
+        },
+      ]}
+    />
   );
 }

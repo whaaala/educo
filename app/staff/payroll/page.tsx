@@ -1,28 +1,27 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { useState, useMemo } from "react";
 import {
   DollarSign,
-  Users,
-  TrendingUp,
-  Download,
   CheckCircle,
-  Clock,
-  XCircle,
-  AlertCircle,
   FileText,
-  CreditCard,
-  Plus,
+  Save,
 } from "lucide-react";
 import {
   PayrollRecord,
   PayrollStatus,
   PayrollSummary,
 } from "@/types/payroll";
+import DataManagementPage from "@/components/pages/DataManagementPage";
+import {
+  payrollFilterFields,
+  payrollSortOptions,
+  payrollStats,
+  filterPayrollRecords,
+  sortPayrollRecords,
+  searchPayrollRecords,
+  formatCurrency,
+} from "./config";
 
 // Mock data for payroll
 const mockPayrollRecords: PayrollRecord[] = [
@@ -229,18 +228,19 @@ const mockPayrollRecords: PayrollRecord[] = [
 ];
 
 export default function PayrollManagementPage() {
-  const isLoading = usePageLoad(600);
   const [selectedMonth, setSelectedMonth] = useState<string>("2024-11");
   const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>(mockPayrollRecords);
-  const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedStaff, setSelectedStaff] = useState<Set<string>>(new Set());
   const [bulkAction, setBulkAction] = useState<string>("");
 
+  // Filter records by selected month for the custom table
+  const monthFilteredRecords = useMemo(() => {
+    return payrollRecords.filter((r) => r.month === selectedMonth);
+  }, [payrollRecords, selectedMonth]);
+
   // Calculate summary
   const summary: PayrollSummary = useMemo(() => {
-    const monthRecords = payrollRecords.filter((r) => r.month === selectedMonth);
+    const monthRecords = monthFilteredRecords;
 
     return {
       totalStaff: monthRecords.length,
@@ -258,25 +258,7 @@ export default function PayrollManagementPage() {
       },
       byDepartment: {},
     };
-  }, [payrollRecords, selectedMonth]);
-
-  // Filter records
-  const filteredRecords = useMemo(() => {
-    return payrollRecords.filter((record) => {
-      const matchesMonth = record.month === selectedMonth;
-      const matchesDepartment =
-        selectedDepartment === "all" || record.department === selectedDepartment;
-      const matchesStatus =
-        selectedStatus === "all" || record.status === selectedStatus;
-      const matchesSearch =
-        searchQuery === "" ||
-        record.staffName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        record.staffEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        record.staffId.toLowerCase().includes(searchQuery.toLowerCase());
-
-      return matchesMonth && matchesDepartment && matchesStatus && matchesSearch;
-    });
-  }, [payrollRecords, selectedMonth, selectedDepartment, selectedStatus, searchQuery]);
+  }, [monthFilteredRecords]);
 
   const handleBulkAction = () => {
     if (selectedStaff.size === 0 || !bulkAction) {
@@ -324,10 +306,10 @@ export default function PayrollManagementPage() {
   };
 
   const handleSelectAll = () => {
-    if (selectedStaff.size === filteredRecords.length) {
+    if (selectedStaff.size === monthFilteredRecords.length) {
       setSelectedStaff(new Set());
     } else {
-      setSelectedStaff(new Set(filteredRecords.map((r) => r.staffId)));
+      setSelectedStaff(new Set(monthFilteredRecords.map((r) => r.staffId)));
     }
   };
 
@@ -341,133 +323,54 @@ export default function PayrollManagementPage() {
     setSelectedStaff(newSelected);
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
+  const handleGeneratePayslips = () => {
+    console.log("Generating payslips...");
   };
 
   const handleExport = () => {
     console.log("Exporting payroll data...");
   };
 
-  const handleGeneratePayslips = () => {
-    console.log("Generating payslips...");
-  };
-
-  if (isLoading) {
-    return (
-      <MainLayout>
-        <PageLoader isLoading={true} loadingText="Loading Payroll" />
-      </MainLayout>
-    );
-  }
-
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-          <PageHeader
-            title="Payroll Management"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Staff", href: "/staff" },
-              { label: "Payroll" },
-            ]}
-          />
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleGeneratePayslips}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
-            >
-              <FileText className="w-4 h-4" />
-              Generate Payslips
-            </button>
-            <button
-              onClick={handleExport}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Export
-            </button>
+    <DataManagementPage<PayrollRecord>
+      title="Payroll Management"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Staff", href: "/staff" },
+        { label: "Payroll" },
+      ]}
+      data={monthFilteredRecords}
+      getRowKey={(item) => item.id}
+      columns={[]}
+      stats={payrollStats}
+      statsColumns={{ default: 1, sm: 2, md: 3, lg: 5 }}
+      filterFields={payrollFilterFields}
+      sortOptions={payrollSortOptions}
+      filterFn={filterPayrollRecords}
+      sortFn={sortPayrollRecords}
+      searchFn={searchPayrollRecords}
+      enableViewToggle={false}
+      enableSelection={false}
+      enablePagination={false}
+      showTableSearch={false}
+      itemLabel="payroll record"
+      itemLabelPlural="payroll records"
+      headerContent={
+        <>
+          {/* Status Cards */}
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <StatusCard label="Draft" value={summary.byStatus.draft} color="gray" />
+            <StatusCard label="Pending Approval" value={summary.byStatus.pendingApproval} color="yellow" />
+            <StatusCard label="Approved" value={summary.byStatus.approved} color="blue" />
+            <StatusCard label="Processing" value={summary.byStatus.processing} color="indigo" />
+            <StatusCard label="Paid" value={summary.byStatus.paid} color="green" />
+            <StatusCard label="Failed" value={summary.byStatus.failed} color="red" />
           </div>
-        </div>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <SummaryCard
-            label="Total Staff"
-            value={summary.totalStaff.toString()}
-            icon={Users}
-            color="blue"
-          />
-          <SummaryCard
-            label="Total Gross"
-            value={formatCurrency(summary.totalGross)}
-            icon={DollarSign}
-            color="green"
-          />
-          <SummaryCard
-            label="Total Allowances"
-            value={formatCurrency(summary.totalAllowances)}
-            icon={TrendingUp}
-            color="cyan"
-          />
-          <SummaryCard
-            label="Total Deductions"
-            value={formatCurrency(summary.totalDeductions)}
-            icon={AlertCircle}
-            color="orange"
-          />
-          <SummaryCard
-            label="Total Net Salary"
-            value={formatCurrency(summary.totalNet)}
-            icon={CreditCard}
-            color="purple"
-          />
-        </div>
-
-        {/* Status Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <StatusCard
-            label="Draft"
-            value={summary.byStatus.draft}
-            color="gray"
-          />
-          <StatusCard
-            label="Pending Approval"
-            value={summary.byStatus.pendingApproval}
-            color="yellow"
-          />
-          <StatusCard
-            label="Approved"
-            value={summary.byStatus.approved}
-            color="blue"
-          />
-          <StatusCard
-            label="Processing"
-            value={summary.byStatus.processing}
-            color="indigo"
-          />
-          <StatusCard
-            label="Paid"
-            value={summary.byStatus.paid}
-            color="green"
-          />
-          <StatusCard
-            label="Failed"
-            value={summary.byStatus.failed}
-            color="red"
-          />
-        </div>
-
-        {/* Filters and Bulk Actions */}
+        </>
+      }
+      beforeContent={
         <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 space-y-4">
-          {/* Filters */}
+          {/* Month Selector */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
@@ -480,55 +383,14 @@ export default function PayrollManagementPage() {
                 className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
               />
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Department
-              </label>
-              <select
-                value={selectedDepartment}
-                onChange={(e) => setSelectedDepartment(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+            <div className="flex items-end">
+              <button
+                onClick={handleGeneratePayslips}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
               >
-                <option value="all">All Departments</option>
-                <option value="Mathematics">Mathematics</option>
-                <option value="English">English</option>
-                <option value="Science">Science</option>
-                <option value="Administration">Administration</option>
-                <option value="IT">IT</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Status Filter
-              </label>
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
-              >
-                <option value="all">All Status</option>
-                <option value="draft">Draft</option>
-                <option value="pending-approval">Pending Approval</option>
-                <option value="approved">Approved</option>
-                <option value="processing">Processing</option>
-                <option value="paid">Paid</option>
-                <option value="failed">Failed</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Search Staff
-              </label>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by name, email..."
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
-              />
+                <FileText className="w-4 h-4" />
+                Generate Payslips
+              </button>
             </div>
           </div>
 
@@ -564,12 +426,12 @@ export default function PayrollManagementPage() {
               onClick={handleSelectAll}
               className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-colors"
             >
-              {selectedStaff.size === filteredRecords.length ? "Deselect All" : "Select All"}
+              {selectedStaff.size === monthFilteredRecords.length ? "Deselect All" : "Select All"}
             </button>
           </div>
         </div>
-
-        {/* Payroll Table */}
+      }
+      customListComponent={
         <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -578,7 +440,7 @@ export default function PayrollManagementPage() {
                   <th className="px-4 py-3 text-left">
                     <input
                       type="checkbox"
-                      checked={selectedStaff.size === filteredRecords.length && filteredRecords.length > 0}
+                      checked={selectedStaff.size === monthFilteredRecords.length && monthFilteredRecords.length > 0}
                       onChange={handleSelectAll}
                       className="rounded border-gray-300 dark:border-gray-600"
                     />
@@ -610,7 +472,7 @@ export default function PayrollManagementPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700 midnight:divide-cyan-500/20 purple:divide-pink-500/20">
-                {filteredRecords.map((record) => (
+                {monthFilteredRecords.map((record) => (
                   <tr
                     key={record.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-gray-800/50 purple:hover:bg-gray-800/50 transition-colors"
@@ -661,7 +523,7 @@ export default function PayrollManagementPage() {
                       {formatCurrency(record.netSalary)}
                     </td>
                     <td className="px-4 py-3">
-                      <StatusBadge status={record.status} />
+                      <PayrollStatusBadge status={record.status} />
                     </td>
                   </tr>
                 ))}
@@ -669,7 +531,7 @@ export default function PayrollManagementPage() {
             </table>
           </div>
 
-          {filteredRecords.length === 0 && (
+          {monthFilteredRecords.length === 0 && (
             <div className="text-center py-12">
               <DollarSign className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-3" />
               <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400">
@@ -678,49 +540,8 @@ export default function PayrollManagementPage() {
             </div>
           )}
         </div>
-      </div>
-    </MainLayout>
-  );
-}
-
-// Summary Card Component
-function SummaryCard({
-  label,
-  value,
-  icon: Icon,
-  color,
-}: {
-  label: string;
-  value: string;
-  icon: any;
-  color: string;
-}) {
-  const colorClasses = {
-    blue: "from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700",
-    green: "from-green-500 to-green-600 dark:from-green-600 dark:to-green-700",
-    cyan: "from-cyan-500 to-cyan-600 dark:from-cyan-600 dark:to-cyan-700",
-    orange: "from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700",
-    purple: "from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700",
-  };
-
-  return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 hover:shadow-lg transition-shadow">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 mb-1">
-            {label}
-          </p>
-          <p className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-            {value}
-          </p>
-        </div>
-        <div
-          className={`w-10 h-10 rounded-lg bg-gradient-to-br ${colorClasses[color as keyof typeof colorClasses]} flex items-center justify-center`}
-        >
-          <Icon className="w-5 h-5 text-white" />
-        </div>
-      </div>
-    </div>
+      }
+    />
   );
 }
 
@@ -746,7 +567,7 @@ function StatusCard({ label, value, color }: { label: string; value: number; col
 }
 
 // Status Badge Component
-function StatusBadge({ status }: { status: PayrollStatus }) {
+function PayrollStatusBadge({ status }: { status: PayrollStatus }) {
   const statusConfig = {
     draft: { label: "Draft", color: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400" },
     "pending-approval": { label: "Pending", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" },

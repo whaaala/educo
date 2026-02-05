@@ -1,15 +1,10 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
-import StatCard from "@/components/shared/StatCard";
-import SearchFilterBar from "@/components/shared/SearchFilterBar";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import { DataManagementPage } from "@/components/pages";
+import type { ColumnConfig } from "@/types/components";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import jsPDF from "jspdf";
 import {
@@ -17,27 +12,18 @@ import {
   AlertTriangle,
   Download,
   Eye,
-  BookOpen,
-  Trophy,
-  Target,
   FileText,
 } from "lucide-react";
 
-// Exam result type matching the widget
-interface ExamResult {
-  id: string;
-  childId: string;
-  childName: string;
-  childPhoto: string;
-  class: string;
-  section: string;
-  examType: string;
-  examDate: string;
-  academicYear: string;
-  term: string;
-  percentage: number;
-  status: "pass" | "fail";
-}
+import {
+  type ExamResult,
+  filterResults,
+  sortResults,
+  searchResults,
+  resultSortOptions,
+  getResultFilterFields,
+  getResultStats,
+} from "./config";
 
 // Child academic data for report card generation
 interface ChildAcademicData {
@@ -177,41 +163,10 @@ const MOCK_RESULTS: ExamResult[] = [
   },
 ];
 
-// Filter Options
-const CHILD_OPTIONS = [
-  { value: "all", label: "All Children" },
-  { value: "child-001", label: "Adaeze Okonkwo" },
-  { value: "child-002", label: "Chukwuemeka Okonkwo" },
-];
-
-const EXAM_TYPE_OPTIONS = [
-  { value: "all", label: "All Exam Types" },
-  { value: "Mid-Term", label: "Mid-Term" },
-  { value: "Final Exam", label: "Final Exam" },
-];
-
-const TERM_OPTIONS = [
-  { value: "all", label: "All Terms" },
-  { value: "1st Term", label: "1st Term" },
-  { value: "2nd Term", label: "2nd Term" },
-  { value: "3rd Term", label: "3rd Term" },
-];
-
-const YEAR_OPTIONS = [
-  { value: "all", label: "All Years" },
-  { value: "2024/2025", label: "2024/2025" },
-  { value: "2023/2024", label: "2023/2024" },
-];
-
 export default function ParentResultsPage() {
-  const isPageLoading = usePageLoad(600);
   const { settings, currentTenant } = useSchoolSettings();
-  const [selectedChild, setSelectedChild] = useState("all");
-  const [selectedExamType, setSelectedExamType] = useState("all");
-  const [selectedTerm, setSelectedTerm] = useState("all");
-  const [selectedYear, setSelectedYear] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const tableWrapRef = useRef<HTMLDivElement | null>(null);
+  const data = MOCK_RESULTS;
+  const filterFields = useMemo(() => getResultFilterFields(data), [data]);
 
   // Download full report card as PDF - same as report card page
   const handleDownloadReportCard = (result: ExamResult) => {
@@ -568,67 +523,6 @@ export default function ParentResultsPage() {
     pdf.save(`Report-Card-${academicData.fullName}-${result.term}-${result.academicYear}.pdf`);
   };
 
-  // Animation trigger for filter changes
-  const filterKey = `${searchQuery}-${selectedChild}-${selectedExamType}-${selectedTerm}-${selectedYear}`;
-  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
-  const [animationTrigger, setAnimationTrigger] = useState(0);
-
-  // Filter results
-  const filteredResults = useMemo(() => {
-    return MOCK_RESULTS.filter((result) => {
-      const matchesChild = selectedChild === "all" || result.childId === selectedChild;
-      const matchesExamType = selectedExamType === "all" || result.examType === selectedExamType;
-      const matchesTerm = selectedTerm === "all" || result.term === selectedTerm;
-      const matchesYear = selectedYear === "all" || result.academicYear === selectedYear;
-      const matchesSearch =
-        searchQuery === "" ||
-        result.childName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        result.examType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        result.class.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesChild && matchesExamType && matchesTerm && matchesYear && matchesSearch;
-    });
-  }, [selectedChild, selectedExamType, selectedTerm, selectedYear, searchQuery]);
-
-  // Calculate stats
-  const stats = useMemo(() => {
-    const totalExams = MOCK_RESULTS.length;
-    const avgPercentage = Math.round(
-      MOCK_RESULTS.reduce((sum, r) => sum + r.percentage, 0) / totalExams
-    );
-    const passCount = MOCK_RESULTS.filter((r) => r.status === "pass").length;
-    const highestScore = Math.max(...MOCK_RESULTS.map((r) => r.percentage));
-    return { totalExams, avgPercentage, passCount, highestScore };
-  }, []);
-
-  useEffect(() => {
-    if (filterKey !== prevFilterKey) {
-      setAnimationTrigger((prev) => prev + 1);
-      setPrevFilterKey(filterKey);
-    }
-  }, [filterKey, prevFilterKey]);
-
-  useEffect(() => {
-    if (animationTrigger <= 0) return;
-    const timeoutId = setTimeout(() => {
-      const root = tableWrapRef.current;
-      if (!root) return;
-      const rows = root.querySelectorAll("tbody tr");
-      rows.forEach((row, index) => {
-        const htmlRow = row as HTMLElement;
-        const delay = index / 80;
-        htmlRow.style.animation = `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${delay}s both`;
-      });
-      setTimeout(() => {
-        rows.forEach((row) => {
-          const htmlRow = row as HTMLElement;
-          htmlRow.style.animation = "";
-        });
-      }, 600);
-    }, 50);
-
-    return () => clearTimeout(timeoutId);
-  }, [animationTrigger]);
-
   // Table columns - Simple layout matching the widget style
   const columns: ColumnConfig<ExamResult>[] = [
     {
@@ -745,127 +639,48 @@ export default function ParentResultsPage() {
   ];
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Results" />
-
-      <div
-        className={`space-y-6 transition-opacity duration-500 ${
-          isPageLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        {/* Header */}
-        <PageHeader
-          title="Exam Results"
-          breadcrumbs={[
-            { label: "Parent Portal", href: "/parents" },
-            { label: "Exam Results" },
-          ]}
-        />
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          <StatCard
-            icon={BookOpen}
-            label="Total Exams"
-            value={stats.totalExams.toString()}
-            color="blue"
-          />
-          <StatCard
-            icon={Target}
-            label="Average Score"
-            value={`${stats.avgPercentage}%`}
-            color="indigo"
-          />
-          <StatCard
-            icon={CheckCircle2}
-            label="Passed"
-            value={`${stats.passCount}/${stats.totalExams}`}
-            color="green"
-          />
-          <StatCard
-            icon={Trophy}
-            label="Highest Score"
-            value={`${stats.highestScore}%`}
-            color="amber"
-          />
-        </div>
-
-        {/* Filters */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder="Search by name, exam type, class..."
-          filters={[
-            {
-              label: "Child",
-              value: selectedChild,
-              onChange: (val) => setSelectedChild(String(val)),
-              options: CHILD_OPTIONS,
-            },
-            {
-              label: "Year",
-              value: selectedYear,
-              onChange: (val) => setSelectedYear(String(val)),
-              options: YEAR_OPTIONS,
-            },
-            {
-              label: "Exam Type",
-              value: selectedExamType,
-              onChange: (val) => setSelectedExamType(String(val)),
-              options: EXAM_TYPE_OPTIONS,
-            },
-            {
-              label: "Term",
-              value: selectedTerm,
-              onChange: (val) => setSelectedTerm(String(val)),
-              options: TERM_OPTIONS,
-            },
-          ]}
-        />
-
-        {/* Results Table */}
-        <div className="relative">
-          <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none" />
-
-          <div
-            ref={tableWrapRef}
-            key={`results-table-${filterKey}`}
-            className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden"
-          >
-            <DataTable
-              data={filteredResults}
-              columns={columns}
-              getRowKey={(result) => result.id}
-              emptyMessage="No exam results found"
-              title=""
-              showSearch={false}
-              defaultItemsPerPage={10}
-              itemsPerPageOptions={[5, 10, 15, 20, 25]}
-              enablePagination={true}
-              enableItemsPerPage={true}
-              stickyColumnCount={1}
-            />
+    <DataManagementPage
+      title="Exam Results"
+      breadcrumbs={[
+        { label: "Parent Portal", href: "/parents" },
+        { label: "Exam Results", isActive: true },
+      ]}
+      data={data}
+      getRowKey={(result) => result.id}
+      columns={columns}
+      stats={getResultStats()}
+      filterFields={filterFields}
+      sortOptions={resultSortOptions}
+      defaultSort="date_newest"
+      filterFn={filterResults}
+      sortFn={sortResults}
+      searchFn={searchResults}
+      searchPlaceholder="Search by name, exam type, class..."
+      itemLabel="result"
+      itemLabelPlural="results"
+      enableSelection={false}
+      enableExport={false}
+      enableViewToggle={false}
+      stickyColumnCount={1}
+      defaultItemsPerPage={10}
+      itemsPerPageOptions={[5, 10, 15, 20, 25]}
+    >
+      <div className="mt-6 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-6">
+        <div className="flex items-start gap-4">
+          <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
+            <FileText className="w-6 h-6 text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
-        </div>
-
-        {/* Info Card */}
-        <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-6">
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
-              <FileText className="w-6 h-6 text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                View Detailed Report Cards
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Click the eye icon on any result to view the full report card with subject-wise
-                breakdown, teacher remarks, and more detailed performance analysis.
-              </p>
-            </div>
+          <div>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+              View Detailed Report Cards
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Click the eye icon on any result to view the full report card with subject-wise
+              breakdown, teacher remarks, and more detailed performance analysis.
+            </p>
           </div>
         </div>
       </div>
-    </MainLayout>
+    </DataManagementPage>
   );
 }

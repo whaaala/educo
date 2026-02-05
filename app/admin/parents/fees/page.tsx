@@ -1,25 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageActions from "@/components/shared/PageActions";
-import PageLoader from "@/components/shared/PageLoader";
-import PageSpinner from "@/components/shared/PageSpinner";
-import StatCard from "@/components/shared/StatCard";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
-import DateRangePicker from "@/components/shared/DateRangePicker";
-import FilterButton, { FilterField, FilterValues } from "@/components/shared/FilterButton";
-import SortButton from "@/components/shared/SortButton";
-import ViewToggle from "@/components/shared/ViewToggle";
-import LoadMoreButton from "@/components/shared/LoadMoreButton";
-import DeleteAllButton from "@/components/shared/DeleteAllButton";
-import BulkReminderButton from "@/components/shared/BulkReminderButton";
+import { DataManagementPage } from "@/components/pages";
 import BulkDeleteModal, { BulkDeleteItem } from "@/components/shared/BulkDeleteModal";
 import BulkFeeReminderModal, { ChannelMessage, RecordCustomMessage } from "@/components/shared/BulkFeeReminderModal";
 import Tooltip from "@/components/shared/Tooltip";
@@ -31,7 +18,6 @@ import FeeReminderHistoryModal from "@/components/shared/FeeReminderHistoryModal
 import AutoReminderScheduleModal from "@/components/shared/AutoReminderScheduleModal";
 import RecordPaymentModal, { PaymentData } from "@/components/shared/RecordPaymentModal";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import {
   getAllFeeRecords,
@@ -43,32 +29,32 @@ import {
   type ReminderChannel,
   type FeeReminderRecord,
 } from "@/lib/mockParents";
+import type { ColumnConfig, GridCardProps } from "@/types/components";
 import {
-  Banknote,
   CheckCircle2,
   Clock,
   AlertCircle,
-  TrendingUp,
   FileCheck,
   Eye,
   Receipt,
   Send,
   History,
-  CalendarClock,
   FileText,
+  Trash2,
 } from "lucide-react";
+import {
+  adminParentFeeFilterFields,
+  adminParentFeeSortOptions,
+  filterAdminParentFees,
+  sortAdminParentFees,
+  searchAdminParentFees,
+  getAdminParentFeeStats,
+} from "./config";
 
 export default function AdminParentFeesPage() {
   const { settings } = useSchoolSettings();
   const { addNotification } = useNotifications();
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const basePageLoading = usePageLoad(600);
-  const tableWrapRef = useRef<HTMLDivElement | null>(null);
-
-  // Get view mode from URL, default to list
-  const urlView = searchParams.get("view");
-  const initialView = urlView === "grid" ? "grid" : "list";
 
   // Load fee records from mock data and session storage (newly added fees)
   const [feeRecords, setFeeRecords] = useState<AdminFeeRecord[]>(() => {
@@ -110,15 +96,6 @@ export default function AdminParentFeesPage() {
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
-  const [viewMode, setViewMode] = useState<"grid" | "list">(initialView);
-  const [isMounted, setIsMounted] = useState(false);
-  const [displayedCount, setDisplayedCount] = useState(12);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isSwitchingView, setIsSwitchingView] = useState(false);
-  const gridRef = useRef<HTMLDivElement>(null);
-  const previousCountRef = useRef(12);
-
-  const isPageLoading = basePageLoading && !isSwitchingView;
 
   // Currency formatter
   const currencyCode = settings.currency || "NGN";
@@ -139,67 +116,7 @@ export default function AdminParentFeesPage() {
     };
   }, [currencyCode]);
 
-  // Get stats
-  const stats = useMemo(() => getFeeStats(), []);
-
-  // Handler to update view mode and URL
-  const handleViewModeChange = (newMode: "grid" | "list") => {
-    setIsSwitchingView(true);
-    setViewMode(newMode);
-    router.push(`/admin/parents/fees?view=${newMode}`);
-
-    setTimeout(() => {
-      setIsSwitchingView(false);
-    }, 700);
-  };
-
-  // Sync view mode with URL changes
-  useEffect(() => {
-    const urlView = searchParams.get("view");
-    const newViewMode = urlView === "grid" ? "grid" : "list";
-    setViewMode(newViewMode);
-  }, [searchParams]);
-
-  // Filter fields configuration
-  const filterFields: FilterField[] = [
-    {
-      id: "status",
-      label: "Status",
-      options: ["Paid", "Partial", "Pending", "Overdue"],
-      width: "half",
-    },
-    {
-      id: "feeType",
-      label: "Fee Type",
-      options: ["School Fees", "Bus Fee", "Exam Fee", "Library Fee", "Lab Fee", "Sports Fee", "Uniform Fee"],
-      width: "half",
-    },
-    {
-      id: "term",
-      label: "Term",
-      options: ["1st Term", "2nd Term", "3rd Term"],
-      width: "half",
-    },
-    {
-      id: "balanceRange",
-      label: "Balance Range",
-      options: ["Fully Paid", "Under 50K", "50K - 100K", "Over 100K"],
-      width: "half",
-    },
-  ];
-
-  // Filter state
-  const [filters, setFilters] = useState<FilterValues>({});
-  const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string } | null>(null);
-  const [isFiltering, setIsFiltering] = useState(false);
-
-  // Sort state
-  const [sortOption, setSortOption] = useState<string>("highest_balance");
-  const [isSorting, setIsSorting] = useState(false);
-
-  // Refresh state
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [resetKey, setResetKey] = useState(0);
+  // Controlled selection (so bulk actions can clear it)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Bulk delete modal state
@@ -228,71 +145,18 @@ export default function AdminParentFeesPage() {
     return counts;
   });
 
-  // Animation trigger for table rows
-  const filterKey = `${JSON.stringify(filters)}-${sortOption}`;
-  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
-  const [animationTrigger, setAnimationTrigger] = useState(0);
+  const handleBulkDelete = (ids: Set<string>) => {
+    if (ids.size === 0) return;
 
-  // Sort options
-  const sortOptions = [
-    { label: "Highest Balance", value: "highest_balance" },
-    { label: "Lowest Balance", value: "lowest_balance" },
-    { label: "A-Z (Parent)", value: "ascending" },
-    { label: "Z-A (Parent)", value: "descending" },
-    { label: "Due Date (Nearest)", value: "due_date_asc" },
-    { label: "Due Date (Farthest)", value: "due_date_desc" },
-  ];
+    const selectedRecords = feeRecords.filter((record) => ids.has(record.id));
+    const items: BulkDeleteItem[] = selectedRecords.map((record) => ({
+      id: record.id,
+      name: `${record.childName} - ${record.feeType}`,
+      subtitle: `${record.parentName} | ${money(record.balance)} outstanding`,
+    }));
 
-  const handleDateRangeChange = (startDate: string, endDate: string) => {
-    setIsFiltering(true);
-    setTimeout(() => {
-      setDateRange({ startDate, endDate });
-      const initialCount = viewMode === "grid" ? 12 : 15;
-      setDisplayedCount(initialCount);
-      setTimeout(() => {
-        setIsFiltering(false);
-      }, 100);
-    }, 300);
-  };
-
-  const handleFilterChange = (updatedFilters: FilterValues) => {
-    setIsFiltering(true);
-    setTimeout(() => {
-      setFilters(updatedFilters);
-      const initialCount = viewMode === "grid" ? 12 : 15;
-      setDisplayedCount(initialCount);
-      setTimeout(() => {
-        setIsFiltering(false);
-      }, 100);
-    }, 300);
-  };
-
-  const handleClearFilters = () => {
-    setIsFiltering(true);
-    setTimeout(() => {
-      setFilters({});
-      setDateRange(null);
-      const initialCount = viewMode === "grid" ? 12 : 15;
-      setDisplayedCount(initialCount);
-      setTimeout(() => {
-        setIsFiltering(false);
-      }, 100);
-    }, 300);
-  };
-
-  const handleDeleteAll = () => {
-    if (selectedIds.size > 0) {
-      const selectedRecords = filteredRecords.filter((record) => selectedIds.has(record.id));
-
-      const items: BulkDeleteItem[] = selectedRecords.map((record) => ({
-        id: record.id,
-        name: `${record.childName} - ${record.feeType}`,
-        subtitle: `${record.parentName} | ${money(record.balance)} outstanding`,
-      }));
-
-      setItemsToDelete(items);
-      setIsBulkDeleteModalOpen(true);
-    }
+    setItemsToDelete(items);
+    setIsBulkDeleteModalOpen(true);
   };
 
   const handleRemoveFromDeleteList = (itemId: string) => {
@@ -305,7 +169,7 @@ export default function AdminParentFeesPage() {
   };
 
   const handleConfirmBulkDelete = (itemIds: string[]) => {
-    console.log("Deleting fee records:", itemIds);
+    setFeeRecords((prev) => prev.filter((r) => !itemIds.includes(r.id)));
     setSelectedIds(new Set());
     setIsBulkDeleteModalOpen(false);
     setItemsToDelete([]);
@@ -334,14 +198,23 @@ export default function AdminParentFeesPage() {
   };
 
   // Bulk reminder handlers
-  const handleBulkReminder = () => {
-    if (selectedIds.size > 0) {
-      const selectedRecords = filteredRecords.filter((record) => selectedIds.has(record.id));
-      // Only include records with outstanding balance
-      const recordsWithBalance = selectedRecords.filter((record) => record.balance > 0);
-      setRecordsToRemind(recordsWithBalance);
-      setIsBulkReminderModalOpen(true);
+  const handleBulkReminder = (ids: Set<string>) => {
+    if (ids.size === 0) return;
+
+    const selectedRecords = feeRecords.filter((record) => ids.has(record.id));
+    const recordsWithBalance = selectedRecords.filter((record) => record.balance > 0);
+
+    if (recordsWithBalance.length === 0) {
+      addNotification({
+        type: "info",
+        title: "No outstanding balances",
+        message: "All selected records are fully paid.",
+      });
+      return;
     }
+
+    setRecordsToRemind(recordsWithBalance);
+    setIsBulkReminderModalOpen(true);
   };
 
   const handleCloseBulkReminderModal = () => {
@@ -386,36 +259,6 @@ export default function AdminParentFeesPage() {
 
   const handleRemoveFromReminderList = (recordId: string) => {
     setRecordsToRemind((prev) => prev.filter((record) => record.id !== recordId));
-  };
-
-  // Check if there are active filters
-  const hasActiveFilters =
-    Object.values(filters).some((values) => values && values.length > 0) || dateRange !== null;
-
-  const handleSortChange = (sortValue: string) => {
-    setIsSorting(true);
-    setTimeout(() => {
-      setSortOption(sortValue);
-      setTimeout(() => {
-        setIsSorting(false);
-      }, 100);
-    }, 300);
-  };
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setDateRange(null);
-    setFilters({});
-    setSortOption("highest_balance");
-    setSelectedIds(new Set());
-    setResetKey((prev) => prev + 1);
-    setTimeout(() => {
-      const initialCount = viewMode === "grid" ? 12 : 15;
-      setDisplayedCount(initialCount);
-      setTimeout(() => {
-        setIsRefreshing(false);
-      }, 100);
-    }, 300);
   };
 
   const handleAddFee = () => {
@@ -975,147 +818,15 @@ export default function AdminParentFeesPage() {
     router.push(`/parents/chat/compose?parentId=${record.parentId}&from=admin`);
   };
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Reset displayedCount when view mode changes
-  useEffect(() => {
-    if (isMounted) {
-      const initialCount = viewMode === "grid" ? 12 : 15;
-      setDisplayedCount(initialCount);
-      previousCountRef.current = initialCount;
-    }
-  }, [viewMode, isMounted]);
-
-  useEffect(() => {
-    if (displayedCount > previousCountRef.current && gridRef.current) {
-      const cards = gridRef.current.children;
-      const firstNewCardIndex = previousCountRef.current;
-
-      if (cards[firstNewCardIndex]) {
-        setTimeout(() => {
-          (cards[firstNewCardIndex] as HTMLElement).scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-        }, 100);
-      }
-
-      previousCountRef.current = displayedCount;
-    }
-  }, [displayedCount]);
-
-  useEffect(() => {
-    if (filterKey !== prevFilterKey) {
-      setAnimationTrigger((prev) => prev + 1);
-      setPrevFilterKey(filterKey);
-    }
-  }, [filterKey, prevFilterKey]);
-
-  useEffect(() => {
-    if (animationTrigger <= 0) return;
-    const timeoutId = setTimeout(() => {
-      const root = tableWrapRef.current;
-      if (!root) return;
-      const rows = root.querySelectorAll("tbody tr");
-      rows.forEach((row, index) => {
-        const htmlRow = row as HTMLElement;
-        const delay = index / 80;
-        htmlRow.style.animation = `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${delay}s both`;
-      });
-      setTimeout(() => {
-        rows.forEach((row) => {
-          const htmlRow = row as HTMLElement;
-          htmlRow.style.animation = "";
-        });
-      }, 600);
-    }, 50);
-
-    return () => clearTimeout(timeoutId);
-  }, [animationTrigger]);
-
-  const handleLoadMore = () => {
-    setIsLoadingMore(true);
-    setTimeout(() => {
-      setDisplayedCount((prev) => prev + 12);
-      setIsLoadingMore(false);
-    }, 500);
+  const computeExportStats = (items: AdminFeeRecord[]) => {
+    const totalFees = items.reduce((acc, r) => acc + r.amount, 0);
+    const totalCollected = items.reduce((acc, r) => acc + r.paidAmount, 0);
+    const totalOutstanding = items.reduce((acc, r) => acc + r.balance, 0);
+    return { totalFees, totalCollected, totalOutstanding };
   };
 
-  // Apply sorting
-  const sortedRecords = [...feeRecords].sort((a, b) => {
-    switch (sortOption) {
-      case "ascending":
-        return a.parentName.localeCompare(b.parentName);
-      case "descending":
-        return b.parentName.localeCompare(a.parentName);
-      case "highest_balance":
-        return b.balance - a.balance;
-      case "lowest_balance":
-        return a.balance - b.balance;
-      case "due_date_asc":
-        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-      case "due_date_desc":
-        return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
-      default:
-        return 0;
-    }
-  });
-
-  // Apply filters
-  const filteredRecords = sortedRecords.filter((record) => {
-    const hasFilters = Object.values(filters).some((values) => values && values.length > 0);
-    if (!hasFilters && !dateRange) return true;
-
-    // Status filter
-    const matchesStatus =
-      !filters.status ||
-      filters.status.length === 0 ||
-      filters.status.some((s) => s.toLowerCase() === record.status);
-
-    // Fee type filter
-    const matchesFeeType =
-      !filters.feeType ||
-      filters.feeType.length === 0 ||
-      filters.feeType.includes(record.feeType);
-
-    // Term filter
-    const matchesTerm =
-      !filters.term ||
-      filters.term.length === 0 ||
-      filters.term.includes(record.term);
-
-    // Balance range filter
-    const matchesBalanceRange =
-      !filters.balanceRange ||
-      filters.balanceRange.length === 0 ||
-      filters.balanceRange.some((range) => {
-        if (range === "Fully Paid") return record.balance === 0;
-        if (range === "Under 50K") return record.balance > 0 && record.balance < 50000;
-        if (range === "50K - 100K") return record.balance >= 50000 && record.balance <= 100000;
-        if (range === "Over 100K") return record.balance > 100000;
-        return false;
-      });
-
-    // Date range filter (based on due date)
-    let matchesDateRange = true;
-    if (dateRange) {
-      const dueDate = new Date(record.dueDate);
-      const startDate = new Date(dateRange.startDate);
-      const endDate = new Date(dateRange.endDate);
-      matchesDateRange = dueDate >= startDate && dueDate <= endDate;
-    }
-
-    return matchesStatus && matchesFeeType && matchesTerm && matchesBalanceRange && matchesDateRange;
-  });
-
-  const displayedRecords = filteredRecords.slice(0, displayedCount);
-  const hasMore = displayedCount < filteredRecords.length;
-
-  // Export handlers (must be after filteredRecords is defined)
-  const handlePrint = () => {
-    // Generate printable HTML for fee records
+  const handlePrintList = (items: AdminFeeRecord[]) => {
+    const { totalFees, totalCollected, totalOutstanding } = computeExportStats(items);
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -1155,19 +866,19 @@ export default function AdminParentFeesPage() {
         <div class="stats">
           <div class="stat-card">
             <div class="label">Total Fees</div>
-            <div class="value">NGN ${stats.totalFees.toLocaleString()}</div>
+            <div class="value">${totalFees.toLocaleString()}</div>
           </div>
           <div class="stat-card">
             <div class="label">Collected</div>
-            <div class="value green">NGN ${stats.totalCollected.toLocaleString()}</div>
+            <div class="value green">${totalCollected.toLocaleString()}</div>
           </div>
           <div class="stat-card">
             <div class="label">Outstanding</div>
-            <div class="value red">NGN ${stats.totalOutstanding.toLocaleString()}</div>
+            <div class="value red">${totalOutstanding.toLocaleString()}</div>
           </div>
           <div class="stat-card">
             <div class="label">Total Records</div>
-            <div class="value">${filteredRecords.length}</div>
+            <div class="value">${items.length}</div>
           </div>
         </div>
 
@@ -1185,23 +896,27 @@ export default function AdminParentFeesPage() {
             </tr>
           </thead>
           <tbody>
-            ${filteredRecords.map(record => `
+            ${items
+              .map(
+                (record) => `
               <tr>
                 <td>${record.parentName}</td>
                 <td>${record.childName}</td>
                 <td>${record.feeType}</td>
-                <td>NGN ${record.amount.toLocaleString()}</td>
-                <td>NGN ${record.paidAmount.toLocaleString()}</td>
-                <td>NGN ${record.balance.toLocaleString()}</td>
+                <td>${record.amount.toLocaleString()}</td>
+                <td>${record.paidAmount.toLocaleString()}</td>
+                <td>${record.balance.toLocaleString()}</td>
                 <td>${new Date(record.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</td>
                 <td><span class="status ${record.status.toLowerCase()}">${record.status}</span></td>
               </tr>
-            `).join("")}
+            `
+              )
+              .join("")}
           </tbody>
         </table>
 
         <div class="footer">
-          <p>This is a computer-generated document. | Total Records: ${filteredRecords.length}</p>
+          <p>This is a computer-generated document. | Total Records: ${items.length}</p>
         </div>
       </body>
       </html>
@@ -1218,7 +933,8 @@ export default function AdminParentFeesPage() {
     }
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDFList = (items: AdminFeeRecord[]) => {
+    const { totalFees, totalCollected, totalOutstanding } = computeExportStats(items);
     const doc = new jsPDF({
       orientation: "landscape",
       unit: "mm",
@@ -1227,24 +943,20 @@ export default function AdminParentFeesPage() {
 
     const pageWidth = doc.internal.pageSize.getWidth();
 
-    // Header with blue background
     doc.setFillColor(59, 130, 246);
     doc.rect(0, 0, pageWidth, 35, "F");
 
-    // Title
     doc.setFontSize(20);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(255, 255, 255);
     doc.text("Parent Fee Records", 14, 15);
 
-    // School name and date
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.text(settings.schoolName || "School", 14, 22);
     doc.setFontSize(9);
     doc.text(`Generated on: ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`, 14, 28);
 
-    // Summary statistics box
     doc.setTextColor(0, 0, 0);
     doc.setFillColor(245, 247, 250);
     doc.rect(14, 40, pageWidth - 28, 20, "F");
@@ -1255,19 +967,18 @@ export default function AdminParentFeesPage() {
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text(`Total Records: ${filteredRecords.length}`, 18, 53);
-    doc.text(`Total Fees: NGN ${stats.totalFees.toLocaleString()}`, 70, 53);
-    doc.text(`Collected: NGN ${stats.totalCollected.toLocaleString()}`, 140, 53);
-    doc.text(`Outstanding: NGN ${stats.totalOutstanding.toLocaleString()}`, 210, 53);
+    doc.text(`Total Records: ${items.length}`, 18, 53);
+    doc.text(`Total Fees: ${totalFees.toLocaleString()}`, 70, 53);
+    doc.text(`Collected: ${totalCollected.toLocaleString()}`, 140, 53);
+    doc.text(`Outstanding: ${totalOutstanding.toLocaleString()}`, 210, 53);
 
-    // Table data
-    const tableData = filteredRecords.map(record => [
+    const tableData = items.map((record) => [
       record.parentName,
       record.childName,
       record.feeType,
-      `NGN ${record.amount.toLocaleString()}`,
-      `NGN ${record.paidAmount.toLocaleString()}`,
-      `NGN ${record.balance.toLocaleString()}`,
+      record.amount.toLocaleString(),
+      record.paidAmount.toLocaleString(),
+      record.balance.toLocaleString(),
       new Date(record.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
       record.status,
     ]);
@@ -1277,66 +988,44 @@ export default function AdminParentFeesPage() {
       body: tableData,
       startY: 65,
       theme: "grid",
-      styles: {
-        fontSize: 8,
-        cellPadding: 3,
-        overflow: "linebreak",
-      },
-      headStyles: {
-        fillColor: [59, 130, 246],
-        textColor: 255,
-        fontStyle: "bold",
-        halign: "center",
-      },
-      columnStyles: {
-        0: { cellWidth: 35 },
-        1: { cellWidth: 30 },
-        2: { cellWidth: 30 },
-        3: { cellWidth: 28, halign: "right" },
-        4: { cellWidth: 28, halign: "right" },
-        5: { cellWidth: 28, halign: "right" },
-        6: { cellWidth: 25 },
-        7: { cellWidth: 20, halign: "center" },
-      },
-      alternateRowStyles: {
-        fillColor: [245, 247, 250],
-      },
+      styles: { fontSize: 8, cellPadding: 3, overflow: "linebreak" },
+      headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: "bold", halign: "center" },
+      alternateRowStyles: { fillColor: [245, 247, 250] },
     });
-
-    // Page numbers
-    const pageCount = doc.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(9);
-      doc.setTextColor(128, 128, 128);
-      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 30, doc.internal.pageSize.getHeight() - 10);
-    }
 
     doc.save(`Fee_Records_${new Date().toISOString().split("T")[0]}.pdf`);
   };
 
-  const handleExportExcel = () => {
-    // Build worksheet data
+  const handleExportExcelList = (items: AdminFeeRecord[]) => {
+    const { totalFees, totalCollected, totalOutstanding } = computeExportStats(items);
     const worksheetData: (string | number)[][] = [];
 
-    // Title
     worksheetData.push(["PARENT FEE RECORDS"]);
     worksheetData.push([settings.schoolName || "School"]);
     worksheetData.push([`Generated on: ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`]);
     worksheetData.push([]);
 
-    // Summary
     worksheetData.push(["SUMMARY STATISTICS"]);
-    worksheetData.push(["Total Records:", filteredRecords.length, "", "Total Fees:", stats.totalFees]);
-    worksheetData.push(["Collected:", stats.totalCollected, "", "Outstanding:", stats.totalOutstanding]);
+    worksheetData.push(["Total Records:", items.length, "", "Total Fees:", totalFees]);
+    worksheetData.push(["Collected:", totalCollected, "", "Outstanding:", totalOutstanding]);
     worksheetData.push([]);
     worksheetData.push([]);
 
-    // Header row
-    worksheetData.push(["Parent Name", "Parent Email", "Student Name", "Class", "Fee Type", "Term", "Amount", "Paid", "Balance", "Due Date", "Status"]);
+    worksheetData.push([
+      "Parent Name",
+      "Parent Email",
+      "Student Name",
+      "Class",
+      "Fee Type",
+      "Term",
+      "Amount",
+      "Paid",
+      "Balance",
+      "Due Date",
+      "Status",
+    ]);
 
-    // Data rows
-    filteredRecords.forEach(record => {
+    items.forEach((record) => {
       worksheetData.push([
         record.parentName,
         record.parentEmail,
@@ -1352,36 +1041,27 @@ export default function AdminParentFeesPage() {
       ]);
     });
 
-    // Create worksheet
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-
-    // Set column widths
     worksheet["!cols"] = [
-      { wch: 25 }, // Parent Name
-      { wch: 30 }, // Parent Email
-      { wch: 20 }, // Student Name
-      { wch: 12 }, // Class
-      { wch: 15 }, // Fee Type
-      { wch: 15 }, // Term
-      { wch: 12 }, // Amount
-      { wch: 12 }, // Paid
-      { wch: 12 }, // Balance
-      { wch: 12 }, // Due Date
-      { wch: 10 }, // Status
+      { wch: 25 },
+      { wch: 30 },
+      { wch: 20 },
+      { wch: 12 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 12 },
+      { wch: 12 },
+      { wch: 12 },
+      { wch: 12 },
+      { wch: 10 },
     ];
 
-    // Create workbook and add sheet
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Fee Records");
-
-    // Download
     XLSX.writeFile(workbook, `Fee_Records_${new Date().toISOString().split("T")[0]}.xlsx`);
   };
 
-  const isLoading = isFiltering || isSorting || isRefreshing || isSwitchingView;
-
-  // Get status badge
-  const getStatusBadge = (status: AdminFeeRecord["status"]) => {
+  const renderStatusBadge = (status: AdminFeeRecord["status"]) => {
     const config = {
       paid: {
         bg: "bg-green-100 dark:bg-green-900/30",
@@ -1407,7 +1087,7 @@ export default function AdminParentFeesPage() {
         icon: <AlertCircle className="w-3 h-3" />,
         label: "Overdue",
       },
-    };
+    } as const;
 
     const c = config[status];
     return (
@@ -1418,760 +1098,489 @@ export default function AdminParentFeesPage() {
     );
   };
 
-  // Table columns - responsive with hidden properties for mobile/tablet
-  const columns: ColumnConfig<AdminFeeRecord>[] = [
-    {
-      key: "checkbox",
-      label: "",
-      className: "w-[3%]",
-      hidden: { mobile: true }, // Hide checkbox on mobile
-      renderHeader: () => (
-        <input
-          type="checkbox"
-          ref={(el) => {
-            if (el) {
-              const isSomeSelected = selectedIds.size > 0 && selectedIds.size < filteredRecords.length;
-              el.indeterminate = isSomeSelected;
-            }
-          }}
-          checked={selectedIds.size === filteredRecords.length && filteredRecords.length > 0}
-          onChange={(e) => {
-            if (e.target.checked) {
-              setSelectedIds(new Set(filteredRecords.map(r => r.id)));
-            } else {
-              setSelectedIds(new Set());
-            }
-          }}
-          className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
-        />
-      ),
-      render: (record) => (
-        <input
-          type="checkbox"
-          checked={selectedIds.has(record.id)}
-          onChange={(e) => {
-            const newSelectedIds = new Set(selectedIds);
-            if (e.target.checked) {
-              newSelectedIds.add(record.id);
-            } else {
-              newSelectedIds.delete(record.id);
-            }
-            setSelectedIds(newSelectedIds);
-          }}
-          className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
-        />
-      ),
-    },
-    {
-      key: "parent",
-      label: "Parent",
-      sortable: true,
-      className: "w-[20%] lg:w-[14%] overflow-visible",
-      render: (record) => (
-        <div className="flex items-center gap-2 overflow-visible">
-          <Tooltip content={`${record.parentName}\n${record.parentEmail}`}>
-            <div className="group relative flex-shrink-0">
-              <div className="relative w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 cursor-pointer transition-all duration-300 ease-out group-hover:scale-[2] group-hover:ring-3 group-hover:ring-blue-500 group-hover:shadow-xl group-hover:z-[9999]">
-                <Image
-                  src={`https://i.pravatar.cc/150?u=${record.parentId}`}
-                  alt={record.parentName}
-                  fill
-                  className="object-cover rounded-full"
-                  unoptimized
-                />
+  const columns: ColumnConfig<AdminFeeRecord>[] = useMemo(
+    () => [
+      {
+        key: "parent",
+        label: "Parent",
+        sortable: true,
+        className: "w-[20%] lg:w-[14%] overflow-visible",
+        render: (record) => (
+          <div className="flex items-center gap-2 overflow-visible">
+            <Tooltip content={`${record.parentName}\n${record.parentEmail}`}>
+              <div className="group relative flex-shrink-0">
+                <div className="relative w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 cursor-pointer transition-all duration-300 ease-out group-hover:scale-[2] group-hover:ring-3 group-hover:ring-blue-500 group-hover:shadow-xl group-hover:z-[9999]">
+                  <Image
+                    src={`https://i.pravatar.cc/150?u=${record.parentId}`}
+                    alt={record.parentName}
+                    fill
+                    className="object-cover rounded-full"
+                    unoptimized
+                  />
+                </div>
               </div>
+            </Tooltip>
+            <div className="min-w-0 flex-1 overflow-hidden">
+              <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm truncate">{record.parentName}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">{record.parentEmail}</p>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: "child",
+        label: "Student",
+        sortable: true,
+        className: "w-[10%] overflow-visible",
+        hidden: { mobile: true },
+        render: (record) => (
+          <div className="flex items-center gap-2 overflow-visible">
+            <Tooltip content={`${record.childName}\n${record.childClass}`}>
+              <div className="group relative flex-shrink-0">
+                <div className="relative w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 cursor-pointer transition-all duration-300 ease-out group-hover:scale-[2] group-hover:ring-3 group-hover:ring-green-500 group-hover:shadow-xl group-hover:z-[9999]">
+                  <Image
+                    src={`https://i.pravatar.cc/150?u=${record.childId}`}
+                    alt={record.childName}
+                    fill
+                    className="object-cover rounded-full"
+                    unoptimized
+                  />
+                </div>
+              </div>
+            </Tooltip>
+            <div className="min-w-0 flex-1 overflow-hidden">
+              <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm truncate">{record.childName}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">{record.childClass}</p>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: "feeType",
+        label: "Fee Type",
+        sortable: true,
+        className: "w-[12%]",
+        hidden: { mobile: true, tablet: true, desktop: false },
+        render: (record) => (
+          <Tooltip content={`${record.feeType}\n${record.term} - ${record.academicYear}`}>
+            <div className="overflow-hidden">
+              <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm truncate">{record.feeType}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                {record.term} - {record.academicYear}
+              </p>
             </div>
           </Tooltip>
-          <div className="min-w-0 flex-1 overflow-hidden">
-            <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm truncate">
-              {record.parentName}
-            </p>
-            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">
-              {record.parentEmail}
-            </p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "child",
-      label: "Student",
-      sortable: true,
-      className: "w-[10%] overflow-visible",
-      hidden: { mobile: true }, // Hide on mobile - parent is enough
-      render: (record) => (
-        <div className="flex items-center gap-2 overflow-visible">
-          <Tooltip content={`${record.childName}\n${record.childClass}`}>
-            <div className="group relative flex-shrink-0">
-              <div className="relative w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 cursor-pointer transition-all duration-300 ease-out group-hover:scale-[2] group-hover:ring-3 group-hover:ring-green-500 group-hover:shadow-xl group-hover:z-[9999]">
-                <Image
-                  src={`https://i.pravatar.cc/150?u=${record.childId}`}
-                  alt={record.childName}
-                  fill
-                  className="object-cover rounded-full"
-                  unoptimized
-                />
-              </div>
+        ),
+      },
+      {
+        key: "amount",
+        label: "Amount",
+        sortable: true,
+        className: "w-[15%] lg:w-[7%]",
+        render: (record) => (
+          <span className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm whitespace-nowrap">
+            {money(record.amount)}
+          </span>
+        ),
+      },
+      {
+        key: "paidAmount",
+        label: "Paid",
+        sortable: true,
+        className: "w-[7%]",
+        hidden: { mobile: true, tablet: true },
+        render: (record) => (
+          <span className="font-medium text-green-600 dark:text-green-400 text-xs sm:text-sm whitespace-nowrap">
+            {money(record.paidAmount)}
+          </span>
+        ),
+      },
+      {
+        key: "balance",
+        label: "Balance",
+        sortable: true,
+        className: "w-[15%] lg:w-[7%]",
+        render: (record) => (
+          <span
+            className={`font-semibold text-xs sm:text-sm whitespace-nowrap ${
+              record.balance > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
+            }`}
+          >
+            {money(record.balance)}
+          </span>
+        ),
+      },
+      {
+        key: "dueDate",
+        label: "Due Date",
+        sortable: true,
+        className: "w-[8%]",
+        hidden: { mobile: true, tablet: true },
+        render: (record) => (
+          <span className="text-gray-700 dark:text-gray-300 text-xs sm:text-sm whitespace-nowrap">
+            {new Date(record.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+          </span>
+        ),
+      },
+      {
+        key: "status",
+        label: "Status",
+        sortable: true,
+        className: "w-[18%] lg:w-[10%]",
+        render: (record) => renderStatusBadge(record.status),
+      },
+      {
+        key: "actions",
+        label: "Actions",
+        className: "w-[12%] lg:w-[12%]",
+        sortable: false,
+        searchable: false,
+        render: (record) => (
+          <div className="flex items-center justify-end gap-0">
+            <div className="hidden lg:flex items-center gap-0">
+              <Tooltip content="View Details">
+                <button
+                  type="button"
+                  onClick={() => handleViewDetails(record)}
+                  className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                >
+                  <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                </button>
+              </Tooltip>
+              {record.paymentHistory.length > 0 && (
+                <Tooltip content="View Receipt">
+                  <button
+                    type="button"
+                    onClick={() => handleViewReceipt(record)}
+                    className="p-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
+                  >
+                    <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </button>
+                </Tooltip>
+              )}
+              <Tooltip content={reminderCounts[record.id] > 0 ? `Send Reminder (${reminderCounts[record.id]} sent)` : "Send Reminder"}>
+                <button
+                  type="button"
+                  onClick={() => handleSendReminder(record)}
+                  className="relative p-1 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors cursor-pointer"
+                >
+                  <Send className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                </button>
+              </Tooltip>
+              {reminderCounts[record.id] > 0 && (
+                <Tooltip content={`View Reminder History (${reminderCounts[record.id]} sent)`}>
+                  <button
+                    type="button"
+                    onClick={() => handleViewReminderHistory(record)}
+                    className="relative p-1 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors cursor-pointer"
+                  >
+                    <History className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[12px] h-3 px-0.5 flex items-center justify-center text-[8px] font-bold bg-purple-500 text-white rounded-full">
+                      {reminderCounts[record.id] > 9 ? "9+" : reminderCounts[record.id]}
+                    </span>
+                  </button>
+                </Tooltip>
+              )}
             </div>
-          </Tooltip>
-          <div className="min-w-0 flex-1 overflow-hidden">
-            <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm truncate">
-              {record.childName}
-            </p>
-            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">
-              {record.childClass}
-            </p>
+            <FeeActionsDropdown
+              hasPayments={record.paymentHistory.length > 0}
+              hasReminders={reminderCounts[record.id] > 0}
+              onViewDetails={() => handleViewDetails(record)}
+              onEdit={() => handleEditRecord(record)}
+              onDelete={() => handleDeleteRecord(record)}
+              onDownload={() => handleDownloadStatement(record)}
+              onPrint={() => handlePrintStatement(record)}
+              onMessage={() => handleSendMessage(record)}
+              onViewHistory={() => handleViewReceipt(record)}
+              onRecordPayment={() => handleRecordPayment(record)}
+              onAutoReminder={() => handleAutoReminder(record)}
+              onSendReminder={() => handleSendReminder(record)}
+              onViewReminderHistory={() => handleViewReminderHistory(record)}
+            />
           </div>
-        </div>
-      ),
-    },
-    {
-      key: "feeType",
-      label: "Fee Type",
-      sortable: true,
-      className: "w-[12%]",
-      hidden: { mobile: true, tablet: true, desktop: false }, // Hide on mobile and tablet, show on desktop
-      render: (record) => (
-        <Tooltip content={`${record.feeType}\n${record.term} - ${record.academicYear}`}>
-          <div className="overflow-hidden">
-            <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm truncate">{record.feeType}</p>
-            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-              {record.term} - {record.academicYear}
-            </p>
-          </div>
-        </Tooltip>
-      ),
-    },
-    {
-      key: "amount",
-      label: "Amount",
-      sortable: true,
-      className: "w-[15%] lg:w-[7%]",
-      render: (record) => (
-        <span className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm whitespace-nowrap">
-          {money(record.amount)}
-        </span>
-      ),
-    },
-    {
-      key: "paidAmount",
-      label: "Paid",
-      sortable: true,
-      className: "w-[7%]",
-      hidden: { mobile: true, tablet: true }, // Hide on mobile and tablet
-      render: (record) => (
-        <span className="font-medium text-green-600 dark:text-green-400 text-xs sm:text-sm whitespace-nowrap">
-          {money(record.paidAmount)}
-        </span>
-      ),
-    },
-    {
-      key: "balance",
-      label: "Balance",
-      sortable: true,
-      className: "w-[15%] lg:w-[7%]",
-      render: (record) => (
-        <span
-          className={`font-semibold text-xs sm:text-sm whitespace-nowrap ${
-            record.balance > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
-          }`}
-        >
-          {money(record.balance)}
-        </span>
-      ),
-    },
-    {
-      key: "dueDate",
-      label: "Due Date",
-      sortable: true,
-      className: "w-[8%]",
-      hidden: { mobile: true, tablet: true }, // Hide on mobile and tablet
-      render: (record) => (
-        <span className="text-gray-700 dark:text-gray-300 text-xs sm:text-sm whitespace-nowrap">
-          {new Date(record.dueDate).toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })}
-        </span>
-      ),
-    },
-    {
-      key: "status",
-      label: "Status",
-      sortable: true,
-      className: "w-[18%] lg:w-[10%]",
-      render: (record) => getStatusBadge(record.status),
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      className: "w-[12%] lg:w-[12%]",
-      render: (record) => (
-        <div className="flex items-center justify-end gap-0">
-          {/* Action buttons - only visible on lg screens and above */}
-          <div className="hidden lg:flex items-center gap-0">
-            <Tooltip content="View Details">
-              <button
-                type="button"
-                onClick={() => handleViewDetails(record)}
-                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-              >
-                <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-              </button>
-            </Tooltip>
-            {record.paymentHistory.length > 0 && (
-              <Tooltip content="View Receipt">
-                <button
-                  type="button"
-                  onClick={() => handleViewReceipt(record)}
-                  className="p-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
-                >
-                  <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                </button>
-              </Tooltip>
-            )}
-            <Tooltip content={reminderCounts[record.id] > 0 ? `Send Reminder (${reminderCounts[record.id]} sent)` : "Send Reminder"}>
-              <button
-                type="button"
-                onClick={() => handleSendReminder(record)}
-                className="relative p-1 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors cursor-pointer"
-              >
-                <Send className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-              </button>
-            </Tooltip>
-            {reminderCounts[record.id] > 0 && (
-              <Tooltip content={`View Reminder History (${reminderCounts[record.id]} sent)`}>
-                <button
-                  type="button"
-                  onClick={() => handleViewReminderHistory(record)}
-                  className="relative p-1 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors cursor-pointer"
-                >
-                  <History className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[12px] h-3 px-0.5 flex items-center justify-center text-[8px] font-bold bg-purple-500 text-white rounded-full">
-                    {reminderCounts[record.id] > 9 ? "9+" : reminderCounts[record.id]}
-                  </span>
-                </button>
-              </Tooltip>
-            )}
-          </div>
-          <FeeActionsDropdown
-            hasPayments={record.paymentHistory.length > 0}
-            hasReminders={reminderCounts[record.id] > 0}
-            onViewDetails={() => handleViewDetails(record)}
-            onEdit={() => handleEditRecord(record)}
-            onDelete={() => handleDeleteRecord(record)}
-            onDownload={() => handleDownloadStatement(record)}
-            onPrint={() => handlePrintStatement(record)}
-            onMessage={() => handleSendMessage(record)}
-            onViewHistory={() => handleViewReceipt(record)}
-            onRecordPayment={() => handleRecordPayment(record)}
-            onAutoReminder={() => handleAutoReminder(record)}
-            onSendReminder={() => handleSendReminder(record)}
-            onViewReminderHistory={() => handleViewReminderHistory(record)}
-          />
-        </div>
-      ),
-    },
-  ];
+        ),
+      },
+    ],
+    [money, reminderCounts, router]
+  );
 
-  if (!isMounted) {
-    return null;
-  }
+  const FeeRecordGridCard = useMemo(() => {
+    return function FeeRecordGridCardInner({
+      item,
+      isSelected,
+      onSelectionChange,
+    }: GridCardProps<AdminFeeRecord>) {
+      return (
+        <FeeRecordCard
+          record={item}
+          money={money}
+          getStatusBadge={renderStatusBadge}
+          reminderCount={reminderCounts[item.id] || 0}
+          isSelected={isSelected}
+          onSelectionChange={(id, selected) => {
+            // id is provided for compatibility with existing card API
+            void id;
+            onSelectionChange(selected);
+          }}
+          onViewDetails={handleViewDetails}
+          onViewReceipt={handleViewReceipt}
+          onSendReminder={handleSendReminder}
+          onViewReminderHistory={handleViewReminderHistory}
+          onAutoReminder={handleAutoReminder}
+          onEdit={handleEditRecord}
+          onDelete={handleDeleteRecord}
+          onDownload={handleDownloadStatement}
+          onPrint={handlePrintStatement}
+          onMessage={handleSendMessage}
+          onRecordPayment={handleRecordPayment}
+        />
+      );
+    };
+  }, [money, reminderCounts]);
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Fee Records" />
+    <DataManagementPage<AdminFeeRecord>
+      title="Parent Fee Records"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Admin" },
+        { label: "Parents", href: "/admin/parents" },
+        { label: "Fee Records", isActive: true },
+      ]}
+      data={feeRecords}
+      getRowKey={(record) => record.id}
+      columns={columns}
+      stats={getAdminParentFeeStats(money)}
+      filterFields={adminParentFeeFilterFields}
+      filterFn={filterAdminParentFees}
+      sortOptions={adminParentFeeSortOptions}
+      sortFn={sortAdminParentFees}
+      defaultSort="highest_balance"
+      searchFn={searchAdminParentFees}
+      searchPlaceholder="Search fee records..."
+      enableDateRange
+      getDateForRange={(record) => record.dueDate}
+      enableViewToggle
+      gridCardComponent={FeeRecordGridCard}
+      gridColumns={{ sm: 1, md: 2, lg: 3, xl: 4 }}
+      enableSelection
+      controlledSelection={{ selectedIds, onChange: setSelectedIds }}
+      selectionColumnHidden={{ mobile: true }}
+      bulkActions={[
+        {
+          id: "remind",
+          label: "Send Reminders",
+          icon: Send,
+          variant: "warning",
+          onClick: handleBulkReminder,
+        },
+        {
+          id: "delete",
+          label: "Delete Records",
+          icon: Trash2,
+          variant: "danger",
+          onClick: handleBulkDelete,
+        },
+      ]}
+      addButtonConfig={{
+        label: "Add Fee Record",
+        href: "/admin/parents/fees/add",
+      }}
+      enableExport
+      exportConfig={{ filename: "fee-records" }}
+      onPrint={handlePrintList}
+      onExportPDF={handleExportPDFList}
+      onExportExcel={handleExportExcelList}
+      itemLabel="record"
+      itemLabelPlural="records"
+      emptyStateConfig={{
+        title: "No fee records found",
+        description: "Try adjusting your filters, search, or date range.",
+        actionLabel: "Add Fee Record",
+        actionHref: "/admin/parents/fees/add",
+      }}
+    >
+      <BulkDeleteModal
+        isOpen={isBulkDeleteModalOpen}
+        onClose={handleCloseBulkDeleteModal}
+        onConfirm={handleConfirmBulkDelete}
+        items={itemsToDelete}
+        onRemoveItem={handleRemoveFromDeleteList}
+        onRestoreItem={handleRestoreItem}
+        onRestoreAll={handleRestoreAll}
+        title="Delete Fee Records"
+        warningMessage="This will permanently remove these fee records. This action cannot be undone."
+        confirmButtonText="Delete Records"
+      />
 
-      <div className={`transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-0 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
-          <PageHeader
-            title="Parent Fee Records"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Admin" },
-              { label: "Parents", href: "/admin/parents" },
-              { label: "Fee Records", isActive: true },
-            ]}
-          />
+      <BulkFeeReminderModal
+        isOpen={isBulkReminderModalOpen}
+        onClose={handleCloseBulkReminderModal}
+        onConfirm={handleConfirmBulkReminder}
+        records={recordsToRemind.map((record) => ({
+          id: record.id,
+          parentId: record.parentId,
+          parentName: record.parentName,
+          parentEmail: record.parentEmail,
+          parentPhone: record.parentPhone,
+          childId: record.childId,
+          childName: record.childName,
+          childClass: record.childClass,
+          feeType: record.feeType,
+          amount: record.amount,
+          balance: record.balance,
+          dueDate: record.dueDate,
+        }))}
+        onRemoveRecord={handleRemoveFromReminderList}
+        money={money}
+        title="Send Bulk Reminders"
+      />
 
-          <PageActions
-            addButtonLabel="Add Fee Record"
-            exportDescription="Download fee records"
-            onAdd={handleAddFee}
-            onRefresh={handleRefresh}
-            onPrint={handlePrint}
-            onExportPDF={handleExportPDF}
-            onExportExcel={handleExportExcel}
-          />
-        </div>
+      <FeeDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedRecord(null);
+        }}
+        record={selectedRecord as FeeDetailRecord}
+        money={money}
+      />
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-100 ease-out">
-          <StatCard
-            icon={Banknote}
-            label="Total Fees"
-            value={money(stats.totalFees)}
-            color="blue"
-          />
-          <StatCard
-            icon={CheckCircle2}
-            label="Collected"
-            value={money(stats.totalCollected)}
-            color="green"
-          />
-          <StatCard
-            icon={Clock}
-            label="Outstanding"
-            value={money(stats.totalOutstanding)}
-            color={stats.totalOutstanding > 0 ? "red" : "green"}
-          />
-          <StatCard
-            icon={TrendingUp}
-            label="Collection Rate"
-            value={`${stats.collectionRate}%`}
-            color={stats.collectionRate >= 80 ? "green" : stats.collectionRate >= 50 ? "amber" : "red"}
-            badge={stats.overdueCount > 0 ? `${stats.overdueCount} Overdue` : undefined}
-          />
-        </div>
-
-        {/* Filters Bar */}
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out mb-6">
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
-            <div className="flex items-center gap-2 sm:gap-3 lg:flex-1">
-              <DateRangePicker onChange={handleDateRangeChange} resetKey={resetKey} />
-              <FilterButton fields={filterFields} onFilterChange={handleFilterChange} resetKey={resetKey} />
-
-              {/* Bulk Actions - Only show when items selected */}
-              {selectedIds.size > 0 && (
-                <>
-                  <BulkReminderButton selectedCount={selectedIds.size} onBulkReminder={handleBulkReminder} />
-                  <DeleteAllButton selectedCount={selectedIds.size} onDeleteAll={handleDeleteAll} />
-                </>
-              )}
-
-              <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                <span className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                  {filteredRecords.length} records
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 lg:flex-1">
-              {/* Select All Checkbox - Only show in grid view */}
-              {viewMode === "grid" && (
-                <div className="flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 shadow-sm">
-                  <input
-                    type="checkbox"
-                    ref={(el) => {
-                      if (el) {
-                        const isSomeSelected = selectedIds.size > 0 && selectedIds.size < displayedRecords.length;
-                        el.indeterminate = isSomeSelected;
-                      }
-                    }}
-                    checked={selectedIds.size === displayedRecords.length && displayedRecords.length > 0}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        // Select all displayed records
-                        setSelectedIds(new Set(displayedRecords.map(r => r.id)));
-                      } else {
-                        // Deselect all
-                        setSelectedIds(new Set());
-                      }
-                    }}
-                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
-                  />
-                  <span className="hidden sm:inline text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
-                    Select All
-                  </span>
-                </div>
-              )}
-              <ViewToggle viewMode={viewMode} onViewModeChange={handleViewModeChange} />
-              <SortButton
-                options={sortOptions}
-                defaultOption="highest_balance"
-                onSortChange={handleSortChange}
-                resetKey={resetKey}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div
-          className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out"
-          style={{ overflow: "visible" }}
-        >
-          <div className="relative min-h-[400px]" style={{ overflow: "visible" }}>
-            {viewMode === "list" ? (
-              <div
-                key={`list-view-${isFiltering ? "filtering" : "filtered"}-${sortOption}`}
-                className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms]"
-              >
-                {isLoading ? (
-                  <PageSpinner
-                    message={
-                      isSwitchingView
-                        ? "Switching view..."
-                        : isRefreshing
-                        ? "Refreshing..."
-                        : isSorting
-                        ? "Sorting..."
-                        : "Filtering..."
-                    }
-                    size="md"
-                  />
-                ) : filteredRecords.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16">
-                    <div className="relative mb-4">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 animate-pulse" />
-                      </div>
-                      <div className="relative z-10 flex items-center justify-center w-16 h-16">
-                        <Receipt className="w-8 h-8 text-gray-400 dark:text-gray-500" />
-                      </div>
-                    </div>
-                    <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-1">No fee records found</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {hasActiveFilters
-                        ? "No results match the current filters. Try adjusting your filters."
-                        : "No fee records available"}
-                    </p>
-                    {hasActiveFilters && (
-                      <button
-                        onClick={handleClearFilters}
-                        className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer transition-colors duration-200"
-                      >
-                        Clear filters
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <div
-                    ref={tableWrapRef}
-                    key={`fees-table-${filterKey}`}
-                    className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm"
-                  >
-                    {/* Mobile Scroll Indicator */}
-                    <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none rounded-r-xl" />
-                    <DataTable
-                      data={filteredRecords}
-                      columns={columns}
-                      getRowKey={(record) => record.id}
-                      emptyMessage="No fee records found"
-                      title=""
-                      showSearch={false}
-                      defaultItemsPerPage={15}
-                      itemsPerPageOptions={[10, 15, 25, 50]}
-                      enablePagination={true}
-                      enableItemsPerPage={true}
-                      stickyColumnCount={1}
-                      disableHorizontalScroll={true}
-                    />
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div
-                key={`grid-view-${isFiltering ? "filtering" : "filtered"}-${sortOption}`}
-                className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms]"
-                style={{ overflow: "visible" }}
-              >
-                {isLoading ? (
-                  <PageSpinner
-                    message={
-                      isSwitchingView
-                        ? "Switching view..."
-                        : isRefreshing
-                        ? "Refreshing..."
-                        : isSorting
-                        ? "Sorting..."
-                        : "Filtering..."
-                    }
-                    size="md"
-                  />
-                ) : displayedRecords.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16">
-                    <div className="relative mb-4">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 animate-pulse" />
-                      </div>
-                      <div className="relative z-10 flex items-center justify-center w-16 h-16">
-                        <Receipt className="w-8 h-8 text-gray-400 dark:text-gray-500" />
-                      </div>
-                    </div>
-                    <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-1">No fee records found</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {hasActiveFilters
-                        ? "No results match the current filters. Try adjusting your filters."
-                        : "No fee records available"}
-                    </p>
-                    {hasActiveFilters && (
-                      <button
-                        onClick={handleClearFilters}
-                        className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer transition-colors duration-200"
-                      >
-                        Clear filters
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <div
-                      ref={gridRef}
-                      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-2 pr-2 md:pr-0"
-                      style={{ overflow: "visible" }}
-                    >
-                      {displayedRecords.map((record, index) => (
-                        <div
-                          key={record.id}
-                          style={{
-                            transition: "opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-                            transitionDelay: `${index / 40}s`,
-                          }}
-                        >
-                          <FeeRecordCard
-                            record={record}
-                            money={money}
-                            getStatusBadge={getStatusBadge}
-                            reminderCount={reminderCounts[record.id] || 0}
-                            isSelected={selectedIds.has(record.id)}
-                            onSelectionChange={(id, selected) => {
-                              const newSelectedIds = new Set(selectedIds);
-                              if (selected) {
-                                newSelectedIds.add(id);
-                              } else {
-                                newSelectedIds.delete(id);
-                              }
-                              setSelectedIds(newSelectedIds);
-                            }}
-                            onViewDetails={handleViewDetails}
-                            onViewReceipt={handleViewReceipt}
-                            onSendReminder={handleSendReminder}
-                            onViewReminderHistory={handleViewReminderHistory}
-                            onAutoReminder={handleAutoReminder}
-                            onEdit={handleEditRecord}
-                            onDelete={handleDeleteRecord}
-                            onDownload={handleDownloadStatement}
-                            onPrint={handlePrintStatement}
-                            onMessage={handleSendMessage}
-                            onRecordPayment={handleRecordPayment}
-                          />
-                        </div>
-                      ))}
-                    </div>
-
-                    {hasMore && (
-                      <LoadMoreButton
-                        onClick={handleLoadMore}
-                        isLoading={isLoadingMore}
-                        text="Load More"
-                        loadingText="Loading..."
-                      />
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Bulk Delete Modal */}
-        <BulkDeleteModal
-          isOpen={isBulkDeleteModalOpen}
-          onClose={handleCloseBulkDeleteModal}
-          onConfirm={handleConfirmBulkDelete}
-          items={itemsToDelete}
-          onRemoveItem={handleRemoveFromDeleteList}
-          onRestoreItem={handleRestoreItem}
-          onRestoreAll={handleRestoreAll}
-          title="Delete Fee Records"
-          warningMessage="This will permanently remove these fee records. This action cannot be undone."
-          confirmButtonText="Delete Records"
-        />
-
-        {/* Bulk Fee Reminder Modal */}
-        <BulkFeeReminderModal
-          isOpen={isBulkReminderModalOpen}
-          onClose={handleCloseBulkReminderModal}
-          onConfirm={handleConfirmBulkReminder}
-          records={recordsToRemind.map(record => ({
-            id: record.id,
-            parentId: record.parentId,
-            parentName: record.parentName,
-            parentEmail: record.parentEmail,
-            parentPhone: record.parentPhone,
-            childId: record.childId,
-            childName: record.childName,
-            childClass: record.childClass,
-            feeType: record.feeType,
-            amount: record.amount,
-            balance: record.balance,
-            dueDate: record.dueDate,
-          }))}
-          onRemoveRecord={handleRemoveFromReminderList}
-          money={money}
-          title="Send Bulk Reminders"
-        />
-
-        {/* Fee Detail Modal */}
-        <FeeDetailModal
-          isOpen={isDetailModalOpen}
+      {selectedRecord && (
+        <PaymentHistoryModal
+          isOpen={isPaymentHistoryModalOpen}
           onClose={() => {
-            setIsDetailModalOpen(false);
+            setIsPaymentHistoryModalOpen(false);
             setSelectedRecord(null);
           }}
-          record={selectedRecord as FeeDetailRecord}
+          payments={selectedRecord.paymentHistory}
+          studentName={selectedRecord.childName}
+          studentId={selectedRecord.childId}
+          feeType={selectedRecord.feeType}
+          term={selectedRecord.term}
+          totalAmount={selectedRecord.amount}
+          paidAmount={selectedRecord.paidAmount}
           money={money}
         />
+      )}
 
-        {/* Payment History Modal */}
-        {selectedRecord && (
-          <PaymentHistoryModal
-            isOpen={isPaymentHistoryModalOpen}
-            onClose={() => {
-              setIsPaymentHistoryModalOpen(false);
-              setSelectedRecord(null);
-            }}
-            payments={selectedRecord.paymentHistory}
-            studentName={selectedRecord.childName}
-            studentId={selectedRecord.childId}
-            feeType={selectedRecord.feeType}
-            term={selectedRecord.term}
-            totalAmount={selectedRecord.amount}
-            paidAmount={selectedRecord.paidAmount}
-            money={money}
-          />
-        )}
+      {selectedRecord && (
+        <SendFeeReminderModal
+          isOpen={isReminderModalOpen}
+          onClose={() => {
+            setIsReminderModalOpen(false);
+            setSelectedRecord(null);
+          }}
+          parentName={selectedRecord.parentName}
+          parentEmail={selectedRecord.parentEmail}
+          parentPhone={selectedRecord.parentPhone}
+          parentId={selectedRecord.parentId}
+          childName={selectedRecord.childName}
+          childId={selectedRecord.childId}
+          feeRecordId={selectedRecord.id}
+          feeType={selectedRecord.feeType}
+          amount={selectedRecord.amount}
+          balance={selectedRecord.balance}
+          dueDate={selectedRecord.dueDate}
+          money={money}
+          onSend={(data) => {
+            const reminderMessages: Record<string, { subject?: string; message: string; attachmentCount?: number }> = {};
+            data.channels.forEach((channel) => {
+              const msg = data.messages[channel];
+              reminderMessages[channel] = {
+                subject: msg?.subject,
+                message: msg?.message || "",
+                attachmentCount: msg?.attachments?.length || 0,
+              };
+            });
 
-        {/* Send Reminder Modal */}
-        {selectedRecord && (
-          <SendFeeReminderModal
-            isOpen={isReminderModalOpen}
-            onClose={() => {
-              setIsReminderModalOpen(false);
-              setSelectedRecord(null);
-            }}
-            parentName={selectedRecord.parentName}
-            parentEmail={selectedRecord.parentEmail}
-            parentPhone={selectedRecord.parentPhone}
-            parentId={selectedRecord.parentId}
-            childName={selectedRecord.childName}
-            childId={selectedRecord.childId}
-            feeRecordId={selectedRecord.id}
-            feeType={selectedRecord.feeType}
-            amount={selectedRecord.amount}
-            balance={selectedRecord.balance}
-            dueDate={selectedRecord.dueDate}
-            money={money}
-            onSend={(data) => {
-              // Save the reminder to our mock data store
-              const reminderMessages: Record<string, { subject?: string; message: string; attachmentCount?: number }> = {};
-              data.channels.forEach(channel => {
-                const msg = data.messages[channel];
-                reminderMessages[channel] = {
-                  subject: msg?.subject,
-                  message: msg?.message || "",
-                  attachmentCount: msg?.attachments?.length || 0,
-                };
-              });
+            addFeeReminder({
+              feeRecordId: data.feeRecordId,
+              parentId: data.parentId,
+              parentName: selectedRecord.parentName,
+              parentEmail: selectedRecord.parentEmail,
+              parentPhone: selectedRecord.parentPhone,
+              childId: data.childId,
+              childName: selectedRecord.childName,
+              feeType: selectedRecord.feeType,
+              amount: selectedRecord.amount,
+              balance: selectedRecord.balance,
+              channels: data.channels as ReminderChannel[],
+              status: data.scheduleDate ? "scheduled" : "sent",
+              sentAt: new Date().toISOString(),
+              scheduledFor: data.scheduleDate && data.scheduleTime ? `${data.scheduleDate}T${data.scheduleTime}` : undefined,
+              messages: reminderMessages,
+              sentBy: "Admin",
+            });
 
-              addFeeReminder({
-                feeRecordId: data.feeRecordId,
-                parentId: data.parentId,
-                parentName: selectedRecord.parentName,
-                parentEmail: selectedRecord.parentEmail,
-                parentPhone: selectedRecord.parentPhone,
-                childId: data.childId,
-                childName: selectedRecord.childName,
-                feeType: selectedRecord.feeType,
-                amount: selectedRecord.amount,
-                balance: selectedRecord.balance,
-                channels: data.channels as ReminderChannel[],
-                status: data.scheduleDate ? "scheduled" : "sent",
-                sentAt: new Date().toISOString(),
-                scheduledFor: data.scheduleDate && data.scheduleTime
-                  ? `${data.scheduleDate}T${data.scheduleTime}`
-                  : undefined,
-                messages: reminderMessages,
-                sentBy: "Admin",
-              });
+            setReminderCounts((prev) => ({
+              ...prev,
+              [selectedRecord.id]: (prev[selectedRecord.id] || 0) + 1,
+            }));
+          }}
+        />
+      )}
 
-              // Update reminder counts by forcing a re-render
-              setReminderCounts(prev => ({
-                ...prev,
-                [selectedRecord.id]: (prev[selectedRecord.id] || 0) + 1,
-              }));
-            }}
-          />
-        )}
+      {selectedRecord && (
+        <FeeReminderHistoryModal
+          isOpen={isReminderHistoryModalOpen}
+          onClose={() => {
+            setIsReminderHistoryModalOpen(false);
+            setSelectedRecord(null);
+          }}
+          reminders={getRemindersByFeeRecordId(selectedRecord.id)}
+          feeType={selectedRecord.feeType}
+          childName={selectedRecord.childName}
+          balance={selectedRecord.balance}
+          money={money}
+        />
+      )}
 
-        {/* Reminder History Modal */}
-        {selectedRecord && (
-          <FeeReminderHistoryModal
-            isOpen={isReminderHistoryModalOpen}
-            onClose={() => {
-              setIsReminderHistoryModalOpen(false);
-              setSelectedRecord(null);
-            }}
-            reminders={getRemindersByFeeRecordId(selectedRecord.id)}
-            feeType={selectedRecord.feeType}
-            childName={selectedRecord.childName}
-            balance={selectedRecord.balance}
-            money={money}
-          />
-        )}
+      {selectedRecord && (
+        <AutoReminderScheduleModal
+          isOpen={isAutoReminderModalOpen}
+          onClose={() => {
+            setIsAutoReminderModalOpen(false);
+            setSelectedRecord(null);
+          }}
+          parentName={selectedRecord.parentName}
+          parentEmail={selectedRecord.parentEmail}
+          parentPhone={selectedRecord.parentPhone}
+          parentId={selectedRecord.parentId}
+          childName={selectedRecord.childName}
+          childId={selectedRecord.childId}
+          feeRecordId={selectedRecord.id}
+          feeType={selectedRecord.feeType}
+          balance={selectedRecord.balance}
+          dueDate={selectedRecord.dueDate}
+          money={money}
+          onSave={(schedule) => {
+            console.log("Auto reminder schedule saved:", schedule);
+          }}
+        />
+      )}
 
-        {/* Auto Reminder Schedule Modal */}
-        {selectedRecord && (
-          <AutoReminderScheduleModal
-            isOpen={isAutoReminderModalOpen}
-            onClose={() => {
-              setIsAutoReminderModalOpen(false);
-              setSelectedRecord(null);
-            }}
-            parentName={selectedRecord.parentName}
-            parentEmail={selectedRecord.parentEmail}
-            parentPhone={selectedRecord.parentPhone}
-            parentId={selectedRecord.parentId}
-            childName={selectedRecord.childName}
-            childId={selectedRecord.childId}
-            feeRecordId={selectedRecord.id}
-            feeType={selectedRecord.feeType}
-            balance={selectedRecord.balance}
-            dueDate={selectedRecord.dueDate}
-            money={money}
-            onSave={(schedule) => {
-              console.log("Auto reminder schedule saved:", schedule);
-              // In a real app, you would save this to your backend
-            }}
-          />
-        )}
-
-        {/* Record Payment Modal */}
-        {selectedRecord && (
-          <RecordPaymentModal
-            isOpen={isRecordPaymentModalOpen}
-            onClose={() => {
-              setIsRecordPaymentModalOpen(false);
-              setSelectedRecord(null);
-            }}
-            feeRecordId={selectedRecord.id}
-            parentName={selectedRecord.parentName}
-            parentId={selectedRecord.parentId}
-            childName={selectedRecord.childName}
-            childId={selectedRecord.childId}
-            feeType={selectedRecord.feeType}
-            amount={selectedRecord.amount}
-            paidAmount={selectedRecord.paidAmount}
-            balance={selectedRecord.balance}
-            money={money}
-            onRecordPayment={handlePaymentRecorded}
-          />
-        )}
-      </div>
-    </MainLayout>
+      {selectedRecord && (
+        <RecordPaymentModal
+          isOpen={isRecordPaymentModalOpen}
+          onClose={() => {
+            setIsRecordPaymentModalOpen(false);
+            setSelectedRecord(null);
+          }}
+          feeRecordId={selectedRecord.id}
+          parentName={selectedRecord.parentName}
+          parentId={selectedRecord.parentId}
+          childName={selectedRecord.childName}
+          childId={selectedRecord.childId}
+          feeType={selectedRecord.feeType}
+          amount={selectedRecord.amount}
+          paidAmount={selectedRecord.paidAmount}
+          balance={selectedRecord.balance}
+          money={money}
+          onRecordPayment={handlePaymentRecorded}
+        />
+      )}
+    </DataManagementPage>
   );
 }
 

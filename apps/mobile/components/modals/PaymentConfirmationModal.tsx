@@ -12,10 +12,13 @@ const FONTS = {
   bold: 'Inter_700Bold',
 };
 
-type PaymentMethod = 'card' | 'bank' | 'cash';
+export type PaymentMethod = 'card' | 'bank' | 'cash';
 
-interface PaymentConfirmationModalProps {
-  visible: boolean;
+export interface PaymentConfirmationModalProps {
+  /** Preferred visibility prop (web-aligned) */
+  isOpen?: boolean;
+  /** Back-compat visibility prop */
+  visible?: boolean;
   onClose: () => void;
   onConfirm: () => void;
   paymentMethod: PaymentMethod;
@@ -24,6 +27,7 @@ interface PaymentConfirmationModalProps {
 }
 
 export function PaymentConfirmationModal({
+  isOpen,
   visible,
   onClose,
   onConfirm,
@@ -34,6 +38,7 @@ export function PaymentConfirmationModal({
   const { colors } = useTheme();
   const { settings } = useTenantSettings();
   const { payment, currencySymbol, schoolName } = settings;
+  const resolvedVisible = isOpen ?? visible ?? false;
 
   const formatCurrency = (value: number) => `${currencySymbol}${value.toLocaleString()}`;
 
@@ -312,7 +317,7 @@ export function PaymentConfirmationModal({
 
   return (
     <Modal
-      visible={visible}
+      visible={resolvedVisible}
       onClose={onClose}
       title={config.title}
       subtitle={config.subtitle}

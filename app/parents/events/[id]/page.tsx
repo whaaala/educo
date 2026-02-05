@@ -4,11 +4,8 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import {
   Calendar,
   CalendarDays,
@@ -402,7 +399,6 @@ function getEventStatusInfo(status: EventStatus) {
 export default function EventDetailPage() {
   const params = useParams();
   const eventId = params?.id as string;
-  const isPageLoading = usePageLoad(600);
   const [showReminderModal, setShowReminderModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [reminderSet, setReminderSet] = useState<string | null>(null);
@@ -425,28 +421,25 @@ export default function EventDetailPage() {
 
   const event = MOCK_EVENTS[eventId];
 
-  if (isPageLoading) {
-    return <PageLoader isLoading={true} loadingText="Loading Event" />;
-  }
-
   if (!event) {
     return (
-      <MainLayout>
-        <div className="space-y-6">
-          <PageHeader
-            title="Event Not Found"
-            breadcrumbs={[
-              { label: "Parent Portal", href: "/parents" },
-              { label: "Events", href: "/parents/events" },
-              { label: "Not Found" },
-            ]}
-          />
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-12">
+      <DashboardPage
+        title="Event Not Found"
+        breadcrumbs={[
+          { label: "Parent Portal", href: "/parents" },
+          { label: "Events", href: "/parents/events" },
+          { label: "Not Found", isActive: true },
+        ]}
+        loadingText="Loading Event"
+        afterStats={
+          <div className="mt-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-12">
             <div className="flex flex-col items-center justify-center text-center">
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700/50 dark:to-gray-800 flex items-center justify-center mb-4">
                 <CalendarDays className="w-10 h-10 text-gray-400" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Event Not Found</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                Event Not Found
+              </h2>
               <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
                 The event you&apos;re looking for doesn&apos;t exist or may have been removed.
               </p>
@@ -458,8 +451,8 @@ export default function EventDetailPage() {
               </Link>
             </div>
           </div>
-        </div>
-      </MainLayout>
+        }
+      />
     );
   }
 
@@ -468,20 +461,18 @@ export default function EventDetailPage() {
   const TypeIcon = typeInfo.icon;
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        {/* Page Header with Breadcrumbs */}
-        <PageHeader
-          title={event.title}
-          breadcrumbs={[
-            { label: "Parent Portal", href: "/parents" },
-            { label: "Events", href: "/parents/events" },
-            { label: event.title },
-          ]}
-        />
-
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <DashboardPage
+      title={event.title}
+      breadcrumbs={[
+        { label: "Parent Portal", href: "/parents" },
+        { label: "Events", href: "/parents/events" },
+        { label: event.title, isActive: true },
+      ]}
+      loadingText="Loading Event"
+      afterStats={
+        <div className="mt-6 space-y-6">
+          {/* Main Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Event Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Hero Image Card */}
@@ -819,6 +810,8 @@ export default function EventDetailPage() {
           </div>
         </div>
       </div>
+      }
+    >
 
       {/* Set Reminder Modal */}
       <SetReminderModal
@@ -847,6 +840,6 @@ export default function EventDetailPage() {
           image: event.image,
         }}
       />
-    </MainLayout>
+    </DashboardPage>
   );
 }

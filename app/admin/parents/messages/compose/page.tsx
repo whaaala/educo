@@ -3,11 +3,8 @@
 import { useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import DashboardPage from "@/components/shared/DashboardPage";
 import EmojiPickerPopover from "@/components/shared/EmojiPickerPopover";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { getAllParents, type AdminParent } from "@/lib/mockParents";
 import {
   Send,
@@ -27,7 +24,6 @@ import {
 
 export default function ComposeMessagePage() {
   const router = useRouter();
-  const isPageLoading = usePageLoad(600);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -148,39 +144,33 @@ export default function ComposeMessagePage() {
   const isFormValid = recipients.length > 0 && subject.trim() && message.trim();
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Compose" />
-
-      <div className={`transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-6 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
-          <PageHeader
-            title="Compose Message"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Admin" },
-              { label: "Parents", href: "/admin/parents" },
-              { label: "Messages", href: "/admin/parents/messages" },
-              { label: "Compose", isActive: true },
-            ]}
-          />
-        </div>
-
-        {/* Success State */}
-        {isSent ? (
-          <div className="flex flex-col items-center justify-center py-20 animate-in fade-in zoom-in-95 duration-500">
-            <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-6">
-              <CheckCircle2 className="w-10 h-10 text-green-500" />
+    <DashboardPage
+      title="Compose Message"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Admin" },
+        { label: "Parents", href: "/admin/parents" },
+        { label: "Messages", href: "/admin/parents/messages" },
+        { label: "Compose", isActive: true },
+      ]}
+      loadingText="Loading Compose"
+      afterStats={
+        <>
+          {/* Success State */}
+          {isSent ? (
+            <div className="flex flex-col items-center justify-center py-20 animate-in fade-in zoom-in-95 duration-500">
+              <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-6">
+                <CheckCircle2 className="w-10 h-10 text-green-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Message Sent!</h2>
+              <p className="text-gray-500 dark:text-gray-400 mb-2">
+                Your message has been sent to {recipients.length} recipient{recipients.length > 1 ? "s" : ""}.
+              </p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">Redirecting to messages...</p>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Message Sent!</h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-2">
-              Your message has been sent to {recipients.length} recipient{recipients.length > 1 ? "s" : ""}.
-            </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">Redirecting to messages...</p>
-          </div>
-        ) : (
-          /* Compose Form */
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-700 ease-out">
+          ) : (
+            /* Compose Form */
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-700 ease-out">
             {/* Recipients Section */}
             <div className="p-4 lg:p-6 border-b border-gray-100 dark:border-gray-700">
               <div className="flex flex-col gap-3">
@@ -481,20 +471,21 @@ export default function ComposeMessagePage() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+            </div>
+          )}
 
-      {/* Click outside to close dropdowns */}
-      {(showRecipientDropdown || showCategoryDropdown) && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => {
-            setShowRecipientDropdown(false);
-            setShowCategoryDropdown(false);
-          }}
-        />
-      )}
-    </MainLayout>
+          {/* Click outside to close dropdowns */}
+          {(showRecipientDropdown || showCategoryDropdown) && (
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => {
+                setShowRecipientDropdown(false);
+                setShowCategoryDropdown(false);
+              }}
+            />
+          )}
+        </>
+      }
+    />
   );
 }

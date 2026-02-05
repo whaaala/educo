@@ -2,15 +2,12 @@
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import PersonalInformationSection from "@/components/admin/parents/form-sections/PersonalInformationSection";
 import ContactInformationSection from "@/components/admin/parents/form-sections/ContactInformationSection";
 import AddressSection from "@/components/admin/parents/form-sections/AddressSection";
 import EmploymentSection from "@/components/admin/parents/form-sections/EmploymentSection";
 import LinkStudentsSection from "@/components/admin/parents/form-sections/LinkStudentsSection";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { ValidationErrors } from "@/lib/validation";
@@ -29,7 +26,6 @@ function AddParentForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [showValidationModal, setShowValidationModal] = useState(false);
-  const isLoading = usePageLoad(800);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [isSticky, setIsSticky] = useState(true);
@@ -256,36 +252,24 @@ function AddParentForm() {
   };
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Form" />
-
-      {/* Main Content */}
-      <div
-        className={`transition-opacity duration-500 ${
-          isLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        {/* Header */}
-        <div className="py-4 mb-2">
-          <PageHeader
-            title={pageTitle}
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Admin" },
-              { label: "Parents", href: "/admin/parents?view=grid" },
-              { label: pageTitle, isActive: true },
-            ]}
-          />
-        </div>
-
-        {/* Form */}
-        <form
-          id="add-parent-form"
-          ref={formRef}
-          onSubmit={handleSubmit}
-          className="space-y-6 pb-32 md:pb-36 lg:pb-16 xl:pb-20"
-        >
+    <DashboardPage
+      title={pageTitle}
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Admin", href: "/admin" },
+        { label: "Parents", href: "/admin/parents?view=grid" },
+        { label: pageTitle, isActive: true },
+      ]}
+      loadingText="Loading Form"
+      afterStats={
+        <div className="mt-6">
+          {/* Form */}
+          <form
+            id="add-parent-form"
+            ref={formRef}
+            onSubmit={handleSubmit}
+            className="space-y-6 pb-32 md:pb-36 lg:pb-16 xl:pb-20"
+          >
           {/* Personal Information */}
           <PersonalInformationSection
             formData={formData}
@@ -366,21 +350,35 @@ function AddParentForm() {
           </div>
         </div>
       </div>
-
+      }
+    >
       {/* Validation Errors Modal */}
       <ValidationErrorsModal
         isOpen={showValidationModal}
         onClose={() => setShowValidationModal(false)}
         errors={errors}
       />
-    </MainLayout>
+    </DashboardPage>
   );
 }
 
 // Main export wrapped in Suspense for useSearchParams
 export default function AddParentPage() {
   return (
-    <Suspense fallback={<PageLoader isLoading={true} loadingText="Loading Form" />}>
+    <Suspense
+      fallback={
+        <DashboardPage
+          title="Add Parent"
+          breadcrumbs={[
+            { label: "Dashboard", href: "/" },
+            { label: "Admin", href: "/admin" },
+            { label: "Parents", href: "/admin/parents?view=grid" },
+            { label: "Add Parent", isActive: true },
+          ]}
+          loadingText="Loading Form"
+        />
+      }
+    >
       <AddParentForm />
     </Suspense>
   );

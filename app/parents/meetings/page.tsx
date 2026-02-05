@@ -2,9 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Image from "next/image";
-import MainLayout from "@/components/layout/MainLayout";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import DashboardPage from "@/components/shared/DashboardPage";
 import ScheduleMeetingModal, {
   ScheduledMeetingData,
   MeetingChildReference,
@@ -335,7 +333,6 @@ function formatDate(dateStr: string) {
 // ============================================
 
 export default function ParentMeetingsPage() {
-  const isPageLoading = usePageLoad(600);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState<MeetingPlatform | "all">("all");
   const [selectedStatus, setSelectedStatus] = useState<MeetingStatus | "all">("all");
@@ -535,18 +532,18 @@ export default function ParentMeetingsPage() {
   };
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Meetings" />
-
-      <div className={`space-y-6 transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
+    <DashboardPage
+      title="Video Calls & Meetings"
+      description="Schedule and join video calls with teachers via Zoom, Google Meet, or WhatsApp"
+      breadcrumbs={[
+        { label: "Parent Portal", href: "/parents" },
+        { label: "Meetings", isActive: true },
+      ]}
+      loadingText="Loading Meetings"
+      afterStats={
+        <div className="space-y-6 transition-opacity duration-500">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-1">Video Calls & Meetings</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Schedule and join video calls with teachers via Zoom, Google Meet, or WhatsApp
-            </p>
-          </div>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-end gap-4">
 
           {/* Schedule Meeting Button */}
           <button
@@ -968,7 +965,8 @@ export default function ParentMeetingsPage() {
           onReschedule={handleRescheduleMeeting}
           onAccept={handleAcceptMeeting}
         />
-      </div>
-    </MainLayout>
+        </div>
+      }
+    />
   );
 }

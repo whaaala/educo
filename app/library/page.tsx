@@ -1,71 +1,33 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import Image from "next/image";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import PageSpinner from "@/components/shared/PageSpinner";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DataManagementPage } from "@/components/pages";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useCountry } from "@/contexts/CountryContext";
 import { formatCurrency } from "@/config/countries";
-import Button from "@/components/shared/Button";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
-import PageActions from "@/components/shared/PageActions";
-import SearchFilterBar from "@/components/shared/SearchFilterBar";
-import StatCard from "@/components/shared/StatCard";
+import DataTable from "@/components/shared/DataTable";
 import Tooltip from "@/components/shared/Tooltip";
-import BookViewModal from "@/components/library/BookViewModal";
+import DetailViewModal from "@/components/shared/DetailViewModal";
 import AddBookModal from "@/components/library/AddBookModal";
 import IssueBookModal from "@/components/library/IssueBookModal";
 import {
-  Plus,
   BookOpen,
   Eye,
   Edit2,
   BookMarked,
-  CheckCircle2,
-  Library,
-  BookCopy,
 } from "lucide-react";
-import type { Book, BookStatus, BookCategory, BookCondition, BookEducationLevel, BookLoan } from "@/types/library";
+import type { Book, BookStatus, BookCondition, BookLoan } from "@/types/library";
+import type { ColumnConfig } from "@/types/components";
 import { exportBooksToExcel, exportBooksToPDF } from "@/lib/export-utils";
-
-// Book categories with labels
-const BOOK_CATEGORIES: { value: BookCategory; label: string }[] = [
-  { value: "textbook", label: "Textbook" },
-  { value: "fiction", label: "Fiction" },
-  { value: "non-fiction", label: "Non-Fiction" },
-  { value: "reference", label: "Reference" },
-  { value: "science", label: "Science" },
-  { value: "mathematics", label: "Mathematics" },
-  { value: "history", label: "History" },
-  { value: "geography", label: "Geography" },
-  { value: "literature", label: "Literature" },
-  { value: "art", label: "Art" },
-  { value: "music", label: "Music" },
-  { value: "sports", label: "Sports" },
-  { value: "religion", label: "Religion" },
-  { value: "biography", label: "Biography" },
-  { value: "periodical", label: "Periodical" },
-  { value: "other", label: "Other" },
-];
-
-const BOOK_CONDITIONS: { value: BookCondition; label: string }[] = [
-  { value: "new", label: "New" },
-  { value: "good", label: "Good" },
-  { value: "fair", label: "Fair" },
-  { value: "poor", label: "Poor" },
-  { value: "damaged", label: "Damaged" },
-];
-
-const EDUCATION_LEVELS: { value: BookEducationLevel; label: string }[] = [
-  { value: "Primary", label: "Primary" },
-  { value: "Secondary", label: "Secondary" },
-  { value: "Tertiary", label: "Tertiary" },
-  { value: "All", label: "All Levels" },
-];
+import {
+  bookFilterFields,
+  bookSortOptions,
+  filterBooks,
+  sortBooks,
+  searchBooks,
+  getBookStats,
+} from "./config";
 
 // Mock Books Data
 const MOCK_BOOKS: Book[] = [
@@ -324,44 +286,12 @@ const MOCK_BOOKS: Book[] = [
   },
 ];
 
-// Filter options
-const STATUS_OPTIONS = [
-  { value: "all", label: "All Status" },
-  { value: "available", label: "Available" },
-  { value: "borrowed", label: "Borrowed" },
-  { value: "reserved", label: "Reserved" },
-  { value: "lost", label: "Lost" },
-  { value: "damaged", label: "Damaged" },
-  { value: "maintenance", label: "Maintenance" },
-];
-
-const CATEGORY_OPTIONS = [
-  { value: "all", label: "All Categories" },
-  ...BOOK_CATEGORIES,
-];
-
-const LEVEL_OPTIONS = [
-  { value: "all", label: "All Levels" },
-  ...EDUCATION_LEVELS,
-];
-
-const CONDITION_OPTIONS = [
-  { value: "all", label: "All Conditions" },
-  ...BOOK_CONDITIONS,
-];
-
 export default function LibraryPage() {
-  const isPageLoading = usePageLoad(600);
   const { settings } = useSchoolSettings();
   const { countryCode } = useCountry();
 
   // State
   const [books, setBooks] = useState<Book[]>(MOCK_BOOKS);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState("all");
-  const [selectedLevel, setSelectedLevel] = useState("all");
-  const [selectedCondition, setSelectedCondition] = useState("all");
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -373,92 +303,8 @@ export default function LibraryPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isIssuing, setIsIssuing] = useState(false);
 
-  // Loading states
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isFiltering, setIsFiltering] = useState(false);
-
-  // Animation trigger
-  const [animationTrigger, setAnimationTrigger] = useState(0);
-
-  // Create a filterKey to track filter/search changes
-  const filterKey = `${searchQuery}-${selectedCategory}-${selectedStatus}-${selectedLevel}-${selectedCondition}`;
-  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
-
-  // Handle filter changes with animation
-  const handleFilterChange = (setter: (val: string) => void, value: string) => {
-    setIsFiltering(true);
-    setTimeout(() => {
-      setter(value);
-      setTimeout(() => setIsFiltering(false), 100);
-    }, 200);
-  };
-
-  // Filter books
-  const filteredBooks = useMemo(() => {
-    return books.filter((book) => {
-      const matchesSearch =
-        searchQuery === "" ||
-        book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        book.isbn.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        book.subject?.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesCategory = selectedCategory === "all" || book.category === selectedCategory;
-      const matchesStatus = selectedStatus === "all" || book.status === selectedStatus;
-      const matchesLevel = selectedLevel === "all" || book.educationLevel === selectedLevel || book.educationLevel === "All";
-      const matchesCondition = selectedCondition === "all" || book.condition === selectedCondition;
-
-      return matchesSearch && matchesCategory && matchesStatus && matchesLevel && matchesCondition;
-    });
-  }, [books, searchQuery, selectedCategory, selectedStatus, selectedLevel, selectedCondition]);
-
-  // Calculate statistics
-  const stats = useMemo(() => {
-    const totalBooks = books.reduce((sum, b) => sum + b.totalCopies, 0);
-    const availableBooks = books.reduce((sum, b) => sum + b.availableCopies, 0);
-    const borrowedBooks = totalBooks - availableBooks;
-    const uniqueTitles = books.length;
-
-    return { totalBooks, availableBooks, borrowedBooks, uniqueTitles };
-  }, [books]);
-
-  // Trigger animation when filterKey changes
-  useEffect(() => {
-    if (filterKey !== prevFilterKey) {
-      setAnimationTrigger(prev => prev + 1);
-      setPrevFilterKey(filterKey);
-    }
-  }, [filterKey, prevFilterKey]);
-
-  // Apply row animation when filter/search changes
-  useEffect(() => {
-    if (animationTrigger > 0) {
-      const timeoutId = setTimeout(() => {
-        const tables = document.querySelectorAll('table');
-        tables.forEach((table) => {
-          const rows = table.querySelectorAll('tbody tr');
-          rows.forEach((row, index) => {
-            const htmlRow = row as HTMLElement;
-            const delay = index / 80;
-            htmlRow.style.animation = `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${delay}s both`;
-          });
-        });
-
-        // Cleanup after animation completes
-        setTimeout(() => {
-          tables.forEach((table) => {
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach((row) => {
-              const htmlRow = row as HTMLElement;
-              htmlRow.style.animation = '';
-            });
-          });
-        }, 600);
-      }, 50);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [animationTrigger]);
+  // Stats config
+  const bookStats = useMemo(() => getBookStats((price) => formatCurrency(price, countryCode)), [countryCode]);
 
   // Handle view book
   const handleView = (book: Book) => {
@@ -470,21 +316,14 @@ export default function LibraryPage() {
   const handleSaveBook = (bookData: Omit<Book, "id" | "createdAt" | "updatedAt">) => {
     setIsSaving(true);
 
-    // Simulate API call
     setTimeout(() => {
       if (editingBook) {
-        // Update existing book
         setBooks(prev => prev.map(book =>
           book.id === editingBook.id
-            ? {
-                ...book,
-                ...bookData,
-                updatedAt: new Date().toISOString()
-              }
+            ? { ...book, ...bookData, updatedAt: new Date().toISOString() }
             : book
         ));
       } else {
-        // Add new book
         const newBook: Book = {
           ...bookData,
           id: `book-${Date.now()}`,
@@ -506,7 +345,7 @@ export default function LibraryPage() {
     setIsAddModalOpen(true);
   };
 
-  // Handle issue book - open modal
+  // Handle issue book
   const handleIssueBook = (book: Book) => {
     setIssuingBook(book);
     setIsIssueModalOpen(true);
@@ -516,9 +355,7 @@ export default function LibraryPage() {
   const handleIssueBookSubmit = (loanData: Omit<BookLoan, "id" | "createdAt" | "updatedAt">) => {
     setIsIssuing(true);
 
-    // Simulate API call
     setTimeout(() => {
-      // Update book's available copies
       setBooks(prev => prev.map(book =>
         book.id === loanData.bookId
           ? {
@@ -530,35 +367,16 @@ export default function LibraryPage() {
           : book
       ));
 
-      // In a real app, you would also save the loan record
-      console.log("Book issued:", loanData);
-
       setIsIssuing(false);
       setIsIssueModalOpen(false);
       setIssuingBook(null);
     }, 500);
   };
 
-  // Handle refresh
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setSearchQuery("");
-    setSelectedCategory("all");
-    setSelectedStatus("all");
-    setSelectedLevel("all");
-    setSelectedCondition("all");
-    setTimeout(() => setIsRefreshing(false), 500);
-  };
-
-  // Handle search change
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-  };
-
   // Export to PDF
   const handleExportPDF = () => {
     exportBooksToPDF(
-      filteredBooks,
+      books,
       "book-catalog",
       (price) => formatCurrency(price, countryCode),
       settings.schoolName
@@ -568,7 +386,7 @@ export default function LibraryPage() {
   // Export to Excel
   const handleExportExcel = () => {
     exportBooksToExcel(
-      filteredBooks,
+      books,
       "book-catalog",
       (price) => formatCurrency(price, countryCode)
     );
@@ -653,32 +471,16 @@ export default function LibraryPage() {
           <div
             className="relative cursor-pointer group/cover flex-shrink-0 w-10 h-14"
             onMouseEnter={(e) => {
-              // Find the parent tr and raise its z-index
               const tr = e.currentTarget.closest('tr');
-              if (tr) {
-                tr.style.zIndex = '100';
-                tr.style.position = 'relative';
-              }
-              // Also raise the entire table container's scroll wrapper z-index
+              if (tr) { tr.style.zIndex = '100'; tr.style.position = 'relative'; }
               const scrollContainer = e.currentTarget.closest('.overflow-x-auto');
-              if (scrollContainer) {
-                (scrollContainer as HTMLElement).style.zIndex = '100';
-                (scrollContainer as HTMLElement).style.position = 'relative';
-              }
+              if (scrollContainer) { (scrollContainer as HTMLElement).style.zIndex = '100'; (scrollContainer as HTMLElement).style.position = 'relative'; }
             }}
             onMouseLeave={(e) => {
-              // Reset the parent tr z-index
               const tr = e.currentTarget.closest('tr');
-              if (tr) {
-                tr.style.zIndex = '';
-                tr.style.position = '';
-              }
-              // Reset scroll container z-index
+              if (tr) { tr.style.zIndex = ''; tr.style.position = ''; }
               const scrollContainer = e.currentTarget.closest('.overflow-x-auto');
-              if (scrollContainer) {
-                (scrollContainer as HTMLElement).style.zIndex = '';
-                (scrollContainer as HTMLElement).style.position = '';
-              }
+              if (scrollContainer) { (scrollContainer as HTMLElement).style.zIndex = ''; (scrollContainer as HTMLElement).style.position = ''; }
             }}
           >
             {book.coverImage ? (
@@ -783,10 +585,7 @@ export default function LibraryPage() {
         <div className="flex items-center justify-center gap-2.5">
           <Tooltip content="View Details">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleView(book);
-              }}
+              onClick={(e) => { e.stopPropagation(); handleView(book); }}
               className="group relative p-2 rounded-lg bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/30 dark:to-blue-900/20 midnight:from-blue-950/30 midnight:to-blue-900/20 purple:from-blue-950/30 purple:to-blue-900/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-blue-900/40 dark:hover:to-blue-800/30 transition-all duration-200 cursor-pointer border border-blue-200/40 dark:border-blue-800/30 hover:border-blue-400/60 dark:hover:border-blue-600/50 active:scale-95"
             >
               <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
@@ -794,10 +593,7 @@ export default function LibraryPage() {
           </Tooltip>
           <Tooltip content="Edit Book">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEditBook(book);
-              }}
+              onClick={(e) => { e.stopPropagation(); handleEditBook(book); }}
               className="group relative p-2 rounded-lg bg-gradient-to-br from-green-50/50 to-green-100/30 dark:from-green-950/30 dark:to-green-900/20 midnight:from-green-950/30 midnight:to-green-900/20 purple:from-green-950/30 purple:to-green-900/20 hover:from-green-100 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/30 transition-all duration-200 cursor-pointer border border-green-200/40 dark:border-green-800/30 hover:border-green-400/60 dark:hover:border-green-600/50 active:scale-95"
             >
               <Edit2 className="w-4 h-4 text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors" />
@@ -805,12 +601,7 @@ export default function LibraryPage() {
           </Tooltip>
           <Tooltip content={book.availableCopies > 0 ? "Issue Book" : "No copies available"}>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (book.availableCopies > 0) {
-                  handleIssueBook(book);
-                }
-              }}
+              onClick={(e) => { e.stopPropagation(); if (book.availableCopies > 0) handleIssueBook(book); }}
               disabled={book.availableCopies < 1}
               className={`group relative p-2 rounded-lg transition-all duration-200 border ${
                 book.availableCopies > 0
@@ -830,178 +621,199 @@ export default function LibraryPage() {
     },
   ];
 
-  const isLoading = isRefreshing || isFiltering;
-
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Library" />
-
-      <div className={`space-y-6 transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <PageHeader
-            title="Book Catalog"
-            breadcrumbs={[
-              { label: "Library", href: "/library" },
-              { label: "Catalog" },
-            ]}
-          />
-          <PageActions
-            onRefresh={handleRefresh}
-            onExportPDF={handleExportPDF}
-            onExportExcel={handleExportExcel}
-            onAdd={() => setIsAddModalOpen(true)}
-            addButtonLabel="Add Book"
-            exportDescription="Export book catalog"
-            showPrint={false}
-          />
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-          <StatCard
-            icon={Library}
-            label="Total Books"
-            value={stats.totalBooks.toLocaleString()}
-            color="blue"
-            badge={`${filteredBooks.length} shown`}
-          />
-          <StatCard
-            icon={CheckCircle2}
-            label="Available"
-            value={stats.availableBooks.toLocaleString()}
-            color="green"
-            badge={`${stats.totalBooks > 0 ? ((stats.availableBooks / stats.totalBooks) * 100).toFixed(0) : 0}%`}
-          />
-          <StatCard
-            icon={BookMarked}
-            label="Borrowed"
-            value={stats.borrowedBooks.toLocaleString()}
-            color="amber"
-            badge={`${stats.totalBooks > 0 ? ((stats.borrowedBooks / stats.totalBooks) * 100).toFixed(0) : 0}%`}
-          />
-          <StatCard
-            icon={BookCopy}
-            label="Unique Titles"
-            value={stats.uniqueTitles.toLocaleString()}
-            color="purple"
-          />
-        </div>
-
-        {/* Filters Bar */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={handleSearchChange}
-          searchPlaceholder="Search by title, author, ISBN, or subject..."
-          filters={[
-            {
-              label: "Category",
-              value: selectedCategory,
-              onChange: (val) => handleFilterChange(setSelectedCategory, String(val)),
-              options: CATEGORY_OPTIONS,
-            },
-            {
-              label: "Status",
-              value: selectedStatus,
-              onChange: (val) => handleFilterChange(setSelectedStatus, String(val)),
-              options: STATUS_OPTIONS,
-            },
-            {
-              label: "Level",
-              value: selectedLevel,
-              onChange: (val) => handleFilterChange(setSelectedLevel, String(val)),
-              options: LEVEL_OPTIONS,
-            },
-            {
-              label: "Condition",
-              value: selectedCondition,
-              onChange: (val) => handleFilterChange(setSelectedCondition, String(val)),
-              options: CONDITION_OPTIONS,
-            },
-          ]}
+    <DataManagementPage<Book>
+      title="Book Catalog"
+      breadcrumbs={[
+        { label: "Library", href: "/library" },
+        { label: "Catalog" },
+      ]}
+      data={books}
+      getRowKey={(book) => book.id}
+      columns={columns}
+      stats={bookStats}
+      filterFields={bookFilterFields}
+      filterFn={filterBooks}
+      sortOptions={bookSortOptions}
+      sortFn={sortBooks}
+      searchFn={searchBooks}
+      enableViewToggle={false}
+      enableSelection={false}
+      addButtonConfig={{
+        label: "Add Book",
+        onClick: () => setIsAddModalOpen(true),
+      }}
+      onExportPDF={handleExportPDF}
+      onExportExcel={handleExportExcel}
+      customListComponent={
+        <DataTable
+          columns={columns}
+          data={books}
+          getRowKey={(book) => book.id}
+          emptyMessage="No books found. Click 'Add Book' to add one."
+          title=""
+          showSearch={false}
+          defaultItemsPerPage={10}
+          itemsPerPageOptions={[5, 10, 15, 20, 25]}
+          enablePagination={true}
+          enableItemsPerPage={true}
+          onRowClick={handleView}
         />
-
-        {/* Table Section */}
-        <div>
-          {isLoading ? (
-            <PageSpinner message={isRefreshing ? "Refreshing..." : "Filtering..."} size="md" />
-          ) : filteredBooks.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-8 sm:p-12">
-              <div className="flex flex-col items-center justify-center">
-                <div className="relative mb-4">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 animate-pulse" />
-                  </div>
-                  <div className="relative z-10 flex items-center justify-center w-16 h-16">
-                    <BookOpen className="w-8 h-8 text-gray-400 dark:text-gray-500" />
-                  </div>
-                </div>
-                <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 mb-1 text-center">
-                  No books found
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
-                  {searchQuery
-                    ? "No results match your search. Try adjusting your filters."
-                    : "Get started by adding your first book to the catalog."}
-                </p>
-                {!searchQuery && (
-                  <Button variant="primary" onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2">
-                    <Plus className="w-4 h-4" />
-                    Add Book
-                  </Button>
-                )}
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    Clear search
-                  </button>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="relative pb-16">
-              {/* Mobile Scroll Indicator */}
-              <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none" />
-
-              <div
-                key={`table-data-${filterKey}`}
-                className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-visible"
-              >
-                <DataTable
-                  columns={columns}
-                  data={filteredBooks}
-                  getRowKey={(book) => book.id}
-                  emptyMessage="No books found. Click 'Add Book' to add one."
-                  title=""
-                  showSearch={false}
-                  defaultItemsPerPage={10}
-                  itemsPerPageOptions={[5, 10, 15, 20, 25]}
-                  enablePagination={true}
-                  enableItemsPerPage={true}
-                  onRowClick={handleView}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
+      }
+      enablePagination={true}
+      itemLabel="book"
+      itemLabelPlural="books"
+      emptyStateConfig={{
+        title: "No books found",
+        description: "Get started by adding your first book to the catalog.",
+        actionLabel: "Add Book",
+        onAction: () => setIsAddModalOpen(true),
+      }}
+    >
       {/* View Book Modal */}
       {viewingBook && (
-        <BookViewModal
+        <DetailViewModal
           isOpen={isViewModalOpen}
           onClose={() => {
             setIsViewModalOpen(false);
             setViewingBook(null);
           }}
-          book={viewingBook}
-          formatCurrency={(price) => formatCurrency(price, countryCode)}
-          onIssueBook={() => {
-            // Close view modal and open issue modal
-            setIsViewModalOpen(false);
-            handleIssueBook(viewingBook);
+          title={viewingBook.title}
+          subtitle={`by ${viewingBook.author}`}
+          icon={<BookOpen className="w-5 h-5" />}
+          size="3xl"
+          header={{
+            image: (
+              <div className="relative w-20 h-28 rounded-xl overflow-hidden ring-2 ring-white/80 dark:ring-gray-700/50 shadow-lg">
+                {viewingBook.coverImage ? (
+                  <Image
+                    src={viewingBook.coverImage}
+                    alt={viewingBook.title}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <BookOpen className="w-8 h-8 text-gray-400" />
+                  </div>
+                )}
+              </div>
+            ),
+            badges: [
+              {
+                label: viewingBook.status.replace("_", " ").toUpperCase(),
+                variant:
+                  viewingBook.status === "available"
+                    ? "success"
+                    : viewingBook.status === "reserved"
+                      ? "warning"
+                      : viewingBook.status === "borrowed"
+                        ? "info"
+                        : viewingBook.status === "maintenance"
+                          ? "neutral"
+                          : "danger",
+                pulse: viewingBook.status === "available",
+              },
+              {
+                label: viewingBook.condition.toUpperCase(),
+                variant:
+                  viewingBook.condition === "new"
+                    ? "success"
+                    : viewingBook.condition === "good"
+                      ? "info"
+                      : viewingBook.condition === "fair"
+                        ? "warning"
+                        : "danger",
+              },
+            ],
+            subtitle: (
+              <div className="space-y-1">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  {viewingBook.isbn}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {viewingBook.educationLevel} • {viewingBook.subject} • {viewingBook.category.replace("-", " ")}
+                </p>
+              </div>
+            ),
+            chips: viewingBook.tags?.slice(0, 6).map((t) => ({ label: t })) ?? [],
+          }}
+          sections={[
+            viewingBook.description
+              ? { id: "desc", type: "description", title: "Description", content: viewingBook.description }
+              : { id: "desc-empty", type: "custom", children: null },
+            {
+              id: "details",
+              title: "Details",
+              type: "grid",
+              columns: 3,
+              fields: [
+                { label: "Publisher", value: viewingBook.publisher || "-" },
+                { label: "Year", value: viewingBook.publishYear ? String(viewingBook.publishYear) : "-" },
+                { label: "Edition", value: viewingBook.edition || "-" },
+                { label: "Language", value: viewingBook.language || "-" },
+                { label: "Pages", value: viewingBook.pages ? String(viewingBook.pages) : "-" },
+                { label: "Location", value: viewingBook.location || "-" },
+                {
+                  label: "Copies",
+                  value: `${viewingBook.availableCopies}/${viewingBook.totalCopies}`,
+                  highlight: viewingBook.availableCopies > 0 ? "green" : "red",
+                },
+                {
+                  label: "Price",
+                  value: typeof viewingBook.price === "number" ? formatCurrency(viewingBook.price, countryCode) : "-",
+                  highlight: "blue",
+                },
+                { label: "Acquired", value: viewingBook.acquisitionDate ? new Date(viewingBook.acquisitionDate).toLocaleDateString("en-GB") : "-" },
+              ],
+            },
+            viewingBook.tags && viewingBook.tags.length > 0
+              ? { id: "tags", title: "Tags", type: "tags", tags: viewingBook.tags.map((t) => ({ label: t })) }
+              : { id: "tags-empty", type: "custom", children: null },
+          ]}
+          actions={[
+            {
+              id: "edit",
+              label: "Edit",
+              icon: Edit2,
+              variant: "secondary",
+              position: "left",
+              onClick: () => {
+                setIsViewModalOpen(false);
+                setViewingBook(null);
+                handleEditBook(viewingBook);
+              },
+            },
+            {
+              id: "issue",
+              label: "Issue Book",
+              icon: BookMarked,
+              variant: "primary",
+              position: "left",
+              condition: viewingBook.availableCopies > 0,
+              onClick: () => {
+                setIsViewModalOpen(false);
+                setViewingBook(null);
+                handleIssueBook(viewingBook);
+              },
+            },
+            {
+              id: "close",
+              label: "Close",
+              variant: "ghost",
+              position: "right",
+              onClick: () => {
+                setIsViewModalOpen(false);
+                setViewingBook(null);
+              },
+            },
+          ]}
+          footerInfo={{
+            items: [
+              { label: "Created", value: new Date(viewingBook.createdAt).toLocaleString() },
+              { label: "Updated", value: new Date(viewingBook.updatedAt).toLocaleString() },
+            ],
           }}
         />
       )}
@@ -1029,7 +841,6 @@ export default function LibraryPage() {
         book={issuingBook}
         isIssuing={isIssuing}
       />
-    </MainLayout>
+    </DataManagementPage>
   );
 }
-

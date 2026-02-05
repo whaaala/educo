@@ -47,7 +47,10 @@ interface ExamResult {
 }
 
 export interface ViewResultsModalProps {
-  visible: boolean;
+  /** Preferred visibility prop (web-aligned) */
+  isOpen?: boolean;
+  /** Back-compat visibility prop */
+  visible?: boolean;
   onClose: () => void;
   childName?: string;
   childClass?: string;
@@ -112,6 +115,7 @@ const MOCK_RESULTS: ExamResult[] = [
 ];
 
 export function ViewResultsModal({
+  isOpen,
   visible,
   onClose,
   childName,
@@ -121,6 +125,7 @@ export function ViewResultsModal({
   onViewAllReports,
 }: ViewResultsModalProps) {
   const { colors } = useTheme();
+  const resolvedVisible = isOpen ?? visible ?? false;
   const [selectedResult, setSelectedResult] = useState<string | null>(
     results.length > 0 ? results[0].id : null
   );
@@ -300,7 +305,7 @@ export function ViewResultsModal({
 
   return (
     <Modal
-      visible={visible}
+      visible={resolvedVisible}
       onClose={onClose}
       title="Exam Results"
       subtitle={childName ? `${childName}${childClass ? ` (${childClass})` : ''}` : 'View academic performance'}

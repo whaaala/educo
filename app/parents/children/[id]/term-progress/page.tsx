@@ -2,11 +2,8 @@
 
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import StatCard from "@/components/shared/StatCard";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useMemo } from "react";
 import {
   TrendingUp,
@@ -198,7 +195,6 @@ export default function TermProgressPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const childId = params.id as string;
-  const isPageLoading = usePageLoad(600);
 
   // In a real app, fetch child data based on childId
   const child = MOCK_CHILD;
@@ -242,22 +238,14 @@ export default function TermProgressPage() {
   );
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Term Progress" />
-
-      <div
-        className={`space-y-6 transition-opacity duration-500 ${
-          isPageLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        {/* Page Header with Breadcrumbs */}
-        <PageHeader
-          title="Term Progress"
-          breadcrumbs={breadcrumbs}
-        />
-
-        {/* Stats Row - Using StatCard component for consistency */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+    <DashboardPage
+      title="Term Progress"
+      breadcrumbs={breadcrumbs}
+      loadingText="Loading Term Progress"
+      afterStats={
+        <div className="mt-6 space-y-6">
+          {/* Stats Row - Using StatCard component for consistency */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           <StatCard
             icon={BarChart3}
             label="Current Avg"
@@ -282,10 +270,10 @@ export default function TermProgressPage() {
             value={child.conduct}
             color="purple"
           />
-        </div>
+          </div>
 
-        {/* Student Info Card */}
-        <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-gray-800/60 dark:via-gray-800/40 dark:to-blue-900/20 border border-gray-200/60 dark:border-gray-700/50 shadow-sm">
+          {/* Student Info Card */}
+          <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-gray-800/60 dark:via-gray-800/40 dark:to-blue-900/20 border border-gray-200/60 dark:border-gray-700/50 shadow-sm">
           <div className="flex items-center gap-4">
             {/* Profile Photo */}
             <div className="relative flex-shrink-0 group/avatar">
@@ -356,7 +344,7 @@ export default function TermProgressPage() {
               {completedSubjects} of {totalSubjects} subjects completed
             </p>
           </div>
-        </div>
+          </div>
 
         {/* Subject Progress Section */}
         <div className="space-y-4">
@@ -522,15 +510,16 @@ export default function TermProgressPage() {
           </div>
         </div>
 
-        {/* Info Note */}
-        <div className="flex items-start gap-3 p-4 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-2xl">
+          {/* Info Note */}
+          <div className="flex items-start gap-3 p-4 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-2xl">
           <Info className="w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-indigo-700 dark:text-indigo-300">
             The final report card will be generated at the end of the term once
             all assessments are completed.
           </p>
+          </div>
         </div>
-      </div>
-    </MainLayout>
+      }
+    />
   );
 }

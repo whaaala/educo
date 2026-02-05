@@ -2,14 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import PersonalInformationSection from "@/components/teachers/form-sections/PersonalInformationSection";
 import EmploymentInformationSection from "@/components/teachers/form-sections/EmploymentInformationSection";
 import SubjectsClassesSection from "@/components/teachers/form-sections/SubjectsClassesSection";
 import DocumentsSection from "@/components/teachers/form-sections/DocumentsSection";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { getTeacherById, Teacher } from "@/lib/mockTeachers";
@@ -22,7 +19,6 @@ export default function EditTeacherPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoadingData, setIsLoadingData] = useState(true);
-  const isLoading = usePageLoad(800);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [isSticky, setIsSticky] = useState(true);
@@ -246,33 +242,30 @@ export default function EditTeacherPage() {
 
   if (isLoadingData) {
     return (
-      <MainLayout>
-        <PageLoader isLoading={true} loadingText="Loading Teacher Data" />
-      </MainLayout>
+      <DashboardPage
+        title={`Edit ${singularRole}`}
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: settings?.supportedLevels?.includes("Tertiary") ? "Lecturers" : "Teachers", href: "/teachers" },
+          { label: "Edit", isActive: true },
+        ]}
+        loadingText="Loading Teacher Data"
+      />
     );
   }
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Form" />
-
-      {/* Main Content - Fades in after loading */}
-      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-        {/* Header */}
-        <div className="py-4 mb-2">
-          <PageHeader
-            title={`Edit ${singularRole}`}
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: settings?.supportedLevels?.includes("Tertiary") ? "Lecturers" : "Teachers", href: "/teachers" },
-              { label: formData.firstName + " " + formData.lastName, href: `/teachers/${teacherId}` },
-              { label: "Edit", isActive: true },
-            ]}
-          />
-        </div>
-
-        {/* Form */}
+    <DashboardPage
+      title={`Edit ${singularRole}`}
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: settings?.supportedLevels?.includes("Tertiary") ? "Lecturers" : "Teachers", href: "/teachers" },
+        { label: `${formData.firstName} ${formData.lastName}`, href: `/teachers/${teacherId}` },
+        { label: "Edit", isActive: true },
+      ]}
+      loadingText="Loading Form"
+      afterStats={
+        <div className="mt-6">
         <form
           id="edit-teacher-form"
           ref={formRef}
@@ -336,7 +329,8 @@ export default function EditTeacherPage() {
             </button>
           </div>
         </div>
-      </div>
-    </MainLayout>
+        </div>
+      }
+    />
   );
 }

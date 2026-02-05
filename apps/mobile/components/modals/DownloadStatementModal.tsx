@@ -37,7 +37,10 @@ interface FeeItem {
 }
 
 export interface DownloadStatementModalProps {
-  visible: boolean;
+  /** Preferred visibility prop (web-aligned) */
+  isOpen?: boolean;
+  /** Back-compat visibility prop */
+  visible?: boolean;
   onClose: () => void;
   childName: string;
   childClass: string;
@@ -98,6 +101,7 @@ const MOCK_FEES: FeeItem[] = [
 ];
 
 export function DownloadStatementModal({
+  isOpen,
   visible,
   onClose,
   childName,
@@ -110,6 +114,7 @@ export function DownloadStatementModal({
   const { colors, isDark } = useTheme();
   const { settings } = useTenantSettings();
   const { currencySymbol } = settings;
+  const resolvedVisible = isOpen ?? visible ?? false;
 
   const [selectedType, setSelectedType] = useState<StatementType>('current');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -861,7 +866,7 @@ export function DownloadStatementModal({
 
   return (
     <Modal
-      visible={visible}
+      visible={resolvedVisible}
       onClose={onClose}
       title="Download Statement"
       subtitle="Export fee breakdown"

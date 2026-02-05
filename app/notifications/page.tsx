@@ -3,10 +3,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, CheckCheck, Bell, Filter } from "lucide-react";
-import MainLayout from "@/components/layout/MainLayout";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
+import ActionModal from "@/components/shared/ActionModal";
 import NotificationCard from "@/components/notifications/NotificationCard";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useNotifications, formatTimeAgo, NotificationType } from "@/contexts/NotificationContext";
 import { useUser } from "@/contexts/UserContext";
 
@@ -28,7 +27,7 @@ export default function NotificationsPage() {
   const router = useRouter();
   const [filter, setFilter] = useState<FilterType>("all");
   const [isMounted, setIsMounted] = useState(false);
-  const isLoading = usePageLoad(600);
+  const [isClearAllOpen, setIsClearAllOpen] = useState(false);
 
   const { isParent, isAnyAdmin } = useUser();
   const {
@@ -88,31 +87,37 @@ export default function NotificationsPage() {
   };
 
   const handleDeleteAll = () => {
-    if (window.confirm("Are you sure you want to delete all notifications?")) {
-      clearAllNotifications();
-    }
+    setIsClearAllOpen(true);
   };
 
   if (!isMounted) {
     return (
-      <MainLayout>
-        <div className="p-6">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-2"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-64"></div>
-          </div>
-        </div>
-      </MainLayout>
+      <DashboardPage
+        title="Notifications"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Notifications", isActive: true },
+        ]}
+        loadingText="Loading Notifications"
+      />
     );
   }
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Notifications" />
-
-      {/* Main Content - Fades in after loading */}
-      <div className={`transition-opacity duration-500 space-y-6 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+    <DashboardPage
+      title="Notifications"
+      description={
+        unreadCount > 0
+          ? `You have ${unreadCount} unread notification${unreadCount === 1 ? "" : "s"}`
+          : "All caught up!"
+      }
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Notifications", isActive: true },
+      ]}
+      loadingText="Loading Notifications"
+      afterStats={
+        <div className="mt-6 space-y-6">
         {/* Header Section */}
         <div className="bg-white/80 dark:bg-gray-800/80 midnight:bg-gray-900/80 purple:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-100/80 dark:border-gray-700/30 shadow-sm p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -121,9 +126,6 @@ export default function NotificationsPage() {
                 <Bell className="w-7 h-7 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                  Notifications
-                </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mt-0.5">
                   {unreadCount > 0
                     ? `You have ${unreadCount} unread notification${unreadCount === 1 ? "" : "s"}`
@@ -243,6 +245,25 @@ export default function NotificationsPage() {
           )}
         </div>
       </div>
-    </MainLayout>
+      }
+    >
+      <ActionModal
+        isOpen={isClearAllOpen}
+        onClose={() => setIsClearAllOpen(false)}
+        title="Clear all notifications"
+        variant="danger"
+        message="This will permanently delete all notifications from your list. This action cannot be undone."
+        details={[
+          { label: "Total", value: notifications.length.toString() },
+          { label: "Unread", value: unreadCount.toString() },
+        ]}
+        confirmLabel="Clear all"
+        cancelLabel="Cancel"
+        onConfirm={() => {
+          clearAllNotifications();
+          setIsClearAllOpen(false);
+        }}
+      />
+    </DashboardPage>
   );
 }

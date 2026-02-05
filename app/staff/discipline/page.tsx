@@ -1,12 +1,9 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Download, Plus, AlertTriangle, MessageSquare } from "lucide-react";
-import { DisciplinaryAction, Complaint, IncidentStatus, ComplaintStatus } from "@/types/discipline";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageActions from "@/components/shared/PageActions";
-import SearchFilterBar from "@/components/shared/SearchFilterBar";
+import { Plus, AlertTriangle, MessageSquare } from "lucide-react";
+import { DisciplinaryAction, Complaint } from "@/types/discipline";
+import DataManagementPage from "@/components/pages/DataManagementPage";
 import { useDiscipline } from "@/contexts/DisciplineContext";
 import DisciplineStatisticsCards from "@/components/discipline/DisciplineStatisticsCards";
 import ComplaintStatisticsCards from "@/components/discipline/ComplaintStatisticsCards";
@@ -15,10 +12,15 @@ import ComplaintsTable from "@/components/discipline/ComplaintsTable";
 import NewIncidentReportModal from "@/components/discipline/NewIncidentReportModal";
 import ViewDisciplinaryActionModal from "@/components/discipline/ViewDisciplinaryActionModal";
 import EditDisciplinaryActionModal from "@/components/discipline/EditDisciplinaryActionModal";
-import ConfirmationModal from "@/components/shared/ConfirmationModal";
-// Import will be added when needed for export functionality
+import ActionModal from "@/components/shared/ActionModal";
+import type { FilterValues } from "@/types/components";
+import {
+  disciplineFilterFields,
+  complaintsFilterFields,
+  disciplineSortOptions,
+} from "./config";
 
-// Mock data for disciplinary actions - covering all status types
+// Mock data for disciplinary actions
 const mockDisciplinaryActions: DisciplinaryAction[] = [
   {
     id: "DA001",
@@ -359,35 +361,20 @@ export default function DisciplinePage() {
   // Calculate statistics for disciplinary actions
   const disciplineStats = useMemo(() => {
     const total = disciplinaryActions.length;
-    const reported = disciplinaryActions.filter(a => a.status === "reported").length;
-    const investigating = disciplinaryActions.filter(a => a.status === "under-investigation").length;
-    const resolved = disciplinaryActions.filter(a => a.status === "resolved").length;
-    const critical = disciplinaryActions.filter(a => a.severity === "critical").length;
-    const serious = disciplinaryActions.filter(a => a.severity === "serious").length;
-
-    return { total, reported, investigating, resolved, critical, serious };
+    return { total };
   }, [disciplinaryActions]);
 
   // Calculate statistics for complaints
   const complaintStats = useMemo(() => {
     const total = complaints.length;
-    const submitted = complaints.filter(c => c.status === "submitted").length;
-    const reviewing = complaints.filter(c => c.status === "reviewing").length;
-    const investigating = complaints.filter(c => c.status === "investigating").length;
-    const resolved = complaints.filter(c => c.status === "resolved").length;
-    const urgent = complaints.filter(c => c.priority === "urgent").length;
-    const anonymous = complaints.filter(c => c.isAnonymous).length;
-
-    return { total, submitted, reviewing, investigating, resolved, urgent, anonymous };
+    return { total };
   }, [complaints]);
 
   const handleExportExcel = () => {
-    // Export functionality will be added later
     console.log(`Export ${activeTab} to Excel clicked`);
   };
 
   const handleExportPDF = () => {
-    // Export functionality will be added later
     console.log(`Export ${activeTab} to PDF clicked`);
   };
 
@@ -408,165 +395,126 @@ export default function DisciplinePage() {
 
   const confirmDelete = () => {
     if (actionToDelete) {
-      // Remove from local state
       setDisciplinaryActions(prev => prev.filter(a => a.id !== actionToDelete.id));
       setIsDeleteModalOpen(false);
       setActionToDelete(null);
     }
   };
 
+  // Use a union type since the page manages both disciplines and complaints
+  // We pass disciplines as the data to DataManagementPage, but use customListComponent to render both
+  const currentData = activeTab === "discipline" ? disciplinaryActions : [];
+
+  // Filter function for the ActionBar filters (handles discipline tab filters via DataManagementPage)
+  const filterDisciplineData = (data: DisciplinaryAction[], filters: FilterValues) => {
+    return data.filter((action) => {
+      const hasFilters = Object.values(filters).some(
+        (values) => values && values.length > 0
+      );
+      if (!hasFilters) return true;
+
+      const matchesStatus =
+        !filters.status ||
+        filters.status.length === 0 ||
+        filters.status.includes(action.status);
+
+      const matchesSeverity =
+        !filters.severity ||
+        filters.severity.length === 0 ||
+        filters.severity.includes(action.severity);
+
+      return matchesStatus && matchesSeverity;
+    });
+  };
+
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        {/* Header with Breadcrumbs and Actions */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-          <PageHeader
-            title="Discipline & Complaints"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Staff", href: "/staff" },
-              { label: "Discipline & Complaints", isActive: true },
-            ]}
-          />
-          <PageActions
-            actions={[
-              {
-                label: activeTab === "discipline" ? "Report Incident" : "New Complaint",
-                icon: Plus,
-                onClick: () => {
-                  if (activeTab === "discipline") {
-                    setIsNewIncidentModalOpen(true);
-                  } else {
-                    console.log("New Complaint clicked");
-                  }
-                },
-                variant: "primary",
-              },
-            ]}
-            onExportPDF={handleExportPDF}
-            onExportExcel={handleExportExcel}
-            exportDescription={`Download ${activeTab === "discipline" ? "disciplinary actions" : "complaints"} data`}
-          />
-        </div>
-
-        {/* Tabs */}
-        <div className="border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-          <nav className="-mb-px flex space-x-8">
-            <button
-              onClick={() => setActiveTab("discipline")}
-              className={`
-                py-4 px-1 border-b-2 font-medium text-sm transition-colors
-                ${activeTab === "discipline"
-                  ? "border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400 midnight:border-cyan-400 midnight:text-cyan-400 purple:border-pink-400 purple:text-pink-400"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 midnight:text-cyan-300/70 midnight:hover:text-cyan-300 purple:text-pink-300/70 purple:hover:text-pink-300"
-                }
-              `}
-            >
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4" />
-                Disciplinary Actions
-                <span className="ml-2 py-0.5 px-2 rounded-full text-xs bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 midnight:bg-red-500/10 midnight:text-red-400 purple:bg-red-500/10 purple:text-red-400">
-                  {disciplineStats.total}
-                </span>
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab("complaints")}
-              className={`
-                py-4 px-1 border-b-2 font-medium text-sm transition-colors
-                ${activeTab === "complaints"
-                  ? "border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400 midnight:border-cyan-400 midnight:text-cyan-400 purple:border-pink-400 purple:text-pink-400"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 midnight:text-cyan-300/70 midnight:hover:text-cyan-300 purple:text-pink-300/70 purple:hover:text-pink-300"
-                }
-              `}
-            >
-              <div className="flex items-center gap-2">
-                <MessageSquare className="w-4 h-4" />
-                Complaints
-                <span className="ml-2 py-0.5 px-2 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 midnight:bg-cyan-500/10 midnight:text-cyan-400 purple:bg-pink-500/10 purple:text-pink-400">
-                  {complaintStats.total}
-                </span>
-              </div>
-            </button>
-          </nav>
-        </div>
-
-        {/* Statistics Cards - Disciplinary Actions */}
-        {activeTab === "discipline" && (
-          <DisciplineStatisticsCards actions={disciplinaryActions} />
-        )}
-
-        {/* Statistics Cards - Complaints */}
-        {activeTab === "complaints" && (
-          <ComplaintStatisticsCards complaints={complaints} />
-        )}
-
-        {/* Search and Filters */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder={activeTab === "discipline"
-            ? "Search by staff name, incident type, or action ID..."
-            : "Search by complainant, subject, or complaint ID..."
+    <DataManagementPage<DisciplinaryAction>
+      title="Discipline & Complaints"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Staff", href: "/staff" },
+        { label: "Discipline & Complaints", isActive: true },
+      ]}
+      data={disciplinaryActions}
+      getRowKey={(item) => item.id}
+      columns={[]}
+      filterFields={activeTab === "discipline" ? disciplineFilterFields : complaintsFilterFields}
+      sortOptions={disciplineSortOptions}
+      filterFn={filterDisciplineData}
+      addButtonConfig={{
+        label: activeTab === "discipline" ? "Report Incident" : "New Complaint",
+        onClick: () => {
+          if (activeTab === "discipline") {
+            setIsNewIncidentModalOpen(true);
+          } else {
+            console.log("New Complaint clicked");
           }
-          filters={activeTab === "discipline" ? [
-            {
-              label: "Status Filter",
-              value: filterStatus,
-              onChange: (value) => setFilterStatus(value as string),
-              options: [
-                { label: "All Status", value: "all" },
-                { label: "Reported", value: "reported" },
-                { label: "Under Investigation", value: "under-investigation" },
-                { label: "Resolved", value: "resolved" },
-                { label: "Closed", value: "closed" },
-                { label: "Escalated", value: "escalated" },
-              ],
-            },
-            {
-              label: "Severity Filter",
-              value: filterSeverity,
-              onChange: (value) => setFilterSeverity(value as string),
-              options: [
-                { label: "All Severity", value: "all" },
-                { label: "Minor", value: "minor" },
-                { label: "Moderate", value: "moderate" },
-                { label: "Serious", value: "serious" },
-                { label: "Critical", value: "critical" },
-              ],
-            },
-          ] : [
-            {
-              label: "Status Filter",
-              value: filterStatus,
-              onChange: (value) => setFilterStatus(value as string),
-              options: [
-                { label: "All Status", value: "all" },
-                { label: "Submitted", value: "submitted" },
-                { label: "Reviewing", value: "reviewing" },
-                { label: "Investigating", value: "investigating" },
-                { label: "Resolved", value: "resolved" },
-                { label: "Closed", value: "closed" },
-                { label: "Rejected", value: "rejected" },
-              ],
-            },
-            {
-              label: "Priority Filter",
-              value: filterPriority,
-              onChange: (value) => setFilterPriority(value as string),
-              options: [
-                { label: "All Priority", value: "all" },
-                { label: "Low", value: "low" },
-                { label: "Medium", value: "medium" },
-                { label: "High", value: "high" },
-                { label: "Urgent", value: "urgent" },
-              ],
-            },
-          ]}
-        />
+        },
+      }}
+      onExportPDF={handleExportPDF}
+      onExportExcel={handleExportExcel}
+      enableViewToggle={false}
+      enableSelection={false}
+      enablePagination={false}
+      showTableSearch={false}
+      itemLabel={activeTab === "discipline" ? "disciplinary action" : "complaint"}
+      itemLabelPlural={activeTab === "discipline" ? "disciplinary actions" : "complaints"}
+      headerContent={
+        <>
+          {/* Tabs */}
+          <div className="mt-6 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab("discipline")}
+                className={`
+                  py-4 px-1 border-b-2 font-medium text-sm transition-colors
+                  ${activeTab === "discipline"
+                    ? "border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400 midnight:border-cyan-400 midnight:text-cyan-400 purple:border-pink-400 purple:text-pink-400"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 midnight:text-cyan-300/70 midnight:hover:text-cyan-300 purple:text-pink-300/70 purple:hover:text-pink-300"
+                  }
+                `}
+              >
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  Disciplinary Actions
+                  <span className="ml-2 py-0.5 px-2 rounded-full text-xs bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 midnight:bg-red-500/10 midnight:text-red-400 purple:bg-red-500/10 purple:text-red-400">
+                    {disciplineStats.total}
+                  </span>
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab("complaints")}
+                className={`
+                  py-4 px-1 border-b-2 font-medium text-sm transition-colors
+                  ${activeTab === "complaints"
+                    ? "border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400 midnight:border-cyan-400 midnight:text-cyan-400 purple:border-pink-400 purple:text-pink-400"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 midnight:text-cyan-300/70 midnight:hover:text-cyan-300 purple:text-pink-300/70 purple:hover:text-pink-300"
+                  }
+                `}
+              >
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  Complaints
+                  <span className="ml-2 py-0.5 px-2 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 midnight:bg-cyan-500/10 midnight:text-cyan-400 purple:bg-pink-500/10 purple:text-pink-400">
+                    {complaintStats.total}
+                  </span>
+                </div>
+              </button>
+            </nav>
+          </div>
 
-        {/* Tables */}
-        {activeTab === "discipline" ? (
+          {/* Statistics Cards */}
+          <div className="mt-6">
+            {activeTab === "discipline" ? (
+              <DisciplineStatisticsCards actions={disciplinaryActions} />
+            ) : (
+              <ComplaintStatisticsCards complaints={complaints} />
+            )}
+          </div>
+        </>
+      }
+      customListComponent={
+        activeTab === "discipline" ? (
           <DisciplinaryActionsTable
             actions={filteredActions}
             onViewDetails={handleViewAction}
@@ -580,9 +528,9 @@ export default function DisciplinePage() {
             onViewDetails={(complaint) => setSelectedComplaint(complaint)}
             filterKey={`${filterStatus}-${filterPriority}-${searchQuery}`}
           />
-        )}
-      </div>
-
+        )
+      }
+    >
       {/* New Incident Report Modal */}
       <NewIncidentReportModal
         isOpen={isNewIncidentModalOpen}
@@ -618,19 +566,30 @@ export default function DisciplinePage() {
       )}
 
       {/* Delete Confirmation Modal */}
-      <ConfirmationModal
+      <ActionModal
         isOpen={isDeleteModalOpen}
         onClose={() => {
           setIsDeleteModalOpen(false);
           setActionToDelete(null);
         }}
-        onConfirm={confirmDelete}
         title="Delete Disciplinary Action"
-        message={`Are you sure you want to delete this disciplinary action for ${actionToDelete?.staffName}? This action cannot be undone.`}
+        subtitle={actionToDelete?.id}
+        variant="danger"
+        message="Are you sure you want to delete this disciplinary action? This action cannot be undone."
+        details={
+          actionToDelete
+            ? [
+                { label: "Staff", value: actionToDelete.staffName },
+                { label: "Department", value: actionToDelete.staffDepartment },
+                { label: "Type", value: actionToDelete.incidentType },
+                { label: "Severity", value: actionToDelete.severity },
+              ]
+            : undefined
+        }
         confirmLabel="Delete"
         cancelLabel="Cancel"
-        variant="danger"
+        onConfirm={confirmDelete}
       />
-    </MainLayout>
+    </DataManagementPage>
   );
 }

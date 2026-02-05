@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DashboardPage } from "@/components/pages";
 import { getTeacherById, Teacher } from "@/lib/mockTeachers";
 import {
   Briefcase,
@@ -25,7 +23,7 @@ import EmploymentDetailsCard from "@/components/staff/EmploymentDetailsCard";
 import QualificationsCard from "@/components/staff/QualificationsCard";
 import StaffDocumentsCard from "@/components/staff/StaffDocumentsCard";
 import FamilyInformationCard from "@/components/staff/FamilyInformationCard";
-import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
+import ActionModal from "@/components/shared/ActionModal";
 import ActionButton from "@/components/shared/ActionButton";
 import SecondaryButton from "@/components/shared/SecondaryButton";
 import MobileDropdown from "@/components/shared/MobileDropdown";
@@ -49,7 +47,6 @@ export default function ViewStaffPage() {
   const params = useParams();
   const staffId = params?.id as string;
   const router = useRouter();
-  const isLoading = usePageLoad(600);
   const [staffData, setStaffData] = useState<Teacher | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("details");
@@ -74,11 +71,17 @@ export default function ViewStaffPage() {
     }
   }, [staffId, router]);
 
-  if (isLoading || isLoadingData || !staffData) {
+  if (isLoadingData || !staffData) {
     return (
-      <MainLayout>
-        <PageLoader isLoading={true} loadingText="Loading Staff Details" />
-      </MainLayout>
+      <DashboardPage
+        title="Staff Details"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Staff", href: "/staff?view=grid" },
+          { label: "Staff Details", isActive: true },
+        ]}
+        loadingText="Loading Staff Details"
+      />
     );
   }
 
@@ -98,12 +101,18 @@ export default function ViewStaffPage() {
   ];
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isLoading} loadingText="Loading Staff Details" />
-
-      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-        {/* Header */}
-        <div className="mb-6 mt-6">
+    <DashboardPage
+      title="Staff Details"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Staff", href: "/staff?view=grid" },
+        { label: "Staff Details", isActive: true },
+      ]}
+      loadingText="Loading Staff Details"
+      afterStats={
+        <div className="mt-6 space-y-6">
+          {/* Header */}
+          <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
               <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
@@ -150,7 +159,7 @@ export default function ViewStaffPage() {
               </div>
             </div>
           </div>
-        </div>
+          </div>
 
         <div className="flex flex-col lg:flex-row gap-2.5 lg:gap-6 items-start">
           {/* Left Sidebar */}
@@ -184,21 +193,24 @@ export default function ViewStaffPage() {
           </div>
         </div>
       </div>
+      }
+    >
 
       {/* Delete Confirmation Modal */}
       {staffData && (
-        <DeleteConfirmationModal
+        <ActionModal
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
-          onConfirm={handleDeleteStaff}
           title="Delete Staff"
-          itemName={fullName}
-          itemId={staffData.staffId}
-          warningMessage="This will permanently remove this staff member and all associated data including attendance records, payroll, performance records, and documents. This action cannot be undone."
-          confirmButtonText="Delete Staff"
+          subtitle={`${fullName} • ${staffData.staffId}`}
+          variant="danger"
+          message="This will permanently remove this staff member and all associated data including attendance records, payroll, performance records, and documents. This action cannot be undone."
+          confirmLabel="Delete Staff"
+          cancelLabel="Cancel"
+          onConfirm={handleDeleteStaff}
         />
       )}
-    </MainLayout>
+    </DashboardPage>
   );
 }
 

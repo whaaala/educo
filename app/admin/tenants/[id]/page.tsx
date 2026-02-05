@@ -19,9 +19,9 @@ import {
   DollarSign,
   FileText,
 } from "lucide-react";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
+import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
+import ActionModal from "@/components/shared/ActionModal";
 import { getTenantById, deleteTenant } from "@/lib/mockTenants";
 import { Tenant } from "@/types/school";
 
@@ -32,6 +32,8 @@ export default function TenantDetailsPage() {
 
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "config" | "branding" | "subscription">("overview");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (tenantId) {
@@ -40,30 +42,46 @@ export default function TenantDetailsPage() {
     }
   }, [tenantId]);
 
-  const handleDelete = () => {
+  const requestDelete = () => {
     if (!tenant) return;
+    setIsDeleteModalOpen(true);
+  };
 
-    if (confirm(`Are you sure you want to delete ${tenant.name}? This action cannot be undone.`)) {
+  const confirmDelete = async () => {
+    if (!tenant) return;
+    setIsDeleting(true);
+    try {
       const success = deleteTenant(tenant.id);
       if (success) {
         router.push("/admin/tenants");
       }
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteModalOpen(false);
     }
   };
 
   if (!tenant) {
     return (
-      <MainLayout>
-        <div className="p-6">
-          <div className="text-center py-12">
+      <DashboardPage
+        title="Tenant Not Found"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Admin", href: "/admin" },
+          { label: "Tenants", href: "/admin/tenants" },
+          { label: "Not Found", isActive: true },
+        ]}
+        loadingText="Loading Tenant"
+        afterStats={
+          <div className="mt-6 text-center py-12">
             <Building2 className="w-12 h-12 mx-auto text-neutral-400 mb-4" />
             <p className="text-neutral-600 dark:text-neutral-400">Tenant not found</p>
             <Button onClick={() => router.push("/admin/tenants")} className="mt-4">
               Back to Tenants
             </Button>
           </div>
-        </div>
-      </MainLayout>
+        }
+      />
     );
   }
 
@@ -83,20 +101,18 @@ export default function TenantDetailsPage() {
   };
 
   return (
-    <MainLayout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <PageHeader
-            title={tenant.name}
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Admin", href: "/admin" },
-              { label: "Tenants", href: "/admin/tenants" },
-              { label: tenant.name, isActive: true },
-            ]}
-          />
-          <div className="flex items-center gap-3">
+    <DashboardPage
+      title={tenant.name}
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Admin", href: "/admin" },
+        { label: "Tenants", href: "/admin/tenants" },
+        { label: tenant.name, isActive: true },
+      ]}
+      loadingText="Loading Tenant"
+      afterStats={
+        <div className="mt-6 p-6 space-y-6">
+          <div className="flex items-center justify-end gap-3">
             <Button
               onClick={() => router.push(`/admin/tenants/${tenant.id}/edit`)}
               variant="outline"
@@ -106,7 +122,7 @@ export default function TenantDetailsPage() {
               Edit
             </Button>
             <Button
-              onClick={handleDelete}
+              onClick={requestDelete}
               variant="outline"
               className="flex items-center gap-2 text-red-600 hover:text-red-700 dark:text-red-400"
             >
@@ -114,7 +130,6 @@ export default function TenantDetailsPage() {
               Delete
             </Button>
           </div>
-        </div>
 
         {/* School Info Header */}
         <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
@@ -685,7 +700,33 @@ export default function TenantDetailsPage() {
             </div>
           </div>
         </div>
+
+        <ActionModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            if (isDeleting) return;
+            setIsDeleteModalOpen(false);
+          }}
+          title="Delete School"
+          subtitle={tenant?.name}
+          variant="danger"
+          message="Are you sure you want to delete this school? This action cannot be undone."
+          details={
+            tenant
+              ? [
+                  { label: "Tenant ID", value: tenant.id },
+                  { label: "Slug", value: tenant.slug },
+                  { label: "Status", value: tenant.status },
+                ]
+              : undefined
+          }
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          onConfirm={confirmDelete}
+          isConfirming={isDeleting}
+        />
       </div>
-    </MainLayout>
+    }
+  />
   );
 }

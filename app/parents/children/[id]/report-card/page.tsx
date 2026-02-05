@@ -4,13 +4,10 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
 import FormDropdown from "@/components/shared/FormDropdown";
 import ReportCardTemplate from "@/components/reports/ReportCardTemplate";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useReactToPrint } from "react-to-print";
 import jsPDF from "jspdf";
@@ -162,7 +159,6 @@ export default function ReportCardPage() {
   const searchParams = useSearchParams();
   const childId = params?.id as string;
   const fromResults = searchParams.get("from") === "results";
-  const isPageLoading = usePageLoad(600);
   const { settings, currentTenant } = useSchoolSettings();
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -577,29 +573,34 @@ export default function ReportCardPage() {
     pdf.save(`Report-Card-${child.fullName}-${selectedTerm}-${selectedYear}.pdf`);
   };
 
-  if (isPageLoading) {
-    return <PageLoader isLoading={true} />;
-  }
-
   if (!child) {
     return (
-      <MainLayout>
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <AlertCircle className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            Student Not Found
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
-            The student you&apos;re looking for doesn&apos;t exist.
-          </p>
-          <Link href="/parents/children">
-            <Button variant="primary">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to My Children
-            </Button>
-          </Link>
-        </div>
-      </MainLayout>
+      <DashboardPage
+        title="Student Not Found"
+        breadcrumbs={[
+          { label: "Parent Portal", href: "/parents" },
+          { label: "My Children", href: "/parents/children" },
+          { label: "Report Card", isActive: true },
+        ]}
+        loadingText="Loading Report Card"
+        afterStats={
+          <div className="mt-6 flex flex-col items-center justify-center min-h-[60vh]">
+            <AlertCircle className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              Student Not Found
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              The student you&apos;re looking for doesn&apos;t exist.
+            </p>
+            <Link href="/parents/children">
+              <Button variant="primary">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to My Children
+              </Button>
+            </Link>
+          </div>
+        }
+      />
     );
   }
 
@@ -616,10 +617,29 @@ export default function ReportCardPage() {
     maxScore: 100,
   })) || [];
 
+  const breadcrumbs = fromResults
+    ? [
+        { label: "Parent Portal", href: "/parents" },
+        { label: "Exam Results", href: "/parents/results" },
+        { label: child.fullName },
+      ]
+    : [
+        { label: "Parent Portal", href: "/parents" },
+        { label: "My Children", href: "/parents/children" },
+        { label: child.firstName, href: `/parents/children/${child.id}` },
+        { label: "Report Card" },
+      ];
+
   return (
-    <MainLayout>
-      {/* Print Styles */}
-      <style jsx global>{`
+    <DashboardPage
+      title="Report Card"
+      breadcrumbs={breadcrumbs}
+      loadingText="Loading Report Card"
+      pageLoadDuration={600}
+      afterStats={
+        <>
+          {/* Print Styles */}
+          <style jsx global>{`
         @media print {
           @page {
             size: A4;
@@ -697,27 +717,7 @@ export default function ReportCardPage() {
         }
       `}</style>
 
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <PageHeader
-            title="Report Card"
-            breadcrumbs={
-              fromResults
-                ? [
-                    { label: "Parent Portal", href: "/parents" },
-                    { label: "Exam Results", href: "/parents/results" },
-                    { label: child.fullName },
-                  ]
-                : [
-                    { label: "Parent Portal", href: "/parents" },
-                    { label: "My Children", href: "/parents/children" },
-                    { label: child.firstName, href: `/parents/children/${child.id}` },
-                    { label: "Report Card" },
-                  ]
-            }
-          />
-        </div>
+          <div className="mt-6 space-y-6">
 
         {/* Modern Report Card Controls */}
         <div className="no-print relative rounded-2xl bg-gradient-to-br from-slate-50 via-white to-slate-50/80 dark:from-slate-900 dark:via-slate-800/95 dark:to-slate-900 border border-slate-200/80 dark:border-slate-700/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)]">
@@ -937,7 +937,9 @@ export default function ReportCardPage() {
             </div>
           </div>
         </div>
-      </div>
-    </MainLayout>
+          </div>
+        </>
+      }
+    />
   );
 }

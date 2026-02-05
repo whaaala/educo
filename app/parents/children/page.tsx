@@ -1,14 +1,9 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import { type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
-import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
-import StatCard from "@/components/shared/StatCard";
+import DashboardPage from "@/components/pages/DashboardPage";
 import Button from "@/components/shared/Button";
 import {
   Users,
@@ -19,7 +14,6 @@ import {
   CheckCircle2,
   Clock,
   TrendingUp,
-  Award,
   FileText,
   CreditCard,
   Sparkles,
@@ -41,124 +35,18 @@ import {
   Star,
   ArrowUpRight,
 } from "lucide-react";
-import type { ParentChild, ChildAcademicSummary } from "@/types/parent";
-
-// Mock Data
-const MOCK_CHILDREN: ParentChild[] = [
-  {
-    id: "child-001",
-    studentId: "STU-2024-001",
-    firstName: "Adaeze",
-    lastName: "Okonkwo",
-    fullName: "Adaeze Okonkwo",
-    admissionNumber: "ADM-2024-0145",
-    classLevel: "JSS 2",
-    section: "A",
-    profilePhoto: "https://i.pravatar.cc/150?u=adaeze",
-    dateOfBirth: "2012-03-15",
-    gender: "Female",
-    status: "Active",
-    relationship: "Father",
-  },
-  {
-    id: "child-002",
-    studentId: "STU-2024-002",
-    firstName: "Chukwuemeka",
-    lastName: "Okonkwo",
-    fullName: "Chukwuemeka Okonkwo",
-    admissionNumber: "ADM-2024-0089",
-    classLevel: "SS 1",
-    section: "B",
-    profilePhoto: "https://i.pravatar.cc/150?u=chukwuemeka",
-    dateOfBirth: "2009-07-22",
-    gender: "Male",
-    status: "Active",
-    relationship: "Father",
-  },
-];
-
-const MOCK_ACADEMIC_SUMMARY: ChildAcademicSummary[] = [
-  {
-    childId: "child-001",
-    childName: "Adaeze Okonkwo",
-    classLevel: "JSS 2",
-    currentTermAverage: 78.5,
-    classPosition: 5,
-    totalStudents: 45,
-    subjectPerformance: [
-      { subject: "Mathematics", score: 85, grade: "A" },
-      { subject: "English", score: 78, grade: "B" },
-      { subject: "Science", score: 72, grade: "B" },
-      { subject: "Social Studies", score: 80, grade: "A" },
-      { subject: "Civic Education", score: 75, grade: "B" },
-    ],
-    overallRemarks: "Good performance. Keep it up!",
-    conductGrade: "A",
-  },
-  {
-    childId: "child-002",
-    childName: "Chukwuemeka Okonkwo",
-    classLevel: "SS 1",
-    currentTermAverage: 82.3,
-    classPosition: 3,
-    totalStudents: 52,
-    subjectPerformance: [
-      { subject: "Mathematics", score: 88, grade: "A" },
-      { subject: "Physics", score: 80, grade: "A" },
-      { subject: "Chemistry", score: 79, grade: "B" },
-      { subject: "Biology", score: 85, grade: "A" },
-      { subject: "English", score: 78, grade: "B" },
-    ],
-    overallRemarks: "Excellent performance!",
-    conductGrade: "A",
-  },
-];
-
-// Mock attendance data
-const MOCK_ATTENDANCE = {
-  "child-001": { present: 42, absent: 3, late: 2, total: 47, rate: 89.4 },
-  "child-002": { present: 45, absent: 1, late: 1, total: 47, rate: 95.7 },
-};
-
-// Mock transport data
-const MOCK_TRANSPORT = {
-  "child-001": {
-    routeName: "Route A - Ikeja",
-    busNumber: "BUS-001",
-    driverName: "Mr. Adebayo",
-    driverPhone: "+234 801 234 5678",
-    pickupTime: "6:45 AM",
-    dropoffTime: "3:30 PM",
-    pickupLocation: "Victoria Island Junction",
-    status: "On Route",
-  },
-  "child-002": {
-    routeName: "Route A - Ikeja",
-    busNumber: "BUS-001",
-    driverName: "Mr. Adebayo",
-    driverPhone: "+234 801 234 5678",
-    pickupTime: "6:45 AM",
-    dropoffTime: "3:30 PM",
-    pickupLocation: "Victoria Island Junction",
-    status: "At School",
-  },
-};
-
-// Mock notifications data
-const MOCK_NOTIFICATIONS = {
-  "child-001": [
-    { id: 1, type: "info", message: "Parent-Teacher meeting scheduled for Dec 20th", time: "2 hours ago", read: false },
-    { id: 2, type: "success", message: "Mathematics test score uploaded: 85%", time: "1 day ago", read: false },
-    { id: 3, type: "warning", message: "Library book due in 3 days", time: "2 days ago", read: true },
-  ],
-  "child-002": [
-    { id: 1, type: "success", message: "Selected for Science Olympiad team", time: "3 hours ago", read: false },
-    { id: 2, type: "info", message: "Chemistry lab session tomorrow", time: "1 day ago", read: true },
-  ],
-};
+import type { ParentChild } from "@/types/parent";
+import {
+  MOCK_ACADEMIC_SUMMARY,
+  MOCK_ATTENDANCE,
+  MOCK_CHILDREN,
+  MOCK_NOTIFICATIONS,
+  MOCK_TRANSPORT,
+  parentChildrenPrimaryStats,
+} from "./config";
 
 // Subject icons mapping
-const subjectIcons: Record<string, { icon: React.ReactNode; bg: string; iconColor: string }> = {
+const subjectIcons: Record<string, { icon: ReactNode; bg: string; iconColor: string }> = {
   'Mathematics': { icon: <Calculator className="w-4 h-4" />, bg: 'bg-blue-100 dark:bg-blue-900/50 midnight:bg-blue-900/40 purple:bg-blue-900/40', iconColor: 'text-blue-600 dark:text-blue-400' },
   'Physics': { icon: <Atom className="w-4 h-4" />, bg: 'bg-purple-100 dark:bg-purple-900/50 midnight:bg-purple-900/40 purple:bg-purple-900/40', iconColor: 'text-purple-600 dark:text-purple-400' },
   'Chemistry': { icon: <FlaskConical className="w-4 h-4" />, bg: 'bg-green-100 dark:bg-green-900/50 midnight:bg-green-900/40 purple:bg-green-900/40', iconColor: 'text-green-600 dark:text-green-400' },
@@ -180,9 +68,6 @@ const getSubjectIcon = (subject: string) => {
 };
 
 export default function ParentChildrenPage() {
-  const isPageLoading = usePageLoad(600);
-  const { settings } = useSchoolSettings();
-
   // Calculate age from date of birth
   const calculateAge = (dob: string) => {
     const birthDate = new Date(dob);
@@ -234,53 +119,17 @@ export default function ParentChildrenPage() {
   };
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Children" />
-
-      <div
-        className={`space-y-6 transition-opacity duration-500 ${
-          isPageLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        {/* Header */}
-        <PageHeader
-          title="My Children"
-          breadcrumbs={[
-            { label: "Parent Portal", href: "/parents" },
-            { label: "My Children" },
-          ]}
-        />
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          <StatCard
-            icon={Users}
-            label="Total Children"
-            value={MOCK_CHILDREN.length.toString()}
-            color="blue"
-          />
-          <StatCard
-            icon={CheckCircle2}
-            label="Active"
-            value={MOCK_CHILDREN.filter((c) => c.status === "Active").length.toString()}
-            color="green"
-          />
-          <StatCard
-            icon={TrendingUp}
-            label="Avg. Performance"
-            value={`${(MOCK_ACADEMIC_SUMMARY.reduce((sum, a) => sum + (a.currentTermAverage || 0), 0) / MOCK_ACADEMIC_SUMMARY.length).toFixed(1)}%`}
-            color="purple"
-          />
-          <StatCard
-            icon={Award}
-            label="Best Position"
-            value={`#${Math.min(...MOCK_ACADEMIC_SUMMARY.map((a) => a.classPosition || 999))}`}
-            color="orange"
-          />
-        </div>
-
-        {/* Children Cards */}
-        <div className="space-y-6">
+    <DashboardPage<ParentChild>
+      title="My Children"
+      breadcrumbs={[
+        { label: "Parent Portal", href: "/parents" },
+        { label: "My Children" },
+      ]}
+      data={MOCK_CHILDREN}
+      primaryStats={parentChildrenPrimaryStats}
+      loadingText="Loading Children"
+      afterStats={
+        <div className="mt-6 space-y-6">
           {MOCK_CHILDREN.map((child) => {
             const academicData = MOCK_ACADEMIC_SUMMARY.find((a) => a.childId === child.id);
             const attendanceData = MOCK_ATTENDANCE[child.id as keyof typeof MOCK_ATTENDANCE];
@@ -796,7 +645,7 @@ export default function ParentChildrenPage() {
             );
           })}
         </div>
-      </div>
-    </MainLayout>
+      }
+    />
   );
 }

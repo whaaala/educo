@@ -1,4 +1,4 @@
-import type { FilterField, SortOption } from "@/types/components";
+import type { DateRange, FilterField, FilterValues, SortOption } from "@/types/components";
 import type { AdminParent } from "@/lib/mockParents";
 
 // Filter fields configuration
@@ -61,7 +61,7 @@ export const sortParents = (data: AdminParent[], sortOption: string): AdminParen
 // Filter function for parents
 export const filterParents = (
   data: AdminParent[],
-  filters: Record<string, string[]>
+  filters: FilterValues
 ): AdminParent[] => {
   return data.filter((parent) => {
     const hasFilters = Object.values(filters).some((values) => values && values.length > 0);
@@ -112,8 +112,12 @@ export const getCurrencySymbol = (currencyCode: string): string => {
 
 // Check if there are active filters
 export const hasActiveFilters = (
-  filters: Record<string, string[]>,
-  dateRange: { startDate: string; endDate: string } | null
+  filters: FilterValues,
+  dateRange: DateRange | null
 ): boolean => {
-  return Object.values(filters).some((values) => values && values.length > 0) || dateRange !== null;
+  return (
+    Object.values(filters).some((values) => values && values.length > 0) ||
+    !!dateRange?.start ||
+    !!dateRange?.end
+  );
 };

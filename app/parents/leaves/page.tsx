@@ -2,24 +2,17 @@
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import StatCard from "@/components/shared/StatCard";
-import SearchFilterBar from "@/components/shared/SearchFilterBar";
+import { DataManagementPage } from "@/components/pages";
+import type { ColumnConfig } from "@/types/components";
 import FormInput from "@/components/shared/FormInput";
 import FormTextarea from "@/components/shared/FormTextarea";
-import AddButton from "@/components/shared/AddButton";
 import ChildLeaveRequestDetailsModal, { LeaveHistoryEntry } from "@/components/shared/ChildLeaveRequestDetailsModal";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import {
   CalendarDays,
   CalendarCheck,
   Clock,
   CheckCircle2,
   XCircle,
-  AlertTriangle,
-  Plus,
   Calendar,
   X,
   FileText,
@@ -30,43 +23,26 @@ import {
   Church,
   Trophy,
   Info,
-  ArrowRight,
   PenLine,
 } from "lucide-react";
+import {
+  type Child,
+  type ChildLeaveRequest,
+  type LeaveStatus,
+  type LeaveType,
+  getLeaveFilterFields,
+  getLeaveStats,
+  leaveSortOptions,
+  filterLeaves,
+  sortLeaves,
+  searchLeaves,
+} from "./config";
 
 // ============================================
 // TYPES
 // ============================================
 
-type LeaveStatus = "approved" | "pending" | "declined";
-type LeaveType = "Medical" | "Family" | "Personal" | "Religious" | "Sports" | "Other";
-
-interface ChildLeaveRequest {
-  id: string;
-  childId: string;
-  childName: string;
-  childPhoto?: string;
-  classLevel: string;
-  reason: string;
-  leaveType: LeaveType;
-  fromDate: string;
-  toDate: string;
-  days: number;
-  status: LeaveStatus;
-  appliedDate: string;
-  approvedBy?: string;
-  approvedDate?: string;
-  remarks?: string;
-  documents?: string[];
-}
-
-interface Child {
-  id: string;
-  name: string;
-  classLevel: string;
-  section: string;
-  photo: string;
-}
+// (Moved to ./config.ts)
 
 // ============================================
 // MOCK DATA
@@ -285,11 +261,6 @@ function generateLeaveHistory(leave: ChildLeaveRequest): LeaveHistoryEntry[] {
 // ============================================
 
 export default function ParentLeavesPage() {
-  const isPageLoading = usePageLoad(600);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedChild, setSelectedChild] = useState<string>("all");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [selectedType, setSelectedType] = useState<string>("all");
   const [selectedLeave, setSelectedLeave] = useState<ChildLeaveRequest | null>(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [leaveRequests, setLeaveRequests] = useState<ChildLeaveRequest[]>(MOCK_LEAVE_REQUESTS);
@@ -299,186 +270,156 @@ export default function ParentLeavesPage() {
     setLeaveRequests((prev) => [newLeave, ...prev]);
   };
 
-  // Filter leaves
-  const filteredLeaves = useMemo(() => {
-    return leaveRequests.filter((leave) => {
-      const matchesSearch =
-        leave.reason.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        leave.childName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        leave.leaveType.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesChild = selectedChild === "all" || leave.childId === selectedChild;
-      const matchesStatus = selectedStatus === "all" || leave.status === selectedStatus;
-      const matchesType = selectedType === "all" || leave.leaveType === selectedType;
-      return matchesSearch && matchesChild && matchesStatus && matchesType;
-    });
-  }, [leaveRequests, searchQuery, selectedChild, selectedStatus, selectedType]);
-
-  // Group leaves by child
-  const leavesByChild = useMemo(() => {
-    const grouped: Record<string, { child: Child; leaves: ChildLeaveRequest[] }> = {};
-
-    MOCK_CHILDREN.forEach((child) => {
-      const childLeaves = filteredLeaves.filter((leave) => leave.childId === child.id);
-      if (childLeaves.length > 0 || selectedChild === child.id) {
-        grouped[child.id] = { child, leaves: childLeaves };
-      }
-    });
-
-    // If "all" is selected and there are filtered leaves, show all children with leaves
-    if (selectedChild === "all") {
-      MOCK_CHILDREN.forEach((child) => {
-        const childLeaves = filteredLeaves.filter((leave) => leave.childId === child.id);
-        if (childLeaves.length > 0) {
-          grouped[child.id] = { child, leaves: childLeaves };
-        }
-      });
-    }
-
-    return grouped;
-  }, [filteredLeaves, selectedChild]);
-
-  // Stats
-  const stats = useMemo(() => ({
-    total: leaveRequests.length,
-    approved: leaveRequests.filter((l) => l.status === "approved").length,
-    pending: leaveRequests.filter((l) => l.status === "pending").length,
-    declined: leaveRequests.filter((l) => l.status === "declined").length,
-  }), [leaveRequests]);
+  const filterFields = useMemo(() => getLeaveFilterFields(MOCK_CHILDREN), []);
+  const columns: ColumnConfig<ChildLeaveRequest>[] = useMemo(
+    () => [
+      {
+        key: "childName",
+        label: "Child",
+        sortable: true,
+        sortValue: (l) => l.childName,
+        render: (leave) => (
+          <div className="flex items-center gap-3">
+            <div className="relative w-9 h-9 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={leave.childPhoto || "https://i.pravatar.cc/100?u=" + leave.childId}
+                alt={leave.childName}
+                className="w-9 h-9 object-cover"
+              />
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                {leave.childName}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                {leave.classLevel}
+              </div>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: "leaveType",
+        label: "Type",
+        sortable: true,
+        sortValue: (l) => l.leaveType,
+        render: (leave) => {
+          const cfg = getLeaveTypeConfig(leave.leaveType);
+          const Icon = cfg.icon;
+          return (
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.bg} ${cfg.text}`}>
+              <Icon className="w-3.5 h-3.5" />
+              {leave.leaveType}
+            </span>
+          );
+        },
+      },
+      {
+        key: "dates",
+        label: "Dates",
+        sortable: true,
+        sortValue: (l) => new Date(l.fromDate).getTime(),
+        render: (leave) => (
+          <div className="text-sm text-gray-700 dark:text-gray-300">
+            <div className="font-medium">{formatShortDate(leave.fromDate)} → {formatShortDate(leave.toDate)}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Applied: {formatShortDate(leave.appliedDate)}
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: "days",
+        label: "Days",
+        sortable: true,
+        sortValue: (l) => l.days,
+        render: (leave) => (
+          <span className="text-sm font-semibold text-gray-900 dark:text-white">
+            {leave.days}
+          </span>
+        ),
+      },
+      {
+        key: "status",
+        label: "Status",
+        sortable: true,
+        sortValue: (l) => l.status,
+        render: (leave) => {
+          const cfg = getStatusConfig(leave.status);
+          const Icon = cfg.icon;
+          return (
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.bg} ${cfg.text} border ${cfg.border}`}>
+              <Icon className="w-3.5 h-3.5" />
+              {cfg.label}
+            </span>
+          );
+        },
+      },
+      {
+        key: "actions",
+        label: "Action",
+        sortable: false,
+        searchable: false,
+        className: "text-right",
+        render: (leave) => (
+          <button
+            type="button"
+            onClick={() => setSelectedLeave(leave)}
+            className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-blue-700 dark:text-blue-300 text-xs font-semibold"
+          >
+            View
+          </button>
+        ),
+      },
+    ],
+    []
+  );
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Leave Requests" />
-
-      <div className={`space-y-4 sm:space-y-6 transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Page Header with Action Button */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <PageHeader
-            title="Child Leave Requests"
-            breadcrumbs={[
-              { label: "Parent Portal", href: "/parents" },
-              { label: "Leaves" },
-            ]}
-          />
-          <AddButton
-            label="Apply for Leave"
-            onClick={() => setShowApplyModal(true)}
-          />
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          <StatCard
-            icon={CalendarDays}
-            label="Total Leaves"
-            value={stats.total.toString()}
-            color="blue"
-          />
-          <StatCard
-            icon={CheckCircle2}
-            label="Approved"
-            value={stats.approved.toString()}
-            color="green"
-          />
-          <StatCard
-            icon={Clock}
-            label="Pending"
-            value={stats.pending.toString()}
-            color="amber"
-          />
-          <StatCard
-            icon={XCircle}
-            label="Declined"
-            value={stats.declined.toString()}
-            color="red"
-          />
-        </div>
-
-        {/* Filters */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder="Search by child name, reason, type..."
-          filters={[
-            {
-              label: "Child",
-              value: selectedChild,
-              onChange: (val) => setSelectedChild(String(val)),
-              options: [
-                { value: "all", label: "All Children" },
-                ...MOCK_CHILDREN.map((c) => ({ value: c.id, label: c.name })),
-              ],
-            },
-            {
-              label: "Status",
-              value: selectedStatus,
-              onChange: (val) => setSelectedStatus(String(val)),
-              options: [
-                { value: "all", label: "All Status" },
-                { value: "approved", label: "Approved" },
-                { value: "pending", label: "Pending" },
-                { value: "declined", label: "Declined" },
-              ],
-            },
-            {
-              label: "Type",
-              value: selectedType,
-              onChange: (val) => setSelectedType(String(val)),
-              options: [
-                { value: "all", label: "All Types" },
-                { value: "Medical", label: "Medical" },
-                { value: "Family", label: "Family" },
-                { value: "Personal", label: "Personal" },
-                { value: "Religious", label: "Religious" },
-                { value: "Sports", label: "Sports" },
-              ],
-            },
-          ]}
-        />
-
-        {/* Leaves by Child */}
-        {Object.values(leavesByChild).map(({ child, leaves }) => (
-          <ChildLeaveSection
-            key={child.id}
-            child={child}
-            leaves={leaves}
-            onViewLeave={setSelectedLeave}
-          />
-        ))}
-
-        {/* Empty State */}
-        {filteredLeaves.length === 0 && (
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 p-8 sm:p-12 text-center">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
-              <CalendarDays className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
-            </div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2">No leave requests found</h3>
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-6">
-              {searchQuery || selectedChild !== "all" || selectedStatus !== "all" || selectedType !== "all"
-                ? "Try adjusting your filters."
-                : "You haven't submitted any leave requests yet."}
-            </p>
-            <button
-              onClick={() => setShowApplyModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white text-sm font-semibold shadow-lg shadow-cyan-500/25 transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              Apply for Leave
-            </button>
+    <DataManagementPage
+      title="Child Leave Requests"
+      breadcrumbs={[
+        { label: "Parent Portal", href: "/parents" },
+        { label: "Leaves", isActive: true },
+      ]}
+      data={leaveRequests}
+      getRowKey={(leave) => leave.id}
+      columns={columns}
+      stats={getLeaveStats()}
+      filterFields={filterFields}
+      sortOptions={leaveSortOptions}
+      defaultSort="applied_newest"
+      filterFn={filterLeaves}
+      sortFn={sortLeaves}
+      searchFn={searchLeaves}
+      searchPlaceholder="Search by child name, reason, type..."
+      itemLabel="leave request"
+      itemLabelPlural="leave requests"
+      enableSelection={false}
+      enableExport={false}
+      enableViewToggle={false}
+      emptyStateConfig={{
+        title: "No leave requests found",
+        description: "Try adjusting your search or filters, or submit a new leave request.",
+        icon: CalendarDays,
+      }}
+      addButtonConfig={{
+        label: "Apply for Leave",
+        onClick: () => setShowApplyModal(true),
+      }}
+    >
+      {/* Guidelines */}
+      <div className="mt-6 bg-gradient-to-br from-cyan-50/80 via-blue-50/80 to-indigo-50/80 dark:from-cyan-950/30 dark:via-blue-950/30 dark:to-indigo-950/30 backdrop-blur-xl rounded-2xl border border-cyan-200/50 dark:border-cyan-800/30 p-4 sm:p-6">
+        <div className="flex items-start gap-3 sm:gap-4">
+          <div className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-gray-800/80 shadow-sm shrink-0">
+            <Info className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-600 dark:text-cyan-400" />
           </div>
-        )}
-
-        {/* Guidelines */}
-        <div className="bg-gradient-to-br from-cyan-50/80 via-blue-50/80 to-indigo-50/80 dark:from-cyan-950/30 dark:via-blue-950/30 dark:to-indigo-950/30 backdrop-blur-xl rounded-2xl border border-cyan-200/50 dark:border-cyan-800/30 p-4 sm:p-6">
-          <div className="flex items-start gap-3 sm:gap-4">
-            <div className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-gray-800/80 shadow-sm shrink-0">
-              <Info className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-600 dark:text-cyan-400" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Leave Request Guidelines</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                Submit leave requests at least 3 days in advance. Medical emergencies can be submitted anytime with supporting documents.
-              </p>
-            </div>
+          <div>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Leave Request Guidelines</h3>
+            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+              Submit leave requests at least 3 days in advance. Medical emergencies can be submitted anytime with supporting documents.
+            </p>
           </div>
         </div>
       </div>
@@ -518,237 +459,10 @@ export default function ParentLeavesPage() {
           onSubmit={handleAddLeave}
         />
       )}
-    </MainLayout>
+    </DataManagementPage>
   );
 }
 
-
-// ============================================
-// CHILD LEAVE SECTION COMPONENT
-// ============================================
-
-function ChildLeaveSection({
-  child,
-  leaves,
-  onViewLeave,
-}: {
-  child: Child;
-  leaves: ChildLeaveRequest[];
-  onViewLeave: (leave: ChildLeaveRequest) => void;
-}) {
-  const approvedCount = leaves.filter((l) => l.status === "approved").length;
-  const pendingCount = leaves.filter((l) => l.status === "pending").length;
-  const declinedCount = leaves.filter((l) => l.status === "declined").length;
-
-  return (
-    <div className="group bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90 rounded-2xl border border-gray-100/80 dark:border-gray-700/30 midnight:border-gray-700/30 purple:border-gray-700/30 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
-      {/* Child Header */}
-      <div className="relative p-4 sm:p-5 border-b border-gray-100/80 dark:border-gray-700/30">
-        {/* Subtle gradient accent */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.02] via-transparent to-cyan-500/[0.02] pointer-events-none" />
-
-        <div className="relative flex items-center gap-4">
-          {/* Child Photo */}
-          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden flex-shrink-0 shadow-md ring-2 ring-white/80 dark:ring-gray-700/50">
-            {child.photo ? (
-              <img
-                src={child.photo}
-                alt={child.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-blue-500 to-cyan-500 midnight:from-cyan-500 midnight:to-blue-500 purple:from-pink-500 purple:to-purple-500 flex items-center justify-center text-white font-bold text-lg">
-                {child.name.split(" ").map((n) => n[0]).join("")}
-              </div>
-            )}
-          </div>
-
-          {/* Child Info */}
-          <div className="flex-1 min-w-0">
-            <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100 midnight:text-gray-100 purple:text-gray-100 truncate">
-              {child.name}
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5">
-              {child.classLevel} • Section {child.section}
-            </p>
-
-            {/* Leave Stats */}
-            <div className="flex items-center gap-2 sm:gap-4 mt-2.5 flex-wrap">
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-50/80 dark:bg-emerald-500/10">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">{approvedCount} Approved</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-50/80 dark:bg-amber-500/10">
-                <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">{pendingCount} Pending</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-rose-50/80 dark:bg-rose-500/10">
-                <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                <span className="text-[11px] font-medium text-rose-600 dark:text-rose-400">{declinedCount} Declined</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Total Badge */}
-          <div className="hidden sm:flex flex-col items-center justify-center px-4 py-3 rounded-2xl bg-gray-50/80 dark:bg-gray-900/40 midnight:bg-gray-800/40 purple:bg-gray-800/40 border border-gray-100/80 dark:border-gray-700/30">
-            <span className="text-2xl font-bold text-gray-800 dark:text-gray-100">{leaves.length}</span>
-            <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Leave Cards */}
-      <div className="p-4 sm:p-5">
-        {leaves.length === 0 ? (
-          <div className="text-center py-8">
-            <CalendarDays className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">No leave requests for this child</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            {leaves.map((leave) => (
-              <LeaveCard key={leave.id} leave={leave} onClick={() => onViewLeave(leave)} showChildInfo={false} />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ============================================
-// LEAVE CARD COMPONENT
-// ============================================
-
-function LeaveCard({ leave, onClick, showChildInfo = true }: { leave: ChildLeaveRequest; onClick: () => void; showChildInfo?: boolean }) {
-  const status = getStatusConfig(leave.status);
-  const type = getLeaveTypeConfig(leave.leaveType);
-  const StatusIcon = status.icon;
-  const TypeIcon = type.icon;
-
-  // Status-based subtle styling
-  const statusStyles = {
-    approved: {
-      card: "bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90 border-gray-100/80 dark:border-gray-700/30 hover:border-emerald-200/60 dark:hover:border-emerald-500/20",
-      accent: "from-emerald-500/[0.03] to-transparent",
-      indicator: "bg-emerald-500",
-      glow: "group-hover:shadow-emerald-500/5",
-    },
-    pending: {
-      card: "bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90 border-gray-100/80 dark:border-gray-700/30 hover:border-amber-200/60 dark:hover:border-amber-500/20",
-      accent: "from-amber-500/[0.03] to-transparent",
-      indicator: "bg-amber-500",
-      glow: "group-hover:shadow-amber-500/5",
-    },
-    declined: {
-      card: "bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90 border-gray-100/80 dark:border-gray-700/30 hover:border-rose-200/60 dark:hover:border-rose-500/20",
-      accent: "from-rose-500/[0.03] to-transparent",
-      indicator: "bg-rose-500",
-      glow: "group-hover:shadow-rose-500/5",
-    },
-  };
-
-  const currentStyle = statusStyles[leave.status];
-
-  return (
-    <button
-      onClick={onClick}
-      className={`group relative w-full text-left rounded-2xl border p-4 sm:p-5 transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-0.5 overflow-hidden ${currentStyle.card} ${currentStyle.glow}`}
-    >
-      {/* Subtle gradient accent */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${currentStyle.accent} pointer-events-none`} />
-
-      {/* Status indicator line */}
-      <div className={`absolute top-4 bottom-4 left-0 w-[3px] ${currentStyle.indicator} rounded-r-full opacity-80`} />
-
-      {/* Content */}
-      <div className="relative pl-2">
-        {/* Top Row - Type & Status */}
-        <div className="flex items-center justify-between gap-3 mb-3">
-          {/* Leave Type Badge */}
-          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ${type.bg}`}>
-            <TypeIcon className={`w-3.5 h-3.5 ${type.text}`} />
-            <span className={`text-[11px] font-medium ${type.text}`}>{leave.leaveType}</span>
-          </div>
-
-          {/* Status Badge */}
-          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ${status.bg}`}>
-            <StatusIcon className={`w-3.5 h-3.5 ${status.text}`} />
-            <span className={`text-[11px] font-semibold ${status.text}`}>{status.label}</span>
-          </div>
-        </div>
-
-        {/* Reason/Title */}
-        <h3 className="text-sm sm:text-[15px] font-semibold text-gray-800 dark:text-gray-100 midnight:text-gray-100 purple:text-gray-100 mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors leading-relaxed">
-          {leave.reason}
-        </h3>
-
-        {/* Child Info - Only show if showChildInfo is true */}
-        {showChildInfo && (
-          <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-gray-100/80 dark:border-gray-700/30">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 midnight:from-cyan-500 midnight:to-blue-500 purple:from-pink-500 purple:to-purple-500 flex items-center justify-center text-white text-[10px] font-bold shadow-sm">
-              {leave.childName.split(" ").map((n) => n[0]).join("")}
-            </div>
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{leave.childName}</span>
-            <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
-            <span className="text-xs text-gray-500 dark:text-gray-400">{leave.classLevel}</span>
-          </div>
-        )}
-
-        {/* Date Information */}
-        <div className="flex items-center justify-between gap-4 p-3 rounded-xl bg-gray-50/80 dark:bg-gray-900/40 midnight:bg-gray-800/40 purple:bg-gray-800/40">
-          {/* Date Range */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 shadow-sm flex items-center justify-center">
-              <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">
-                {formatShortDate(leave.fromDate)} - {formatShortDate(leave.toDate)}
-              </p>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                {leave.days} {leave.days === 1 ? "day" : "days"} duration
-              </p>
-            </div>
-          </div>
-
-          {/* Applied Date */}
-          <div className="text-right">
-            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium">Applied</p>
-            <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mt-0.5">{formatShortDate(leave.appliedDate)}</p>
-          </div>
-        </div>
-
-        {/* Approval/Decline Info */}
-        {leave.status === "approved" && leave.approvedBy && (
-          <div className="mt-3 pt-3 border-t border-gray-100/80 dark:border-gray-700/30 flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-            </div>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              Approved by <span className="font-semibold text-gray-700 dark:text-gray-300">{leave.approvedBy}</span>
-            </span>
-          </div>
-        )}
-        {leave.status === "declined" && leave.remarks && (
-          <div className="mt-3 pt-3 border-t border-gray-100/80 dark:border-gray-700/30 flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center shrink-0">
-              <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-            </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">{leave.remarks}</p>
-          </div>
-        )}
-
-        {/* Hover Arrow */}
-        <div className="absolute bottom-0 right-0 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-1 group-hover:translate-x-0">
-          <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10 flex items-center justify-center">
-            <ArrowRight className="w-4 h-4 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-          </div>
-        </div>
-      </div>
-    </button>
-  );
-}
 
 // ============================================
 // APPLY LEAVE MODAL

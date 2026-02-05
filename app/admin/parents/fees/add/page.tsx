@@ -3,10 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DashboardPage } from "@/components/pages";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
@@ -40,7 +37,6 @@ export default function AddFeeRecordPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [showValidationModal, setShowValidationModal] = useState(false);
-  const isLoading = usePageLoad(800);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [isSticky, setIsSticky] = useState(true);
@@ -261,37 +257,25 @@ export default function AddFeeRecordPage() {
   };
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Form" />
-
-      {/* Main Content */}
-      <div
-        className={`transition-opacity duration-500 ${
-          isLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        {/* Header */}
-        <div className="py-4 mb-2">
-          <PageHeader
-            title="Add Fee Record"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Admin" },
-              { label: "Parents", href: "/admin/parents?view=grid" },
-              { label: "Fee Records", href: "/admin/parents/fees?view=list" },
-              { label: "Add Fee Record", isActive: true },
-            ]}
-          />
-        </div>
-
-        {/* Form */}
-        <form
-          id="add-fee-form"
-          ref={formRef}
-          onSubmit={handleSubmit}
-          className="space-y-6 pb-32 md:pb-36 lg:pb-16 xl:pb-20"
-        >
+    <DashboardPage
+      title="Add Fee Record"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Admin", href: "/admin" },
+        { label: "Parents", href: "/admin/parents?view=grid" },
+        { label: "Fee Records", href: "/admin/parents/fees?view=list" },
+        { label: "Add Fee Record", isActive: true },
+      ]}
+      loadingText="Loading Form"
+      afterStats={
+        <div className="mt-6">
+          {/* Form */}
+          <form
+            id="add-fee-form"
+            ref={formRef}
+            onSubmit={handleSubmit}
+            className="space-y-6 pb-32 md:pb-36 lg:pb-16 xl:pb-20"
+          >
           {/* Parent & Student Selection Section */}
           <ParentStudentSelectionSection
             formData={{
@@ -430,13 +414,14 @@ export default function AddFeeRecordPage() {
           </div>
         </div>
       </div>
-
+      }
+    >
       {/* Validation Errors Modal */}
       <ValidationErrorsModal
         isOpen={showValidationModal}
         onClose={() => setShowValidationModal(false)}
         errors={errors}
       />
-    </MainLayout>
+    </DashboardPage>
   );
 }

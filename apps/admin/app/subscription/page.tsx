@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import AdminLayout from "@admin/components/layout/AdminLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import AdminPageShell from "@admin/components/pages/AdminPageShell";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useTenantSubscription } from "@/hooks/useTenant";
 import { CreditCard, CheckCircle2, AlertCircle, Users, UserCog, Sparkles } from "lucide-react";
@@ -19,9 +17,17 @@ export default function SubscriptionPage() {
 
   if (!isMounted) {
     return (
-      <AdminLayout>
-        <PageLoader isLoading={true} loadingText="Loading Subscription" />
-      </AdminLayout>
+      <AdminPageShell
+        title="Subscription & Plans"
+        breadcrumbs={[
+          { label: "Admin Console", href: "/" },
+          { label: "Subscription & Plans", isActive: true },
+        ]}
+        isLoading={true}
+        loadingText="Loading Subscription"
+      >
+        <div />
+      </AdminPageShell>
     );
   }
 
@@ -51,26 +57,17 @@ export default function SubscriptionPage() {
   };
 
   return (
-    <AdminLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Subscription" />
-
-      {/* Main Content */}
-      <div className={`transition-opacity duration-500 ${isLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Header */}
-        <div className="py-4 mb-2">
-          <PageHeader
-            title="Subscription & Plans"
-            breadcrumbs={[
-              { label: "Admin Console", href: "/" },
-              { label: "Subscription & Plans", isActive: true },
-            ]}
-          />
-        </div>
-
-        {/* Content */}
-        <div className="pb-20 space-y-6">
-          <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <AdminPageShell
+      title="Subscription & Plans"
+      breadcrumbs={[
+        { label: "Admin Console", href: "/" },
+        { label: "Subscription & Plans", isActive: true },
+      ]}
+      isLoading={isLoading}
+      loadingText="Loading Subscription"
+    >
+      <div className="pb-20 space-y-6">
+        <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
             {/* Section Header */}
             <div className="bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 px-6 py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="flex items-center gap-3">
@@ -238,8 +235,7 @@ export default function SubscriptionPage() {
               )}
             </div>
           </section>
-        </div>
       </div>
-    </AdminLayout>
+    </AdminPageShell>
   );
 }

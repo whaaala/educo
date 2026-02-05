@@ -2,11 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import PageSpinner from "@/components/shared/PageSpinner";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DataManagementPage } from "@/components/pages";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useCountry } from "@/contexts/CountryContext";
 import { formatCurrency } from "@/config/countries";
@@ -14,12 +10,12 @@ import { exportReceiptsToPDF, exportReceiptsToExcel } from "@/lib/export-utils";
 import { printReceipt, downloadReceipt, emailReceipt, type ReceiptData } from "@/lib/document-utils";
 import Button from "@/components/shared/Button";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
-import PageActions from "@/components/shared/PageActions";
 import SearchFilterBar from "@/components/shared/SearchFilterBar";
 import StatCard from "@/components/shared/StatCard";
-import Modal from "@/components/shared/Modal";
-import ConfirmationModal from "@/components/shared/ConfirmationModal";
+import ActionModal from "@/components/shared/ActionModal";
+import DetailViewModal from "@/components/shared/DetailViewModal";
 import ReceiptModal from "@/components/finance/ReceiptModal";
+import PageSpinner from "@/components/shared/PageSpinner";
 import {
   Plus,
   Receipt,
@@ -34,6 +30,7 @@ import {
   TrendingUp,
   CreditCard,
 } from "lucide-react";
+import { RECEIPT_ACADEMIC_YEARS, RECEIPT_TERMS, CLASS_OPTIONS, RECEIPT_STATUS_OPTIONS } from "../config";
 
 // Receipt status type
 type ReceiptStatus = "issued" | "pending" | "voided";
@@ -49,7 +46,7 @@ interface ReceiptItem {
   quantity: number;
 }
 
-interface Receipt {
+interface ReceiptRecord {
   id: string;
   receiptNumber: string;
   studentId: string;
@@ -76,7 +73,7 @@ interface Receipt {
 }
 
 // Mock data
-const MOCK_RECEIPTS: Receipt[] = [
+const MOCK_RECEIPTS: ReceiptRecord[] = [
   {
     id: "rec-001",
     receiptNumber: "RCP-2024-0001",
@@ -265,40 +262,7 @@ const FEE_TYPES = [
   { value: "other", label: "Other Fee" },
 ];
 
-// Filter options
-const ACADEMIC_YEARS = [
-  { value: "all", label: "All Years" },
-  { value: "2024-2025", label: "2024/2025" },
-  { value: "2025-2026", label: "2025/2026" },
-  { value: "2023-2024", label: "2023/2024" },
-];
-
-const TERMS = [
-  { value: "all", label: "All Terms" },
-  { value: "first-term", label: "First Term" },
-  { value: "second-term", label: "Second Term" },
-  { value: "third-term", label: "Third Term" },
-];
-
-const STATUS_OPTIONS = [
-  { value: "all", label: "All Status" },
-  { value: "issued", label: "Issued" },
-  { value: "pending", label: "Pending" },
-  { value: "voided", label: "Voided" },
-];
-
-const CLASS_OPTIONS = [
-  { value: "all", label: "All Classes" },
-  { label: "JSS 1", value: "JSS 1" },
-  { label: "JSS 2", value: "JSS 2" },
-  { label: "JSS 3", value: "JSS 3" },
-  { label: "SSS 1", value: "SSS 1" },
-  { label: "SSS 2", value: "SSS 2" },
-  { label: "SSS 3", value: "SSS 3" },
-];
-
 export default function ReceiptsPage() {
-  const isPageLoading = usePageLoad(600);
   const { settings } = useSchoolSettings();
   const { countryCode, countryConfig } = useCountry();
   const currencySymbol = countryConfig.currency.symbol;
@@ -307,7 +271,7 @@ export default function ReceiptsPage() {
   const educationLevel = settings.defaultEducationLevel;
 
   // State
-  const [receipts, setReceipts] = useState<Receipt[]>(MOCK_RECEIPTS);
+  const [receipts, setReceipts] = useState<ReceiptRecord[]>(MOCK_RECEIPTS);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("all");
   const [selectedTerm, setSelectedTerm] = useState("all");
@@ -318,8 +282,8 @@ export default function ReceiptsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isVoidModalOpen, setIsVoidModalOpen] = useState(false);
-  const [viewingReceipt, setViewingReceipt] = useState<Receipt | null>(null);
-  const [voidingReceipt, setVoidingReceipt] = useState<Receipt | null>(null);
+  const [viewingReceipt, setViewingReceipt] = useState<ReceiptRecord | null>(null);
+  const [voidingReceipt, setVoidingReceipt] = useState<ReceiptRecord | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isFiltering, setIsFiltering] = useState(false);
@@ -471,13 +435,13 @@ export default function ReceiptsPage() {
   };
 
   // Handle actions
-  const handleView = (receipt: Receipt) => {
+  const handleView = (receipt: ReceiptRecord) => {
     setViewingReceipt(receipt);
     setIsViewModalOpen(true);
   };
 
-  // Convert Receipt to ReceiptData format for document utilities
-  const convertToReceiptData = (receipt: Receipt): ReceiptData => ({
+  // Convert ReceiptRecord to ReceiptData format for document utilities
+  const convertToReceiptData = (receipt: ReceiptRecord): ReceiptData => ({
     receiptNumber: receipt.receiptNumber,
     studentName: receipt.studentName,
     studentNumber: receipt.studentNumber,
@@ -502,7 +466,7 @@ export default function ReceiptsPage() {
     notes: receipt.notes,
   });
 
-  const handlePrint = (receipt: Receipt) => {
+  const handlePrint = (receipt: ReceiptRecord) => {
     const receiptData = convertToReceiptData(receipt);
     printReceipt(
       receiptData,
@@ -511,7 +475,7 @@ export default function ReceiptsPage() {
     );
   };
 
-  const handleDownload = (receipt: Receipt) => {
+  const handleDownload = (receipt: ReceiptRecord) => {
     const receiptData = convertToReceiptData(receipt);
     downloadReceipt(
       receiptData,
@@ -520,7 +484,7 @@ export default function ReceiptsPage() {
     );
   };
 
-  const handleEmail = (receipt: Receipt) => {
+  const handleEmail = (receipt: ReceiptRecord) => {
     const receiptData = convertToReceiptData(receipt);
     emailReceipt(
       receiptData,
@@ -589,7 +553,7 @@ export default function ReceiptsPage() {
     const amountPaid = parseFloat(data.amountPaid) || totalAmount;
     const balance = totalAmount - amountPaid;
 
-    const newReceipt: Receipt = {
+    const newReceipt: ReceiptRecord = {
       id: `rec-${Date.now()}`,
       receiptNumber: `RCP-2024-${String(receipts.length + 1).padStart(4, "0")}`,
       studentId: data.studentId,
@@ -639,7 +603,7 @@ export default function ReceiptsPage() {
   };
 
   // Table columns
-  const columns: ColumnConfig<Receipt>[] = [
+  const columns: ColumnConfig<ReceiptRecord>[] = [
     {
       key: "receiptNumber",
       label: "Receipt #",
@@ -799,112 +763,112 @@ export default function ReceiptsPage() {
   const isLoading = isRefreshing || isFiltering;
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Receipts" />
+    <DataManagementPage<ReceiptRecord>
+      title="Receipts"
+      breadcrumbs={[
+        { label: "Finance", href: "/finance/fee-structure" },
+        { label: "Receipts" },
+      ]}
+      data={filteredData}
+      getRowKey={(item) => item.id}
+      columns={columns}
+      enableSelection={false}
+      enableViewToggle={false}
+      showTableSearch={false}
+      addButtonConfig={{
+        label: "Generate Receipt",
+        onClick: () => setIsCreateModalOpen(true),
+      }}
+      onRefresh={handleRefresh}
+      onExportPDF={() => exportReceiptsToPDF(
+        filteredData,
+        "receipts",
+        (amount) => formatCurrency(amount, countryCode),
+        "School Management System"
+      )}
+      onExportExcel={() => exportReceiptsToExcel(
+        filteredData,
+        "receipts",
+        (amount) => formatCurrency(amount, countryCode)
+      )}
+      headerContent={
+        <>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mt-6">
+            <StatCard
+              icon={FileText}
+              label="Total Amount"
+              value={formatCurrency(stats.totalAmount, countryCode)}
+              color="blue"
+              badge={`${filteredData.length}`}
+            />
+            <StatCard
+              icon={TrendingUp}
+              label="Collected"
+              value={formatCurrency(stats.totalCollected, countryCode)}
+              color="green"
+              badge={`${stats.totalAmount > 0 ? ((stats.totalCollected / stats.totalAmount) * 100).toFixed(0) : 0}%`}
+            />
+            <StatCard
+              icon={Clock}
+              label="Outstanding"
+              value={formatCurrency(stats.totalOutstanding, countryCode)}
+              color="amber"
+              badge={`${stats.pendingReceipts}`}
+            />
+            <StatCard
+              icon={CheckCircle2}
+              label="Issued"
+              value={stats.issuedReceipts.toString()}
+              color="emerald"
+              badge={`${stats.totalReceipts > 0 ? ((stats.issuedReceipts / stats.totalReceipts) * 100).toFixed(0) : 0}%`}
+            />
+            <StatCard
+              icon={XCircle}
+              label="Voided"
+              value={stats.voidedReceipts.toString()}
+              color="red"
+              badge={`${stats.voidedReceipts}`}
+            />
+          </div>
 
-      <div className={`space-y-6 transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <PageHeader
-            title="Receipts"
-            breadcrumbs={[
-              { label: "Finance", href: "/finance/fee-structure" },
-              { label: "Receipts" },
-            ]}
-          />
-          <PageActions
-            onRefresh={handleRefresh}
-            onExportPDF={() => exportReceiptsToPDF(
-              filteredData,
-              "receipts",
-              (amount) => formatCurrency(amount, countryCode),
-              "School Management System"
-            )}
-            onExportExcel={() => exportReceiptsToExcel(
-              filteredData,
-              "receipts",
-              (amount) => formatCurrency(amount, countryCode)
-            )}
-            onAdd={() => setIsCreateModalOpen(true)}
-            addButtonLabel="Generate Receipt"
-            exportDescription="Export receipt records"
-            showPrint={false}
-          />
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-          <StatCard
-            icon={FileText}
-            label="Total Amount"
-            value={formatCurrency(stats.totalAmount, countryCode)}
-            color="blue"
-            badge={`${filteredData.length}`}
-          />
-          <StatCard
-            icon={TrendingUp}
-            label="Collected"
-            value={formatCurrency(stats.totalCollected, countryCode)}
-            color="green"
-            badge={`${stats.totalAmount > 0 ? ((stats.totalCollected / stats.totalAmount) * 100).toFixed(0) : 0}%`}
-          />
-          <StatCard
-            icon={Clock}
-            label="Outstanding"
-            value={formatCurrency(stats.totalOutstanding, countryCode)}
-            color="amber"
-            badge={`${stats.pendingReceipts}`}
-          />
-          <StatCard
-            icon={CheckCircle2}
-            label="Issued"
-            value={stats.issuedReceipts.toString()}
-            color="emerald"
-            badge={`${stats.totalReceipts > 0 ? ((stats.issuedReceipts / stats.totalReceipts) * 100).toFixed(0) : 0}%`}
-          />
-          <StatCard
-            icon={XCircle}
-            label="Voided"
-            value={stats.voidedReceipts.toString()}
-            color="red"
-            badge={`${stats.voidedReceipts}`}
-          />
-        </div>
-
-        {/* Filters Bar */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={handleSearchChange}
-          searchPlaceholder="Search by receipt #, student name or ID..."
-          filters={[
-            {
-              label: "Academic Year",
-              value: selectedYear,
-              onChange: (val) => handleFilterChange(setSelectedYear, String(val)),
-              options: ACADEMIC_YEARS,
-            },
-            {
-              label: "Term",
-              value: selectedTerm,
-              onChange: (val) => handleFilterChange(setSelectedTerm, String(val)),
-              options: TERMS,
-            },
-            {
-              label: "Class",
-              value: selectedClass,
-              onChange: (val) => handleFilterChange(setSelectedClass, String(val)),
-              options: CLASS_OPTIONS,
-            },
-            {
-              label: "Status",
-              value: selectedStatus,
-              onChange: (val) => handleFilterChange(setSelectedStatus, String(val)),
-              options: STATUS_OPTIONS,
-            },
-          ]}
-        />
-
-        {/* Table Section */}
+          {/* Filters Bar */}
+          <div className="mt-6">
+            <SearchFilterBar
+              searchValue={searchQuery}
+              onSearchChange={handleSearchChange}
+              searchPlaceholder="Search by receipt #, student name or ID..."
+              filters={[
+                {
+                  label: "Academic Year",
+                  value: selectedYear,
+                  onChange: (val) => handleFilterChange(setSelectedYear, String(val)),
+                  options: RECEIPT_ACADEMIC_YEARS,
+                },
+                {
+                  label: "Term",
+                  value: selectedTerm,
+                  onChange: (val) => handleFilterChange(setSelectedTerm, String(val)),
+                  options: RECEIPT_TERMS,
+                },
+                {
+                  label: "Class",
+                  value: selectedClass,
+                  onChange: (val) => handleFilterChange(setSelectedClass, String(val)),
+                  options: CLASS_OPTIONS,
+                },
+                {
+                  label: "Status",
+                  value: selectedStatus,
+                  onChange: (val) => handleFilterChange(setSelectedStatus, String(val)),
+                  options: RECEIPT_STATUS_OPTIONS,
+                },
+              ]}
+            />
+          </div>
+        </>
+      }
+      customListComponent={
         <div>
           {isLoading ? (
             <PageSpinner message={isRefreshing ? "Refreshing..." : "Filtering..."} size="md" />
@@ -969,8 +933,8 @@ export default function ReceiptsPage() {
             </div>
           )}
         </div>
-      </div>
-
+      }
+    >
       {/* Create Receipt Modal */}
       <ReceiptModal
         isOpen={isCreateModalOpen}
@@ -1001,20 +965,32 @@ export default function ReceiptsPage() {
       )}
 
       {/* Void Confirmation Modal */}
-      <ConfirmationModal
+      <ActionModal
         isOpen={isVoidModalOpen}
         onClose={() => {
           setIsVoidModalOpen(false);
           setVoidingReceipt(null);
         }}
-        onConfirm={handleVoid}
         title="Void Receipt"
-        message={`Are you sure you want to void receipt "${voidingReceipt?.receiptNumber}"? This action cannot be undone.`}
+        subtitle={voidingReceipt?.receiptNumber}
+        variant="danger"
+        message={`Are you sure you want to void this receipt? This action cannot be undone.`}
+        details={
+          voidingReceipt
+            ? [
+                { label: "Student", value: voidingReceipt.studentName },
+                { label: "Class", value: voidingReceipt.classLevel },
+                { label: "Total", value: formatCurrency(voidingReceipt.totalAmount, countryCode) },
+                { label: "Balance", value: formatCurrency(voidingReceipt.balance, countryCode) },
+              ]
+            : undefined
+        }
         confirmLabel="Void Receipt"
         cancelLabel="Cancel"
-        variant="danger"
+        onConfirm={handleVoid}
+        isConfirming={isSaving}
       />
-    </MainLayout>
+    </DataManagementPage>
   );
 }
 
@@ -1022,7 +998,7 @@ export default function ReceiptsPage() {
 interface ReceiptViewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  receipt: Receipt;
+  receipt: ReceiptRecord;
   countryCode: string;
   currencySymbol: string;
   getStatusBadge: (status: ReceiptStatus) => React.ReactNode;
@@ -1044,165 +1020,133 @@ function ReceiptViewModal({
   onDownload,
   onEmail,
 }: ReceiptViewModalProps) {
+  const itemRows = receipt.items.map((item) => (
+    <tr key={item.id}>
+      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+        {item.description}
+      </td>
+      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 text-right">
+        {item.quantity}
+      </td>
+      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white text-right">
+        {formatCurrency(item.amount * item.quantity, countryCode)}
+      </td>
+    </tr>
+  ));
+
   return (
-    <Modal
+    <DetailViewModal
       isOpen={isOpen}
       onClose={onClose}
       title={`Receipt ${receipt.receiptNumber}`}
-      subtitle={`Issued on ${new Date(receipt.issueDate).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`}
+      subtitle={`Issued on ${new Date(receipt.issueDate).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })}`}
       icon={<Receipt className="w-5 h-5" />}
-      maxWidth="2xl"
-      footer={
-        <div className="flex justify-between w-full">
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={onPrint}>
-              <Printer className="w-4 h-4 mr-2" />
-              Print
-            </Button>
-            <Button variant="secondary" onClick={onDownload}>
-              <Download className="w-4 h-4 mr-2" />
-              Download
-            </Button>
-            <Button variant="secondary" onClick={onEmail}>
-              <Mail className="w-4 h-4 mr-2" />
-              Email
-            </Button>
+      size="2xl"
+      header={{
+        image: (
+          <div className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-blue-200 dark:ring-blue-800 midnight:ring-cyan-800/50 purple:ring-pink-800/50">
+            <Image
+              src={`https://i.pravatar.cc/150?u=${receipt.studentId}`}
+              alt={receipt.studentName}
+              fill
+              className="object-cover"
+              unoptimized
+            />
           </div>
-          <Button variant="ghost" onClick={onClose}>
-            Close
-          </Button>
-        </div>
-      }
-    >
-      <div className="space-y-6">
-        {/* Status and Receipt Info */}
-        <div className="flex items-center justify-between">
-          {getStatusBadge(receipt.status)}
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            {receipt.academicYear} | {receipt.term.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-          </span>
-        </div>
-
-        {/* Student Info */}
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-          <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Student Information</h4>
-          <div className="flex items-center gap-4">
-            <div className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-blue-200 dark:ring-blue-800 midnight:ring-cyan-800/50 purple:ring-pink-800/50">
-              <Image
-                src={`https://i.pravatar.cc/150?u=${receipt.studentId}`}
-                alt={receipt.studentName}
-                fill
-                className="object-cover"
-                unoptimized
-              />
-            </div>
-            <div>
-              <p className="font-semibold text-gray-900 dark:text-white">{receipt.studentName}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {receipt.studentNumber} | {receipt.classLevel}
-              </p>
-            </div>
+        ),
+        badges: [
+          {
+            label: receipt.status.toUpperCase(),
+            variant: receipt.status === "issued" ? "success" : receipt.status === "pending" ? "warning" : "danger",
+            pulse: receipt.status !== "voided",
+          },
+        ],
+        subtitle: (
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm text-gray-600 dark:text-gray-300">
+              {receipt.studentName} • {receipt.studentNumber} • {receipt.classLevel}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {receipt.academicYear} • {receipt.term.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+            </span>
           </div>
-        </div>
-
-        {/* Receipt Items */}
-        <div>
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Items</h4>
-          <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-800">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Description</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Amount</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {receipt.items.map((item) => (
-                  <tr key={item.id}>
-                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{item.description}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 text-right">{item.quantity}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white text-right">
-                      {formatCurrency(item.amount * item.quantity, countryCode)}
-                    </td>
+        ),
+      }}
+      sections={[
+        {
+          id: "items",
+          title: "Items",
+          type: "custom",
+          children: (
+            <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-50 dark:bg-gray-800">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                      Description
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                      Qty
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                      Amount
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Totals */}
-        <div className="bg-gray-100 dark:bg-gray-800 rounded-xl p-4 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600 dark:text-gray-400">Subtotal:</span>
-            <span className="font-medium text-gray-900 dark:text-white">
-              {formatCurrency(receipt.subtotal, countryCode)}
-            </span>
-          </div>
-          {receipt.discount > 0 && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Discount:</span>
-              <span className="font-medium text-red-600 dark:text-red-400">
-                -{formatCurrency(receipt.discount, countryCode)}
-              </span>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">{itemRows}</tbody>
+              </table>
             </div>
-          )}
-          <div className="flex justify-between text-base font-semibold border-t border-gray-300 dark:border-gray-600 pt-2">
-            <span className="text-gray-900 dark:text-white">Total:</span>
-            <span className="text-gray-900 dark:text-white">
-              {formatCurrency(receipt.totalAmount, countryCode)}
-            </span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600 dark:text-gray-400">Amount Paid:</span>
-            <span className="font-medium text-green-600 dark:text-green-400">
-              {formatCurrency(receipt.amountPaid, countryCode)}
-            </span>
-          </div>
-          {receipt.balance > 0 && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Balance Due:</span>
-              <span className="font-medium text-amber-600 dark:text-amber-400">
-                {formatCurrency(receipt.balance, countryCode)}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Payment Info */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Payment Method</p>
-            <p className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
-              <CreditCard className="w-4 h-4 text-gray-400" />
-              {getPaymentMethodLabel(receipt.paymentMethod)}
-            </p>
-          </div>
-          {receipt.paymentReference && (
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Reference</p>
-              <p className="text-sm font-medium text-gray-900 dark:text-white font-mono">
-                {receipt.paymentReference}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Notes */}
-        {receipt.notes && (
-          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
-            <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mb-1">Notes</p>
-            <p className="text-sm text-amber-800 dark:text-amber-200">{receipt.notes}</p>
-          </div>
-        )}
-
-        {/* Footer Info */}
-        <div className="text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-4">
-          <p>Issued by: {receipt.issuedBy}</p>
-          <p>Generated: {new Date(receipt.createdAt).toLocaleString()}</p>
-        </div>
-      </div>
-    </Modal>
+          ),
+        },
+        {
+          id: "totals",
+          title: "Totals",
+          type: "grid",
+          columns: 3,
+          fields: [
+            { label: "Subtotal", value: formatCurrency(receipt.subtotal, countryCode) },
+            { label: "Discount", value: receipt.discount > 0 ? `-${formatCurrency(receipt.discount, countryCode)}` : "-" },
+            { label: "Total", value: formatCurrency(receipt.totalAmount, countryCode), highlight: "blue" },
+            { label: "Paid", value: formatCurrency(receipt.amountPaid, countryCode), highlight: "green" },
+            { label: "Balance", value: formatCurrency(receipt.balance, countryCode), highlight: receipt.balance > 0 ? "amber" : "green" },
+            { label: "Due Date", value: receipt.dueDate ? new Date(receipt.dueDate).toLocaleDateString("en-GB") : "-" },
+          ],
+        },
+        {
+          id: "payment",
+          title: "Payment",
+          type: "grid",
+          columns: 2,
+          fields: [
+            { label: "Method", value: getPaymentMethodLabel(receipt.paymentMethod) },
+            { label: "Reference", value: receipt.paymentReference || "-" },
+          ],
+        },
+        receipt.notes
+          ? {
+              id: "notes",
+              title: "Notes",
+              type: "description",
+              content: receipt.notes,
+            }
+          : { id: "notes-empty", type: "custom", children: null },
+      ]}
+      actions={[
+        { id: "print", label: "Print", icon: Printer, variant: "secondary", position: "left", onClick: onPrint },
+        { id: "download", label: "Download", icon: Download, variant: "secondary", position: "left", onClick: onDownload },
+        { id: "email", label: "Email", icon: Mail, variant: "secondary", position: "left", onClick: onEmail },
+        { id: "close", label: "Close", variant: "ghost", position: "right", onClick: onClose },
+      ]}
+      footerInfo={{
+        items: [
+          { label: "Issued by", value: receipt.issuedBy },
+          { label: "Generated", value: new Date(receipt.createdAt).toLocaleString() },
+        ],
+      }}
+    />
   );
 }

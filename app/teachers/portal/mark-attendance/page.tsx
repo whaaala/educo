@@ -1,10 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DashboardPage } from "@/components/pages";
 import {
   CheckCircle,
   XCircle,
@@ -76,7 +73,6 @@ const mockClasses = [
 ];
 
 export default function MarkAttendancePage() {
-  const isLoading = usePageLoad(600);
   const [selectedClass, setSelectedClass] = useState("CLS-001");
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -151,28 +147,18 @@ export default function MarkAttendancePage() {
   };
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isLoading} loadingText="Loading Attendance" />
-
-      <div
-        className={`transition-opacity duration-500 ${
-          isLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        {/* Header */}
-        <div className="animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
-          <PageHeader
-            title="Mark Student Attendance"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Teacher Portal", href: "/teachers/portal/dashboard" },
-              { label: "Mark Attendance", isActive: true },
-            ]}
-          />
-        </div>
-
-        {/* Class and Date Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out">
+    <DashboardPage
+      title="Mark Student Attendance"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Teacher Portal", href: "/teachers/portal/dashboard" },
+        { label: "Mark Attendance", isActive: true },
+      ]}
+      loadingText="Loading Attendance"
+      afterStats={
+        <div className="mt-6">
+          {/* Class and Date Selection */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Select Class
@@ -419,6 +405,7 @@ export default function MarkAttendancePage() {
           </div>
         )}
       </div>
-    </MainLayout>
+    }
+  />
   );
 }

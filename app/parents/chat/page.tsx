@@ -4,12 +4,9 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import DashboardPage from "@/components/shared/DashboardPage";
 import ActionButton from "@/components/shared/ActionButton";
 import EmojiPickerPopover from "@/components/shared/EmojiPickerPopover";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import {
   MessageCircle,
   Send,
@@ -84,7 +81,6 @@ interface ConversationPreview {
 }
 
 export default function ParentChatPage() {
-  const isPageLoading = usePageLoad(600);
   const searchParams = useSearchParams();
   const chatEndRef = useRef<HTMLDivElement>(null);
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
@@ -271,14 +267,15 @@ export default function ParentChatPage() {
     : [{ label: "Parent Portal", href: "/parents" }, { label: "Chat" }];
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Chat" />
-
-      <div className={`transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
+    <DashboardPage
+      title="Chat"
+      breadcrumbs={breadcrumbs}
+      loadingText="Loading Chat"
+      afterStats={
+        <div className="transition-opacity duration-500">
         {/* Header */}
         <div className="mb-4">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <PageHeader title="Chat" breadcrumbs={breadcrumbs} />
             <Link href={fromAdmin ? "/parents/chat/compose?from=admin" : "/parents/chat/compose"}>
               <ActionButton variant="primary" color="blue" size="md" icon={<Plus className="w-full h-full" />}>
                 New Chat
@@ -590,7 +587,8 @@ export default function ParentChatPage() {
             )}
           </div>
         </div>
-      </div>
-    </MainLayout>
+        </div>
+      }
+    />
   );
 }

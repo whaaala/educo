@@ -5,14 +5,12 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import jsPDF from "jspdf";
-import MainLayout from "@/components/layout/MainLayout";
-import PageLoader from "@/components/shared/PageLoader";
+import DashboardPage from "@/components/shared/DashboardPage";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import ActionButton from "@/components/shared/ActionButton";
 import SecondaryButton from "@/components/shared/SecondaryButton";
-import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
+import ActionModal from "@/components/shared/ActionModal";
 import MobileDropdown from "@/components/shared/MobileDropdown";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import {
   getParentById,
@@ -111,7 +109,6 @@ export default function AdminParentDetailPage() {
   const params = useParams();
   const router = useRouter();
   const parentId = params.id as string;
-  const isLoading = usePageLoad(600);
   const { settings } = useSchoolSettings();
 
   const [parent, setParent] = useState<AdminParent | null>(null);
@@ -305,11 +302,18 @@ export default function AdminParentDetailPage() {
     return [...convertedContextMeetings, ...uniqueMockMeetings];
   }, [parentContextMeetings, mockMeetings]);
 
-  if (isLoading || isLoadingData || !parent) {
+  if (isLoadingData || !parent) {
     return (
-      <MainLayout>
-        <PageLoader isLoading={true} loadingText="Loading Parent Details" />
-      </MainLayout>
+      <DashboardPage
+        title="Parent Details"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Admin" },
+          { label: "Parents", href: "/admin/parents" },
+          { label: "Parent Details", isActive: true },
+        ]}
+        loadingText="Loading Parent Details"
+      />
     );
   }
 
@@ -387,31 +391,22 @@ export default function AdminParentDetailPage() {
   ];
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isLoading} loadingText="Loading Parent Details" />
-
-      <div className={`transition-opacity duration-500 ${isLoading ? "opacity-0" : "opacity-100"}`}>
+    <DashboardPage
+      title="Parent Details"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Admin" },
+        { label: "Parents", href: "/admin/parents" },
+        { label: fullName, href: `/admin/parents/${parent.id}` },
+        { label: "Parent Details", isActive: true },
+      ]}
+      loadingText="Loading Parent Details"
+      afterStats={
+        <>
+      <div className="transition-opacity duration-500">
         {/* Header */}
         <div className="mb-6 mt-6">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div>
-              <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
-                Parent Details
-              </h1>
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 flex-wrap">
-                <a href="/" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
-                  Dashboard
-                </a>
-                <span>/</span>
-                <a href="/admin/parents" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
-                  Parents
-                </a>
-                <span>/</span>
-                <span className="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium">
-                  Parent Details
-                </span>
-              </div>
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-end gap-4">
             <div className="flex flex-wrap gap-3">
               {/* Primary Actions */}
               <div className="flex flex-wrap sm:flex-nowrap gap-3">
@@ -556,15 +551,16 @@ export default function AdminParentDetailPage() {
       </div>
 
       {/* Delete Confirmation Modal */}
-      <DeleteConfirmationModal
+      <ActionModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteParent}
         title="Delete Parent"
-        itemName={fullName}
-        itemId={parentId}
-        warningMessage="This will permanently remove this parent and all associated data. This action cannot be undone."
-        confirmButtonText="Delete Parent"
+        subtitle={`${fullName} • ${parentId}`}
+        variant="danger"
+        message="This will permanently remove this parent and all associated data. This action cannot be undone."
+        confirmLabel="Delete Parent"
+        cancelLabel="Cancel"
+        onConfirm={handleDeleteParent}
       />
 
       {/* Manage Children Modal - shown before delete when parent has children */}
@@ -859,7 +855,9 @@ export default function AdminParentDetailPage() {
         parent={parent}
         parentName={fullName}
       />
-    </MainLayout>
+      </>
+      }
+    />
   );
 }
 

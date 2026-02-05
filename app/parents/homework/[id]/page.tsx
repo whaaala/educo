@@ -4,11 +4,8 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import {
   ArrowLeft,
   BookOpen,
@@ -560,7 +557,6 @@ function getStatusConfig(status: Homework["status"]) {
 export default function HomeworkDetailPage() {
   const params = useParams();
   const homeworkId = params?.id as string;
-  const isPageLoading = usePageLoad(600);
 
   // State for file preview modal
   const [previewFile, setPreviewFile] = useState<{
@@ -574,29 +570,34 @@ export default function HomeworkDetailPage() {
 
   const homework = MOCK_HOMEWORK[homeworkId];
 
-  if (isPageLoading) {
-    return <PageLoader isLoading={true} />;
-  }
-
   if (!homework) {
     return (
-      <MainLayout>
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <AlertCircle className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            Homework Not Found
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
-            The homework assignment you&apos;re looking for doesn&apos;t exist.
-          </p>
-          <Link href="/parents/homework">
-            <Button variant="primary">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Homework
-            </Button>
-          </Link>
-        </div>
-      </MainLayout>
+      <DashboardPage
+        title="Homework Not Found"
+        breadcrumbs={[
+          { label: "Parent Portal", href: "/parents" },
+          { label: "Homework", href: "/parents/homework" },
+          { label: "Not Found", isActive: true },
+        ]}
+        loadingText="Loading Homework"
+        afterStats={
+          <div className="mt-6 flex flex-col items-center justify-center min-h-[60vh]">
+            <AlertCircle className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              Homework Not Found
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              The homework assignment you&apos;re looking for doesn&apos;t exist.
+            </p>
+            <Link href="/parents/homework">
+              <Button variant="primary">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Homework
+              </Button>
+            </Link>
+          </div>
+        }
+      />
     );
   }
 
@@ -604,20 +605,18 @@ export default function HomeworkDetailPage() {
   const StatusIcon = statusConfig.icon;
 
   return (
-    <MainLayout>
-      <div className="space-y-5 sm:space-y-6">
-        {/* Header */}
-        <PageHeader
-          title="Homework Details"
-          breadcrumbs={[
-            { label: "Parent Portal", href: "/parents" },
-            { label: "Homework", href: "/parents/homework" },
-            { label: homework.title },
-          ]}
-        />
-
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+    <DashboardPage
+      title="Homework Details"
+      breadcrumbs={[
+        { label: "Parent Portal", href: "/parents" },
+        { label: "Homework", href: "/parents/homework" },
+        { label: homework.title, isActive: true },
+      ]}
+      loadingText="Loading Homework"
+      afterStats={
+        <div className="mt-6 space-y-5 sm:space-y-6">
+          {/* Main Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
           {/* Left Column - Assignment Details */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-5">
             {/* Assignment Info Card */}
@@ -1144,6 +1143,8 @@ export default function HomeworkDetailPage() {
           </div>
         </div>
       </div>
+      }
+    >
 
       {/* File Preview Modal */}
       <FilePreviewModal
@@ -1151,6 +1152,6 @@ export default function HomeworkDetailPage() {
         onClose={() => setPreviewFile(null)}
         file={previewFile}
       />
-    </MainLayout>
+    </DashboardPage>
   );
 }

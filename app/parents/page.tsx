@@ -3,8 +3,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import MainLayout from "@/components/layout/MainLayout";
-import PageLoader from "@/components/shared/PageLoader";
+import DashboardPage from "@/components/shared/DashboardPage";
 import StatCard from "@/components/shared/StatCard";
 import PaymentModal from "@/components/shared/PaymentModal";
 import SuccessModal from "@/components/shared/SuccessModal";
@@ -27,7 +26,6 @@ import {
   RecentGradesCard,
   UpcomingMeetingsCard,
 } from "@/components/parents/dashboard/cards";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useCountry } from "@/contexts/CountryContext";
 import type { DashboardCardDefinition } from "@/components/parents/dashboard/parent-dashboard-masonry-dnd";
 import {
@@ -348,7 +346,6 @@ const MOCK_MEETINGS = [
 // ============================================
 
 export default function ParentDashboardPage() {
-  const isPageLoading = usePageLoad(600);
   const { countryCode } = useCountry();
   const [selectedChild, setSelectedChild] = useState<Child>(MOCK_CHILDREN[0]);
 
@@ -527,10 +524,16 @@ export default function ParentDashboardPage() {
   );
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Dashboard" />
-
-      <div className={`transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
+    <DashboardPage
+      title="Dashboard"
+      breadcrumbs={[
+        { label: "Parent Portal", href: "/parents" },
+        { label: "Dashboard", isActive: true },
+      ]}
+      loadingText="Loading Dashboard"
+      afterStats={
+        <>
+          <div className="transition-opacity duration-500">
 
         {/* ============================================ */}
         {/* MOBILE LAYOUT (< md) */}
@@ -916,7 +919,7 @@ export default function ParentDashboardPage() {
           {/* Desktop Dashboard Masonry */}
           <ParentDashboardMasonryDnD cards={dashboardCards} order={order} onOrderChange={setOrder} />
         </div>
-      </div>
+          </div>
 
       {/* Payment Modal */}
       {selectedFee && (
@@ -951,6 +954,8 @@ export default function ParentDashboardPage() {
           closeButtonText="Done"
         />
       )}
-    </MainLayout>
+        </>
+      }
+    />
   );
 }

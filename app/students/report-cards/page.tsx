@@ -19,10 +19,8 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
-import MainLayout from "@/components/layout/MainLayout";
+import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
 import FormDropdown from "@/components/shared/FormDropdown";
 import { Student } from "@/components/students/StudentCard";
 import StudentSelectionGrid from "@/components/students/StudentSelectionGrid";
@@ -30,7 +28,6 @@ import ReportCardTemplate from "@/components/reports/ReportCardTemplate";
 import { useStudentsByTenant } from "@/hooks/useStudentsByTenant";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useGrading, EducationLevel } from "@/contexts/GradingContext";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useReactToPrint } from "react-to-print";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -172,7 +169,6 @@ const calculateGradeFallback = (percentage: number, educationLevel: EducationLev
 export default function ReportCardsPage() {
   const router = useRouter();
   const printRef = useRef<HTMLDivElement>(null);
-  const isPageLoading = usePageLoad(600);
   const [currentStep, setCurrentStep] = useState<"config" | "preview" | "generate">("config");
 
   // Educo v4.0 Multi-Tenant: Get students and settings for current tenant
@@ -1332,12 +1328,19 @@ export default function ReportCardsPage() {
   };
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Report Cards" />
-
-      {/* Print Styles */}
-      <style jsx global>{`
+    <DashboardPage
+      title="Generate Report Cards"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Peoples", href: "#" },
+        { label: "Students", href: "/students" },
+        { label: "Report Cards", isActive: true },
+      ]}
+      loadingText="Loading Report Cards"
+      afterStats={
+        <>
+          {/* Print Styles */}
+          <style jsx global>{`
         @media print {
           /* Hide everything except the report card */
           body * {
@@ -1492,19 +1495,7 @@ export default function ReportCardsPage() {
         }
       `}</style>
 
-      {/* Main Content - Fades in after loading */}
-      <div className={`transition-opacity duration-500 ${isPageLoading ? 'opacity-0' : 'opacity-100'}`}>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-      <PageHeader
-        title="Generate Report Cards"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/" },
-          { label: "Peoples", href: "#" },
-          { label: "Students", href: "/students" },
-          { label: "Report Cards", isActive: true }
-        ]}
-      />
+          <div className="mt-6 p-6 space-y-6">
 
       {/* Configuration Step */}
       {currentStep === "config" && (
@@ -1944,8 +1935,9 @@ export default function ReportCardsPage() {
           </div>
         </div>
       )}
-      </div>
-      </div>
-    </MainLayout>
+          </div>
+        </>
+      }
+    />
   );
 }

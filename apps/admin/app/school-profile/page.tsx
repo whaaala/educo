@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import AdminLayout from "@admin/components/layout/AdminLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import AdminPageShell from "@admin/components/pages/AdminPageShell";
 import SchoolProfileSettings from "@/components/settings/SchoolProfileSettings";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { Building2 } from "lucide-react";
@@ -18,33 +16,32 @@ export default function SchoolProfilePage() {
 
   if (!isMounted) {
     return (
-      <AdminLayout>
-        <PageLoader isLoading={true} loadingText="Loading School Profile" />
-      </AdminLayout>
+      <AdminPageShell
+        title="School Profile"
+        breadcrumbs={[
+          { label: "Admin Console", href: "/" },
+          { label: "School Profile", isActive: true },
+        ]}
+        isLoading={true}
+        loadingText="Loading School Profile"
+      >
+        <div />
+      </AdminPageShell>
     );
   }
 
   return (
-    <AdminLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading School Profile" />
-
-      {/* Main Content */}
-      <div className={`transition-opacity duration-500 ${isLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Header */}
-        <div className="py-4 mb-2">
-          <PageHeader
-            title="School Profile"
-            breadcrumbs={[
-              { label: "Admin Console", href: "/" },
-              { label: "School Profile", isActive: true },
-            ]}
-          />
-        </div>
-
-        {/* Content */}
-        <div className="pb-20 space-y-6">
-          <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <AdminPageShell
+      title="School Profile"
+      breadcrumbs={[
+        { label: "Admin Console", href: "/" },
+        { label: "School Profile", isActive: true },
+      ]}
+      isLoading={isLoading}
+      loadingText="Loading School Profile"
+    >
+      <div className="pb-20 space-y-6">
+        <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
             {/* Section Header */}
             <div className="bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 px-6 py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="flex items-center gap-3">
@@ -67,8 +64,7 @@ export default function SchoolProfilePage() {
               <SchoolProfileSettings />
             </div>
           </section>
-        </div>
       </div>
-    </AdminLayout>
+    </AdminPageShell>
   );
 }

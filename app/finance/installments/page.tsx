@@ -1,21 +1,17 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import PageSpinner from "@/components/shared/PageSpinner";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DataManagementPage } from "@/components/pages";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useCountry } from "@/contexts/CountryContext";
 import { formatCurrency } from "@/config/countries";
 import Button from "@/components/shared/Button";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
-import PageActions from "@/components/shared/PageActions";
 import SearchFilterBar from "@/components/shared/SearchFilterBar";
 import StatCard from "@/components/shared/StatCard";
+import Modal from "@/components/shared/Modal";
 import InstallmentPlanModal from "@/components/finance/InstallmentPlanModal";
-import ConfirmationModal from "@/components/shared/ConfirmationModal";
+import ActionModal from "@/components/shared/ActionModal";
 import FormInput from "@/components/shared/FormInput";
 import {
   Plus,
@@ -36,6 +32,7 @@ import {
 } from "lucide-react";
 import { exportInstallmentPlansToPDF } from "@/utils/installmentPdfExport";
 import { exportInstallmentPlansToExcel } from "@/utils/installmentExcelExport";
+import { ACADEMIC_YEARS, TERMS_WITH_ALL, CLASS_OPTIONS, INSTALLMENT_STATUS_OPTIONS } from "../config";
 
 // Installment Plan Status
 type InstallmentPlanStatus = "active" | "completed" | "defaulted" | "cancelled";
@@ -211,37 +208,6 @@ const MOCK_INSTALLMENT_PLANS: InstallmentPlan[] = [
   },
 ];
 
-const ACADEMIC_YEARS = [
-  { label: "2024/2025", value: "2024-2025" },
-  { label: "2025/2026", value: "2025-2026" },
-  { label: "2023/2024", value: "2023-2024" },
-];
-
-const TERMS = [
-  { label: "All Terms", value: "all" },
-  { label: "First Term", value: "first-term" },
-  { label: "Second Term", value: "second-term" },
-  { label: "Third Term", value: "third-term" },
-];
-
-const STATUS_OPTIONS = [
-  { label: "All Status", value: "all" },
-  { label: "Active", value: "active" },
-  { label: "Completed", value: "completed" },
-  { label: "Defaulted", value: "defaulted" },
-  { label: "Cancelled", value: "cancelled" },
-];
-
-const CLASS_OPTIONS = [
-  { label: "All Classes", value: "all" },
-  { label: "JSS 1", value: "JSS 1" },
-  { label: "JSS 2", value: "JSS 2" },
-  { label: "JSS 3", value: "JSS 3" },
-  { label: "SSS 1", value: "SSS 1" },
-  { label: "SSS 2", value: "SSS 2" },
-  { label: "SSS 3", value: "SSS 3" },
-];
-
 // Mock students for duplicate selection
 const MOCK_STUDENTS = [
   { value: "std-001", label: "John Adebayo (STU2024001) - SSS 1", name: "John Adebayo", number: "STU2024001", class: "SSS 1" },
@@ -255,7 +221,6 @@ const MOCK_STUDENTS = [
 ];
 
 export default function InstallmentPlansPage() {
-  const isPageLoading = usePageLoad(600);
   useSchoolSettings();
   const { countryCode, countryConfig } = useCountry();
   const currencySymbol = countryConfig.currency.symbol;
@@ -708,112 +673,119 @@ export default function InstallmentPlansPage() {
   const isLoading = isRefreshing || isFiltering;
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Installment Plans" />
+    <DataManagementPage<InstallmentPlan>
+      title="Installment Plans"
+      breadcrumbs={[
+        { label: "Finance", href: "/finance/fee-structure" },
+        { label: "Installment Plans" },
+      ]}
+      data={filteredData}
+      getRowKey={(item) => item.id}
+      columns={columns}
+      enableSelection={false}
+      enableViewToggle={false}
+      showTableSearch={false}
+      addButtonConfig={{
+        label: "Add Plan",
+        onClick: handleAddNew,
+      }}
+      onRefresh={handleRefresh}
+      onExportPDF={() => {
+        const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+        exportInstallmentPlansToPDF(filteredData, `installment-plans_${dateStr}.pdf`, currencySymbol);
+      }}
+      onExportExcel={() => {
+        const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+        exportInstallmentPlansToExcel(filteredData, `installment-plans_${dateStr}.xlsx`, currencySymbol);
+      }}
+      headerContent={
+        <>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mt-6">
+            <StatCard
+              icon={FileText}
+              label="Total Plans"
+              value={formatCurrency(stats.totalAmount, countryCode)}
+              color="blue"
+              badge={`${filteredData.length}`}
+            />
+            <StatCard
+              icon={TrendingUp}
+              label="Collected"
+              value={formatCurrency(stats.totalCollected, countryCode)}
+              color="green"
+              badge={`${stats.totalAmount > 0 ? ((stats.totalCollected / stats.totalAmount) * 100).toFixed(0) : 0}%`}
+            />
+            <StatCard
+              icon={Clock}
+              label="Pending"
+              value={formatCurrency(stats.totalPending, countryCode)}
+              color="amber"
+              badge={`${stats.totalAmount > 0 ? ((stats.totalPending / stats.totalAmount) * 100).toFixed(0) : 0}%`}
+            />
+            <StatCard
+              icon={CheckCircle2}
+              label="Completed"
+              value={formatCurrency(stats.completedPlansAmount, countryCode)}
+              color="emerald"
+              badge={`${stats.completedPlansCount}`}
+            />
+            <StatCard
+              icon={AlertTriangle}
+              label="Overdue"
+              value={formatCurrency(stats.overduePlansAmount, countryCode)}
+              color="red"
+              badge={`${stats.overduePlansCount}`}
+            />
+          </div>
 
-      <div className={`space-y-6 transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <PageHeader
-            title="Installment Plans"
-            breadcrumbs={[
-              { label: "Finance", href: "/finance/fee-structure" },
-              { label: "Installment Plans" },
-            ]}
-          />
-          <PageActions
-            onRefresh={handleRefresh}
-            onExportPDF={() => {
-              const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
-              exportInstallmentPlansToPDF(filteredData, `installment-plans_${dateStr}.pdf`, currencySymbol);
-            }}
-            onExportExcel={() => {
-              const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
-              exportInstallmentPlansToExcel(filteredData, `installment-plans_${dateStr}.xlsx`, currencySymbol);
-            }}
-            onAdd={handleAddNew}
-            addButtonLabel="Add Plan"
-            exportDescription="Export installment plan records"
-            showPrint={false}
-          />
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-          <StatCard
-            icon={FileText}
-            label="Total Plans"
-            value={formatCurrency(stats.totalAmount, countryCode)}
-            color="blue"
-            badge={`${filteredData.length}`}
-          />
-          <StatCard
-            icon={TrendingUp}
-            label="Collected"
-            value={formatCurrency(stats.totalCollected, countryCode)}
-            color="green"
-            badge={`${stats.totalAmount > 0 ? ((stats.totalCollected / stats.totalAmount) * 100).toFixed(0) : 0}%`}
-          />
-          <StatCard
-            icon={Clock}
-            label="Pending"
-            value={formatCurrency(stats.totalPending, countryCode)}
-            color="amber"
-            badge={`${stats.totalAmount > 0 ? ((stats.totalPending / stats.totalAmount) * 100).toFixed(0) : 0}%`}
-          />
-          <StatCard
-            icon={CheckCircle2}
-            label="Completed"
-            value={formatCurrency(stats.completedPlansAmount, countryCode)}
-            color="emerald"
-            badge={`${stats.completedPlansCount}`}
-          />
-          <StatCard
-            icon={AlertTriangle}
-            label="Overdue"
-            value={formatCurrency(stats.overduePlansAmount, countryCode)}
-            color="red"
-            badge={`${stats.overduePlansCount}`}
-          />
-        </div>
-
-        {/* Filters Bar */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={handleSearchChange}
-          searchPlaceholder="Search by student name, ID, or fee type..."
-          filters={[
-            {
-              label: "Academic Year",
-              value: selectedYear,
-              onChange: (val) => handleFilterChange(setSelectedYear, String(val)),
-              options: ACADEMIC_YEARS,
-            },
-            {
-              label: "Term",
-              value: selectedTerm,
-              onChange: (val) => handleFilterChange(setSelectedTerm, String(val)),
-              options: TERMS,
-            },
-            {
-              label: "Class",
-              value: selectedClass,
-              onChange: (val) => handleFilterChange(setSelectedClass, String(val)),
-              options: CLASS_OPTIONS,
-            },
-            {
-              label: "Status",
-              value: selectedStatus,
-              onChange: (val) => handleFilterChange(setSelectedStatus, String(val)),
-              options: STATUS_OPTIONS,
-            },
-          ]}
-        />
-
-        {/* Table Section */}
+          {/* Filters Bar */}
+          <div className="mt-6">
+            <SearchFilterBar
+              searchValue={searchQuery}
+              onSearchChange={handleSearchChange}
+              searchPlaceholder="Search by student name, ID, or fee type..."
+              filters={[
+                {
+                  label: "Academic Year",
+                  value: selectedYear,
+                  onChange: (val) => handleFilterChange(setSelectedYear, String(val)),
+                  options: ACADEMIC_YEARS,
+                },
+                {
+                  label: "Term",
+                  value: selectedTerm,
+                  onChange: (val) => handleFilterChange(setSelectedTerm, String(val)),
+                  options: TERMS_WITH_ALL,
+                },
+                {
+                  label: "Class",
+                  value: selectedClass,
+                  onChange: (val) => handleFilterChange(setSelectedClass, String(val)),
+                  options: CLASS_OPTIONS,
+                },
+                {
+                  label: "Status",
+                  value: selectedStatus,
+                  onChange: (val) => handleFilterChange(setSelectedStatus, String(val)),
+                  options: INSTALLMENT_STATUS_OPTIONS,
+                },
+              ]}
+            />
+          </div>
+        </>
+      }
+      customListComponent={
         <div>
           {isLoading ? (
-            <PageSpinner message={isRefreshing ? "Refreshing..." : "Filtering..."} size="md" />
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {isRefreshing ? "Refreshing..." : "Filtering..."}
+                </p>
+              </div>
+            </div>
           ) : filteredData.length === 0 ? (
             <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-8 sm:p-12">
               <div className="flex flex-col items-center justify-center">
@@ -875,8 +847,8 @@ export default function InstallmentPlansPage() {
             </div>
           )}
         </div>
-      </div>
-
+      }
+    >
       {/* Add Modal */}
       <InstallmentPlanModal
         isOpen={isAddModalOpen}
@@ -921,18 +893,29 @@ export default function InstallmentPlansPage() {
       )}
 
       {/* Delete Confirmation Modal */}
-      <ConfirmationModal
+      <ActionModal
         isOpen={isDeleteModalOpen}
         onClose={() => {
           setIsDeleteModalOpen(false);
           setDeletingPlan(null);
         }}
-        onConfirm={handleDelete}
         title="Delete Installment Plan"
-        message={`Are you sure you want to delete the installment plan for "${deletingPlan?.studentName}"? This action cannot be undone.`}
+        subtitle={deletingPlan ? `${deletingPlan.studentName} • ${deletingPlan.classLevel}` : undefined}
+        variant="danger"
+        message="Are you sure you want to delete this installment plan? This action cannot be undone."
+        details={
+          deletingPlan
+            ? [
+                { label: "Student", value: deletingPlan.studentName },
+                { label: "Fee Type", value: deletingPlan.feeTypeName },
+                { label: "Total", value: formatCurrency(deletingPlan.totalAmount, countryCode) },
+                { label: "Balance", value: formatCurrency(deletingPlan.remainingAmount, countryCode) },
+              ]
+            : undefined
+        }
         confirmLabel="Delete"
         cancelLabel="Cancel"
-        variant="danger"
+        onConfirm={handleDelete}
       />
 
       {/* Duplicate Plan Modal */}
@@ -952,7 +935,7 @@ export default function InstallmentPlansPage() {
           countryCode={countryCode}
         />
       )}
-    </MainLayout>
+    </DataManagementPage>
   );
 }
 
@@ -978,7 +961,6 @@ function InstallmentPlanViewModal({
   isEditMode = false,
   onSave,
 }: InstallmentPlanViewModalProps) {
-  const Modal = require("@/components/shared/Modal").default;
   const [editedPlan, setEditedPlan] = useState<InstallmentPlan>(plan);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -1285,7 +1267,6 @@ function DuplicatePlanModal({
   onConfirm,
   countryCode,
 }: DuplicatePlanModalProps) {
-  const Modal = require("@/components/shared/Modal").default;
   const [selectedStudentId, setSelectedStudentId] = useState("");
   const [editInstallments, setEditInstallments] = useState(false);
   const [editedInstallments, setEditedInstallments] = useState<Installment[]>(plan.installments);

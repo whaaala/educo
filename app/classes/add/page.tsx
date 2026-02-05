@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import BasicInformationSection from "@/components/classes/form-sections/BasicInformationSection";
 import TertiaryDetailsSection from "@/components/classes/form-sections/TertiaryDetailsSection";
 import SecondaryTrackSection from "@/components/classes/form-sections/SecondaryTrackSection";
@@ -12,7 +10,6 @@ import LogisticsSection from "@/components/classes/form-sections/LogisticsSectio
 import TeacherAssignmentSection from "@/components/classes/form-sections/TeacherAssignmentSection";
 import SubjectCourseSection from "@/components/classes/form-sections/SubjectCourseSection";
 import FeaturesSettingsSection from "@/components/classes/form-sections/FeaturesSettingsSection";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import type { EducationLevel } from "@/utils/educationLevel";
@@ -22,7 +19,6 @@ export default function AddClassPage() {
   const { settings } = useSchoolSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<any>({});
-  const isLoading = usePageLoad(800);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [isSticky, setIsSticky] = useState(true);
@@ -326,24 +322,17 @@ export default function AddClassPage() {
   const classLabel = settings.supportedLevels.includes("Tertiary") ? "Course" : "Class";
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Form" />
-
-      {/* Main Content */}
-      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`} suppressHydrationWarning>
-        {/* Header */}
-        <div className="py-4 mb-2">
-          <PageHeader
-            title={`Add ${classLabel}`}
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Academic" },
-              { label: "Classes", href: "/classes?view=grid" },
-              { label: `Add ${classLabel}`, isActive: true },
-            ]}
-          />
-        </div>
+    <DashboardPage
+      title={`Add ${classLabel}`}
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Academic" },
+        { label: "Classes", href: "/classes?view=grid" },
+        { label: `Add ${classLabel}`, isActive: true },
+      ]}
+      loadingText="Loading Form"
+      afterStats={
+        <div className="mt-6" suppressHydrationWarning>
 
         {/* Class Code Preview */}
         {generatedClassCode && (
@@ -450,7 +439,8 @@ export default function AddClassPage() {
             </button>
           </div>
         </div>
-      </div>
-    </MainLayout>
+        </div>
+      }
+    />
   );
 }

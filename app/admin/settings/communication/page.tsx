@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import MainLayout from "@/components/layout/MainLayout";
+import { DashboardPage } from "@/components/pages";
 import {
   Video,
   Phone,
@@ -576,7 +576,17 @@ export default function CommunicationSettingsPage() {
   const activePlatformCount = [webrtcForm.enabled, agoraForm.enabled, zoomForm.enabled, googleMeetForm.enabled, whatsAppForm.enabled].filter(Boolean).length;
 
   return (
-    <MainLayout>
+    <DashboardPage
+      title="Communication Settings"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Admin", href: "/admin" },
+        { label: "Settings", href: "/admin/settings" },
+        { label: "Communication", isActive: true },
+      ]}
+      loadingText="Loading Communication Settings"
+      afterStats={
+        <>
       <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
         {/* Header - Subtle styling */}
         <div className="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -1230,6 +1240,8 @@ export default function CommunicationSettingsPage() {
           </div>
         </div>
       </div>
-    </MainLayout>
+        </>
+      }
+    />
   );
 }

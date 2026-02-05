@@ -1,21 +1,26 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import StatCard from "@/components/shared/StatCard";
-import SearchFilterBar from "@/components/shared/SearchFilterBar";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DataManagementPage } from "@/components/pages";
+import type { ColumnConfig, GridCardProps } from "@/types/components";
+import {
+  type SchoolEvent,
+  type EventType,
+  type EventStatus,
+  getEventFilterFields,
+  eventSortOptions,
+  filterEvents,
+  sortEvents,
+  searchEvents,
+  getEventStats,
+} from "./config";
 import {
   Calendar,
   CalendarDays,
-  ChevronRight,
   Clock,
   MapPin,
-  Tag,
   Users,
   Star,
   PartyPopper,
@@ -26,38 +31,8 @@ import {
 } from "lucide-react";
 
 // ============================================
-// TYPES
-// ============================================
-
-type EventType = "academic" | "sports" | "cultural" | "meeting" | "holiday" | "examination";
-type EventStatus = "upcoming" | "ongoing" | "completed" | "cancelled";
-
-interface SchoolEvent {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  endDate?: string;
-  time?: string;
-  duration: "Half Day" | "Full Day";
-  image: string;
-  type: EventType;
-  status: EventStatus;
-  location?: string;
-  isImportant?: boolean;
-  childId?: string;
-  childName?: string;
-  classLevel?: string;
-}
-
-// ============================================
 // MOCK DATA
 // ============================================
-
-const MOCK_CHILDREN = [
-  { id: "child-001", name: "Adaeze Okonkwo", classLevel: "JSS 2", section: "A" },
-  { id: "child-002", name: "Chukwuemeka Okonkwo", classLevel: "SS 1", section: "B" },
-];
 
 const MOCK_EVENTS: SchoolEvent[] = [
   {
@@ -196,30 +171,6 @@ const MOCK_EVENTS: SchoolEvent[] = [
   },
 ];
 
-// Filter Options
-const CHILD_OPTIONS = [
-  { value: "all", label: "All Children" },
-  ...MOCK_CHILDREN.map((child) => ({ value: child.id, label: child.name })),
-];
-
-const TYPE_OPTIONS = [
-  { value: "all", label: "All Types" },
-  { value: "academic", label: "Academic" },
-  { value: "sports", label: "Sports" },
-  { value: "cultural", label: "Cultural" },
-  { value: "meeting", label: "Meeting" },
-  { value: "holiday", label: "Holiday" },
-  { value: "examination", label: "Examination" },
-];
-
-const STATUS_OPTIONS = [
-  { value: "all", label: "All Status" },
-  { value: "upcoming", label: "Upcoming" },
-  { value: "ongoing", label: "Ongoing" },
-  { value: "completed", label: "Completed" },
-  { value: "cancelled", label: "Cancelled" },
-];
-
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
@@ -307,342 +258,233 @@ function getEventStatusInfo(status: EventStatus) {
 // COMPONENT
 // ============================================
 
-export default function ParentEventsPage() {
-  const isPageLoading = usePageLoad(600);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedChild, setSelectedChild] = useState<string>("all");
-  const [selectedType, setSelectedType] = useState<string>("all");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-
-  // Filter events
-  const filteredEvents = useMemo(() => {
-    return MOCK_EVENTS.filter((event) => {
-      const matchesSearch =
-        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        event.description.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesChild =
-        selectedChild === "all" ||
-        !event.childId ||
-        event.childId === selectedChild;
-
-      const matchesType = selectedType === "all" || event.type === selectedType;
-      const matchesStatus = selectedStatus === "all" || event.status === selectedStatus;
-
-      return matchesSearch && matchesChild && matchesType && matchesStatus;
-    });
-  }, [searchQuery, selectedChild, selectedType, selectedStatus]);
-
-  // Group events by status
-  const upcomingEvents = filteredEvents.filter((e) => e.status === "upcoming" || e.status === "ongoing");
-  const pastEvents = filteredEvents.filter((e) => e.status === "completed" || e.status === "cancelled");
-
-  // Stats
-  const stats = useMemo(() => {
-    const total = MOCK_EVENTS.length;
-    const upcoming = MOCK_EVENTS.filter((e) => e.status === "upcoming").length;
-    const important = MOCK_EVENTS.filter((e) => e.isImportant).length;
-    const thisMonth = MOCK_EVENTS.filter((e) => {
-      const eventDate = new Date(e.date);
-      const now = new Date();
-      return eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
-    }).length;
-    return { total, upcoming, important, thisMonth };
-  }, []);
+function EventGridCard({ item }: GridCardProps<SchoolEvent>) {
+  const event = item;
+  const typeInfo = getEventTypeInfo(event.type);
+  const statusInfo = getEventStatusInfo(event.status);
+  const TypeIcon = typeInfo.icon;
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Events" />
+    <Link
+      href={`/parents/events/${event.id}`}
+      className={`group relative bg-white dark:bg-gray-800 rounded-2xl border ${typeInfo.borderClass} shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden`}
+    >
+      <div className={`absolute inset-0 opacity-[0.03] bg-gradient-to-br ${typeInfo.bgClass}`} />
 
-      <div className={`space-y-6 transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Page Header with Breadcrumb */}
-        <PageHeader
-          title="School Events"
-          breadcrumbs={[
-            { label: "Parent Portal", href: "/parents" },
-            { label: "Events" },
-          ]}
+      <div className="relative h-36 w-full overflow-hidden">
+        <Image
+          src={event.image}
+          alt={event.title}
+          fill
+          className="object-cover group-hover:scale-110 transition-transform duration-500"
+          unoptimized
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          <StatCard
-            icon={CalendarDays}
-            label="Total Events"
-            value={stats.total.toString()}
-            color="blue"
-          />
-          <StatCard
-            icon={Clock}
-            label="Upcoming"
-            value={stats.upcoming.toString()}
-            color="green"
-          />
-          <StatCard
-            icon={Star}
-            label="Important"
-            value={stats.important.toString()}
-            color="amber"
-          />
-          <StatCard
-            icon={Calendar}
-            label="This Month"
-            value={stats.thisMonth.toString()}
-            color="purple"
-          />
+        <div className="absolute top-3 left-3 flex items-center gap-2 flex-wrap">
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold ${typeInfo.bgClass} ${typeInfo.textClass} backdrop-blur-sm`}
+          >
+            <TypeIcon className="w-3 h-3" />
+            {typeInfo.label}
+          </span>
+          {event.isImportant && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-red-500/90 text-white backdrop-blur-sm">
+              <Star className="w-3 h-3" />
+              Important
+            </span>
+          )}
         </div>
 
-        {/* Search and Filters */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder="Search events..."
-          filters={[
-            {
-              label: "Child",
-              value: selectedChild,
-              onChange: (val) => setSelectedChild(String(val)),
-              options: CHILD_OPTIONS,
-            },
-            {
-              label: "Type",
-              value: selectedType,
-              onChange: (val) => setSelectedType(String(val)),
-              options: TYPE_OPTIONS,
-            },
-            {
-              label: "Status",
-              value: selectedStatus,
-              onChange: (val) => setSelectedStatus(String(val)),
-              options: STATUS_OPTIONS,
-            },
-          ]}
-        />
+        <span
+          className={`absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-bold backdrop-blur-sm ${
+            event.duration === "Half Day" ? "bg-blue-500/90 text-white" : "bg-purple-500/90 text-white"
+          }`}
+        >
+          {event.duration}
+        </span>
 
-        {/* Upcoming Events */}
-        {upcomingEvents.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30">
-                <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Upcoming Events</h2>
-              <span className="px-2.5 py-1 text-xs font-bold text-white bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full shadow-sm">
-                {upcomingEvents.length}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {upcomingEvents.map((event) => {
-                const typeInfo = getEventTypeInfo(event.type);
-                const TypeIcon = typeInfo.icon;
-
-                return (
-                  <Link
-                    key={event.id}
-                    href={`/parents/events/${event.id}`}
-                    className={`group relative bg-white dark:bg-gray-800 rounded-2xl border ${typeInfo.borderClass} shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden`}
-                  >
-                    {/* Subtle gradient background */}
-                    <div className={`absolute inset-0 opacity-[0.03] bg-gradient-to-br ${typeInfo.bgClass}`} />
-
-                    {/* Event Image */}
-                    <div className="relative h-36 w-full overflow-hidden">
-                      <Image
-                        src={event.image}
-                        alt={event.title}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                        unoptimized
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-
-                      {/* Top badges */}
-                      <div className="absolute top-3 left-3 flex items-center gap-2 flex-wrap">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold ${typeInfo.bgClass} ${typeInfo.textClass} backdrop-blur-sm`}>
-                          <TypeIcon className="w-3 h-3" />
-                          {typeInfo.label}
-                        </span>
-                        {event.isImportant && (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-red-500/90 text-white backdrop-blur-sm">
-                            <Star className="w-3 h-3" />
-                            Important
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Duration Badge */}
-                      <span className={`absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-bold backdrop-blur-sm ${
-                        event.duration === "Half Day"
-                          ? "bg-blue-500/90 text-white"
-                          : "bg-purple-500/90 text-white"
-                      }`}>
-                        {event.duration}
-                      </span>
-
-                      {/* Title & Date overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 p-4">
-                        <h3 className="text-white font-bold text-base leading-tight mb-1 group-hover:text-blue-200 transition-colors line-clamp-1">
-                          {event.title}
-                        </h3>
-                        <div className="flex items-center gap-1.5 text-white/80 text-xs">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>{formatShortDate(event.date)}</span>
-                          {event.endDate && (
-                            <span>- {formatShortDate(event.endDate)}</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Event Content */}
-                    <div className="relative p-4">
-                      <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-3 leading-relaxed">
-                        {event.description}
-                      </p>
-
-                      {/* Meta info */}
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500 dark:text-gray-400">
-                        {event.time && (
-                          <span className="inline-flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5" />
-                            {event.time}
-                          </span>
-                        )}
-                        {event.location && (
-                          <span className="inline-flex items-center gap-1.5">
-                            <MapPin className="w-3.5 h-3.5" />
-                            {event.location}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Child specific badge */}
-                      {event.childName && (
-                        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/50">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-xs font-medium">
-                            <Users className="w-3.5 h-3.5" />
-                            {event.childName}
-                            <span className="text-indigo-400 dark:text-indigo-500">•</span>
-                            {event.classLevel}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Hover indicator */}
-                    <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className={`p-2 rounded-full ${typeInfo.bgClass}`}>
-                        <ChevronRight className={`w-4 h-4 ${typeInfo.textClass}`} />
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Past Events */}
-        {pastEvents.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-gray-100 dark:bg-gray-700/50">
-                <Clock className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              </div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Past Events</h2>
-              <span className="px-2.5 py-1 text-xs font-bold text-gray-600 bg-gray-200 dark:bg-gray-700 dark:text-gray-300 rounded-full">
-                {pastEvents.length}
-              </span>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
-              <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
-                {pastEvents.map((event) => {
-                  const typeInfo = getEventTypeInfo(event.type);
-                  const statusInfo = getEventStatusInfo(event.status);
-                  const TypeIcon = typeInfo.icon;
-
-                  return (
-                    <Link
-                      key={event.id}
-                      href={`/parents/events/${event.id}`}
-                      className="group flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
-                    >
-                      <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 shadow-sm">
-                        <Image
-                          src={event.image}
-                          alt={event.title}
-                          fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-300"
-                          unoptimized
-                        />
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                            {event.title}
-                          </h3>
-                          <span className={`shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold ${statusInfo.bgClass} ${statusInfo.textClass}`}>
-                            {statusInfo.label}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                          <Calendar className="w-3 h-3" />
-                          {formatDate(event.date)}
-                          <span>•</span>
-                          {event.duration}
-                        </p>
-                      </div>
-
-                      <div className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ${typeInfo.bgClass}`}>
-                        <TypeIcon className={`w-3.5 h-3.5 ${typeInfo.textClass}`} />
-                        <span className={`text-[10px] font-semibold ${typeInfo.textClass}`}>{typeInfo.label}</span>
-                      </div>
-
-                      <ChevronRight className="w-5 h-5 text-gray-300 dark:text-gray-600 group-hover:text-blue-500 group-hover:translate-x-1 transition-all shrink-0" />
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {filteredEvents.length === 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-12">
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700/50 dark:to-gray-800 flex items-center justify-center">
-                <CalendarDays className="w-10 h-10 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No events found</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-                {searchQuery || selectedChild !== "all" || selectedType !== "all" || selectedStatus !== "all"
-                  ? "Try adjusting your search or filters to find what you're looking for."
-                  : "There are no events scheduled at the moment. Check back later!"}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Help Section */}
-        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/10 dark:via-indigo-900/10 dark:to-purple-900/10 rounded-2xl border border-blue-100 dark:border-blue-800/30 p-6">
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <div className="p-3 rounded-xl bg-white dark:bg-gray-800 shadow-sm">
-              <CalendarDays className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Stay Updated</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                School events include academic activities, sports competitions, cultural celebrations, parent-teacher meetings,
-                holidays, and examinations. Click on any event to view detailed information including schedule, location, and requirements.
-              </p>
-            </div>
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <h3 className="text-white font-bold text-base leading-tight mb-1 group-hover:text-blue-200 transition-colors line-clamp-1">
+            {event.title}
+          </h3>
+          <div className="flex items-center gap-1.5 text-white/80 text-xs">
+            <Calendar className="w-3.5 h-3.5" />
+            <span>{formatShortDate(event.date)}</span>
+            {event.endDate && <span>- {formatShortDate(event.endDate)}</span>}
           </div>
         </div>
       </div>
-    </MainLayout>
+
+      <div className="relative p-4">
+        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-3 leading-relaxed">
+          {event.description}
+        </p>
+
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500 dark:text-gray-400">
+          {event.time && (
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5" />
+              {event.time}
+            </span>
+          )}
+          {event.location && (
+            <span className="inline-flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5" />
+              {event.location}
+            </span>
+          )}
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-3">
+          {event.childName && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-xs font-medium">
+              <Users className="w-3.5 h-3.5" />
+              {event.childName}
+              {event.classLevel ? (
+                <>
+                  <span className="text-indigo-400 dark:text-indigo-500">•</span>
+                  {event.classLevel}
+                </>
+              ) : null}
+            </span>
+          )}
+
+          <span
+            className={`shrink-0 px-2 py-1 rounded-lg text-[10px] font-bold ${statusInfo.bgClass} ${statusInfo.textClass}`}
+          >
+            {statusInfo.label}
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+export default function ParentEventsPage() {
+  const data = MOCK_EVENTS;
+  const filterFields = useMemo(() => getEventFilterFields(data), [data]);
+
+  const columns: ColumnConfig<SchoolEvent>[] = useMemo(
+    () => [
+      {
+        key: "title",
+        label: "Event",
+        sortable: true,
+        sortValue: (e) => e.title,
+        render: (event) => {
+          const typeInfo = getEventTypeInfo(event.type);
+          const TypeIcon = typeInfo.icon;
+          return (
+            <div className="flex items-center gap-3">
+              <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700">
+                <Image src={event.image} alt={event.title} fill className="object-cover" unoptimized />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                    {event.title}
+                  </span>
+                  {event.isImportant && <Star className="w-4 h-4 text-red-500" />}
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  <span className={`inline-flex items-center gap-1 ${typeInfo.textClass}`}>
+                    <TypeIcon className="w-3.5 h-3.5" />
+                    {typeInfo.label}
+                  </span>
+                  {event.childName ? (
+                    <>
+                      <span>•</span>
+                      <span className="truncate">{event.childName}</span>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        key: "date",
+        label: "Date",
+        sortable: true,
+        sortValue: (e) => new Date(e.date).getTime(),
+        render: (event) => (
+          <div className="text-sm text-gray-700 dark:text-gray-300">
+            <div className="font-medium">{formatDate(event.date)}</div>
+            {event.endDate ? (
+              <div className="text-xs text-gray-500 dark:text-gray-400">to {formatDate(event.endDate)}</div>
+            ) : null}
+          </div>
+        ),
+      },
+      {
+        key: "status",
+        label: "Status",
+        sortable: true,
+        sortValue: (e) => e.status,
+        render: (event) => {
+          const statusInfo = getEventStatusInfo(event.status);
+          return (
+            <span
+              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${statusInfo.bgClass} ${statusInfo.textClass}`}
+            >
+              {statusInfo.label}
+            </span>
+          );
+        },
+      },
+      {
+        key: "actions",
+        label: "Action",
+        className: "text-right",
+        searchable: false,
+        sortable: false,
+        render: (event) => (
+          <Link
+            href={`/parents/events/${event.id}`}
+            className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-blue-700 dark:text-blue-300 text-xs font-semibold"
+          >
+            View
+          </Link>
+        ),
+      },
+    ],
+    []
+  );
+
+  return (
+    <DataManagementPage
+      title="School Events"
+      subtitle="Stay updated with school activities and important dates"
+      breadcrumbs={[
+        { label: "Parent Portal", href: "/parents" },
+        { label: "Events", isActive: true },
+      ]}
+      data={data}
+      getRowKey={(e) => e.id}
+      columns={columns}
+      stats={getEventStats()}
+      filterFields={filterFields}
+      sortOptions={eventSortOptions}
+      defaultSort="date_soon"
+      filterFn={filterEvents}
+      sortFn={sortEvents}
+      searchFn={searchEvents}
+      searchPlaceholder="Search events..."
+      itemLabel="event"
+      itemLabelPlural="events"
+      enableSelection={false}
+      enableExport={false}
+      enableViewToggle={true}
+      defaultViewMode="grid"
+      gridCardComponent={EventGridCard}
+      gridColumns={{ sm: 1, md: 2, lg: 3, xl: 3 }}
+      emptyStateConfig={{
+        title: "No events found",
+        description: "Try adjusting your search or filters to find events.",
+        icon: CalendarDays,
+      }}
+    />
   );
 }

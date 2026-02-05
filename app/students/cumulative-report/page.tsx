@@ -15,10 +15,8 @@ import {
   BarChart3,
   Users,
 } from "lucide-react";
-import MainLayout from "@/components/layout/MainLayout";
+import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
 import FormDropdown from "@/components/shared/FormDropdown";
 import { Student } from "@/components/students/StudentCard";
 import StudentSelectionGrid from "@/components/students/StudentSelectionGrid";
@@ -26,10 +24,10 @@ import { useStudentsByTenant } from "@/hooks/useStudentsByTenant";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useGrading } from "@/contexts/GradingContext";
 import { useCurrentTenant } from "@/hooks/useTenant";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useReactToPrint } from "react-to-print";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import ActionModal from "@/components/shared/ActionModal";
 
 type EducationLevel = "Primary" | "Secondary" | "Tertiary";
 type Term = "First Term" | "Second Term" | "Third Term" | "First Semester" | "Second Semester";
@@ -182,8 +180,8 @@ const calculateGPA = (percentage: number): number => {
 export default function CumulativeReportPage() {
   const router = useRouter();
   const printRef = useRef<HTMLDivElement>(null);
-  const isPageLoading = usePageLoad(600);
   const [currentStep, setCurrentStep] = useState<"config" | "preview">("config");
+  const [isDownloadInfoOpen, setIsDownloadInfoOpen] = useState(false);
 
   const tenantStudents = useStudentsByTenant();
   const { settings } = useSchoolSettings();
@@ -381,38 +379,20 @@ export default function CumulativeReportPage() {
   });
 
   const handleDownloadPDF = () => {
-    // Show instruction modal/alert
-    const confirmed = window.confirm(
-      'Click OK to open the print dialog.\n\n' +
-      'In the print dialog:\n' +
-      '1. Select "Save as PDF" or "Microsoft Print to PDF" as the destination\n' +
-      '2. Click Save/Print\n' +
-      '3. Choose where to save your PDF file\n\n' +
-      'Note: Browser print dialog handles all modern color formats correctly.'
-    );
-
-    if (confirmed) {
-      handlePrint();
-    }
+    setIsDownloadInfoOpen(true);
   };
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Cumulative Reports" />
-
-      {/* Main Content - Fades in after loading */}
-      <div className={`transition-opacity duration-500 ${isPageLoading ? 'opacity-0' : 'opacity-100'}`}>
-      <div className="p-6 space-y-6">
-        <PageHeader
-          title="Cumulative Report Cards"
-          description="Generate comprehensive academic reports showing all completed terms/semesters"
-          icon={<BarChart3 className="w-6 h-6" />}
-          breadcrumbs={[
-            { label: "Students", href: "/students" },
-            { label: "Cumulative Reports", isActive: true },
-          ]}
-        />
+    <DashboardPage
+      title="Cumulative Report Cards"
+      description="Generate comprehensive academic reports showing all completed terms/semesters"
+      breadcrumbs={[
+        { label: "Students", href: "/students" },
+        { label: "Cumulative Reports", isActive: true },
+      ]}
+      loadingText="Loading Cumulative Reports"
+      afterStats={
+        <div className="mt-6 p-6 space-y-6">
 
         {/* Configuration Step */}
         {currentStep === "config" && (
@@ -629,7 +609,7 @@ export default function CumulativeReportPage() {
                   Print
                 </Button>
                 <Button
-                  onClick={handlePrint}
+                  onClick={handleDownloadPDF}
                   icon={<Download className="w-4 h-4" />}
                   title="Open print dialog to save as PDF"
                   className="w-full sm:w-auto"
@@ -928,7 +908,38 @@ export default function CumulativeReportPage() {
           </div>
         )}
       </div>
-      </div>
-    </MainLayout>
+      }
+    >
+      <ActionModal
+        isOpen={isDownloadInfoOpen}
+        onClose={() => setIsDownloadInfoOpen(false)}
+        title="Download as PDF"
+        variant="info"
+        message={
+          <div className="space-y-3">
+            <p>
+              Click <strong>Open Print Dialog</strong> to download this report as a PDF.
+            </p>
+            <ol className="list-decimal pl-5 space-y-1">
+              <li>
+                In the print dialog, choose <strong>Save as PDF</strong> (or{" "}
+                <strong>Microsoft Print to PDF</strong>)
+              </li>
+              <li>Click Save / Print</li>
+              <li>Choose where to save your PDF</li>
+            </ol>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Note: the browser print dialog handles colors and layout best.
+            </p>
+          </div>
+        }
+        confirmLabel="Open Print Dialog"
+        cancelLabel="Cancel"
+        onConfirm={() => {
+          setIsDownloadInfoOpen(false);
+          handlePrint();
+        }}
+      />
+    </DashboardPage>
   );
 }

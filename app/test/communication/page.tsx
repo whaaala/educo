@@ -6,6 +6,7 @@ import { useCommunication } from "@/contexts/CommunicationContext";
 import VideoCallRoom from "@/components/communication/VideoCallRoom";
 import VoiceCallRoom from "@/components/communication/VoiceCallRoom";
 import ChatRoom from "@/components/communication/ChatRoom";
+import { DashboardPage } from "@/components/pages";
 
 export default function CommunicationTestPage() {
   const { isConfigured, getAvailablePlatforms, getBestAvailablePlatform } = useCommunication();
@@ -31,12 +32,14 @@ export default function CommunicationTestPage() {
   // Show loading while client-side values are generated
   if (!isClient) {
     return (
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">Loading test page...</p>
-        </div>
-      </div>
+      <DashboardPage
+        title="Communication System Test"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Communication Test", isActive: true },
+        ]}
+        loadingText="Loading test page..."
+      />
     );
   }
 
@@ -94,14 +97,16 @@ export default function CommunicationTestPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Communication System Test
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-8">
-          Test video calls, voice calls, and chat functionality
-        </p>
+    <DashboardPage
+      title="Communication System Test"
+      description="Test video calls, voice calls, and chat functionality"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Communication Test", isActive: true },
+      ]}
+      loadingText="Loading Communication Test"
+      afterStats={
+        <div className="mt-6 max-w-4xl mx-auto">
 
         {/* Platform Status */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg mb-8">
@@ -245,7 +250,8 @@ export default function CommunicationTestPage() {
             </p>
           </div>
         </div>
-      </div>
-    </div>
+        </div>
+      }
+    />
   );
 }

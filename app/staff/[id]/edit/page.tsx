@@ -2,13 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import PersonalInformationSection from "@/components/teachers/form-sections/PersonalInformationSection";
 import EmploymentInformationSection from "@/components/teachers/form-sections/EmploymentInformationSection";
 import DocumentsSection from "@/components/teachers/form-sections/DocumentsSection";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { getTeacherById, Teacher } from "@/lib/mockTeachers";
 
@@ -19,7 +16,6 @@ export default function EditStaffPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoadingData, setIsLoadingData] = useState(true);
-  const isLoading = usePageLoad(800);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [isSticky, setIsSticky] = useState(true);
@@ -240,90 +236,91 @@ export default function EditStaffPage() {
 
   if (isLoadingData) {
     return (
-      <MainLayout>
-        <PageLoader isLoading={true} loadingText="Loading Staff Data" />
-      </MainLayout>
+      <DashboardPage
+        title="Edit Staff Member"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Staff", href: "/staff" },
+          { label: "Edit", isActive: true },
+        ]}
+        loadingText="Loading Staff Data"
+      />
     );
   }
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Form" />
+    <DashboardPage
+      title="Edit Staff Member"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Staff", href: "/staff" },
+        { label: `${formData.firstName} ${formData.lastName}`, href: `/staff/${staffId}` },
+        { label: "Edit", isActive: true },
+      ]}
+      loadingText="Loading Form"
+      afterStats={
+        <div className="mt-6">
+          {/* Form */}
+          <form
+            id="edit-staff-form"
+            ref={formRef}
+            onSubmit={handleSubmit}
+            className="space-y-6 pb-32 md:pb-36 lg:pb-16 xl:pb-20"
+          >
+            {/* Personal Information */}
+            <PersonalInformationSection
+              formData={formData}
+              onChange={handleChange}
+              errors={errors}
+            />
 
-      {/* Main Content - Fades in after loading */}
-      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-        {/* Header */}
-        <div className="py-4 mb-2">
-          <PageHeader
-            title="Edit Staff Member"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Staff", href: "/staff" },
-              { label: formData.firstName + " " + formData.lastName, href: `/staff/${staffId}` },
-              { label: "Edit", isActive: true },
-            ]}
-          />
-        </div>
+            {/* Employment Information */}
+            <EmploymentInformationSection
+              formData={formData}
+              onChange={handleChange}
+              errors={errors}
+            />
 
-        {/* Form */}
-        <form
-          id="edit-staff-form"
-          ref={formRef}
-          onSubmit={handleSubmit}
-          className="space-y-6 pb-32 md:pb-36 lg:pb-16 xl:pb-20"
-        >
-          {/* Personal Information */}
-          <PersonalInformationSection
-            formData={formData}
-            onChange={handleChange}
-            errors={errors}
-          />
+            {/* Documents & Certificates */}
+            <DocumentsSection formData={formData} onChange={handleChange} errors={errors} />
+          </form>
 
-          {/* Employment Information */}
-          <EmploymentInformationSection
-            formData={formData}
-            onChange={handleChange}
-            errors={errors}
-          />
-
-          {/* Documents & Certificates */}
-          <DocumentsSection
-            formData={formData}
-            onChange={handleChange}
-            errors={errors}
-          />
-        </form>
-
-        {/* Action Buttons - Sticky to bottom until form ends */}
-        <div
-          ref={buttonsRef}
-          className={`${isSticky ? 'fixed' : 'relative'} bottom-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-t-xl shadow-lg backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 py-4 px-6 z-50`}
-          style={isSticky ? {
-            left: isLargeScreen ? `calc(${isCollapsed ? '5rem' : '18rem'} + 2rem)` : '1rem',
-            right: isLargeScreen ? '2rem' : '1rem',
-            transition: 'left 500ms, right 0ms'
-          } : undefined}
-        >
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-all duration-200"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              form="edit-staff-form"
-              disabled={isSubmitting}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl cursor-pointer"
-            >
-              {isSubmitting ? "Saving Changes..." : "Save Changes"}
-            </button>
+          {/* Action Buttons - Sticky to bottom until form ends */}
+          <div
+            ref={buttonsRef}
+            className={`${isSticky ? "fixed" : "relative"} bottom-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-t-xl shadow-lg backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 py-4 px-6 z-50`}
+            style={
+              isSticky
+                ? {
+                    left: isLargeScreen
+                      ? `calc(${isCollapsed ? "5rem" : "18rem"} + 2rem)`
+                      : "1rem",
+                    right: isLargeScreen ? "2rem" : "1rem",
+                    transition: "left 500ms, right 0ms",
+                  }
+                : undefined
+            }
+          >
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-all duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="edit-staff-form"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl cursor-pointer"
+              >
+                {isSubmitting ? "Saving Changes..." : "Save Changes"}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </MainLayout>
+      }
+    />
   );
 }

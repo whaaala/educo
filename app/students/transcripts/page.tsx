@@ -1,51 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Download, RefreshCw } from "lucide-react";
-import { TranscriptRequest, TranscriptStatus, TranscriptType, PaymentStatus } from "@/types/transcript";
+import { TranscriptRequest } from "@/types/transcript";
 import { mockTranscriptRequests } from "@/data/mockTranscriptData";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageActions from "@/components/shared/PageActions";
-import SearchFilterBar from "@/components/shared/SearchFilterBar";
-import TranscriptStatisticsCards from "@/components/transcript/TranscriptStatisticsCards";
+import DataManagementPage from "@/components/pages/DataManagementPage";
 import TranscriptRequestsTable from "@/components/transcript/TranscriptRequestsTable";
 import TranscriptDetailModal from "@/components/transcript/TranscriptDetailModal";
 import TranscriptRequestForm from "@/components/transcript/TranscriptRequestForm";
-import TranscriptTemplate from "@/components/transcript/TranscriptTemplate";
 import TranscriptTemplatePrintable from "@/components/transcript/TranscriptTemplatePrintable";
 import { generateTranscriptPDF } from "@/utils/transcriptPdfExport";
 import { exportTranscriptRequestsToPDF } from "@/utils/transcriptRequestsPdfExport";
 import { exportTranscriptRequestsToExcel } from "@/utils/transcriptRequestsExcelExport";
+import {
+  transcriptFilterFields,
+  transcriptSortOptions,
+  transcriptStats,
+  filterTranscriptRequests,
+  sortTranscriptRequests,
+} from "./config";
 
 export default function TranscriptsPage() {
   const [requests, setRequests] = useState<TranscriptRequest[]>(mockTranscriptRequests);
   const [selectedRequest, setSelectedRequest] = useState<TranscriptRequest | null>(null);
   const [showRequestForm, setShowRequestForm] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState<TranscriptStatus | "all">("all");
-  const [filterType, setFilterType] = useState<TranscriptType | "all">("all");
-  const [filterPayment, setFilterPayment] = useState<PaymentStatus | "all">("all");
-  const [filterYear, setFilterYear] = useState<string>("all");
-
-  // Filter requests
-  const filteredRequests = requests.filter((request) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      request.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.studentAdmissionNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.requestNumber.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesStatus = filterStatus === "all" || request.status === filterStatus;
-    const matchesType = filterType === "all" || request.transcriptType === filterType;
-    const matchesPayment = filterPayment === "all" || request.payment.status === filterPayment;
-
-    // Extract year from request date
-    const requestYear = new Date(request.requestDate).getFullYear().toString();
-    const matchesYear = filterYear === "all" || requestYear === filterYear;
-
-    return matchesSearch && matchesStatus && matchesType && matchesPayment && matchesYear;
-  });
 
   const handleViewDetails = (request: TranscriptRequest) => {
     setSelectedRequest(request);
@@ -97,110 +74,56 @@ export default function TranscriptsPage() {
     }
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = (items: TranscriptRequest[]) => {
     const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
-    exportTranscriptRequestsToPDF(filteredRequests, `transcript-requests_${dateStr}.pdf`);
+    exportTranscriptRequestsToPDF(items, `transcript-requests_${dateStr}.pdf`);
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = (items: TranscriptRequest[]) => {
     const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
-    exportTranscriptRequestsToExcel(filteredRequests, `transcript-requests_${dateStr}.xlsx`);
+    exportTranscriptRequestsToExcel(items, `transcript-requests_${dateStr}.xlsx`);
   };
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        {/* Header with Breadcrumbs and Actions */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-          <PageHeader
-            title="Transcript Management"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Students", href: "/students" },
-              { label: "Transcripts", isActive: true },
-            ]}
-          />
-          <PageActions
-            onRefresh={() => window.location.reload()}
-            onAdd={handleRequestNew}
-            onExportPDF={handleExportPDF}
-            onExportExcel={handleExportExcel}
-            addButtonLabel="Request Transcript"
-            exportDescription="Export transcript records"
-            showPrint={false}
-          />
-        </div>
-
-        {/* Statistics Cards */}
-        <TranscriptStatisticsCards requests={requests} />
-
-        {/* Search and Filters */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder="Search by student name, admission number, or request number..."
-          filters={[
-            {
-              label: "Year Filter",
-              value: filterYear,
-              onChange: (value) => setFilterYear(value as string),
-              options: [
-                { label: "All Years", value: "all" },
-                { label: "2025", value: "2025" },
-                { label: "2024", value: "2024" },
-                { label: "2023", value: "2023" },
-                { label: "2022", value: "2022" },
-              ],
-            },
-            {
-              label: "Type Filter",
-              value: filterType,
-              onChange: (value) => setFilterType(value as TranscriptType | "all"),
-              options: [
-                { label: "All Types", value: "all" },
-                { label: "Official", value: "official" },
-                { label: "Unofficial", value: "unofficial" },
-              ],
-            },
-            {
-              label: "Status Filter",
-              value: filterStatus,
-              onChange: (value) => setFilterStatus(value as TranscriptStatus | "all"),
-              options: [
-                { label: "All Status", value: "all" },
-                { label: "Pending", value: "pending" },
-                { label: "Processing", value: "processing" },
-                { label: "Ready", value: "ready" },
-                { label: "Delivered", value: "delivered" },
-                { label: "Rejected", value: "rejected" },
-              ],
-            },
-            {
-              label: "Payment Filter",
-              value: filterPayment,
-              onChange: (value) => setFilterPayment(value as PaymentStatus | "all"),
-              options: [
-                { label: "All Payments", value: "all" },
-                { label: "Paid", value: "paid" },
-                { label: "Unpaid", value: "unpaid" },
-                { label: "Partial", value: "partial" },
-                { label: "Waived", value: "waived" },
-              ],
-            },
-          ]}
-        />
-
-        {/* Transcript Requests Table */}
+    <DataManagementPage<TranscriptRequest>
+      title="Transcript Management"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Students", href: "/students" },
+        { label: "Transcripts", isActive: true },
+      ]}
+      data={requests}
+      getRowKey={(item) => item.id}
+      columns={[]} // Using customListComponent instead
+      stats={transcriptStats}
+      statsColumns={{ default: 2, sm: 4, md: 8 }}
+      filterFields={transcriptFilterFields}
+      sortOptions={transcriptSortOptions}
+      defaultSort="newest"
+      filterFn={filterTranscriptRequests}
+      sortFn={sortTranscriptRequests}
+      enableViewToggle={false}
+      enableSelection={false}
+      enableExport={true}
+      onExportPDF={handleExportPDF}
+      onExportExcel={handleExportExcel}
+      addButtonConfig={{
+        label: "Request Transcript",
+        onClick: handleRequestNew,
+      }}
+      itemLabel="request"
+      itemLabelPlural="requests"
+      showTableSearch={false}
+      customListComponent={
         <TranscriptRequestsTable
-          requests={filteredRequests}
+          requests={requests}
           onViewDetails={handleViewDetails}
           onEdit={handleEdit}
           onDelete={handleDelete}
           onDownload={handleDownload}
-          filterKey={`${searchQuery}-${filterYear}-${filterType}-${filterStatus}-${filterPayment}`}
         />
-      </div>
-
+      }
+    >
       {/* Transcript Detail Modal */}
       {selectedRequest && (
         <TranscriptDetailModal
@@ -228,6 +151,6 @@ export default function TranscriptsPage() {
           </div>
         ))}
       </div>
-    </MainLayout>
+    </DataManagementPage>
   );
 }

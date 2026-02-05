@@ -2,16 +2,10 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import StatCard from "@/components/shared/StatCard";
-import SearchFilterBar from "@/components/shared/SearchFilterBar";
+import { DataManagementPage } from "@/components/pages";
 import FormInput from "@/components/shared/FormInput";
 import FormTextarea from "@/components/shared/FormTextarea";
 import FormDropdown from "@/components/shared/FormDropdown";
-import AddButton from "@/components/shared/AddButton";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import {
   Ticket,
   Clock,
@@ -34,6 +28,16 @@ import {
   Flag,
 } from "lucide-react";
 import type { CommunicationRecord } from "@/lib/mockParents";
+import type { ColumnConfig, GridCardProps } from "@/types/components";
+import {
+  type SupportTicket,
+  filterParentSupportTickets,
+  parentSupportTicketFilterFields,
+  parentSupportTicketSortOptions,
+  parentSupportTicketStats,
+  searchParentSupportTickets,
+  sortParentSupportTickets,
+} from "./config";
 
 // ============================================
 // TYPES
@@ -192,6 +196,7 @@ function getStatusConfig(status: TicketStatus) {
         icon: AlertCircle,
         bg: "bg-amber-50 dark:bg-amber-500/10",
         text: "text-amber-600 dark:text-amber-400",
+        dot: "bg-amber-500",
         border: "border-amber-200 dark:border-amber-500/20",
         accent: "amber",
       };
@@ -201,6 +206,7 @@ function getStatusConfig(status: TicketStatus) {
         icon: Loader2,
         bg: "bg-blue-50 dark:bg-blue-500/10",
         text: "text-blue-600 dark:text-blue-400",
+        dot: "bg-blue-500",
         border: "border-blue-200 dark:border-blue-500/20",
         accent: "blue",
       };
@@ -210,6 +216,7 @@ function getStatusConfig(status: TicketStatus) {
         icon: CheckCircle2,
         bg: "bg-emerald-50 dark:bg-emerald-500/10",
         text: "text-emerald-600 dark:text-emerald-400",
+        dot: "bg-emerald-500",
         border: "border-emerald-200 dark:border-emerald-500/20",
         accent: "emerald",
       };
@@ -219,6 +226,7 @@ function getStatusConfig(status: TicketStatus) {
         icon: XCircle,
         bg: "bg-slate-50 dark:bg-slate-500/10",
         text: "text-slate-600 dark:text-slate-400",
+        dot: "bg-slate-500",
         border: "border-slate-200 dark:border-slate-500/20",
         accent: "slate",
       };
@@ -258,11 +266,6 @@ function getPriorityConfig(priority: TicketPriority) {
 // ============================================
 
 export default function ParentSupportPage() {
-  const isPageLoading = usePageLoad(600);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [selectedType, setSelectedType] = useState<string>("all");
-  const [selectedPriority, setSelectedPriority] = useState<string>("all");
   const [selectedTicket, setSelectedTicket] = useState<CommunicationRecord | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [tickets, setTickets] = useState<CommunicationRecord[]>(MOCK_SUPPORT_TICKETS);
@@ -272,150 +275,117 @@ export default function ParentSupportPage() {
     setTickets((prev) => [newTicket, ...prev]);
   };
 
-  // Filter tickets
-  const filteredTickets = useMemo(() => {
-    return tickets.filter((ticket) => {
-      const matchesSearch =
-        ticket.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ticket.message.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus = selectedStatus === "all" || ticket.status === selectedStatus;
-      const matchesType = selectedType === "all" || ticket.type === selectedType;
-      const matchesPriority = selectedPriority === "all" || ticket.priority === selectedPriority;
-      return matchesSearch && matchesStatus && matchesType && matchesPriority;
-    });
-  }, [tickets, searchQuery, selectedStatus, selectedType, selectedPriority]);
+  const columns: ColumnConfig<SupportTicket>[] = useMemo(() => {
+    return [
+      {
+        key: "subject",
+        label: "Subject",
+        sortable: true,
+        sortValue: (t) => t.subject,
+        render: (t) => {
+          const type = getTypeConfig(t.type);
+          return (
+            <button
+              type="button"
+              onClick={() => setSelectedTicket(t)}
+              className="text-left group"
+            >
+              <div className="flex items-start gap-2">
+                <div className={`mt-0.5 p-1.5 rounded-lg ${type.bg}`}>
+                  <type.icon className={`w-4 h-4 ${type.text}`} />
+                </div>
+                <div className="min-w-0">
+                  <div className="font-semibold text-gray-900 dark:text-white group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors truncate">
+                    {t.subject}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
+                    {t.message}
+                  </div>
+                </div>
+              </div>
+            </button>
+          );
+        },
+      },
+      {
+        key: "status",
+        label: "Status",
+        sortable: true,
+        sortValue: (t) => t.status,
+        render: (t) => {
+          const status = getStatusConfig(t.status);
+          return (
+            <span
+              className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold ${status.bg} ${status.text}`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
+              {status.label}
+            </span>
+          );
+        },
+      },
+      {
+        key: "priority",
+        label: "Priority",
+        sortable: true,
+        sortValue: (t) => t.priority,
+        render: (t) => {
+          const priority = getPriorityConfig(t.priority);
+          return (
+            <span
+              className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold ${priority.bg} ${priority.text}`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${priority.dot}`} />
+              {priority.label}
+            </span>
+          );
+        },
+      },
+      {
+        key: "createdAt",
+        label: "Created",
+        sortable: true,
+        sortValue: (t) => new Date(t.createdAt).getTime(),
+        render: (t) => (
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            {new Date(t.createdAt).toLocaleDateString()}
+          </span>
+        ),
+      },
+    ];
+  }, []);
 
-  // Stats
-  const stats = useMemo(() => ({
-    total: tickets.length,
-    open: tickets.filter((t) => t.status === "open").length,
-    inProgress: tickets.filter((t) => t.status === "in_progress").length,
-    resolved: tickets.filter((t) => t.status === "resolved" || t.status === "closed").length,
-  }), [tickets]);
+  const TicketGridCard = useMemo(() => {
+    return function TicketGridCardInner({ item }: GridCardProps<SupportTicket>) {
+      return <TicketCard ticket={item} onClick={() => setSelectedTicket(item)} />;
+    };
+  }, []);
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Support Tickets" />
-
-      <div className={`space-y-4 sm:space-y-6 transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Page Header with Action Button */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <PageHeader
-            title="Support Tickets"
-            breadcrumbs={[
-              { label: "Parent Portal", href: "/parents" },
-              { label: "Support" },
-            ]}
-          />
-          <AddButton
-            label="Create Ticket"
-            onClick={() => setShowCreateModal(true)}
-          />
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          <StatCard
-            icon={Ticket}
-            label="Total Tickets"
-            value={stats.total.toString()}
-            color="blue"
-          />
-          <StatCard
-            icon={AlertCircle}
-            label="Open"
-            value={stats.open.toString()}
-            color="amber"
-          />
-          <StatCard
-            icon={Clock}
-            label="In Progress"
-            value={stats.inProgress.toString()}
-            color="purple"
-          />
-          <StatCard
-            icon={CheckCircle2}
-            label="Resolved"
-            value={stats.resolved.toString()}
-            color="green"
-          />
-        </div>
-
-        {/* Filters */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder="Search by subject or message..."
-          filters={[
-            {
-              label: "Status",
-              value: selectedStatus,
-              onChange: (val) => setSelectedStatus(String(val)),
-              options: [
-                { value: "all", label: "All Status" },
-                { value: "open", label: "Open" },
-                { value: "in_progress", label: "In Progress" },
-                { value: "resolved", label: "Resolved" },
-                { value: "closed", label: "Closed" },
-              ],
-            },
-            {
-              label: "Type",
-              value: selectedType,
-              onChange: (val) => setSelectedType(String(val)),
-              options: [
-                { value: "all", label: "All Types" },
-                { value: "complaint", label: "Complaint" },
-                { value: "inquiry", label: "Inquiry" },
-                { value: "feedback", label: "Feedback" },
-                { value: "request", label: "Request" },
-                { value: "meeting_request", label: "Meeting Request" },
-              ],
-            },
-            {
-              label: "Priority",
-              value: selectedPriority,
-              onChange: (val) => setSelectedPriority(String(val)),
-              options: [
-                { value: "all", label: "All Priority" },
-                { value: "high", label: "High" },
-                { value: "medium", label: "Medium" },
-                { value: "low", label: "Low" },
-              ],
-            },
-          ]}
-        />
-
-        {/* Tickets List */}
-        {filteredTickets.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            {filteredTickets.map((ticket) => (
-              <TicketCard key={ticket.id} ticket={ticket} onClick={() => setSelectedTicket(ticket)} />
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 p-8 sm:p-12 text-center">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
-              <Ticket className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
-            </div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2">No tickets found</h3>
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-6">
-              {searchQuery || selectedStatus !== "all" || selectedType !== "all" || selectedPriority !== "all"
-                ? "Try adjusting your filters."
-                : "You haven't submitted any support tickets yet."}
-            </p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white text-sm font-semibold shadow-lg shadow-cyan-500/25 transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              Create Ticket
-            </button>
-          </div>
-        )}
-
-        {/* Guidelines */}
-        <div className="bg-gradient-to-br from-cyan-50/80 via-blue-50/80 to-indigo-50/80 dark:from-cyan-950/30 dark:via-blue-950/30 dark:to-indigo-950/30 backdrop-blur-xl rounded-2xl border border-cyan-200/50 dark:border-cyan-800/30 p-4 sm:p-6">
+    <DataManagementPage<SupportTicket>
+      title="Support Tickets"
+      breadcrumbs={[
+        { label: "Parent Portal", href: "/parents" },
+        { label: "Support" },
+      ]}
+      data={tickets}
+      getRowKey={(ticket) => ticket.id}
+      columns={columns}
+      stats={parentSupportTicketStats}
+      filterFields={parentSupportTicketFilterFields}
+      filterFn={filterParentSupportTickets}
+      sortOptions={parentSupportTicketSortOptions}
+      sortFn={sortParentSupportTickets}
+      defaultSort="created_desc"
+      searchFn={searchParentSupportTickets}
+      searchPlaceholder="Search by subject or message..."
+      enableViewToggle
+      defaultViewMode="grid"
+      gridCardComponent={TicketGridCard}
+      gridColumns={{ sm: 1, md: 2, lg: 2, xl: 2 }}
+      addButtonConfig={{ label: "Create Ticket", onClick: () => setShowCreateModal(true) }}
+      beforeContent={
+        <div className="mb-4 bg-gradient-to-br from-cyan-50/80 via-blue-50/80 to-indigo-50/80 dark:from-cyan-950/30 dark:via-blue-950/30 dark:to-indigo-950/30 backdrop-blur-xl rounded-2xl border border-cyan-200/50 dark:border-cyan-800/30 p-4 sm:p-6">
           <div className="flex items-start gap-3 sm:gap-4">
             <div className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-gray-800/80 shadow-sm shrink-0">
               <Info className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-600 dark:text-cyan-400" />
@@ -423,29 +393,34 @@ export default function ParentSupportPage() {
             <div>
               <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Support Guidelines</h3>
               <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                Our support team typically responds within 24-48 hours. For urgent matters, please mark your ticket as high priority. You can track the status of your tickets here.
+                Our support team typically responds within 24-48 hours. For urgent matters, please mark your ticket as
+                high priority. You can track the status of your tickets here.
               </p>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* View Ticket Modal */}
+      }
+      itemLabel="ticket"
+      itemLabelPlural="tickets"
+      emptyStateConfig={{
+        icon: Ticket,
+        title: "No tickets found",
+        description: "Try adjusting your filters or create a new support ticket.",
+        actionLabel: "Create Ticket",
+        onAction: () => setShowCreateModal(true),
+      }}
+    >
       {selectedTicket && (
-        <ViewTicketModal
-          ticket={selectedTicket}
-          onClose={() => setSelectedTicket(null)}
-        />
+        <ViewTicketModal ticket={selectedTicket} onClose={() => setSelectedTicket(null)} />
       )}
 
-      {/* Create Ticket Modal */}
       {showCreateModal && (
         <CreateTicketModal
           onClose={() => setShowCreateModal(false)}
           onSubmit={handleAddTicket}
         />
       )}
-    </MainLayout>
+    </DataManagementPage>
   );
 }
 

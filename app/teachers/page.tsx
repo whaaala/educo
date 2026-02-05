@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 
 /**
  * Teachers page - Redirects to Personnel/Staff page with Academic Staff filter
@@ -24,5 +24,14 @@ export default function TeachersPage() {
     router.replace(redirectUrl);
   }, [router, searchParams]);
 
-  return <PageLoader isLoading={true} loadingText="Redirecting to Personnel..." />;
+  return (
+    <DashboardPage
+      title="Teachers"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Teachers", isActive: true },
+      ]}
+      loadingText="Redirecting to Personnel..."
+    />
+  );
 }

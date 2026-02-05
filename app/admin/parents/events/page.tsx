@@ -1,25 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useMemo, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageActions from "@/components/shared/PageActions";
-import PageLoader from "@/components/shared/PageLoader";
-import PageSpinner from "@/components/shared/PageSpinner";
-import StatCard from "@/components/shared/StatCard";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
-import DateRangePicker from "@/components/shared/DateRangePicker";
-import FilterButton, { FilterField, FilterValues } from "@/components/shared/FilterButton";
-import SortButton from "@/components/shared/SortButton";
-import ViewToggle from "@/components/shared/ViewToggle";
-import LoadMoreButton from "@/components/shared/LoadMoreButton";
-import DeleteAllButton from "@/components/shared/DeleteAllButton";
+import { DataManagementPage } from "@/components/pages";
 import BulkDeleteModal, { BulkDeleteItem } from "@/components/shared/BulkDeleteModal";
 import Tooltip from "@/components/shared/Tooltip";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { getAllParents } from "@/lib/mockParents";
+import type { ColumnConfig, GridCardProps } from "@/types/components";
 import {
   Calendar,
   CalendarDays,
@@ -38,48 +26,19 @@ import {
   Send,
   CheckCircle2,
   XCircle,
-  AlertCircle,
-  MoreHorizontal,
-  UserCheck,
 } from "lucide-react";
-
-// Event types
-type EventType = "academic" | "sports" | "cultural" | "meeting" | "holiday" | "examination";
-type EventStatus = "upcoming" | "ongoing" | "completed" | "cancelled";
-
-interface ParentRSVP {
-  parentId: string;
-  parentName: string;
-  parentAvatar?: string;
-  status: "confirmed" | "declined" | "pending";
-  childrenAttending: string[];
-  respondedAt?: string;
-}
-
-interface AdminEvent {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  endDate?: string;
-  time?: string;
-  duration: "Half Day" | "Full Day";
-  image: string;
-  type: EventType;
-  status: EventStatus;
-  location?: string;
-  isImportant: boolean;
-  targetAudience: "All" | "Primary" | "Secondary" | "Specific Classes";
-  targetClasses?: string[];
-  invitedParents: number;
-  confirmedParents: number;
-  declinedParents: number;
-  pendingParents: number;
-  rsvpDeadline?: string;
-  createdAt: string;
-  createdBy: string;
-  rsvps: ParentRSVP[];
-}
+import {
+  type AdminEvent,
+  type EventType,
+  type EventStatus,
+  type ParentRSVP,
+  adminParentEventFilterFields,
+  adminParentEventSortOptions,
+  adminParentEventStats,
+  filterAdminParentEvents,
+  sortAdminParentEvents,
+  searchAdminParentEvents,
+} from "./config";
 
 // Generate mock events for admin view
 const generateAdminEvents = (): AdminEvent[] => {
@@ -203,423 +162,120 @@ const getStatusBadge = (status: EventStatus) => {
 };
 
 export default function AdminParentEventsPage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const basePageLoading = usePageLoad(600);
-  const tableWrapRef = useRef<HTMLDivElement | null>(null);
+  const [events, setEvents] = useState<AdminEvent[]>(MOCK_EVENTS);
 
-  const urlView = searchParams.get("view");
-  const initialView = urlView === "grid" ? "grid" : "list";
-
-  const [events] = useState<AdminEvent[]>(MOCK_EVENTS);
-  const [viewMode, setViewMode] = useState<"grid" | "list">(initialView);
-  const [isMounted, setIsMounted] = useState(false);
-  const [displayedCount, setDisplayedCount] = useState(12);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isSwitchingView, setIsSwitchingView] = useState(false);
-  const gridRef = useRef<HTMLDivElement>(null);
-  const previousCountRef = useRef(12);
-
-  const isPageLoading = basePageLoading && !isSwitchingView;
-
-  // Calculate stats
-  const stats = useMemo(() => {
-    const total = events.length;
-    const upcoming = events.filter((e) => e.status === "upcoming").length;
-    const ongoing = events.filter((e) => e.status === "ongoing").length;
-    const totalConfirmed = events.reduce((acc, e) => acc + e.confirmedParents, 0);
-    const totalPending = events.reduce((acc, e) => acc + e.pendingParents, 0);
-    return { total, upcoming, ongoing, totalConfirmed, totalPending };
-  }, [events]);
-
-  const handleViewModeChange = (newMode: "grid" | "list") => {
-    setIsSwitchingView(true);
-    setViewMode(newMode);
-    router.push(`/admin/parents/events?view=${newMode}`);
-
-    setTimeout(() => {
-      setIsSwitchingView(false);
-    }, 700);
-  };
-
-  useEffect(() => {
-    const urlView = searchParams.get("view");
-    const newViewMode = urlView === "grid" ? "grid" : "list";
-    setViewMode(newViewMode);
-  }, [searchParams]);
-
-  // Filter fields
-  const filterFields: FilterField[] = [
-    {
-      id: "status",
-      label: "Status",
-      options: ["Upcoming", "Ongoing", "Completed", "Cancelled"],
-      width: "half",
-    },
-    {
-      id: "type",
-      label: "Event Type",
-      options: ["Academic", "Sports", "Cultural", "Meeting", "Holiday", "Examination"],
-      width: "half",
-    },
-    {
-      id: "audience",
-      label: "Audience",
-      options: ["All", "Primary", "Secondary", "Specific Classes"],
-      width: "half",
-    },
-    {
-      id: "important",
-      label: "Priority",
-      options: ["Important Only", "All Events"],
-      width: "half",
-    },
-  ];
-
-  const [filters, setFilters] = useState<FilterValues>({});
-  const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string } | null>(null);
-  const [isFiltering, setIsFiltering] = useState(false);
-  const [sortOption, setSortOption] = useState<string>("date_desc");
-  const [isSorting, setIsSorting] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [resetKey, setResetKey] = useState(0);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const [itemsToDelete, setItemsToDelete] = useState<BulkDeleteItem[]>([]);
 
-  const filterKey = `${JSON.stringify(filters)}-${sortOption}`;
-  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
-  const [animationTrigger, setAnimationTrigger] = useState(0);
-
-  const sortOptions = [
-    { label: "Date (Newest)", value: "date_desc" },
-    { label: "Date (Oldest)", value: "date_asc" },
-    { label: "Most RSVPs", value: "rsvp_desc" },
-    { label: "Least RSVPs", value: "rsvp_asc" },
-    { label: "A-Z (Title)", value: "title_asc" },
-    { label: "Z-A (Title)", value: "title_desc" },
-  ];
-
-  const handleDateRangeChange = (startDate: string, endDate: string) => {
-    setIsFiltering(true);
-    setTimeout(() => {
-      setDateRange({ startDate, endDate });
-      setDisplayedCount(12);
-      setTimeout(() => setIsFiltering(false), 100);
-    }, 300);
+  const handleBulkDelete = (selectedIds: Set<string>) => {
+    if (selectedIds.size === 0) return;
+    const selectedEvents = events.filter((evt) => selectedIds.has(evt.id));
+    const items: BulkDeleteItem[] = selectedEvents.map((evt) => ({
+      id: evt.id,
+      name: evt.title,
+      subtitle: `${new Date(evt.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} | ${evt.confirmedParents} confirmed`,
+    }));
+    setItemsToDelete(items);
+    setIsBulkDeleteModalOpen(true);
   };
 
-  const handleFilterChange = (updatedFilters: FilterValues) => {
-    setIsFiltering(true);
-    setTimeout(() => {
-      setFilters(updatedFilters);
-      setDisplayedCount(12);
-      setTimeout(() => setIsFiltering(false), 100);
-    }, 300);
-  };
-
-  const handleClearFilters = () => {
-    setIsFiltering(true);
-    setTimeout(() => {
-      setFilters({});
-      setDateRange(null);
-      setDisplayedCount(12);
-      setTimeout(() => setIsFiltering(false), 100);
-    }, 300);
-  };
-
-  const handleDeleteAll = () => {
-    if (selectedIds.size > 0) {
-      const selectedEvents = filteredEvents.filter((evt) => selectedIds.has(evt.id));
-      const items: BulkDeleteItem[] = selectedEvents.map((evt) => ({
-        id: evt.id,
-        name: evt.title,
-        subtitle: `${new Date(evt.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} | ${evt.confirmedParents} confirmed`,
-      }));
-      setItemsToDelete(items);
-      setIsBulkDeleteModalOpen(true);
-    }
-  };
-
-  const handleRemoveFromDeleteList = (itemId: string) => {
-    setItemsToDelete((prev) => prev.filter((item) => item.id !== itemId));
-    setSelectedIds((prev) => {
-      const newIds = new Set(prev);
-      newIds.delete(itemId);
-      return newIds;
-    });
-  };
-
-  const handleConfirmBulkDelete = (itemIds: string[]) => {
-    console.log("Deleting events:", itemIds);
-    setSelectedIds(new Set());
-    setIsBulkDeleteModalOpen(false);
-    setItemsToDelete([]);
-  };
-
-  const handleCloseBulkDeleteModal = () => {
-    setIsBulkDeleteModalOpen(false);
-  };
-
-  const handleRestoreItem = (item: BulkDeleteItem) => {
-    setItemsToDelete((prev) => [...prev, item]);
-    setSelectedIds((prev) => {
-      const newIds = new Set(prev);
-      newIds.add(item.id);
-      return newIds;
-    });
-  };
-
-  const handleRestoreAll = (items: BulkDeleteItem[]) => {
-    setItemsToDelete((prev) => [...prev, ...items]);
-    setSelectedIds((prev) => {
-      const newIds = new Set(prev);
-      items.forEach((item) => newIds.add(item.id));
-      return newIds;
-    });
-  };
-
-  const hasActiveFilters = Object.values(filters).some((v) => v && v.length > 0) || dateRange !== null;
-
-  const handleSortChange = (sortValue: string) => {
-    setIsSorting(true);
-    setTimeout(() => {
-      setSortOption(sortValue);
-      setTimeout(() => setIsSorting(false), 100);
-    }, 300);
-  };
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setDateRange(null);
-    setFilters({});
-    setSortOption("date_desc");
-    setSelectedIds(new Set());
-    setResetKey((prev) => prev + 1);
-    setTimeout(() => {
-      setDisplayedCount(12);
-      setTimeout(() => setIsRefreshing(false), 100);
-    }, 300);
-  };
-
-  const handleAddEvent = () => {
-    router.push("/admin/parents/events/add");
-  };
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (isMounted) {
-      setDisplayedCount(12);
-      previousCountRef.current = 12;
-    }
-  }, [viewMode, isMounted]);
-
-  useEffect(() => {
-    if (displayedCount > previousCountRef.current && gridRef.current) {
-      const cards = gridRef.current.children;
-      const firstNewCardIndex = previousCountRef.current;
-      if (cards[firstNewCardIndex]) {
-        setTimeout(() => {
-          (cards[firstNewCardIndex] as HTMLElement).scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 100);
-      }
-      previousCountRef.current = displayedCount;
-    }
-  }, [displayedCount]);
-
-  useEffect(() => {
-    if (filterKey !== prevFilterKey) {
-      setAnimationTrigger((prev) => prev + 1);
-      setPrevFilterKey(filterKey);
-    }
-  }, [filterKey, prevFilterKey]);
-
-  useEffect(() => {
-    if (animationTrigger <= 0) return;
-    const timeoutId = setTimeout(() => {
-      const root = tableWrapRef.current;
-      if (!root) return;
-      const rows = root.querySelectorAll("tbody tr");
-      rows.forEach((row, idx) => {
-        const htmlRow = row as HTMLElement;
-        htmlRow.style.animation = `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${idx / 80}s both`;
-      });
-      setTimeout(() => {
-        rows.forEach((row) => {
-          const htmlRow = row as HTMLElement;
-          htmlRow.style.animation = "";
-        });
-      }, 600);
-    }, 50);
-    return () => clearTimeout(timeoutId);
-  }, [animationTrigger]);
-
-  const handleLoadMore = () => {
-    setIsLoadingMore(true);
-    setTimeout(() => {
-      setDisplayedCount((prev) => prev + 12);
-      setIsLoadingMore(false);
-    }, 500);
-  };
-
-  // Sort and filter
-  const sortedEvents = [...events].sort((a, b) => {
-    switch (sortOption) {
-      case "date_desc":
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      case "date_asc":
-        return new Date(a.date).getTime() - new Date(b.date).getTime();
-      case "rsvp_desc":
-        return b.confirmedParents - a.confirmedParents;
-      case "rsvp_asc":
-        return a.confirmedParents - b.confirmedParents;
-      case "title_asc":
-        return a.title.localeCompare(b.title);
-      case "title_desc":
-        return b.title.localeCompare(a.title);
-      default:
-        return 0;
-    }
-  });
-
-  const filteredEvents = sortedEvents.filter((evt) => {
-    const hasFilters = Object.values(filters).some((v) => v && v.length > 0);
-    if (!hasFilters && !dateRange) return true;
-
-    const matchesStatus = !filters.status || filters.status.length === 0 || filters.status.some((s) => s.toLowerCase() === evt.status);
-    const matchesType = !filters.type || filters.type.length === 0 || filters.type.some((t) => t.toLowerCase() === evt.type);
-    const matchesAudience = !filters.audience || filters.audience.length === 0 || filters.audience.includes(evt.targetAudience);
-    const matchesImportant = !filters.important || filters.important.length === 0 || (filters.important.includes("Important Only") ? evt.isImportant : true);
-
-    let matchesDateRange = true;
-    if (dateRange) {
-      const evtDate = new Date(evt.date);
-      const startDate = new Date(dateRange.startDate);
-      const endDate = new Date(dateRange.endDate);
-      matchesDateRange = evtDate >= startDate && evtDate <= endDate;
-    }
-
-    return matchesStatus && matchesType && matchesAudience && matchesImportant && matchesDateRange;
-  });
-
-  const displayedEvents = filteredEvents.slice(0, displayedCount);
-  const hasMore = displayedCount < filteredEvents.length;
-  const isLoading = isFiltering || isSorting || isRefreshing || isSwitchingView;
-
-  // Table columns
-  const columns: ColumnConfig<AdminEvent>[] = [
-    {
-      key: "checkbox",
-      label: "",
-      className: "w-12",
-      render: (evt) => (
-        <input
-          type="checkbox"
-          checked={selectedIds.has(evt.id)}
-          onChange={(e) => {
-            const newSelectedIds = new Set(selectedIds);
-            if (e.target.checked) {
-              newSelectedIds.add(evt.id);
-            } else {
-              newSelectedIds.delete(evt.id);
-            }
-            setSelectedIds(newSelectedIds);
-          }}
-          className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
-        />
-      ),
-    },
-    {
-      key: "event",
-      label: "Event",
-      sortable: true,
-      render: (evt) => {
-        const typeInfo = getEventTypeInfo(evt.type);
-        const TypeIcon = typeInfo.icon;
-        return (
-          <div className="flex items-center gap-3">
-            <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-              <Image src={evt.image} alt={evt.title} fill className="object-cover" unoptimized />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                {evt.isImportant && <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 flex-shrink-0" />}
-                <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{evt.title}</p>
+  const columns: ColumnConfig<AdminEvent>[] = useMemo(
+    () => [
+      {
+        key: "event",
+        label: "Event",
+        sortable: true,
+        render: (evt) => {
+          const typeInfo = getEventTypeInfo(evt.type);
+          const TypeIcon = typeInfo.icon;
+          return (
+            <div className="flex items-center gap-3">
+              <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                <Image src={evt.image} alt={evt.title} fill className="object-cover" unoptimized />
               </div>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${typeInfo.bgClass} ${typeInfo.textClass}`}>
-                  <TypeIcon className="w-3 h-3" />
-                  {typeInfo.label}
-                </span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  {evt.isImportant && (
+                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 flex-shrink-0" />
+                  )}
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+                    {evt.title}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span
+                    className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${typeInfo.bgClass} ${typeInfo.textClass}`}
+                  >
+                    <TypeIcon className="w-3 h-3" />
+                    {typeInfo.label}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        );
+          );
+        },
       },
-    },
-    {
-      key: "date",
-      label: "Date",
-      sortable: true,
-      render: (evt) => (
-        <div>
-          <p className="font-medium text-gray-900 dark:text-white text-sm">
-            {new Date(evt.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-          </p>
-          {evt.time && <p className="text-xs text-gray-500 dark:text-gray-400">{evt.time}</p>}
-        </div>
-      ),
-    },
-    {
-      key: "location",
-      label: "Location",
-      render: (evt) => (
-        evt.location ? (
-          <span className="text-sm text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-gray-400" />
-            {evt.location}
+      {
+        key: "date",
+        label: "Date",
+        sortable: true,
+        render: (evt) => (
+          <div>
+            <p className="font-medium text-gray-900 dark:text-white text-sm">
+              {new Date(evt.date).toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
+            </p>
+            {evt.time && <p className="text-xs text-gray-500 dark:text-gray-400">{evt.time}</p>}
+          </div>
+        ),
+      },
+      {
+        key: "location",
+        label: "Location",
+        render: (evt) =>
+          evt.location ? (
+            <span className="text-sm text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-gray-400" />
+              {evt.location}
+            </span>
+          ) : (
+            <span className="text-sm text-gray-400">-</span>
+          ),
+      },
+      {
+        key: "audience",
+        label: "Audience",
+        render: (evt) => (
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {evt.targetAudience}
+            {evt.targetClasses && (
+              <span className="text-gray-400"> ({evt.targetClasses.length} classes)</span>
+            )}
           </span>
-        ) : (
-          <span className="text-sm text-gray-400">-</span>
-        )
-      ),
-    },
-    {
-      key: "audience",
-      label: "Audience",
-      render: (evt) => (
-        <span className="text-sm text-gray-700 dark:text-gray-300">
-          {evt.targetAudience}
-          {evt.targetClasses && <span className="text-gray-400"> ({evt.targetClasses.length} classes)</span>}
-        </span>
-      ),
-    },
-    {
-      key: "rsvp",
-      label: "RSVPs",
-      sortable: true,
-      render: (evt) => (
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1">
+        ),
+      },
+      {
+        key: "rsvp",
+        label: "RSVPs",
+        sortable: true,
+        render: (evt) => (
+          <div className="flex items-center gap-3">
             <Tooltip content="Confirmed">
               <span className="flex items-center gap-0.5 text-green-600 dark:text-green-400">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span className="text-xs font-semibold">{evt.confirmedParents}</span>
               </span>
             </Tooltip>
-          </div>
-          <div className="flex items-center gap-1">
             <Tooltip content="Pending">
               <span className="flex items-center gap-0.5 text-amber-600 dark:text-amber-400">
                 <Clock className="w-3.5 h-3.5" />
                 <span className="text-xs font-semibold">{evt.pendingParents}</span>
               </span>
             </Tooltip>
-          </div>
-          <div className="flex items-center gap-1">
             <Tooltip content="Declined">
               <span className="flex items-center gap-0.5 text-red-600 dark:text-red-400">
                 <XCircle className="w-3.5 h-3.5" />
@@ -627,193 +283,145 @@ export default function AdminParentEventsPage() {
               </span>
             </Tooltip>
           </div>
-        </div>
-      ),
-    },
-    {
-      key: "status",
-      label: "Status",
-      sortable: true,
-      render: (evt) => getStatusBadge(evt.status),
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      className: "text-center",
-      render: (evt) => (
-        <div className="flex items-center justify-center gap-1">
-          <Tooltip content="View Details">
-            <button type="button" className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer">
-              <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-            </button>
-          </Tooltip>
-          <Tooltip content="Edit Event">
-            <button type="button" className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer">
-              <Edit className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            </button>
-          </Tooltip>
-          <Tooltip content="Send Reminder">
-            <button type="button" className="p-1.5 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors cursor-pointer">
-              <Send className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-            </button>
-          </Tooltip>
-          <Tooltip content="Delete">
-            <button type="button" className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors cursor-pointer">
-              <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
-            </button>
-          </Tooltip>
-        </div>
-      ),
-    },
-  ];
+        ),
+      },
+      {
+        key: "status",
+        label: "Status",
+        sortable: true,
+        render: (evt) => getStatusBadge(evt.status),
+      },
+      {
+        key: "actions",
+        label: "Actions",
+        className: "text-center",
+        sortable: false,
+        searchable: false,
+        render: (evt) => (
+          <div className="flex items-center justify-center gap-1">
+            <Tooltip content="View Details">
+              <button
+                type="button"
+                onClick={() => console.log("View", evt.id)}
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              >
+                <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              </button>
+            </Tooltip>
+            <Tooltip content="Edit Event">
+              <button
+                type="button"
+                onClick={() => router.push(`/admin/parents/events/${evt.id}/edit`)}
+                className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
+              >
+                <Edit className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              </button>
+            </Tooltip>
+            <Tooltip content="Send Reminder">
+              <button
+                type="button"
+                onClick={() => console.log("Send reminder", evt.id)}
+                className="p-1.5 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors cursor-pointer"
+              >
+                <Send className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+              </button>
+            </Tooltip>
+          </div>
+        ),
+      },
+    ],
+    [router]
+  );
 
-  if (!isMounted) return null;
+  const EventGridCard = useMemo(() => {
+    return function EventGridCardInner({
+      item,
+      isSelected,
+      onSelectionChange,
+    }: GridCardProps<AdminEvent>) {
+      return (
+        <div className="relative">
+          <div className="absolute bottom-3 left-3 z-10">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={(e) => onSelectionChange(e.target.checked)}
+              onClick={(e) => e.stopPropagation()}
+              className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer bg-white/90"
+              aria-label={`Select ${item.title}`}
+            />
+          </div>
+          <EventCard event={item} getEventTypeInfo={getEventTypeInfo} getStatusBadge={getStatusBadge} />
+        </div>
+      );
+    };
+  }, []);
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Events" />
-
-      <div className={`transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-0 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
-          <PageHeader
-            title="Parent Events"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Admin" },
-              { label: "Parents", href: "/admin/parents" },
-              { label: "Events", isActive: true },
-            ]}
-          />
-
-          <PageActions
-            addButtonLabel="Create Event"
-            exportDescription="Download events"
-            onAdd={handleAddEvent}
-            onRefresh={handleRefresh}
-            onPrint={() => window.print()}
-            onExportPDF={() => console.log("Export PDF")}
-            onExportExcel={() => console.log("Export Excel")}
-          />
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-100 ease-out">
-          <StatCard icon={CalendarDays} label="Total Events" value={stats.total.toString()} color="blue" />
-          <StatCard icon={Clock} label="Upcoming" value={stats.upcoming.toString()} color="purple" badge={stats.ongoing > 0 ? `${stats.ongoing} Ongoing` : undefined} />
-          <StatCard icon={UserCheck} label="Confirmed" value={stats.totalConfirmed.toString()} color="green" />
-          <StatCard icon={AlertCircle} label="Pending RSVPs" value={stats.totalPending.toString()} color={stats.totalPending > 0 ? "amber" : "gray"} />
-        </div>
-
-        {/* Filters */}
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out mb-6">
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
-            <div className="flex items-center gap-2 sm:gap-3 lg:flex-1">
-              <DateRangePicker onChange={handleDateRangeChange} resetKey={resetKey} />
-              <FilterButton fields={filterFields} onFilterChange={handleFilterChange} resetKey={resetKey} />
-              {selectedIds.size > 0 && <DeleteAllButton selectedCount={selectedIds.size} onDeleteAll={handleDeleteAll} />}
-              <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                <span className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{filteredEvents.length} events</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 lg:flex-1">
-              <ViewToggle viewMode={viewMode} onViewModeChange={handleViewModeChange} />
-              <SortButton options={sortOptions} defaultOption="date_desc" onSortChange={handleSortChange} resetKey={resetKey} />
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-[800ms] delay-150 ease-out" style={{ overflow: "visible" }}>
-          <div className="relative min-h-[400px]" style={{ overflow: "visible" }}>
-            {viewMode === "list" ? (
-              <div key={`list-view-${filterKey}`} className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms]">
-                {isLoading ? (
-                  <PageSpinner message={isSwitchingView ? "Switching view..." : isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."} size="md" />
-                ) : filteredEvents.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16">
-                    <div className="relative mb-4">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 animate-pulse flex items-center justify-center">
-                        <CalendarDays className="w-8 h-8 text-gray-400" />
-                      </div>
-                    </div>
-                    <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-1">No events found</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{hasActiveFilters ? "Try adjusting your filters." : "No events available"}</p>
-                    {hasActiveFilters && (
-                      <button onClick={handleClearFilters} className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
-                        Clear filters
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <div ref={tableWrapRef} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                    <DataTable
-                      data={filteredEvents}
-                      columns={columns}
-                      getRowKey={(evt) => evt.id}
-                      emptyMessage="No events found"
-                      title=""
-                      showSearch={false}
-                      defaultItemsPerPage={15}
-                      itemsPerPageOptions={[10, 15, 25, 50]}
-                      enablePagination={true}
-                      enableItemsPerPage={true}
-                      stickyColumnCount={2}
-                    />
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div key={`grid-view-${filterKey}`} className="opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-3 duration-[450ms]" style={{ overflow: "visible" }}>
-                {isLoading ? (
-                  <PageSpinner message={isSwitchingView ? "Switching view..." : isRefreshing ? "Refreshing..." : isSorting ? "Sorting..." : "Filtering..."} size="md" />
-                ) : displayedEvents.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16">
-                    <div className="relative mb-4">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 animate-pulse flex items-center justify-center">
-                        <CalendarDays className="w-8 h-8 text-gray-400" />
-                      </div>
-                    </div>
-                    <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-1">No events found</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{hasActiveFilters ? "Try adjusting your filters." : "No events available"}</p>
-                    {hasActiveFilters && (
-                      <button onClick={handleClearFilters} className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
-                        Clear filters
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2" style={{ overflow: "visible" }}>
-                      {displayedEvents.map((evt, idx) => (
-                        <div key={evt.id} style={{ transition: "opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)", transitionDelay: `${idx / 40}s` }}>
-                          <EventCard event={evt} getEventTypeInfo={getEventTypeInfo} getStatusBadge={getStatusBadge} />
-                        </div>
-                      ))}
-                    </div>
-                    {hasMore && <LoadMoreButton onClick={handleLoadMore} isLoading={isLoadingMore} text="Load More" loadingText="Loading..." />}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <BulkDeleteModal
-          isOpen={isBulkDeleteModalOpen}
-          onClose={handleCloseBulkDeleteModal}
-          onConfirm={handleConfirmBulkDelete}
-          items={itemsToDelete}
-          onRemoveItem={handleRemoveFromDeleteList}
-          onRestoreItem={handleRestoreItem}
-          onRestoreAll={handleRestoreAll}
-          title="Delete Events"
-          warningMessage="This will permanently remove these events and all associated RSVPs. This action cannot be undone."
-          confirmButtonText="Delete Events"
-        />
-      </div>
-    </MainLayout>
+    <DataManagementPage<AdminEvent>
+      title="Parent Events"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Admin" },
+        { label: "Parents", href: "/admin/parents" },
+        { label: "Events", isActive: true },
+      ]}
+      data={events}
+      getRowKey={(evt) => evt.id}
+      columns={columns}
+      stats={adminParentEventStats}
+      filterFields={adminParentEventFilterFields}
+      filterFn={filterAdminParentEvents}
+      sortOptions={adminParentEventSortOptions}
+      sortFn={sortAdminParentEvents}
+      defaultSort="date_desc"
+      searchFn={searchAdminParentEvents}
+      searchPlaceholder="Search events..."
+      enableDateRange
+      getDateForRange={(evt) => evt.date}
+      enableViewToggle
+      gridCardComponent={EventGridCard}
+      gridColumns={{ sm: 1, md: 2, lg: 3, xl: 3 }}
+      enableSelection
+      bulkActions={[
+        {
+          id: "delete",
+          label: "Delete Events",
+          icon: Trash2,
+          variant: "danger",
+          onClick: handleBulkDelete,
+        },
+      ]}
+      addButtonConfig={{
+        label: "Create Event",
+        href: "/admin/parents/events/add",
+      }}
+      enableExport
+      exportConfig={{ filename: "parent-events" }}
+      itemLabel="event"
+      itemLabelPlural="events"
+      emptyStateConfig={{
+        title: "No events found",
+        description: "Try adjusting your filters, or create a new event.",
+      }}
+    >
+      <BulkDeleteModal
+        isOpen={isBulkDeleteModalOpen}
+        onClose={() => setIsBulkDeleteModalOpen(false)}
+        onConfirm={(itemIds) => {
+          setEvents((prev) => prev.filter((e) => !itemIds.includes(e.id)));
+          setIsBulkDeleteModalOpen(false);
+          setItemsToDelete([]);
+        }}
+        items={itemsToDelete}
+        onRemoveItem={(itemId) => setItemsToDelete((prev) => prev.filter((i) => i.id !== itemId))}
+        onRestoreItem={(item) => setItemsToDelete((prev) => [...prev, item])}
+        onRestoreAll={(items) => setItemsToDelete((prev) => [...prev, ...items])}
+        title="Delete Events"
+        warningMessage="This will permanently remove these events and all associated RSVPs. This action cannot be undone."
+        confirmButtonText="Delete Events"
+      />
+    </DataManagementPage>
   );
 }
 
@@ -821,7 +429,7 @@ export default function AdminParentEventsPage() {
 interface EventCardProps {
   event: AdminEvent;
   getEventTypeInfo: (type: EventType) => { label: string; icon: typeof Calendar; bgClass: string; textClass: string };
-  getStatusBadge: (status: EventStatus) => React.ReactNode;
+  getStatusBadge: (status: EventStatus) => ReactNode;
 }
 
 function EventCard({ event, getEventTypeInfo, getStatusBadge }: EventCardProps) {

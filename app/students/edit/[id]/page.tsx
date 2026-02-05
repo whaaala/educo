@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import PersonalInformationSection from "@/components/students/form-sections/PersonalInformationSection";
 import ParentsGuardianSection from "@/components/students/form-sections/ParentsGuardianSection";
 import SiblingsSection from "@/components/students/form-sections/SiblingsSection";
@@ -15,7 +13,6 @@ import DocumentsSection from "@/components/students/form-sections/DocumentsSecti
 import MedicalHistorySection from "@/components/students/form-sections/MedicalHistorySection";
 import PreviousSchoolSection from "@/components/students/form-sections/PreviousSchoolSection";
 import OtherDetailsSection from "@/components/students/form-sections/OtherDetailsSection";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useAcademicYear } from "@/contexts/AcademicYearContext";
 import { validateForm, ValidationErrors } from "@/lib/validation";
@@ -38,7 +35,6 @@ export default function EditStudentPage() {
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
-  const isLoading = usePageLoad(800);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [isSticky, setIsSticky] = useState(true);
@@ -430,26 +426,31 @@ export default function EditStudentPage() {
     router.push("/students?view=grid");
   };
 
+  if (isLoadingData) {
+    return (
+      <DashboardPage
+        title="Edit Student"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Students", href: "/students?view=grid" },
+          { label: "Edit Student", isActive: true },
+        ]}
+        loadingText="Loading Student Data"
+      />
+    );
+  }
+
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading || isLoadingData} loadingText={isLoadingData ? "Loading Student Data" : "Loading Form"} />
-
-      {/* Main Content - Fades in after loading */}
-      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-        {/* Header */}
-        <div className="py-4 mb-2">
-          <PageHeader
-            title="Edit Student"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Students", href: "/students?view=grid" },
-              { label: "Edit Student", isActive: true },
-            ]}
-          />
-        </div>
-
-        {/* Form */}
+    <DashboardPage
+      title="Edit Student"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Students", href: "/students?view=grid" },
+        { label: "Edit Student", isActive: true },
+      ]}
+      loadingText="Loading Form"
+      afterStats={
+        <div className="mt-6">
         <form
           id="edit-student-form"
           ref={formRef}
@@ -556,13 +557,13 @@ export default function EditStudentPage() {
           </div>
         </div>
       </div>
-
-      {/* Validation Errors Modal */}
+      }
+    >
       <ValidationErrorsModal
         isOpen={showValidationModal}
         onClose={() => setShowValidationModal(false)}
         errors={errors}
       />
-    </MainLayout>
+    </DashboardPage>
   );
 }

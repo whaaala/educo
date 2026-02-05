@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, TrendingUp, CheckCircle2, AlertCircle, RotateCcw } from "lucide-react";
-import MainLayout from "@/components/layout/MainLayout";
+import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
-import PageHeader from "@/components/shared/PageHeader";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import { Student } from "@/components/students/StudentCard";
 import { useStudentsByTenant } from "@/hooks/useStudentsByTenant";
@@ -316,18 +315,16 @@ export default function PromotionPage() {
   ];
 
   return (
-    <MainLayout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-      <PageHeader
-        title="Student Promotion"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/" },
-          { label: "Peoples", href: "#" },
-          { label: "Students", href: "/students" },
-          { label: "Promotion", isActive: true }
-        ]}
-      />
+    <DashboardPage
+      title="Student Promotion"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Peoples", href: "#" },
+        { label: "Students", href: "/students" },
+        { label: "Promotion", isActive: true },
+      ]}
+      afterStats={
+        <div className="mt-6 p-6 space-y-6">
 
       {/* Progress Steps */}
       <div className="flex items-center justify-between bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
@@ -681,7 +678,8 @@ export default function PromotionPage() {
           </div>
         </div>
       )}
-      </div>
-    </MainLayout>
+        </div>
+      }
+    />
   );
 }

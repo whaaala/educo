@@ -1,23 +1,17 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import PageSpinner from "@/components/shared/PageSpinner";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DataManagementPage } from "@/components/pages";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useCountry } from "@/contexts/CountryContext";
 import { formatCurrency } from "@/config/countries";
 import { exportFeeStructureToExcel, exportFeeStructureToPDF } from "@/lib/export-utils";
-import Button from "@/components/shared/Button";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
-import PageActions from "@/components/shared/PageActions";
 import SearchFilterBar from "@/components/shared/SearchFilterBar";
 import StatCard from "@/components/shared/StatCard";
 import FeeStructureModal from "@/components/finance/FeeStructureModal";
+import ActionModal from "@/components/shared/ActionModal";
 import {
-  Plus,
   Edit,
   Trash2,
   Layers,
@@ -33,6 +27,7 @@ import {
   SchoolType,
   EducationLevel,
 } from "@/lib/feeConfigNew";
+import { ACADEMIC_YEARS, TERMS } from "../config";
 
 // Fee Structure item - the actual fee with amount for a specific class
 interface FeeStructureItem {
@@ -61,21 +56,6 @@ interface FeeStructureItem {
 const PRIMARY_CLASSES = ["All Primary", "Nursery 1", "Nursery 2", "KG 1", "KG 2", "Primary 1", "Primary 2", "Primary 3", "Primary 4", "Primary 5", "Primary 6"];
 const SECONDARY_CLASSES = ["All Secondary", "JSS 1", "JSS 2", "JSS 3", "SSS 1", "SSS 2", "SSS 3"];
 const TERTIARY_CLASSES = ["All Levels", "100 Level", "200 Level", "300 Level", "400 Level", "500 Level", "600 Level"];
-
-const TERMS = [
-  { label: "First Term", value: "first-term" },
-  { label: "Second Term", value: "second-term" },
-  { label: "Third Term", value: "third-term" },
-  { label: "First Semester", value: "first-semester" },
-  { label: "Second Semester", value: "second-semester" },
-  { label: "Full Year", value: "full-year" },
-];
-
-const ACADEMIC_YEARS = [
-  { label: "2024/2025", value: "2024-2025" },
-  { label: "2025/2026", value: "2025-2026" },
-  { label: "2023/2024", value: "2023-2024" },
-];
 
 // Mock fee structure data
 const MOCK_FEE_STRUCTURES: FeeStructureItem[] = [
@@ -178,7 +158,6 @@ function getClassesForLevel(level: EducationLevel): string[] {
 }
 
 export default function FeeStructurePage() {
-  const isPageLoading = usePageLoad(600);
   const { settings } = useSchoolSettings();
   const { countryCode, countryConfig } = useCountry();
   const currencySymbol = countryConfig.currency.symbol;
@@ -208,6 +187,9 @@ export default function FeeStructurePage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<FeeStructureItem | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingItem, setDeletingItem] = useState<FeeStructureItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isFiltering, setIsFiltering] = useState(false);
   const [animationTrigger, setAnimationTrigger] = useState(0);
@@ -439,10 +421,21 @@ export default function FeeStructurePage() {
   };
 
   // Delete fee structure
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this fee structure?")) {
-      setFeeStructures(feeStructures.filter((item) => item.id !== id));
-    }
+  const requestDelete = (item: FeeStructureItem) => {
+    setDeletingItem(item);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingItem) return;
+
+    setIsDeleting(true);
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    setFeeStructures((prev) => prev.filter((item) => item.id !== deletingItem.id));
+    setIsDeleting(false);
+    setIsDeleteModalOpen(false);
+    setDeletingItem(null);
   };
 
   // Toggle active status
@@ -583,7 +576,7 @@ export default function FeeStructurePage() {
             <Copy className="w-4 h-4 text-purple-600 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors" />
           </button>
           <button
-            onClick={() => handleDelete(item.id)}
+            onClick={() => requestDelete(item)}
             className="group relative p-2 rounded-lg bg-gradient-to-br from-red-50/50 to-red-100/30 dark:from-red-950/30 dark:to-red-900/20 midnight:from-red-950/30 midnight:to-red-900/20 purple:from-red-950/30 purple:to-red-900/20 hover:from-red-100 hover:to-red-100 dark:hover:from-red-900/40 dark:hover:to-red-800/30 transition-all duration-200 cursor-pointer border border-red-200/40 dark:border-red-800/30 hover:border-red-400/60 dark:hover:border-red-600/50 active:scale-95"
             title="Delete"
           >
@@ -616,115 +609,122 @@ export default function FeeStructurePage() {
   const isLoading = isRefreshing || isFiltering;
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Fee Structure" />
+    <DataManagementPage<FeeStructureItem>
+      title="Fee Structure"
+      breadcrumbs={[
+        { label: "Finance", href: "/finance" },
+        { label: "Fee Structure" },
+      ]}
+      data={filteredStructures}
+      getRowKey={(item) => item.id}
+      columns={columns}
+      enableSelection={false}
+      enableViewToggle={false}
+      showTableSearch={false}
+      addButtonConfig={{
+        label: "Add Fee",
+        onClick: handleAddNew,
+      }}
+      onRefresh={handleRefresh}
+      onExportPDF={() => exportFeeStructureToPDF(
+        filteredStructures,
+        "fee-structure",
+        (amount) => formatCurrency(amount, countryCode),
+        settings?.schoolName || "School Management System"
+      )}
+      onExportExcel={() => exportFeeStructureToExcel(
+        filteredStructures,
+        "fee-structure",
+        (amount) => formatCurrency(amount, countryCode)
+      )}
+      headerContent={
+        <>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mt-6">
+            <StatCard
+              icon={FileText}
+              label="Total Fees"
+              value={formatCurrency(totalFees, countryCode)}
+              color="blue"
+              badge="100%"
+            />
+            <StatCard
+              icon={TrendingUp}
+              label="Active Fees"
+              value={formatCurrency(filteredStructures.filter(f => f.isActive).reduce((sum, f) => sum + f.amount, 0), countryCode)}
+              color="green"
+              badge={`${filteredStructures.length > 0 ? ((activeFeesCount / filteredStructures.length) * 100).toFixed(0) : 0}%`}
+            />
+            <StatCard
+              icon={TrendingUp}
+              label="Inactive Fees"
+              value={formatCurrency(filteredStructures.filter(f => !f.isActive).reduce((sum, f) => sum + f.amount, 0), countryCode)}
+              color="purple"
+              badge={`${filteredStructures.length > 0 ? (((filteredStructures.length - activeFeesCount) / filteredStructures.length) * 100).toFixed(0) : 0}%`}
+            />
+            <StatCard
+              icon={Layers}
+              label="Installments"
+              value={formatCurrency(filteredStructures.filter(f => f.allowInstallments).reduce((sum, f) => sum + f.amount, 0), countryCode)}
+              color="amber"
+              badge={`${filteredStructures.length > 0 ? ((installmentFeesCount / filteredStructures.length) * 100).toFixed(0) : 0}%`}
+            />
+            <StatCard
+              icon={FileText}
+              label="Late Fees"
+              value={formatCurrency(filteredStructures.filter(f => f.lateFee && f.lateFeeType === 'fixed').reduce((sum, f) => sum + (f.lateFee || 0), 0), countryCode)}
+              color="red"
+              badge={`${filteredStructures.length > 0 ? ((filteredStructures.filter(f => f.lateFee && f.lateFee > 0).length / filteredStructures.length) * 100).toFixed(0) : 0}%`}
+            />
+          </div>
 
-      <div className={`space-y-6 transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-          <PageHeader
-            title="Fee Structure"
-            breadcrumbs={[
-              { label: "Finance", href: "/finance" },
-              { label: "Fee Structure" },
-            ]}
-          />
-          <PageActions
-            onRefresh={handleRefresh}
-            onExportPDF={() => exportFeeStructureToPDF(
-              filteredStructures,
-              "fee-structure",
-              (amount) => formatCurrency(amount, countryCode),
-              settings?.schoolName || "School Management System"
-            )}
-            onExportExcel={() => exportFeeStructureToExcel(
-              filteredStructures,
-              "fee-structure",
-              (amount) => formatCurrency(amount, countryCode)
-            )}
-            onAdd={handleAddNew}
-            addButtonLabel="Add Fee"
-            exportDescription="Export fee structure records"
-            showPrint={false}
-          />
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-          <StatCard
-            icon={FileText}
-            label="Total Fees"
-            value={formatCurrency(totalFees, countryCode)}
-            color="blue"
-            badge="100%"
-          />
-          <StatCard
-            icon={TrendingUp}
-            label="Active Fees"
-            value={formatCurrency(filteredStructures.filter(f => f.isActive).reduce((sum, f) => sum + f.amount, 0), countryCode)}
-            color="green"
-            badge={`${filteredStructures.length > 0 ? ((activeFeesCount / filteredStructures.length) * 100).toFixed(0) : 0}%`}
-          />
-          <StatCard
-            icon={TrendingUp}
-            label="Inactive Fees"
-            value={formatCurrency(filteredStructures.filter(f => !f.isActive).reduce((sum, f) => sum + f.amount, 0), countryCode)}
-            color="purple"
-            badge={`${filteredStructures.length > 0 ? (((filteredStructures.length - activeFeesCount) / filteredStructures.length) * 100).toFixed(0) : 0}%`}
-          />
-          <StatCard
-            icon={Layers}
-            label="Installments"
-            value={formatCurrency(filteredStructures.filter(f => f.allowInstallments).reduce((sum, f) => sum + f.amount, 0), countryCode)}
-            color="amber"
-            badge={`${filteredStructures.length > 0 ? ((installmentFeesCount / filteredStructures.length) * 100).toFixed(0) : 0}%`}
-          />
-          <StatCard
-            icon={FileText}
-            label="Late Fees"
-            value={formatCurrency(filteredStructures.filter(f => f.lateFee && f.lateFeeType === 'fixed').reduce((sum, f) => sum + (f.lateFee || 0), 0), countryCode)}
-            color="red"
-            badge={`${filteredStructures.length > 0 ? ((filteredStructures.filter(f => f.lateFee && f.lateFee > 0).length / filteredStructures.length) * 100).toFixed(0) : 0}%`}
-          />
-        </div>
-
-        {/* Filters Bar */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={handleSearchChange}
-          searchPlaceholder="Search by fee name, category, or class..."
-          filters={[
-            {
-              label: "Academic Year",
-              value: selectedYear,
-              onChange: (val) => handleFilterChange(setSelectedYear, String(val)),
-              options: ACADEMIC_YEARS,
-            },
-            {
-              label: "Level",
-              value: selectedLevel,
-              onChange: (val) => handleFilterChange(setSelectedLevel as (val: string) => void, String(val)),
-              options: levelOptions,
-            },
-            {
-              label: "Class",
-              value: selectedClass,
-              onChange: (val) => handleFilterChange(setSelectedClass, String(val)),
-              options: classOptions,
-            },
-            {
-              label: "Category",
-              value: selectedCategory,
-              onChange: (val) => handleFilterChange(setSelectedCategory, String(val)),
-              options: categoryOptions,
-            },
-          ]}
-        />
-
-        {/* Table Section */}
+          {/* Filters Bar */}
+          <div className="mt-6">
+            <SearchFilterBar
+              searchValue={searchQuery}
+              onSearchChange={handleSearchChange}
+              searchPlaceholder="Search by fee name, category, or class..."
+              filters={[
+                {
+                  label: "Academic Year",
+                  value: selectedYear,
+                  onChange: (val) => handleFilterChange(setSelectedYear, String(val)),
+                  options: ACADEMIC_YEARS,
+                },
+                {
+                  label: "Level",
+                  value: selectedLevel,
+                  onChange: (val) => handleFilterChange(setSelectedLevel as (val: string) => void, String(val)),
+                  options: levelOptions,
+                },
+                {
+                  label: "Class",
+                  value: selectedClass,
+                  onChange: (val) => handleFilterChange(setSelectedClass, String(val)),
+                  options: classOptions,
+                },
+                {
+                  label: "Category",
+                  value: selectedCategory,
+                  onChange: (val) => handleFilterChange(setSelectedCategory, String(val)),
+                  options: categoryOptions,
+                },
+              ]}
+            />
+          </div>
+        </>
+      }
+      customListComponent={
         <div>
           {isLoading ? (
-            <PageSpinner message={isRefreshing ? "Refreshing..." : "Filtering..."} size="md" />
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {isRefreshing ? "Refreshing..." : "Filtering..."}
+                </p>
+              </div>
+            </div>
           ) : filteredStructures.length === 0 ? (
             <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-8 sm:p-12">
               <div className="flex flex-col items-center justify-center">
@@ -744,12 +744,6 @@ export default function FeeStructurePage() {
                     ? "No results match your search. Try adjusting your filters."
                     : "Get started by adding your first fee structure."}
                 </p>
-                {!searchQuery && (
-                  <Button variant="primary" onClick={handleAddNew} className="flex items-center gap-2">
-                    <Plus className="w-4 h-4" />
-                    Add Fee
-                  </Button>
-                )}
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
@@ -785,8 +779,8 @@ export default function FeeStructurePage() {
             </div>
           )}
         </div>
-      </div>
-
+      }
+    >
       {/* Add/Edit Modal */}
       <FeeStructureModal
         isOpen={isAddModalOpen || isEditModalOpen}
@@ -806,6 +800,33 @@ export default function FeeStructurePage() {
         termOptions={TERMS}
         currencySymbol={currencySymbol}
       />
-    </MainLayout>
+
+      {/* Delete Confirmation */}
+      <ActionModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          if (isDeleting) return;
+          setIsDeleteModalOpen(false);
+          setDeletingItem(null);
+        }}
+        title="Delete Fee Structure"
+        subtitle={deletingItem ? `${deletingItem.feeTypeName} • ${deletingItem.classLevel}` : undefined}
+        variant="danger"
+        message="Are you sure you want to delete this fee structure? This action cannot be undone."
+        details={
+          deletingItem
+            ? [
+                { label: "Category", value: deletingItem.categoryName },
+                { label: "Amount", value: formatCurrency(deletingItem.amount, countryCode) },
+                { label: "Due Date", value: new Date(deletingItem.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) },
+              ]
+            : undefined
+        }
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={handleDeleteConfirm}
+        isConfirming={isDeleting}
+      />
+    </DataManagementPage>
   );
 }

@@ -1,20 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import TimetableManagementSettings from "@/components/settings/TimetableManagementSettings";
 import UserPermissionManagement from "@/components/settings/UserPermissionManagement";
 import AttendanceSettings from "@/components/settings/AttendanceSettings";
 import FeeSettings from "@/components/settings/FeeSettings";
 import BankAccountSettings from "@/components/settings/BankAccountSettings";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { Settings as SettingsIcon, Palette, Calendar, Clock, Shield, UserCheck, DollarSign, GraduationCap, Landmark, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
 export default function SettingsPage() {
-  const isLoading = usePageLoad(800);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -23,32 +19,27 @@ export default function SettingsPage() {
 
   if (!isMounted) {
     return (
-      <MainLayout>
-        <PageLoader isLoading={true} loadingText="Loading Settings" />
-      </MainLayout>
+      <DashboardPage
+        title="Settings"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Settings", isActive: true },
+        ]}
+        loadingText="Loading Settings"
+      />
     );
   }
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Settings" />
-
-      {/* Main Content */}
-      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-        {/* Header */}
-        <div className="py-4 mb-2">
-          <PageHeader
-            title="Settings"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Settings", isActive: true },
-            ]}
-          />
-        </div>
-
-        {/* Settings Content */}
-        <div className="pb-20 space-y-6">
+    <DashboardPage
+      title="Settings"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Settings", isActive: true },
+      ]}
+      loadingText="Loading Settings"
+      afterStats={
+        <div className="mt-6 pb-20 space-y-6">
           {/* Admin Console Banner */}
           <div className="p-4 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-xl border border-blue-200 dark:border-blue-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-3">
@@ -314,7 +305,7 @@ export default function SettingsPage() {
             </div>
           </section>
         </div>
-      </div>
-    </MainLayout>
+      }
+    />
   );
 }

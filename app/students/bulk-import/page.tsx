@@ -4,9 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Download, FileSpreadsheet, AlertCircle, CheckCircle2, X } from "lucide-react";
 import * as XLSX from "xlsx";
-import MainLayout from "@/components/layout/MainLayout";
+import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
-import PageHeader from "@/components/shared/PageHeader";
 import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import { Student } from "@/components/students/StudentCard";
 
@@ -292,28 +291,27 @@ export default function BulkImportPage() {
   ];
 
   return (
-    <MainLayout>
-      <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <PageHeader
-          title="Bulk Import Students"
-          breadcrumbs={[
-            { label: "Dashboard", href: "/" },
-            { label: "Peoples", href: "#" },
-            { label: "Students", href: "/students" },
-            { label: "Bulk Import", isActive: true }
-          ]}
-        />
-        <Button
-          variant="outline"
-          onClick={downloadSampleTemplate}
-          className="flex items-center gap-2"
-        >
-          <Download className="w-4 h-4" />
-          Download Sample Template
-        </Button>
-      </div>
+    <DashboardPage
+      title="Bulk Import Students"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Students", href: "/students" },
+        { label: "Bulk Import", isActive: true },
+      ]}
+      loadingText="Loading Bulk Import"
+      afterStats={
+        <div className="mt-6 p-6 space-y-6">
+          {/* Header Actions */}
+          <div className="flex items-center justify-end">
+            <Button
+              variant="outline"
+              onClick={downloadSampleTemplate}
+              className="flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Download Sample Template
+            </Button>
+          </div>
 
       {/* Progress Steps */}
       <div className="flex items-center justify-between bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
@@ -731,7 +729,8 @@ export default function BulkImportPage() {
           </div>
         </div>
       )}
-      </div>
-    </MainLayout>
+        </div>
+      }
+    />
   );
 }

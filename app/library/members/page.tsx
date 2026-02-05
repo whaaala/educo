@@ -1,45 +1,38 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import Image from "next/image";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import PageSpinner from "@/components/shared/PageSpinner";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DataManagementPage } from "@/components/pages";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useCountry } from "@/contexts/CountryContext";
 import { formatCurrency } from "@/config/countries";
-import Button from "@/components/shared/Button";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
-import PageActions from "@/components/shared/PageActions";
-import SearchFilterBar from "@/components/shared/SearchFilterBar";
-import StatCard from "@/components/shared/StatCard";
+import DataTable from "@/components/shared/DataTable";
 import Tooltip from "@/components/shared/Tooltip";
 import {
-  Plus,
-  Users,
   Eye,
   Edit,
   UserCheck,
   UserX,
   BookOpen,
-  AlertCircle,
   GraduationCap,
   Briefcase,
   School,
-  Mail,
-  Phone,
-  Calendar,
-  CreditCard,
-  Hash,
   Clock,
 } from "lucide-react";
 import type { LibraryMember, BorrowerType } from "@/types/library";
+import type { ColumnConfig } from "@/types/components";
 import { exportMembersToExcel, exportMembersToPDF } from "@/lib/export-utils";
-import MemberViewModal from "@/components/library/MemberViewModal";
+import DetailViewModal from "@/components/shared/DetailViewModal";
 import EditMemberModal from "@/components/library/EditMemberModal";
 import AddMemberModal from "@/components/library/AddMemberModal";
+import {
+  memberFilterFields,
+  memberSortOptions,
+  filterMembers,
+  sortMembers,
+  searchMembers,
+  getMemberStats,
+} from "../config";
 
 // Mock Library Members Data
 const MOCK_MEMBERS: LibraryMember[] = [
@@ -242,37 +235,12 @@ const MOCK_MEMBERS: LibraryMember[] = [
   },
 ];
 
-// Filter options
-const TYPE_OPTIONS = [
-  { value: "all", label: "All Types" },
-  { value: "student", label: "Students" },
-  { value: "staff", label: "Staff" },
-  { value: "teacher", label: "Teachers" },
-];
-
-const STATUS_OPTIONS = [
-  { value: "all", label: "All Status" },
-  { value: "active", label: "Active" },
-  { value: "inactive", label: "Inactive" },
-];
-
-const FINE_OPTIONS = [
-  { value: "all", label: "All Members" },
-  { value: "with-fines", label: "With Fines" },
-  { value: "no-fines", label: "No Fines" },
-];
-
 export default function LibraryMembersPage() {
-  const isPageLoading = usePageLoad(600);
   const { settings } = useSchoolSettings();
   const { countryCode } = useCountry();
 
   // State
   const [members, setMembers] = useState<LibraryMember[]>(MOCK_MEMBERS);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState("all");
-  const [selectedFineFilter, setSelectedFineFilter] = useState("all");
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -282,104 +250,13 @@ export default function LibraryMembersPage() {
   const [editingMember, setEditingMember] = useState<LibraryMember | null>(null);
 
   // Loading states
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isFiltering, setIsFiltering] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Animation trigger
-  const [animationTrigger, setAnimationTrigger] = useState(0);
-
-  // Create a filterKey to track filter/search changes
-  const filterKey = `${searchQuery}-${selectedType}-${selectedStatus}-${selectedFineFilter}`;
-  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
-
-  // Handle filter changes with animation
-  const handleFilterChange = (setter: (val: string) => void, value: string) => {
-    setIsFiltering(true);
-    setTimeout(() => {
-      setter(value);
-      setTimeout(() => setIsFiltering(false), 100);
-    }, 200);
-  };
-
-  // Handle search change
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-  };
-
-  // Filter members
-  const filteredMembers = useMemo(() => {
-    return members.filter((member) => {
-      const matchesSearch =
-        searchQuery === "" ||
-        member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.memberId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.class?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.department?.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesType = selectedType === "all" || member.type === selectedType;
-      const matchesStatus =
-        selectedStatus === "all" ||
-        (selectedStatus === "active" && member.isActive) ||
-        (selectedStatus === "inactive" && !member.isActive);
-      const matchesFineFilter =
-        selectedFineFilter === "all" ||
-        (selectedFineFilter === "with-fines" && member.finesDue > 0) ||
-        (selectedFineFilter === "no-fines" && member.finesDue === 0);
-
-      return matchesSearch && matchesType && matchesStatus && matchesFineFilter;
-    });
-  }, [members, searchQuery, selectedType, selectedStatus, selectedFineFilter]);
-
-  // Calculate statistics
-  const stats = useMemo(() => {
-    const totalMembers = members.length;
-    const activeMembers = members.filter((m) => m.isActive).length;
-    const totalWithFines = members.filter((m) => m.finesDue > 0).length;
-    const totalFinesAmount = members.reduce((sum, m) => sum + m.finesDue, 0);
-    const totalBooksBorrowed = members.reduce((sum, m) => sum + m.currentBooksCount, 0);
-
-    return { totalMembers, activeMembers, totalWithFines, totalFinesAmount, totalBooksBorrowed };
-  }, [members]);
-
-  // Trigger animation when filterKey changes
-  useEffect(() => {
-    if (filterKey !== prevFilterKey) {
-      setAnimationTrigger((prev) => prev + 1);
-      setPrevFilterKey(filterKey);
-    }
-  }, [filterKey, prevFilterKey]);
-
-  // Apply row animation when filter/search changes
-  useEffect(() => {
-    if (animationTrigger > 0) {
-      const timeoutId = setTimeout(() => {
-        const tables = document.querySelectorAll("table");
-        tables.forEach((table) => {
-          const rows = table.querySelectorAll("tbody tr");
-          rows.forEach((row, index) => {
-            const htmlRow = row as HTMLElement;
-            const delay = index / 80;
-            htmlRow.style.animation = `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${delay}s both`;
-          });
-        });
-
-        // Cleanup after animation completes
-        setTimeout(() => {
-          tables.forEach((table) => {
-            const rows = table.querySelectorAll("tbody tr");
-            rows.forEach((row) => {
-              const htmlRow = row as HTMLElement;
-              htmlRow.style.animation = "";
-            });
-          });
-        }, 600);
-      }, 50);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [animationTrigger]);
+  // Stats config
+  const memberStats = useMemo(
+    () => getMemberStats(members, (amount) => formatCurrency(amount, countryCode)),
+    [members, countryCode]
+  );
 
   // Handle view member
   const handleView = (member: LibraryMember) => {
@@ -426,20 +303,10 @@ export default function LibraryMembersPage() {
     }, 500);
   };
 
-  // Handle refresh
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setSearchQuery("");
-    setSelectedType("all");
-    setSelectedStatus("all");
-    setSelectedFineFilter("all");
-    setTimeout(() => setIsRefreshing(false), 500);
-  };
-
   // Export to PDF
   const handleExportPDF = () => {
     exportMembersToPDF(
-      filteredMembers,
+      members,
       "library-members",
       (amount) => formatCurrency(amount, countryCode),
       settings.schoolName
@@ -449,7 +316,7 @@ export default function LibraryMembersPage() {
   // Export to Excel
   const handleExportExcel = () => {
     exportMembersToExcel(
-      filteredMembers,
+      members,
       "library-members",
       (amount) => formatCurrency(amount, countryCode)
     );
@@ -726,183 +593,179 @@ export default function LibraryMembersPage() {
     },
   ];
 
-  const isLoading = isRefreshing || isFiltering;
-
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Members" />
-
-      <div
-        className={`space-y-6 transition-opacity duration-500 ${
-          isPageLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <PageHeader
-            title="Library Members"
-            breadcrumbs={[
-              { label: "Library", href: "/library" },
-              { label: "Members" },
-            ]}
-          />
-          <PageActions
-            onRefresh={handleRefresh}
-            onExportPDF={handleExportPDF}
-            onExportExcel={handleExportExcel}
-            onAdd={() => setIsAddModalOpen(true)}
-            addButtonLabel="Add Member"
-            exportDescription="Export member records"
-            showPrint={false}
-          />
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-          <StatCard
-            icon={Users}
-            label="Total Members"
-            value={stats.totalMembers.toString()}
-            color="blue"
-            badge={`${filteredMembers.length} shown`}
-          />
-          <StatCard
-            icon={UserCheck}
-            label="Active Members"
-            value={stats.activeMembers.toString()}
-            color="green"
-            badge={`${Math.round((stats.activeMembers / stats.totalMembers) * 100)}%`}
-          />
-          <StatCard
-            icon={BookOpen}
-            label="Books Borrowed"
-            value={stats.totalBooksBorrowed.toString()}
-            color="purple"
-          />
-          <StatCard
-            icon={AlertCircle}
-            label="Outstanding Fines"
-            value={formatCurrency(stats.totalFinesAmount, countryCode)}
-            color="red"
-            badge={stats.totalWithFines > 0 ? `${stats.totalWithFines} members` : "None"}
-          />
-        </div>
-
-        {/* Filters */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={handleSearchChange}
-          searchPlaceholder="Search by name, ID, email, class, or department..."
-          filters={[
-            {
-              label: "Type",
-              value: selectedType,
-              onChange: (val) => handleFilterChange(setSelectedType, String(val)),
-              options: TYPE_OPTIONS,
-            },
-            {
-              label: "Status",
-              value: selectedStatus,
-              onChange: (val) => handleFilterChange(setSelectedStatus, String(val)),
-              options: STATUS_OPTIONS,
-            },
-            {
-              label: "Fines",
-              value: selectedFineFilter,
-              onChange: (val) => handleFilterChange(setSelectedFineFilter, String(val)),
-              options: FINE_OPTIONS,
-            },
-          ]}
+    <DataManagementPage<LibraryMember>
+      title="Library Members"
+      breadcrumbs={[
+        { label: "Library", href: "/library" },
+        { label: "Members" },
+      ]}
+      data={members}
+      getRowKey={(member) => member.id}
+      columns={columns}
+      stats={memberStats}
+      filterFields={memberFilterFields}
+      filterFn={filterMembers}
+      sortOptions={memberSortOptions}
+      sortFn={sortMembers}
+      searchFn={searchMembers}
+      enableViewToggle={false}
+      enableSelection={false}
+      addButtonConfig={{
+        label: "Add Member",
+        onClick: () => setIsAddModalOpen(true),
+      }}
+      onExportPDF={handleExportPDF}
+      onExportExcel={handleExportExcel}
+      customListComponent={
+        <DataTable
+          data={members}
+          columns={columns}
+          getRowKey={(member) => member.id}
+          emptyMessage="No members found"
+          title=""
+          showSearch={false}
+          defaultItemsPerPage={10}
+          itemsPerPageOptions={[5, 10, 15, 20, 25]}
+          enablePagination={true}
+          enableItemsPerPage={true}
+          onRowClick={handleView}
         />
-
-        {/* Table Section */}
-        <div>
-          {isLoading ? (
-            <PageSpinner
-              message={isRefreshing ? "Refreshing..." : "Filtering..."}
-              size="md"
-            />
-          ) : filteredMembers.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-8 sm:p-12">
-              <div className="flex flex-col items-center justify-center">
-                <div className="relative mb-4">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 animate-pulse" />
-                  </div>
-                  <div className="relative z-10 flex items-center justify-center w-16 h-16">
-                    <Users className="w-8 h-8 text-gray-400 dark:text-gray-500" />
-                  </div>
-                </div>
-                <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 mb-1 text-center">
-                  No members found
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
-                  {searchQuery
-                    ? "No results match your search. Try adjusting your filters."
-                    : "Get started by adding your first library member."}
-                </p>
-                {!searchQuery && (
-                  <Button
-                    variant="primary"
-                    onClick={() => setIsAddModalOpen(true)}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Member
-                  </Button>
-                )}
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    Clear search
-                  </button>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="relative pb-16">
-              {/* Mobile Scroll Indicator */}
-              <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none" />
-
-              <div
-                key={`table-data-${filterKey}`}
-                className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-visible"
-              >
-                <DataTable
-                  data={filteredMembers}
-                  columns={columns}
-                  getRowKey={(member) => member.id}
-                  emptyMessage="No members found"
-                  title=""
-                  showSearch={false}
-                  defaultItemsPerPage={10}
-                  itemsPerPageOptions={[5, 10, 15, 20, 25]}
-                  enablePagination={true}
-                  enableItemsPerPage={true}
-                  onRowClick={handleView}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
+      }
+      enablePagination={true}
+      itemLabel="member"
+      itemLabelPlural="members"
+      emptyStateConfig={{
+        title: "No members found",
+        description: "Get started by adding your first library member.",
+        actionLabel: "Add Member",
+        onAction: () => setIsAddModalOpen(true),
+      }}
+    >
       {/* View Member Modal */}
       {viewingMember && (
-        <MemberViewModal
+        <DetailViewModal
           isOpen={isViewModalOpen}
           onClose={() => {
             setIsViewModalOpen(false);
             setViewingMember(null);
           }}
-          member={viewingMember}
-          formatCurrency={(amount) => formatCurrency(amount, countryCode)}
-          onEdit={() => {
-            setIsViewModalOpen(false);
-            setViewingMember(null);
-            handleEdit(viewingMember);
+          title={viewingMember.name}
+          subtitle={viewingMember.memberId}
+          icon={<BookOpen className="w-5 h-5" />}
+          size="3xl"
+          header={{
+            image: (
+              <div className="relative w-16 h-16 rounded-2xl overflow-hidden ring-2 ring-white/80 dark:ring-gray-700/50 shadow-lg">
+                <Image
+                  src={viewingMember.avatarUrl || `https://i.pravatar.cc/150?u=${viewingMember.id}`}
+                  alt={viewingMember.name}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+            ),
+            badges: [
+              {
+                label: viewingMember.isActive ? "ACTIVE" : "INACTIVE",
+                variant: viewingMember.isActive ? "success" : "neutral",
+                pulse: viewingMember.isActive,
+              },
+              {
+                label: viewingMember.type.toUpperCase(),
+                variant:
+                  viewingMember.type === "student"
+                    ? "purple"
+                    : viewingMember.type === "teacher"
+                      ? "info"
+                      : "warning",
+              },
+            ],
+            subtitle: (
+              <div className="space-y-1">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  {viewingMember.email || "-"} • {viewingMember.phone || "-"}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {viewingMember.class || viewingMember.department || "-"}
+                </p>
+              </div>
+            ),
+          }}
+          sections={[
+            {
+              id: "overview",
+              title: "Overview",
+              type: "grid",
+              columns: 3,
+              fields: [
+                { label: "Member ID", value: viewingMember.memberId },
+                { label: "Type", value: getMemberTypeBadge(viewingMember.type as BorrowerType) },
+                { label: "Status", value: viewingMember.isActive ? "Active" : "Inactive" },
+                { label: "Max Books", value: String(viewingMember.maxBooksAllowed) },
+                {
+                  label: "Current Books",
+                  value: String(viewingMember.currentBooksCount),
+                  highlight:
+                    viewingMember.currentBooksCount >= viewingMember.maxBooksAllowed ? "red" : "blue",
+                },
+                { label: "Total Borrowed", value: String(viewingMember.totalBorrowedCount) },
+                {
+                  label: "Fines Due",
+                  value: viewingMember.finesDue > 0 ? formatCurrency(viewingMember.finesDue, countryCode) : "-",
+                  highlight: viewingMember.finesDue > 0 ? "red" : "green",
+                },
+                {
+                  label: "Member Since",
+                  value: new Date(viewingMember.memberSince).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  }),
+                },
+                {
+                  label: "Expires",
+                  value: viewingMember.expiryDate
+                    ? new Date(viewingMember.expiryDate).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : "-",
+                },
+              ],
+            },
+          ]}
+          actions={[
+            {
+              id: "edit",
+              label: "Edit",
+              icon: Edit,
+              variant: "secondary",
+              position: "left",
+              onClick: () => {
+                setIsViewModalOpen(false);
+                setViewingMember(null);
+                handleEdit(viewingMember);
+              },
+            },
+            {
+              id: "close",
+              label: "Close",
+              variant: "ghost",
+              position: "right",
+              onClick: () => {
+                setIsViewModalOpen(false);
+                setViewingMember(null);
+              },
+            },
+          ]}
+          footerInfo={{
+            items: [
+              { label: "Created", value: new Date(viewingMember.createdAt).toLocaleString() },
+              { label: "Updated", value: new Date(viewingMember.updatedAt).toLocaleString() },
+            ],
           }}
         />
       )}
@@ -928,6 +791,6 @@ export default function LibraryMembersPage() {
         onAdd={handleAddMember}
         isAdding={isSaving}
       />
-    </MainLayout>
+    </DataManagementPage>
   );
 }

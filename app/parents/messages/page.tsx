@@ -4,10 +4,7 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import DashboardPage from "@/components/shared/DashboardPage";
 import ActionButton from "@/components/shared/ActionButton";
 import EmojiPickerPopover from "@/components/shared/EmojiPickerPopover";
 import {
@@ -271,7 +268,6 @@ const MOCK_MESSAGES: ExtendedMessage[] = [...MOCK_RECEIVED_MESSAGES, ...MOCK_SEN
 type FilterType = "all" | "unread" | "starred" | "sent";
 
 export default function ParentMessagesPage() {
-  const isPageLoading = usePageLoad(600);
   const searchParams = useSearchParams();
   const [selectedFilter, setSelectedFilter] = useState<FilterType>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -496,21 +492,15 @@ export default function ParentMessagesPage() {
       ];
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Messages" />
-
-      <div
-        className={`transition-opacity duration-500 ${
-          isPageLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
+    <DashboardPage
+      title="Messages"
+      breadcrumbs={breadcrumbs}
+      loadingText="Loading Messages"
+      afterStats={
+        <div className="transition-opacity duration-500">
         {/* Header Section */}
         <div className="mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-            <PageHeader
-              title="Messages"
-              breadcrumbs={breadcrumbs}
-            />
             <Link href="/parents/messages/compose">
               <ActionButton
                 variant="primary"
@@ -1113,7 +1103,8 @@ export default function ParentMessagesPage() {
             </div>
           </div>
         </div>
-      </div>
-    </MainLayout>
+        </div>
+      }
+    />
   );
 }

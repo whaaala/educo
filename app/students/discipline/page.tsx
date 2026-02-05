@@ -1,19 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Download, RefreshCw, FileText } from "lucide-react";
-import { DisciplineIncident, IncidentCategory, IncidentSeverity, IncidentStatus } from "@/types/discipline";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageActions from "@/components/shared/PageActions";
-import SearchFilterBar from "@/components/shared/SearchFilterBar";
-import DisciplineStatisticsCards from "@/components/discipline/DisciplineStatisticsCards";
+import { DisciplineIncident } from "@/types/discipline";
+import DataManagementPage from "@/components/pages/DataManagementPage";
 import DisciplineRecordsTable from "@/components/discipline/DisciplineRecordsTable";
 import IncidentReportForm from "@/components/discipline/IncidentReportForm";
 import IncidentDetailModal from "@/components/discipline/IncidentDetailModal";
 import DeleteIncidentModal from "@/components/discipline/DeleteIncidentModal";
 import { exportDisciplineToPDF } from "@/utils/disciplinePdfExport";
 import { exportDisciplineToExcel } from "@/utils/disciplineExcelExport";
+import {
+  disciplineFilterFields,
+  disciplineSortOptions,
+  disciplineStats,
+  filterDisciplineIncidents,
+  sortDisciplineIncidents,
+} from "./config";
 
 // Mock data - replace with actual API call
 const mockDisciplineIncidents: DisciplineIncident[] = [
@@ -178,32 +180,6 @@ export default function DisciplinePage() {
   const [selectedIncident, setSelectedIncident] = useState<DisciplineIncident | null>(null);
   const [incidentToDelete, setIncidentToDelete] = useState<DisciplineIncident | null>(null);
   const [incidentToEdit, setIncidentToEdit] = useState<DisciplineIncident | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterCategory, setFilterCategory] = useState<IncidentCategory | "all">("all");
-  const [filterSeverity, setFilterSeverity] = useState<IncidentSeverity | "all">("all");
-  const [filterStatus, setFilterStatus] = useState<IncidentStatus | "all">("all");
-  const [filterClass, setFilterClass] = useState<string>("all");
-  const [filterYear, setFilterYear] = useState<string>("all");
-
-  // Filter incidents
-  const filteredIncidents = incidents.filter(incident => {
-    const matchesSearch = searchQuery === "" ||
-      incident.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (incident.studentAdmissionNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
-      incident.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      incident.id.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesCategory = filterCategory === "all" || incident.category === filterCategory;
-    const matchesSeverity = filterSeverity === "all" || incident.severity === filterSeverity;
-    const matchesStatus = filterStatus === "all" || incident.status === filterStatus;
-    const matchesClass = filterClass === "all" || incident.studentClass === filterClass;
-
-    // Extract year from incident date
-    const incidentYear = new Date(incident.incidentDate).getFullYear().toString();
-    const matchesYear = filterYear === "all" || incidentYear === filterYear;
-
-    return matchesSearch && matchesCategory && matchesSeverity && matchesStatus && matchesClass && matchesYear;
-  });
 
   const handleSubmitReport = (incident: Partial<DisciplineIncident>) => {
     if (incidentToEdit) {
@@ -246,153 +222,77 @@ export default function DisciplinePage() {
     setIncidents(incidents.filter(i => i.id !== incidentId));
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = (items: DisciplineIncident[]) => {
     const timestamp = new Date().toISOString().split('T')[0];
-    exportDisciplineToPDF(filteredIncidents, `discipline-records-${timestamp}.pdf`);
+    exportDisciplineToPDF(items, `discipline-records-${timestamp}.pdf`);
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = (items: DisciplineIncident[]) => {
     const timestamp = new Date().toISOString().split('T')[0];
-    exportDisciplineToExcel(filteredIncidents, `discipline-records-${timestamp}.xlsx`);
+    exportDisciplineToExcel(items, `discipline-records-${timestamp}.xlsx`);
   };
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        {/* Header with Breadcrumbs and Actions */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-          <PageHeader
-            title="Discipline Management"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Students", href: "/students" },
-              { label: "Discipline", isActive: true },
-            ]}
-          />
-          <PageActions
-            onRefresh={() => window.location.reload()}
-            onAdd={() => setShowReportForm(true)}
-            onExportPDF={handleExportPDF}
-            onExportExcel={handleExportExcel}
-            addButtonLabel="Report Incident"
-            exportDescription="Export discipline records"
-            showPrint={false}
-          />
-        </div>
-
-        {/* Statistics Cards */}
-        <DisciplineStatisticsCards incidents={incidents} />
-
-        {/* Search and Filters */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder="Search by student name, admission number, or incident title..."
-          filters={[
-            {
-              label: "Class Filter",
-              value: filterClass,
-              onChange: (value) => setFilterClass(value as string),
-              options: [
-                { label: "All Classes", value: "all" },
-                { label: "JSS 1", value: "JSS 1" },
-                { label: "JSS 2", value: "JSS 2" },
-                { label: "JSS 3", value: "JSS 3" },
-                { label: "SS 1", value: "SS 1" },
-                { label: "SS 2", value: "SS 2" },
-                { label: "SS 3", value: "SS 3" },
-              ],
-            },
-            {
-              label: "Year Filter",
-              value: filterYear,
-              onChange: (value) => setFilterYear(value as string),
-              options: [
-                { label: "All Years", value: "all" },
-                { label: "2025", value: "2025" },
-                { label: "2024", value: "2024" },
-                { label: "2023", value: "2023" },
-                { label: "2022", value: "2022" },
-              ],
-            },
-            {
-              label: "Category Filter",
-              value: filterCategory,
-              onChange: (value) => setFilterCategory(value as IncidentCategory | "all"),
-              options: [
-                { label: "All Categories", value: "all" },
-                { label: "Disruptive Behavior", value: "disruptive-behavior" },
-                { label: "Attendance", value: "attendance" },
-                { label: "Academic Dishonesty", value: "academic-dishonesty" },
-                { label: "Bullying", value: "bullying" },
-                { label: "Violence", value: "violence" },
-                { label: "Property Damage", value: "property-damage" },
-                { label: "Substance Abuse", value: "substance-abuse" },
-                { label: "Dress Code", value: "dress-code" },
-                { label: "Technology Misuse", value: "technology-misuse" },
-                { label: "Other", value: "other" },
-              ],
-            },
-            {
-              label: "Severity Filter",
-              value: filterSeverity,
-              onChange: (value) => setFilterSeverity(value as IncidentSeverity | "all"),
-              options: [
-                { label: "All Severities", value: "all" },
-                { label: "Minor", value: "minor" },
-                { label: "Moderate", value: "moderate" },
-                { label: "Major", value: "major" },
-                { label: "Critical", value: "critical" },
-              ],
-            },
-            {
-              label: "Status Filter",
-              value: filterStatus,
-              onChange: (value) => setFilterStatus(value as IncidentStatus | "all"),
-              options: [
-                { label: "All Status", value: "all" },
-                { label: "Reported", value: "reported" },
-                { label: "Under Review", value: "under-review" },
-                { label: "Resolved", value: "resolved" },
-                { label: "Appealed", value: "appealed" },
-                { label: "Closed", value: "closed" },
-              ],
-            },
-          ]}
-        />
-
-        {/* Discipline Records Table */}
+    <DataManagementPage<DisciplineIncident>
+      title="Discipline Management"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Students", href: "/students" },
+        { label: "Discipline", isActive: true },
+      ]}
+      data={incidents}
+      getRowKey={(item) => item.id}
+      columns={[]} // Using customListComponent instead
+      stats={disciplineStats}
+      statsColumns={{ default: 2, sm: 3, md: 6 }}
+      filterFields={disciplineFilterFields}
+      sortOptions={disciplineSortOptions}
+      defaultSort="newest"
+      filterFn={filterDisciplineIncidents}
+      sortFn={sortDisciplineIncidents}
+      enableViewToggle={false}
+      enableSelection={false}
+      enableExport={true}
+      onExportPDF={handleExportPDF}
+      onExportExcel={handleExportExcel}
+      addButtonConfig={{
+        label: "Report Incident",
+        onClick: () => setShowReportForm(true),
+      }}
+      itemLabel="incident"
+      itemLabelPlural="incidents"
+      showTableSearch={false}
+      customListComponent={
         <DisciplineRecordsTable
-          incidents={filteredIncidents}
+          incidents={incidents}
           onViewDetails={(incident) => setSelectedIncident(incident)}
           onEdit={handleEditIncident}
           onDelete={handleDeleteIncident}
-          filterKey={`${searchQuery}-${filterClass}-${filterYear}-${filterCategory}-${filterSeverity}-${filterStatus}`}
         />
+      }
+    >
+      {/* Incident Report Form Modal */}
+      <IncidentReportForm
+        isOpen={showReportForm}
+        onClose={handleCloseReportForm}
+        onSubmit={handleSubmitReport}
+        initialData={incidentToEdit}
+      />
 
-        {/* Incident Report Form Modal */}
-        <IncidentReportForm
-          isOpen={showReportForm}
-          onClose={handleCloseReportForm}
-          onSubmit={handleSubmitReport}
-          initialData={incidentToEdit}
-        />
+      {/* Incident Detail Modal */}
+      <IncidentDetailModal
+        incident={selectedIncident}
+        isOpen={selectedIncident !== null}
+        onClose={() => setSelectedIncident(null)}
+      />
 
-        {/* Incident Detail Modal */}
-        <IncidentDetailModal
-          incident={selectedIncident}
-          isOpen={selectedIncident !== null}
-          onClose={() => setSelectedIncident(null)}
-        />
-
-        {/* Delete Incident Modal */}
-        <DeleteIncidentModal
-          incident={incidentToDelete}
-          isOpen={incidentToDelete !== null}
-          onClose={() => setIncidentToDelete(null)}
-          onConfirmDelete={confirmDeleteIncident}
-        />
-      </div>
-    </MainLayout>
+      {/* Delete Incident Modal */}
+      <DeleteIncidentModal
+        incident={incidentToDelete}
+        isOpen={incidentToDelete !== null}
+        onClose={() => setIncidentToDelete(null)}
+        onConfirmDelete={confirmDeleteIncident}
+      />
+    </DataManagementPage>
   );
 }

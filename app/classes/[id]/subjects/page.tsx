@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import Link from "next/link";
+import { DashboardPage } from "@/components/pages";
 import {
   ArrowLeft,
   Plus,
@@ -206,7 +207,16 @@ export default function SubjectsManagementPage() {
   const totalHours = mockSubjects.reduce((sum, subject) => sum + (subject.hoursPerWeek || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 midnight:bg-gray-950 purple:bg-gray-950">
+    <DashboardPage
+      title={isTertiary ? "Course Subjects" : "Class Subjects"}
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Classes", href: "/classes" },
+        { label: "Subjects", isActive: true },
+      ]}
+      loadingText="Loading Subjects"
+      afterStats={
+        <div className="mt-6 min-h-screen bg-gray-50 dark:bg-gray-900 midnight:bg-gray-950 purple:bg-gray-950">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -548,5 +558,7 @@ export default function SubjectsManagementPage() {
         </div>
       )}
     </div>
+      }
+    />
   );
 }

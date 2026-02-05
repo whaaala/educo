@@ -40,7 +40,10 @@ export interface PaymentReceiptData {
 }
 
 export interface ViewReceiptModalProps {
-  visible: boolean;
+  /** Preferred visibility prop (web-aligned) */
+  isOpen?: boolean;
+  /** Back-compat visibility prop */
+  visible?: boolean;
   onClose: () => void;
   payment?: PaymentReceiptData | null;
   childName?: string;
@@ -59,6 +62,7 @@ interface InfoModalState {
 }
 
 export function ViewReceiptModal({
+  isOpen,
   visible,
   onClose,
   payment,
@@ -69,6 +73,7 @@ export function ViewReceiptModal({
   const { colors, isDark } = useTheme();
   const { settings } = useTenantSettings();
   const { currencySymbol } = settings;
+  const resolvedVisible = isOpen ?? visible ?? false;
 
   // Branding with fallback defaults
   const branding = settings.branding || {
@@ -87,10 +92,10 @@ export function ViewReceiptModal({
 
   // Reset isGenerating state when modal visibility changes
   useEffect(() => {
-    if (!visible) {
+    if (!resolvedVisible) {
       setIsGenerating(false);
     }
-  }, [visible]);
+  }, [resolvedVisible]);
 
   const showInfoModal = (config: Omit<InfoModalState, 'visible'>) => {
     setInfoModal({ ...config, visible: true });
@@ -517,7 +522,7 @@ export function ViewReceiptModal({
 
   return (
     <Modal
-      visible={visible}
+      visible={resolvedVisible}
       onClose={onClose}
       title="Payment Receipt"
       subtitle={payment?.transactionRef || ''}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Video, Phone, MessageSquare, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { DashboardPage } from "@/components/pages";
 
 // Dynamic imports to avoid SSR issues with WebRTC
 const VideoCallRoom = dynamic(
@@ -109,22 +110,31 @@ export default function TestCallPage() {
 
   // Selection screen
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white p-8">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
-          </Link>
-          <h1 className="text-3xl font-bold">Communication Test Page</h1>
-          <p className="text-gray-400 mt-2">
-            Test video calls, voice calls, and chat using WebRTC (no API keys required)
-          </p>
-        </div>
+    <DashboardPage
+      title="Communication Test"
+      description="Test video calls, voice calls, and chat using WebRTC (no API keys required)"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Communication Test", isActive: true },
+      ]}
+      loadingText="Loading Communication Test"
+      afterStats={
+        <div className="mt-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white p-8 rounded-2xl">
+          <div className="max-w-2xl mx-auto">
+            {/* Header */}
+            <div className="mb-8">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-4"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Dashboard
+              </Link>
+              <h2 className="text-3xl font-bold">Communication Test Page</h2>
+              <p className="text-gray-400 mt-2">
+                Test video calls, voice calls, and chat using WebRTC (no API keys required)
+              </p>
+            </div>
 
         {/* Settings */}
         <div className="bg-gray-800 rounded-xl p-6 mb-8">
@@ -215,7 +225,9 @@ export default function TestCallPage() {
           <p>Using WebRTC for peer-to-peer communication</p>
           <p>No server required - works directly between browsers on the same network</p>
         </div>
-      </div>
-    </div>
+          </div>
+        </div>
+      }
+    />
   );
 }

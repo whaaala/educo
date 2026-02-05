@@ -1,20 +1,22 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Plus } from "lucide-react";
-import { PerformanceReview, ReviewStatus, ReviewPeriod } from "@/types/performance";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageActions from "@/components/shared/PageActions";
-import SearchFilterBar from "@/components/shared/SearchFilterBar";
-import PerformanceStatisticsCards from "@/components/performance/PerformanceStatisticsCards";
+import { PerformanceReview } from "@/types/performance";
+import DataManagementPage from "@/components/pages/DataManagementPage";
 import PerformanceReviewsTable from "@/components/performance/PerformanceReviewsTable";
 import NewPerformanceReviewModal from "@/components/performance/NewPerformanceReviewModal";
 import ViewPerformanceReviewModal from "@/components/performance/ViewPerformanceReviewModal";
 import EditPerformanceReviewModal from "@/components/performance/EditPerformanceReviewModal";
-import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
+import ActionModal from "@/components/shared/ActionModal";
 import { usePerformance } from "@/contexts/PerformanceContext";
-// Import will be added when needed for export functionality
+import {
+  performanceFilterFields,
+  performanceSortOptions,
+  performanceStats,
+  filterPerformanceReviews,
+  sortPerformanceReviews,
+  searchPerformanceReviews,
+} from "./config";
 
 // Mock data - replace with actual API call
 const mockReviews: PerformanceReview[] = [
@@ -150,10 +152,6 @@ export default function PerformanceReviewsPage() {
   const { reviews: contextReviews, updateReview, deleteReview } = usePerformance();
   const [reviews, setReviews] = useState<PerformanceReview[]>(mockReviews);
   const [selectedReview, setSelectedReview] = useState<PerformanceReview | null>(null);
-  const [filterStatus, setFilterStatus] = useState<ReviewStatus | "all">("all");
-  const [filterPeriod, setFilterPeriod] = useState<ReviewPeriod | "all">("all");
-  const [filterYear, setFilterYear] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
   const [isNewReviewModalOpen, setIsNewReviewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -188,29 +186,11 @@ export default function PerformanceReviewsPage() {
     }
   }, [reviews, selectedReview]);
 
-  // Filter reviews
-  const filteredReviews = useMemo(() => {
-    return reviews.filter(review => {
-      const matchesStatus = filterStatus === "all" || review.status === filterStatus;
-      const matchesPeriod = filterPeriod === "all" || review.reviewPeriod === filterPeriod;
-      const matchesYear = filterYear === "all" || review.reviewYear === filterYear;
-      const matchesSearch = searchQuery === "" ||
-        review.staffName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        review.staffPosition.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        review.id.toLowerCase().includes(searchQuery.toLowerCase());
-
-      return matchesStatus && matchesPeriod && matchesYear && matchesSearch;
-    });
-  }, [reviews, filterStatus, filterPeriod, filterYear, searchQuery]);
-
-
   const handleExportExcel = () => {
-    // Export functionality will be added later
     console.log("Export to Excel clicked");
   };
 
   const handleExportPDF = () => {
-    // Export functionality will be added later
     console.log("Export to PDF clicked");
   };
 
@@ -219,7 +199,6 @@ export default function PerformanceReviewsPage() {
       deleteReview(reviewToDelete.id);
       setIsDeleteModalOpen(false);
       setReviewToDelete(null);
-      // Close view/edit modals if the deleted review was selected
       if (selectedReview?.id === reviewToDelete.id) {
         setSelectedReview(null);
         setIsEditModalOpen(false);
@@ -228,83 +207,38 @@ export default function PerformanceReviewsPage() {
   };
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        {/* Header with Breadcrumbs and Actions */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-          <PageHeader
-            title="Performance Reviews"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Staff", href: "/staff" },
-              { label: "Performance Reviews", isActive: true },
-            ]}
-          />
-          <PageActions
-            actions={[
-              {
-                label: "New Review",
-                icon: Plus,
-                onClick: () => setIsNewReviewModalOpen(true),
-                variant: "primary",
-              },
-            ]}
-            onExportPDF={handleExportPDF}
-            onExportExcel={handleExportExcel}
-            exportDescription="Download performance reviews data"
-          />
-        </div>
-
-        {/* Statistics Cards */}
-        <PerformanceStatisticsCards reviews={reviews} />
-
-        {/* Search and Filters */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder="Search by staff name, position, or review ID..."
-          filters={[
-            {
-              label: "Year Filter",
-              value: filterYear,
-              onChange: (value) => setFilterYear(value as string),
-              options: [
-                { label: "All Years", value: "all" },
-                { label: "2025", value: "2025" },
-                { label: "2024", value: "2024" },
-                { label: "2023", value: "2023" },
-              ],
-            },
-            {
-              label: "Period Filter",
-              value: filterPeriod,
-              onChange: (value) => setFilterPeriod(value as ReviewPeriod | "all"),
-              options: [
-                { label: "All Periods", value: "all" },
-                { label: "Quarterly", value: "quarterly" },
-                { label: "Half-Yearly", value: "half-yearly" },
-                { label: "Annual", value: "annual" },
-                { label: "Probation", value: "probation" },
-              ],
-            },
-            {
-              label: "Status Filter",
-              value: filterStatus,
-              onChange: (value) => setFilterStatus(value as ReviewStatus | "all"),
-              options: [
-                { label: "All Status", value: "all" },
-                { label: "Scheduled", value: "scheduled" },
-                { label: "In Progress", value: "in-progress" },
-                { label: "Completed", value: "completed" },
-                { label: "Overdue", value: "overdue" },
-              ],
-            },
-          ]}
-        />
-
-        {/* Reviews Table */}
+    <DataManagementPage<PerformanceReview>
+      title="Performance Reviews"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Staff", href: "/staff" },
+        { label: "Performance Reviews", isActive: true },
+      ]}
+      data={reviews}
+      getRowKey={(item) => item.id}
+      columns={[]}
+      stats={performanceStats}
+      statsColumns={{ default: 1, sm: 2, md: 4, lg: 7 }}
+      filterFields={performanceFilterFields}
+      sortOptions={performanceSortOptions}
+      filterFn={filterPerformanceReviews}
+      sortFn={sortPerformanceReviews}
+      searchFn={searchPerformanceReviews}
+      addButtonConfig={{
+        label: "New Review",
+        onClick: () => setIsNewReviewModalOpen(true),
+      }}
+      onExportPDF={handleExportPDF}
+      onExportExcel={handleExportExcel}
+      enableViewToggle={false}
+      enableSelection={false}
+      enablePagination={false}
+      showTableSearch={false}
+      itemLabel="performance review"
+      itemLabelPlural="performance reviews"
+      customListComponent={
         <PerformanceReviewsTable
-          reviews={filteredReviews}
+          reviews={reviews}
           onViewDetails={(review) => setSelectedReview(review)}
           onEdit={(review) => {
             setSelectedReview(review);
@@ -314,10 +248,9 @@ export default function PerformanceReviewsPage() {
             setReviewToDelete(review);
             setIsDeleteModalOpen(true);
           }}
-          filterKey={`${filterStatus}-${filterPeriod}-${filterYear}-${searchQuery}`}
         />
-      </div>
-
+      }
+    >
       {/* New Review Modal */}
       <NewPerformanceReviewModal
         isOpen={isNewReviewModalOpen}
@@ -340,27 +273,29 @@ export default function PerformanceReviewsPage() {
           isOpen={isEditModalOpen}
           onClose={() => {
             setIsEditModalOpen(false);
-            // Keep the view modal open after editing
           }}
           review={selectedReview}
         />
       )}
 
       {/* Delete Confirmation Modal */}
-      <DeleteConfirmationModal
+      <ActionModal
         isOpen={isDeleteModalOpen}
         onClose={() => {
           setIsDeleteModalOpen(false);
           setReviewToDelete(null);
         }}
-        onConfirm={handleDeleteReview}
         title="Delete Performance Review"
+        variant="danger"
         message={
           reviewToDelete
             ? `Are you sure you want to delete the performance review for ${reviewToDelete.staffName} (${reviewToDelete.id})? This action cannot be undone.`
             : ""
         }
+        confirmLabel="Delete Review"
+        cancelLabel="Cancel"
+        onConfirm={handleDeleteReview}
       />
-    </MainLayout>
+    </DataManagementPage>
   );
 }

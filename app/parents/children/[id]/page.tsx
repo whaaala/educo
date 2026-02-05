@@ -4,14 +4,10 @@ import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import DashboardPage from "@/components/pages/DashboardPage";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useCountry } from "@/contexts/CountryContext";
 import { formatCurrency } from "@/config/countries";
-import StatCard from "@/components/shared/StatCard";
 import Button from "@/components/shared/Button";
 import ActionButton from "@/components/shared/ActionButton";
 import MessageTeacherModal from "@/components/parents/MessageTeacherModal";
@@ -267,7 +263,6 @@ export default function ChildDetailPage() {
   const params = useParams();
   const router = useRouter();
   const childId = params?.id as string;
-  const isPageLoading = usePageLoad(600);
   const { settings } = useSchoolSettings();
   const { countryCode } = useCountry();
 
@@ -974,40 +969,42 @@ export default function ChildDetailPage() {
 
   if (!child) {
     return (
-      <MainLayout>
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <AlertCircle className="w-16 h-16 text-gray-400 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Child Not Found</h2>
-          <p className="text-gray-500 dark:text-gray-400 mb-4">The requested child profile could not be found.</p>
-          <Button variant="primary" onClick={() => router.push("/parents/children")}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Children
-          </Button>
-        </div>
-      </MainLayout>
+      <DashboardPage
+        title="Child Not Found"
+        breadcrumbs={[
+          { label: "Parent Portal", href: "/parents" },
+          { label: "My Children", href: "/parents/children" },
+          { label: "Not Found" },
+        ]}
+        afterStats={
+          <div className="mt-6 flex flex-col items-center justify-center min-h-[60vh]">
+            <AlertCircle className="w-16 h-16 text-gray-400 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Child Not Found</h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">
+              The requested child profile could not be found.
+            </p>
+            <Button variant="primary" onClick={() => router.push("/parents/children")}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Children
+            </Button>
+          </div>
+        }
+      />
     );
   }
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText={`Loading ${child.firstName}'s Profile`} />
-
-      <div
-        className={`space-y-6 transition-opacity duration-500 ${
-          isPageLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        {/* Header */}
-        <PageHeader
-          title={child.fullName}
-          breadcrumbs={[
-            { label: "Parent Portal", href: "/parents" },
-            { label: "My Children", href: "/parents/children" },
-            { label: child.firstName },
-          ]}
-        />
-
-        {/* Profile Card - Hero Section */}
+    <DashboardPage<ParentChild>
+      title={child.fullName}
+      breadcrumbs={[
+        { label: "Parent Portal", href: "/parents" },
+        { label: "My Children", href: "/parents/children" },
+        { label: child.firstName },
+      ]}
+      loadingText={`Loading ${child.firstName}'s Profile`}
+      afterStats={
+        <div className="mt-6 space-y-6">
+          {/* Profile Card - Hero Section */}
         <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 shadow-sm">
           <div className="relative p-4 sm:p-5">
             {/* Main Content Row */}
@@ -2632,8 +2629,9 @@ export default function ChildDetailPage() {
             </div>
           )}
         </div>
-      </div>
-
+        </div>
+      }
+    >
       {/* Message Teacher Modal */}
       <MessageTeacherModal
         isOpen={isMessageModalOpen}
@@ -2675,6 +2673,6 @@ export default function ChildDetailPage() {
           closeButtonText="Done"
         />
       )}
-    </MainLayout>
+    </DashboardPage>
   );
 }

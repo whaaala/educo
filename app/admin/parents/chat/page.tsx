@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import MainLayout from "@/components/layout/MainLayout";
-import PageLoader from "@/components/shared/PageLoader";
+import DashboardPage from "@/components/shared/DashboardPage";
 import { ChatPageContent, ChatConversation, ChatPageConfig } from "@/components/shared/chat";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { getAllParents } from "@/lib/mockParents";
 
 // Generate mock chat conversations for parent admin view
@@ -60,7 +58,6 @@ const generateChatConversations = (): ChatConversation[] => {
 const MOCK_CONVERSATIONS = generateChatConversations();
 
 export default function AdminParentChatPage() {
-  const isPageLoading = usePageLoad(600);
   const [conversations] = useState<ChatConversation[]>(MOCK_CONVERSATIONS);
 
   // Page configuration
@@ -81,15 +78,16 @@ export default function AdminParentChatPage() {
   }), []);
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Chats" />
-
-      <div className={`transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
+    <DashboardPage
+      title={config.pageTitle}
+      breadcrumbs={config.breadcrumbs}
+      loadingText="Loading Chats"
+      afterStats={
         <ChatPageContent
           conversations={conversations}
           config={config}
         />
-      </div>
-    </MainLayout>
+      }
+    />
   );
 }

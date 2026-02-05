@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import MainLayout from "@/components/layout/MainLayout";
-import PageLoader from "@/components/shared/PageLoader";
+import DashboardPage from "@/components/shared/DashboardPage";
 import { CallLogsPageContent, CallLog, CallLogsPageConfig } from "@/components/shared/call-logs";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useCall } from "@/hooks/useCall";
 import { getAllParents } from "@/lib/mockParents";
 
@@ -70,7 +68,6 @@ const generateCallLogs = (): CallLog[] => {
 const MOCK_CALLS = generateCallLogs();
 
 export default function AdminParentCallsPage() {
-  const isPageLoading = usePageLoad(600);
   const [calls] = useState<CallLog[]>(MOCK_CALLS);
   const { startVideoCall, startVoiceCall } = useCall();
 
@@ -108,16 +105,17 @@ export default function AdminParentCallsPage() {
   }), []);
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Call History" />
-
-      <div className={`transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
+    <DashboardPage
+      title={config.pageTitle}
+      breadcrumbs={config.breadcrumbs}
+      loadingText="Loading Call History"
+      afterStats={
         <CallLogsPageContent
           calls={calls}
           config={config}
           onCallback={handleCallback}
         />
-      </div>
-    </MainLayout>
+      }
+    />
   );
 }

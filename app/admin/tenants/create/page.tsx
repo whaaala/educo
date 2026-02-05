@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, Building2, Globe, Mail, Phone, MapPin, Palette } from "lucide-react";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
+import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
 import { createTenant } from "@/lib/mockTenants";
 import { Tenant, InstitutionType, EducationLevel } from "@/types/school";
@@ -264,22 +263,18 @@ export default function CreateTenantPage() {
   };
 
   return (
-    <MainLayout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <PageHeader
-            title="Add New School"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Admin", href: "/admin" },
-              { label: "Tenants", href: "/admin/tenants" },
-              { label: "Create", isActive: true },
-            ]}
-          />
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <DashboardPage
+      title="Add New School"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Admin", href: "/admin" },
+        { label: "Tenants", href: "/admin/tenants" },
+        { label: "Create", isActive: true },
+      ]}
+      loadingText="Loading Tenant Form"
+      afterStats={
+        <div className="mt-6 p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information */}
           <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
@@ -790,8 +785,9 @@ export default function CreateTenantPage() {
               <p className="text-sm text-red-600 dark:text-red-400">{errors.submit}</p>
             </div>
           )}
-        </form>
-      </div>
-    </MainLayout>
+          </form>
+        </div>
+      }
+    />
   );
 }

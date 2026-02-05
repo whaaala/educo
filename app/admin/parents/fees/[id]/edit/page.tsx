@@ -3,10 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DashboardPage } from "@/components/pages";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
@@ -44,7 +41,6 @@ export default function EditFeeRecordPage() {
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const [originalRecord, setOriginalRecord] = useState<AdminFeeRecord | null>(null);
-  const isLoading = usePageLoad(800);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [isSticky, setIsSticky] = useState(true);
@@ -306,60 +302,58 @@ export default function EditFeeRecordPage() {
 
   if (notFound) {
     return (
-      <MainLayout>
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
-            <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+      <DashboardPage
+        title="Fee Record Not Found"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Admin", href: "/admin" },
+          { label: "Fee Records", href: "/admin/parents/fees?view=list" },
+          { label: "Not Found", isActive: true },
+        ]}
+        loadingText="Loading Fee Record"
+        afterStats={
+          <div className="mt-6 flex flex-col items-center justify-center min-h-[60vh]">
+            <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
+              <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              Fee Record Not Found
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              The fee record you&apos;re looking for doesn&apos;t exist or has been deleted.
+            </p>
+            <button
+              onClick={() => router.push("/admin/parents/fees?view=list")}
+              className="px-6 py-2.5 rounded-lg font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors cursor-pointer"
+            >
+              Back to Fee Records
+            </button>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            Fee Record Not Found
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
-            The fee record you&apos;re looking for doesn&apos;t exist or has been deleted.
-          </p>
-          <button
-            onClick={() => router.push("/admin/parents/fees?view=list")}
-            className="px-6 py-2.5 rounded-lg font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors cursor-pointer"
-          >
-            Back to Fee Records
-          </button>
-        </div>
-      </MainLayout>
+        }
+      />
     );
   }
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Fee Record" />
-
-      {/* Main Content */}
-      <div
-        className={`transition-opacity duration-500 ${
-          isLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        {/* Header */}
-        <div className="py-4 mb-2">
-          <PageHeader
-            title="Edit Fee Record"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Admin" },
-              { label: "Parents", href: "/admin/parents?view=grid" },
-              { label: "Fee Records", href: "/admin/parents/fees?view=list" },
-              { label: "Edit Fee Record", isActive: true },
-            ]}
-          />
-        </div>
-
-        {/* Form */}
-        <form
-          id="edit-fee-form"
-          ref={formRef}
-          onSubmit={handleSubmit}
-          className="space-y-6 pb-32 md:pb-36 lg:pb-16 xl:pb-20"
-        >
+    <DashboardPage
+      title="Edit Fee Record"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Admin", href: "/admin" },
+        { label: "Parents", href: "/admin/parents?view=grid" },
+        { label: "Fee Records", href: "/admin/parents/fees?view=list" },
+        { label: "Edit Fee Record", isActive: true },
+      ]}
+      loadingText="Loading Fee Record"
+      afterStats={
+        <div className="mt-6">
+          {/* Form */}
+          <form
+            id="edit-fee-form"
+            ref={formRef}
+            onSubmit={handleSubmit}
+            className="space-y-6 pb-32 md:pb-36 lg:pb-16 xl:pb-20"
+          >
           {/* Parent & Student Selection Section */}
           <ParentStudentSelectionSection
             formData={{
@@ -499,12 +493,14 @@ export default function EditFeeRecordPage() {
         </div>
       </div>
 
+      }
+    >
       {/* Validation Errors Modal */}
       <ValidationErrorsModal
         isOpen={showValidationModal}
         onClose={() => setShowValidationModal(false)}
         errors={errors}
       />
-    </MainLayout>
+    </DashboardPage>
   );
 }

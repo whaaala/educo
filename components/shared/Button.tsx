@@ -5,7 +5,7 @@ import { ReactNode } from "react";
 export interface ButtonProps {
   children: ReactNode;
   onClick?: (() => void) | (() => Promise<void>);
-  variant?: "primary" | "secondary" | "outline" | "ghost";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
   size?: "sm" | "md" | "lg";
   disabled?: boolean;
   className?: string;
@@ -33,6 +33,7 @@ export default function Button({
     secondary: "bg-neutral-600 hover:bg-neutral-700 text-white shadow-sm focus:ring-neutral-500 dark:bg-neutral-500 dark:hover:bg-neutral-600",
     outline: "border-2 border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 focus:ring-neutral-500",
     ghost: "hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 focus:ring-neutral-500",
+    danger: "bg-red-600 hover:bg-red-700 text-white shadow-sm focus:ring-red-500 dark:bg-red-500 dark:hover:bg-red-600",
   };
 
   const sizeClasses = {

@@ -2,10 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import { MessagesPageContent, AdminMessage, MessagesPageConfig } from "@/components/shared/messages";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { getAllParents } from "@/lib/mockParents";
 
 // Generate mock messages for parent admin view
@@ -104,7 +102,6 @@ const MOCK_MESSAGES = generateAdminMessages();
 export default function AdminParentMessagesPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const isPageLoading = usePageLoad(600);
 
   // Get recipient filter from URL
   const recipientId = searchParams.get("recipient");
@@ -151,17 +148,25 @@ export default function AdminParentMessagesPage() {
     : null;
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Messages" />
-
-      <div className={`transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
-        <MessagesPageContent
-          messages={messages}
-          config={config}
-          selectedRecipient={selectedRecipient}
-          onClearRecipient={handleClearRecipient}
-        />
-      </div>
-    </MainLayout>
+    <DashboardPage
+      title="Parent Messages"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Admin", href: "/admin" },
+        { label: "Parents", href: "/admin/parents" },
+        { label: "Messages", isActive: true },
+      ]}
+      loadingText="Loading Messages"
+      afterStats={
+        <div className="mt-6">
+          <MessagesPageContent
+            messages={messages}
+            config={config}
+            selectedRecipient={selectedRecipient}
+            onClearRecipient={handleClearRecipient}
+          />
+        </div>
+      }
+    />
   );
 }

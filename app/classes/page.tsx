@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DataManagementPage } from "@/components/pages";
 import ClassCard from "@/components/classes/ClassCard";
-import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
+import ActionModal from "@/components/shared/ActionModal";
 import BulkDeleteModal, { BulkDeleteItem } from "@/components/shared/BulkDeleteModal";
 import Tooltip from "@/components/shared/Tooltip";
 import NameLabel from "@/components/shared/NameLabel";
@@ -579,15 +579,19 @@ function ClassActionsCell({ classData }: { classData: ClassData }) {
         </div>
       </div>
 
-      <DeleteConfirmationModal
+      <ActionModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={() => { console.log('Deleting class:', classData.id); setIsDeleteModalOpen(false); }}
         title="Delete Class"
-        itemName={classData.name}
-        itemId={classData.id}
-        warningMessage="This will permanently remove this class and all associated data. This action cannot be undone."
-        confirmButtonText="Delete Class"
+        subtitle={`${classData.name} • ${classData.id}`}
+        variant="danger"
+        message="This will permanently remove this class and all associated data. This action cannot be undone."
+        confirmLabel="Delete Class"
+        cancelLabel="Cancel"
+        onConfirm={() => {
+          console.log("Deleting class:", classData.id);
+          setIsDeleteModalOpen(false);
+        }}
       />
     </>
   );

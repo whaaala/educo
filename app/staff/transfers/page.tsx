@@ -1,18 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Plus } from "lucide-react";
-import { StaffTransferRequest, TransferStatus, TransferType } from "@/types/staffTransfer";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageActions from "@/components/shared/PageActions";
-import SearchFilterBar from "@/components/shared/SearchFilterBar";
+import { StaffTransferRequest } from "@/types/staffTransfer";
+import DataManagementPage from "@/components/pages/DataManagementPage";
 import StaffTransferTable from "@/components/staff/transfers/StaffTransferTable";
-import StaffTransferStatisticsCards from "@/components/staff/transfers/StaffTransferStatisticsCards";
 import NewTransferRequestModal from "@/components/staff/transfers/NewTransferRequestModal";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { exportStaffTransfersToPDF, exportStaffTransfersToExcel } from "@/utils/exportStaffTransfers";
+import {
+  transferFilterFields,
+  transferSortOptions,
+  transferStats,
+  filterTransferRequests,
+  sortTransferRequests,
+  searchTransferRequests,
+} from "./config";
 
 // Mock data
 const mockTransferRequests: StaffTransferRequest[] = [
@@ -145,30 +146,9 @@ const mockTransferRequests: StaffTransferRequest[] = [
 ];
 
 export default function StaffTransfersPage() {
-  const isLoading = usePageLoad(600);
   const [requests, setRequests] = useState<StaffTransferRequest[]>(mockTransferRequests);
   const [selectedRequest, setSelectedRequest] = useState<StaffTransferRequest | null>(null);
   const [isNewRequestModalOpen, setIsNewRequestModalOpen] = useState(false);
-  const [filterStatus, setFilterStatus] = useState<TransferStatus | "all">("all");
-  const [filterType, setFilterType] = useState<TransferType | "all">("all");
-  const [filterDepartment, setFilterDepartment] = useState<string>("all");
-  const [filterBranch, setFilterBranch] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Filter requests
-  const filteredRequests = requests.filter(request => {
-    const matchesStatus = filterStatus === "all" || request.status === filterStatus;
-    const matchesType = filterType === "all" || request.transferType === filterType;
-    const matchesDepartment = filterDepartment === "all" || request.currentDepartment === filterDepartment;
-    const matchesBranch = filterBranch === "all" || request.currentBranch === filterBranch;
-
-    const matchesSearch = searchQuery === "" ||
-      request.staffName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.staffEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.id.toLowerCase().includes(searchQuery.toLowerCase());
-
-    return matchesStatus && matchesType && matchesDepartment && matchesBranch && matchesSearch;
-  });
 
   const handleApprove = (requestId: string) => {
     setRequests(prev => prev.map(req =>
@@ -214,131 +194,53 @@ export default function StaffTransfersPage() {
   };
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isLoading} loadingText="Loading Staff Transfers" />
-
-      <div
-        className={`transition-opacity duration-500 ${
-          isLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        <div className="space-y-6">
-          {/* Header with Breadcrumbs and Actions */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-            <PageHeader
-              title="Staff Transfers"
-              breadcrumbs={[
-                { label: "Dashboard", href: "/" },
-                { label: "Staff", href: "/staff" },
-                { label: "Transfer Requests", isActive: true },
-              ]}
-            />
-            <PageActions
-              actions={[
-                {
-                  label: "New Transfer Request",
-                  icon: Plus,
-                  onClick: () => setIsNewRequestModalOpen(true),
-                  variant: "primary",
-                },
-                {
-                  label: "Export",
-                  icon: Download,
-                  onClick: () => console.log("Export clicked"),
-                  variant: "secondary",
-                },
-              ]}
-              onExportPDF={() => exportStaffTransfersToPDF(filteredRequests)}
-              onExportExcel={() => exportStaffTransfersToExcel(filteredRequests)}
-              exportDescription="Download staff transfer requests data"
-            />
-          </div>
-
-          {/* Statistics Cards */}
-          <StaffTransferStatisticsCards requests={requests} />
-
-          {/* Search and Filters */}
-          <SearchFilterBar
-            searchValue={searchQuery}
-            onSearchChange={setSearchQuery}
-            searchPlaceholder="Search by staff name, email, or transfer ID..."
-            filters={[
-              {
-                label: "Status",
-                value: filterStatus,
-                onChange: (value) => setFilterStatus(value as TransferStatus | "all"),
-                options: [
-                  { label: "All Status", value: "all" },
-                  { label: "Pending", value: "pending" },
-                  { label: "Approved", value: "approved" },
-                  { label: "In Progress", value: "in-progress" },
-                  { label: "Completed", value: "completed" },
-                  { label: "Rejected", value: "rejected" },
-                  { label: "Cancelled", value: "cancelled" },
-                ],
-              },
-              {
-                label: "Transfer Type",
-                value: filterType,
-                onChange: (value) => setFilterType(value as TransferType | "all"),
-                options: [
-                  { label: "All Types", value: "all" },
-                  { label: "Department", value: "department" },
-                  { label: "Branch", value: "branch" },
-                  { label: "Designation", value: "designation" },
-                  { label: "Location", value: "location" },
-                ],
-              },
-              {
-                label: "Department",
-                value: filterDepartment,
-                onChange: (value) => setFilterDepartment(value as string),
-                options: [
-                  { label: "All Departments", value: "all" },
-                  { label: "Mathematics", value: "Mathematics" },
-                  { label: "English", value: "English" },
-                  { label: "Science", value: "Science" },
-                  { label: "ICT", value: "ICT" },
-                  { label: "Biology", value: "Biology" },
-                  { label: "Sports", value: "Sports" },
-                ],
-              },
-              {
-                label: "Branch",
-                value: filterBranch,
-                onChange: (value) => setFilterBranch(value as string),
-                options: [
-                  { label: "All Branches", value: "all" },
-                  { label: "Main Campus", value: "Main Campus" },
-                  { label: "Annex Campus", value: "Annex Campus" },
-                  { label: "Lekki Campus", value: "Lekki Campus" },
-                ],
-              },
-            ]}
-          />
-
-          {/* Transfer Requests Table */}
-          <StaffTransferTable
-            requests={filteredRequests}
-            onViewDetails={(request) => setSelectedRequest(request)}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            onProcess={handleProcess}
-            filterKey={`${filterStatus}-${filterType}-${searchQuery}`}
-          />
-        </div>
-      </div>
-
+    <DataManagementPage<StaffTransferRequest>
+      title="Staff Transfers"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Staff", href: "/staff" },
+        { label: "Transfer Requests", isActive: true },
+      ]}
+      data={requests}
+      getRowKey={(item) => item.id}
+      columns={[]}
+      stats={transferStats}
+      statsColumns={{ default: 1, sm: 2, md: 3, lg: 6 }}
+      filterFields={transferFilterFields}
+      sortOptions={transferSortOptions}
+      filterFn={filterTransferRequests}
+      sortFn={sortTransferRequests}
+      searchFn={searchTransferRequests}
+      addButtonConfig={{
+        label: "New Transfer Request",
+        onClick: () => setIsNewRequestModalOpen(true),
+      }}
+      onExportPDF={(items) => exportStaffTransfersToPDF(items)}
+      onExportExcel={(items) => exportStaffTransfersToExcel(items)}
+      enableViewToggle={false}
+      enableSelection={false}
+      enablePagination={false}
+      showTableSearch={false}
+      itemLabel="transfer request"
+      itemLabelPlural="transfer requests"
+      customListComponent={
+        <StaffTransferTable
+          requests={requests}
+          onViewDetails={(request) => setSelectedRequest(request)}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onProcess={handleProcess}
+        />
+      }
+    >
       {/* New Transfer Request Modal */}
       <NewTransferRequestModal
         isOpen={isNewRequestModalOpen}
         onClose={() => setIsNewRequestModalOpen(false)}
         onSubmit={(data) => {
           console.log("New transfer request submitted:", data);
-          // Here you would typically add the new request to the list
-          // For now, just log it
         }}
       />
-    </MainLayout>
+    </DataManagementPage>
   );
 }

@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DashboardPage } from "@/components/pages";
 import { getTeacherById, Teacher } from "@/lib/mockTeachers";
 import Image from "next/image";
 import {
@@ -28,7 +26,7 @@ import {
 } from "lucide-react";
 import ActionButton from "@/components/shared/ActionButton";
 import SecondaryButton from "@/components/shared/SecondaryButton";
-import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
+import ActionModal from "@/components/shared/ActionModal";
 import MobileDropdown from "@/components/shared/MobileDropdown";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 
@@ -38,7 +36,6 @@ export default function ViewTeacherPage() {
   const params = useParams();
   const teacherId = params?.id as string;
   const router = useRouter();
-  const isLoading = usePageLoad(600);
   const [teacherData, setTeacherData] = useState<Teacher | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("details");
@@ -68,30 +65,49 @@ export default function ViewTeacherPage() {
     router.push(`/teachers/${teacherId}/edit`);
   };
 
-  if (isLoading || isLoadingData) {
+  if (isLoadingData) {
     return (
-      <MainLayout>
-        <PageLoader isLoading={true} loadingText="Loading Teacher Details" />
-      </MainLayout>
+      <DashboardPage
+        title="Teacher Profile"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Teachers", href: "/teachers" },
+          { label: "Profile", isActive: true },
+        ]}
+        loadingText="Loading Teacher Details"
+      />
     );
   }
 
   if (!teacherData) {
     return (
-      <MainLayout>
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Teacher Not Found</h2>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">The teacher you're looking for doesn't exist.</p>
-            <button
-              onClick={() => router.push("/teachers")}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Back to Teachers
-            </button>
+      <DashboardPage
+        title="Teacher Not Found"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Teachers", href: "/teachers" },
+          { label: "Not Found", isActive: true },
+        ]}
+        loadingText="Loading Teacher Details"
+        afterStats={
+          <div className="mt-6 flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Teacher Not Found
+              </h2>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                The teacher you&apos;re looking for doesn&apos;t exist.
+              </p>
+              <button
+                onClick={() => router.push("/teachers")}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Back to Teachers
+              </button>
+            </div>
           </div>
-        </div>
-      </MainLayout>
+        }
+      />
     );
   }
 
@@ -113,19 +129,20 @@ export default function ViewTeacherPage() {
   };
 
   return (
-    <MainLayout>
-      <div className="space-y-5 sm:space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            <div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                Teacher Profile
-              </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 mt-1">
-                View and manage teacher information
-              </p>
-            </div>
+    <DashboardPage
+      title="Teacher Profile"
+      description="View and manage teacher information"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Teachers", href: "/teachers" },
+        { label: `${teacherData.firstName} ${teacherData.lastName}`, isActive: true },
+      ]}
+      loadingText="Loading Teacher Details"
+      afterStats={
+        <div className="mt-6 space-y-5 sm:space-y-6">
+          {/* Actions */}
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 sm:gap-4">
 
             {/* Desktop Actions */}
             <div className="hidden sm:flex items-center gap-3">
@@ -151,7 +168,7 @@ export default function ViewTeacherPage() {
               />
             </div>
           </div>
-        </div>
+          </div>
 
         {/* Profile Overview Card */}
         <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm overflow-hidden">
@@ -384,16 +401,20 @@ export default function ViewTeacherPage() {
           )}
         </div>
       </div>
-
+      }
+    >
       {/* Delete Confirmation Modal */}
-      <DeleteConfirmationModal
+      <ActionModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDelete}
         title="Delete Teacher"
+        subtitle={`${teacherData.firstName} ${teacherData.lastName} • ${teacherData.staffId}`}
+        variant="danger"
         message={`Are you sure you want to delete ${teacherData.firstName} ${teacherData.lastName}? This action cannot be undone.`}
-        itemName={`${teacherData.firstName} ${teacherData.lastName}`}
+        confirmLabel="Delete Teacher"
+        cancelLabel="Cancel"
+        onConfirm={handleDelete}
       />
-    </MainLayout>
+    </DashboardPage>
   );
 }

@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import PersonalInformationSection from "@/components/teachers/form-sections/PersonalInformationSection";
 import EmploymentInformationSection from "@/components/teachers/form-sections/EmploymentInformationSection";
 import QualificationsSection from "@/components/teachers/form-sections/QualificationsSection";
@@ -14,7 +12,6 @@ import MedicalInformationSection from "@/components/teachers/form-sections/Medic
 import PayrollSection from "@/components/teachers/form-sections/PayrollSection";
 import RolePermissionsSection from "@/components/teachers/form-sections/RolePermissionsSection";
 import DocumentsSection from "@/components/teachers/form-sections/DocumentsSection";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { validateForm, ValidationErrors } from "@/lib/validation";
@@ -33,7 +30,6 @@ export default function AddTeacherPage() {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [showValidationModal, setShowValidationModal] = useState(false);
-  const isLoading = usePageLoad(800);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [isSticky, setIsSticky] = useState(true);
@@ -347,25 +343,19 @@ export default function AddTeacherPage() {
   };
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Form" />
-
-      {/* Main Content - Fades in after loading */}
-      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-        {/* Header */}
-        <div className="py-4 mb-2">
-          <PageHeader
-            title={`Add ${singularRole}`}
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: settings?.supportedLevels?.includes("Tertiary") ? "Lecturers" : "Teachers", href: "/teachers?view=grid" },
-              { label: `Add ${singularRole}`, isActive: true },
-            ]}
-          />
-        </div>
-
-        {/* Form */}
+    <DashboardPage
+      title={`Add ${singularRole}`}
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        {
+          label: settings?.supportedLevels?.includes("Tertiary") ? "Lecturers" : "Teachers",
+          href: "/teachers?view=grid",
+        },
+        { label: `Add ${singularRole}`, isActive: true },
+      ]}
+      loadingText="Loading Form"
+      afterStats={
+        <div className="mt-6">
         <form
           id="add-teacher-form"
           ref={formRef}
@@ -464,14 +454,14 @@ export default function AddTeacherPage() {
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Validation Errors Modal */}
+        </div>
+      }
+    >
       <ValidationErrorsModal
         isOpen={showValidationModal}
         onClose={() => setShowValidationModal(false)}
         errors={errors}
       />
-    </MainLayout>
+    </DashboardPage>
   );
 }

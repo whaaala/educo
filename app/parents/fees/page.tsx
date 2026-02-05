@@ -1,17 +1,11 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DataManagementPage } from "@/components/pages";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
-import StatCard from "@/components/shared/StatCard";
-import SearchFilterBar from "@/components/shared/SearchFilterBar";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
-import Button from "@/components/shared/Button";
+import type { ColumnConfig, PageAction } from "@/types/components";
 import jsPDF from "jspdf";
 import PayFeesModal from "@/components/parents/PayFeesModal";
 import ViewReceiptModal, { PaymentReceiptData } from "@/components/parents/ViewReceiptModal";
@@ -22,17 +16,25 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  Receipt,
   FileText,
   History,
   FileCheck,
   Phone,
   Download,
   HelpCircle,
-  Banknote,
 } from "lucide-react";
 import CurrencyIcon from "@/components/shared/CurrencyIcon";
 import type { ParentFeeRecord } from "@/types/parent";
+import {
+  feeSortOptions,
+  filterFees,
+  sortFees,
+  searchFees,
+  getFeeFilterFields,
+  getFeeStats,
+  getFeeTotals,
+  getFeeExcelExportConfig,
+} from "./config";
 
 // Mock Fee Data
 const MOCK_FEES: ParentFeeRecord[] = [
@@ -152,24 +154,8 @@ const MOCK_FEES: ParentFeeRecord[] = [
   },
 ];
 
-// Filter options
-const STATUS_OPTIONS = [
-  { value: "all", label: "All Status" },
-  { value: "paid", label: "Paid" },
-  { value: "partial", label: "Partial" },
-  { value: "pending", label: "Pending" },
-  { value: "overdue", label: "Overdue" },
-];
-
-const CHILD_OPTIONS = [
-  { value: "all", label: "All Children" },
-  { value: "child-001", label: "Adaeze Okonkwo" },
-  { value: "child-002", label: "Chukwuemeka Okonkwo" },
-];
-
 export default function ParentFeesPage() {
   const searchParams = useSearchParams();
-  const isPageLoading = usePageLoad(600);
   const { settings } = useSchoolSettings();
   const currencyCode = settings.currency || "NGN";
   const { money, currencySymbol } = useMemo(() => {
@@ -190,11 +176,13 @@ export default function ParentFeesPage() {
     };
   }, [currencyCode]);
 
-  const initialChild = searchParams.get("child") || "all";
-  const [selectedChild, setSelectedChild] = useState(initialChild);
-  const [selectedStatus, setSelectedStatus] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const tableWrapRef = useRef<HTMLDivElement | null>(null);
+  const initialChild = searchParams.get("child");
+  const defaultFilters = useMemo<Record<string, string[]>>(() => {
+    if (initialChild && initialChild !== "all") {
+      return { childId: [initialChild] } as Record<string, string[]>;
+    }
+    return {} as Record<string, string[]>;
+  }, [initialChild]);
 
   // Fees state - combines mock data with newly added fees from admin portal
   const [fees, setFees] = useState<ParentFeeRecord[]>(MOCK_FEES);
@@ -266,33 +254,31 @@ export default function ParentFeesPage() {
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [contactBursaryModalOpen, setContactBursaryModalOpen] = useState(false);
 
-  // Match /finance/installments: trigger row animation when filters/search change.
-  const filterKey = `${searchQuery}-${selectedChild}-${selectedStatus}`;
-  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
-  const [animationTrigger, setAnimationTrigger] = useState(0);
+  const stats = useMemo(() => getFeeTotals(fees), [fees]);
+  const filterFields = useMemo(() => getFeeFilterFields(fees), [fees]);
+  const pageActions: PageAction[] = useMemo(() => {
+    const actions: PageAction[] = [
+      {
+        id: "history",
+        label: "Download History",
+        icon: History,
+        onClick: () => setHistoryModalOpen(true),
+        variant: "secondary",
+      },
+      {
+        id: "pay",
+        label:
+          stats.totalBalance > 0
+            ? `Pay Outstanding (${money(stats.totalBalance)})`
+            : "Pay Fees",
+        icon: CreditCard,
+        onClick: () => handleOpenPayModal(),
+        variant: "primary",
+      },
+    ];
 
-  // Filter fees
-  const filteredFees = useMemo(() => {
-    return fees.filter((fee) => {
-      const matchesChild = selectedChild === "all" || fee.childId === selectedChild;
-      const matchesStatus = selectedStatus === "all" || fee.status === selectedStatus;
-      const matchesSearch =
-        searchQuery === "" ||
-        fee.childName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        fee.feeType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        fee.term.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesChild && matchesStatus && matchesSearch;
-    });
-  }, [fees, selectedChild, selectedStatus, searchQuery]);
-
-  // Calculate stats
-  const stats = useMemo(() => {
-    const totalAmount = fees.reduce((sum, f) => sum + f.amount, 0);
-    const totalPaid = fees.reduce((sum, f) => sum + f.paidAmount, 0);
-    const totalBalance = fees.reduce((sum, f) => sum + f.balance, 0);
-    const overdueCount = fees.filter((f) => f.status === "overdue").length;
-    return { totalAmount, totalPaid, totalBalance, overdueCount };
-  }, [fees]);
+    return actions;
+  }, [stats.totalBalance, money]);
 
   // Convert fees to format needed for PayFeesModal
   const feesForPayModal = useMemo(() => {
@@ -337,10 +323,10 @@ export default function ParentFeesPage() {
   }, [fees]);
 
   // Modal handlers
-  const handleOpenPayModal = (feeId?: string) => {
+  function handleOpenPayModal(feeId?: string) {
     setSelectedFeeIdForPayment(feeId || null);
     setPayFeesModalOpen(true);
-  };
+  }
 
   const handlePaymentComplete = (paymentDetails: any) => {
     console.log("Payment completed:", paymentDetails);
@@ -378,7 +364,8 @@ export default function ParentFeesPage() {
   };
 
   // Download Fee Statement as PDF
-  const handleDownloadStatement = () => {
+  const handleDownloadStatement = (items: ParentFeeRecord[]) => {
+    const stats = getFeeTotals(items);
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
@@ -501,7 +488,7 @@ export default function ParentFeesPage() {
     y += 12;
 
     // Table rows
-    fees.forEach((fee, index) => {
+    items.forEach((fee, index) => {
       if (y > 260) {
         doc.addPage();
         y = 20;
@@ -566,35 +553,6 @@ export default function ParentFeesPage() {
     // Save PDF
     doc.save(`Fee-Statement-${new Date().toISOString().split("T")[0]}.pdf`);
   };
-
-  useEffect(() => {
-    if (filterKey !== prevFilterKey) {
-      setAnimationTrigger((prev) => prev + 1);
-      setPrevFilterKey(filterKey);
-    }
-  }, [filterKey, prevFilterKey]);
-
-  useEffect(() => {
-    if (animationTrigger <= 0) return;
-    const timeoutId = setTimeout(() => {
-      const root = tableWrapRef.current;
-      if (!root) return;
-      const rows = root.querySelectorAll("tbody tr");
-      rows.forEach((row, index) => {
-        const htmlRow = row as HTMLElement;
-        const delay = index / 80;
-        htmlRow.style.animation = `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${delay}s both`;
-      });
-      setTimeout(() => {
-        rows.forEach((row) => {
-          const htmlRow = row as HTMLElement;
-          htmlRow.style.animation = "";
-        });
-      }, 600);
-    }, 50);
-
-    return () => clearTimeout(timeoutId);
-  }, [animationTrigger]);
 
   // Get status badge
   const getStatusBadge = (status: ParentFeeRecord["status"]) => {
@@ -755,76 +713,37 @@ export default function ParentFeesPage() {
     },
   ];
 
+  const exportConfig = useMemo(() => getFeeExcelExportConfig("fee-statement", money), [money]);
+
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Fees" />
-
-      <div
-        className={`space-y-6 transition-opacity duration-500 ${
-          isPageLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <PageHeader
-            title="Fees & Payments"
-            breadcrumbs={[
-              { label: "Parent Portal", href: "/parents" },
-              { label: "Fees & Payments" },
-            ]}
-          />
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              className="text-gray-600 dark:text-gray-400"
-              onClick={() => setHistoryModalOpen(true)}
-            >
-              <History className="w-4 h-4 mr-2" />
-              Download History
-            </Button>
-            {stats.totalBalance > 0 && (
-              <Button
-                variant="primary"
-                onClick={() => handleOpenPayModal()}
-              >
-                <CreditCard className="w-4 h-4 mr-2" />
-                Pay Outstanding ({money(stats.totalBalance)})
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          <StatCard
-            icon={Banknote}
-            label="Total Fees"
-            value={money(stats.totalAmount)}
-            color="blue"
-          />
-          <StatCard
-            icon={CheckCircle2}
-            label="Total Paid"
-            value={money(stats.totalPaid)}
-            color="green"
-          />
-          <StatCard
-            icon={Clock}
-            label="Outstanding"
-            value={money(stats.totalBalance)}
-            color={stats.totalBalance > 0 ? "red" : "green"}
-          />
-          <StatCard
-            icon={AlertCircle}
-            label="Overdue"
-            value={stats.overdueCount.toString()}
-            color={stats.overdueCount > 0 ? "red" : "green"}
-            badge={stats.overdueCount > 0 ? "Action Required" : undefined}
-          />
-        </div>
-
-        {/* Outstanding Balance Alert */}
-        {stats.totalBalance > 0 && (
+    <DataManagementPage
+      title="Fees & Payments"
+      breadcrumbs={[
+        { label: "Parent Portal", href: "/parents" },
+        { label: "Fees & Payments", isActive: true },
+      ]}
+      data={fees}
+      getRowKey={(fee) => fee.id}
+      columns={columns}
+      stats={getFeeStats(money)}
+      filterFields={filterFields}
+      sortOptions={feeSortOptions}
+      defaultSort="due_soon"
+      defaultFilters={defaultFilters}
+      filterFn={filterFees}
+      sortFn={sortFees}
+      searchFn={searchFees}
+      searchPlaceholder="Search by child name, fee type..."
+      itemLabel="fee record"
+      itemLabelPlural="fee records"
+      pageActions={pageActions}
+      enableSelection={false}
+      enableViewToggle={false}
+      enableExport={true}
+      exportConfig={exportConfig}
+      onExportPDF={(items) => handleDownloadStatement(items)}
+      beforeContent={
+        stats.totalBalance > 0 ? (
           <div className="p-4 rounded-xl bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/10 border border-red-200/60 dark:border-red-700/30">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-start gap-3">
@@ -850,126 +769,76 @@ export default function ParentFeesPage() {
               </button>
             </div>
           </div>
-        )}
-
-        {/* Filters */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder="Search by child name, fee type..."
-          filters={[
-            {
-              label: "Child",
-              value: selectedChild,
-              onChange: (val) => setSelectedChild(String(val)),
-              options: CHILD_OPTIONS,
-            },
-            {
-              label: "Status",
-              value: selectedStatus,
-              onChange: (val) => setSelectedStatus(String(val)),
-              options: STATUS_OPTIONS,
-            },
-          ]}
-        />
-
-        {/* Fee Table (match /finance/installments behavior) */}
-        <div className="relative">
-          {/* Mobile Scroll Indicator */}
-          <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none" />
-
-          <div
-            ref={tableWrapRef}
-            key={`fees-table-${filterKey}`}
-            className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden"
-          >
-            <DataTable
-              data={filteredFees}
-              columns={columns}
-              getRowKey={(fee) => fee.id}
-              emptyMessage="No fee records found"
-              title=""
-              showSearch={false}
-              defaultItemsPerPage={10}
-              itemsPerPageOptions={[5, 10, 15, 20, 25]}
-              enablePagination={true}
-              enableItemsPerPage={true}
-              stickyColumnCount={1}
-            />
+        ) : undefined
+      }
+    >
+      {/* Need Help? Quick Actions */}
+      <div className="mt-6 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-4 sm:p-6">
+        <div className="flex items-start gap-3 mb-4 sm:mb-5">
+          <div className="p-2 sm:p-2.5 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 midnight:from-gray-800 midnight:to-gray-700 purple:from-gray-800 purple:to-gray-700">
+            <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 dark:text-gray-300 midnight:text-cyan-400 purple:text-pink-400" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm sm:text-base">
+              Need Help?
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
+              Quick actions & support
+            </p>
           </div>
         </div>
 
-        {/* Need Help? Quick Actions */}
-        <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-4 sm:p-6">
-          <div className="flex items-start gap-3 mb-4 sm:mb-5">
-            <div className="p-2 sm:p-2.5 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 midnight:from-gray-800 midnight:to-gray-700 purple:from-gray-800 purple:to-gray-700">
-              <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 dark:text-gray-300 midnight:text-cyan-400 purple:text-pink-400" />
+        <div className="grid grid-cols-3 gap-3 sm:gap-4">
+          {/* Contact Bursary */}
+          <button
+            type="button"
+            onClick={() => setContactBursaryModalOpen(true)}
+            className="group flex flex-col items-center p-3 sm:p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/10 midnight:from-cyan-900/20 midnight:to-cyan-800/10 purple:from-pink-900/20 purple:to-pink-800/10 border border-blue-200/50 dark:border-blue-500/20 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-300 dark:hover:border-blue-400/30 midnight:hover:border-cyan-400/30 purple:hover:border-pink-400/30 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 dark:hover:shadow-blue-500/5 hover:-translate-y-0.5 cursor-pointer"
+          >
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 midnight:from-cyan-500 midnight:to-cyan-600 purple:from-pink-500 purple:to-pink-600 flex items-center justify-center mb-2 sm:mb-3 shadow-lg shadow-blue-500/20 dark:shadow-blue-500/10 group-hover:scale-110 transition-transform duration-300">
+              <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm sm:text-base">
-                Need Help?
-              </h3>
-              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-                Quick actions & support
-              </p>
+            <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center">
+              Contact
+            </p>
+            <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center font-semibold">
+              Finance
+            </p>
+          </button>
+
+          {/* Payment History */}
+          <button
+            type="button"
+            onClick={() => setHistoryModalOpen(true)}
+            className="group flex flex-col items-center p-3 sm:p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/10 midnight:from-emerald-900/20 midnight:to-emerald-800/10 purple:from-emerald-900/20 purple:to-emerald-800/10 border border-green-200/50 dark:border-green-500/20 midnight:border-emerald-500/20 purple:border-emerald-500/20 hover:border-green-300 dark:hover:border-green-400/30 midnight:hover:border-emerald-400/30 purple:hover:border-emerald-400/30 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/10 dark:hover:shadow-green-500/5 hover:-translate-y-0.5 cursor-pointer"
+          >
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 midnight:from-emerald-500 midnight:to-emerald-600 purple:from-emerald-500 purple:to-emerald-600 flex items-center justify-center mb-2 sm:mb-3 shadow-lg shadow-green-500/20 dark:shadow-green-500/10 group-hover:scale-110 transition-transform duration-300">
+              <History className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-          </div>
+            <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center">
+              Payment
+            </p>
+            <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center font-semibold">
+              History
+            </p>
+          </button>
 
-          <div className="grid grid-cols-3 gap-3 sm:gap-4">
-            {/* Contact Bursary */}
-            <button
-              type="button"
-              onClick={() => setContactBursaryModalOpen(true)}
-              className="group flex flex-col items-center p-3 sm:p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/10 midnight:from-cyan-900/20 midnight:to-cyan-800/10 purple:from-pink-900/20 purple:to-pink-800/10 border border-blue-200/50 dark:border-blue-500/20 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-300 dark:hover:border-blue-400/30 midnight:hover:border-cyan-400/30 purple:hover:border-pink-400/30 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 dark:hover:shadow-blue-500/5 hover:-translate-y-0.5 cursor-pointer"
-            >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 midnight:from-cyan-500 midnight:to-cyan-600 purple:from-pink-500 purple:to-pink-600 flex items-center justify-center mb-2 sm:mb-3 shadow-lg shadow-blue-500/20 dark:shadow-blue-500/10 group-hover:scale-110 transition-transform duration-300">
-                <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center">
-                Contact
-              </p>
-              <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center font-semibold">
-                Finance
-              </p>
-            </button>
-
-            {/* Payment History */}
-            <button
-              type="button"
-              onClick={() => setHistoryModalOpen(true)}
-              className="group flex flex-col items-center p-3 sm:p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/10 midnight:from-emerald-900/20 midnight:to-emerald-800/10 purple:from-emerald-900/20 purple:to-emerald-800/10 border border-green-200/50 dark:border-green-500/20 midnight:border-emerald-500/20 purple:border-emerald-500/20 hover:border-green-300 dark:hover:border-green-400/30 midnight:hover:border-emerald-400/30 purple:hover:border-emerald-400/30 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/10 dark:hover:shadow-green-500/5 hover:-translate-y-0.5 cursor-pointer"
-            >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 midnight:from-emerald-500 midnight:to-emerald-600 purple:from-emerald-500 purple:to-emerald-600 flex items-center justify-center mb-2 sm:mb-3 shadow-lg shadow-green-500/20 dark:shadow-green-500/10 group-hover:scale-110 transition-transform duration-300">
-                <History className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center">
-                Payment
-              </p>
-              <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center font-semibold">
-                History
-              </p>
-            </button>
-
-            {/* Download Statement */}
-            <button
-              type="button"
-              onClick={() => {
-                // Trigger download of fee statement
-                handleDownloadStatement();
-              }}
-              className="group flex flex-col items-center p-3 sm:p-4 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-800/10 midnight:from-amber-900/20 midnight:to-amber-800/10 purple:from-amber-900/20 purple:to-amber-800/10 border border-orange-200/50 dark:border-orange-500/20 midnight:border-amber-500/20 purple:border-amber-500/20 hover:border-orange-300 dark:hover:border-orange-400/30 midnight:hover:border-amber-400/30 purple:hover:border-amber-400/30 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10 dark:hover:shadow-orange-500/5 hover:-translate-y-0.5 cursor-pointer"
-            >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700 midnight:from-amber-500 midnight:to-amber-600 purple:from-amber-500 purple:to-amber-600 flex items-center justify-center mb-2 sm:mb-3 shadow-lg shadow-orange-500/20 dark:shadow-orange-500/10 group-hover:scale-110 transition-transform duration-300">
-                <Download className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center">
-                Download
-              </p>
-              <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center font-semibold">
-                Statement
-              </p>
-            </button>
-          </div>
+          {/* Download Statement */}
+          <button
+            type="button"
+            onClick={() => handleDownloadStatement(fees)}
+            className="group flex flex-col items-center p-3 sm:p-4 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-800/10 midnight:from-amber-900/20 midnight:to-amber-800/10 purple:from-amber-900/20 purple:to-amber-800/10 border border-orange-200/50 dark:border-orange-500/20 midnight:border-amber-500/20 purple:border-amber-500/20 hover:border-orange-300 dark:hover:border-orange-400/30 midnight:hover:border-amber-400/30 purple:hover:border-amber-400/30 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10 dark:hover:shadow-orange-500/5 hover:-translate-y-0.5 cursor-pointer"
+          >
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700 midnight:from-amber-500 midnight:to-amber-600 purple:from-amber-500 purple:to-amber-600 flex items-center justify-center mb-2 sm:mb-3 shadow-lg shadow-orange-500/20 dark:shadow-orange-500/10 group-hover:scale-110 transition-transform duration-300">
+              <Download className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center">
+              Download
+            </p>
+            <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center font-semibold">
+              Statement
+            </p>
+          </button>
         </div>
       </div>
 
@@ -1008,6 +877,6 @@ export default function ParentFeesPage() {
         isOpen={contactBursaryModalOpen}
         onClose={() => setContactBursaryModalOpen(false)}
       />
-    </MainLayout>
+    </DataManagementPage>
   );
 }

@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import PersonalInformationSection from "@/components/teachers/form-sections/PersonalInformationSection";
 import EmploymentInformationSection from "@/components/teachers/form-sections/EmploymentInformationSection";
 import QualificationsSection from "@/components/teachers/form-sections/QualificationsSection";
@@ -14,14 +12,12 @@ import MedicalInformationSection from "@/components/teachers/form-sections/Medic
 import PayrollSection from "@/components/teachers/form-sections/PayrollSection";
 import RolePermissionsSection from "@/components/teachers/form-sections/RolePermissionsSection";
 import DocumentsSection from "@/components/teachers/form-sections/DocumentsSection";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 export default function AddStaffPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const isLoading = usePageLoad(800);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [isSticky, setIsSticky] = useState(true);
@@ -198,9 +194,16 @@ export default function AddStaffPage() {
   // Don't render form sections until mounted to avoid hydration errors
   if (!isMounted) {
     return (
-      <MainLayout>
-        <PageLoader isLoading={true} loadingText="Loading Form" />
-      </MainLayout>
+      <DashboardPage
+        title="Add Personnel"
+        subtitle="Add teaching and non-teaching staff members to your institution"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Staff", href: "/staff" },
+          { label: "Add Personnel", isActive: true },
+        ]}
+        loadingText="Loading Form"
+      />
     );
   }
 
@@ -330,26 +333,17 @@ export default function AddStaffPage() {
   };
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Form" />
-
-      {/* Main Content - Fades in after loading */}
-      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-        {/* Header */}
-        <div className="py-4 mb-2">
-          <PageHeader
-            title="Add Personnel"
-            subtitle="Add teaching and non-teaching staff members to your institution"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Staff", href: "/staff" },
-              { label: "Add Personnel", isActive: true },
-            ]}
-          />
-        </div>
-
-        {/* Form */}
+    <DashboardPage
+      title="Add Personnel"
+      subtitle="Add teaching and non-teaching staff members to your institution"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Staff", href: "/staff" },
+        { label: "Add Personnel", isActive: true },
+      ]}
+      loadingText="Loading Form"
+      afterStats={
+        <div className="mt-6">
         <form
           id="add-staff-form"
           ref={formRef}
@@ -448,7 +442,8 @@ export default function AddStaffPage() {
             </button>
           </div>
         </div>
-      </div>
-    </MainLayout>
+        </div>
+      }
+    />
   );
 }

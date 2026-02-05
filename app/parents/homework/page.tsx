@@ -1,15 +1,10 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
-import StatCard from "@/components/shared/StatCard";
-import SearchFilterBar from "@/components/shared/SearchFilterBar";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import { DataManagementPage } from "@/components/pages";
+import type { ColumnConfig } from "@/types/components";
 import {
   CheckCircle2,
   Clock,
@@ -21,27 +16,15 @@ import {
   FileText,
 } from "lucide-react";
 
-// Homework type
-interface Homework {
-  id: string;
-  childId: string;
-  childName: string;
-  childPhoto: string;
-  class: string;
-  section: string;
-  subject: string;
-  title: string;
-  description: string;
-  teacher: string;
-  assignedDate: string;
-  dueDate: string;
-  status: "pending" | "submitted" | "graded" | "overdue";
-  submissionDate?: string;
-  grade?: string;
-  score?: number;
-  maxScore?: number;
-  feedback?: string;
-}
+import {
+  type Homework,
+  filterHomework,
+  sortHomework,
+  searchHomework,
+  homeworkSortOptions,
+  getHomeworkFilterFields,
+  getHomeworkStats,
+} from "./config";
 
 // Mock Data
 const MOCK_HOMEWORK: Homework[] = [
@@ -292,75 +275,8 @@ function getStatusConfig(status: Homework["status"]) {
 }
 
 export default function ParentHomeworkPage() {
-  const isPageLoading = usePageLoad(600);
-  const [selectedChild, setSelectedChild] = useState("all");
-  const [selectedSubject, setSelectedSubject] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState("all");
-  const [selectedYear, setSelectedYear] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const tableWrapRef = useRef<HTMLDivElement | null>(null);
-
-  // Animation trigger for filter changes
-  const filterKey = `${searchQuery}-${selectedChild}-${selectedSubject}-${selectedStatus}-${selectedYear}`;
-  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
-  const [animationTrigger, setAnimationTrigger] = useState(0);
-
-  // Filter homework
-  const filteredHomework = useMemo(() => {
-    return MOCK_HOMEWORK.filter((hw) => {
-      const matchesChild = selectedChild === "all" || hw.childId === selectedChild;
-      const matchesSubject = selectedSubject === "all" || hw.subject === selectedSubject;
-      const matchesStatus = selectedStatus === "all" || hw.status === selectedStatus;
-      const homeworkYear = new Date(hw.dueDate).getFullYear().toString();
-      const matchesYear = selectedYear === "all" || homeworkYear === selectedYear;
-      const matchesSearch =
-        searchQuery === "" ||
-        hw.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        hw.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        hw.teacher.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        hw.childName.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesChild && matchesSubject && matchesStatus && matchesYear && matchesSearch;
-    });
-  }, [selectedChild, selectedSubject, selectedStatus, selectedYear, searchQuery]);
-
-  // Calculate stats
-  const stats = useMemo(() => {
-    const total = MOCK_HOMEWORK.length;
-    const pending = MOCK_HOMEWORK.filter((hw) => hw.status === "pending").length;
-    const submitted = MOCK_HOMEWORK.filter((hw) => hw.status === "submitted").length;
-    const graded = MOCK_HOMEWORK.filter((hw) => hw.status === "graded").length;
-    const overdue = MOCK_HOMEWORK.filter((hw) => hw.status === "overdue").length;
-    return { total, pending, submitted, graded, overdue };
-  }, []);
-
-  useEffect(() => {
-    if (filterKey !== prevFilterKey) {
-      setAnimationTrigger((prev) => prev + 1);
-      setPrevFilterKey(filterKey);
-    }
-  }, [filterKey, prevFilterKey]);
-
-  useEffect(() => {
-    if (animationTrigger <= 0) return;
-    const timeoutId = setTimeout(() => {
-      const root = tableWrapRef.current;
-      if (!root) return;
-      const rows = root.querySelectorAll("tbody tr");
-      rows.forEach((row, index) => {
-        const htmlRow = row as HTMLElement;
-        const delay = index / 80;
-        htmlRow.style.animation = `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${delay}s both`;
-      });
-      setTimeout(() => {
-        rows.forEach((row) => {
-          const htmlRow = row as HTMLElement;
-          htmlRow.style.animation = "";
-        });
-      }, 600);
-    }, 50);
-
-    return () => clearTimeout(timeoutId);
-  }, [animationTrigger]);
+  const data = MOCK_HOMEWORK;
+  const filterFields = useMemo(() => getHomeworkFilterFields(data), [data]);
 
   // Table columns
   const columns: ColumnConfig<Homework>[] = [
@@ -506,133 +422,45 @@ export default function ParentHomeworkPage() {
   ];
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Homework" />
-
-      <div
-        className={`space-y-6 transition-opacity duration-500 ${
-          isPageLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        {/* Header */}
-        <PageHeader
-          title="Homework"
-          breadcrumbs={[
-            { label: "Parent Portal", href: "/parents" },
-            { label: "Homework" },
-          ]}
-        />
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
-          <StatCard
-            icon={BookOpen}
-            label="Total"
-            value={stats.total.toString()}
-            color="blue"
-          />
-          <StatCard
-            icon={Clock}
-            label="Pending"
-            value={stats.pending.toString()}
-            color="amber"
-          />
-          <StatCard
-            icon={ClipboardList}
-            label="Submitted"
-            value={stats.submitted.toString()}
-            color="indigo"
-          />
-          <StatCard
-            icon={CheckCircle2}
-            label="Graded"
-            value={stats.graded.toString()}
-            color="green"
-          />
-          <StatCard
-            icon={AlertTriangle}
-            label="Overdue"
-            value={stats.overdue.toString()}
-            color="red"
-          />
-        </div>
-
-        {/* Filters */}
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder="Search by title, subject, teacher..."
-          filters={[
-            {
-              label: "Child",
-              value: selectedChild,
-              onChange: (val) => setSelectedChild(String(val)),
-              options: CHILD_OPTIONS,
-            },
-            {
-              label: "Year",
-              value: selectedYear,
-              onChange: (val) => setSelectedYear(String(val)),
-              options: YEAR_OPTIONS,
-            },
-            {
-              label: "Subject",
-              value: selectedSubject,
-              onChange: (val) => setSelectedSubject(String(val)),
-              options: SUBJECT_OPTIONS,
-            },
-            {
-              label: "Status",
-              value: selectedStatus,
-              onChange: (val) => setSelectedStatus(String(val)),
-              options: STATUS_OPTIONS,
-            },
-          ]}
-        />
-
-        {/* Homework Table */}
-        <div className="relative">
-          <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none" />
-
-          <div
-            ref={tableWrapRef}
-            key={`homework-table-${filterKey}`}
-            className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden"
-          >
-            <DataTable
-              data={filteredHomework}
-              columns={columns}
-              getRowKey={(hw) => hw.id}
-              emptyMessage="No homework found"
-              title=""
-              showSearch={false}
-              defaultItemsPerPage={10}
-              itemsPerPageOptions={[5, 10, 15, 20, 25]}
-              enablePagination={true}
-              enableItemsPerPage={true}
-              stickyColumnCount={1}
-            />
+    <DataManagementPage
+      title="Homework"
+      breadcrumbs={[
+        { label: "Parent Portal", href: "/parents" },
+        { label: "Homework", isActive: true },
+      ]}
+      data={data}
+      getRowKey={(hw) => hw.id}
+      columns={columns}
+      stats={getHomeworkStats()}
+      filterFields={filterFields}
+      sortOptions={homeworkSortOptions}
+      defaultSort="due_soon"
+      filterFn={filterHomework}
+      sortFn={sortHomework}
+      searchFn={searchHomework}
+      searchPlaceholder="Search by title, subject, teacher..."
+      itemLabel="assignment"
+      itemLabelPlural="assignments"
+      enableSelection={false}
+      enableExport={false}
+      enableViewToggle={false}
+    >
+      <div className="mt-6 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-6">
+        <div className="flex items-start gap-4">
+          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
+            <FileText className="w-6 h-6 text-emerald-600 dark:text-emerald-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
-        </div>
-
-        {/* Info Card */}
-        <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-6">
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
-              <FileText className="w-6 h-6 text-emerald-600 dark:text-emerald-400 midnight:text-cyan-400 purple:text-pink-400" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                Track Your Child&apos;s Progress
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Click the eye icon on any homework to view full details including assignment
-                instructions, submission status, teacher feedback, and grades.
-              </p>
-            </div>
+          <div>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+              Track Your Child&apos;s Progress
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Click the eye icon on any homework to view full details including assignment
+              instructions, submission status, teacher feedback, and grades.
+            </p>
           </div>
         </div>
       </div>
-    </MainLayout>
+    </DataManagementPage>
   );
 }

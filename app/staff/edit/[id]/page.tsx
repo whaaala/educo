@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import PersonalInformationSection from "@/components/teachers/form-sections/PersonalInformationSection";
 import EmploymentInformationSection from "@/components/teachers/form-sections/EmploymentInformationSection";
 import QualificationsSection from "@/components/teachers/form-sections/QualificationsSection";
@@ -14,7 +12,6 @@ import MedicalInformationSection from "@/components/teachers/form-sections/Medic
 import PayrollSection from "@/components/teachers/form-sections/PayrollSection";
 import RolePermissionsSection from "@/components/teachers/form-sections/RolePermissionsSection";
 import DocumentsSection from "@/components/teachers/form-sections/DocumentsSection";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 export default function EditStaffPage() {
@@ -24,7 +21,6 @@ export default function EditStaffPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoadingData, setIsLoadingData] = useState(true);
-  const isLoading = usePageLoad(800);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [isSticky, setIsSticky] = useState(true);
@@ -267,9 +263,29 @@ export default function EditStaffPage() {
   // Don't render form sections until mounted to avoid hydration errors
   if (!isMounted) {
     return (
-      <MainLayout>
-        <PageLoader isLoading={true} loadingText="Loading Form" />
-      </MainLayout>
+      <DashboardPage
+        title="Edit Personnel"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Staff", href: "/staff?view=grid" },
+          { label: "Edit Personnel", isActive: true },
+        ]}
+        loadingText="Loading Form"
+      />
+    );
+  }
+
+  if (isLoadingData) {
+    return (
+      <DashboardPage
+        title="Edit Personnel"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Staff", href: "/staff?view=grid" },
+          { label: "Edit Personnel", isActive: true },
+        ]}
+        loadingText="Loading Staff Data"
+      />
     );
   }
 
@@ -359,25 +375,16 @@ export default function EditStaffPage() {
   };
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading || isLoadingData} loadingText={isLoadingData ? "Loading Staff Data" : "Loading Form"} />
-
-      {/* Main Content - Fades in after loading */}
-      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-        {/* Header */}
-        <div className="py-4 mb-2">
-          <PageHeader
-            title="Edit Personnel"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Staff", href: "/staff?view=grid" },
-              { label: "Edit Personnel", isActive: true },
-            ]}
-          />
-        </div>
-
-        {/* Form */}
+    <DashboardPage
+      title="Edit Personnel"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Staff", href: "/staff?view=grid" },
+        { label: "Edit Personnel", isActive: true },
+      ]}
+      loadingText="Loading Form"
+      afterStats={
+        <div className="mt-6">
         <form
           id="edit-staff-form"
           ref={formRef}
@@ -476,7 +483,8 @@ export default function EditStaffPage() {
             </button>
           </div>
         </div>
-      </div>
-    </MainLayout>
+        </div>
+      }
+    />
   );
 }

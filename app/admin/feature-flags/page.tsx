@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import MainLayout from "@/components/layout/MainLayout";
+import { DashboardPage } from "@/components/pages";
 import { Settings, Save, RotateCcw, Search, Filter } from "lucide-react";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { DEFAULT_FEATURE_FLAGS, type FeatureFlagKey } from "@/lib/featureFlags";
@@ -84,36 +84,33 @@ export default function FeatureFlagsAdminPage() {
 
   if (!isMounted) {
     return (
-      <MainLayout>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading feature flags...</p>
-          </div>
-        </div>
-      </MainLayout>
+      <DashboardPage
+        title="Feature Flags"
+        description="Enable or disable features for this tenant"
+        breadcrumbs={[
+          { label: "Admin", href: "/admin" },
+          { label: "Feature Flags", isActive: true },
+        ]}
+        loadingText="Loading feature flags..."
+      />
     );
   }
 
   return (
-    <MainLayout>
-      <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="w-full lg:w-auto lg:flex-shrink-0 p-6 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Settings className="w-8 h-8 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-              <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                  Feature Flags Management
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-                  Enable or disable features for this tenant
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
+    <DashboardPage
+      title="Feature Flags"
+      description="Enable or disable features for this tenant"
+      breadcrumbs={[
+        { label: "Admin", href: "/admin" },
+        { label: "Feature Flags", isActive: true },
+      ]}
+      loadingText="Loading feature flags..."
+      afterStats={
+        <div className="mt-6 flex flex-col h-full">
+          {/* Actions + Tenant Info */}
+          <div className="w-full lg:w-auto lg:flex-shrink-0 p-6 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
+            <div className="flex items-center justify-end mb-4">
+              <div className="flex items-center gap-3">
               {hasChanges && (
                 <button
                   onClick={handleReset}
@@ -328,7 +325,8 @@ export default function FeatureFlagsAdminPage() {
             </div>
           </div>
         )}
-      </div>
-    </MainLayout>
+        </div>
+      }
+    />
   );
 }

@@ -1,20 +1,9 @@
-import { useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  Alert,
-  Image,
-  ScrollView,
-} from 'react-native';
-import type { ScrollView as ScrollViewType } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Modal } from '../ui/Modal';
-import { FormDropdown } from '../ui/FormDropdown';
-import { FormInput } from '../ui/FormInput';
-import { FormTextarea } from '../ui/FormTextarea';
+import { FormModal, type FormFieldConfig } from './FormModal';
+import { ActionModal } from './ActionModal';
 
 // Shared fonts
 const FONTS = {
@@ -34,7 +23,10 @@ interface Teacher {
 }
 
 export interface MessageTeacherModalProps {
-  visible: boolean;
+  /** Preferred visibility prop (web-aligned) */
+  isOpen?: boolean;
+  /** Back-compat visibility prop */
+  visible?: boolean;
   onClose: () => void;
   onSubmit?: (data: MessageFormData) => void;
   childName?: string;
@@ -95,6 +87,7 @@ const MESSAGE_CATEGORIES = [
 ];
 
 export function MessageTeacherModal({
+  isOpen,
   visible,
   onClose,
   onSubmit,
@@ -104,243 +97,222 @@ export function MessageTeacherModal({
   preselectedTeacher,
 }: MessageTeacherModalProps) {
   const { colors } = useTheme();
-  const scrollRef = useRef<ScrollViewType>(null);
+  const resolvedVisible = isOpen ?? visible ?? false;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<MessageFormData>({
-    teacherId: preselectedTeacher?.id || '',
-    category: '',
-    customCategory: '',
-    subject: '',
-    message: '',
-  });
-  const [errors, setErrors] = useState<Partial<Record<keyof MessageFormData, string>>>({});
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
-  const selectedTeacher = teachers.find((t) => t.id === formData.teacherId);
-
-  const teacherOptions = teachers.map((t) => ({
-    value: t.id,
-    label: `${t.name} - ${t.subject}`,
-  }));
-
-  const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof MessageFormData, string>> = {};
-
-    if (!formData.teacherId) {
-      newErrors.teacherId = 'Please select a teacher';
-    }
-    if (!formData.subject.trim()) {
-      newErrors.subject = 'Please enter a subject';
-    }
-    if (!formData.message.trim()) {
-      newErrors.message = 'Please enter your message';
-    } else if (formData.message.trim().length < 10) {
-      newErrors.message = 'Message must be at least 10 characters';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async () => {
-    if (!validateForm()) return;
-
-    setIsSubmitting(true);
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      if (onSubmit) {
-        onSubmit(formData);
-      }
-
-      // Reset form
-      setFormData({
-        teacherId: preselectedTeacher?.id || '',
-        category: '',
-        customCategory: '',
-        subject: '',
-        message: '',
-      });
-      setErrors({});
-      onClose();
-
-      Alert.alert(
-        'Message Sent',
-        `Your message has been sent to ${selectedTeacher?.name}. They will respond shortly.`,
-        [{ text: 'OK' }]
-      );
-    } catch (error) {
-      Alert.alert('Error', 'Failed to send message. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleClose = () => {
-    setFormData({
+  const initialValues = useMemo<Record<string, string>>(
+    () => ({
       teacherId: preselectedTeacher?.id || '',
       category: '',
       customCategory: '',
       subject: '',
       message: '',
-    });
-    setErrors({});
+    }),
+    [preselectedTeacher?.id]
+  );
+
+  const [values, setValues] = useState<Record<string, string>>(initialValues);
+
+  useEffect(() => {
+    if (resolvedVisible) setValues(initialValues);
+  }, [resolvedVisible, initialValues]);
+
+  const selectedTeacher = useMemo(
+    () => teachers.find((t) => t.id === values.teacherId),
+    [teachers, values.teacherId]
+  );
+
+  const teacherOptions = useMemo(
+    () =>
+      teachers.map((t) => ({
+        value: t.id,
+        label: `${t.name} - ${t.subject}`,
+      })),
+    [teachers]
+  );
+
+  const fields: FormFieldConfig[] = useMemo(
+    () => [
+      {
+        id: 'teacherId',
+        label: 'To',
+        type: 'dropdown',
+        required: true,
+        icon: <Ionicons name="person" size={16} color={colors.textMuted} />,
+        iconBgColor: colors.primaryLight,
+        options: teacherOptions,
+        placeholder: 'Select a teacher',
+      },
+      {
+        id: 'category',
+        label: 'Category',
+        type: 'dropdown',
+        icon: <Ionicons name="folder" size={16} color={colors.textMuted} />,
+        iconBgColor: colors.accentLight,
+        options: MESSAGE_CATEGORIES,
+        placeholder: 'Select category (optional)',
+      },
+      {
+        id: 'customCategory',
+        label: 'Custom Category',
+        type: 'text',
+        icon: <Ionicons name="create" size={16} color={colors.textMuted} />,
+        iconBgColor: colors.accentLight,
+        placeholder: 'Enter your custom category',
+        condition: (v) => v.category === 'other',
+        validate: (value, v) => {
+          if (v.category === 'other' && !value.trim()) return 'Please enter a custom category';
+          return undefined;
+        },
+      },
+      {
+        id: 'subject',
+        label: 'Subject',
+        type: 'text',
+        required: true,
+        icon: <Ionicons name="text" size={16} color={colors.textMuted} />,
+        iconBgColor: colors.warningLight,
+        placeholder: "What's this message about?",
+      },
+      {
+        id: 'message',
+        label: 'Message',
+        type: 'textarea',
+        required: true,
+        icon: <Ionicons name="chatbox" size={16} color={colors.textMuted} />,
+        iconBgColor: colors.successLight,
+        placeholder: 'Type your message here...',
+        rows: 5,
+        maxLength: 1000,
+        showCharCount: true,
+        validate: (value) => {
+          if (!value.trim()) return 'Please enter your message';
+          if (value.trim().length < 10) return 'Message must be at least 10 characters';
+          return undefined;
+        },
+      },
+    ],
+    [
+      colors.accentLight,
+      colors.primaryLight,
+      colors.successLight,
+      colors.textMuted,
+      colors.warningLight,
+      teacherOptions,
+    ]
+  );
+
+  const subtitle = childName
+    ? `For ${childName}${childClass ? ` (${childClass})` : ''}`
+    : 'Send a message to a teacher';
+
+  const handleClose = () => {
+    setValues(initialValues);
     onClose();
   };
 
-  const footer = (
-    <View style={styles.footer}>
-      <Pressable
-        style={[styles.footerButton, { backgroundColor: colors.backgroundTertiary }]}
-        onPress={handleClose}
-        disabled={isSubmitting}
-      >
-        <Text style={[styles.footerButtonText, { color: colors.textSecondary }]}>Cancel</Text>
-      </Pressable>
-      <Pressable
-        style={[
-          styles.footerButton,
-          styles.footerButtonPrimary,
-          { backgroundColor: colors.primary },
-          isSubmitting && styles.footerButtonDisabled,
-        ]}
-        onPress={handleSubmit}
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? (
-          <Text style={[styles.footerButtonText, { color: colors.primaryText }]}>Sending...</Text>
-        ) : (
-          <>
-            <Ionicons name="send" size={16} color={colors.primaryText} />
-            <Text style={[styles.footerButtonText, { color: colors.primaryText }]}>Send Message</Text>
-          </>
-        )}
-      </Pressable>
-    </View>
-  );
+  const handleSubmit = async (submittedValues: Record<string, string>) => {
+    setIsSubmitting(true);
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const payload: MessageFormData = {
+        teacherId: submittedValues.teacherId || '',
+        category: submittedValues.category || '',
+        customCategory: submittedValues.customCategory || '',
+        subject: submittedValues.subject || '',
+        message: submittedValues.message || '',
+      };
+
+      onSubmit?.(payload);
+      onClose();
+      setIsSuccessModalOpen(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <Modal
-      visible={visible}
-      onClose={handleClose}
-      title="New Message"
-      subtitle={childName ? `For ${childName}${childClass ? ` (${childClass})` : ''}` : 'Send a message to a teacher'}
-      icon={<Ionicons name="chatbubble-ellipses" size={22} color="#ffffff" />}
-      iconBgColors={[colors.primary, colors.primaryDark]}
-      footer={footer}
-      scrollRef={scrollRef}
-    >
-      <View style={styles.content}>
-        {/* Selected Teacher Preview (if selected) */}
-        {selectedTeacher && (
-          <View style={[styles.teacherPreview, { backgroundColor: colors.primaryLight, borderColor: colors.primary }]}>
-            <Image
-              source={{ uri: selectedTeacher.photo || `https://i.pravatar.cc/150?u=${selectedTeacher.id}` }}
-              style={styles.teacherPhoto}
-            />
-            <View style={styles.teacherInfo}>
-              <Text style={[styles.teacherName, { color: colors.text }]}>{selectedTeacher.name}</Text>
-              <Text style={[styles.teacherSubject, { color: colors.textMuted }]}>{selectedTeacher.subject}</Text>
-            </View>
-            {selectedTeacher.isClassTeacher && (
-              <View style={[styles.classTeacherBadge, { backgroundColor: colors.success }]}>
-                <Ionicons name="school" size={10} color="#ffffff" />
+    <>
+      <FormModal
+        visible={resolvedVisible}
+        onClose={handleClose}
+        title="New Message"
+        subtitle={subtitle}
+        icon={<Ionicons name="chatbubble-ellipses" size={22} color="#ffffff" />}
+        iconBgColors={[colors.primary, colors.primaryDark]}
+        fields={fields}
+        values={values}
+        onChange={setValues}
+        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
+        submitLabel="Send Message"
+        cancelLabel="Cancel"
+        infoBanner={
+          <View style={styles.info}>
+            {/* Selected Teacher Preview (if selected) */}
+            {selectedTeacher && (
+              <View
+                style={[
+                  styles.teacherPreview,
+                  { backgroundColor: colors.primaryLight, borderColor: colors.primary },
+                ]}
+              >
+                <Image
+                  source={{
+                    uri:
+                      selectedTeacher.photo ||
+                      `https://i.pravatar.cc/150?u=${selectedTeacher.id}`,
+                  }}
+                  style={styles.teacherPhoto}
+                />
+                <View style={styles.teacherInfo}>
+                  <Text style={[styles.teacherName, { color: colors.text }]}>
+                    {selectedTeacher.name}
+                  </Text>
+                  <Text style={[styles.teacherSubject, { color: colors.textMuted }]}>
+                    {selectedTeacher.subject}
+                  </Text>
+                </View>
+                {selectedTeacher.isClassTeacher && (
+                  <View style={[styles.classTeacherBadge, { backgroundColor: colors.success }]}>
+                    <Ionicons name="school" size={10} color="#ffffff" />
+                  </View>
+                )}
               </View>
             )}
+
+            {/* Tip */}
+            <View style={[styles.tipBanner, { backgroundColor: colors.backgroundTertiary }]}>
+              <Ionicons name="bulb-outline" size={16} color={colors.textMuted} />
+              <Text style={[styles.tipText, { color: colors.textMuted }]}>
+                Teachers typically respond within 24 hours during school days.
+              </Text>
+            </View>
           </View>
-        )}
+        }
+      />
 
-        {/* Teacher Selection */}
-        <FormDropdown
-          label="To"
-          icon={<Ionicons name="person" size={12} color={colors.primary} />}
-          iconBgColor={colors.primaryLight}
-          value={formData.teacherId}
-          onChange={(value) => {
-            setFormData({ ...formData, teacherId: value });
-            if (errors.teacherId) setErrors({ ...errors, teacherId: undefined });
-          }}
-          options={teacherOptions}
-          placeholder="Select a teacher"
-          required
-          error={errors.teacherId}
-          parentScrollRef={scrollRef}
-        />
-
-        {/* Category Selection */}
-        <FormDropdown
-          label="Category"
-          icon={<Ionicons name="folder" size={12} color={colors.accent} />}
-          iconBgColor={colors.accentLight}
-          value={formData.category}
-          onChange={(value) => {
-            setFormData({ ...formData, category: value, customCategory: value === 'other' ? formData.customCategory : '' });
-          }}
-          options={MESSAGE_CATEGORIES}
-          placeholder="Select category (optional)"
-          parentScrollRef={scrollRef}
-        />
-
-        {/* Custom Category Input (shown when "Other" is selected) */}
-        {formData.category === 'other' && (
-          <FormInput
-            label="Custom Category"
-            icon={<Ionicons name="create" size={12} color={colors.accent} />}
-            iconBgColor={colors.accentLight}
-            value={formData.customCategory}
-            onChangeText={(text) => setFormData({ ...formData, customCategory: text })}
-            placeholder="Enter your custom category"
-          />
-        )}
-
-        {/* Subject */}
-        <FormInput
-          label="Subject"
-          icon={<Ionicons name="text" size={12} color={colors.warning} />}
-          iconBgColor={colors.warningLight}
-          value={formData.subject}
-          onChangeText={(text) => {
-            setFormData({ ...formData, subject: text });
-            if (errors.subject) setErrors({ ...errors, subject: undefined });
-          }}
-          placeholder="What's this message about?"
-          required
-          error={errors.subject}
-        />
-
-        {/* Message */}
-        <FormTextarea
-          label="Message"
-          icon={<Ionicons name="chatbox" size={12} color={colors.success} />}
-          iconBgColor={colors.successLight}
-          value={formData.message}
-          onChangeText={(text) => {
-            setFormData({ ...formData, message: text });
-            if (errors.message) setErrors({ ...errors, message: undefined });
-          }}
-          placeholder="Type your message here..."
-          rows={5}
-          required
-          error={errors.message}
-          maxLength={1000}
-          showCharCount
-        />
-
-        {/* Tip */}
-        <View style={[styles.tipBanner, { backgroundColor: colors.backgroundTertiary }]}>
-          <Ionicons name="bulb-outline" size={16} color={colors.textMuted} />
-          <Text style={[styles.tipText, { color: colors.textMuted }]}>
-            Teachers typically respond within 24 hours during school days.
-          </Text>
-        </View>
-      </View>
-    </Modal>
+      <ActionModal
+        visible={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        title="Message Sent"
+        subtitle={selectedTeacher ? `To ${selectedTeacher.name}` : undefined}
+        variant="success"
+        message="Your message has been sent successfully. You’ll be notified when there’s a reply."
+        confirmLabel="Done"
+        cancelLabel="Close"
+        onConfirm={() => setIsSuccessModalOpen(false)}
+      />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    gap: 4,
+  info: {
+    gap: 12,
   },
   teacherPreview: {
     flexDirection: 'row',
@@ -348,7 +320,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    marginBottom: 12,
     gap: 12,
   },
   teacherPhoto: {
@@ -369,47 +340,26 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   classTeacherBadge: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
   },
   tipBanner: {
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 10,
+    alignItems: 'flex-start',
     gap: 10,
-    marginTop: 8,
+    padding: 12,
+    borderRadius: 12,
   },
   tipText: {
     flex: 1,
-    fontSize: 12,
-    fontFamily: FONTS.medium,
-    lineHeight: 16,
-  },
-  footer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  footerButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 12,
-    gap: 8,
-  },
-  footerButtonPrimary: {},
-  footerButtonDisabled: {
-    opacity: 0.7,
-  },
-  footerButtonText: {
-    fontSize: 15,
-    fontFamily: FONTS.semiBold,
+    fontSize: 13,
+    fontFamily: FONTS.regular,
+    lineHeight: 18,
   },
 });
 
 export default MessageTeacherModal;
+

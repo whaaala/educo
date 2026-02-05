@@ -3,9 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAttendance } from "@/contexts/AttendanceContext";
-import MainLayout from "@/components/layout/MainLayout";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DashboardPage } from "@/components/pages";
 import { getExtendedStudentDataById } from "@/lib/mockStudents";
 import { useTranscripts } from "@/contexts/TranscriptContext";
 import Image from "next/image";
@@ -38,7 +36,7 @@ import MedicalHistoryCard from "@/components/students/MedicalHistoryCard";
 import BankDetailsCard from "@/components/students/BankDetailsCard";
 import OtherInfoCard from "@/components/students/OtherInfoCard";
 import CollectFeesModal from "@/components/shared/CollectFeesModal";
-import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
+import ActionModal from "@/components/shared/ActionModal";
 import ActionButton from "@/components/shared/ActionButton";
 import SecondaryButton from "@/components/shared/SecondaryButton";
 import CurrencyIcon from "@/components/shared/CurrencyIcon";
@@ -78,7 +76,6 @@ export default function ViewStudentPage() {
   const studentId = params?.id as string;
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isLoading = usePageLoad(600);
 
   // Get navigation source from query params
   const fromSource = searchParams.get("from");
@@ -186,11 +183,17 @@ export default function ViewStudentPage() {
     setIsTransferSuccessModalOpen(true);
   };
 
-  if (isLoading || isLoadingData || !studentData) {
+  if (isLoadingData || !studentData) {
     return (
-      <MainLayout>
-        <PageLoader isLoading={true} loadingText="Loading Student Details" />
-      </MainLayout>
+      <DashboardPage
+        title="Student Details"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Students", href: "/students" },
+          { label: "Student Details", isActive: true },
+        ]}
+        loadingText="Loading Student Details"
+      />
     );
   }
 
@@ -286,12 +289,18 @@ export default function ViewStudentPage() {
   ];
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isLoading} loadingText="Loading Student Details" />
-      
-      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-        {/* Header */}
-        <div className="mb-6 mt-6">
+    <DashboardPage
+      title="Student Details"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Students", href: "/students" },
+        { label: "Student Details", isActive: true },
+      ]}
+      loadingText="Loading Student Details"
+      afterStats={
+        <div className="mt-6">
+          {/* Header */}
+          <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
               <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
@@ -409,6 +418,8 @@ export default function ViewStudentPage() {
           </div>
         </div>
       </div>
+      }
+    >
 
       {/* Collect Fees Modal */}
       {studentData && getStudentForModal() && (
@@ -460,15 +471,16 @@ export default function ViewStudentPage() {
 
       {/* Delete Confirmation Modal */}
       {studentData && (
-        <DeleteConfirmationModal
+        <ActionModal
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
-          onConfirm={handleDeleteStudent}
           title="Delete Student"
-          itemName={fullName}
-          itemId={studentData.admissionNumber || studentId}
-          warningMessage="This will permanently remove this student and all associated data including attendance records, fees, exam results, and documents. This action cannot be undone."
-          confirmButtonText="Delete Student"
+          subtitle={`${fullName} • ${studentData.admissionNumber || studentId}`}
+          variant="danger"
+          message="This will permanently remove this student and all associated data including attendance records, fees, exam results, and documents. This action cannot be undone."
+          confirmLabel="Delete Student"
+          cancelLabel="Cancel"
+          onConfirm={handleDeleteStudent}
         />
       )}
 
@@ -574,7 +586,7 @@ export default function ViewStudentPage() {
           ]}
         />
       )}
-    </MainLayout>
+    </DashboardPage>
   );
 }
 

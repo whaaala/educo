@@ -4,12 +4,9 @@ import React, { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import DashboardPage from "@/components/shared/DashboardPage";
 import ActionButton from "@/components/shared/ActionButton";
 import EmojiPickerPopover from "@/components/shared/EmojiPickerPopover";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import {
   MessageSquare,
   Send,
@@ -121,7 +118,6 @@ interface Attachment {
 export default function ComposeMessagePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isPageLoading = usePageLoad(600);
 
   // Pre-fill from query params
   const prefilledTeacher = searchParams.get("teacher") || "";
@@ -244,35 +240,28 @@ export default function ComposeMessagePage() {
   const isValid = selectedTeacherId && subject.trim() && message.trim();
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Compose" />
+    <DashboardPage
+      title="Compose Message"
+      breadcrumbs={[
+        { label: "Parent Portal", href: "/parents" },
+        { label: "Messages", href: "/parents/messages" },
+        { label: "Compose", isActive: true },
+      ]}
+      loadingText="Loading Compose"
+      afterStats={
+        <>
+          <div className="flex items-center gap-4 mb-6">
+            <Link href="/parents/messages">
+              <button className="p-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all cursor-pointer shadow-sm">
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            </Link>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Back to Messages</p>
+          </div>
 
-      <div
-        className={`transition-opacity duration-500 ${
-          isPageLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/parents/messages">
-            <button className="p-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all cursor-pointer shadow-sm">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-          </Link>
-          <PageHeader
-            title="Compose Message"
-            breadcrumbs={[
-              { label: "Parent Portal", href: "/parents" },
-              { label: "Messages", href: "/parents/messages" },
-              { label: "Compose" },
-            ]}
-          />
-        </div>
-
-        {/* Main Content */}
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-            {isSent ? (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+              {isSent ? (
               /* Success State */
               <div className="flex flex-col items-center justify-center py-20 text-center px-6">
                 <div className="relative mb-6">
@@ -694,10 +683,11 @@ export default function ComposeMessagePage() {
                   </div>
                 </div>
               </>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      </div>
-    </MainLayout>
+        </>
+      }
+    />
   );
 }

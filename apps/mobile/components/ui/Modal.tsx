@@ -32,7 +32,10 @@ const FONTS = {
 };
 
 export interface ModalProps {
-  visible: boolean;
+  /** Preferred visibility prop (web-aligned) */
+  isOpen?: boolean;
+  /** Back-compat visibility prop */
+  visible?: boolean;
   onClose: () => void;
   title?: string;
   subtitle?: string;
@@ -46,6 +49,7 @@ export interface ModalProps {
 }
 
 export function Modal({
+  isOpen,
   visible,
   onClose,
   title,
@@ -60,6 +64,7 @@ export function Modal({
 }: ModalProps) {
   const { colors } = useTheme();
   const isTablet = useIsTablet();
+  const resolvedVisible = isOpen ?? visible ?? false;
 
   // Default icon colors based on theme
   const defaultIconBgColors: readonly [string, string] = [colors.primary, colors.primaryDark];
@@ -67,7 +72,7 @@ export function Modal({
 
   return (
     <RNModal
-      visible={visible}
+      visible={resolvedVisible}
       animationType="slide"
       transparent
       onRequestClose={onClose}

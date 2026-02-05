@@ -1,12 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import { DashboardPage } from "@/components/pages";
 import GradingSystemConfig from "@/components/settings/GradingSystemConfig";
 import CustomDropdown from "@/components/shared/CustomDropdown";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { GraduationCap } from "lucide-react";
 import type { EducationLevel } from "@/lib/gradingConfig";
 
@@ -30,7 +27,6 @@ const MOCK_SUBJECTS = {
 };
 
 export default function GradingConfigPage() {
-  const isLoading = usePageLoad(800);
   const [educationLevel, setEducationLevel] = useState<EducationLevel>("secondary");
   const [selectedSubject, setSelectedSubject] = useState<string>("");
 
@@ -46,26 +42,16 @@ export default function GradingConfigPage() {
   const currentSubject = subjects.find(s => s.id === selectedSubject) || subjects[0];
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isLoading} loadingText="Loading Grading Configuration" />
-
-      {/* Main Content */}
-      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-        {/* Header */}
-        <div className="py-4 mb-2">
-          <PageHeader
-            title="Grading System Configuration"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Settings", href: "/settings" },
-              { label: "Grading Configuration", isActive: true },
-            ]}
-          />
-        </div>
-
-        {/* Configuration Content */}
-        <div className="pb-20 space-y-6">
+    <DashboardPage
+      title="Grading System Configuration"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Settings", href: "/settings" },
+        { label: "Grading Configuration", isActive: true },
+      ]}
+      loadingText="Loading Grading Configuration"
+      afterStats={
+        <div className="mt-6 pb-20 space-y-6">
           {/* Info Section */}
           <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
             <div className="p-6">
@@ -136,7 +122,7 @@ export default function GradingConfigPage() {
             </div>
           </section>
         </div>
-      </div>
-    </MainLayout>
+      }
+    />
   );
 }

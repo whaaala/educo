@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import MainLayout from "@/components/layout/MainLayout";
+import { DashboardPage } from "@/components/pages";
 import {
   Video,
   Phone,
@@ -242,7 +242,16 @@ export default function TenantCommunicationSettingsPage() {
   const tabs: CommunicationPlatform[] = ["webrtc", "agora", "zoom", "google-meet", "whatsapp"];
 
   return (
-    <MainLayout>
+    <DashboardPage
+      title="Communication Settings"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Settings", href: "/settings" },
+        { label: "Communication", isActive: true },
+      ]}
+      loadingText="Loading Communication Settings"
+      afterStats={
+        <>
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -933,6 +942,8 @@ export default function TenantCommunicationSettingsPage() {
           </div>
         </div>
       </div>
-    </MainLayout>
+        </>
+      }
+    />
   );
 }

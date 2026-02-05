@@ -2,18 +2,15 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
+import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormInput from "@/components/shared/FormInput";
 import SearchBar from "@/components/shared/SearchBar";
-import PageLoader from "@/components/shared/PageLoader";
 import Tooltip from "@/components/shared/Tooltip";
 import Modal from "@/components/shared/Modal";
 import AbsenceReasonModal, { AbsenceFormData } from "@/components/shared/AbsenceReasonModal";
 import BulkAbsenceReasonModal, { BulkAbsenceStudent, BulkAbsenceFormData } from "@/components/shared/BulkAbsenceReasonModal";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSchoolSettings, EducationLevel } from "@/contexts/SchoolSettingsContext";
 import { useAttendance, ABSENCE_REASONS, AbsenceReason } from "@/contexts/AttendanceContext";
 import { useUser } from "@/contexts/UserContext";
@@ -235,7 +232,6 @@ const MOCK_STUDENTS: Student[] = [
 
 export default function AttendancePage() {
   const { settings, currentTenant } = useSchoolSettings();
-  const isPageLoading = usePageLoad(600);
   const { saveAttendance: saveToContext } = useAttendance();
   const { user } = useUser();
 
@@ -789,24 +785,16 @@ export default function AttendancePage() {
   const stats = getAttendanceStats();
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Attendance" />
-
-      <div
-        className={`transition-opacity duration-500 ${
-          isPageLoading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        <PageHeader
-          title="Student Attendance"
-          breadcrumbs={[
-            { label: "Dashboard", href: "/" },
-            { label: "Students", href: "/students" },
-            { label: "Attendance", isActive: true },
-          ]}
-        />
-
-        <div className="space-y-6 mt-6">
+    <DashboardPage
+      title="Student Attendance"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Students", href: "/students" },
+        { label: "Attendance", isActive: true },
+      ]}
+      loadingText="Loading Attendance"
+      afterStats={
+        <div className="mt-6 space-y-6">
           {/* Configuration Section */}
           <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 overflow-visible">
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 px-4 sm:px-6 py-3 sm:py-4 border-b border-neutral-200 dark:border-neutral-700">
@@ -1632,7 +1620,8 @@ export default function AttendancePage() {
             </div>
           )}
         </div>
-      </div>
+      }
+    >
 
       {/* Late Duration Modal */}
       <Modal isOpen={lateModalOpen} onClose={handleCancelLate}>
@@ -1722,6 +1711,6 @@ export default function AttendancePage() {
         students={absentStudents}
         onRemoveStudent={handleRemoveStudentFromBulkAbsence}
       />
-    </MainLayout>
+    </DashboardPage>
   );
 }

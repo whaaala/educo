@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import AdminLayout from "@admin/components/layout/AdminLayout";
-import { Settings, Save, RotateCcw, Search, Filter } from "lucide-react";
+import AdminPageShell from "@admin/components/pages/AdminPageShell";
+import ActionModal from "@/components/shared/ActionModal";
+import { Save, RotateCcw, Search, Filter } from "lucide-react";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { DEFAULT_FEATURE_FLAGS, type FeatureFlagKey } from "@/lib/featureFlags";
-import type { EducationLevel, InstitutionType } from "@/contexts/SchoolSettingsContext";
 
 export default function FeatureFlagsAdminPage() {
   const { tenantContext } = useFeatureFlags();
@@ -13,6 +13,7 @@ export default function FeatureFlagsAdminPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [hasChanges, setHasChanges] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isSavedModalOpen, setIsSavedModalOpen] = useState(false);
 
   // Local state for feature flags (in production, this would sync with database)
   const [localFlags, setLocalFlags] = useState(() => {
@@ -54,8 +55,8 @@ export default function FeatureFlagsAdminPage() {
 
     // Simulate API call
     setTimeout(() => {
-      alert("Feature flags saved successfully!\n\nNote: In production, this would update the database for tenant: " + tenantContext.tenantId);
       setHasChanges(false);
+      setIsSavedModalOpen(true);
     }, 500);
   };
 
@@ -84,109 +85,104 @@ export default function FeatureFlagsAdminPage() {
 
   if (!isMounted) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading feature flags...</p>
-          </div>
-        </div>
-      </AdminLayout>
+      <AdminPageShell
+        title="Feature Flags Management"
+        subtitle="Enable or disable features for this tenant"
+        breadcrumbs={[
+          { label: "Admin Console", href: "/" },
+          { label: "Feature Flags", isActive: true },
+        ]}
+        isLoading={true}
+        loadingText="Loading feature flags..."
+      >
+        <div />
+      </AdminPageShell>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="w-full lg:w-auto lg:flex-shrink-0 p-6 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Settings className="w-8 h-8 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-              <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                  Feature Flags Management
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-                  Enable or disable features for this tenant
-                </p>
-              </div>
+    <AdminPageShell
+      title="Feature Flags Management"
+      subtitle="Enable or disable features for this tenant"
+      breadcrumbs={[
+        { label: "Admin Console", href: "/" },
+        { label: "Feature Flags", isActive: true },
+      ]}
+      headerActions={
+        <div className="flex items-center gap-3">
+          {hasChanges && (
+            <button
+              onClick={handleReset}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all cursor-pointer"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Reset
+            </button>
+          )}
+          <button
+            onClick={handleSave}
+            disabled={!hasChanges}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm text-white transition-all cursor-pointer ${
+              hasChanges
+                ? "bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl"
+                : "bg-gray-400 cursor-not-allowed"
+            }`}
+          >
+            <Save className="w-4 h-4" />
+            Save Changes
+          </button>
+        </div>
+      }
+    >
+      <div className="pb-20 space-y-6">
+        {/* Tenant Info */}
+        <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 midnight:from-cyan-900/20 midnight:to-blue-900/20 purple:from-pink-900/20 purple:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-800 midnight:border-cyan-500/50 purple:border-pink-500/50">
+          <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
+                Tenant ID
+              </p>
+              <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                {tenantContext.tenantId}
+              </p>
             </div>
-
-            <div className="flex items-center gap-3">
-              {hasChanges && (
-                <button
-                  onClick={handleReset}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all cursor-pointer"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Reset
-                </button>
-              )}
-              <button
-                onClick={handleSave}
-                disabled={!hasChanges}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm text-white transition-all cursor-pointer ${
-                  hasChanges
-                    ? "bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl"
-                    : "bg-gray-400 cursor-not-allowed"
-                }`}
-              >
-                <Save className="w-4 h-4" />
-                Save Changes
-              </button>
+            <div>
+              <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
+                Region
+              </p>
+              <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                {tenantContext.region}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
+                Education Level
+              </p>
+              <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                {tenantContext.educationLevel}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
+                Institution Type
+              </p>
+              <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                {tenantContext.institutionType}
+              </p>
             </div>
           </div>
-
-          {/* Tenant Info */}
-          <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 midnight:from-cyan-900/20 midnight:to-blue-900/20 purple:from-pink-900/20 purple:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-800 midnight:border-cyan-500/50 purple:border-pink-500/50">
-            <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
-                  Tenant ID
-                </p>
-                <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                  {tenantContext.tenantId}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
-                  Region
-                </p>
-                <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                  {tenantContext.region}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
-                  Education Level
-                </p>
-                <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                  {tenantContext.educationLevel}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
-                  Institution Type
-                </p>
-                <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                  {tenantContext.institutionType}
-                </p>
-              </div>
-            </div>
-            <div className="text-center px-4 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
-                {enabledCount}/{totalCount}
-              </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-                Enabled
-              </p>
-            </div>
+          <div className="text-center px-4 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
+              {enabledCount}/{totalCount}
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
+              Enabled
+            </p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="p-6 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
+        <div className="pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
           <div className="flex items-center gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -217,7 +213,7 @@ export default function FeatureFlagsAdminPage() {
         </div>
 
         {/* Feature Flags List */}
-        <div className="flex-1 overflow-auto p-6">
+        <div>
           <div className="space-y-8">
             {filteredCategories.map(([category, flags]) => {
               const categoryFlags = flags.filter((flag) => {
@@ -329,6 +325,21 @@ export default function FeatureFlagsAdminPage() {
           </div>
         )}
       </div>
-    </AdminLayout>
+
+      <ActionModal
+        isOpen={isSavedModalOpen}
+        onClose={() => setIsSavedModalOpen(false)}
+        title="Feature flags saved"
+        variant="success"
+        message="Your feature flag changes have been saved (mock). In production, this would update the database for the current tenant."
+        details={[
+          { label: "Tenant ID", value: tenantContext.tenantId },
+          { label: "Enabled", value: `${enabledCount}/${totalCount}` },
+        ]}
+        confirmLabel="Done"
+        cancelLabel="Close"
+        onConfirm={() => setIsSavedModalOpen(false)}
+      />
+    </AdminPageShell>
   );
 }

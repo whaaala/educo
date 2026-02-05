@@ -2,10 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DashboardPage } from "@/components/pages";
 import { useMeetings, Meeting as ContextMeeting } from "@/contexts/MeetingsContext";
 import { useCall } from "@/hooks/useCall";
 import ScheduleMeetingModal, {
@@ -264,7 +261,6 @@ function formatTime24to12(time24: string): string {
 }
 
 export default function TeacherMeetingsPage() {
-  const isPageLoading = usePageLoad(600);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState<MeetingPlatform | "all">("all");
   const [selectedStatus, setSelectedStatus] = useState<MeetingStatus | "all">("all");
@@ -480,37 +476,29 @@ export default function TeacherMeetingsPage() {
   };
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Meetings" />
-
-      <div className={`space-y-6 transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <PageHeader
-              title="Parent-Teacher Meetings"
-              breadcrumbs={[
-                { label: "Dashboard", href: "/" },
-                { label: "Teacher Portal", href: "/teachers/portal/dashboard" },
-                { label: "Meetings", isActive: true },
-              ]}
-            />
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Schedule and manage meetings with parents
-            </p>
+    <DashboardPage
+      title="Meetings"
+      subtitle="Schedule and manage meetings with parents"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Teacher Portal", href: "/teachers/portal/dashboard" },
+        { label: "Meetings", isActive: true },
+      ]}
+      loadingText="Loading Meetings"
+      afterStats={
+        <div className="mt-6 space-y-6">
+          <div className="flex justify-end">
+            <button
+              onClick={() => setIsScheduleMeetingModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              Schedule Meeting
+            </button>
           </div>
 
-          <button
-            onClick={() => setIsScheduleMeetingModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            Schedule Meeting
-          </button>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {/* Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-900/30">
@@ -926,6 +914,7 @@ export default function TeacherMeetingsPage() {
           availableParticipants={AVAILABLE_STAFF.filter(s => s.id !== MOCK_TEACHER.id)}
         />
       </div>
-    </MainLayout>
+    }
+  />
   );
 }

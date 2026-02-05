@@ -33,7 +33,10 @@ interface FeeItem {
 }
 
 export interface PayFeesModalProps {
-  visible: boolean;
+  /** Preferred visibility prop (web-aligned) */
+  isOpen?: boolean;
+  /** Back-compat visibility prop */
+  visible?: boolean;
   onClose: () => void;
   onPaymentInitiated?: (feeId: string | null, method: PaymentMethod) => void;
   childName?: string;
@@ -69,6 +72,7 @@ const MOCK_FEES: FeeItem[] = [
 ];
 
 export function PayFeesModal({
+  isOpen,
   visible,
   onClose,
   onPaymentInitiated,
@@ -76,6 +80,7 @@ export function PayFeesModal({
   fees = MOCK_FEES,
 }: PayFeesModalProps) {
   const { colors } = useTheme();
+  const resolvedVisible = isOpen ?? visible ?? false;
   const { settings } = useTenantSettings();
   const { currencySymbol, payment } = settings;
   const router = useRouter();
@@ -104,7 +109,7 @@ export function PayFeesModal({
 
   // Auto-show payment options when modal opens with fees - default to "Pay All"
   useEffect(() => {
-    if (visible && fees.length > 0) {
+    if (resolvedVisible && fees.length > 0) {
       // Default to "Pay All" mode
       setSelectedFee(null);
       setSelectedAmount(totalOutstanding);
@@ -125,7 +130,7 @@ export function PayFeesModal({
         scrollRef.current?.scrollToEnd({ animated: true });
       }, 300);
     }
-  }, [visible]);
+  }, [resolvedVisible, fees, totalOutstanding]);
 
   const formatCurrency = (amount: number) => {
     return `${currencySymbol}${amount.toLocaleString()}`;
@@ -346,7 +351,7 @@ export function PayFeesModal({
 
   return (
     <Modal
-      visible={visible}
+      visible={resolvedVisible}
       onClose={handleClose}
       title="Pay Fees"
       subtitle={childName ? `Fees for ${childName}` : 'View and pay outstanding fees'}

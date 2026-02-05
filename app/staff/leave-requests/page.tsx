@@ -1,19 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Download,
-} from "lucide-react";
-import { LeaveRequest, LeaveStatus, LeaveType } from "@/types/leave";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageActions from "@/components/shared/PageActions";
-import SearchFilterBar from "@/components/shared/SearchFilterBar";
+import { LeaveRequest } from "@/types/leave";
+import DataManagementPage from "@/components/pages/DataManagementPage";
 import LeaveRequestsTable from "@/components/leave/LeaveRequestsTable";
-import LeaveStatisticsCards from "@/components/leave/LeaveStatisticsCards";
 import LeaveRequestDetailModal from "@/components/leave/LeaveRequestDetailModal";
 import { useLeaves } from "@/contexts/LeaveContext";
 import { exportLeaveRequestsToExcel, exportLeaveRequestsToPDF } from "@/lib/export-utils";
+import {
+  leaveFilterFields,
+  leaveSortOptions,
+  leaveStats,
+  filterLeaveRequests,
+  sortLeaveRequests,
+  searchLeaveRequests,
+} from "./config";
 
 // Mock data - replace with actual API call
 const mockLeaveRequests: LeaveRequest[] = [
@@ -93,15 +94,10 @@ export default function LeaveRequestsPage() {
   const { requests: contextRequests, updateLeaveRequest } = useLeaves();
   const [requests, setRequests] = useState<LeaveRequest[]>(mockLeaveRequests);
   const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null);
-  const [filterStatus, setFilterStatus] = useState<LeaveStatus | "all">("all");
-  const [filterType, setFilterType] = useState<LeaveType | "all">("all");
-  const [filterYear, setFilterYear] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
 
   // Initialize with mock data and merge with context requests
   useEffect(() => {
     console.log("Leave Requests Page: Context requests changed", contextRequests);
-    // Merge context requests with mock requests, avoiding duplicates
     const merged = [
       ...contextRequests,
       ...mockLeaveRequests.filter(
@@ -110,11 +106,8 @@ export default function LeaveRequestsPage() {
     ];
     console.log("Leave Requests Page: Merged requests", merged);
 
-    // Only update if the merged array is different from current requests
     setRequests(prev => {
-      // Don't reset if we're just getting the same context data
       if (contextRequests.length === 0 && prev.length > 0) {
-        // Keep existing data if context is empty and we have local updates
         return prev;
       }
       return merged;
@@ -131,27 +124,9 @@ export default function LeaveRequestsPage() {
     }
   }, [requests]);
 
-  // Filter requests
-  const filteredRequests = requests.filter(request => {
-    const matchesStatus = filterStatus === "all" || request.status === filterStatus;
-    const matchesType = filterType === "all" || request.leaveType === filterType;
-
-    // Extract year from requested date
-    const requestYear = new Date(request.requestedDate).getFullYear().toString();
-    const matchesYear = filterYear === "all" || requestYear === filterYear;
-
-    const matchesSearch = searchQuery === "" ||
-      request.staffName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.staffPosition.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.id.toLowerCase().includes(searchQuery.toLowerCase());
-
-    return matchesStatus && matchesType && matchesYear && matchesSearch;
-  });
-
   const handleApprove = (requestId: string) => {
     console.log("Page handleApprove called", { requestId });
 
-    // Update in context (which syncs to localStorage)
     updateLeaveRequest(requestId, {
       status: "approved",
       approvedBy: "current-user",
@@ -160,7 +135,6 @@ export default function LeaveRequestsPage() {
       updatedAt: new Date().toISOString(),
     });
 
-    // Also update local state for immediate UI update
     setRequests(prev => {
       const updated = prev.map(req =>
         req.id === requestId
@@ -180,7 +154,6 @@ export default function LeaveRequestsPage() {
   };
 
   const handleReject = (requestId: string, reason: string) => {
-    // Update in context (which syncs to localStorage)
     updateLeaveRequest(requestId, {
       status: "rejected",
       rejectedBy: "current-user",
@@ -190,7 +163,6 @@ export default function LeaveRequestsPage() {
       updatedAt: new Date().toISOString(),
     });
 
-    // Also update local state for immediate UI update
     setRequests(prev => prev.map(req =>
       req.id === requestId
         ? {
@@ -207,96 +179,40 @@ export default function LeaveRequestsPage() {
   };
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        {/* Header with Breadcrumbs and Actions */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-          <PageHeader
-            title="Leave Requests"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Staff", href: "/staff" },
-              { label: "Leave Requests", isActive: true },
-            ]}
-          />
-          <PageActions
-            actions={[
-              {
-                label: "Export",
-                icon: Download,
-                onClick: () => console.log("Export clicked"),
-                variant: "secondary",
-              },
-            ]}
-            onExportPDF={() => exportLeaveRequestsToPDF(filteredRequests, "leave-requests")}
-            onExportExcel={() => exportLeaveRequestsToExcel(filteredRequests, "leave-requests")}
-            exportDescription="Download leave requests data"
-          />
-        </div>
-
-      {/* Statistics Cards */}
-      <LeaveStatisticsCards requests={requests} />
-
-      {/* Search and Filters */}
-      <SearchFilterBar
-        searchValue={searchQuery}
-        onSearchChange={setSearchQuery}
-        searchPlaceholder="Search by staff name, position, or request ID..."
-        filters={[
-          {
-            label: "Year Filter",
-            value: filterYear,
-            onChange: (value) => setFilterYear(value as string),
-            options: [
-              { label: "All Years", value: "all" },
-              { label: "2025", value: "2025" },
-              { label: "2024", value: "2024" },
-              { label: "2023", value: "2023" },
-              { label: "2022", value: "2022" },
-            ],
-          },
-          {
-            label: "Type Filter",
-            value: filterType,
-            onChange: (value) => setFilterType(value as LeaveType | "all"),
-            options: [
-              { label: "All Types", value: "all" },
-              { label: "Annual Leave", value: "Annual Leave" },
-              { label: "Medical Leave", value: "Medical Leave" },
-              { label: "Casual Leave", value: "Casual Leave" },
-              { label: "Maternity Leave", value: "Maternity Leave" },
-              { label: "Paternity Leave", value: "Paternity Leave" },
-              { label: "Special Leave", value: "Special Leave" },
-              { label: "Sick Leave", value: "Sick Leave" },
-              { label: "Study Leave", value: "Study Leave" },
-              { label: "Bereavement Leave", value: "Bereavement Leave" },
-              { label: "Unpaid Leave", value: "Unpaid Leave" },
-            ],
-          },
-          {
-            label: "Status Filter",
-            value: filterStatus,
-            onChange: (value) => setFilterStatus(value as LeaveStatus | "all"),
-            options: [
-              { label: "All Status", value: "all" },
-              { label: "Pending", value: "pending" },
-              { label: "Approved", value: "approved" },
-              { label: "Rejected", value: "rejected" },
-              { label: "Cancelled", value: "cancelled" },
-            ],
-          },
-        ]}
-      />
-
-      {/* Leave Requests Table */}
-      <LeaveRequestsTable
-        requests={filteredRequests}
-        onViewDetails={(request) => setSelectedRequest(request)}
-        onApprove={handleApprove}
-        onReject={handleReject}
-        filterKey={`${filterStatus}-${filterType}-${searchQuery}`}
-      />
-
+    <DataManagementPage<LeaveRequest>
+      title="Leave Requests"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Staff", href: "/staff" },
+        { label: "Leave Requests", isActive: true },
+      ]}
+      data={requests}
+      getRowKey={(item) => item.id}
+      columns={[]}
+      stats={leaveStats}
+      statsColumns={{ default: 1, sm: 2, md: 4, lg: 4 }}
+      filterFields={leaveFilterFields}
+      sortOptions={leaveSortOptions}
+      filterFn={filterLeaveRequests}
+      sortFn={sortLeaveRequests}
+      searchFn={searchLeaveRequests}
+      onExportPDF={(items) => exportLeaveRequestsToPDF(items, "leave-requests")}
+      onExportExcel={(items) => exportLeaveRequestsToExcel(items, "leave-requests")}
+      enableViewToggle={false}
+      enableSelection={false}
+      enablePagination={false}
+      showTableSearch={false}
+      itemLabel="leave request"
+      itemLabelPlural="leave requests"
+      customListComponent={
+        <LeaveRequestsTable
+          requests={requests}
+          onViewDetails={(request) => setSelectedRequest(request)}
+          onApprove={handleApprove}
+          onReject={handleReject}
+        />
+      }
+    >
       {/* Detail Modal */}
       {selectedRequest && (
         <LeaveRequestDetailModal
@@ -307,7 +223,6 @@ export default function LeaveRequestsPage() {
           onReject={handleReject}
         />
       )}
-      </div>
-    </MainLayout>
+    </DataManagementPage>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import MainLayout from "@/components/layout/MainLayout";
+import { DashboardPage } from "@/components/pages";
 import { Book, FileText, CheckCircle, Zap, Code, Settings } from "lucide-react";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
@@ -16,14 +16,15 @@ export default function DocsPage() {
 
   if (!isMounted) {
     return (
-      <MainLayout>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading documentation...</p>
-          </div>
-        </div>
-      </MainLayout>
+      <DashboardPage
+        title="Documentation"
+        description="Feature flags, multi-tenant architecture, and implementation guides"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Docs", isActive: true },
+        ]}
+        loadingText="Loading documentation..."
+      />
     );
   }
 
@@ -61,22 +62,16 @@ export default function DocsPage() {
   ];
 
   return (
-    <MainLayout>
-      <div className="flex flex-col h-full">
-        {/* Custom Header for Docs */}
-        <div className="w-full lg:w-auto lg:flex-shrink-0 p-6 pb-0">
-          <div className="flex items-center gap-3 mb-2">
-            <FileText className="w-8 h-8 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-            <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-              Documentation
-            </h1>
-          </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-            Feature flags, multi-tenant architecture, and implementation guides
-          </p>
-        </div>
-
-        <div className="flex-1 flex gap-6 p-6 overflow-hidden">
+    <DashboardPage
+      title="Documentation"
+      description="Feature flags, multi-tenant architecture, and implementation guides"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Docs", isActive: true },
+      ]}
+      loadingText="Loading documentation..."
+      afterStats={
+        <div className="mt-6 flex gap-6 p-6 overflow-hidden">
           {/* Sidebar */}
           <div className="w-64 flex-shrink-0 space-y-2">
             {docs.map((doc) => {
@@ -133,8 +128,8 @@ export default function DocsPage() {
             </div>
           </div>
         </div>
-      </div>
-    </MainLayout>
+      }
+    />
   );
 }
 

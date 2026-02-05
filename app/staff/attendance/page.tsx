@@ -1,29 +1,23 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { useState, useMemo } from "react";
 import {
-  Calendar,
   Users,
-  Download,
-  Filter,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Coffee,
-  Home,
-  FileText,
   Save,
-  Upload,
 } from "lucide-react";
 import {
   StaffAttendanceRecord,
   StaffAttendanceStatus,
-  StaffAttendanceStats,
 } from "@/types/staffAttendance";
+import DataManagementPage from "@/components/pages/DataManagementPage";
+import {
+  attendanceFilterFields,
+  attendanceSortOptions,
+  attendanceStats,
+  filterAttendanceRecords,
+  sortAttendanceRecords,
+  searchAttendanceRecords,
+} from "./config";
 
 // Mock data for staff
 const mockStaffAttendance: StaffAttendanceRecord[] = [
@@ -115,51 +109,19 @@ const mockStaffAttendance: StaffAttendanceRecord[] = [
 ];
 
 export default function StaffAttendancePage() {
-  const isLoading = usePageLoad(600);
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split("T")[0]
   );
   const [attendanceRecords, setAttendanceRecords] = useState<StaffAttendanceRecord[]>(
     mockStaffAttendance
   );
-  const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
   const [bulkStatus, setBulkStatus] = useState<StaffAttendanceStatus>("present");
   const [selectedStaff, setSelectedStaff] = useState<Set<string>>(new Set());
 
-  // Calculate stats
-  const stats: StaffAttendanceStats = useMemo(() => {
-    const todayRecords = attendanceRecords.filter((r) => r.date === selectedDate);
-    return {
-      totalStaff: todayRecords.length,
-      present: todayRecords.filter((r) => r.status === "present").length,
-      absent: todayRecords.filter((r) => r.status === "absent").length,
-      late: todayRecords.filter((r) => r.status === "late").length,
-      halfDay: todayRecords.filter((r) => r.status === "half-day").length,
-      onLeave: todayRecords.filter((r) => r.status === "on-leave").length,
-      workFromHome: todayRecords.filter((r) => r.status === "work-from-home").length,
-      notMarked: 0,
-    };
+  // Filter records by selected date
+  const dateFilteredRecords = useMemo(() => {
+    return attendanceRecords.filter((r) => r.date === selectedDate);
   }, [attendanceRecords, selectedDate]);
-
-  // Filter records
-  const filteredRecords = useMemo(() => {
-    return attendanceRecords.filter((record) => {
-      const matchesDate = record.date === selectedDate;
-      const matchesDepartment =
-        selectedDepartment === "all" || record.department === selectedDepartment;
-      const matchesStatus =
-        selectedStatus === "all" || record.status === selectedStatus;
-      const matchesSearch =
-        searchQuery === "" ||
-        record.staffName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        record.staffEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        record.staffId.toLowerCase().includes(searchQuery.toLowerCase());
-
-      return matchesDate && matchesDepartment && matchesStatus && matchesSearch;
-    });
-  }, [attendanceRecords, selectedDate, selectedDepartment, selectedStatus, searchQuery]);
 
   const handleBulkMark = () => {
     if (selectedStaff.size === 0) {
@@ -185,10 +147,10 @@ export default function StaffAttendancePage() {
   };
 
   const handleSelectAll = () => {
-    if (selectedStaff.size === filteredRecords.length) {
+    if (selectedStaff.size === dateFilteredRecords.length) {
       setSelectedStaff(new Set());
     } else {
-      setSelectedStaff(new Set(filteredRecords.map((r) => r.staffId)));
+      setSelectedStaff(new Set(dateFilteredRecords.map((r) => r.staffId)));
     }
   };
 
@@ -206,88 +168,33 @@ export default function StaffAttendancePage() {
     console.log("Exporting attendance data...");
   };
 
-  if (isLoading) {
-    return (
-      <MainLayout>
-        <PageLoader isLoading={true} loadingText="Loading Attendance" />
-      </MainLayout>
-    );
-  }
-
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-          <PageHeader
-            title="Staff Attendance"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/" },
-              { label: "Staff", href: "/staff" },
-              { label: "Attendance" },
-            ]}
-          />
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleExport}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Export
-            </button>
-          </div>
-        </div>
-
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-          <StatCard
-            label="Total Staff"
-            value={stats.totalStaff}
-            icon={Users}
-            color="blue"
-          />
-          <StatCard
-            label="Present"
-            value={stats.present}
-            icon={CheckCircle}
-            color="green"
-          />
-          <StatCard
-            label="Absent"
-            value={stats.absent}
-            icon={XCircle}
-            color="red"
-          />
-          <StatCard
-            label="Late"
-            value={stats.late}
-            icon={Clock}
-            color="orange"
-          />
-          <StatCard
-            label="Half Day"
-            value={stats.halfDay}
-            icon={Coffee}
-            color="yellow"
-          />
-          <StatCard
-            label="On Leave"
-            value={stats.onLeave}
-            icon={FileText}
-            color="purple"
-          />
-          <StatCard
-            label="WFH"
-            value={stats.workFromHome}
-            icon={Home}
-            color="cyan"
-          />
-        </div>
-
-        {/* Filters and Actions */}
+    <DataManagementPage<StaffAttendanceRecord>
+      title="Staff Attendance"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Staff", href: "/staff" },
+        { label: "Attendance" },
+      ]}
+      data={dateFilteredRecords}
+      getRowKey={(item) => item.id}
+      columns={[]}
+      stats={attendanceStats}
+      statsColumns={{ default: 2, sm: 4, md: 4, lg: 7 }}
+      filterFields={attendanceFilterFields}
+      sortOptions={attendanceSortOptions}
+      filterFn={filterAttendanceRecords}
+      sortFn={sortAttendanceRecords}
+      searchFn={searchAttendanceRecords}
+      enableViewToggle={false}
+      enableSelection={false}
+      enablePagination={false}
+      showTableSearch={false}
+      itemLabel="attendance record"
+      itemLabelPlural="attendance records"
+      beforeContent={
         <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 space-y-4">
-          {/* Date and Search */}
+          {/* Date Selector */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
@@ -299,43 +206,6 @@ export default function StaffAttendancePage() {
                 onChange={(e) => setSelectedDate(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Department
-              </label>
-              <select
-                value={selectedDepartment}
-                onChange={(e) => setSelectedDepartment(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
-              >
-                <option value="all">All Departments</option>
-                <option value="Mathematics">Mathematics</option>
-                <option value="English">English</option>
-                <option value="Science">Science</option>
-                <option value="Administration">Administration</option>
-                <option value="IT">IT</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
-                Status Filter
-              </label>
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
-              >
-                <option value="all">All Status</option>
-                <option value="present">Present</option>
-                <option value="absent">Absent</option>
-                <option value="late">Late</option>
-                <option value="half-day">Half Day</option>
-                <option value="on-leave">On Leave</option>
-                <option value="work-from-home">Work From Home</option>
-              </select>
             </div>
           </div>
 
@@ -373,12 +243,12 @@ export default function StaffAttendancePage() {
               onClick={handleSelectAll}
               className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-colors"
             >
-              {selectedStaff.size === filteredRecords.length ? "Deselect All" : "Select All"}
+              {selectedStaff.size === dateFilteredRecords.length ? "Deselect All" : "Select All"}
             </button>
           </div>
         </div>
-
-        {/* Attendance Table */}
+      }
+      customListComponent={
         <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -387,7 +257,7 @@ export default function StaffAttendancePage() {
                   <th className="px-4 py-3 text-left">
                     <input
                       type="checkbox"
-                      checked={selectedStaff.size === filteredRecords.length && filteredRecords.length > 0}
+                      checked={selectedStaff.size === dateFilteredRecords.length && dateFilteredRecords.length > 0}
                       onChange={handleSelectAll}
                       className="rounded border-gray-300 dark:border-gray-600"
                     />
@@ -416,7 +286,7 @@ export default function StaffAttendancePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700 midnight:divide-cyan-500/20 purple:divide-pink-500/20">
-                {filteredRecords.map((record) => (
+                {dateFilteredRecords.map((record) => (
                   <tr
                     key={record.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-gray-800/50 purple:hover:bg-gray-800/50 transition-colors"
@@ -452,7 +322,7 @@ export default function StaffAttendancePage() {
                       {record.department}
                     </td>
                     <td className="px-4 py-3">
-                      <StatusBadge status={record.status} />
+                      <AttendanceStatusBadge status={record.status} />
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
                       {record.checkInTime || "-"}
@@ -472,7 +342,7 @@ export default function StaffAttendancePage() {
             </table>
           </div>
 
-          {filteredRecords.length === 0 && (
+          {dateFilteredRecords.length === 0 && (
             <div className="text-center py-12">
               <Users className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-3" />
               <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400">
@@ -481,56 +351,13 @@ export default function StaffAttendancePage() {
             </div>
           )}
         </div>
-      </div>
-    </MainLayout>
-  );
-}
-
-// Statistics Card Component
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  color,
-}: {
-  label: string;
-  value: number;
-  icon: any;
-  color: string;
-}) {
-  const colorClasses = {
-    blue: "from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700",
-    green: "from-green-500 to-green-600 dark:from-green-600 dark:to-green-700",
-    red: "from-red-500 to-red-600 dark:from-red-600 dark:to-red-700",
-    orange: "from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700",
-    yellow: "from-yellow-500 to-yellow-600 dark:from-yellow-600 dark:to-yellow-700",
-    purple: "from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700",
-    cyan: "from-cyan-500 to-cyan-600 dark:from-cyan-600 dark:to-cyan-700",
-  };
-
-  return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 hover:shadow-lg transition-shadow">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 mb-1">
-            {label}
-          </p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-            {value}
-          </p>
-        </div>
-        <div
-          className={`w-10 h-10 rounded-lg bg-gradient-to-br ${colorClasses[color as keyof typeof colorClasses]} flex items-center justify-center`}
-        >
-          <Icon className="w-5 h-5 text-white" />
-        </div>
-      </div>
-    </div>
+      }
+    />
   );
 }
 
 // Status Badge Component
-function StatusBadge({ status }: { status: StaffAttendanceStatus }) {
+function AttendanceStatusBadge({ status }: { status: StaffAttendanceStatus }) {
   const statusConfig = {
     present: { label: "Present", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
     absent: { label: "Absent", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },

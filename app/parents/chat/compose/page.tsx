@@ -3,11 +3,8 @@
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import MainLayout from "@/components/layout/MainLayout";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
+import DashboardPage from "@/components/shared/DashboardPage";
 import EmojiPickerPopover from "@/components/shared/EmojiPickerPopover";
-import { usePageLoad } from "@/hooks/usePageLoad";
 import {
   Send,
   Paperclip,
@@ -94,7 +91,6 @@ const MOCK_STAFF: StaffContact[] = [
 export default function ParentComposeNewChatPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isPageLoading = usePageLoad(600);
 
   // Detect if navigating from admin view
   const fromAdmin = searchParams.get("from") === "admin";
@@ -222,42 +218,37 @@ export default function ParentComposeNewChatPage() {
   };
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading..." />
+    <DashboardPage
+      title="New Chat"
+      breadcrumbs={
+        fromAdmin
+          ? [
+              { label: "Dashboard", href: "/" },
+              { label: "Admin" },
+              { label: "Parents", href: "/admin/parents" },
+              { label: "Chat", href: "/parents/chat?from=admin" },
+              { label: "New", isActive: true },
+            ]
+          : [
+              { label: "Parent Portal", href: "/parents" },
+              { label: "Chat", href: "/parents/chat" },
+              { label: "New", isActive: true },
+            ]
+      }
+      loadingText="Loading..."
+      afterStats={
+        <>
+          <div className="flex justify-end mb-6">
+            <button
+              onClick={() => router.push(fromAdmin ? "/parents/chat?from=admin" : "/parents/chat")}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Chats
+            </button>
+          </div>
 
-      <div className={`transition-opacity duration-500 ${isPageLoading ? "opacity-0" : "opacity-100"}`}>
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between py-4 mb-6 gap-4 animate-in fade-in slide-in-from-top-2 duration-700 ease-out">
-          <PageHeader
-            title="New Chat"
-            breadcrumbs={
-              fromAdmin
-                ? [
-                    { label: "Dashboard", href: "/" },
-                    { label: "Admin" },
-                    { label: "Parents", href: "/admin/parents" },
-                    { label: "Chat", href: "/parents/chat?from=admin" },
-                    { label: "New", isActive: true },
-                  ]
-                : [
-                    { label: "Parent Portal", href: "/parents" },
-                    { label: "Chat", href: "/parents/chat" },
-                    { label: "New", isActive: true },
-                  ]
-            }
-          />
-
-          <button
-            onClick={() => router.push(fromAdmin ? "/parents/chat?from=admin" : "/parents/chat")}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Chats
-          </button>
-        </div>
-
-        {/* Main Content */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-700 ease-out h-[calc(100vh-250px)] min-h-[500px] flex flex-col">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-700 ease-out h-[calc(100vh-250px)] min-h-[500px] flex flex-col">
           {!selectedStaff ? (
             /* Staff Selection View */
             <div className="flex-1 flex flex-col">
@@ -492,8 +483,9 @@ export default function ParentComposeNewChatPage() {
               </div>
             </div>
           )}
-        </div>
-      </div>
-    </MainLayout>
+          </div>
+        </>
+      }
+    />
   );
 }
