@@ -12,9 +12,12 @@ export type StatCardColor =
   | "cyan"
   | "amber"
   | "indigo"
-  | "emerald";
+  | "emerald"
+  | "gray"
+  | "teal"
+  | "pink";
 
-interface StatCardProps {
+export interface StatCardProps {
   icon: LucideIcon;
   label: string;
   value: string | number;
@@ -22,6 +25,7 @@ interface StatCardProps {
   badge?: ReactNode;
   subtitle?: string;
   currencySymbol?: string;
+  href?: string;
 }
 
 export default function StatCard({
@@ -122,6 +126,33 @@ export default function StatCard({
       valueColor: "text-emerald-900 dark:text-emerald-100",
       badgeColor: "text-emerald-700 dark:text-emerald-300",
       badgeBg: "bg-emerald-100 dark:bg-emerald-900/30",
+    },
+    gray: {
+      bg: "bg-gray-50/80 dark:bg-gray-950/30 midnight:bg-gray-950/30 purple:bg-gray-950/30",
+      iconBg: "bg-white dark:bg-gray-800/50",
+      iconColor: "text-gray-600 dark:text-gray-400",
+      labelColor: "text-gray-600 dark:text-gray-400",
+      valueColor: "text-gray-900 dark:text-gray-100",
+      badgeColor: "text-gray-700 dark:text-gray-300",
+      badgeBg: "bg-gray-100 dark:bg-gray-900/30",
+    },
+    teal: {
+      bg: "bg-teal-50/80 dark:bg-teal-950/30 midnight:bg-teal-950/30 purple:bg-teal-950/30",
+      iconBg: "bg-white dark:bg-gray-800/50",
+      iconColor: "text-teal-600 dark:text-teal-400",
+      labelColor: "text-teal-600 dark:text-teal-400",
+      valueColor: "text-teal-900 dark:text-teal-100",
+      badgeColor: "text-teal-700 dark:text-teal-300",
+      badgeBg: "bg-teal-100 dark:bg-teal-900/30",
+    },
+    pink: {
+      bg: "bg-pink-50/80 dark:bg-pink-950/30 midnight:bg-pink-950/30 purple:bg-pink-950/30",
+      iconBg: "bg-white dark:bg-gray-800/50",
+      iconColor: "text-pink-600 dark:text-pink-400",
+      labelColor: "text-pink-600 dark:text-pink-400",
+      valueColor: "text-pink-900 dark:text-pink-100",
+      badgeColor: "text-pink-700 dark:text-pink-300",
+      badgeBg: "bg-pink-100 dark:bg-pink-900/30",
     },
   };
 

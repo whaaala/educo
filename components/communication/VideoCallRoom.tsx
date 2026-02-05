@@ -42,13 +42,14 @@ import CallSettings, {
 } from "./CallSettings";
 import AddParticipantModal from "./AddParticipantModal";
 
-interface VideoCallRoomProps {
+export interface VideoCallRoomProps {
   roomId: string;
   userId: string;
   userName: string;
   userAvatar?: string;
   isHost?: boolean;
   callType?: "video" | "voice";
+  recipientName?: string;
   onCallEnd?: () => void;
   onError?: (error: Error) => void;
 }
@@ -126,7 +127,7 @@ export default function VideoCallRoom({
 
   // Call timer
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setTimeout>;
     if (session?.state === "connected" && session.startedAt) {
       interval = setInterval(() => {
         const startTime = new Date(session.startedAt!).getTime();
@@ -491,7 +492,7 @@ export default function VideoCallRoom({
 
   // Auto-hide controls
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
+    let timeout: ReturnType<typeof setTimeout>;
 
     const handleMouseMove = () => {
       setShowControls(true);

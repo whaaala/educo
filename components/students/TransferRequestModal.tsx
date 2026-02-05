@@ -149,8 +149,7 @@ export default function TransferRequestModal({
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     onSubmit(formData);
   };
 

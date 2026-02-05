@@ -229,11 +229,12 @@ export default function TranscriptRequestForm({ isOpen, onClose, onSubmit }: Tra
       deliveryPostalCode: formData.deliveryPostalCode,
       urgentProcessing: formData.urgentProcessing,
       payment: {
+        paymentId: "",
         amount: totalAmount,
         currency: "NGN",
-        method: "bank-transfer",
-        status: "pending",
-        transactionId: "",
+        baseFee: totalAmount,
+        paymentMethod: "bank-transfer",
+        status: "unpaid" as const,
       },
     };
 

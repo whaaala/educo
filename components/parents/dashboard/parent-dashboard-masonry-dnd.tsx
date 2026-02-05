@@ -9,7 +9,9 @@ import {
   closestCenter,
   useSensor,
   useSensors,
+  type DraggableAttributes,
 } from "@dnd-kit/core";
+import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import {
   SortableContext,
   arrayMove,
@@ -33,8 +35,8 @@ export interface ParentDashboardMasonryDnDProps {
 }
 
 interface DragHandleContextValue {
-  attributes: Record<string, unknown>;
-  listeners: Record<string, unknown>;
+  attributes: DraggableAttributes;
+  listeners: SyntheticListenerMap | undefined;
   setActivatorNodeRef: (node: HTMLElement | null) => void;
   isDragging: boolean;
   title?: string;
@@ -82,7 +84,6 @@ export function DashboardDragHandle({
         }`
       }
       aria-label={ctx.title ? `Move widget: ${ctx.title}` : "Move widget"}
-      aria-pressed={ctx.isDragging}
       {...ctx.attributes}
       {...ctx.listeners}
     >
@@ -280,8 +281,15 @@ export function ParentDashboardMasonryDnD({ cards, order, onOrderChange }: Paren
           >
             <DragHandleContext.Provider
               value={{
-                attributes: {},
-                listeners: {},
+                attributes: {
+                  role: "button",
+                  tabIndex: 0,
+                  "aria-disabled": false,
+                  "aria-pressed": undefined,
+                  "aria-roledescription": "sortable",
+                  "aria-describedby": "",
+                },
+                listeners: undefined,
                 setActivatorNodeRef: () => {},
                 isDragging: true,
                 title: activeCard.title,

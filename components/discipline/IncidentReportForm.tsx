@@ -6,8 +6,18 @@ import {
   DisciplineIncident,
   IncidentCategory,
   IncidentSeverity,
-  DisciplinaryActionType,
 } from "@/types/discipline";
+
+// Action type for discipline incidents
+type DisciplinaryActionType =
+  | "verbal-warning"
+  | "written-warning"
+  | "detention"
+  | "suspension"
+  | "parent-conference"
+  | "counseling"
+  | "other"
+  | "";
 import SearchableDropdown from "@/components/shared/SearchableDropdown";
 import { getAllStudents } from "@/lib/mockStudents";
 import Modal from "@/components/shared/Modal";
@@ -84,13 +94,13 @@ export default function IncidentReportForm({
       setFormData({
         selectedStudentId: initialData.studentId,
         selectedStudentName: initialData.studentName,
-        selectedStudentAdmissionNumber: initialData.studentAdmissionNumber,
+        selectedStudentAdmissionNumber: initialData.studentAdmissionNumber || "",
         selectedStudentClass: initialData.studentClass,
-        selectedStudentSection: initialData.studentSection,
+        selectedStudentSection: initialData.studentSection || "",
         selectedStudentProfilePhoto: initialData.profilePhoto || "",
         incidentDate: initialData.incidentDate,
-        incidentTime: initialData.incidentTime,
-        location: initialData.location,
+        incidentTime: initialData.incidentTime || "",
+        location: initialData.location || "",
         category: initialData.category,
         severity: initialData.severity,
         title: initialData.title,

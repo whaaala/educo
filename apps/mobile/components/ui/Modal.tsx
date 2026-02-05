@@ -42,7 +42,7 @@ export interface ModalProps {
   footer?: ReactNode;
   showCloseButton?: boolean;
   preventBackdropClose?: boolean;
-  scrollRef?: RefObject<ScrollViewType>;
+  scrollRef?: RefObject<ScrollViewType | null>;
 }
 
 export function Modal({

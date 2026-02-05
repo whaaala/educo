@@ -392,7 +392,7 @@ export default function ParentFeesPage() {
 
     // Format currency for PDF
     const formatCurrency = (amount: number) => {
-      return `${settings.currency?.code || "NGN"} ${amount.toLocaleString()}`;
+      return `${settings.currency || "NGN"} ${amount.toLocaleString()}`;
     };
 
     // ===== HEADER =====

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 
 interface BreadcrumbItem {
@@ -8,22 +9,33 @@ interface BreadcrumbItem {
   isActive?: boolean;
 }
 
-interface PageHeaderProps {
+export interface PageHeaderProps {
   title: string;
   breadcrumbs: BreadcrumbItem[];
   className?: string;
+  subtitle?: string;
+  description?: string;
+  icon?: React.ReactNode;
+  actions?: React.ReactNode;
 }
 
 export default function PageHeader({
   title,
   breadcrumbs,
   className = "",
+  subtitle,
+  description,
 }: PageHeaderProps) {
   return (
     <div className={`w-full lg:w-auto lg:flex-shrink-0 ${className}`}>
       <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
         {title}
       </h1>
+      {(subtitle || description) && (
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+          {subtitle || description}
+        </p>
+      )}
       <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 flex-wrap">
         {breadcrumbs.map((item, index) => (
           <div key={index} className="flex items-center gap-2">

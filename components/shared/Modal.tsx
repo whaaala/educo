@@ -4,7 +4,7 @@ import { useEffect, ReactNode } from "react";
 import { X } from "lucide-react";
 import Portal from "./Portal";
 
-interface ModalProps {
+export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
@@ -13,6 +13,7 @@ interface ModalProps {
   children: ReactNode;
   footer?: ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl";
+  size?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl"; // Alias for maxWidth
   showCloseButton?: boolean;
   preventBackdropClose?: boolean;
 }
@@ -25,10 +26,13 @@ export default function Modal({
   icon,
   children,
   footer,
-  maxWidth = "4xl",
+  maxWidth,
+  size,
   showCloseButton = true,
   preventBackdropClose = false,
 }: ModalProps) {
+  // Support both maxWidth and size (alias)
+  const effectiveMaxWidth = maxWidth || size || "4xl";
   // Close on escape key (unless prevented)
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -66,7 +70,7 @@ export default function Modal({
         onClick={preventBackdropClose ? undefined : onClose}
       >
         <div
-          className={`bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl w-full ${maxWidthClasses[maxWidth]} max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-4 duration-300`}
+          className={`bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl w-full ${maxWidthClasses[effectiveMaxWidth]} max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-4 duration-300`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}

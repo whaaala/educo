@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllMockStudents } from "@/lib/mockStudents";
+import { getAllStudents, type StudentData } from "@/lib/mockStudents";
 
 // This is a placeholder API route
 // In production, replace this with actual database queries (e.g., Supabase)
@@ -26,10 +26,10 @@ export async function GET(request: NextRequest) {
     //   .range(offset, offset + limit - 1);
 
     // Get students from shared mock data (same source as main table)
-    const allStudents = getAllMockStudents();
+    const allStudents = getAllStudents();
 
     // Filter and transform students
-    let filteredStudents = allStudents.filter((student) => {
+    let filteredStudents = allStudents.filter((student: StudentData) => {
       // Exclude current student
       if (currentStudentId && student.id === currentStudentId) return false;
       
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     const paginatedStudents = filteredStudents.slice(offset, offset + limit);
 
     // Format response - transform to match expected format
-    const results = paginatedStudents.map((student) => {
+    const results = paginatedStudents.map((student: StudentData) => {
       // Split name into first and last
       const nameParts = student.name.split(" ");
       const firstName = nameParts[0] || "";

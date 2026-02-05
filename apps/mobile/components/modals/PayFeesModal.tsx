@@ -74,7 +74,7 @@ export function PayFeesModal({
   onPaymentInitiated,
   childName,
   fees = MOCK_FEES,
-}: PayFeesModalProps): JSX.Element {
+}: PayFeesModalProps) {
   const { colors } = useTheme();
   const { settings } = useTenantSettings();
   const { currencySymbol, payment } = settings;

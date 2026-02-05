@@ -7,21 +7,27 @@ import ModernTimePicker from "./ModernTimePicker";
 import ErrorMessage from "./ErrorMessage";
 import Tooltip from "./Tooltip";
 
-interface FormInputProps {
+export interface FormInputProps {
   label: string;
-  icon: ReactNode;
+  icon?: ReactNode;
   iconBgColor?: string;
   iconColor?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  type?: "text" | "number" | "email" | "date" | "time";
+  type?: "text" | "number" | "email" | "date" | "time" | "tel";
   leftIcon?: ReactNode;
   leftIconBg?: string;
   disabled?: boolean;
   required?: boolean;
   error?: string;
   timeFormat?: "12h" | "24h";
+  min?: number;
+  max?: number;
+  step?: number;
+  minLength?: number;
+  maxLength?: number;
+  helpText?: ReactNode;
 }
 
 export default function FormInput({

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 import {
   View,
   Text,
@@ -63,7 +63,7 @@ export default function MoreScreen() {
     );
   };
 
-  const menuSections = [
+  const menuSections: { title: string; items: { id: string; icon: keyof typeof Ionicons.glyphMap; label: string; subtitle: string; color: string; onPress: () => void; showArrow: boolean; rightElement?: ReactNode }[] }[] = [
     {
       title: 'Account',
       items: [
@@ -106,6 +106,7 @@ export default function MoreScreen() {
           subtitle: 'Receive updates and alerts',
           color: colors.warning,
           onPress: () => {},
+          showArrow: false,
           rightElement: (
             <Switch
               value={notificationsEnabled}
@@ -122,6 +123,7 @@ export default function MoreScreen() {
           subtitle: 'Use fingerprint or face ID',
           color: colors.info,
           onPress: () => {},
+          showArrow: false,
           rightElement: (
             <Switch
               value={biometricsEnabled}

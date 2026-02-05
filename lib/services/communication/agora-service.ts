@@ -19,8 +19,10 @@ interface IAgoraRTCClient {
   unpublish(tracks?: ILocalTrack[]): Promise<void>;
   subscribe(user: IAgoraRTCRemoteUser, mediaType: "audio" | "video"): Promise<IRemoteTrack>;
   unsubscribe(user: IAgoraRTCRemoteUser, mediaType?: "audio" | "video"): Promise<void>;
-  on(event: string, callback: (...args: unknown[]) => void): void;
-  off(event: string, callback: (...args: unknown[]) => void): void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on(event: string, callback: (...args: any[]) => void): void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  off(event: string, callback: (...args: any[]) => void): void;
   setClientRole(role: "host" | "audience"): Promise<void>;
   remoteUsers: IAgoraRTCRemoteUser[];
   renewToken(token: string): Promise<void>;
@@ -34,11 +36,15 @@ interface ILocalTrack {
   setEnabled(enabled: boolean): Promise<void>;
   getMediaStreamTrack(): MediaStreamTrack;
   trackMediaType: "audio" | "video";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on?(event: string, callback: (...args: any[]) => void): void;
 }
 
 interface ILocalVideoTrack extends ILocalTrack {
   replaceTrack(track: MediaStreamTrack, stopOldTrack?: boolean): Promise<void>;
   setDevice(deviceId: string): Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on(event: string, callback: (...args: any[]) => void): void;
 }
 
 interface ILocalAudioTrack extends ILocalTrack {
@@ -47,7 +53,7 @@ interface ILocalAudioTrack extends ILocalTrack {
 }
 
 interface IRemoteTrack {
-  play(element: string | HTMLElement): void;
+  play(element?: string | HTMLElement): void;
   stop(): void;
   getMediaStreamTrack(): MediaStreamTrack;
   trackMediaType: "audio" | "video";
@@ -105,8 +111,10 @@ interface IAgoraRTMClient {
   login(options: { uid: string; token?: string }): Promise<void>;
   logout(): Promise<void>;
   createChannel(name: string): IAgoraRTMChannel;
-  on(event: string, callback: (...args: unknown[]) => void): void;
-  off(event: string, callback?: (...args: unknown[]) => void): void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on(event: string, callback: (...args: any[]) => void): void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  off(event: string, callback?: (...args: any[]) => void): void;
   sendMessageToPeer(message: RtmTextMessage, peerId: string): Promise<void>;
 }
 
@@ -114,8 +122,10 @@ interface IAgoraRTMChannel {
   join(): Promise<void>;
   leave(): Promise<void>;
   sendMessage(message: RtmTextMessage): Promise<void>;
-  on(event: string, callback: (...args: unknown[]) => void): void;
-  off(event: string, callback?: (...args: unknown[]) => void): void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on(event: string, callback: (...args: any[]) => void): void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  off(event: string, callback?: (...args: any[]) => void): void;
   getMembers(): Promise<string[]>;
 }
 
@@ -198,6 +208,7 @@ export class AgoraService implements ICommunicationService {
       if (typeof window !== "undefined") {
         // Try npm import first
         try {
+          // @ts-expect-error - agora-rtc-sdk-ng may not be installed
           const AgoraRTCModule = await import("agora-rtc-sdk-ng");
           this.agoraRTC = AgoraRTCModule.default as unknown as IAgoraRTC;
         } catch {
@@ -228,6 +239,7 @@ export class AgoraService implements ICommunicationService {
         // Initialize RTM if enabled
         if (this.config.useRtm !== false) {
           try {
+            // @ts-expect-error - agora-rtm-sdk may not be installed
             const AgoraRTMModule = await import("agora-rtm-sdk");
             this.agoraRTM = AgoraRTMModule.default as unknown as IAgoraRTM;
             this.rtmClient = this.agoraRTM.createInstance(this.config.appId);

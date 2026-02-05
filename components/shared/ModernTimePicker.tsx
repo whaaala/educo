@@ -4,11 +4,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Clock } from "lucide-react";
 
-interface ModernTimePickerProps {
+export interface ModernTimePickerProps {
   value: string;
   onChange: (time: string) => void;
   onClose: () => void;
-  triggerRef?: React.RefObject<HTMLElement>;
+  triggerRef?: React.RefObject<HTMLElement | null>;
   format?: "12h" | "24h";
 }
 

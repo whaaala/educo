@@ -1,5 +1,5 @@
 import { TransferType } from "@/types/transfer";
-import { ArrowRight, Building2, GraduationCap, Users, ExternalLink } from "lucide-react";
+import { ArrowRight, Building2, GraduationCap, Users, ExternalLink, TrendingUp } from "lucide-react";
 
 interface TransferTypeBadgeProps {
   type: TransferType;
@@ -44,6 +44,11 @@ export default function TransferTypeBadge({ type, size = "md" }: TransferTypeBad
       icon: ExternalLink,
       label: "External Transfer",
       className: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800",
+    },
+    "promotion": {
+      icon: TrendingUp,
+      label: "Promotion",
+      className: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800",
     },
   };
 

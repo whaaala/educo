@@ -322,7 +322,7 @@ export default function DataManagementPage<T>({
   // Check if filters are active
   const hasActiveFilters = useMemo(() => {
     return Object.values(filters).some(
-      (v) => v !== null && v !== undefined && v !== "" && (Array.isArray(v) ? v.length > 0 : true)
+      (v) => Array.isArray(v) && v.length > 0
     );
   }, [filters]);
 

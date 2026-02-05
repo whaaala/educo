@@ -1,6 +1,9 @@
 // Shared mock student data
 import { Student } from "@/components/students/StudentCard";
 
+// Export Student as StudentData for API routes
+export type StudentData = Student;
+
 // Timetable interfaces
 export interface TimetableEntry {
   day: string;
@@ -25,6 +28,7 @@ export interface ExtendedStudentData {
   admissionDate?: string;
   rollNumber: string;
   status: "Active" | "Inactive";
+  classLevel?: string; // Current class level (e.g., "JSS 1", "SS 2", "100 Level")
 
   // NEW: Education Level & Institution Type (PRD Requirements)
   educationLevel?: "Primary" | "Secondary" | "Tertiary";

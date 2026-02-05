@@ -1,12 +1,24 @@
 "use client";
 
 import { useState, useEffect, useRef, ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, MoreVertical } from "lucide-react";
 
-interface MobileDropdownProps {
-  value: string | number;
-  options: Array<{ label: string; value: string | number }>;
-  onChange: (value: string | number) => void;
+// Action menu item for mobile action dropdown
+interface ActionMenuItem {
+  icon?: ReactNode;
+  label: string;
+  onClick: () => void;
+  variant?: "default" | "danger";
+}
+
+export interface MobileDropdownProps {
+  // For select dropdown mode
+  value?: string | number;
+  options?: Array<{ label: string; value: string | number }>;
+  onChange?: (value: string | number) => void;
+  // For action menu mode
+  items?: ActionMenuItem[];
+  // Common props
   icon?: ReactNode;
   label?: string;
   className?: string;
@@ -14,14 +26,18 @@ interface MobileDropdownProps {
 
 export default function MobileDropdown({
   value,
-  options,
+  options = [],
   onChange,
+  items,
   icon,
   label,
   className = "",
 }: MobileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Determine mode: action menu or select dropdown
+  const isActionMenu = items && items.length > 0;
 
   // Click outside handler
   useEffect(() => {
@@ -40,6 +56,49 @@ export default function MobileDropdown({
 
   const selectedOption = options.find((opt) => opt.value === value);
 
+  // Action menu mode
+  if (isActionMenu) {
+    return (
+      <div className={`relative ${className}`} ref={dropdownRef}>
+        {/* Action Menu Button */}
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 midnight:focus:ring-cyan-400/50 purple:focus:ring-pink-400/50 shadow-sm transition-all duration-200 cursor-pointer"
+        >
+          <MoreVertical className="w-5 h-5" />
+        </button>
+
+        {/* Action Menu Dropdown */}
+        {isOpen && (
+          <div className="absolute top-full mt-1.5 right-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 min-w-40 overflow-hidden z-[10000] animate-slideDown">
+            {items.map((item, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => {
+                  item.onClick();
+                  setIsOpen(false);
+                }}
+                className={`w-full text-left px-3 py-2.5 text-sm font-medium flex items-center gap-2.5 transition-all duration-150 ${
+                  index !== items.length - 1 ? "border-b border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10" : ""
+                } ${
+                  item.variant === "danger"
+                    ? "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20"
+                    : "text-gray-700 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                }`}
+              >
+                {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
+                {item.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Select dropdown mode
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
       {label && (
@@ -74,14 +133,14 @@ export default function MobileDropdown({
       </button>
 
       {/* Dropdown Menu */}
-      {isOpen && (
+      {isOpen && options.length > 0 && (
         <div className="absolute top-full mt-1.5 left-0 right-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-2xl border-2 border-blue-200/60 dark:border-blue-800/60 midnight:border-cyan-500/30 purple:border-pink-500/30 max-h-60 overflow-y-auto z-[10000] animate-slideDown">
           {options.map((option, index) => (
             <button
               key={option.value}
               type="button"
               onClick={() => {
-                onChange(option.value);
+                onChange?.(option.value);
                 setIsOpen(false);
               }}
               className={`w-full text-left px-3 sm:px-3.5 py-2 sm:py-2.5 text-sm font-semibold transition-all duration-150 ${

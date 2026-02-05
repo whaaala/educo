@@ -1,5 +1,5 @@
 import { IncidentStatus } from "@/types/discipline";
-import { Clock, Search, CheckCircle, Scale, XCircle } from "lucide-react";
+import { Clock, Search, CheckCircle, Scale, XCircle, FileSearch } from "lucide-react";
 
 interface IncidentStatusBadgeProps {
   status: IncidentStatus;
@@ -29,6 +29,11 @@ export default function IncidentStatusBadge({ status, size = "md" }: IncidentSta
       icon: Search,
       label: "Under Review",
       className: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800",
+    },
+    investigating: {
+      icon: FileSearch,
+      label: "Investigating",
+      className: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800",
     },
     resolved: {
       icon: CheckCircle,

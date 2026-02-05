@@ -361,14 +361,14 @@ export default function TransferDetailsModal({
                     {formatDate(transfer.effectiveDate)}
                   </p>
                 </div>
-                {transfer.approvalDate && (
+                {transfer.approvedAt && (
                   <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       Approval Date
                     </p>
                     <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                      {formatDate(transfer.approvalDate)}
+                      {formatDate(transfer.approvedAt)}
                     </p>
                   </div>
                 )}

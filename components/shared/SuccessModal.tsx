@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { X, CheckCircle } from "lucide-react";
 
 export interface SuccessModalField {
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   label: string;
   value: string;
   valueClassName?: string;

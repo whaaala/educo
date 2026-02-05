@@ -1,10 +1,10 @@
 "use client";
 
-import { IncidentStatus } from "@/types/discipline";
+import { IncidentStatus, StaffIncidentStatus } from "@/types/discipline";
 import { AlertTriangle, Search, CheckCircle, XCircle, ArrowUpCircle } from "lucide-react";
 
 interface DisciplineStatusBadgeProps {
-  status: IncidentStatus;
+  status: IncidentStatus | StaffIncidentStatus;
   size?: "sm" | "md" | "lg";
 }
 

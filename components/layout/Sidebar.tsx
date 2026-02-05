@@ -264,10 +264,10 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
   const [isMobile, setIsMobile] = useState<boolean | null>(null); // null on server, boolean on client
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [hoveredSubmenuItem, setHoveredSubmenuItem] = useState<string | null>(null);
-  const [hideTimeout, setHideTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [submenuHideTimeout, setSubmenuHideTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [hideTimeout, setHideTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [submenuHideTimeout, setSubmenuHideTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [showLogoText, setShowLogoText] = useState(false);
-  const logoTextTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const logoTextTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Helper function to check if a link is active
   const isLinkActive = (href: string) => {

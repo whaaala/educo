@@ -2,14 +2,17 @@
 
 import { ReactNode } from "react";
 
-interface ButtonProps {
+export interface ButtonProps {
   children: ReactNode;
-  onClick?: () => void;
+  onClick?: (() => void) | (() => Promise<void>);
   variant?: "primary" | "secondary" | "outline" | "ghost";
   size?: "sm" | "md" | "lg";
   disabled?: boolean;
   className?: string;
   type?: "button" | "submit" | "reset";
+  icon?: ReactNode;
+  title?: string;
+  isLoading?: boolean;
 }
 
 export default function Button({
@@ -20,6 +23,8 @@ export default function Button({
   disabled = false,
   className = "",
   type = "button",
+  icon,
+  isLoading = false,
 }: ButtonProps) {
   const baseClasses = "inline-flex items-center justify-center font-medium transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer";
 
@@ -40,9 +45,14 @@ export default function Button({
     <button
       type={type}
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || isLoading}
       className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
     >
+      {isLoading ? (
+        <span className="animate-spin mr-2 w-4 h-4 border-2 border-current border-t-transparent rounded-full" />
+      ) : icon ? (
+        <span className="mr-2 flex-shrink-0">{icon}</span>
+      ) : null}
       {children}
     </button>
   );

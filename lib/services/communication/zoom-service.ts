@@ -36,8 +36,10 @@ interface ZoomClient {
     userEmail?: string;
   }): Promise<void>;
   leave(): Promise<void>;
-  on(event: string, callback: (...args: unknown[]) => void): void;
-  off(event: string, callback: (...args: unknown[]) => void): void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on(event: string, callback: (...args: any[]) => void): void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  off(event: string, callback: (...args: any[]) => void): void;
   getCurrentUser(): { muted: boolean; video: boolean } | null;
   getAllUser(): Array<{ odUserI: string | number; userName: string; muted: boolean }>;
   mute(mute: boolean): void;

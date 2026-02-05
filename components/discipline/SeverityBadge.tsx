@@ -35,6 +35,11 @@ export default function SeverityBadge({ severity, size = "md" }: SeverityBadgePr
       label: "Major",
       className: "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800",
     },
+    serious: {
+      icon: ShieldAlert,
+      label: "Serious",
+      className: "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800",
+    },
     critical: {
       icon: Flame,
       label: "Critical",

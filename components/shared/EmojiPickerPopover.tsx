@@ -161,11 +161,11 @@ export default function EmojiPickerPopover({
   const getTheme = (): Theme => {
     if (theme === "auto") {
       if (typeof window !== "undefined") {
-        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" as Theme : "light" as Theme;
       }
-      return "light";
+      return "light" as Theme;
     }
-    return theme;
+    return theme as Theme;
   };
 
   return (

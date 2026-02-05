@@ -25,6 +25,7 @@ import StudentSelectionGrid from "@/components/students/StudentSelectionGrid";
 import { useStudentsByTenant } from "@/hooks/useStudentsByTenant";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useGrading } from "@/contexts/GradingContext";
+import { useCurrentTenant } from "@/hooks/useTenant";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useReactToPrint } from "react-to-print";
 import jsPDF from "jspdf";
@@ -187,6 +188,7 @@ export default function CumulativeReportPage() {
   const tenantStudents = useStudentsByTenant();
   const { settings } = useSchoolSettings();
   const { getGradeForScore } = useGrading();
+  const currentTenant = useCurrentTenant();
   const [students, setStudents] = useState<Student[]>([]);
 
   const [config, setConfig] = useState({

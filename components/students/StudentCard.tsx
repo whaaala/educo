@@ -13,6 +13,7 @@ export interface Student {
   id: string;
   name: string;
   rollNo: string;
+  admissionNo?: string; // Alias for rollNo
   class: string;
   gender: "Male" | "Female";
   joinedOn: string;

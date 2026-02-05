@@ -118,7 +118,7 @@ export default function NewTransferRequestModal({
     // Reset form
     setFormData({
       staffId: "",
-      transferType: "department",
+      transferType: "department" as TransferType,
       newDepartment: "",
       newBranch: "",
       newDesignation: "",
@@ -130,6 +130,10 @@ export default function NewTransferRequestModal({
       currentSalary: "",
       newSalary: "",
       newResponsibilities: "",
+      terminationType: "dismissal" as "resignation" | "dismissal" | "retirement" | "contract-end" | "mutual-agreement",
+      terminationReason: "",
+      lastWorkingDay: "",
+      severancePackage: "",
     });
 
     onClose();

@@ -7,7 +7,8 @@ import TimetableCell from "./TimetableCell";
 import BreakCard from "./BreakCard";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import MobileDropdown from "@/components/shared/MobileDropdown";
-import { getSchoolConfig, generateTimeSlots, getBreakPeriods, type CalendarEvent, type TimetableConfig } from "@/lib/timetableConfig";
+import { getSchoolConfig, generateTimeSlots, getBreakPeriods, type TimetableConfig } from "@/lib/timetableConfig";
+import type { CalendarEvent } from "@/lib/calendarPermissions";
 import { getCurrentUser, getUserEvents } from "@/lib/calendarPermissions";
 import type { EducationLevel } from "@/lib/educationLevelUtils";
 

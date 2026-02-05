@@ -18,6 +18,14 @@ export interface TeacherPeriod {
   type: "class" | "break" | "free";
 }
 
+// Job categories for staff (per PRD Section 7.3)
+export type JobCategory =
+  | "Academic Staff"
+  | "Non-Academic Staff"
+  | "Finance & Accounting"
+  | "Technical & ICT"
+  | "Operations & Facility";
+
 export interface Teacher {
   id: string;
   staffId: string;
@@ -42,6 +50,7 @@ export interface Teacher {
   branch?: string;
   specialization?: string;
   timetable?: TeacherTimetableEntry[];
+  jobCategory?: JobCategory; // Staff category for personnel management
 }
 
 // Mock teachers data

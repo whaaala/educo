@@ -744,8 +744,8 @@ function AttendanceTab({ staffData }: { staffData: Teacher }) {
           staffId: staffData.staffId,
           staffName: `${staffData.firstName} ${staffData.lastName}`,
           staffEmail: staffData.email,
-          staffDepartment: staffData.subject || "General",
-          staffPosition: `${staffData.subject} Teacher`,
+          staffDepartment: staffData.subjects?.[0] || staffData.department || "General",
+          staffPosition: `${staffData.subjects?.[0] || staffData.department || "General"} Teacher`,
         }}
       />
     </div>

@@ -326,7 +326,8 @@ export default function BulkMessageModal({
     setEditingRecipientMessages((prev) => ({
       ...prev,
       [channelId]: {
-        ...prev[channelId],
+        message: prev[channelId]?.message || "",
+        subject: prev[channelId]?.subject,
         [field]: value,
       },
     }));

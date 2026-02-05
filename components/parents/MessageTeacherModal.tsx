@@ -166,7 +166,6 @@ export default function MessageTeacherModal({
     } else {
       setMessage(message + emoji);
     }
-    setShowEmojiPicker(false);
   };
 
   // Handle file selection

@@ -54,7 +54,7 @@ export default function Tooltip({
   const [triggerLayout, setTriggerLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const [tooltipSize, setTooltipSize] = useState({ width: 0, height: 0 });
   const triggerRef = useRef<View>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Use controlled or uncontrolled visibility
   const isVisible = controlledVisible !== undefined ? controlledVisible : internalVisible;

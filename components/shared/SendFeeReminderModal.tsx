@@ -139,8 +139,8 @@ export default function SendFeeReminderModal({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
-  const dateInputRef = useRef<HTMLButtonElement>(null) as React.RefObject<HTMLElement>;
-  const timeInputRef = useRef<HTMLButtonElement>(null) as React.RefObject<HTMLElement>;
+  const dateInputRef = useRef<HTMLButtonElement>(null);
+  const timeInputRef = useRef<HTMLButtonElement>(null);
 
   const channelOptions = [
     { id: "email", label: "Email", icon: <Mail className="w-4 h-4" />, description: parentEmail, color: "blue" },

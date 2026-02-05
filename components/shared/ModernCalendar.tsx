@@ -4,11 +4,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { flushSync, createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-interface ModernCalendarProps {
+export interface ModernCalendarProps {
   value: string;
   onChange: (date: string) => void;
   onClose: () => void;
-  triggerRef?: React.RefObject<HTMLElement>;
+  triggerRef?: React.RefObject<HTMLElement | null>;
 }
 
 export default function ModernCalendar({ value, onChange, onClose, triggerRef }: ModernCalendarProps) {

@@ -10,6 +10,6 @@ export { FormDropdown } from './FormDropdown';
 export { DatePicker } from './DatePicker';
 export { TimePicker } from './TimePicker';
 export { Modal } from './Modal';
-export { Tooltip } from './Tooltip';
+export { default as Tooltip } from './Tooltip';
 export { Screen } from './Screen';
-export { BottomTabBar } from './BottomTabBar';
+export { default as BottomTabBar } from './BottomTabBar';

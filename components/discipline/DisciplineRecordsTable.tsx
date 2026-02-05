@@ -154,7 +154,7 @@ export default function DisciplineRecordsTable({
       sortable: true,
       className: "text-left",
       render: (incident) => {
-        const reporterInfo = `${incident.reportedByName} (Reported on ${formatDate(incident.reportedDate)})`;
+        const reporterInfo = `${incident.reportedByName} (Reported on ${formatDate(incident.reportedDate || incident.createdAt)})`;
         return (
           <Tooltip content={reporterInfo}>
             <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-[130px] whitespace-nowrap" style={{ fontSize: '11.8px' }}>

@@ -13,9 +13,9 @@ export interface AttachmentFile {
   file?: File;
 }
 
-interface FormTextareaProps {
+export interface FormTextareaProps {
   label: string;
-  icon: ReactNode;
+  icon?: ReactNode;
   iconBgColor?: string;
   iconColor?: string;
   value: string;

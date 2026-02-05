@@ -1,5 +1,63 @@
 // Discipline and Complaints Types
 
+// Student discipline incident types (for student discipline page)
+export type IncidentCategory =
+  | "academic"
+  | "behavioral"
+  | "attendance"
+  | "substance"
+  | "bullying"
+  | "property"
+  | "safety"
+  | "disruptive-behavior"
+  | "academic-dishonesty"
+  | "property-damage"
+  | "technology-misuse"
+  | "dress-code"
+  | "other";
+
+export type IncidentSeverity = "minor" | "moderate" | "major" | "serious" | "critical";
+export type IncidentStatus = "reported" | "under-review" | "investigating" | "resolved" | "appealed" | "closed";
+
+export interface DisciplineIncident {
+  id: string;
+  studentId: string;
+  studentName: string;
+  studentAdmissionNumber?: string;
+  studentClass: string;
+  studentSection?: string;
+  studentAvatar?: string;
+  profilePhoto?: string;
+  category: IncidentCategory;
+  title: string;
+  description: string;
+  incidentDate: string;
+  incidentTime?: string;
+  location?: string;
+  severity: IncidentSeverity;
+  status: IncidentStatus;
+  reportedBy: string;
+  reportedByName: string;
+  reportedByRole?: string;
+  reportedDate?: string;
+  witnesses?: string[];
+  actionType?: string;
+  actionTaken?: string;
+  actionDetails?: string;
+  actionDate?: string;
+  actionStartDate?: string;
+  actionEndDate?: string;
+  parentNotified: boolean;
+  parentNotifiedDate?: string;
+  followUpRequired?: boolean;
+  followUpDate?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt?: string;
+}
+
+// Staff discipline incident types (existing)
 export type IncidentType =
   | "misconduct"
   | "insubordination"
@@ -12,8 +70,10 @@ export type IncidentType =
   | "fraud"
   | "other";
 
-export type IncidentSeverity = "minor" | "moderate" | "serious" | "critical";
-export type IncidentStatus = "reported" | "under-investigation" | "resolved" | "closed" | "escalated";
+// Staff-specific incident severity (used by DisciplinaryAction)
+export type StaffIncidentSeverity = "minor" | "moderate" | "serious" | "critical";
+// Staff-specific incident status (used by DisciplinaryAction)
+export type StaffIncidentStatus = "reported" | "under-investigation" | "resolved" | "closed" | "escalated";
 export type ActionTaken =
   | "verbal-warning"
   | "written-warning"
@@ -52,8 +112,8 @@ export interface DisciplinaryAction {
   incidentDate: string;
   incidentTime?: string;
   incidentLocation: string;
-  severity: IncidentSeverity;
-  status: IncidentStatus;
+  severity: StaffIncidentSeverity;
+  status: StaffIncidentStatus;
 
   // Description
   incidentDescription: string;
@@ -104,6 +164,7 @@ export interface DisciplinaryAction {
 
 export interface Complaint {
   id: string;
+  profilePhoto?: string;
 
   // Complainant Information (can be anonymous)
   isAnonymous: boolean;
@@ -165,7 +226,7 @@ export interface CreateDisciplinaryAction {
   incidentDate: string;
   incidentTime?: string;
   incidentLocation: string;
-  severity: IncidentSeverity;
+  severity: StaffIncidentSeverity;
   incidentDescription: string;
   witnessNames?: string[];
   reportedBy: string;

@@ -7,16 +7,16 @@ import SortButton from "@/components/shared/SortButton";
 import ViewToggle from "@/components/shared/ViewToggle";
 import DateRangePicker from "@/components/shared/DateRangePicker";
 import type {
-  FilterField,
-  FilterValues,
+  FilterField as ComponentFilterField,
   SortOption,
   BulkAction,
   DateRange,
 } from "@/types/components";
+import type { FilterField as FilterButtonField, FilterValues } from "@/components/shared/FilterButton";
 
 export interface ActionBarProps {
   // Filter props
-  filterFields?: FilterField[];
+  filterFields?: ComponentFilterField[];
   filters?: FilterValues;
   onFilterChange?: (filters: FilterValues) => void;
   filterResetKey?: number;
@@ -140,9 +140,13 @@ export default function ActionBar({
           {/* Filter Button */}
           {filterFields && filterFields.length > 0 && onFilterChange && (
             <FilterButton
-              fields={filterFields}
-              values={filters}
-              onChange={onFilterChange}
+              fields={filterFields.map((field) => ({
+                ...field,
+                options: field.options.map((opt) =>
+                  typeof opt === "string" ? opt : opt.label
+                ),
+              }))}
+              onFilterChange={onFilterChange}
               resetKey={filterResetKey}
             />
           )}
@@ -151,11 +155,11 @@ export default function ActionBar({
           {sortOptions && sortOptions.length > 0 && onSortChange && (
             <SortButton
               options={sortOptions.map((opt) => ({
-                id: opt.id,
+                value: opt.id,
                 label: opt.label,
               }))}
-              value={sortOption || ""}
-              onChange={onSortChange}
+              defaultOption={sortOption || ""}
+              onSortChange={onSortChange}
             />
           )}
 
@@ -163,9 +167,9 @@ export default function ActionBar({
           {enableDateRange && onDateRangeChange && (
             <div className="hidden sm:block">
               <DateRangePicker
-                value={dateRange}
-                onChange={onDateRangeChange}
-                label={dateRangeLabel}
+                value={dateRange ? { startDate: dateRange.start || "", endDate: dateRange.end || "" } : undefined}
+                onChange={(startDate, endDate) => onDateRangeChange({ start: startDate, end: endDate })}
+                resetKey={filterResetKey}
               />
             </div>
           )}
@@ -182,7 +186,7 @@ export default function ActionBar({
 
           {/* View Toggle */}
           {enableViewToggle && onViewModeChange && (
-            <ViewToggle view={viewMode} onChange={onViewModeChange} />
+            <ViewToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
           )}
 
           {/* Custom right content */}
@@ -194,9 +198,9 @@ export default function ActionBar({
       {enableDateRange && onDateRangeChange && (
         <div className="mt-3 sm:hidden">
           <DateRangePicker
-            value={dateRange}
-            onChange={onDateRangeChange}
-            label={dateRangeLabel}
+            value={dateRange ? { startDate: dateRange.start || "", endDate: dateRange.end || "" } : undefined}
+            onChange={(startDate, endDate) => onDateRangeChange({ start: startDate, end: endDate })}
+            resetKey={filterResetKey}
           />
         </div>
       )}

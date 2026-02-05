@@ -10,8 +10,8 @@ interface SearchableDropdownOption {
 }
 
 interface SearchableDropdownProps {
-  label: string;
-  icon: ReactNode;
+  label?: string;
+  icon?: ReactNode;
   iconBgColor?: string;
   iconColor?: string;
   value: string;
@@ -22,7 +22,10 @@ interface SearchableDropdownProps {
   searchPlaceholder?: string;
   excludeIds?: string[];
   loading?: boolean;
+  className?: string;
 }
+
+export type { SearchableDropdownProps };
 
 export default function SearchableDropdown({
   label,
@@ -37,6 +40,7 @@ export default function SearchableDropdown({
   searchPlaceholder = "Search...",
   excludeIds = [],
   loading = false,
+  className = "",
 }: SearchableDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,7 +48,7 @@ export default function SearchableDropdown({
   const [isSearching, setIsSearching] = useState(false);
   const [asyncOptions, setAsyncOptions] = useState<SearchableDropdownOption[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const lastSearchQueryRef = useRef<string>("");
 
   // Debounced search for async fetching
@@ -184,13 +188,17 @@ export default function SearchableDropdown({
   const displayOptions = onSearch ? filteredOptions : filteredOptions;
 
   return (
-    <div className="group">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
-        <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
-          <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
-        </div>
-        <span>{label}</span>
-      </label>
+    <div className={`group ${className}`}>
+      {label && (
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
+          {icon && (
+            <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
+              <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
+            </div>
+          )}
+          <span>{label}</span>
+        </label>
+      )}
       <div className="relative" ref={dropdownRef}>
         {/* Custom Dropdown Button */}
         <button

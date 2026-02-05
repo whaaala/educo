@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { AlertTriangle, GraduationCap, UserMinus, Check, Trash2, UserPlus, Users, Shield } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
@@ -8,7 +8,7 @@ import ParentCard from "@/components/admin/parents/ParentCard";
 import ParentsTable from "@/components/admin/parents/ParentsTable";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
 import DateRangePicker from "@/components/shared/DateRangePicker";
-import FilterButton, { FilterField, FilterValues } from "@/components/shared/FilterButton";
+import FilterButton, { FilterValues } from "@/components/shared/FilterButton";
 import SortButton from "@/components/shared/SortButton";
 import ViewToggle from "@/components/shared/ViewToggle";
 import PageHeader from "@/components/shared/PageHeader";
@@ -25,6 +25,14 @@ import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { exportParentsToPDF } from "@/utils/parentsPdfExport";
 import { exportParentsToExcel } from "@/utils/parentsExcelExport";
+import {
+  parentFilterFields,
+  parentSortOptions,
+  sortParents,
+  filterParents,
+  getCurrencySymbol,
+  hasActiveFilters as checkHasActiveFilters,
+} from "./config";
 
 export default function AdminParentsPage() {
   const { settings } = useSchoolSettings();
@@ -66,34 +74,6 @@ export default function AdminParentsPage() {
     setViewMode(newViewMode);
   }, [searchParams]);
 
-  // Filter fields configuration
-  const filterFields: FilterField[] = [
-    {
-      id: "relationship",
-      label: "Relationship",
-      options: ["Father", "Mother", "Guardian", "Sponsor"],
-      width: "half",
-    },
-    {
-      id: "status",
-      label: "Status",
-      options: ["Active", "Inactive"],
-      width: "half",
-    },
-    {
-      id: "feeStatus",
-      label: "Fee Status",
-      options: ["Paid Up", "Pending", "High Balance"],
-      width: "full",
-    },
-    {
-      id: "childrenCount",
-      label: "Children",
-      options: ["1 Child", "2 Children", "3+ Children"],
-      width: "full",
-    },
-  ];
-
   // Filter state
   const [filters, setFilters] = useState<FilterValues>({});
   const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string } | null>(null);
@@ -121,6 +101,10 @@ export default function AdminParentsPage() {
   const [isAddParentModalOpen, setIsAddParentModalOpen] = useState(false);
 
   const { addNotification } = useNotifications();
+
+  // Apply sorting and filtering using config functions
+  const sortedParents = sortParents(parents, sortOption);
+  const filteredParents = filterParents(sortedParents, filters);
 
   // Helper to toggle child selection in the bulk modal
   const toggleChildInModal = (parentId: string, childId: string) => {
@@ -254,15 +238,6 @@ export default function AdminParentsPage() {
     }
   };
 
-  // Sort options
-  const sortOptions = [
-    { label: "A-Z", value: "ascending" },
-    { label: "Z-A", value: "descending" },
-    { label: "Recently Added", value: "recently_added" },
-    { label: "Highest Balance", value: "highest_balance" },
-    { label: "Most Children", value: "most_children" },
-  ];
-
   const handleDateRangeChange = (startDate: string, endDate: string) => {
     setIsFiltering(true);
     setTimeout(() => {
@@ -375,8 +350,7 @@ export default function AdminParentsPage() {
   };
 
   // Check if there are active filters
-  const hasActiveFilters =
-    Object.values(filters).some((values) => values && values.length > 0) || dateRange !== null;
+  const hasActiveFilters = checkHasActiveFilters(filters, dateRange);
 
   const handleSortChange = (sortValue: string) => {
     setIsSorting(true);
@@ -409,18 +383,8 @@ export default function AdminParentsPage() {
     window.print();
   };
 
-  const handleExportPDF = () => {
-    // Get currency symbol from settings
-    const currencyCode = settings.currency || "NGN";
-    let currencySymbol = "₦";
-    try {
-      const formatter = new Intl.NumberFormat(undefined, { style: "currency", currency: currencyCode });
-      const parts = formatter.formatToParts(0);
-      currencySymbol = parts.find((p) => p.type === "currency")?.value || "₦";
-    } catch {
-      currencySymbol = "₦";
-    }
-
+  const handleExportPDF = useCallback(() => {
+    const currencySymbol = getCurrencySymbol(settings.currency || "NGN");
     const dateStr = new Date().toLocaleDateString("en-US", {
       year: "numeric",
       month: "2-digit",
@@ -431,20 +395,10 @@ export default function AdminParentsPage() {
       currencySymbol,
       schoolName: settings.schoolName || "School Management System",
     });
-  };
+  }, [filteredParents, settings.currency, settings.schoolName]);
 
-  const handleExportExcel = () => {
-    // Get currency symbol from settings
-    const currencyCode = settings.currency || "NGN";
-    let currencySymbol = "₦";
-    try {
-      const formatter = new Intl.NumberFormat(undefined, { style: "currency", currency: currencyCode });
-      const parts = formatter.formatToParts(0);
-      currencySymbol = parts.find((p) => p.type === "currency")?.value || "₦";
-    } catch {
-      currencySymbol = "₦";
-    }
-
+  const handleExportExcel = useCallback(() => {
+    const currencySymbol = getCurrencySymbol(settings.currency || "NGN");
     const dateStr = new Date().toLocaleDateString("en-US", {
       year: "numeric",
       month: "2-digit",
@@ -455,7 +409,7 @@ export default function AdminParentsPage() {
       currencySymbol,
       schoolName: settings.schoolName || "School Management System",
     });
-  };
+  }, [filteredParents, settings.currency, settings.schoolName]);
 
   const handleAddParent = () => {
     setIsAddParentModalOpen(true);
@@ -523,60 +477,6 @@ export default function AdminParentsPage() {
     }, 500);
   };
 
-  // Apply sorting
-  const sortedParents = [...parents].sort((a, b) => {
-    switch (sortOption) {
-      case "ascending":
-        return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
-      case "descending":
-        return `${b.firstName} ${b.lastName}`.localeCompare(`${a.firstName} ${a.lastName}`);
-      case "recently_added":
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      case "highest_balance":
-        return b.totalOutstandingFees - a.totalOutstandingFees;
-      case "most_children":
-        return b.children.length - a.children.length;
-      default:
-        return 0;
-    }
-  });
-
-  // Apply filters
-  const filteredParents = sortedParents.filter((parent) => {
-    const hasFilters = Object.values(filters).some((values) => values && values.length > 0);
-    if (!hasFilters) return true;
-
-    const matchesRelationship =
-      !filters.relationship ||
-      filters.relationship.length === 0 ||
-      filters.relationship.includes(parent.relationship);
-
-    const matchesStatus =
-      !filters.status || filters.status.length === 0 || filters.status.includes(parent.status);
-
-    const matchesFeeStatus =
-      !filters.feeStatus ||
-      filters.feeStatus.length === 0 ||
-      filters.feeStatus.some((status) => {
-        if (status === "Paid Up") return parent.totalOutstandingFees === 0;
-        if (status === "High Balance") return parent.totalOutstandingFees > 100000;
-        if (status === "Pending") return parent.totalOutstandingFees > 0 && parent.totalOutstandingFees <= 100000;
-        return false;
-      });
-
-    const matchesChildrenCount =
-      !filters.childrenCount ||
-      filters.childrenCount.length === 0 ||
-      filters.childrenCount.some((count) => {
-        if (count === "1 Child") return parent.children.length === 1;
-        if (count === "2 Children") return parent.children.length === 2;
-        if (count === "3+ Children") return parent.children.length >= 3;
-        return false;
-      });
-
-    return matchesRelationship && matchesStatus && matchesFeeStatus && matchesChildrenCount;
-  });
-
   const displayedParents = filteredParents.slice(0, displayedCount);
   const hasMore = displayedCount < filteredParents.length;
 
@@ -618,7 +518,7 @@ export default function AdminParentsPage() {
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
             <div className="flex items-center gap-2 sm:gap-3 lg:flex-1">
               <DateRangePicker onChange={handleDateRangeChange} resetKey={resetKey} />
-              <FilterButton fields={filterFields} onFilterChange={handleFilterChange} resetKey={resetKey} />
+              <FilterButton fields={parentFilterFields} onFilterChange={handleFilterChange} resetKey={resetKey} />
 
               {viewMode === "list" && selectedIds.size > 0 && (
                 <DeleteAllButton selectedCount={selectedIds.size} onDeleteAll={handleDeleteAll} />
@@ -674,7 +574,7 @@ export default function AdminParentsPage() {
 
               <ViewToggle viewMode={viewMode} onViewModeChange={handleViewModeChange} />
               <SortButton
-                options={sortOptions}
+                options={parentSortOptions}
                 defaultOption="ascending"
                 onSortChange={handleSortChange}
                 resetKey={resetKey}

@@ -222,7 +222,7 @@ export default function IncidentDetailModal({
               <div>
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Type</p>
                 <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                  {getActionTypeLabel(incident.actionType)}
+                  {getActionTypeLabel(incident.actionType || "")}
                 </p>
               </div>
               <div>
@@ -255,7 +255,7 @@ export default function IncidentDetailModal({
                 <span className="font-semibold">Role:</span> {incident.reportedByRole}
               </p>
               <p className="text-gray-700 dark:text-gray-300">
-                <span className="font-semibold">Reported on:</span> {formatDateTime(incident.reportedDate)}
+                <span className="font-semibold">Reported on:</span> {formatDateTime(incident.reportedDate || incident.createdAt)}
               </p>
             </div>
           </div>

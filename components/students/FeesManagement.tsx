@@ -26,7 +26,7 @@ import {
   Award,
   UtensilsCrossed,
 } from "lucide-react";
-import DataTable, { Column } from "@/components/shared/DataTable";
+import DataTable, { ColumnConfig as Column } from "@/components/shared/DataTable";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import Tooltip from "@/components/shared/Tooltip";
 import StatCard from "@/components/shared/StatCard";
@@ -449,7 +449,7 @@ export default function FeesManagement({
 
       if (!tableContainer || !leftIndicator || !rightIndicator || !table) return;
 
-      let scrollTimeout: NodeJS.Timeout;
+      let scrollTimeout: ReturnType<typeof setTimeout>;
       let isScrolling = false;
 
       const handleScroll = () => {
@@ -1029,7 +1029,6 @@ export default function FeesManagement({
           data={filteredRecords}
           getRowKey={(item) => item.id}
           enablePagination={true}
-          enableSearch={true}
           enableItemsPerPage={true}
           emptyMessage="No fee records found"
         />

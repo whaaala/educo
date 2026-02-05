@@ -102,7 +102,7 @@ export function FormInput({
           ref={inputRef}
           style={[
             styles.input,
-            leftIcon && styles.inputWithLeftIcon,
+            leftIcon ? styles.inputWithLeftIcon : undefined,
             multiline && styles.inputMultiline,
             disabled && styles.inputDisabled,
           ]}

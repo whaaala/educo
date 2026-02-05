@@ -224,7 +224,6 @@ export default function QualificationsSection({
                   onChange={(file) => onChange("cvDocument", file)}
                   helpText="Upload PDF, DOC, or DOCX (Max 5MB)"
                   accept=".pdf,.doc,.docx"
-                  error={errors.cvDocument}
                 />
                 <FileUpload
                   label="Degree Certificate"

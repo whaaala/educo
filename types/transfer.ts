@@ -53,6 +53,7 @@ export interface TransferRequest {
   destinationClass?: string;
   destinationSection?: string;
   destinationSchoolName?: string;  // For external transfers
+  destinationSchoolAddress?: string;  // For external transfers
 
   // Status & Workflow
   status: TransferStatus;
@@ -195,4 +196,4 @@ export const TRANSFER_REASONS = [
   { value: "administrative", label: "Administrative Reasons" },
   { value: "medical", label: "Medical Reasons" },
   { value: "other", label: "Other" },
-] as const;
+];

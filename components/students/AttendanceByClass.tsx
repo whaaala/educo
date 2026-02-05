@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import DataTable, { Column } from "@/components/shared/DataTable";
+import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
 import RefreshButton from "@/components/shared/RefreshButton";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import WeekNavigator from "@/components/shared/WeekNavigator";
@@ -337,7 +337,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
   };
 
   // Generate columns dynamically based on periodsPerDay and enrolled subjects
-  const columns: Column<ClassAttendanceData>[] = useMemo(() => {
+  const columns: ColumnConfig<ClassAttendanceData>[] = useMemo(() => {
     const periodsPerDay = config.periodsPerDay;
 
     // Use enrolled subjects if available, otherwise use default subjects
@@ -357,7 +357,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
         label: "Date",
         sortable: true,
         className: "text-left sticky left-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 z-10",
-        render: (row) => {
+        render: (row: ClassAttendanceData) => {
           const isDayBlocked = isBlockedDay(row.day);
           return (
             <div className="flex flex-col items-start justify-center min-w-[80px] md:min-w-[70px] h-full">
@@ -532,7 +532,6 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
         columns={columns}
         getRowKey={(item) => item.date}
         enablePagination={false}
-        enableSearch={false}
         enableItemsPerPage={false}
         emptyMessage="No attendance data available for this week"
       />

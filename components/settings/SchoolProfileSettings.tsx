@@ -258,7 +258,7 @@ export default function SchoolProfileSettings() {
           value={scheduleType}
           options={SCHOOL_SCHEDULE_OPTIONS}
           onChange={handleScheduleTypeChange}
-          variant="green"
+          variant="blue"
         />
         <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mt-2">
           {scheduleType === "full-time" && "Traditional full-time day school with regular daily schedule."}

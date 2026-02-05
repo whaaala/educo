@@ -163,12 +163,13 @@ export function generateTransferLetter(
     );
   } else {
     // Regular transfer
-    const transferTypeText = {
+    const transferTypeLabels: Record<string, string> = {
       department: "department transfer",
       branch: "branch transfer",
       designation: "designation change",
       location: "location transfer",
-    }[transfer.transferType] || "transfer";
+    };
+    const transferTypeText = transferTypeLabels[transfer.transferType] || "transfer";
 
     addWrappedText(
       `This letter serves to notify you of your ${transferTypeText} within ${config.schoolName}. Following administrative review and organizational requirements, we are pleased to inform you of the following changes:`,

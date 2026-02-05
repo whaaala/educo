@@ -1,6 +1,6 @@
 "use client";
 
-import StatCard from "@/components/shared/StatCard";
+import StatCard, { type StatCardColor } from "@/components/shared/StatCard";
 import type { StatCardConfig, ColorVariant } from "@/types/components";
 
 export interface StatsGridProps<T> {
@@ -25,7 +25,7 @@ export interface StatsGridProps<T> {
 }
 
 // Map color variants to StatCard colors
-const colorMap: Record<ColorVariant, string> = {
+const colorMap: Record<ColorVariant, StatCardColor> = {
   blue: "blue",
   green: "green",
   red: "red",

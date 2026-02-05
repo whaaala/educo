@@ -42,7 +42,7 @@ export default function FeeSettings() {
   }, []);
 
   // Save school type to localStorage
-  const handleSchoolTypeChange = (value: string) => {
+  const handleSchoolTypeChange = (value: string | number) => {
     const newSchoolType = value as SchoolType;
     setSchoolType(newSchoolType);
     localStorage.setItem("schoolType", newSchoolType);

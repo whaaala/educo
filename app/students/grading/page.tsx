@@ -190,7 +190,7 @@ export default function GradingPage() {
           return;
         }
 
-        let scrollTimeout: NodeJS.Timeout;
+        let scrollTimeout: ReturnType<typeof setTimeout>;
         let isScrolling = false;
 
         const handleScroll = () => {

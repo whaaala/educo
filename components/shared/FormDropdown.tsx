@@ -10,9 +10,9 @@ interface FormDropdownOption {
   label: string;
 }
 
-interface FormDropdownProps {
+export interface FormDropdownProps {
   label: string;
-  icon: ReactNode;
+  icon?: ReactNode;
   iconBgColor?: string;
   iconColor?: string;
   value: string;
@@ -22,6 +22,7 @@ interface FormDropdownProps {
   disabled?: boolean;
   required?: boolean;
   error?: string;
+  helpText?: string;
 }
 
 export default function FormDropdown({

@@ -93,7 +93,7 @@ export default function VoiceCallRoom({
 
   // Call timer
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setTimeout>;
     if (session?.state === "connected" && session.startedAt) {
       interval = setInterval(() => {
         const startTime = new Date(session.startedAt!).getTime();

@@ -62,12 +62,13 @@ export interface DeleteConfirmationModalProps {
   onClose: () => void;
   onConfirm: () => void;
   title?: string;
-  itemName: string;
-  itemId: string;
+  itemName?: string; // Made optional for simpler usages
+  itemId?: string;   // Made optional for simpler usages
   itemInitials?: string;
   itemAvatar?: string;
   avatarColor?: string;
   warningMessage?: string;
+  message?: string; // Alias for warningMessage
   confirmButtonText?: string;
   cancelButtonText?: string;
   // Customization props
@@ -87,7 +88,8 @@ export default function DeleteConfirmationModal({
   itemInitials,
   itemAvatar,
   avatarColor,
-  warningMessage = "This will permanently remove this item and all associated data. This action cannot be undone.",
+  warningMessage,
+  message,
   confirmButtonText = "Delete",
   cancelButtonText = "Cancel",
   headerIcon: HeaderIcon = AlertTriangle,
@@ -95,6 +97,8 @@ export default function DeleteConfirmationModal({
   subtitle,
   showWarning = true,
 }: DeleteConfirmationModalProps) {
+  // Use message as alias for warningMessage
+  const displayMessage = warningMessage || message || "This will permanently remove this item and all associated data. This action cannot be undone.";
   const modalRef = useRef<HTMLDivElement>(null);
   const colors = variantConfig[variant];
 
@@ -127,7 +131,7 @@ export default function DeleteConfirmationModal({
   if (!isOpen) return null;
 
   // Generate initials from name if not provided
-  const initials = itemInitials || itemName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+  const initials = itemInitials || (itemName || "").split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
   return (
     <div
@@ -199,7 +203,7 @@ export default function DeleteConfirmationModal({
           {showWarning && (
             <div className={`mb-4 p-3 ${colors.warningBg} border-l-4 ${colors.warningBorder} rounded`}>
               <p className={`text-sm ${colors.warningText}`}>
-                {warningMessage}
+                {displayMessage}
               </p>
             </div>
           )}

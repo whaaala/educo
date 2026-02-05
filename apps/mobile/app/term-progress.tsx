@@ -401,7 +401,7 @@ export default function TermProgressScreen() {
             const progressPercent = subject.totalTests > 0
               ? Math.round((subject.testsCompleted / subject.totalTests) * 100)
               : 0;
-            const scoreGradient = subject.currentAverage > 0
+            const scoreGradient: [string, string] = subject.currentAverage > 0
               ? getScoreGradient(subject.currentAverage)
               : ['#9ca3af', '#6b7280'];
 

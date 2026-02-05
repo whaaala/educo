@@ -7,7 +7,7 @@ import Tooltip from "./Tooltip";
 
 export interface ColumnConfig<T> {
   key: string;
-  label: string;
+  label: string | ReactNode;
   sortable?: boolean;
   hidden?: {
     mobile?: boolean;
@@ -313,7 +313,7 @@ export default function DataTable<T>({
                   {column.renderHeader ? (
                     column.renderHeader()
                   ) : (
-                    <Tooltip content={column.label}>
+                    <Tooltip content={typeof column.label === 'string' ? column.label : ''}>
                       <div className={`flex items-center ${justifyClass} gap-1.5 cursor-help`}>
                         <span className="relative">
                           {column.label}

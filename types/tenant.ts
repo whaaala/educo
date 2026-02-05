@@ -7,6 +7,7 @@ export interface SchoolBranding {
   schoolNameShort?: string;
   schoolLogo?: string;
   schoolMotto?: string;
+  motto?: string; // Alias for schoolMotto
   address: string;
   city: string;
   state: string;
@@ -42,6 +43,17 @@ export interface SignatureConfig {
   principalSignature?: string;
   showOfficialSeal: boolean;
   sealImage?: string;
+  // Nested structure aliases for component compatibility
+  registrar?: {
+    name: string;
+    title: string;
+    signature?: string;
+  };
+  principal?: {
+    name: string;
+    title: string;
+    signature?: string;
+  };
 }
 
 export interface BankAccountSettings {

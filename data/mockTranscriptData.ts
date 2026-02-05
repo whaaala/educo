@@ -3,7 +3,8 @@
 import { TranscriptRequest, AcademicTermRecord } from "@/types/transcript";
 
 // Helper function to generate mock academic records
-export const mockAcademicRecords = {
+// Type annotation ensures all AcademicTermRecord fields are recognized
+export const mockAcademicRecords: Record<string, AcademicTermRecord[]> = {
   // Primary Student - Ralph Claudia (Primary 2)
   "AD9892430": [
     {
@@ -60,7 +61,7 @@ export const mockAcademicRecords = {
       teacherRemarks: "Outstanding improvement this term. Ralph is now at the top of the class!",
       principalRemarks: "Brilliant performance. Well done!",
     },
-  ] as AcademicTermRecord[],
+  ],
   // Secondary Student - Mary Johnson (SS 3)
   "AD9892431": [
     {
@@ -200,7 +201,7 @@ export const mockAcademicRecords = {
       teacherRemarks: "Excellent progress this term. Keep it up!",
       principalRemarks: "Outstanding performance.",
     },
-  ] as AcademicTermRecord[],
+  ],
 
   // Tertiary Student - Joann Michael (Year 2)
   "AD9892433": [
@@ -229,7 +230,7 @@ export const mockAcademicRecords = {
       teacherRemarks: "Excellent performance in core Computer Science courses.",
       principalRemarks: "Keep maintaining this high standard.",
     },
-  ] as AcademicTermRecord[],
+  ],
 };
 
 // Mock Transcript Requests

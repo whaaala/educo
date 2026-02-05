@@ -20,11 +20,15 @@ import { registerStream, unregisterStream } from "@/lib/utils/stopAllMedia";
 // - Xirsys (https://xirsys.com/)
 // - Open Relay Project (https://openrelayproject.org/)
 // - Coturn (self-hosted: https://github.com/coturn/coturn)
+
+// Credential type for TURN servers (password or oauth)
+type TurnCredentialType = "password" | "oauth";
+
 export interface TurnServerConfig {
   urls: string | string[];
   username?: string;
   credential?: string;
-  credentialType?: RTCIceCredentialType;
+  credentialType?: TurnCredentialType;
 }
 
 export interface WebRTCConfig {
@@ -80,7 +84,7 @@ function buildIceServers(config?: WebRTCConfig): RTCIceServer[] {
     const server: RTCIceServer = { urls: turn.urls };
     if (turn.username) server.username = turn.username;
     if (turn.credential) server.credential = turn.credential;
-    if (turn.credentialType) server.credentialType = turn.credentialType;
+    // Note: credentialType is rarely needed (defaults to "password")
     iceServers.push(server);
   });
 
@@ -104,7 +108,7 @@ class SignalingChannel {
   private wsUrl: string | null = null;
   private reconnectAttempts: number = 0;
   private maxReconnectAttempts: number = 5;
-  private reconnectTimeout: NodeJS.Timeout | null = null;
+  private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
   private connectionStateCallbacks: ((state: "connected" | "disconnected" | "reconnecting") => void)[] = [];
 
   constructor(wsUrl?: string) {

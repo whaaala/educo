@@ -189,7 +189,7 @@ export default function DisciplinePage() {
   const filteredIncidents = incidents.filter(incident => {
     const matchesSearch = searchQuery === "" ||
       incident.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      incident.studentAdmissionNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (incident.studentAdmissionNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
       incident.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       incident.id.toLowerCase().includes(searchQuery.toLowerCase());
 

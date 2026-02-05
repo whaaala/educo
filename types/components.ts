@@ -32,7 +32,7 @@ export interface BreadcrumbItem {
 /**
  * Filter values - generic key-value pairs
  */
-export type FilterValues = Record<string, string | string[] | null>;
+export type FilterValues = Record<string, string[]>;
 
 /**
  * Date range for filtering
@@ -51,7 +51,7 @@ export interface DateRange {
  */
 export interface ColumnConfig<T> {
   key: string;
-  label: string;
+  label: string | ReactNode;
   sortable?: boolean;
   searchable?: boolean;
   render?: (item: T, index: number) => ReactNode;

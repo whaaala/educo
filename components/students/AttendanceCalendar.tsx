@@ -148,7 +148,7 @@ export default function AttendanceCalendar({ year = 2024, onYearChange, studentI
 
       if (!tableContainer || !leftIndicator || !rightIndicator || !table) return;
 
-      let scrollTimeout: NodeJS.Timeout;
+      let scrollTimeout: ReturnType<typeof setTimeout>;
       let isScrolling = false;
 
       const handleScroll = () => {

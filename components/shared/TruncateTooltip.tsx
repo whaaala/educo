@@ -5,7 +5,10 @@ import { createPortal } from "react-dom";
 
 interface TruncateTooltipProps {
   content: string;
-  children: ReactElement;
+  children: ReactElement<{
+    onMouseEnter?: (e: React.MouseEvent) => void;
+    onMouseLeave?: (e: React.MouseEvent) => void;
+  }>;
   delay?: number;
 }
 
@@ -13,7 +16,7 @@ export default function TruncateTooltip({ content, children, delay = 300 }: Trun
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState<'top' | 'bottom'>('top');
   const [coords, setCoords] = useState({ top: 0, left: 0 });
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
   const [mounted, setMounted] = useState(false);

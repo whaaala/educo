@@ -115,6 +115,12 @@ export default function BookViewModal({
         textClass: "text-white",
         shadowClass: "shadow-red-500/30",
       },
+      damaged: {
+        label: "Damaged",
+        bgClass: "bg-gradient-to-r from-red-700 to-rose-600",
+        textClass: "text-white",
+        shadowClass: "shadow-red-700/30",
+      },
     };
     return configs[condition] || configs.good;
   };

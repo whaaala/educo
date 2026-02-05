@@ -252,7 +252,7 @@ export default function BulkImportPage() {
     {
       key: "_rowNumber",
       label: "Row",
-      isSortable: false,
+      sortable: false,
       render: (row) => (
         <span className="text-xs text-neutral-500 dark:text-neutral-400">
           {row._rowNumber}
@@ -262,7 +262,7 @@ export default function BulkImportPage() {
     ...columnMappings.slice(0, 5).map((mapping) => ({
       key: mapping.systemField,
       label: REQUIRED_FIELDS.concat(OPTIONAL_FIELDS).find((f) => f.field === mapping.systemField)?.label || mapping.systemField,
-      isSortable: false,
+      sortable: false,
       render: (row: ImportedRow) => (
         <span className={row._errors.some((e) => e.field === mapping.systemField) ? "text-red-600 dark:text-red-400" : ""}>
           {row[mapping.systemField] || "-"}
@@ -272,7 +272,7 @@ export default function BulkImportPage() {
     {
       key: "status",
       label: "Status",
-      isSortable: false,
+      sortable: false,
       render: (row) => (
         <div className="flex items-center gap-2">
           {row._errors.length === 0 ? (

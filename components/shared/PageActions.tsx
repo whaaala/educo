@@ -13,7 +13,7 @@ interface Action {
   variant?: "primary" | "secondary";
 }
 
-interface PageActionsProps {
+export interface PageActionsProps {
   // New actions array API
   actions?: Action[];
 
@@ -24,6 +24,7 @@ interface PageActionsProps {
   onExportPDF?: () => void;
   onExportExcel?: () => void;
   addButtonLabel?: string;
+  addButtonHref?: string;
   exportDescription?: string;
   showRefresh?: boolean;
   showPrint?: boolean;

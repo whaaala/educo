@@ -6,7 +6,7 @@ import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormTextarea from "@/components/shared/FormTextarea";
 import { useDiscipline } from "@/contexts/DisciplineContext";
-import { DisciplinaryAction, IncidentStatus, IncidentSeverity, ActionTaken } from "@/types/discipline";
+import { DisciplinaryAction, StaffIncidentStatus, StaffIncidentSeverity, ActionTaken } from "@/types/discipline";
 
 interface EditDisciplinaryActionModalProps {
   isOpen: boolean;
@@ -15,8 +15,8 @@ interface EditDisciplinaryActionModalProps {
 }
 
 interface EditFormData {
-  status: IncidentStatus;
-  severity: IncidentSeverity;
+  status: StaffIncidentStatus;
+  severity: StaffIncidentSeverity;
   investigatorName: string;
   investigationStartDate: string;
   investigationEndDate: string;
@@ -199,7 +199,7 @@ export default function EditDisciplinaryActionModal({
                 label="Status"
                 icon={<AlertTriangle className="w-4 h-4" />}
                 value={formData.status}
-                onChange={(value) => setFormData({ ...formData, status: value as IncidentStatus })}
+                onChange={(value) => setFormData({ ...formData, status: value as StaffIncidentStatus })}
                 options={[
                   { label: "Reported", value: "reported" },
                   { label: "Under Investigation", value: "under-investigation" },
@@ -213,7 +213,7 @@ export default function EditDisciplinaryActionModal({
                 label="Severity"
                 icon={<Shield className="w-4 h-4" />}
                 value={formData.severity}
-                onChange={(value) => setFormData({ ...formData, severity: value as IncidentSeverity })}
+                onChange={(value) => setFormData({ ...formData, severity: value as StaffIncidentSeverity })}
                 options={[
                   { label: "Minor", value: "minor" },
                   { label: "Moderate", value: "moderate" },

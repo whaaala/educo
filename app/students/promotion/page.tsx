@@ -185,7 +185,7 @@ export default function PromotionPage() {
           className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-600"
         />
       ),
-      isSortable: false,
+      sortable: false,
       render: (student) => (
         <input
           type="checkbox"
@@ -198,7 +198,7 @@ export default function PromotionPage() {
     {
       key: "name",
       label: "Student Name",
-      isSortable: true,
+      sortable: true,
       render: (student) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
@@ -211,22 +211,22 @@ export default function PromotionPage() {
     {
       key: "rollNo",
       label: "Admission No",
-      isSortable: true,
+      sortable: true,
     },
     {
       key: "class",
       label: "Current Class",
-      isSortable: true,
+      sortable: true,
     },
     {
       key: "gender",
       label: "Gender",
-      isSortable: true,
+      sortable: true,
     },
     {
       key: "status",
       label: "Status",
-      isSortable: true,
+      sortable: true,
       render: (student) => (
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -245,7 +245,7 @@ export default function PromotionPage() {
     {
       key: "student",
       label: "Student Name",
-      isSortable: false,
+      sortable: false,
       render: (record) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
@@ -263,7 +263,7 @@ export default function PromotionPage() {
     {
       key: "currentClass",
       label: "Current Class",
-      isSortable: false,
+      sortable: false,
       render: (record) => (
         <span className="font-medium text-neutral-700 dark:text-neutral-300">
           {record.currentClass}
@@ -273,7 +273,7 @@ export default function PromotionPage() {
     {
       key: "arrow",
       label: "",
-      isSortable: false,
+      sortable: false,
       render: () => (
         <ArrowRight className="w-5 h-5 text-neutral-400 dark:text-neutral-500" />
       ),
@@ -281,7 +281,7 @@ export default function PromotionPage() {
     {
       key: "newClass",
       label: "New Class",
-      isSortable: false,
+      sortable: false,
       render: (record) => (
         <span className="font-medium text-purple-700 dark:text-purple-300">
           {record.newClass}
@@ -292,7 +292,7 @@ export default function PromotionPage() {
     {
       key: "status",
       label: "Status",
-      isSortable: false,
+      sortable: false,
       render: (record) => (
         <div className="flex items-center gap-2">
           {record.status === "success" && (

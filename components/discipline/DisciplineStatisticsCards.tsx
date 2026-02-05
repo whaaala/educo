@@ -1,21 +1,24 @@
 "use client";
 
 import { AlertTriangle, Clock, Search, CheckCircle, AlertOctagon, AlertCircle } from "lucide-react";
-import { DisciplinaryAction } from "@/types/discipline";
+import { DisciplinaryAction, DisciplineIncident } from "@/types/discipline";
 import StatCard, { StatCardColor } from "@/components/shared/StatCard";
 
 interface DisciplineStatisticsCardsProps {
-  actions: DisciplinaryAction[];
+  actions?: DisciplinaryAction[];
+  incidents?: DisciplineIncident[];
 }
 
-export default function DisciplineStatisticsCards({ actions = [] }: DisciplineStatisticsCardsProps) {
+export default function DisciplineStatisticsCards({ actions = [], incidents = [] }: DisciplineStatisticsCardsProps) {
+  // Support both staff actions and student incidents
+  const data = actions.length > 0 ? actions : incidents;
   const stats = {
-    total: actions.length,
-    reported: actions.filter(a => a.status === "reported").length,
-    investigating: actions.filter(a => a.status === "under-investigation").length,
-    resolved: actions.filter(a => a.status === "resolved").length,
-    critical: actions.filter(a => a.severity === "critical").length,
-    serious: actions.filter(a => a.severity === "serious").length,
+    total: data.length,
+    reported: data.filter(a => a.status === "reported").length,
+    investigating: data.filter(a => a.status === "under-investigation" || a.status === "under-review" || a.status === "investigating").length,
+    resolved: data.filter(a => a.status === "resolved").length,
+    critical: data.filter(a => a.severity === "critical").length,
+    serious: data.filter(a => a.severity === "serious" || a.severity === "major").length,
   };
 
   const cards: Array<{ label: string; value: number; icon: typeof AlertTriangle; color: StatCardColor }> = [

@@ -541,11 +541,13 @@ export default function ChildDetailPage() {
       doc.setFillColor(...primaryColor);
       doc.rect(0, 0, pageWidth, headerHeight, "F");
 
-      // Add gradient effect overlay
-      doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-      doc.setGlobalAlpha?.(0.3);
+      // Add gradient effect overlay (using lower opacity color for gradient effect)
+      doc.setFillColor(
+        Math.min(255, secondaryColor[0] + 50),
+        Math.min(255, secondaryColor[1] + 50),
+        Math.min(255, secondaryColor[2] + 50)
+      );
       doc.rect(pageWidth * 0.6, 0, pageWidth * 0.4, headerHeight, "F");
-      doc.setGlobalAlpha?.(1);
 
       // School Name - Large and Prominent
       doc.setTextColor(255, 255, 255);
@@ -756,7 +758,7 @@ export default function ChildDetailPage() {
           if (data.section === "body" && data.column.index === 2) {
             const grade = String(data.cell.raw);
             const gradeInfo = gradeScale.find((g) => g.grade === grade);
-            if (gradeInfo) {
+            if (gradeInfo && gradeInfo.color) {
               const rgb = hexToRgb(gradeInfo.color);
               doc.setFillColor(rgb[0], rgb[1], rgb[2]);
               doc.roundedRect(data.cell.x + 3, data.cell.y + 1.5, 12, 5, 1, 1, "F");
@@ -873,7 +875,7 @@ export default function ChildDetailPage() {
 
         const scaleBoxWidth = contentWidth / gradeScale.length;
         gradeScale.forEach((grade, index) => {
-          const rgb = hexToRgb(grade.color);
+          const rgb = hexToRgb(grade.color || "#888888");
           doc.setFillColor(rgb[0], rgb[1], rgb[2]);
           doc.roundedRect(margin + index * scaleBoxWidth, y, scaleBoxWidth - 1, 10, 1, 1, "F");
           doc.setTextColor(255, 255, 255);
@@ -2287,7 +2289,7 @@ export default function ChildDetailPage() {
                           onClick={() => {
                             // Export as PDF
                             const doc = new jsPDF();
-                            const tenant = getTenantById(settings.tenantId);
+                            const tenant = getTenantById(settings.tenantId || "default");
                             doc.setFontSize(18);
                             doc.setFont("helvetica", "bold");
                             doc.text(tenant?.name || "School Name", 105, 20, { align: "center" });
@@ -2511,7 +2513,7 @@ export default function ChildDetailPage() {
                                 e.stopPropagation();
                                 // Download receipt PDF
                                 const doc = new jsPDF();
-                                const tenant = getTenantById(settings.tenantId);
+                                const tenant = getTenantById(settings.tenantId || "default");
                                 const pageWidth = doc.internal.pageSize.getWidth();
 
                                 // Header

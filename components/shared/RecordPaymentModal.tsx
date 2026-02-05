@@ -608,9 +608,9 @@ export default function RecordPaymentModal({
               </button>
               {showDatePicker && (
                 <ModernCalendar
-                  selectedDate={paymentDate ? new Date(paymentDate) : null}
-                  onSelect={(date) => {
-                    setPaymentDate(date.toISOString().split("T")[0]);
+                  value={paymentDate || ""}
+                  onChange={(date: string) => {
+                    setPaymentDate(date);
                     setShowDatePicker(false);
                     if (errors.date) {
                       setErrors((prev) => {

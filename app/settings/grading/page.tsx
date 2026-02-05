@@ -115,7 +115,7 @@ export default function GradingConfigPage() {
                   <CustomDropdown
                     value={selectedSubject || currentSubject.id}
                     options={subjectOptions}
-                    onChange={(value) => setSelectedSubject(value)}
+                    onChange={(value) => setSelectedSubject(String(value))}
                     variant="blue"
                     className="w-full"
                   />

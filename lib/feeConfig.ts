@@ -235,6 +235,7 @@ export const FEE_TYPES: FeeType[] = [
     isRecurring: true,
     frequency: "monthly",
     applicableTo: ["primary", "secondary"],
+    applicableToSchoolTypes: ["private", "public"],
   },
   {
     id: "semester-tuition",
@@ -243,7 +244,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Per semester tuition payment",
     isRecurring: true,
     frequency: "semester",
-    applicableTo: ["university"],
+    applicableTo: ["tertiary"],
+    applicableToSchoolTypes: ["tertiary"],
   },
   {
     id: "annual-tuition",
@@ -252,7 +254,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Yearly tuition payment",
     isRecurring: true,
     frequency: "annual",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
 
   // ADMISSION & REGISTRATION
@@ -263,7 +266,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "One-time admission/enrollment fee",
     isRecurring: false,
     frequency: "one-time",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
   {
     id: "registration-fee",
@@ -272,7 +276,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Annual registration fee",
     isRecurring: true,
     frequency: "annual",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
   {
     id: "re-admission-fee",
@@ -281,7 +286,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Fee for re-enrolling students",
     isRecurring: false,
     frequency: "one-time",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
 
   // INFRASTRUCTURE & FACILITIES
@@ -292,7 +298,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Infrastructure development and maintenance",
     isRecurring: true,
     frequency: "annual",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
   {
     id: "building-fund",
@@ -301,7 +308,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Construction and building maintenance",
     isRecurring: true,
     frequency: "annual",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
   {
     id: "electricity-water",
@@ -310,7 +318,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Electricity, water, and utilities",
     isRecurring: true,
     frequency: "monthly",
-    applicableTo: ["university"],
+    applicableTo: ["tertiary"],
+    applicableToSchoolTypes: ["tertiary"],
   },
 
   // ACADEMIC SERVICES
@@ -321,7 +330,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Library membership and books",
     isRecurring: true,
     frequency: "annual",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
   {
     id: "lab-fee",
@@ -330,7 +340,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Science lab equipment and materials",
     isRecurring: true,
     frequency: "semester",
-    applicableTo: ["secondary", "university"],
+    applicableTo: ["secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
   {
     id: "computer-lab-fee",
@@ -339,7 +350,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "IT lab and computer facilities",
     isRecurring: true,
     frequency: "semester",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
   {
     id: "study-material-fee",
@@ -349,6 +361,7 @@ export const FEE_TYPES: FeeType[] = [
     isRecurring: true,
     frequency: "annual",
     applicableTo: ["primary", "secondary"],
+    applicableToSchoolTypes: ["private", "public"],
   },
 
   // TRANSPORTATION
@@ -360,6 +373,7 @@ export const FEE_TYPES: FeeType[] = [
     isRecurring: true,
     frequency: "monthly",
     applicableTo: ["primary", "secondary"],
+    applicableToSchoolTypes: ["private", "public"],
   },
   {
     id: "transport-fee-quarterly",
@@ -369,6 +383,7 @@ export const FEE_TYPES: FeeType[] = [
     isRecurring: true,
     frequency: "quarterly",
     applicableTo: ["primary", "secondary"],
+    applicableToSchoolTypes: ["private", "public"],
   },
 
   // HOSTEL & ACCOMMODATION
@@ -379,7 +394,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Boarding and lodging (monthly)",
     isRecurring: true,
     frequency: "monthly",
-    applicableTo: ["secondary", "university"],
+    applicableTo: ["secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "tertiary"],
   },
   {
     id: "hostel-fee-semester",
@@ -388,7 +404,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Boarding and lodging (per semester)",
     isRecurring: true,
     frequency: "semester",
-    applicableTo: ["university"],
+    applicableTo: ["tertiary"],
+    applicableToSchoolTypes: ["tertiary"],
   },
   {
     id: "hostel-security-deposit",
@@ -397,7 +414,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Refundable security deposit",
     isRecurring: false,
     frequency: "one-time",
-    applicableTo: ["secondary", "university"],
+    applicableTo: ["secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "tertiary"],
   },
   {
     id: "mess-fee",
@@ -406,7 +424,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Food and dining services",
     isRecurring: true,
     frequency: "monthly",
-    applicableTo: ["secondary", "university"],
+    applicableTo: ["secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "tertiary"],
   },
 
   // EXAMINATION & CERTIFICATION
@@ -417,7 +436,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Regular examination and assessment",
     isRecurring: true,
     frequency: "semester",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
   {
     id: "board-exam-fee",
@@ -427,6 +447,7 @@ export const FEE_TYPES: FeeType[] = [
     isRecurring: false,
     frequency: "one-time",
     applicableTo: ["secondary"],
+    applicableToSchoolTypes: ["private", "public"],
   },
   {
     id: "certificate-fee",
@@ -435,7 +456,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Degree/diploma certificate issuance",
     isRecurring: false,
     frequency: "one-time",
-    applicableTo: ["secondary", "university"],
+    applicableTo: ["secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
   {
     id: "revaluation-fee",
@@ -444,7 +466,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Answer script re-evaluation",
     isRecurring: false,
     frequency: "one-time",
-    applicableTo: ["secondary", "university"],
+    applicableTo: ["secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
 
   // SPORTS & ACTIVITIES
@@ -455,7 +478,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Sports facilities and activities",
     isRecurring: true,
     frequency: "annual",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
   {
     id: "cultural-activities-fee",
@@ -464,7 +488,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Cultural events and programs",
     isRecurring: true,
     frequency: "annual",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
   {
     id: "excursion-fee",
@@ -473,7 +498,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Educational tours and field trips",
     isRecurring: false,
     frequency: "one-time",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
 
   // MISCELLANEOUS
@@ -484,7 +510,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Student identification card",
     isRecurring: true,
     frequency: "annual",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
   {
     id: "uniform-fee",
@@ -494,6 +521,7 @@ export const FEE_TYPES: FeeType[] = [
     isRecurring: true,
     frequency: "annual",
     applicableTo: ["primary", "secondary"],
+    applicableToSchoolTypes: ["private", "public"],
   },
   {
     id: "medical-fee",
@@ -502,7 +530,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Health checkup and medical services",
     isRecurring: true,
     frequency: "annual",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
   {
     id: "insurance-fee",
@@ -511,7 +540,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Student accident/health insurance",
     isRecurring: true,
     frequency: "annual",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
   {
     id: "late-fee",
@@ -520,7 +550,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Penalty for delayed fee payment",
     isRecurring: false,
     frequency: "one-time",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
   {
     id: "lost-items-fee",
@@ -529,7 +560,8 @@ export const FEE_TYPES: FeeType[] = [
     description: "Lost library books, equipment, etc.",
     isRecurring: false,
     frequency: "one-time",
-    applicableTo: ["primary", "secondary", "university"],
+    applicableTo: ["primary", "secondary", "tertiary"],
+    applicableToSchoolTypes: ["private", "public", "tertiary"],
   },
 ];
 

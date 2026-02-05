@@ -18,6 +18,7 @@ import { usePageLoad } from "@/hooks/usePageLoad";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { validateForm, ValidationErrors } from "@/lib/validation";
+import { teacherFormValidationRules } from "@/lib/teacherFormValidation";
 import dynamic from "next/dynamic";
 
 const ValidationErrorsModal = dynamic(

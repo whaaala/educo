@@ -136,6 +136,8 @@ export interface TranscriptRequest {
 
   // Delivery Information (for physical delivery)
   recipientName?: string;
+  recipientEmail?: string;
+  recipientInstitution?: string;
   deliveryAddress?: string;
   deliveryCity?: string;
   deliveryState?: string;

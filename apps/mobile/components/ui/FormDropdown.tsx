@@ -44,7 +44,7 @@ export interface FormDropdownProps {
   disabled?: boolean;
   required?: boolean;
   error?: string;
-  parentScrollRef?: RefObject<ScrollViewType>;
+  parentScrollRef?: RefObject<ScrollViewType | null>;
 }
 
 export function FormDropdown({

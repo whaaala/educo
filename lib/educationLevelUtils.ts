@@ -140,7 +140,6 @@ export function getEducationLevelFromClass(
   }
 
   // Default fallback based on school type
-  if (schoolType === "tertiary") return "tertiary";
   if (schoolType === "secondary") return "secondary";
   if (schoolType === "primary") return "primary";
 

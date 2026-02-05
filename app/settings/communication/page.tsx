@@ -200,8 +200,9 @@ export default function TenantCommunicationSettingsPage() {
 
     try {
       // Build full settings
+      const tenantId = schoolSettings.tenantId || "default";
       const fullSettings: CommunicationSettings = {
-        tenantId: schoolSettings.tenantId,
+        tenantId,
         schoolName: schoolSettings.schoolName,
         agora: agoraForm,
         zoom: zoomForm,
@@ -213,7 +214,7 @@ export default function TenantCommunicationSettingsPage() {
       };
 
       // Save for this tenant
-      saveTenantSettings(schoolSettings.tenantId, fullSettings);
+      saveTenantSettings(tenantId, fullSettings);
 
       // Update current context
       updateAgoraCredentials(agoraForm);

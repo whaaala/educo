@@ -2,7 +2,7 @@
 
 import { X, User, AlertTriangle, Calendar, MapPin, FileText, Clock, Building2, Users } from "lucide-react";
 import { useState, useRef } from "react";
-import { IncidentType, IncidentSeverity, INCIDENT_TYPES } from "@/types/discipline";
+import { IncidentType, StaffIncidentSeverity, INCIDENT_TYPES } from "@/types/discipline";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormInput from "@/components/shared/FormInput";
 import FormTextarea from "@/components/shared/FormTextarea";
@@ -64,7 +64,7 @@ export default function NewIncidentReportModal({
     incidentDate: "",
     incidentTime: "",
     incidentLocation: "",
-    severity: "" as IncidentSeverity | "",
+    severity: "" as StaffIncidentSeverity | "",
     incidentDescription: "",
     witnessNames: "",
   });
@@ -170,7 +170,7 @@ export default function NewIncidentReportModal({
       incidentDate: formData.incidentDate,
       incidentTime: formData.incidentTime || undefined,
       incidentLocation: formData.incidentLocation,
-      severity: formData.severity as IncidentSeverity,
+      severity: formData.severity as StaffIncidentSeverity,
       incidentDescription: formData.incidentDescription,
       witnessNames: formData.witnessNames
         ? formData.witnessNames.split(",").map((name) => name.trim())
@@ -189,7 +189,7 @@ export default function NewIncidentReportModal({
       incidentDate: "",
       incidentTime: "",
       incidentLocation: "",
-      severity: "" as IncidentSeverity | "",
+      severity: "" as StaffIncidentSeverity | "",
       incidentDescription: "",
       witnessNames: "",
     });
@@ -338,7 +338,7 @@ export default function NewIncidentReportModal({
                     label="Severity"
                     icon={<AlertTriangle className="w-4 h-4" />}
                     value={formData.severity}
-                    onChange={(value) => setFormData({ ...formData, severity: value as IncidentSeverity })}
+                    onChange={(value) => setFormData({ ...formData, severity: value as StaffIncidentSeverity })}
                     options={[
                       { label: "Minor", value: "minor" },
                       { label: "Moderate", value: "moderate" },
