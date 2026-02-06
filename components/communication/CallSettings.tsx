@@ -517,6 +517,7 @@ export default function CallSettings({
                   value={selectedMicrophone}
                   onChange={(e) => setSelectedMicrophone(e.target.value)}
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  suppressHydrationWarning
                 >
                   {microphones.map((mic) => (
                     <option key={mic.deviceId} value={mic.deviceId}>
@@ -566,6 +567,7 @@ export default function CallSettings({
                   value={selectedSpeaker}
                   onChange={(e) => setSelectedSpeaker(e.target.value)}
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  suppressHydrationWarning
                 >
                   {speakers.map((speaker) => (
                     <option key={speaker.deviceId} value={speaker.deviceId}>
@@ -637,6 +639,7 @@ export default function CallSettings({
                   value={selectedCamera}
                   onChange={(e) => setSelectedCamera(e.target.value)}
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  suppressHydrationWarning
                 >
                   {cameras.map((camera) => (
                     <option key={camera.deviceId} value={camera.deviceId}>

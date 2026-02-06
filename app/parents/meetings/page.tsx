@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import DashboardPage from "@/components/shared/DashboardPage";
 import ScheduleMeetingModal, {
   ScheduledMeetingData,
@@ -11,6 +12,7 @@ import ScheduleMeetingModal, {
 import MeetingDetailsModal, { MeetingDetails, RescheduleMeetingData } from "@/components/shared/MeetingDetailsModal";
 import { useMeetings, Meeting as ContextMeeting, MeetingPlatform as ContextPlatform } from "@/contexts/MeetingsContext";
 import { useCall } from "@/hooks/useCall";
+import { useCommunication } from "@/contexts/CommunicationContext";
 import {
   Video,
   Phone,
@@ -333,6 +335,9 @@ function formatDate(dateStr: string) {
 // ============================================
 
 export default function ParentMeetingsPage() {
+  const searchParams = useSearchParams();
+  const meetingIdParam = searchParams.get("meeting");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState<MeetingPlatform | "all">("all");
   const [selectedStatus, setSelectedStatus] = useState<MeetingStatus | "all">("all");
@@ -342,6 +347,17 @@ export default function ParentMeetingsPage() {
 
   // Use the call hook for WebRTC calls
   const { startVideoCall, startVoiceCall, startChat, startCall } = useCall();
+
+  // Use the communication context for tenant configuration
+  const { getAvailablePlatforms, isConfigured, settings: commSettings } = useCommunication();
+
+  // Get available communication capabilities from tenant configuration
+  const availablePlatforms = getAvailablePlatforms();
+  const hasVideoCapability = availablePlatforms.length > 0;
+  const hasVoiceCapability = availablePlatforms.length > 0;
+  const hasChatCapability = isConfigured("agora") || isConfigured("webrtc");
+  const hasInAppCalling = commSettings.enableInAppCalling;
+  const hasWhatsApp = isConfigured("whatsapp");
 
   // Use the meetings context
   const { meetings: contextMeetings, addMeeting, getMeetingsByParent, rescheduleMeeting, acceptMeeting } = useMeetings();
@@ -382,6 +398,41 @@ export default function ParentMeetingsPage() {
     const hour12 = hour % 12 || 12;
     return `${hour12}:${minutes} ${ampm}`;
   }
+
+  // Auto-open meeting details modal when navigating from dashboard with ?meeting=id
+  useEffect(() => {
+    if (meetingIdParam && meetings.length > 0) {
+      const meeting = meetings.find((m) => m.id === meetingIdParam);
+      if (meeting) {
+        const originalMeeting = parentMeetings.find((m) => m.id === meeting.id);
+        const meetingDetails: MeetingDetails = {
+          id: meeting.id,
+          title: meeting.title,
+          description: meeting.description,
+          platform: meeting.platform,
+          hostName: meeting.hostName,
+          hostRole: meeting.hostRole,
+          hostPhoto: meeting.hostPhoto,
+          childName: meeting.childName,
+          scheduledDate: meeting.scheduledDate,
+          scheduledTime: meeting.scheduledTime,
+          duration: meeting.duration,
+          status: originalMeeting?.status === "pending_approval" ? "pending_approval" : meeting.status,
+          meetingLink: meeting.meetingLink,
+          meetingId: meeting.meetingId,
+          passcode: meeting.passcode,
+          notes: originalMeeting?.notes,
+          outcome: originalMeeting?.outcome,
+          cancellationReason: originalMeeting?.cancellationReason,
+          cancelledBy: originalMeeting?.cancelledBy,
+          cancelledByName: originalMeeting?.cancelledByName,
+          cancelledAt: originalMeeting?.cancelledAt,
+        };
+        setSelectedMeeting(meetingDetails);
+        setIsMeetingDetailsModalOpen(true);
+      }
+    }
+  }, [meetingIdParam, meetings, parentMeetings]);
 
   // Handle scheduling a new meeting
   const handleScheduleMeeting = (meetingData: ScheduledMeetingData) => {
@@ -555,65 +606,75 @@ export default function ParentMeetingsPage() {
           </button>
         </div>
 
-        {/* Quick Actions - Communication Options */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Educo Meet - Video Call */}
-          <button
-            onClick={() => handleQuickCall("video")}
-            className="group flex items-center gap-4 p-4 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-900/20 dark:to-gray-800 rounded-2xl border border-indigo-100 dark:border-indigo-700/30 shadow-sm hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-600/50 transition-all duration-200"
-          >
-            <div className="p-3 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
-              <Video className="w-5 h-5" />
-            </div>
-            <div className="text-left">
-              <p className="font-semibold text-gray-900 dark:text-white text-sm">Video Call</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Start video meeting</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
-          </button>
+        {/* Quick Actions - Communication Options (based on tenant configuration) */}
+        {hasInAppCalling && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Video Call - only show if configured */}
+            {hasVideoCapability && (
+              <button
+                onClick={() => handleQuickCall("video")}
+                className="group flex items-center gap-4 p-4 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-900/20 dark:to-gray-800 rounded-2xl border border-indigo-100 dark:border-indigo-700/30 shadow-sm hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-600/50 transition-all duration-200 cursor-pointer"
+              >
+                <div className="p-3 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                  <Video className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">Video Call</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Start video meeting</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
+              </button>
+            )}
 
-          {/* Voice Call */}
-          <button
-            onClick={() => handleQuickCall("voice")}
-            className="group flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:border-emerald-300 dark:hover:border-emerald-600/50 transition-all duration-200"
-          >
-            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
-              <PhoneCall className="w-5 h-5" />
-            </div>
-            <div className="text-left">
-              <p className="font-semibold text-gray-900 dark:text-white text-sm">Voice Call</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Start audio call</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
-          </button>
+            {/* Voice Call - only show if configured */}
+            {hasVoiceCapability && (
+              <button
+                onClick={() => handleQuickCall("voice")}
+                className="group flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:border-emerald-300 dark:hover:border-emerald-600/50 transition-all duration-200 cursor-pointer"
+              >
+                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+                  <PhoneCall className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">Voice Call</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Start audio call</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+              </button>
+            )}
 
-          {/* Chat */}
-          <button
-            onClick={() => handleQuickCall("chat")}
-            className="group flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:border-purple-300 dark:hover:border-purple-600/50 transition-all duration-200"
-          >
-            <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
-              <MessageSquare className="w-5 h-5" />
-            </div>
-            <div className="text-left">
-              <p className="font-semibold text-gray-900 dark:text-white text-sm">Chat</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Send instant message</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-purple-500 group-hover:translate-x-1 transition-all" />
-          </button>
+            {/* Chat - only show if configured */}
+            {hasChatCapability && (
+              <button
+                onClick={() => handleQuickCall("chat")}
+                className="group flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:border-purple-300 dark:hover:border-purple-600/50 transition-all duration-200 cursor-pointer"
+              >
+                <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
+                  <MessageSquare className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">Chat</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Send instant message</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-purple-500 group-hover:translate-x-1 transition-all" />
+              </button>
+            )}
 
-          {/* WhatsApp (External) */}
-          <button className="group flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:border-emerald-300 dark:hover:border-emerald-600/50 transition-all duration-200">
-            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
-              <WhatsAppIcon />
-            </div>
-            <div className="text-left">
-              <p className="font-semibold text-gray-900 dark:text-white text-sm">WhatsApp</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">External messaging</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
-          </button>
-        </div>
+            {/* WhatsApp - only show if configured */}
+            {hasWhatsApp && (
+              <button className="group flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:border-emerald-300 dark:hover:border-emerald-600/50 transition-all duration-200 cursor-pointer">
+                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+                  <WhatsAppIcon />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">WhatsApp</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">External messaging</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
@@ -626,6 +687,7 @@ export default function ParentMeetingsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              suppressHydrationWarning
             />
           </div>
 
@@ -634,6 +696,7 @@ export default function ParentMeetingsPage() {
             value={selectedPlatform}
             onChange={(e) => setSelectedPlatform(e.target.value as MeetingPlatform | "all")}
             className="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
+            suppressHydrationWarning
           >
             <option value="all">All Platforms</option>
             <option value="educo-meet">Educo Meet</option>
@@ -648,6 +711,7 @@ export default function ParentMeetingsPage() {
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value as MeetingStatus | "all")}
             className="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
+            suppressHydrationWarning
           >
             <option value="all">All Status</option>
             <option value="scheduled">Scheduled</option>
@@ -735,29 +799,35 @@ export default function ParentMeetingsPage() {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            {/* Educo Meet - Use WebRTC */}
-                            {meeting.platform === "educo-meet" && (
+                            {/* In-app calling buttons - based on tenant configuration */}
+                            {hasInAppCalling && (meeting.platform === "educo-meet" || meeting.platform.includes("whatsapp")) && (
                               <div className="flex items-center gap-1">
-                                <button
-                                  onClick={() => handleStartMeetingCall(meeting, "video")}
-                                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25"
-                                >
-                                  <Video className="w-4 h-4" />
-                                  Video
-                                </button>
-                                <button
-                                  onClick={() => handleStartMeetingCall(meeting, "voice")}
-                                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shadow-lg shadow-emerald-500/25"
-                                >
-                                  <Phone className="w-4 h-4" />
-                                  Voice
-                                </button>
-                                <button
-                                  onClick={() => handleStartMeetingCall(meeting, "chat")}
-                                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg shadow-purple-500/25"
-                                >
-                                  <MessageSquare className="w-4 h-4" />
-                                </button>
+                                {hasVideoCapability && (
+                                  <button
+                                    onClick={() => handleStartMeetingCall(meeting, "video")}
+                                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 cursor-pointer"
+                                  >
+                                    <Video className="w-4 h-4" />
+                                    Video
+                                  </button>
+                                )}
+                                {hasVoiceCapability && (
+                                  <button
+                                    onClick={() => handleStartMeetingCall(meeting, "voice")}
+                                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shadow-lg shadow-emerald-500/25 cursor-pointer"
+                                  >
+                                    <Phone className="w-4 h-4" />
+                                    Voice
+                                  </button>
+                                )}
+                                {hasChatCapability && (
+                                  <button
+                                    onClick={() => handleStartMeetingCall(meeting, "chat")}
+                                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg shadow-purple-500/25 cursor-pointer"
+                                  >
+                                    <MessageSquare className="w-4 h-4" />
+                                  </button>
+                                )}
                               </div>
                             )}
                             {/* External platforms - Open link */}
@@ -780,15 +850,6 @@ export default function ParentMeetingsPage() {
                               </a>
                             )}
                             {/* WhatsApp - Use WebRTC for now */}
-                            {meeting.platform.includes("whatsapp") && (
-                              <button
-                                onClick={() => handleStartMeetingCall(meeting, meeting.platform === "whatsapp-video" ? "video" : "voice")}
-                                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:-translate-y-0.5"
-                              >
-                                {meeting.platform === "whatsapp-video" ? <Video className="w-4 h-4" /> : <Phone className="w-4 h-4" />}
-                                {meeting.platform === "whatsapp-video" ? "Video Call" : "Voice Call"}
-                              </button>
-                            )}
                             {/* View Details button for upcoming meetings */}
                             <button
                               onClick={() => handleViewMeetingDetails(meeting)}

@@ -1,0 +1,314 @@
+"use client";
+
+import React from "react";
+import {
+  X,
+  Share2,
+  Search,
+  Bell,
+  MoreVertical,
+  Settings,
+  Copy,
+  UserPlus,
+  PhoneOff,
+  Video,
+  Phone,
+  Users,
+  LogIn,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export interface CallHeaderProps {
+  title: string;
+  callType: "video" | "voice";
+  duration: number;
+  participantCount: number;
+  invitedCount?: number;
+  isRecording?: boolean;
+  primaryColor?: string;
+  secondaryColor?: string;
+  onClose: () => void;
+  onSettings?: () => void;
+  onCopyRoomId?: () => void;
+  onAddParticipant?: () => void;
+  onShare?: () => void;
+  roomId?: string;
+  className?: string;
+}
+
+export function CallHeader({
+  title,
+  callType,
+  duration,
+  participantCount,
+  invitedCount = 0,
+  isRecording = false,
+  primaryColor = "#2563eb",
+  secondaryColor = "#1e40af",
+  onClose,
+  onSettings,
+  onCopyRoomId,
+  onAddParticipant,
+  onShare,
+  roomId,
+  className,
+}: CallHeaderProps) {
+  const [showMenu, setShowMenu] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
+
+  const formatDuration = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    if (hrs > 0) {
+      return `${hrs}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    }
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const handleCopyRoomId = () => {
+    if (onCopyRoomId) {
+      onCopyRoomId();
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+    setShowMenu(false);
+  };
+
+  const CallIcon = callType === "video" ? Video : Phone;
+
+  return (
+    <header
+      className={cn(
+        "bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800",
+        "px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3",
+        "flex items-center justify-between gap-2 sm:gap-4",
+        className
+      )}
+    >
+      {/* Left Section */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className={cn(
+            "p-1.5 sm:p-2 rounded-lg transition-all duration-200",
+            "hover:bg-gray-100 dark:hover:bg-gray-800",
+            "active:scale-95 cursor-pointer",
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          )}
+          title="End call"
+        >
+          <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400" />
+        </button>
+
+        {/* Call Icon & Title */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div
+            className="p-1.5 sm:p-2 rounded-lg flex-shrink-0"
+            style={{ backgroundColor: `${primaryColor}15` }}
+          >
+            <CallIcon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: primaryColor }} />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-sm sm:text-base lg:text-lg font-bold text-gray-900 dark:text-white truncate">
+              {title}
+            </h1>
+          </div>
+        </div>
+
+        {/* Duration Badge */}
+        <div
+          className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-white text-xs sm:text-sm font-semibold flex-shrink-0 shadow-sm"
+          style={{
+            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+            boxShadow: `0 2px 8px ${primaryColor}30`
+          }}
+        >
+          {isRecording && (
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          )}
+          <span>{formatDuration(duration)}</span>
+        </div>
+      </div>
+
+      {/* Center Section - Badges (hidden on mobile) */}
+      <div className="hidden md:flex items-center gap-2 lg:gap-3">
+        {/* Participant Count Badge */}
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full transition-colors">
+          <LogIn className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+            Join meeting:
+          </span>
+          <span
+            className="text-xs font-bold text-white px-1.5 py-0.5 rounded-full min-w-[20px] text-center"
+            style={{ backgroundColor: primaryColor }}
+          >
+            {participantCount}
+          </span>
+        </div>
+
+        {/* Invited Count Badge */}
+        {invitedCount > 0 && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full">
+            <Users className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+              Invited:
+            </span>
+            <span className="text-xs font-bold text-gray-900 dark:text-white">
+              {invitedCount}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Right Section */}
+      <div className="flex items-center gap-1 sm:gap-2">
+        {/* Share Button */}
+        {onShare && (
+          <button
+            onClick={onShare}
+            className={cn(
+              "hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg",
+              "bg-gray-100 dark:bg-gray-800",
+              "hover:bg-gray-200 dark:hover:bg-gray-700",
+              "active:scale-95 cursor-pointer",
+              "transition-all duration-200",
+              "text-gray-700 dark:text-gray-300 text-sm font-medium"
+            )}
+          >
+            <Share2 className="w-4 h-4" />
+            <span className="hidden lg:inline">Share link</span>
+          </button>
+        )}
+
+        {/* Search Icon */}
+        <button
+          className={cn(
+            "hidden lg:flex p-2 rounded-lg",
+            "hover:bg-gray-100 dark:hover:bg-gray-800",
+            "active:scale-95 cursor-pointer",
+            "transition-all duration-200",
+            "text-gray-500 dark:text-gray-400"
+          )}
+        >
+          <Search className="w-5 h-5" />
+        </button>
+
+        {/* Notification Icon */}
+        <button
+          className={cn(
+            "hidden lg:flex p-2 rounded-lg relative",
+            "hover:bg-gray-100 dark:hover:bg-gray-800",
+            "active:scale-95 cursor-pointer",
+            "transition-all duration-200",
+            "text-gray-500 dark:text-gray-400"
+          )}
+        >
+          <Bell className="w-5 h-5" />
+        </button>
+
+        {/* More Menu */}
+        <div className="relative">
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className={cn(
+              "p-1.5 sm:p-2 rounded-lg",
+              "hover:bg-gray-100 dark:hover:bg-gray-800",
+              "active:scale-95 cursor-pointer",
+              "transition-all duration-200",
+              "text-gray-500 dark:text-gray-400"
+            )}
+          >
+            <MoreVertical className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+
+          {showMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowMenu(false)}
+              />
+              <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 py-1">
+                {onSettings && (
+                  <button
+                    onClick={() => {
+                      onSettings();
+                      setShowMenu(false);
+                    }}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-2.5",
+                      "text-sm text-gray-700 dark:text-gray-300",
+                      "hover:bg-gray-50 dark:hover:bg-gray-700/50",
+                      "cursor-pointer transition-colors"
+                    )}
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>Settings</span>
+                  </button>
+                )}
+                {onCopyRoomId && (
+                  <button
+                    onClick={handleCopyRoomId}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-2.5",
+                      "text-sm text-gray-700 dark:text-gray-300",
+                      "hover:bg-gray-50 dark:hover:bg-gray-700/50",
+                      "cursor-pointer transition-colors"
+                    )}
+                  >
+                    <Copy className="w-4 h-4" />
+                    <span>{copied ? "Copied!" : "Copy Room ID"}</span>
+                  </button>
+                )}
+                {onAddParticipant && (
+                  <button
+                    onClick={() => {
+                      onAddParticipant();
+                      setShowMenu(false);
+                    }}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-2.5",
+                      "text-sm text-gray-700 dark:text-gray-300",
+                      "hover:bg-gray-50 dark:hover:bg-gray-700/50",
+                      "cursor-pointer transition-colors"
+                    )}
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    <span>Add Participant</span>
+                  </button>
+                )}
+                <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+                <button
+                  onClick={() => {
+                    onClose();
+                    setShowMenu(false);
+                  }}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-4 py-2.5",
+                    "text-sm text-red-600 dark:text-red-400",
+                    "hover:bg-red-50 dark:hover:bg-red-500/10",
+                    "cursor-pointer transition-colors"
+                  )}
+                >
+                  <PhoneOff className="w-4 h-4" />
+                  <span>End Call</span>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* User Avatar */}
+        <div
+          className="hidden sm:flex w-8 h-8 sm:w-9 sm:h-9 rounded-full items-center justify-center text-white text-sm font-medium ml-1 shadow-sm cursor-pointer hover:scale-105 transition-transform"
+          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+        >
+          <span>Y</span>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+export default CallHeader;

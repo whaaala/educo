@@ -18,6 +18,10 @@ import {
   Calendar,
   DollarSign,
   FileText,
+  Video,
+  MessageSquare,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
@@ -31,7 +35,7 @@ export default function TenantDetailsPage() {
   const tenantId = params.id as string;
 
   const [tenant, setTenant] = useState<Tenant | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "config" | "branding" | "subscription">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "config" | "communication" | "branding" | "subscription">("overview");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -170,6 +174,7 @@ export default function TenantDetailsPage() {
               {[
                 { id: "overview", label: "Overview", icon: Building2 },
                 { id: "config", label: "Configuration", icon: Settings },
+                { id: "communication", label: "Communication", icon: Video },
                 { id: "branding", label: "Branding", icon: Palette },
                 { id: "subscription", label: "Subscription", icon: CreditCard },
               ].map((tab) => (
@@ -452,6 +457,242 @@ export default function TenantDetailsPage() {
                     ))}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Communication Tab */}
+            {activeTab === "communication" && (
+              <div className="space-y-6">
+                {/* Communication Provider */}
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4 flex items-center gap-2">
+                    <Video className="w-5 h-5" />
+                    Communication Provider
+                  </h3>
+                  <div className="p-4 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
+                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                      Primary Provider
+                    </p>
+                    <p className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 capitalize">
+                      {tenant.config.communication?.provider || "Educo Meet (Default)"}
+                    </p>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                      {tenant.config.communication?.provider === "agora"
+                        ? "Using Agora for video/voice calls"
+                        : tenant.config.communication?.provider === "whatsapp"
+                        ? "Using WhatsApp Business for messaging"
+                        : tenant.config.communication?.provider === "external"
+                        ? "Using external meeting links (Zoom, Google Meet, Teams)"
+                        : tenant.config.communication?.provider === "hybrid"
+                        ? "Using multiple communication platforms"
+                        : "Using built-in Educo Meet for video conferencing"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Enabled Communication Types */}
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4 flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5" />
+                    Enabled Communication Types
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {["video", "voice", "chat"].map((type) => {
+                      const isEnabled =
+                        tenant.config.communication?.enabledTypes?.includes(type as any) ??
+                        (type === "video" || type === "voice");
+                      return (
+                        <div
+                          key={type}
+                          className={`p-4 rounded-lg border-2 ${
+                            isEnabled
+                              ? "border-green-500 bg-green-50 dark:bg-green-900/20 dark:border-green-600"
+                              : "border-neutral-200 bg-neutral-50 dark:bg-neutral-900 dark:border-neutral-700"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              {type === "video" && <Video className="w-5 h-5" />}
+                              {type === "voice" && <Phone className="w-5 h-5" />}
+                              {type === "chat" && <MessageSquare className="w-5 h-5" />}
+                              <span className="font-medium capitalize">{type}</span>
+                            </div>
+                            {isEnabled ? (
+                              <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                            ) : (
+                              <XCircle className="w-5 h-5 text-neutral-400" />
+                            )}
+                          </div>
+                          <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2">
+                            {isEnabled ? "Enabled" : "Disabled"}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Communication Settings */}
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
+                    Communication Settings
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
+                      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                        Default Meeting Duration
+                      </p>
+                      <p className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mt-1">
+                        {tenant.config.communication?.defaultDuration || 30} minutes
+                      </p>
+                    </div>
+                    <div className="p-4 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                            Parent-Initiated Calls
+                          </p>
+                          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                            Allow parents to start calls
+                          </p>
+                        </div>
+                        {tenant.config.communication?.allowParentInitiatedCalls !== false ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                        ) : (
+                          <XCircle className="w-5 h-5 text-red-500" />
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-4 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                            Require Approval
+                          </p>
+                          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                            Meetings need teacher approval
+                          </p>
+                        </div>
+                        {tenant.config.communication?.requireApproval ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                        ) : (
+                          <XCircle className="w-5 h-5 text-neutral-400" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Platform-Specific Settings */}
+                {tenant.config.communication?.settings && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
+                      Platform Settings
+                    </h3>
+                    <div className="space-y-4">
+                      {tenant.config.communication.settings.educoMeet?.enabled && (
+                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Video className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            <span className="font-medium text-blue-900 dark:text-blue-100">
+                              Educo Meet
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="text-blue-700 dark:text-blue-300">Max Participants:</span>{" "}
+                              <span className="font-medium">
+                                {tenant.config.communication.settings.educoMeet.maxParticipants || "Unlimited"}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-blue-700 dark:text-blue-300">Recording:</span>{" "}
+                              <span className="font-medium">
+                                {tenant.config.communication.settings.educoMeet.recordingEnabled
+                                  ? "Enabled"
+                                  : "Disabled"}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-blue-700 dark:text-blue-300">Virtual Background:</span>{" "}
+                              <span className="font-medium">
+                                {tenant.config.communication.settings.educoMeet.virtualBackgroundEnabled
+                                  ? "Enabled"
+                                  : "Disabled"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {tenant.config.communication.settings.agora?.enabled && (
+                        <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Video className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                            <span className="font-medium text-purple-900 dark:text-purple-100">
+                              Agora
+                            </span>
+                          </div>
+                          <div className="text-sm">
+                            <span className="text-purple-700 dark:text-purple-300">App ID:</span>{" "}
+                            <span className="font-medium font-mono">
+                              {tenant.config.communication.settings.agora.appId
+                                ? `${tenant.config.communication.settings.agora.appId.substring(0, 8)}...`
+                                : "Not configured"}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {tenant.config.communication.settings.whatsapp?.enabled && (
+                        <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                          <div className="flex items-center gap-2 mb-2">
+                            <MessageSquare className="w-5 h-5 text-green-600 dark:text-green-400" />
+                            <span className="font-medium text-green-900 dark:text-green-100">
+                              WhatsApp Business
+                            </span>
+                          </div>
+                          <div className="text-sm">
+                            <span className="text-green-700 dark:text-green-300">Business Phone:</span>{" "}
+                            <span className="font-medium">
+                              {tenant.config.communication.settings.whatsapp.businessPhoneNumber || "Not configured"}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {tenant.config.communication.settings.externalLinks?.enabled && (
+                        <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Globe className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                            <span className="font-medium text-orange-900 dark:text-orange-100">
+                              External Meeting Links
+                            </span>
+                          </div>
+                          <div className="text-sm">
+                            <span className="text-orange-700 dark:text-orange-300">Default Platform:</span>{" "}
+                            <span className="font-medium capitalize">
+                              {tenant.config.communication.settings.externalLinks.defaultPlatform || "Zoom"}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* No Communication Config */}
+                {!tenant.config.communication && (
+                  <div className="p-6 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                    <p className="text-amber-800 dark:text-amber-200 font-medium">
+                      Communication settings not configured
+                    </p>
+                    <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                      This tenant is using default communication settings. Edit the tenant to configure
+                      communication preferences.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 

@@ -254,6 +254,7 @@ export default function ChatRoom({
                   placeholder="Search..."
                   className="bg-transparent text-sm w-32 focus:outline-none text-gray-900 dark:text-white"
                   autoFocus
+                  suppressHydrationWarning
                 />
                 <button
                   onClick={() => {
@@ -487,6 +488,7 @@ export default function ChatRoom({
               className="hidden"
               onChange={handleFileUpload}
               accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+              suppressHydrationWarning
             />
           </div>
 
@@ -504,6 +506,7 @@ export default function ChatRoom({
             onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
             placeholder="Type a message..."
             className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 border-0 rounded-full text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            suppressHydrationWarning
           />
 
           {/* Send */}

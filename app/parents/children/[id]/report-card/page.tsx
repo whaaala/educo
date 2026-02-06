@@ -159,6 +159,7 @@ export default function ReportCardPage() {
   const searchParams = useSearchParams();
   const childId = params?.id as string;
   const fromResults = searchParams.get("from") === "results";
+  const highlightedSubject = searchParams.get("subject");
   const { settings, currentTenant } = useSchoolSettings();
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -169,6 +170,21 @@ export default function ReportCardPage() {
   const academicData = MOCK_ACADEMIC_SUMMARY[childId];
   const attendanceData = MOCK_ATTENDANCE[childId];
   const previewKey = useMemo(() => `${childId}-${selectedTerm}-${selectedYear}`, [childId, selectedTerm, selectedYear]);
+
+  // Scroll to highlighted subject when navigating from dashboard
+  useEffect(() => {
+    if (highlightedSubject) {
+      const subjectSlug = highlightedSubject.toLowerCase().replace(/\s+/g, "-");
+      // Wait for content to render
+      const timer = setTimeout(() => {
+        const element = document.getElementById(`subject-${subjectSlug}`);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 800); // Delay to allow page content to load
+      return () => clearTimeout(timer);
+    }
+  }, [highlightedSubject]);
 
   // Handle print
   const handlePrint = useReactToPrint({
@@ -917,6 +933,8 @@ export default function ReportCardPage() {
             viewerType="parent"
             // Tenant-level report card configuration
             config={currentTenant?.branding?.reportCardConfig}
+            // Highlighted subject from dashboard navigation
+            highlightedSubject={highlightedSubject || undefined}
             />
           </ResponsiveReportPreview>
         </div>

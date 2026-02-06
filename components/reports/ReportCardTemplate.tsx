@@ -92,6 +92,9 @@ export interface ReportCardTemplateProps {
 
   // NEW: Report card configuration from tenant settings
   config?: ReportCardConfig;
+
+  // Highlighted subject for scroll-to navigation
+  highlightedSubject?: string;
 }
 
 const ReportCardTemplate = forwardRef<HTMLDivElement, ReportCardTemplateProps>(
@@ -125,6 +128,7 @@ const ReportCardTemplate = forwardRef<HTMLDivElement, ReportCardTemplateProps>(
       principalRemarks,
       customRemarks,
       config: propConfig,
+      highlightedSubject,
     } = props;
 
     // Merge provided config with defaults
@@ -433,8 +437,22 @@ const ReportCardTemplate = forwardRef<HTMLDivElement, ReportCardTemplateProps>(
                 </tr>
               </thead>
               <tbody>
-                {sortedSubjects.map((subject, idx) => (
-                  <tr key={idx} style={{ background: idx % 2 === 0 ? "#ffffff" : "#f8fafc" }}>
+                {sortedSubjects.map((subject, idx) => {
+                  const subjectSlug = subject.subject.toLowerCase().replace(/\s+/g, "-");
+                  const isHighlighted = highlightedSubject?.toLowerCase().replace(/\s+/g, "-") === subjectSlug;
+                  return (
+                  <tr
+                    key={idx}
+                    id={`subject-${subjectSlug}`}
+                    style={{
+                      background: isHighlighted
+                        ? "#fef3c7"
+                        : idx % 2 === 0
+                          ? "#ffffff"
+                          : "#f8fafc",
+                      transition: "background-color 0.3s ease",
+                    }}
+                  >
                     <td style={{ padding: "8px 14px", fontWeight: "600", fontSize: "13px", color: primaryColor, borderBottom: "1px solid #e2e8f0" }}>
                       {subject.subject}
                     </td>
@@ -475,7 +493,8 @@ const ReportCardTemplate = forwardRef<HTMLDivElement, ReportCardTemplateProps>(
                       </td>
                     )}
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
               {config.academicSection.showTotalRow && (
                 <tfoot>

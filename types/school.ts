@@ -75,9 +75,76 @@ export interface SchoolConfiguration {
   // Subjects/Courses offered by the school
   subjects?: SubjectConfig[];
 
+  // Communication Settings
+  communication?: CommunicationConfig;
+
   // Additional Settings
   customSettings?: Record<string, any>; // For school-specific configurations
 }
+
+/**
+ * Communication Configuration
+ * Defines how the school handles video/voice/chat communication
+ */
+export interface CommunicationConfig {
+  // Primary communication provider
+  provider: CommunicationProvider;
+
+  // Enabled communication types
+  enabledTypes: CommunicationType[];
+
+  // Provider-specific settings
+  settings?: {
+    // For educo-meet (WebRTC)
+    educoMeet?: {
+      enabled: boolean;
+      maxParticipants?: number;
+      recordingEnabled?: boolean;
+      virtualBackgroundEnabled?: boolean;
+    };
+    // For Agora integration
+    agora?: {
+      enabled: boolean;
+      appId?: string;
+      // Secret stored securely on server
+    };
+    // For WhatsApp Business API
+    whatsapp?: {
+      enabled: boolean;
+      businessPhoneNumber?: string;
+      // API credentials stored securely on server
+    };
+    // For external platforms (Zoom, Google Meet)
+    externalLinks?: {
+      enabled: boolean;
+      defaultPlatform?: "zoom" | "google-meet" | "teams";
+    };
+  };
+
+  // Default meeting duration (minutes)
+  defaultDuration?: number;
+
+  // Allow parents to initiate calls
+  allowParentInitiatedCalls?: boolean;
+
+  // Require approval for meetings
+  requireApproval?: boolean;
+}
+
+/**
+ * Available communication providers
+ */
+export type CommunicationProvider =
+  | "educo-meet"     // Built-in WebRTC solution
+  | "agora"          // Agora SDK
+  | "whatsapp"       // WhatsApp Business API
+  | "external"       // External links (Zoom, Google Meet, etc.)
+  | "hybrid";        // Multiple providers available
+
+/**
+ * Communication types
+ */
+export type CommunicationType = "video" | "voice" | "chat";
 
 /**
  * Timetable Configuration - Defines periods/sessions for the school

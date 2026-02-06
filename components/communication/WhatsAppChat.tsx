@@ -377,6 +377,7 @@ export default function WhatsAppChat({
                   placeholder="Search..."
                   className="bg-transparent text-sm w-32 focus:outline-none text-white placeholder-green-200"
                   autoFocus
+                  suppressHydrationWarning
                 />
                 <button
                   onClick={() => {
@@ -568,6 +569,7 @@ export default function WhatsAppChat({
               className="hidden"
               onChange={handleFileUpload}
               accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+              suppressHydrationWarning
             />
           </div>
 
@@ -580,6 +582,7 @@ export default function WhatsAppChat({
             onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
             placeholder="Type a message..."
             className="flex-1 px-4 py-2 bg-white dark:bg-gray-700 border-0 rounded-full text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+            suppressHydrationWarning
           />
 
           {/* Send */}

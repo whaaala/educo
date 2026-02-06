@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Building2, Globe, Mail, Phone, MapPin, Palette } from "lucide-react";
+import { ArrowLeft, Save, Building2, Globe, Mail, Phone, MapPin, Palette, Video, MessageSquare, CheckCircle2 } from "lucide-react";
 import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
 import { createTenant } from "@/lib/mockTenants";
-import { Tenant, InstitutionType, EducationLevel } from "@/types/school";
+import { Tenant, InstitutionType, EducationLevel, CommunicationProvider, CommunicationType } from "@/types/school";
 
 interface CreateTenantForm {
   // Basic Information
@@ -45,6 +45,13 @@ interface CreateTenantForm {
   bankName: string;
   accountNumber: string;
   accountName: string;
+
+  // Communication
+  communicationProvider: CommunicationProvider;
+  enabledCommunicationTypes: CommunicationType[];
+  defaultMeetingDuration: number;
+  allowParentInitiatedCalls: boolean;
+  requireMeetingApproval: boolean;
 }
 
 export default function CreateTenantPage() {
@@ -89,6 +96,13 @@ export default function CreateTenantPage() {
     bankName: "",
     accountNumber: "",
     accountName: "",
+
+    // Communication
+    communicationProvider: "educo-meet",
+    enabledCommunicationTypes: ["video", "voice"],
+    defaultMeetingDuration: 30,
+    allowParentInitiatedCalls: true,
+    requireMeetingApproval: false,
   });
 
   const handleInputChange = (field: keyof CreateTenantForm, value: any) => {
@@ -119,6 +133,18 @@ export default function CreateTenantPage() {
         ...prev,
         supportedLevels: levels,
         defaultEducationLevel: defaultLevel,
+      };
+    });
+  };
+
+  const handleCommunicationTypeToggle = (type: CommunicationType) => {
+    setFormData((prev) => {
+      const types = prev.enabledCommunicationTypes.includes(type)
+        ? prev.enabledCommunicationTypes.filter((t) => t !== type)
+        : [...prev.enabledCommunicationTypes, type];
+      return {
+        ...prev,
+        enabledCommunicationTypes: types,
       };
     });
   };
@@ -202,6 +228,21 @@ export default function CreateTenantPage() {
             accountNumber: formData.accountNumber,
             accountName: formData.accountName,
           } : undefined,
+          communication: {
+            provider: formData.communicationProvider,
+            enabledTypes: formData.enabledCommunicationTypes,
+            defaultDuration: formData.defaultMeetingDuration,
+            allowParentInitiatedCalls: formData.allowParentInitiatedCalls,
+            requireApproval: formData.requireMeetingApproval,
+            settings: {
+              educoMeet: {
+                enabled: formData.communicationProvider === "educo-meet" || formData.communicationProvider === "hybrid",
+                maxParticipants: 50,
+                recordingEnabled: false,
+                virtualBackgroundEnabled: true,
+              },
+            },
+          },
         },
         contact: {
           email: formData.email,
@@ -500,6 +541,148 @@ export default function CreateTenantPage() {
                     placeholder="e.g., NGN"
                   />
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Communication Settings */}
+          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                <Video className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                Communication Settings
+              </h2>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  Communication Provider
+                </label>
+                <select
+                  value={formData.communicationProvider}
+                  onChange={(e) =>
+                    handleInputChange("communicationProvider", e.target.value as CommunicationProvider)
+                  }
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
+                >
+                  <option value="educo-meet">Educo Meet (Built-in)</option>
+                  <option value="agora">Agora</option>
+                  <option value="whatsapp">WhatsApp Business</option>
+                  <option value="external">External Links (Zoom, Google Meet, Teams)</option>
+                  <option value="hybrid">Hybrid (Multiple Platforms)</option>
+                </select>
+                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                  {formData.communicationProvider === "educo-meet" &&
+                    "Use our built-in video conferencing solution"}
+                  {formData.communicationProvider === "agora" &&
+                    "Connect with Agora for advanced video features"}
+                  {formData.communicationProvider === "whatsapp" &&
+                    "Use WhatsApp Business for messaging and calls"}
+                  {formData.communicationProvider === "external" &&
+                    "Generate and share external meeting links"}
+                  {formData.communicationProvider === "hybrid" &&
+                    "Use multiple platforms based on needs"}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
+                  Enabled Communication Types
+                </label>
+                <div className="flex flex-wrap gap-3">
+                  {(["video", "voice", "chat"] as CommunicationType[]).map((type) => {
+                    const isEnabled = formData.enabledCommunicationTypes.includes(type);
+                    return (
+                      <label
+                        key={type}
+                        className={`flex items-center gap-2 px-4 py-2 border rounded-lg cursor-pointer transition-colors ${
+                          isEnabled
+                            ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 dark:border-indigo-600"
+                            : "border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-700"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isEnabled}
+                          onChange={() => handleCommunicationTypeToggle(type)}
+                          className="w-4 h-4 text-indigo-600 rounded"
+                        />
+                        <div className="flex items-center gap-2">
+                          {type === "video" && <Video className="w-4 h-4" />}
+                          {type === "voice" && <Phone className="w-4 h-4" />}
+                          {type === "chat" && <MessageSquare className="w-4 h-4" />}
+                          <span className="text-sm text-neutral-900 dark:text-neutral-100 capitalize">
+                            {type}
+                          </span>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                    Default Meeting Duration (minutes)
+                  </label>
+                  <select
+                    value={formData.defaultMeetingDuration}
+                    onChange={(e) =>
+                      handleInputChange("defaultMeetingDuration", parseInt(e.target.value))
+                    }
+                    className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
+                  >
+                    <option value={15}>15 minutes</option>
+                    <option value={30}>30 minutes</option>
+                    <option value={45}>45 minutes</option>
+                    <option value={60}>60 minutes</option>
+                    <option value={90}>90 minutes</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="flex items-center gap-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
+                  <input
+                    type="checkbox"
+                    checked={formData.allowParentInitiatedCalls}
+                    onChange={(e) =>
+                      handleInputChange("allowParentInitiatedCalls", e.target.checked)
+                    }
+                    className="w-5 h-5 text-indigo-600 rounded"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                      Allow Parent-Initiated Calls
+                    </p>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      Parents can request or start calls with teachers directly
+                    </p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
+                  <input
+                    type="checkbox"
+                    checked={formData.requireMeetingApproval}
+                    onChange={(e) =>
+                      handleInputChange("requireMeetingApproval", e.target.checked)
+                    }
+                    className="w-5 h-5 text-indigo-600 rounded"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                      Require Meeting Approval
+                    </p>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      Parent-requested meetings need teacher approval before scheduling
+                    </p>
+                  </div>
+                </label>
               </div>
             </div>
           </div>
