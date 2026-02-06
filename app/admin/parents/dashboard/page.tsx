@@ -27,6 +27,11 @@ export default function AdminParentDashboardPage() {
   const { settings } = useSchoolSettings();
   const [isMounted, setIsMounted] = useState(false);
 
+  // Mount effect - for hydration safety
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Currency formatter
   const currencyCode = settings.currency || "NGN";
   const money = useMemo(() => {
@@ -77,12 +82,6 @@ export default function AdminParentDashboardPage() {
       { id: "ra-5", icon: AlertCircle, iconColor: "red", title: "Fee Overdue", description: "Mr. Emeka Okonkwo has overdue fees of ₦75,000", timestamp: "3 hours ago" },
     ];
   }, []);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) return null;
 
   const primaryStats = useMemo<StatCardConfig<AdminParent>[]>(() => {
     const collectionColor = parentStats.collectionRate >= 80 ? "green" : parentStats.collectionRate >= 50 ? "amber" : "red";
@@ -359,6 +358,9 @@ export default function AdminParentDashboardPage() {
       </div>
     );
   }, [feeStats, metrics.pendingRSVPs, metrics.unreadMessages, metrics.upcomingEvents, parentStats]);
+
+  // Prevent hydration mismatch from locale-dependent formatting
+  if (!isMounted) return null;
 
   return (
     <DashboardPage<AdminParent>

@@ -208,7 +208,6 @@ export class AgoraService implements ICommunicationService {
       if (typeof window !== "undefined") {
         // Try npm import first
         try {
-          // @ts-expect-error - agora-rtc-sdk-ng may not be installed
           const AgoraRTCModule = await import("agora-rtc-sdk-ng");
           this.agoraRTC = AgoraRTCModule.default as unknown as IAgoraRTC;
         } catch {
@@ -239,7 +238,6 @@ export class AgoraService implements ICommunicationService {
         // Initialize RTM if enabled
         if (this.config.useRtm !== false) {
           try {
-            // @ts-expect-error - agora-rtm-sdk may not be installed
             const AgoraRTMModule = await import("agora-rtm-sdk");
             this.agoraRTM = AgoraRTMModule.default as unknown as IAgoraRTM;
             this.rtmClient = this.agoraRTM.createInstance(this.config.appId);

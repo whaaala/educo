@@ -505,17 +505,17 @@ export function ChildLeaveRequestsCard({ leaves }: { leaves: ChildLeaveRequest[]
   return (
     <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cyan-500/5 via-transparent to-transparent dark:from-cyan-400/10 midnight:from-cyan-400/10 purple:from-pink-400/10 pointer-events-none" />
-      <div className="relative px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-2 rounded-xl bg-cyan-50 dark:bg-cyan-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
+      <div className="relative px-3 py-2.5 flex items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="p-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 shrink-0">
             <CalendarCheck className="w-4 h-4 text-cyan-600 dark:text-cyan-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
-          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Child Leave Requests</span>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Leave Requests</span>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           <Link
             href="/parents/leaves"
-            className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+            className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors whitespace-nowrap"
           >
             View All <ChevronRight className="w-3 h-3" />
           </Link>
@@ -960,22 +960,22 @@ export function UpcomingMeetingsCard({ meetings }: { meetings: UpcomingMeeting[]
   return (
     <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-violet-500/5 via-transparent to-transparent dark:from-violet-400/10 midnight:from-violet-400/10 purple:from-pink-400/10 pointer-events-none" />
-      <div className="relative px-3 py-2.5 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-violet-50 dark:bg-violet-900/30 midnight:bg-violet-900/30 purple:bg-pink-900/30">
+      <div className="relative px-3 py-2.5 flex items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="p-1.5 rounded-lg bg-violet-50 dark:bg-violet-900/30 midnight:bg-violet-900/30 purple:bg-pink-900/30 shrink-0">
             <Video className="w-4 h-4 text-violet-600 dark:text-violet-400 midnight:text-violet-400 purple:text-pink-400" />
           </div>
-          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Upcoming Meetings</span>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Meetings</span>
           {upcomingMeetings.length > 0 && (
-            <span className="text-[9px] font-bold text-white bg-gradient-to-r from-violet-500 to-purple-500 px-1.5 py-0.5 rounded-full shadow-sm min-w-[18px] text-center">
+            <span className="text-[9px] font-bold text-white bg-gradient-to-r from-violet-500 to-purple-500 px-1.5 py-0.5 rounded-full shadow-sm min-w-[18px] text-center shrink-0">
               {upcomingMeetings.length}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           <Link
             href="/parents/meetings"
-            className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+            className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors whitespace-nowrap"
           >
             View All <ChevronRight className="w-3 h-3" />
           </Link>

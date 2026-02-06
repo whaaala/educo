@@ -37,6 +37,7 @@ import {
   BarChart3,
   ChevronDown,
   ChevronRight,
+  RotateCcw,
   TrendingUp,
   Users,
   MessageSquare,
@@ -497,7 +498,7 @@ export default function ParentDashboardPage() {
 
   // Default dashboard order (PRD-aligned for Parents): fees + communication + progress first.
   // PRD highlights Parent priorities as: Progress, chat/communication, fees/payments.
-  const defaultOrder = [
+  const defaultOrderV1 = [
     // Highest importance
     "my-children",
     "fees-reminder",
@@ -517,11 +518,40 @@ export default function ParentDashboardPage() {
     "parent-profile",
   ];
 
-  const { order, setOrder } = useDashboardLayout(
+  // Default dashboard order (Screenshot-aligned for Parents): matches the portal layout shown in the PRD screenshots.
+  const defaultOrderV2 = [
+    "parent-profile",
+    "my-children",
+    "fees-reminder",
+    "messages",
+    "exam-results",
+    "homework",
+    "recent-grades",
+    "upcoming-meetings",
+    "payment-history",
+    "events",
+    "notice-board",
+    "quick-links",
+    "quick-actions",
+    "leave-requests",
+  ];
+
+  const { order, setOrder, reset, customized } = useDashboardLayout(
     "educo.parents.dashboard.order.v1",
     dashboardCards.map((c) => c.id),
-    defaultOrder
+    defaultOrderV2,
+    { defaultVersion: "v2", legacyDefaultOrder: defaultOrderV1 }
   );
+
+  // Prevent hydration mismatch from browser extensions (e.g., password managers adding fdprocessedid)
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <DashboardPage
@@ -556,6 +586,16 @@ export default function ParentDashboardPage() {
                   </button>
                   <button className="p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                     <HelpCircle className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={reset}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    title={customized ? "Reset widgets to default" : "Widgets are already on the default layout"}
+                    aria-label="Reset widgets"
+                  >
+                    <RotateCcw className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Reset</span>
                   </button>
                 </div>
               </div>
@@ -779,6 +819,17 @@ export default function ParentDashboardPage() {
                   })}
                 </div>
 
+                {/* Reset Widgets */}
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200/70 dark:border-gray-700/60 bg-white/90 dark:bg-gray-800/80 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all text-sm font-medium"
+                  title={customized ? "Reset widgets to default" : "Widgets are already on the default layout"}
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Reset widgets
+                </button>
+
                 {/* Pay Fees Button */}
                 <Link
                   href="/parents/fees"
@@ -848,15 +899,8 @@ export default function ParentDashboardPage() {
         {/* DESKTOP LAYOUT (lg+) */}
         {/* ============================================ */}
         <div className="hidden lg:block space-y-5">
-          {/* Desktop Header */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-1">Parent Dashboard</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Welcome back, {MOCK_PARENT.fullName.split(" ").slice(1).join(" ")}</p>
-            </div>
-
-            {/* Right Side - Selected Child & Quick Stats */}
-            <div className="flex flex-wrap items-center gap-2">
+          {/* Desktop Header Actions */}
+          <div className="flex flex-wrap items-center justify-end gap-2">
               {/* Current Term Info */}
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                 <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -877,6 +921,17 @@ export default function ParentDashboardPage() {
                 </div>
               </div>
 
+              {/* Reset Widgets */}
+              <button
+                type="button"
+                onClick={reset}
+                className="flex items-center gap-2 px-3 py-2.5 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-medium text-sm transition-all"
+                title={customized ? "Reset widgets to default" : "Widgets are already on the default layout"}
+              >
+                <RotateCcw className="w-4 h-4" />
+                Reset widgets
+              </button>
+
               {/* Pay Fees Button */}
               <Link
                 href="/parents/fees"
@@ -885,7 +940,6 @@ export default function ParentDashboardPage() {
                 <CreditCard className="w-4 h-4" />
                 Pay Fees
               </Link>
-            </div>
           </div>
 
           {/* Desktop Stats Row - Current Term In Progress */}
