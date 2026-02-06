@@ -902,22 +902,22 @@ export default function ParentDashboardPage() {
           {/* Desktop Header Actions */}
           <div className="flex flex-wrap items-center justify-end gap-2">
               {/* Current Term Info */}
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
+                <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 <div>
-                  <p className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">Current Term</p>
-                  <p className="text-xs font-bold text-gray-900 dark:text-white">2nd Term 2024</p>
+                  <p className="text-[10px] text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium">Current Term</p>
+                  <p className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">2nd Term 2024</p>
                 </div>
               </div>
 
               {/* Selected Child Quick View */}
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
                 <div className="w-8 h-8 rounded-lg overflow-hidden">
                   <Image src={selectedChild.profilePhoto} alt={selectedChild.fullName} width={32} height={32} className="object-cover" unoptimized />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Viewing</p>
-                  <p className="text-xs font-bold text-gray-900 dark:text-white">{selectedChild.firstName} • {selectedChild.classLevel}</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 font-medium">Viewing</p>
+                  <p className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{selectedChild.firstName} • {selectedChild.classLevel}</p>
                 </div>
               </div>
 
@@ -925,7 +925,7 @@ export default function ParentDashboardPage() {
               <button
                 type="button"
                 onClick={reset}
-                className="flex items-center gap-2 px-3 py-2.5 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-medium text-sm transition-all"
+                className="flex items-center gap-2 px-3 py-2.5 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 rounded-lg font-medium text-sm transition-all"
                 title={customized ? "Reset widgets to default" : "Widgets are already on the default layout"}
               >
                 <RotateCcw className="w-4 h-4" />
@@ -935,7 +935,7 @@ export default function ParentDashboardPage() {
               {/* Pay Fees Button */}
               <Link
                 href="/parents/fees"
-                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm shadow-sm transition-all"
+                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 text-white rounded-lg font-medium text-sm shadow-sm transition-all"
               >
                 <CreditCard className="w-4 h-4" />
                 Pay Fees

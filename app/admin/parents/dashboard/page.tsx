@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import DashboardPage from "@/components/pages/DashboardPage";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { DashboardProvider, adminDashboardConfig } from "@/contexts/DashboardContext";
 import { getAllParents, getParentStats, getFeeStats, type AdminParent } from "@/lib/mockParents";
 import {
   Users,
@@ -21,16 +22,48 @@ import {
   Activity,
   Bell,
 } from "lucide-react";
-import type { ActivityItem, DashboardListItem, DashboardWidget, QuickActionConfig, StatCardConfig } from "@/types/components";
+import type { QuickActionConfig, StatCardConfig } from "@/types/components";
+import {
+  WidgetGrid,
+  ActivityWidget,
+  ListWidget,
+  StatsWidget,
+  type ActivityWidgetItem,
+  type ListWidgetItem,
+  type StatItem,
+  type WidgetDefinition,
+} from "@/components/widgets";
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const WIDGET_ORDER_KEY = "educo.admin.parents.dashboard.widgetOrder";
+const DEFAULT_WIDGET_ORDER = ["activity", "topChildren", "outstanding", "feeDistribution", "parentStatus", "engagement", "quickStats"];
 
 export default function AdminParentDashboardPage() {
   const { settings } = useSchoolSettings();
   const [isMounted, setIsMounted] = useState(false);
+  const [widgetOrder, setWidgetOrder] = useState<string[]>(DEFAULT_WIDGET_ORDER);
 
-  // Mount effect - for hydration safety
+  // Mount effect - for hydration safety and load widget order
   useEffect(() => {
     setIsMounted(true);
+    const saved = localStorage.getItem(WIDGET_ORDER_KEY);
+    if (saved) {
+      try {
+        setWidgetOrder(JSON.parse(saved));
+      } catch {
+        // ignore invalid JSON
+      }
+    }
   }, []);
+
+  // Save widget order when it changes
+  const handleOrderChange = (newOrder: string[]) => {
+    setWidgetOrder(newOrder);
+    localStorage.setItem(WIDGET_ORDER_KEY, JSON.stringify(newOrder));
+  };
 
   // Currency formatter
   const currencyCode = settings.currency || "NGN";
@@ -72,8 +105,8 @@ export default function AdminParentDashboardPage() {
     };
   }, [parents, feeStats]);
 
-  // Mock recent activities
-  const recentActivityItems = useMemo<ActivityItem[]>(() => {
+  // Recent activity items for ActivityWidget
+  const activityItems = useMemo<ActivityWidgetItem[]>(() => {
     return [
       { id: "ra-1", icon: CreditCard, iconColor: "green", title: "Payment Received", description: "Mrs. Adaeze Okoro paid ₦150,000 for school fees", timestamp: "2 min ago" },
       { id: "ra-2", icon: Mail, iconColor: "blue", title: "New Message", description: "Mr. Chukwuma Eze sent a message about his child", timestamp: "15 min ago" },
@@ -83,6 +116,191 @@ export default function AdminParentDashboardPage() {
     ];
   }, []);
 
+  // Top children list items for ListWidget
+  const topChildrenItems = useMemo<ListWidgetItem[]>(() => {
+    return metrics.topByChildren.map((parent) => ({
+      id: parent.id,
+      primary: `${parent.firstName} ${parent.lastName}`,
+      secondary: `${parent.children.length} ${parent.children.length === 1 ? "child" : "children"}`,
+      left: parent.profilePhoto ? (
+        <img src={parent.profilePhoto} alt="" className="w-8 h-8 rounded-full object-cover" />
+      ) : (
+        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+          <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        </div>
+      ),
+      right: (
+        <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{parent.children.length}</span>
+      ),
+      href: `/admin/parents/${parent.id}`,
+    }));
+  }, [metrics.topByChildren]);
+
+  // Outstanding fees list items for ListWidget
+  const outstandingItems = useMemo<ListWidgetItem[]>(() => {
+    return metrics.topByFees
+      .filter((p) => p.totalOutstandingFees > 0)
+      .map((parent) => ({
+        id: parent.id,
+        primary: `${parent.firstName} ${parent.lastName}`,
+        secondary: "Outstanding balance",
+        left: parent.profilePhoto ? (
+          <img src={parent.profilePhoto} alt="" className="w-8 h-8 rounded-full object-cover" />
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
+            <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+          </div>
+        ),
+        right: (
+          <span className="text-sm font-bold text-red-600 dark:text-red-400">{money(parent.totalOutstandingFees)}</span>
+        ),
+        href: `/admin/parents/${parent.id}`,
+        variant: "danger" as const,
+      }));
+  }, [metrics.topByFees, money]);
+
+  // Fee distribution stats
+  const feeDistributionStats = useMemo<StatItem[]>(() => [
+    { id: "paid", label: "Paid", value: feeStats.paidCount, variant: "success" },
+    { id: "partial", label: "Partial", value: feeStats.partialCount, variant: "warning" },
+    { id: "pending", label: "Pending", value: feeStats.pendingCount, variant: "primary" },
+    { id: "overdue", label: "Overdue", value: feeStats.overdueCount, variant: "danger" },
+  ], [feeStats]);
+
+  // Parent status stats
+  const parentStatusStats = useMemo<StatItem[]>(() => [
+    { id: "active", label: "Active", value: parentStats.activeParents, variant: "success" },
+    { id: "inactive", label: "Inactive", value: parentStats.inactiveParents, variant: "default" },
+  ], [parentStats]);
+
+  // Engagement stats
+  const engagementStats = useMemo<StatItem[]>(() => [
+    { id: "messages", label: "Unread Messages", value: metrics.unreadMessages, variant: "primary" },
+    { id: "rsvps", label: "Pending RSVPs", value: metrics.pendingRSVPs, variant: "warning" },
+    { id: "events", label: "Upcoming Events", value: metrics.upcomingEvents, variant: "default" },
+  ], [metrics]);
+
+  // Widget definitions for the grid
+  const widgets = useMemo<WidgetDefinition[]>(() => [
+    {
+      id: "activity",
+      title: "Recent Activity",
+      content: (
+        <ActivityWidget
+          title="Recent Activity"
+          icon={<Activity className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+          colorScheme="blue"
+          items={activityItems}
+          maxItems={5}
+          viewAllHref="/admin/parents"
+        />
+      ),
+    },
+    {
+      id: "topChildren",
+      title: "Most Children",
+      content: (
+        <ListWidget
+          title="Most Children"
+          icon={<Users className="w-4 h-4 text-violet-600 dark:text-violet-400" />}
+          colorScheme="violet"
+          items={topChildrenItems}
+          maxItems={3}
+        />
+      ),
+    },
+    {
+      id: "outstanding",
+      title: "Highest Outstanding",
+      content: outstandingItems.length > 0 ? (
+        <ListWidget
+          title="Highest Outstanding"
+          icon={<AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />}
+          colorScheme="red"
+          items={outstandingItems}
+          maxItems={3}
+          viewAllHref="/admin/parents/fees?sort=highest_balance"
+        />
+      ) : (
+        <ListWidget
+          title="Highest Outstanding"
+          icon={<AlertCircle className="w-4 h-4 text-green-600 dark:text-green-400" />}
+          colorScheme="green"
+          items={[]}
+          emptyIcon={<CheckCircle2 className="w-10 h-10 text-green-500" />}
+          emptyTitle="All Clear!"
+          emptyDescription="No outstanding fees"
+        />
+      ),
+    },
+    {
+      id: "feeDistribution",
+      title: "Fee Status Distribution",
+      content: (
+        <StatsWidget
+          title="Fee Status"
+          icon={<PieChart className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />}
+          colorScheme="cyan"
+          stats={feeDistributionStats}
+          columns={2}
+        />
+      ),
+    },
+    {
+      id: "parentStatus",
+      title: "Parent Status",
+      content: (
+        <StatsWidget
+          title="Parent Status"
+          icon={<BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+          colorScheme="emerald"
+          stats={parentStatusStats}
+          columns={2}
+        />
+      ),
+    },
+    {
+      id: "engagement",
+      title: "Engagement",
+      content: (
+        <StatsWidget
+          title="Engagement"
+          icon={<Bell className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
+          colorScheme="amber"
+          stats={engagementStats}
+          columns={3}
+        />
+      ),
+    },
+    {
+      id: "quickStats",
+      title: "Quick Stats",
+      content: (
+        <StatsWidget
+          title="Collection Rate"
+          icon={<TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+          colorScheme="blue"
+          stats={[
+            {
+              id: "rate",
+              label: "Fee Collection Rate",
+              value: `${parentStats.collectionRate}%`,
+              variant: parentStats.collectionRate >= 80 ? "success" : parentStats.collectionRate >= 50 ? "warning" : "danger",
+            },
+            {
+              id: "outstanding",
+              label: "With Outstanding",
+              value: parentStats.parentsWithOutstanding,
+              variant: "default",
+            },
+          ]}
+          columns={2}
+        />
+      ),
+    },
+  ], [activityItems, topChildrenItems, outstandingItems, feeDistributionStats, parentStatusStats, engagementStats, parentStats]);
+
+  // Primary stats for DashboardPage header
   const primaryStats = useMemo<StatCardConfig<AdminParent>[]>(() => {
     const collectionColor = parentStats.collectionRate >= 80 ? "green" : parentStats.collectionRate >= 50 ? "amber" : "red";
 
@@ -116,6 +334,7 @@ export default function AdminParentDashboardPage() {
     ];
   }, [parentStats]);
 
+  // Secondary stats for DashboardPage header
   const secondaryStats = useMemo<StatCardConfig<AdminParent>[]>(() => {
     return [
       {
@@ -147,6 +366,7 @@ export default function AdminParentDashboardPage() {
     ];
   }, [feeStats, money]);
 
+  // Quick actions for DashboardPage
   const quickActions = useMemo<QuickActionConfig[]>(() => {
     return [
       {
@@ -183,181 +403,29 @@ export default function AdminParentDashboardPage() {
     ];
   }, [feeStats.overdueCount, metrics.pendingRSVPs, metrics.unreadMessages]);
 
-  const mostChildrenList = useMemo<DashboardListItem[]>(() => {
-    return metrics.topByChildren.map((parent) => ({
-      id: parent.id,
-      title: `${parent.firstName} ${parent.lastName}`,
-      subtitle: "Children",
-      value: parent.children.length,
-      avatar: parent.profilePhoto,
-      href: `/admin/parents/${parent.id}`,
-    }));
-  }, [metrics.topByChildren]);
-
-  const highestOutstandingList = useMemo<DashboardListItem[]>(() => {
-    return metrics.topByFees
-      .filter((p) => p.totalOutstandingFees > 0)
-      .map((parent) => ({
-        id: parent.id,
-        title: `${parent.firstName} ${parent.lastName}`,
-        subtitle: "Outstanding",
-        value: money(parent.totalOutstandingFees),
-        avatar: parent.profilePhoto,
-        href: `/admin/parents/${parent.id}`,
-      }));
-  }, [metrics.topByFees, money]);
-
-  const leftColumn = useMemo<DashboardWidget[]>(() => {
-    return [
-      {
-        type: "activity",
-        title: "Recent Activity",
-        icon: Activity,
-        viewAllLink: "/admin/parents",
-        activityItems: recentActivityItems,
-      },
-    ];
-  }, [recentActivityItems]);
-
-  const rightColumn = useMemo<DashboardWidget[]>(() => {
-    const widgets: DashboardWidget[] = [
-      {
-        type: "list",
-        title: "Most Children",
-        icon: Users,
-        listItems: mostChildrenList,
-      },
-    ];
-
-    if (highestOutstandingList.length > 0) {
-      widgets.push({
-        type: "list",
-        title: "Highest Outstanding",
-        icon: AlertCircle,
-        viewAllLink: "/admin/parents/fees?sort=highest_balance",
-        listItems: highestOutstandingList,
-      });
-    } else {
-      widgets.push({
-        type: "custom",
-        title: "Highest Outstanding",
-        icon: AlertCircle,
-        viewAllLink: "/admin/parents/fees?sort=highest_balance",
-        customComponent: (
-          <div className="text-center py-6">
-            <CheckCircle2 className="w-10 h-10 text-green-500 mx-auto mb-2" />
-            <p className="text-sm text-gray-600 dark:text-gray-400">No outstanding fees</p>
-          </div>
-        ),
-      });
-    }
-
-    return widgets;
-  }, [highestOutstandingList, mostChildrenList]);
-
+  // Widget grid as footer content
   const footerContent = useMemo(() => {
+    if (!isMounted) return null;
+
     return (
-      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Fee Status Distribution</span>
-            <PieChart className="w-4 h-4 text-gray-400" />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-green-500" />
-                <span className="text-xs text-gray-600 dark:text-gray-400">Paid</span>
-              </div>
-              <span className="text-xs font-semibold text-gray-900 dark:text-white">{feeStats.paidCount}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-amber-500" />
-                <span className="text-xs text-gray-600 dark:text-gray-400">Partial</span>
-              </div>
-              <span className="text-xs font-semibold text-gray-900 dark:text-white">{feeStats.partialCount}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-500" />
-                <span className="text-xs text-gray-600 dark:text-gray-400">Pending</span>
-              </div>
-              <span className="text-xs font-semibold text-gray-900 dark:text-white">{feeStats.pendingCount}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500" />
-                <span className="text-xs text-gray-600 dark:text-gray-400">Overdue</span>
-              </div>
-              <span className="text-xs font-semibold text-gray-900 dark:text-white">{feeStats.overdueCount}</span>
-            </div>
-          </div>
+      <DashboardProvider config={adminDashboardConfig}>
+        <div className="mt-6">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            Dashboard Widgets
+            <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">
+              (Drag to reorder)
+            </span>
+          </h3>
+          <WidgetGrid
+            widgets={widgets}
+            order={widgetOrder}
+            onOrderChange={handleOrderChange}
+            columns={{ sm: 2, lg: 3, "2xl": 4 }}
+          />
         </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Parent Status</span>
-            <BarChart3 className="w-4 h-4 text-gray-400" />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-green-500" />
-                <span className="text-xs text-gray-600 dark:text-gray-400">Active</span>
-              </div>
-              <span className="text-xs font-semibold text-gray-900 dark:text-white">{parentStats.activeParents}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-gray-400" />
-                <span className="text-xs text-gray-600 dark:text-gray-400">Inactive</span>
-              </div>
-              <span className="text-xs font-semibold text-gray-900 dark:text-white">{parentStats.inactiveParents}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Engagement</span>
-            <Bell className="w-4 h-4 text-gray-400" />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-600 dark:text-gray-400">Unread Messages</span>
-              <span className="text-xs font-semibold text-gray-900 dark:text-white">{metrics.unreadMessages}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-600 dark:text-gray-400">Pending RSVPs</span>
-              <span className="text-xs font-semibold text-gray-900 dark:text-white">{metrics.pendingRSVPs}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-600 dark:text-gray-400">Upcoming Events</span>
-              <span className="text-xs font-semibold text-gray-900 dark:text-white">{metrics.upcomingEvents}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-xl p-4 text-white">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-blue-100">Quick Stats</span>
-            <TrendingUp className="w-4 h-4 text-blue-200" />
-          </div>
-          <div className="space-y-3">
-            <div>
-              <p className="text-2xl font-bold">{parentStats.collectionRate}%</p>
-              <p className="text-xs text-blue-100">Fee Collection Rate</p>
-            </div>
-            <div className="pt-2 border-t border-blue-400/30">
-              <p className="text-sm font-semibold">{parentStats.parentsWithOutstanding}</p>
-              <p className="text-xs text-blue-100">Parents with outstanding fees</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      </DashboardProvider>
     );
-  }, [feeStats, metrics.pendingRSVPs, metrics.unreadMessages, metrics.upcomingEvents, parentStats]);
+  }, [isMounted, widgets, widgetOrder]);
 
   // Prevent hydration mismatch from locale-dependent formatting
   if (!isMounted) return null;
@@ -375,8 +443,6 @@ export default function AdminParentDashboardPage() {
       primaryStats={primaryStats}
       secondaryStats={secondaryStats}
       quickActions={quickActions}
-      leftColumn={leftColumn}
-      rightColumn={rightColumn}
       headerActions={[{ label: "Manage Parents", href: "/admin/parents", icon: Users }]}
       footerContent={footerContent}
       pageLoadDuration={600}

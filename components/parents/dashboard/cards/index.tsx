@@ -57,28 +57,32 @@ function TrendIcon({ trend }: { trend: "up" | "down" | "stable" | string }) {
 
 export function ParentProfileCard({ parent }: { parent: ParentProfile }) {
   return (
-    <div className="relative bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+    <div className="group relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+      {/* Subtle top shine effect */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
       <div className="absolute top-2.5 right-2.5 z-10">
         <DashboardDragHandle />
       </div>
-      <div className="relative h-16 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-purple-950/40 midnight:from-cyan-950/40 midnight:via-slate-900/30 midnight:to-cyan-950/40 purple:from-pink-950/40 purple:via-slate-900/30 purple:to-purple-950/40">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
+      <div className="relative h-20 bg-gradient-to-br from-blue-500/10 via-indigo-500/10 to-purple-500/10 dark:from-blue-500/20 dark:via-indigo-500/15 dark:to-purple-500/20 midnight:from-cyan-500/20 midnight:via-blue-500/15 midnight:to-indigo-500/20 purple:from-pink-500/20 purple:via-purple-500/15 purple:to-indigo-500/20">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-30 dark:opacity-20" />
+        {/* Animated gradient overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
       </div>
-      <div className="relative px-3 pb-3">
-        <div className="relative -mt-8 mb-2.5">
-          <div className="w-16 h-16 rounded-xl overflow-hidden ring-4 ring-white dark:ring-gray-800 shadow-lg">
-            <Image src={parent.profilePhoto} alt={parent.fullName} width={64} height={64} className="object-cover" unoptimized />
+      <div className="relative px-4 pb-4">
+        <div className="relative -mt-10 mb-3">
+          <div className="w-20 h-20 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-gray-800 midnight:ring-gray-900 purple:ring-gray-900 shadow-xl group-hover:shadow-2xl transition-shadow duration-300">
+            <Image src={parent.profilePhoto} alt={parent.fullName} width={80} height={80} className="object-cover" unoptimized />
           </div>
-          <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-green-500 border-2 border-white dark:border-gray-800 flex items-center justify-center">
-            <CheckCircle2 className="w-3 h-3 text-white" />
+          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 border-2 border-white dark:border-gray-800 midnight:border-gray-900 purple:border-gray-900 flex items-center justify-center shadow-lg">
+            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
           </div>
         </div>
-        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">
+        <span className="inline-flex items-center text-[10px] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50 dark:bg-blue-900/40 midnight:bg-cyan-900/40 purple:bg-pink-900/40 px-2.5 py-1 rounded-lg shadow-sm">
           {parent.id}
         </span>
-        <h3 className="font-bold text-gray-900 dark:text-white text-base mt-1">{parent.fullName}</h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
-          <Mail className="w-3 h-3" /> {parent.email}
+        <h3 className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-lg mt-2">{parent.fullName}</h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 flex items-center gap-1.5 mt-1.5">
+          <Mail className="w-3.5 h-3.5" /> {parent.email}
         </p>
       </div>
     </div>
@@ -95,16 +99,20 @@ export function MyChildrenCard({
   onSelectChild: (child: Child) => void;
 }) {
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-md transition-shadow duration-300 p-3">
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40 midnight:from-cyan-900/40 midnight:to-indigo-900/40 purple:from-pink-900/40 purple:to-purple-900/40 shadow-sm">
-            <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
+    <div className="group relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 p-4">
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.02] via-transparent to-purple-500/[0.02] dark:from-indigo-500/[0.05] dark:to-purple-500/[0.05] midnight:from-cyan-500/[0.05] midnight:to-indigo-500/[0.05] purple:from-pink-500/[0.05] purple:to-purple-500/[0.05] pointer-events-none" />
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
+      <div className="relative flex flex-wrap items-center justify-between gap-2 mb-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 midnight:from-cyan-900/50 midnight:to-indigo-900/50 purple:from-pink-900/50 purple:to-purple-900/50 shadow-md group-hover:shadow-lg transition-shadow duration-300">
+            <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
           <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">My Children</span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[10px] font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 midnight:from-cyan-500 midnight:to-indigo-500 purple:from-pink-500 purple:to-purple-500 px-2.5 py-1 rounded-full shadow-sm">
+          <span className="text-[10px] font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 midnight:from-cyan-500 midnight:to-indigo-500 purple:from-pink-500 purple:to-purple-500 px-3 py-1.5 rounded-full shadow-md">
             {children.length}
           </span>
           <DashboardDragHandle />
@@ -170,44 +178,49 @@ export function MyChildrenCard({
 
 export function QuickActionsCard() {
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-md transition-shadow duration-300 p-3">
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
-        <h4 className="text-xs font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 min-w-0 truncate">Quick Actions</h4>
-        <div className="shrink-0">
-          <DashboardDragHandle />
+    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 p-4">
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
+      <div className="relative flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700/50 dark:to-gray-700/30 midnight:from-gray-800/50 midnight:to-gray-800/30 purple:from-gray-800/50 purple:to-gray-800/30 shadow-sm">
+            <Zap className="w-4 h-4 text-gray-600 dark:text-gray-300 midnight:text-cyan-400 purple:text-pink-400" />
+          </div>
+          <h4 className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Quick Actions</h4>
         </div>
+        <DashboardDragHandle />
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="relative grid grid-cols-2 gap-2.5">
         <button
-          className="group flex items-center gap-2 p-2.5 rounded-xl bg-gradient-to-r from-blue-50/80 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/10 midnight:from-cyan-900/20 midnight:to-blue-900/10 purple:from-pink-900/20 purple:to-purple-900/10 border border-blue-100/50 dark:border-blue-800/30 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-300 dark:hover:border-blue-600/50 hover:shadow-md transition-all duration-200"
+          className="group flex items-center gap-2.5 p-3 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/50 dark:from-blue-900/30 dark:to-indigo-900/20 midnight:from-cyan-900/30 midnight:to-blue-900/20 purple:from-pink-900/30 purple:to-purple-900/20 border border-blue-200/50 dark:border-blue-700/30 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-blue-300 dark:hover:border-blue-600/50 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
           type="button"
         >
-          <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/50 midnight:bg-cyan-900/50 purple:bg-pink-900/50 group-hover:scale-105 transition-transform duration-200">
-            <CalendarPlus className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 midnight:from-cyan-500 midnight:to-blue-500 purple:from-pink-500 purple:to-purple-500 shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-200">
+            <CalendarPlus className="w-4 h-4 text-white" />
           </div>
-          <span className="text-[10px] font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
             Request Leave
           </span>
         </button>
         <button
-          className="group flex items-center gap-2 p-2.5 rounded-xl bg-gradient-to-r from-purple-50/80 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/10 midnight:from-indigo-900/20 midnight:to-purple-900/10 purple:from-purple-900/20 purple:to-pink-900/10 border border-purple-100/50 dark:border-purple-800/30 midnight:border-indigo-500/20 purple:border-purple-500/20 hover:border-purple-300 dark:hover:border-purple-600/50 hover:shadow-md transition-all duration-200"
+          className="group flex items-center gap-2.5 p-3 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50/50 dark:from-purple-900/30 dark:to-pink-900/20 midnight:from-indigo-900/30 midnight:to-purple-900/20 purple:from-purple-900/30 purple:to-pink-900/20 border border-purple-200/50 dark:border-purple-700/30 midnight:border-indigo-500/30 purple:border-purple-500/30 hover:border-purple-300 dark:hover:border-purple-600/50 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
           type="button"
         >
-          <div className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/50 midnight:bg-indigo-900/50 purple:bg-pink-900/50 group-hover:scale-105 transition-transform duration-200">
-            <Send className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 midnight:text-indigo-400 purple:text-pink-400" />
+          <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 midnight:from-indigo-500 midnight:to-purple-500 purple:from-pink-500 purple:to-purple-500 shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-200">
+            <Send className="w-4 h-4 text-white" />
           </div>
-          <span className="text-[10px] font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+          <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
             Message Teacher
           </span>
         </button>
         <Link
           href="/parents/support"
-          className="group flex items-center gap-2 p-2.5 rounded-xl bg-gradient-to-r from-orange-50/80 to-amber-50/50 dark:from-orange-900/20 dark:to-amber-900/10 midnight:from-orange-900/20 midnight:to-amber-900/10 purple:from-orange-900/20 purple:to-amber-900/10 border border-orange-100/50 dark:border-orange-800/30 midnight:border-orange-500/20 purple:border-orange-500/20 hover:border-orange-300 dark:hover:border-orange-600/50 hover:shadow-md transition-all duration-200 col-span-2"
+          className="group flex items-center gap-2.5 p-3 rounded-xl bg-gradient-to-br from-orange-50 to-amber-50/50 dark:from-orange-900/30 dark:to-amber-900/20 midnight:from-orange-900/30 midnight:to-amber-900/20 purple:from-orange-900/30 purple:to-amber-900/20 border border-orange-200/50 dark:border-orange-700/30 midnight:border-orange-500/30 purple:border-orange-500/30 hover:border-orange-300 dark:hover:border-orange-600/50 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 col-span-2"
         >
-          <div className="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-900/50 midnight:bg-orange-900/50 purple:bg-orange-900/50 group-hover:scale-105 transition-transform duration-200">
-            <LifeBuoy className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400" />
+          <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-200">
+            <LifeBuoy className="w-4 h-4 text-white" />
           </div>
-          <span className="text-[10px] font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+          <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
             Support Ticket
           </span>
         </Link>
@@ -224,33 +237,37 @@ export function PaymentHistoryCard({
   countryCode: string;
 }) {
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-md transition-shadow duration-300 p-3">
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 p-3">
+      {/* Decorative gradient */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-green-500/10 via-emerald-500/5 to-transparent dark:from-green-400/15 dark:via-emerald-400/10 midnight:from-emerald-400/15 midnight:via-green-400/10 purple:from-emerald-400/15 purple:via-green-400/10 pointer-events-none" />
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
+      <div className="relative flex flex-wrap items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/40 dark:to-emerald-900/40 midnight:from-emerald-900/40 midnight:to-green-900/40 purple:from-green-900/40 purple:to-emerald-900/40 shadow-sm">
-            <CreditCard className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/50 dark:to-emerald-900/40 midnight:from-emerald-900/50 midnight:to-green-900/40 purple:from-green-900/50 purple:to-emerald-900/40 shadow-md group-hover/card:shadow-lg transition-shadow duration-300">
+            <CreditCard className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
           </div>
           <h4 className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Payment History</h4>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Link href="/parents/fees" className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline">
-            View All
+          <Link href="/parents/fees" className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors">
+            View All <ChevronRight className="w-3 h-3" />
           </Link>
           <DashboardDragHandle />
         </div>
       </div>
-      <div className="space-y-2">
+      <div className="relative space-y-2">
         {payments.map((payment, index) => (
           <div
             key={payment.id}
-            className="group flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-gray-50 to-gray-50/50 dark:from-gray-700/30 dark:to-gray-700/10 midnight:from-gray-800/40 midnight:to-gray-800/20 purple:from-gray-800/40 purple:to-gray-800/20 border border-gray-100 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20 hover:border-green-200 dark:hover:border-green-700/40 hover:shadow-sm transition-all duration-200"
+            className="group flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-700/30 dark:to-gray-700/10 midnight:from-gray-800/40 midnight:to-gray-800/20 purple:from-gray-800/40 purple:to-gray-800/20 border border-gray-100 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20 hover:border-green-200 dark:hover:border-green-500/40 hover:shadow-md hover:-translate-x-0.5 transition-all duration-200"
           >
             <div className="flex items-center gap-3">
               <div className="relative">
                 <div className="p-2 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/50 dark:to-emerald-900/50 midnight:from-green-900/50 midnight:to-emerald-900/50 purple:from-green-900/50 purple:to-emerald-900/50 shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
                   <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                 </div>
-                {index === 0 && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-green-500 animate-pulse" />}
+                {index === 0 && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 shadow-sm animate-pulse" />}
               </div>
               <div>
                 <p className="text-[11px] font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors">
@@ -274,12 +291,15 @@ export function PaymentHistoryCard({
 
 export function ExamResultsCard({ results }: { results: ExamResultItem[] }) {
   return (
-    <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-500/5 via-transparent to-transparent dark:from-indigo-400/10 midnight:from-indigo-400/10 purple:from-pink-400/10 pointer-events-none" />
-      <div className="relative px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-pink-900/30">
-            <GraduationCap className="w-4 h-4 text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-pink-400" />
+    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Decorative gradient */}
+      <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-indigo-500/10 via-purple-500/5 to-transparent dark:from-indigo-400/15 dark:via-purple-400/10 midnight:from-cyan-400/15 midnight:via-indigo-400/10 purple:from-pink-400/15 purple:via-purple-400/10 pointer-events-none" />
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
+      <div className="relative px-4 py-3 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/40 midnight:from-indigo-900/50 midnight:to-cyan-900/40 purple:from-pink-900/50 purple:to-purple-900/40 shadow-md">
+            <GraduationCap className="w-5 h-5 text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
           <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Exam Results</span>
         </div>
@@ -366,12 +386,15 @@ export function RecentGradesCard({
   progress: ChildProgress | undefined;
 }) {
   return (
-    <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-500/5 via-transparent to-transparent dark:from-blue-400/10 midnight:from-cyan-400/10 purple:from-pink-400/10 pointer-events-none" />
+    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Decorative gradient */}
+      <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-blue-500/10 via-indigo-500/5 to-transparent dark:from-blue-400/15 dark:via-indigo-400/10 midnight:from-cyan-400/15 midnight:via-blue-400/10 purple:from-pink-400/15 purple:via-purple-400/10 pointer-events-none" />
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
       <div className="relative px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
-            <Award className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/40 midnight:from-cyan-900/50 midnight:to-blue-900/40 purple:from-pink-900/50 purple:to-purple-900/40 shadow-md group-hover/card:shadow-lg transition-shadow duration-300">
+            <Award className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
           <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Recent Grades</span>
         </div>
@@ -422,14 +445,17 @@ export function EventsCard({ events, selectedChildId }: { events: ParentEvent[];
     : events;
 
   return (
-    <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-500/5 via-transparent to-transparent dark:from-purple-400/10 midnight:from-indigo-400/10 purple:from-pink-400/10 pointer-events-none" />
+    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Decorative gradient */}
+      <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-purple-500/10 via-pink-500/5 to-transparent dark:from-purple-400/15 dark:via-pink-400/10 midnight:from-indigo-400/15 midnight:via-purple-400/10 purple:from-pink-400/15 purple:via-purple-400/10 pointer-events-none" />
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
 
       {/* Header */}
       <div className="relative px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-900/30 midnight:bg-indigo-900/30 purple:bg-pink-900/30">
-            <CalendarDays className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-indigo-400 purple:text-pink-400" />
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/40 midnight:from-indigo-900/50 midnight:to-purple-900/40 purple:from-pink-900/50 purple:to-purple-900/40 shadow-md group-hover/card:shadow-lg transition-shadow duration-300">
+            <CalendarDays className="w-5 h-5 text-purple-600 dark:text-purple-400 midnight:text-indigo-400 purple:text-pink-400" />
           </div>
           <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Events</span>
         </div>
@@ -445,42 +471,45 @@ export function EventsCard({ events, selectedChildId }: { events: ParentEvent[];
       </div>
 
       {/* Events 2x2 Grid */}
-      <div className="relative flex-1 px-3 py-2.5">
-        <div className="grid grid-cols-2 gap-2">
+      <div className="relative flex-1 px-3 py-3">
+        <div className="grid grid-cols-2 gap-2.5">
           {filteredEvents.slice(0, 4).map((event) => (
             <Link
               key={event.id}
               href={`/parents/events/${event.id}`}
-              className="group flex flex-col rounded-xl overflow-hidden border border-gray-100 dark:border-gray-600/20 midnight:border-gray-600/15 purple:border-gray-600/15 hover:border-purple-200 dark:hover:border-purple-500/30 hover:shadow-md transition-all duration-200"
+              className="group relative flex flex-col rounded-xl overflow-hidden border border-gray-100/80 dark:border-gray-600/30 midnight:border-gray-600/20 purple:border-gray-600/20 hover:border-purple-300 dark:hover:border-purple-500/40 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
             >
-              {/* Event Image */}
-              <div className="relative h-[70px] w-full">
+              {/* Event Image with overlay */}
+              <div className="relative h-[100px] w-full">
                 <Image
                   src={event.image}
                   alt={event.title}
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
                   unoptimized
                 />
+                {/* Gradient overlay for better text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+
                 {/* Duration badge */}
-                <span className={`absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold ${
+                <span className={`absolute top-2 left-2 px-2 py-0.5 rounded-md text-[9px] font-bold shadow-md backdrop-blur-sm ${
                   event.duration === "Half Day"
-                    ? "bg-blue-500 text-white"
-                    : "bg-purple-500 text-white"
+                    ? "bg-blue-500/90 text-white"
+                    : "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
                 }`}>
                   {event.duration}
                 </span>
-              </div>
 
-              {/* Event info below image */}
-              <div className="p-2 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
-                <p className="text-xs font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                  {event.title}
-                </p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
-                  <Calendar className="w-3 h-3" />
-                  {formatShortDate(event.date)}
-                </p>
+                {/* Event info overlay at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                  <p className="text-xs font-bold text-white truncate drop-shadow-md">
+                    {event.title}
+                  </p>
+                  <p className="text-[10px] text-white/80 flex items-center gap-1 mt-0.5">
+                    <Calendar className="w-3 h-3" />
+                    {formatShortDate(event.date)}
+                  </p>
+                </div>
               </div>
             </Link>
           ))}
@@ -503,12 +532,15 @@ export function EventsCard({ events, selectedChildId }: { events: ParentEvent[];
 
 export function ChildLeaveRequestsCard({ leaves }: { leaves: ChildLeaveRequest[] }) {
   return (
-    <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cyan-500/5 via-transparent to-transparent dark:from-cyan-400/10 midnight:from-cyan-400/10 purple:from-pink-400/10 pointer-events-none" />
+    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Decorative gradient */}
+      <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-cyan-500/10 via-teal-500/5 to-transparent dark:from-cyan-400/15 dark:via-teal-400/10 midnight:from-cyan-400/15 midnight:via-teal-400/10 purple:from-pink-400/15 purple:via-rose-400/10 pointer-events-none" />
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
       <div className="relative px-3 py-2.5 flex items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="p-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 shrink-0">
-            <CalendarCheck className="w-4 h-4 text-cyan-600 dark:text-cyan-400 midnight:text-cyan-400 purple:text-pink-400" />
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-cyan-100 to-teal-100 dark:from-cyan-900/50 dark:to-teal-900/40 midnight:from-cyan-900/50 midnight:to-teal-900/40 purple:from-pink-900/50 purple:to-rose-900/40 shadow-md group-hover/card:shadow-lg transition-shadow duration-300 shrink-0">
+            <CalendarCheck className="w-5 h-5 text-cyan-600 dark:text-cyan-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
           <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Leave Requests</span>
         </div>
@@ -600,12 +632,15 @@ export function ChildLeaveRequestsCard({ leaves }: { leaves: ChildLeaveRequest[]
 
 export function HomeworkCard({ homework }: { homework: HomeworkItem[] }) {
   return (
-    <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-emerald-500/5 via-transparent to-transparent dark:from-emerald-400/10 midnight:from-emerald-400/10 purple:from-pink-400/10 pointer-events-none" />
+    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Decorative gradient */}
+      <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-emerald-500/10 via-green-500/5 to-transparent dark:from-emerald-400/15 dark:via-green-400/10 midnight:from-emerald-400/15 midnight:via-teal-400/10 purple:from-pink-400/15 purple:via-rose-400/10 pointer-events-none" />
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
       <div className="relative px-3 py-2.5 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-pink-900/30">
-            <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-pink-400" />
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900/50 dark:to-green-900/40 midnight:from-emerald-900/50 midnight:to-teal-900/40 purple:from-pink-900/50 purple:to-rose-900/40 shadow-md group-hover/card:shadow-lg transition-shadow duration-300">
+            <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-pink-400" />
           </div>
           <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Homework</span>
         </div>
@@ -673,12 +708,15 @@ export function FeesReminderCard({
   onPayNow?: (fee: FeeReminderItem) => void;
 }) {
   return (
-    <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-rose-500/5 via-transparent to-transparent dark:from-rose-400/10 midnight:from-rose-400/10 purple:from-pink-400/10 pointer-events-none" />
+    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Decorative gradient */}
+      <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-rose-500/10 via-red-500/5 to-transparent dark:from-rose-400/15 dark:via-red-400/10 midnight:from-rose-400/15 midnight:via-red-400/10 purple:from-pink-400/15 purple:via-rose-400/10 pointer-events-none" />
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
       <div className="relative px-3 py-2.5 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-rose-50 dark:bg-rose-900/30 midnight:bg-rose-900/30 purple:bg-pink-900/30">
-            <CreditCard className="w-4 h-4 text-rose-600 dark:text-rose-400 midnight:text-rose-400 purple:text-pink-400" />
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-rose-100 to-red-100 dark:from-rose-900/50 dark:to-red-900/40 midnight:from-rose-900/50 midnight:to-red-900/40 purple:from-pink-900/50 purple:to-rose-900/40 shadow-md group-hover/card:shadow-lg transition-shadow duration-300">
+            <CreditCard className="w-5 h-5 text-rose-600 dark:text-rose-400 midnight:text-rose-400 purple:text-pink-400" />
           </div>
           <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Fees Reminder</span>
         </div>
@@ -749,16 +787,19 @@ export function FeesReminderCard({
 export function MessagesCard({ messages }: { messages: ParentMessage[] }) {
   const unreadCount = messages.filter((m) => m.unread).length;
   return (
-    <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-teal-500/5 via-transparent to-transparent dark:from-teal-400/10 midnight:from-teal-400/10 purple:from-pink-400/10 pointer-events-none" />
+    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Decorative gradient */}
+      <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-teal-500/10 via-cyan-500/5 to-transparent dark:from-teal-400/15 dark:via-cyan-400/10 midnight:from-teal-400/15 midnight:via-cyan-400/10 purple:from-pink-400/15 purple:via-rose-400/10 pointer-events-none" />
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
       <div className="relative px-3 py-2.5 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-teal-50 dark:bg-teal-900/30 midnight:bg-teal-900/30 purple:bg-pink-900/30">
-            <Mail className="w-4 h-4 text-teal-600 dark:text-teal-400 midnight:text-teal-400 purple:text-pink-400" />
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-teal-100 to-cyan-100 dark:from-teal-900/50 dark:to-cyan-900/40 midnight:from-teal-900/50 midnight:to-cyan-900/40 purple:from-pink-900/50 purple:to-rose-900/40 shadow-md group-hover/card:shadow-lg transition-shadow duration-300">
+            <Mail className="w-5 h-5 text-teal-600 dark:text-teal-400 midnight:text-teal-400 purple:text-pink-400" />
           </div>
           <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Messages</span>
           {unreadCount > 0 && (
-            <span className="text-[9px] font-bold text-white bg-gradient-to-r from-red-500 to-rose-500 px-1.5 py-0.5 rounded-full shadow-sm animate-pulse min-w-[18px] text-center">
+            <span className="text-[9px] font-bold text-white bg-gradient-to-r from-red-500 to-rose-500 px-1.5 py-0.5 rounded-full shadow-md animate-pulse min-w-[18px] text-center">
               {unreadCount}
             </span>
           )}
@@ -803,22 +844,26 @@ export function MessagesCard({ messages }: { messages: ParentMessage[] }) {
 
 export function NoticeBoardCard({ notices }: { notices: NoticeItem[] }) {
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
-      <div className="p-3 border-b border-gray-100 dark:border-gray-700/50 midnight:border-gray-700/30 purple:border-gray-700/30 flex items-center justify-between">
+    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+      {/* Decorative gradient */}
+      <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-amber-500/10 via-orange-500/5 to-transparent dark:from-amber-400/15 dark:via-orange-400/10 midnight:from-amber-400/15 midnight:via-orange-400/10 purple:from-amber-400/15 purple:via-orange-400/10 pointer-events-none" />
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
+      <div className="relative p-3 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40 midnight:from-amber-900/40 midnight:to-orange-900/40 purple:from-amber-900/40 purple:to-orange-900/40 shadow-sm">
-            <Bell className="w-4 h-4 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/50 dark:to-orange-900/40 midnight:from-amber-900/50 midnight:to-orange-900/40 purple:from-amber-900/50 purple:to-orange-900/40 shadow-md group-hover/card:shadow-lg transition-shadow duration-300">
+            <Bell className="w-5 h-5 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
           </div>
           <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Notice Board</span>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/parents/notices" className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline flex items-center gap-0.5">
+          <Link href="/parents/notices" className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors">
             View All <ChevronRight className="w-3 h-3" />
           </Link>
           <DashboardDragHandle />
         </div>
       </div>
-      <div className="p-2">
+      <div className="relative p-2">
         {notices.slice(0, 3).map((notice, index) => (
           <Link
             key={notice.id}
@@ -846,12 +891,15 @@ export function NoticeBoardCard({ notices }: { notices: NoticeItem[] }) {
 
 export function QuickLinksCard({ selectedChildId }: { selectedChildId: string }) {
   return (
-    <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-500/5 via-purple-500/5 to-transparent pointer-events-none" />
-      <div className="relative px-3 py-2.5 flex items-center justify-between gap-2.5 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/30 purple:border-gray-700/30">
+    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Decorative gradient */}
+      <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-indigo-500/10 via-purple-500/5 to-transparent dark:from-indigo-400/15 dark:via-purple-400/10 midnight:from-cyan-400/15 midnight:via-indigo-400/10 purple:from-pink-400/15 purple:via-purple-400/10 pointer-events-none" />
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
+      <div className="relative px-3 py-2.5 flex items-center justify-between gap-2.5 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-pink-900/30 shadow-sm">
-            <Zap className="w-4 h-4 text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/40 midnight:from-cyan-900/50 midnight:to-indigo-900/40 purple:from-pink-900/50 purple:to-purple-900/40 shadow-md group-hover/card:shadow-lg transition-shadow duration-300">
+            <Zap className="w-5 h-5 text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
           <h4 className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Quick Links</h4>
         </div>
@@ -958,16 +1006,19 @@ export function UpcomingMeetingsCard({ meetings }: { meetings: UpcomingMeeting[]
   const upcomingMeetings = meetings.filter((m) => m.status === "scheduled" || m.status === "in-progress");
 
   return (
-    <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-violet-500/5 via-transparent to-transparent dark:from-violet-400/10 midnight:from-violet-400/10 purple:from-pink-400/10 pointer-events-none" />
+    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Decorative gradient */}
+      <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-violet-500/10 via-purple-500/5 to-transparent dark:from-violet-400/15 dark:via-purple-400/10 midnight:from-violet-400/15 midnight:via-purple-400/10 purple:from-pink-400/15 purple:via-purple-400/10 pointer-events-none" />
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
       <div className="relative px-3 py-2.5 flex items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="p-1.5 rounded-lg bg-violet-50 dark:bg-violet-900/30 midnight:bg-violet-900/30 purple:bg-pink-900/30 shrink-0">
-            <Video className="w-4 h-4 text-violet-600 dark:text-violet-400 midnight:text-violet-400 purple:text-pink-400" />
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/50 dark:to-purple-900/40 midnight:from-violet-900/50 midnight:to-purple-900/40 purple:from-pink-900/50 purple:to-purple-900/40 shadow-md group-hover/card:shadow-lg transition-shadow duration-300 shrink-0">
+            <Video className="w-5 h-5 text-violet-600 dark:text-violet-400 midnight:text-violet-400 purple:text-pink-400" />
           </div>
           <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Meetings</span>
           {upcomingMeetings.length > 0 && (
-            <span className="text-[9px] font-bold text-white bg-gradient-to-r from-violet-500 to-purple-500 px-1.5 py-0.5 rounded-full shadow-sm min-w-[18px] text-center shrink-0">
+            <span className="text-[9px] font-bold text-white bg-gradient-to-r from-violet-500 to-purple-500 px-1.5 py-0.5 rounded-full shadow-md min-w-[18px] text-center shrink-0">
               {upcomingMeetings.length}
             </span>
           )}
