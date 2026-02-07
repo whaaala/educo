@@ -1,15 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { X, Video, Phone, MessageSquare, Users } from "lucide-react";
 import dynamic from "next/dynamic";
 import { stopAllMediaTracks } from "@/lib/utils/stopAllMedia";
 import { useSidebar } from "@/contexts/SidebarContext";
+import type { VideoCallRoomProps } from "./VideoCallRoom";
 
-// Dynamic imports to avoid SSR issues with WebRTC
-const VideoCallRoom = dynamic(() => import("./VideoCallRoom"), {
+// Dynamic import for initial/direct video calls (SSR-safe)
+const DynamicVideoCallRoom = dynamic(() => import("./VideoCallRoom"), {
   ssr: false,
-  loading: () => <LoadingScreen text="Loading Video Call..." />,
+  loading: () => (
+    <div className="h-full bg-gray-100 dark:bg-gray-950 midnight:bg-[#060a1a] purple:bg-[#120622]" />
+  ),
 });
 
 const VoiceCallRoom = dynamic(() => import("./VoiceCallRoom"), {
@@ -24,10 +27,10 @@ const ChatRoom = dynamic(() => import("./ChatRoom"), {
 
 function LoadingScreen({ text }: { text: string }) {
   return (
-    <div className="flex items-center justify-center h-full bg-gray-900">
+    <div className="flex items-center justify-center h-full bg-gray-100 dark:bg-gray-900 midnight:bg-[#060a1a] purple:bg-[#120622]">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4" />
-        <p className="text-white">{text}</p>
+        <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{text}</p>
       </div>
     </div>
   );
@@ -82,6 +85,21 @@ export default function CallModal({
     showTypeSelection ? null : initialCallType || null
   );
   const [isInCall, setIsInCall] = useState(!showTypeSelection);
+  const [isUpgradingFromVoice, setIsUpgradingFromVoice] = useState(false);
+
+  // Eagerly loaded VideoCallRoom component (bypasses next/dynamic loading fallback)
+  const eagerVideoCallRoomRef = useRef<React.ComponentType<VideoCallRoomProps> | null>(null);
+  const [eagerVideoLoaded, setEagerVideoLoaded] = useState(false);
+
+  // Preload VideoCallRoom when modal opens so it's ready instantly for voice→video upgrade
+  useEffect(() => {
+    if (isOpen && !eagerVideoCallRoomRef.current) {
+      import("./VideoCallRoom").then((mod) => {
+        eagerVideoCallRoomRef.current = mod.default;
+        setEagerVideoLoaded(true);
+      });
+    }
+  }, [isOpen]);
 
   // Get sidebar state to position the call correctly
   const { isCollapsed } = useSidebar();
@@ -129,6 +147,7 @@ export default function CallModal({
     // Then update state
     setIsInCall(false);
     setSelectedCallType(null);
+    setIsUpgradingFromVoice(false);
     onClose();
   }, [onClose]);
 
@@ -147,9 +166,12 @@ export default function CallModal({
   // Position next to sidebar on desktop (lg breakpoint), full screen on mobile
   if (isInCall && selectedCallType) {
     if (selectedCallType === "video") {
+      // Use eagerly loaded component if available (instant switch from voice),
+      // otherwise fall back to next/dynamic (initial page load)
+      const VideoCallRoom = eagerVideoCallRoomRef.current || DynamicVideoCallRoom;
       return (
         <div
-          className="fixed top-[64px] bottom-0 right-0 z-30 bg-gray-900 left-0 lg:left-[var(--sidebar-width)]"
+          className="fixed top-[64px] bottom-0 right-0 z-30 bg-gray-100 dark:bg-gray-900 midnight:bg-[#060a1a] purple:bg-[#120622] left-0 lg:left-[var(--sidebar-width)]"
           style={{ "--sidebar-width": `${sidebarWidth}px` } as React.CSSProperties}
         >
           <VideoCallRoom
@@ -159,6 +181,9 @@ export default function CallModal({
             userAvatar={currentUser.avatar || `https://i.pravatar.cc/150?u=${currentUser.id}`}
             isHost={true}
             callType="video"
+            recipientName={participant.name}
+            recipientAvatar={participant.avatar}
+            isUpgradeFromVoice={isUpgradingFromVoice}
             onCallEnd={handleEndCall}
             onError={(error) => {
               // Don't use console.error as it triggers Next.js error overlay
@@ -173,7 +198,7 @@ export default function CallModal({
     if (selectedCallType === "voice") {
       return (
         <div
-          className="fixed top-[64px] bottom-0 right-0 z-30 bg-gray-900 left-0 lg:left-[var(--sidebar-width)]"
+          className="fixed top-[64px] bottom-0 right-0 z-30 bg-gray-100 dark:bg-gray-900 midnight:bg-[#060a1a] purple:bg-[#120622] left-0 lg:left-[var(--sidebar-width)]"
           style={{ "--sidebar-width": `${sidebarWidth}px` } as React.CSSProperties}
         >
           <VoiceCallRoom
@@ -186,7 +211,8 @@ export default function CallModal({
             recipientAvatar={participant.avatar}
             onCallEnd={handleEndCall}
             onSwitchToVideo={() => {
-              // Switch from voice to video call
+              // Switch from voice to video call - mark as upgrade to skip loading screen
+              setIsUpgradingFromVoice(true);
               setSelectedCallType("video");
             }}
             onError={(error) => {
@@ -202,7 +228,7 @@ export default function CallModal({
     if (selectedCallType === "chat") {
       return (
         <div
-          className="fixed top-[64px] bottom-0 right-0 z-30 bg-gray-900 left-0 lg:left-[var(--sidebar-width)]"
+          className="fixed top-[64px] bottom-0 right-0 z-30 bg-gray-100 dark:bg-gray-900 midnight:bg-[#060a1a] purple:bg-[#120622] left-0 lg:left-[var(--sidebar-width)]"
           style={{ "--sidebar-width": `${sidebarWidth}px` } as React.CSSProperties}
         >
           <ChatRoom

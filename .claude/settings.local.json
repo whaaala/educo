@@ -24,7 +24,9 @@
       "Bash(npx tsc:*)",
       "Bash(npm install:*)",
       "Bash(ls:*)",
-      "Bash(npx next dev)"
+      "Bash(npx next dev)",
+      "Bash(timeout:*)",
+      "Bash(if exist \"c:\\\\Users\\\\eyite\\\\educo\\\\.next\" rmdir /s /q \"c:\\\\Users\\\\eyite\\\\educo\\\\.next\")"
     ],
     "deny": [],
     "ask": []

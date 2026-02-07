@@ -46,7 +46,7 @@ export interface ControlBarProps {
   // Handlers
   onToggleMute: () => void;
   onToggleVideo: () => void;
-  onToggleScreenShare: () => void;
+  onToggleScreenShare?: () => void;
   onToggleFullscreen: () => void;
   onToggleChat: () => void;
   onToggleParticipants: () => void;
@@ -223,17 +223,15 @@ export function ControlBar({
           tooltip={isMuted ? "Turn on microphone" : "Turn off microphone"}
         />
 
-        {/* Video (only for video calls) */}
-        {callType === "video" && (
-          <ControlButton
-            icon={isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
-            label={isVideoOff ? "Start" : "Stop"}
-            isActive={isVideoOff}
-            onClick={onToggleVideo}
-            primaryColor="#ef4444"
-            tooltip={isVideoOff ? "Turn on camera" : "Turn off camera"}
-          />
-        )}
+        {/* Video */}
+        <ControlButton
+          icon={isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
+          label={isVideoOff ? "Start" : "Stop"}
+          isActive={isVideoOff}
+          onClick={onToggleVideo}
+          primaryColor="#ef4444"
+          tooltip={isVideoOff ? "Turn on camera" : "Turn off camera"}
+        />
       </div>
 
       <ControlDivider />
@@ -261,7 +259,7 @@ export function ControlBar({
         )}
 
         {/* Screen Share */}
-        {callType === "video" && (
+        {onToggleScreenShare && (
           <ControlButton
             icon={
               isScreenSharing ? (
@@ -280,7 +278,7 @@ export function ControlBar({
         )}
 
         {/* Layout Toggle */}
-        {callType === "video" && onChangeLayout && (
+        {onChangeLayout && (
           <ControlButton
             icon={<LayoutGrid className="w-5 h-5" />}
             label="Layout"

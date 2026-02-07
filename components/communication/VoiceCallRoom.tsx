@@ -10,7 +10,7 @@ import {
   Video,
   Phone,
   Users,
-  ChevronRight,
+  Copy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCommunication } from "@/contexts/CommunicationContext";
@@ -22,6 +22,7 @@ import {
 } from "@/lib/services/communication";
 import { stopAllMediaTracks } from "@/lib/utils/stopAllMedia";
 import CallSettings, { CallSettingsState } from "./CallSettings";
+import AddParticipantModal from "./AddParticipantModal";
 import {
   CallHeader,
   ParticipantsPanel,
@@ -82,7 +83,14 @@ export default function VoiceCallRoom({
   const [showChat, setShowChat] = useState(false);
   const [showParticipants, setShowParticipants] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAddParticipant, setShowAddParticipant] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Recording, screen sharing, layout
+  const [isRecording, setIsRecording] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [layout, setLayout] = useState<"spotlight" | "grid">("spotlight");
+  const screenShareStreamRef = useRef<MediaStream | null>(null);
 
   // Chat
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -93,6 +101,9 @@ export default function VoiceCallRoom({
 
   // Store local stream reference for cleanup
   const localStreamRef = useRef<MediaStream | null>(null);
+
+  // Track whether we're switching to video (to skip nuclear cleanup on unmount)
+  const isSwitchingToVideoRef = useRef(false);
 
   // Call timer
   useEffect(() => {
@@ -206,9 +217,14 @@ export default function VoiceCallRoom({
     initCall();
 
     return () => {
-      // Cleanup on unmount - use nuclear option to stop ALL media
-      console.log('[VoiceCallRoom] Component unmounting - calling nuclear cleanup');
-      stopAllMediaTracks();
+      if (isSwitchingToVideoRef.current) {
+        // Upgrading to video - skip nuclear cleanup so VideoCallRoom can reuse the connection
+        console.log('[VoiceCallRoom] Switching to video - skipping nuclear cleanup');
+      } else {
+        // Normal unmount - use nuclear option to stop ALL media
+        console.log('[VoiceCallRoom] Component unmounting - calling nuclear cleanup');
+        stopAllMediaTracks();
+      }
       localStreamRef.current = null;
     };
   }, [roomId, userId, userName, userAvatar, isHost, settings, getBestAvailablePlatform, onCallEnd, onError]);
@@ -283,6 +299,51 @@ export default function VoiceCallRoom({
     }
   }, []);
 
+  // Toggle recording
+  const toggleRecording = useCallback(() => {
+    setIsRecording((prev) => !prev);
+  }, []);
+
+  // Toggle screen sharing
+  const toggleScreenShare = useCallback(async () => {
+    if (isScreenSharing) {
+      // Stop screen sharing
+      if (screenShareStreamRef.current) {
+        screenShareStreamRef.current.getTracks().forEach((track) => track.stop());
+        screenShareStreamRef.current = null;
+      }
+      setIsScreenSharing(false);
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: true,
+        });
+        screenShareStreamRef.current = stream;
+        setIsScreenSharing(true);
+
+        // Listen for user stopping share via browser UI
+        stream.getVideoTracks()[0]?.addEventListener("ended", () => {
+          screenShareStreamRef.current = null;
+          setIsScreenSharing(false);
+        });
+      } catch (err) {
+        // User cancelled or error - do nothing
+        console.warn("Screen share cancelled or failed:", err);
+      }
+    }
+  }, [isScreenSharing]);
+
+  // Clean up screen share on unmount
+  useEffect(() => {
+    return () => {
+      if (screenShareStreamRef.current) {
+        screenShareStreamRef.current.getTracks().forEach((track) => track.stop());
+        screenShareStreamRef.current = null;
+      }
+    };
+  }, []);
+
   // Convert messages to UI format
   const uiMessages: UIChatMessage[] = messages.map((m) => ({
     id: m.id,
@@ -314,10 +375,7 @@ export default function VoiceCallRoom({
   if (isConnecting) {
     return (
       <div
-        className="flex items-center justify-center h-full"
-        style={{
-          background: `linear-gradient(135deg, ${primaryColor}22 0%, ${secondaryColor}22 100%)`,
-        }}
+        className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 midnight:from-[#060a1a] midnight:via-[#0f1729] midnight:to-[#060a1a] purple:from-[#120622] purple:via-[#2a1a3e] purple:to-[#120622]"
       >
         <div className="text-center">
           {/* Tenant Logo */}
@@ -335,11 +393,11 @@ export default function VoiceCallRoom({
               <img
                 src={recipientAvatar}
                 alt={recipientName || "Calling"}
-                className="w-20 h-20 sm:w-28 sm:h-28 rounded-full mx-auto shadow-2xl object-cover ring-2 ring-white/20"
+                className="w-20 h-20 sm:w-28 sm:h-28 rounded-full mx-auto shadow-2xl object-cover ring-2 ring-gray-300 dark:ring-white/20 midnight:ring-cyan-500/30 purple:ring-pink-500/30"
               />
             ) : (
               <div
-                className="w-20 h-20 sm:w-28 sm:h-28 rounded-full flex items-center justify-center mx-auto shadow-2xl ring-2 ring-white/20"
+                className="w-20 h-20 sm:w-28 sm:h-28 rounded-full flex items-center justify-center mx-auto shadow-2xl ring-2 ring-gray-300 dark:ring-white/20 midnight:ring-cyan-500/30 purple:ring-pink-500/30"
                 style={{
                   background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
                 }}
@@ -381,10 +439,7 @@ export default function VoiceCallRoom({
   if (error) {
     return (
       <div
-        className="flex items-center justify-center h-full"
-        style={{
-          background: `linear-gradient(135deg, ${primaryColor}11 0%, ${secondaryColor}11 100%)`,
-        }}
+        className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 midnight:from-[#060a1a] midnight:via-[#0f1729] midnight:to-[#060a1a] purple:from-[#120622] purple:via-[#2a1a3e] purple:to-[#120622]"
       >
         <div className="text-center max-w-md p-8 bg-white dark:bg-gray-800 midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-3xl shadow-2xl mx-4 midnight:border midnight:border-cyan-500/20 purple:border purple:border-pink-500/20">
           <div
@@ -423,220 +478,445 @@ export default function VoiceCallRoom({
         callType="voice"
         duration={callDuration}
         participantCount={session?.participants.length || 0}
-        isRecording={false}
+        isRecording={isRecording}
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
         onClose={endCall}
         onSettings={() => setShowSettings(true)}
+        onAddParticipant={() => setShowAddParticipant(true)}
         onCopyRoomId={copyRoomId}
         roomId={roomId}
         className="z-10"
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex min-h-0">
-        {/* Main Voice Call Area */}
-        <div
-          className={cn(
-          "flex-1 flex flex-col items-center justify-center relative",
-          "transition-all duration-300",
-          "bg-gradient-to-b from-gray-50 via-gray-100 to-gray-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 midnight:from-[#060a1a] midnight:via-[#0f1729] midnight:to-[#060a1a] purple:from-[#120622] purple:via-[#2a1a3e] purple:to-[#120622]",
-            (showParticipants || showChat) && "lg:mr-80"
-          )}
-        >
-          {/* Avatar with Audio Visualizer */}
-          <div className="relative mb-4 sm:mb-6">
-            {/* Subtle animated ring */}
-            <div
-              className="absolute -inset-3 sm:-inset-4 rounded-full opacity-20 animate-pulse"
-              style={{
-                background: `radial-gradient(circle, ${primaryColor}40 0%, transparent 70%)`,
-              }}
-            />
+      <div className="flex-1 flex min-h-0 overflow-hidden">
+        <div className="flex-1 flex flex-col p-2 sm:p-3 lg:p-4 overflow-hidden">
+          {/* Voice Call - Spotlight Layout */}
+          {layout === "spotlight" && (
+            <div className="flex-1 flex gap-2 sm:gap-3 lg:gap-4 min-h-0">
+              <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-4 min-h-0">
+                {/* Primary Tile (large) */}
+                <div className="flex-1 relative bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden min-h-0">
+                  {remoteParticipants.length > 0 ? (
+                    <>
+                      {/* Remote participant avatar */}
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
+                        {/* Audio visualizer bars behind avatar */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="flex items-end justify-center gap-1 h-48 w-48 sm:h-56 sm:w-56">
+                            {audioLevels.map((level, i) => (
+                              <div
+                                key={i}
+                                className="w-1 sm:w-1.5 rounded-full transition-all duration-150 ease-out"
+                                style={{
+                                  height: `${Math.max(8, level * 0.6)}%`,
+                                  background: primaryColor,
+                                  opacity: 0.15,
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        {(activeParticipant?.avatar || recipientAvatar) ? (
+                          <img
+                            src={activeParticipant?.avatar || recipientAvatar}
+                            alt={activeParticipant?.name || recipientName || "User"}
+                            className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full relative z-10 object-cover"
+                          />
+                        ) : (
+                          <div
+                            className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex items-center justify-center text-4xl sm:text-5xl font-bold text-white relative z-10"
+                            style={{
+                              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                            }}
+                          >
+                            {(activeParticipant?.name || recipientName || "?").charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      {/* Name badge */}
+                      <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 flex items-center gap-2">
+                        <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/80 dark:bg-black/60 backdrop-blur rounded-lg text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+                          {activeParticipant?.name || recipientName}
+                        </span>
+                        {activeParticipant?.isMuted && (
+                          <span className="p-1 sm:p-1.5 bg-red-500 rounded-lg">
+                            <MicOff className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                          </span>
+                        )}
+                        {activeParticipant?.isSpeaking && (
+                          <span
+                            className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full animate-pulse"
+                            style={{ backgroundColor: primaryColor }}
+                          />
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    // Waiting for recipient to join - show who we're calling
+                    <>
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
+                        {recipientAvatar ? (
+                          <img
+                            src={recipientAvatar}
+                            alt={recipientName || "Recipient"}
+                            className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full object-cover opacity-50"
+                          />
+                        ) : (
+                          <div
+                            className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex items-center justify-center text-4xl sm:text-5xl font-bold text-white opacity-50"
+                            style={{
+                              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                            }}
+                          >
+                            {(recipientName || "?").charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      {/* Waiting badge */}
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-16 sm:translate-y-20">
+                        <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/80 dark:bg-black/60 backdrop-blur rounded-full">
+                          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                          <span className="text-gray-600 dark:text-white/70 text-xs sm:text-sm">
+                            Waiting to join...
+                          </span>
+                        </div>
+                      </div>
+                      {/* Name badge */}
+                      <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 flex items-center gap-2">
+                        <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/80 dark:bg-black/60 backdrop-blur rounded-lg text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+                          {recipientName || "Invited participant"}
+                        </span>
+                      </div>
+                      {/* Room ID at bottom */}
+                      <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4">
+                        <div className="flex items-center gap-2 text-gray-500 dark:text-white/50 text-xs">
+                          <span className="hidden sm:inline">Room ID:</span>
+                          <code className="px-2 py-1 bg-gray-200/80 dark:bg-black/40 backdrop-blur rounded text-xs text-gray-700 dark:text-gray-300">
+                            {roomId.slice(0, 12)}...
+                          </code>
+                          <button
+                            onClick={copyRoomId}
+                            className="p-1 hover:bg-gray-300/50 dark:hover:bg-white/10 rounded transition-colors text-gray-500 dark:text-white/50"
+                            title="Copy Room ID"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
 
-            {/* Audio bars */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="flex items-end justify-center gap-0.5 h-24 w-24 sm:h-32 sm:w-32">
-                {audioLevels.map((level, i) => (
+                </div>
+
+                {/* Thumbnail strip (right side on desktop) */}
+                <div className="hidden lg:flex lg:flex-col gap-2 overflow-y-auto lg:w-36 xl:w-44 pb-2 lg:pb-0">
+                  {/* Local user thumbnail */}
                   <div
-                    key={i}
-                    className="w-0.5 sm:w-1 rounded-full transition-all duration-150 ease-out"
-                    style={{
-                      height: `${Math.max(8, level * 0.6)}%`,
-                      background: primaryColor,
-                      opacity: 0.25,
-                    }}
-                  />
-                ))}
+                    className={cn(
+                      "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg",
+                      "w-full aspect-video"
+                    )}
+                  >
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
+                      {userAvatar ? (
+                        <img
+                          src={userAvatar}
+                          alt={userName}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white"
+                          style={{
+                            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                          }}
+                        >
+                          {userName.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
+                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white">
+                        You
+                      </span>
+                      {isMuted && (
+                        <span className="p-1 bg-red-500 rounded-md">
+                          <MicOff className="w-2.5 h-2.5 text-white" />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Remote participants thumbnails */}
+                  {remoteParticipants.map((participant) => (
+                    <div
+                      key={participant.id}
+                      className={cn(
+                        "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg",
+                        "w-full aspect-video",
+                        participant.isSpeaking && "ring-2 ring-green-500"
+                      )}
+                    >
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
+                        {participant.avatar ? (
+                          <img
+                            src={participant.avatar}
+                            alt={participant.name}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div
+                            className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white"
+                            style={{
+                              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                            }}
+                          >
+                            {participant.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
+                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
+                          {participant.name}
+                        </span>
+                        {participant.isMuted && (
+                          <span className="p-1 bg-red-500 rounded-md">
+                            <MicOff className="w-2.5 h-2.5 text-white" />
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* More participants indicator */}
+                  {remoteParticipants.length > 4 && (
+                    <button
+                      onClick={() => setShowParticipants(true)}
+                      className="relative flex-shrink-0 bg-gray-200/80 dark:bg-gray-800/80 midnight:bg-[#0d1220]/80 purple:bg-[#1f0d33]/80 rounded-xl overflow-hidden shadow-lg cursor-pointer w-full aspect-video flex items-center justify-center hover:bg-gray-300/80 dark:hover:bg-gray-700/80 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 transition-all duration-200 hover:scale-105 active:scale-95"
+                    >
+                      <div className="text-center">
+                        <div
+                          className="w-12 h-12 rounded-full mx-auto flex items-center justify-center text-white font-bold text-lg shadow-lg"
+                          style={{
+                            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                            boxShadow: `0 4px 14px ${primaryColor}40`,
+                          }}
+                        >
+                          +{remoteParticipants.length - 4}
+                        </div>
+                        <span className="text-gray-600 dark:text-white/70 midnight:text-cyan-200/70 purple:text-pink-200/70 text-xs mt-1.5 block font-medium">
+                          more
+                        </span>
+                      </div>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-
-            {/* Avatar */}
-            <div className="relative">
-              {(activeParticipant?.avatar || recipientAvatar) ? (
-                <img
-                  src={activeParticipant?.avatar || recipientAvatar}
-                  alt={activeParticipant?.name || recipientName || "User"}
-                  className="w-24 h-24 sm:w-32 sm:h-32 rounded-full shadow-2xl ring-2 ring-gray-200 dark:ring-white/10 object-cover"
-                />
-              ) : (
-                <div
-                  className="w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center shadow-2xl ring-2 ring-gray-200 dark:ring-white/10"
-                  style={{
-                    background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
-                  }}
-                >
-                  <span className="text-3xl sm:text-4xl font-semibold text-white">
-                    {(activeParticipant?.name || recipientName || "?").charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
-
-              {/* Speaking indicator */}
-              {activeParticipant?.isSpeaking && (
-                <div
-                  className="absolute -inset-1 rounded-full animate-pulse"
-                  style={{
-                    boxShadow: `0 0 20px ${primaryColor}60`,
-                    border: `2px solid ${primaryColor}60`,
-                  }}
-                />
-              )}
-
-              {/* Muted badge */}
-              {activeParticipant?.isMuted && (
-                <div className="absolute -bottom-0.5 -right-0.5 p-1.5 bg-red-500 rounded-full shadow-lg">
-                  <MicOff className="w-3 h-3 text-white" />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Name and status */}
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1.5 text-center px-4">
-            {activeParticipant?.name || recipientName || "Waiting..."}
-          </h2>
-
-          {/* Call status indicator */}
-          <div
-            className="px-2.5 sm:px-3 py-1 rounded-full text-gray-700 dark:text-white/80 midnight:text-cyan-200 purple:text-pink-200 text-xs sm:text-sm font-medium border border-gray-200 dark:border-transparent midnight:border-cyan-500/20 purple:border-pink-500/20"
-            style={{ backgroundColor: `${primaryColor}25` }}
-          >
-            {session?.state === "connected" ? "Connected" : "Connecting..."}
-          </div>
-
-          {/* Muted indicator */}
-          {activeParticipant?.isMuted && (
-            <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 mt-3 bg-gray-200/60 dark:bg-gray-800/40 midnight:bg-cyan-900/20 purple:bg-pink-900/20 px-3 py-1.5 rounded-full">
-              <MicOff className="w-3.5 h-3.5" />
-              <span className="text-xs">Microphone muted</span>
-            </div>
           )}
 
-          {/* Multiple participants indicator */}
-          {remoteParticipants.length > 1 && (
-            <button
-              onClick={() => setShowParticipants(true)}
-              className="flex items-center gap-1.5 text-gray-600 dark:text-white/60 midnight:text-cyan-200/60 purple:text-pink-200/60 hover:text-gray-900 dark:hover:text-white bg-gray-200/50 dark:bg-white/5 midnight:bg-cyan-900/10 purple:bg-pink-900/10 hover:bg-gray-300/50 dark:hover:bg-white/10 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 px-3 py-1.5 rounded-full transition-colors mt-4 text-sm"
-            >
-              <Users className="w-3.5 h-3.5" />
-              <span>+{remoteParticipants.length - 1} more</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          )}
-
-          {/* Extra Controls - Speaker & Switch to Video */}
-          <div className="flex items-center gap-3 mt-8">
-            {/* Speaker Toggle */}
-            <button
-              onClick={() => setIsSpeakerOff(!isSpeakerOff)}
+          {/* Voice Call - Grid Layout */}
+          {layout === "grid" && (() => {
+            // Count rendered tiles: local user + remotes + waiting placeholder if alone
+            const gridItemCount = remoteParticipants.length === 0
+              ? 2  // local user + "waiting for others" placeholder
+              : 1 + remoteParticipants.length;  // local user + remotes
+            return (
+            <div
               className={cn(
-              "flex items-center gap-2 px-4 py-2.5 rounded-full transition-all",
-                isSpeakerOff
-                  ? "bg-red-500/20 text-red-500 dark:text-red-400 border border-red-500/30"
-                  : "bg-gray-200 dark:bg-white/10 midnight:bg-cyan-900/20 purple:bg-pink-900/20 text-gray-700 dark:text-white/80 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-300 dark:hover:bg-white/15 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-white/10 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                "flex-1 grid gap-2 sm:gap-3 lg:gap-4 min-h-0 auto-rows-fr",
+                gridItemCount <= 1 && "grid-cols-1",
+                gridItemCount === 2 && "grid-cols-1 sm:grid-cols-2",
+                gridItemCount >= 3 && gridItemCount <= 4 && "grid-cols-2",
+                gridItemCount >= 5 && gridItemCount <= 6 && "grid-cols-2 lg:grid-cols-3",
+                gridItemCount >= 7 && "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4",
               )}
             >
-              {isSpeakerOff ? (
-                <VolumeX className="w-5 h-5" />
-              ) : (
-                <Volume2 className="w-5 h-5" />
-              )}
-              <span className="text-sm font-medium">
-                {isSpeakerOff ? "Speaker Off" : "Speaker On"}
-              </span>
-            </button>
+              {/* Local user tile */}
+              <div className="relative bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden min-h-0">
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
+                  {/* Audio visualizer for local user */}
+                  {!isMuted && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="flex items-end justify-center gap-0.5 h-24 w-24 sm:h-32 sm:w-32">
+                        {audioLevels.slice(0, 5).map((level, i) => (
+                          <div
+                            key={i}
+                            className="w-1 rounded-full transition-all duration-150 ease-out"
+                            style={{
+                              height: `${Math.max(8, level * 0.4)}%`,
+                              background: primaryColor,
+                              opacity: 0.15,
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {userAvatar ? (
+                    <img
+                      src={userAvatar}
+                      alt={userName}
+                      className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full object-cover relative z-10"
+                    />
+                  ) : (
+                    <div
+                      className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full flex items-center justify-center text-2xl sm:text-3xl font-bold text-white relative z-10"
+                      style={{
+                        background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                      }}
+                    >
+                      {userName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="absolute bottom-2 left-2 flex items-center gap-2">
+                  <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 bg-white/80 dark:bg-black/60 backdrop-blur rounded-lg text-[10px] sm:text-xs font-medium text-gray-900 dark:text-white">
+                    {userName} (You)
+                  </span>
+                  {isMuted && (
+                    <span className="p-0.5 sm:p-1 bg-red-500 rounded-md">
+                      <MicOff className="w-3 h-3 text-white" />
+                    </span>
+                  )}
+                </div>
+              </div>
 
-            {/* Switch to Video */}
-            {onSwitchToVideo && (
-              <button
-                onClick={onSwitchToVideo}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-full transition-all text-white border border-transparent hover:border-white/20"
-                style={{
-                  background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
-                }}
-              >
-                <Video className="w-5 h-5" />
-                <span className="text-sm font-medium">Switch to Video</span>
-              </button>
-            )}
-          </div>
+              {/* Remote participant tiles */}
+              {remoteParticipants.map((participant) => (
+                <div
+                  key={participant.id}
+                  className={cn(
+                    "relative bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden min-h-0",
+                    participant.isSpeaking && "ring-2 ring-green-500"
+                  )}
+                >
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
+                    {participant.avatar ? (
+                      <img
+                        src={participant.avatar}
+                        alt={participant.name}
+                        className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full flex items-center justify-center text-2xl sm:text-3xl font-bold text-white"
+                        style={{
+                          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                        }}
+                      >
+                        {participant.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <div className="absolute bottom-2 left-2 flex items-center gap-2">
+                    <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 bg-white/80 dark:bg-black/60 backdrop-blur rounded-lg text-[10px] sm:text-xs font-medium text-gray-900 dark:text-white truncate max-w-[120px]">
+                      {participant.name}
+                    </span>
+                    {participant.isMuted && (
+                      <span className="p-0.5 sm:p-1 bg-red-500 rounded-md">
+                        <MicOff className="w-3 h-3 text-white" />
+                      </span>
+                    )}
+                    {participant.isSpeaking && (
+                      <span
+                        className="w-2 h-2 rounded-full animate-pulse"
+                        style={{ backgroundColor: primaryColor }}
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Recipient tile - waiting to join (only when alone) */}
+              {remoteParticipants.length === 0 && (
+                <div className="relative bg-gray-200/60 dark:bg-gray-800/50 midnight:bg-[#0d1220]/50 purple:bg-[#1f0d33]/50 rounded-xl sm:rounded-2xl overflow-hidden min-h-0 border-2 border-dashed border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                    {recipientAvatar ? (
+                      <img
+                        src={recipientAvatar}
+                        alt={recipientName || "Recipient"}
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover opacity-40"
+                      />
+                    ) : (
+                      <div
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-2xl sm:text-3xl font-bold text-white opacity-40"
+                        style={{
+                          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                        }}
+                      >
+                        {(recipientName || "?").charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                      <span className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
+                        {recipientName || "Participant"} — waiting to join
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            );
+          })()}
         </div>
 
-        {/* Participants Panel - Desktop */}
-        {showParticipants && (
-          <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-80 z-20">
-            <ParticipantsPanel
-              participants={uiParticipants}
-              currentUserId={userId}
-              primaryColor={primaryColor}
-              secondaryColor={secondaryColor}
-              onClose={() => setShowParticipants(false)}
-              className="h-full"
-            />
-          </div>
-        )}
-
-        {/* Chat Panel - Desktop */}
-        {showChat && !showParticipants && (
-          <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-80 z-20">
-            <LiveChatPanel
-              messages={uiMessages}
-              currentUserId={userId}
-              primaryColor={primaryColor}
-              secondaryColor={secondaryColor}
-              onClose={() => setShowChat(false)}
-              onSendMessage={sendMessage}
-              className="h-full"
-            />
+        {/* Side Panels */}
+        {(showParticipants || showChat) && (
+          <div className="hidden sm:flex flex-col w-80 lg:w-[320px] border-l border-gray-200 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e]">
+            {showParticipants && (
+              <ParticipantsPanel
+                participants={uiParticipants}
+                currentUserId={userId}
+                primaryColor={primaryColor}
+                secondaryColor={secondaryColor}
+                onClose={() => setShowParticipants(false)}
+                onAddParticipant={() => setShowAddParticipant(true)}
+                className="flex-1"
+              />
+            )}
+            {showChat && !showParticipants && (
+              <LiveChatPanel
+                messages={uiMessages}
+                currentUserId={userId}
+                primaryColor={primaryColor}
+                secondaryColor={secondaryColor}
+                onClose={() => setShowChat(false)}
+                onSendMessage={sendMessage}
+                className="flex-1"
+              />
+            )}
           </div>
         )}
       </div>
 
-      {/* Mobile Panels - Full screen overlay */}
-      {(showParticipants || showChat) && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e]">
-          {showParticipants && (
-            <ParticipantsPanel
-              participants={uiParticipants}
-              currentUserId={userId}
-              primaryColor={primaryColor}
-              secondaryColor={secondaryColor}
-              onClose={() => setShowParticipants(false)}
-              className="h-full"
-            />
-          )}
-          {showChat && !showParticipants && (
-            <LiveChatPanel
-              messages={uiMessages}
-              currentUserId={userId}
-              primaryColor={primaryColor}
-              secondaryColor={secondaryColor}
-              onClose={() => setShowChat(false)}
-              onSendMessage={sendMessage}
-              className="h-full"
-            />
-          )}
+      {/* Mobile Panels (full screen overlays) */}
+      {showParticipants && (
+        <div className="sm:hidden fixed inset-0 z-50 bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e]">
+          <ParticipantsPanel
+            participants={uiParticipants}
+            currentUserId={userId}
+            primaryColor={primaryColor}
+            secondaryColor={secondaryColor}
+            onClose={() => setShowParticipants(false)}
+            onAddParticipant={() => setShowAddParticipant(true)}
+          />
+        </div>
+      )}
+
+      {showChat && (
+        <div className="sm:hidden fixed inset-0 z-50 bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e]">
+          <LiveChatPanel
+            messages={uiMessages}
+            currentUserId={userId}
+            primaryColor={primaryColor}
+            secondaryColor={secondaryColor}
+            onClose={() => setShowChat(false)}
+            onSendMessage={sendMessage}
+          />
         </div>
       )}
 
@@ -644,9 +924,9 @@ export default function VoiceCallRoom({
       <ControlBar
         isMuted={isMuted}
         isVideoOff={true}
-        isScreenSharing={false}
+        isScreenSharing={isScreenSharing}
         isFullscreen={isFullscreen}
-        isRecording={false}
+        isRecording={isRecording}
         showChat={showChat}
         showParticipants={showParticipants}
         participantCount={session?.participants.length || 0}
@@ -655,10 +935,12 @@ export default function VoiceCallRoom({
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
         onToggleMute={toggleMute}
-        onToggleVideo={() => {}} // Not applicable for voice
-        onToggleScreenShare={() => {}} // Not applicable for voice
+        onToggleVideo={() => {
+          isSwitchingToVideoRef.current = true;
+          onSwitchToVideo?.();
+        }}
+        onToggleScreenShare={toggleScreenShare}
         onToggleFullscreen={toggleFullscreen}
-        onToggleRecording={() => {}}
         onToggleChat={() => {
           setShowChat(!showChat);
           if (!showChat) setShowParticipants(false);
@@ -667,8 +949,10 @@ export default function VoiceCallRoom({
           setShowParticipants(!showParticipants);
           if (!showParticipants) setShowChat(false);
         }}
+        onToggleRecording={toggleRecording}
         onEndCall={endCall}
-        onChangeLayout={() => {}}
+        onSettings={() => setShowSettings(true)}
+        onChangeLayout={() => setLayout(layout === "spotlight" ? "grid" : "spotlight")}
         className="z-30"
       />
 
@@ -678,6 +962,19 @@ export default function VoiceCallRoom({
         onClose={() => setShowSettings(false)}
         onSave={handleSettingsSave}
         showVideoSettings={false}
+      />
+
+      {/* Add Participant Modal */}
+      <AddParticipantModal
+        isOpen={showAddParticipant}
+        onClose={() => setShowAddParticipant(false)}
+        roomId={roomId}
+        meetingTitle={meetingTitle}
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
+        onAddParticipant={(participant) => {
+          console.log("Invited participant:", participant);
+        }}
       />
     </div>
   );
