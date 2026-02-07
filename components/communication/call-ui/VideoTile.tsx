@@ -70,7 +70,7 @@ export const VideoTile = forwardRef<HTMLVideoElement, VideoTileProps>(
           onClick && "cursor-pointer",
           className
         )}
-        style={isSpeaking ? { ringColor: primaryColor } : {}}
+        style={isSpeaking ? { ["--tw-ring-color" as string]: primaryColor } : {}}
         onClick={onClick}
       >
         {/* Video Element (or placeholder) */}

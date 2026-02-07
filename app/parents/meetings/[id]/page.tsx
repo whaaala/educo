@@ -184,7 +184,9 @@ export default function MeetingDetailsPage() {
       photo: meeting.teacherPhoto,
     };
     const roomId = `meeting-${meeting.id}`;
-    const callContext = { meetingTitle: meeting.title, childName: meeting.childName };
+    const callContext = meeting.childName
+      ? `${meeting.title} - ${meeting.childName}`
+      : meeting.title;
 
     if (type === "video") {
       startVideoCall(teacherParticipant, { roomId, callContext });

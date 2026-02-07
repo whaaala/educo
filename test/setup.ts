@@ -21,6 +21,5 @@ class ResizeObserver {
   disconnect() {}
 }
 
-// @ts-expect-error - jsdom doesn't ship ResizeObserver
 globalThis.ResizeObserver = ResizeObserver;
 

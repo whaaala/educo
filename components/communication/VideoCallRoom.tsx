@@ -515,7 +515,7 @@ export default function VideoCallRoom({
     return (
       <div
         ref={containerRef}
-        className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
+        className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 midnight:from-[#060a1a] midnight:via-[#0f1729] midnight:to-[#060a1a] purple:from-[#120622] purple:via-[#2a1a3e] purple:to-[#120622]"
       >
         <div className="text-center px-4">
           {tenantLogo && (
@@ -540,19 +540,19 @@ export default function VideoCallRoom({
             </div>
           </div>
 
-          <p className="text-gray-900 dark:text-white text-lg sm:text-xl font-semibold mb-2">
+          <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-lg sm:text-xl font-semibold mb-2">
             Connecting to call...
           </p>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
+          <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 text-sm">
             Room: {roomId.slice(0, 12)}...
           </p>
 
-          <div className="mt-4 sm:mt-6 inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-black/10 dark:bg-white/10 rounded-full">
+          <div className="mt-4 sm:mt-6 inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-black/10 dark:bg-white/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10 rounded-full">
             <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
-            <span className="text-gray-700 dark:text-white/80 text-xs sm:text-sm">{selectedQuality.name}</span>
+            <span className="text-gray-700 dark:text-white/80 midnight:text-cyan-200 purple:text-pink-200 text-xs sm:text-sm">{selectedQuality.name}</span>
           </div>
 
-          <div className="mt-6 sm:mt-8 text-xs sm:text-sm text-gray-500">
+          <div className="mt-6 sm:mt-8 text-xs sm:text-sm text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50">
             Powered by {tenantName}
           </div>
         </div>
@@ -565,19 +565,19 @@ export default function VideoCallRoom({
     return (
       <div
         ref={containerRef}
-        className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
+        className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 midnight:from-[#060a1a] midnight:via-[#0f1729] midnight:to-[#060a1a] purple:from-[#120622] purple:via-[#2a1a3e] purple:to-[#120622]"
       >
-        <div className="text-center max-w-md p-6 sm:p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl mx-4 border border-gray-200 dark:border-white/10">
+        <div className="text-center max-w-md p-6 sm:p-8 bg-white/80 dark:bg-gray-800/80 midnight:bg-[#0f1729]/90 purple:bg-[#2a1a3e]/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl mx-4 border border-gray-200 dark:border-white/10 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div
             className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6"
             style={{ backgroundColor: `${primaryColor}20` }}
           >
             <PhoneOff className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: primaryColor }} />
           </div>
-          <h2 className="text-gray-900 dark:text-white text-xl sm:text-2xl font-bold mb-2 sm:mb-3">
+          <h2 className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xl sm:text-2xl font-bold mb-2 sm:mb-3">
             Connection Failed
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base mb-4 sm:mb-6">{error}</p>
+          <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 text-sm sm:text-base mb-4 sm:mb-6">{error}</p>
           <button
             onClick={onCallEnd}
             className="px-6 sm:px-8 py-2.5 sm:py-3 text-white rounded-xl transition-all font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
@@ -596,7 +596,7 @@ export default function VideoCallRoom({
   return (
     <div
       ref={containerRef}
-      className="relative flex flex-col h-full bg-gray-100 dark:bg-gray-950 overflow-hidden"
+      className="relative flex flex-col h-full bg-gray-100 dark:bg-gray-950 midnight:bg-[#060a1a] purple:bg-[#120622] overflow-hidden"
     >
       {/* Header */}
       <CallHeader
@@ -640,7 +640,7 @@ export default function VideoCallRoom({
           {screenShareStream && (
             <div className="flex-1 flex gap-2 sm:gap-3 lg:gap-4 min-h-0">
               {/* Main screen share */}
-              <div className="flex-1 relative bg-gray-200 dark:bg-gray-900 rounded-xl sm:rounded-2xl overflow-hidden">
+              <div className="flex-1 relative bg-gray-200 dark:bg-gray-900 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden">
                 <video
                   ref={screenShareVideoRef}
                   autoPlay
@@ -680,7 +680,7 @@ export default function VideoCallRoom({
                 {/* Local video */}
                 <div
                   className={cn(
-                  "relative aspect-video bg-gray-200 dark:bg-gray-800 rounded-xl overflow-hidden flex-shrink-0 shadow-lg",
+                  "relative aspect-video bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg",
                     isSpeaking && "ring-2 ring-green-500"
                   )}
                 >
@@ -700,7 +700,7 @@ export default function VideoCallRoom({
                     )}
                   />
                   {isVideoOff && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                       {userAvatar ? (
                         <Image
                           src={userAvatar}
@@ -743,7 +743,7 @@ export default function VideoCallRoom({
                     <div
                       key={participant.id}
                       className={cn(
-                      "relative aspect-video bg-gray-200 dark:bg-gray-800 rounded-xl overflow-hidden flex-shrink-0 shadow-lg",
+                      "relative aspect-video bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg",
                         participant.isSpeaking && "ring-2 ring-green-500"
                       )}
                     >
@@ -764,7 +764,7 @@ export default function VideoCallRoom({
                         )}
                       />
                       {!showVideo && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                           {participant.avatar ? (
                             <Image
                               src={participant.avatar}
@@ -808,7 +808,7 @@ export default function VideoCallRoom({
               {/* Main speaker view (spotlight) or grid */}
               <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-4 min-h-0">
                 {/* Primary Video (large) */}
-                <div className="flex-1 relative bg-gray-200 dark:bg-gray-800 rounded-xl sm:rounded-2xl overflow-hidden min-h-0">
+                <div className="flex-1 relative bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden min-h-0">
                   {remoteParticipants.length > 0 ? (
                     <>
                       <video
@@ -827,7 +827,7 @@ export default function VideoCallRoom({
                         )}
                       />
                       {remoteParticipants[0]?.isVideoOff && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                           {remoteParticipants[0].avatar ? (
                             <Image
                               src={remoteParticipants[0].avatar}
@@ -885,7 +885,7 @@ export default function VideoCallRoom({
                         )}
                       />
                       {isVideoOff && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                           {userAvatar ? (
                             <Image
                               src={userAvatar}
@@ -952,7 +952,7 @@ export default function VideoCallRoom({
                   {/* Local user video thumbnail - always visible */}
                   <div
                     className={cn(
-                    "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg",
+                    "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg",
                     "w-full aspect-video",
                       isSpeaking && "ring-2 ring-green-500"
                     )}
@@ -973,7 +973,7 @@ export default function VideoCallRoom({
                       )}
                     />
                     {isVideoOff && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                         {userAvatar ? (
                           <Image
                             src={userAvatar}
@@ -1016,7 +1016,7 @@ export default function VideoCallRoom({
                       <div
                         key={participant.id}
                         className={cn(
-                        "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg",
+                        "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg",
                         "w-full aspect-video",
                           participant.isSpeaking && "ring-2 ring-green-500"
                         )}
@@ -1038,7 +1038,7 @@ export default function VideoCallRoom({
                           )}
                         />
                         {!showVideo && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+                          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                             {participant.avatar ? (
                               <Image
                                 src={participant.avatar}
@@ -1077,7 +1077,7 @@ export default function VideoCallRoom({
                   {remoteParticipants.length > 4 && (
                     <button
                       onClick={() => setShowParticipants(true)}
-                      className="relative flex-shrink-0 bg-gray-200/80 dark:bg-gray-800/80 rounded-xl overflow-hidden shadow-lg cursor-pointer w-full aspect-video flex items-center justify-center hover:bg-gray-300/80 dark:hover:bg-gray-700/80 transition-all duration-200 hover:scale-105 active:scale-95"
+                      className="relative flex-shrink-0 bg-gray-200/80 dark:bg-gray-800/80 midnight:bg-[#0d1220]/80 purple:bg-[#1f0d33]/80 rounded-xl overflow-hidden shadow-lg cursor-pointer w-full aspect-video flex items-center justify-center hover:bg-gray-300/80 dark:hover:bg-gray-700/80 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 transition-all duration-200 hover:scale-105 active:scale-95"
                     >
                       <div className="text-center">
                         <div
@@ -1089,7 +1089,7 @@ export default function VideoCallRoom({
                         >
                           +{remoteParticipants.length - 4}
                         </div>
-                        <span className="text-gray-600 dark:text-white/70 text-xs mt-1.5 block font-medium">
+                        <span className="text-gray-600 dark:text-white/70 midnight:text-cyan-200/70 purple:text-pink-200/70 text-xs mt-1.5 block font-medium">
                           more
                         </span>
                       </div>
@@ -1103,7 +1103,7 @@ export default function VideoCallRoom({
 
         {/* Side Panels */}
         {(showParticipants || showChat) && (
-          <div className="hidden sm:flex flex-col w-80 lg:w-[320px] border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+          <div className="hidden sm:flex flex-col w-80 lg:w-[320px] border-l border-gray-200 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e]">
             {showParticipants && (
               <ParticipantsPanel
                 participants={uiParticipants}
@@ -1164,7 +1164,7 @@ export default function VideoCallRoom({
 
       {/* Mobile Panels (full screen overlays) */}
       {showParticipants && (
-        <div className="sm:hidden fixed inset-0 z-50 bg-white dark:bg-gray-900">
+        <div className="sm:hidden fixed inset-0 z-50 bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e]">
           <ParticipantsPanel
             participants={uiParticipants}
             currentUserId={userId}
@@ -1177,7 +1177,7 @@ export default function VideoCallRoom({
       )}
 
       {showChat && (
-        <div className="sm:hidden fixed inset-0 z-50 bg-white dark:bg-gray-900">
+        <div className="sm:hidden fixed inset-0 z-50 bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e]">
           <LiveChatPanel
             messages={uiMessages}
             currentUserId={userId}

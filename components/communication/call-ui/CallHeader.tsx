@@ -80,7 +80,7 @@ export function CallHeader({
   return (
     <header
       className={cn(
-        "bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800",
+        "bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20",
         "px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3",
         "flex items-center justify-between gap-2 sm:gap-4",
         className
@@ -93,13 +93,13 @@ export function CallHeader({
           onClick={onClose}
           className={cn(
             "p-1.5 sm:p-2 rounded-lg transition-all duration-200",
-            "hover:bg-gray-100 dark:hover:bg-gray-800",
+            "hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
             "active:scale-95 cursor-pointer",
             "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           )}
           title="End call"
         >
-          <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400" />
+          <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70" />
         </button>
 
         {/* Call Icon & Title */}
@@ -111,7 +111,7 @@ export function CallHeader({
             <CallIcon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: primaryColor }} />
           </div>
           <div className="min-w-0">
-            <h1 className="text-sm sm:text-base lg:text-lg font-bold text-gray-900 dark:text-white truncate">
+            <h1 className="text-sm sm:text-base lg:text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
               {title}
             </h1>
           </div>
@@ -119,7 +119,7 @@ export function CallHeader({
 
         {/* Duration Badge */}
         <div
-          className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white text-xs sm:text-sm font-semibold flex-shrink-0 shadow-sm border border-gray-200 dark:border-gray-700"
+          className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-900/20 purple:bg-pink-900/20 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xs sm:text-sm font-semibold flex-shrink-0 shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
         >
           {isRecording && (
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -131,9 +131,9 @@ export function CallHeader({
       {/* Center Section - Badges (hidden on mobile) */}
       <div className="hidden md:flex items-center gap-2 lg:gap-3">
         {/* Participant Count Badge */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full transition-colors border border-gray-200 dark:border-gray-700">
-          <LogIn className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-full transition-colors border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <LogIn className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70" />
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
             In meeting:
           </span>
           <span
@@ -146,12 +146,12 @@ export function CallHeader({
 
         {/* Invited Count Badge */}
         {invitedCount > 0 && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700">
-            <Users className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-full border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <Users className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70" />
+            <span className="text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
               Invited:
             </span>
-            <span className="text-xs font-bold text-gray-900 dark:text-white">
+            <span className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
               {invitedCount}
             </span>
           </div>
@@ -166,11 +166,11 @@ export function CallHeader({
             onClick={onShare}
             className={cn(
               "hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg",
-              "bg-gray-100 dark:bg-gray-800",
-              "hover:bg-gray-200 dark:hover:bg-gray-700",
+              "bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-900/20 purple:bg-pink-900/20",
+              "hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30",
               "active:scale-95 cursor-pointer",
               "transition-all duration-200",
-              "text-gray-700 dark:text-gray-300 text-sm font-medium"
+              "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 text-sm font-medium"
             )}
           >
             <Share2 className="w-4 h-4" />
@@ -182,10 +182,10 @@ export function CallHeader({
         <button
           className={cn(
             "hidden lg:flex p-2 rounded-lg",
-            "hover:bg-gray-100 dark:hover:bg-gray-800",
+            "hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
             "active:scale-95 cursor-pointer",
             "transition-all duration-200",
-            "text-gray-500 dark:text-gray-400"
+            "text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70"
           )}
         >
           <Search className="w-5 h-5" />
@@ -195,10 +195,10 @@ export function CallHeader({
         <button
           className={cn(
             "hidden lg:flex p-2 rounded-lg relative",
-            "hover:bg-gray-100 dark:hover:bg-gray-800",
+            "hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
             "active:scale-95 cursor-pointer",
             "transition-all duration-200",
-            "text-gray-500 dark:text-gray-400"
+            "text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70"
           )}
         >
           <Bell className="w-5 h-5" />
@@ -225,7 +225,7 @@ export function CallHeader({
                 className="fixed inset-0 z-40"
                 onClick={() => setShowMenu(false)}
               />
-              <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 py-1">
+              <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 py-1">
                 {onSettings && (
                   <button
                     onClick={() => {
@@ -234,8 +234,8 @@ export function CallHeader({
                     }}
                     className={cn(
                       "w-full flex items-center gap-3 px-4 py-2.5",
-                      "text-sm text-gray-700 dark:text-gray-300",
-                      "hover:bg-gray-50 dark:hover:bg-gray-700/50",
+                      "text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200",
+                      "hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
                       "cursor-pointer transition-colors"
                     )}
                   >
@@ -248,8 +248,8 @@ export function CallHeader({
                     onClick={handleCopyRoomId}
                     className={cn(
                       "w-full flex items-center gap-3 px-4 py-2.5",
-                      "text-sm text-gray-700 dark:text-gray-300",
-                      "hover:bg-gray-50 dark:hover:bg-gray-700/50",
+                      "text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200",
+                      "hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
                       "cursor-pointer transition-colors"
                     )}
                   >
@@ -265,8 +265,8 @@ export function CallHeader({
                     }}
                     className={cn(
                       "w-full flex items-center gap-3 px-4 py-2.5",
-                      "text-sm text-gray-700 dark:text-gray-300",
-                      "hover:bg-gray-50 dark:hover:bg-gray-700/50",
+                      "text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200",
+                      "hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
                       "cursor-pointer transition-colors"
                     )}
                   >
@@ -274,7 +274,7 @@ export function CallHeader({
                     <span>Add Participant</span>
                   </button>
                 )}
-                <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+                <div className="border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 my-1" />
                 <button
                   onClick={() => {
                     onClose();
@@ -283,7 +283,7 @@ export function CallHeader({
                   className={cn(
                     "w-full flex items-center gap-3 px-4 py-2.5",
                     "text-sm text-red-600 dark:text-red-400",
-                    "hover:bg-red-50 dark:hover:bg-red-500/10",
+                    "hover:bg-red-50 dark:hover:bg-red-500/10 midnight:hover:bg-red-500/10 purple:hover:bg-red-500/10",
                     "cursor-pointer transition-colors"
                   )}
                 >

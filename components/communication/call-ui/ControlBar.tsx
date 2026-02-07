@@ -111,7 +111,7 @@ function ControlButton({
             ? "bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-red-500/25"
             : isActive
             ? "text-white shadow-lg"
-            : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
+            : "bg-white dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] text-gray-700 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
         )}
         style={
           isActive && !isDestructive
@@ -142,7 +142,7 @@ function ControlButton({
               ? "text-red-500 dark:text-red-400"
               : isActive
               ? "text-gray-900 dark:text-white"
-              : "text-gray-600 dark:text-gray-400"
+              : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70"
           )}
         >
           {label}
@@ -172,7 +172,7 @@ function ControlButton({
 // Divider component for visual separation
 function ControlDivider() {
   return (
-    <div className="hidden sm:block w-px h-8 bg-gray-300 dark:bg-gray-700 mx-1" />
+    <div className="hidden sm:block w-px h-8 bg-gray-300 dark:bg-gray-700 midnight:bg-cyan-500/20 purple:bg-pink-500/20 mx-1" />
   );
 }
 
@@ -205,8 +205,8 @@ export function ControlBar({
     <div
       className={cn(
         "flex items-center justify-center gap-1.5 sm:gap-2 lg:gap-3 px-3 sm:px-6 py-3 sm:py-4",
-        "bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl",
-        "border-t border-gray-100 dark:border-gray-800",
+        "bg-white/98 dark:bg-gray-900/98 midnight:bg-[#0f1729]/98 purple:bg-[#2a1a3e]/98 backdrop-blur-xl",
+        "border-t border-gray-100 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20",
         "shadow-[0_-4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.3)]",
         className
       )}

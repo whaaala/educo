@@ -48,15 +48,15 @@ export function ParticipantsPanel({
   return (
     <div
       className={cn(
-        "flex flex-col bg-white dark:bg-gray-900",
+        "flex flex-col bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e]",
         "w-full h-full",
         className
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20">
         <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-gray-900 dark:text-white">
+          <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
             Participants
           </h3>
           <span
@@ -68,9 +68,9 @@ export function ParticipantsPanel({
         </div>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer active:scale-95"
+          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-all duration-200 cursor-pointer active:scale-95"
         >
-          <MoreHorizontal className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+          <MoreHorizontal className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70" />
         </button>
       </div>
 
@@ -81,7 +81,7 @@ export function ParticipantsPanel({
             key={participant.id}
             className={cn(
               "flex items-center gap-3 px-4 py-2.5",
-              "hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer",
+              "hover:bg-gray-50 dark:hover:bg-gray-800/50 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors cursor-pointer",
               participant.isSpeaking && "bg-green-50/50 dark:bg-green-900/10"
             )}
           >
@@ -106,13 +106,13 @@ export function ParticipantsPanel({
                 </div>
               )}
               {/* Online indicator */}
-              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900 shadow-sm" />
+              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900 midnight:border-[#0f1729] purple:border-[#2a1a3e] shadow-sm" />
             </div>
 
             {/* Name and Username */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-medium text-sm text-gray-900 dark:text-white truncate">
+                <span className="font-medium text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                   {participant.name}
                 </span>
                 {participant.isHost && (
@@ -125,7 +125,7 @@ export function ParticipantsPanel({
                 )}
               </div>
               {/* Username - like @johnwayne */}
-              <span className="text-xs text-gray-400 dark:text-gray-500 truncate block">
+              <span className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400/60 purple:text-pink-400/60 truncate block">
                 @{participant.username || participant.name.toLowerCase().replace(/\s+/g, '')}
               </span>
             </div>
@@ -163,7 +163,7 @@ export function ParticipantsPanel({
 
       {/* Add Participant Button */}
       {onAddParticipant && (
-        <div className="p-3 border-t border-gray-100 dark:border-gray-800">
+        <div className="p-3 border-t border-gray-100 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <button
             onClick={onAddParticipant}
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold transition-all duration-200 hover:opacity-90 hover:shadow-lg cursor-pointer active:scale-[0.98]"

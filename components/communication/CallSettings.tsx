@@ -426,7 +426,7 @@ export default function CallSettings({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden midnight:border midnight:border-cyan-500/20 purple:border purple:border-pink-500/20">
         {/* Header with Tenant Branding */}
         <div
           className="p-5 text-white relative overflow-hidden"
@@ -509,14 +509,14 @@ export default function CallSettings({
             <div className="space-y-6">
               {/* Microphone */}
               <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 flex items-center gap-2">
                   <Mic className="w-4 h-4" />
                   Microphone
                 </label>
                 <select
                   value={selectedMicrophone}
                   onChange={(e) => setSelectedMicrophone(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   suppressHydrationWarning
                 >
                   {microphones.map((mic) => (
@@ -548,7 +548,7 @@ export default function CallSettings({
                   </button>
 
                   {/* Level Meter */}
-                  <div className="flex-1 h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div className="flex-1 h-3 bg-gray-200 dark:bg-gray-700 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-75"
                       style={{ width: `${micLevel}%` }}
@@ -559,14 +559,14 @@ export default function CallSettings({
 
               {/* Speaker */}
               <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 flex items-center gap-2">
                   <Volume2 className="w-4 h-4" />
                   Speaker
                 </label>
                 <select
                   value={selectedSpeaker}
                   onChange={(e) => setSelectedSpeaker(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   suppressHydrationWarning
                 >
                   {speakers.map((speaker) => (
@@ -592,7 +592,7 @@ export default function CallSettings({
 
               {/* Audio Enhancements */}
               <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 flex items-center gap-2">
                   <Sparkles className="w-4 h-4" />
                   Audio Enhancements
                 </label>
@@ -604,12 +604,12 @@ export default function CallSettings({
                   ].map((item) => (
                     <label
                       key={item.key}
-                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 transition-colors"
                     >
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{item.label}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{item.label}</span>
                       <div
                         className={`w-11 h-6 rounded-full relative transition-colors ${
-                          item.state ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"
+                          item.state ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600 midnight:bg-gray-700 purple:bg-gray-700"
                         }`}
                         onClick={() => item.setState(!item.state)}
                       >
@@ -631,14 +631,14 @@ export default function CallSettings({
             <div className="space-y-6">
               {/* Camera */}
               <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                  <Video className="w-4 h-4" />
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 flex items-center gap-2">
+                  <Video className="w-4 h-4 midnight:text-cyan-300/70 purple:text-pink-300/70" />
                   Camera
                 </label>
                 <select
                   value={selectedCamera}
                   onChange={(e) => setSelectedCamera(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   suppressHydrationWarning
                 >
                   {cameras.map((camera) => (
@@ -651,7 +651,7 @@ export default function CallSettings({
 
               {/* Video Preview */}
               <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Preview</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">Preview</label>
                 <div className="relative aspect-video bg-gray-900 rounded-xl overflow-hidden">
                   <video
                     ref={videoPreviewRef}
@@ -692,7 +692,7 @@ export default function CallSettings({
 
               {/* Video Quality */}
               <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Video Quality</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">Video Quality</label>
                 <div className="grid grid-cols-2 gap-3">
                   {VIDEO_QUALITY_PRESETS.map((preset) => (
                     <button
@@ -700,17 +700,17 @@ export default function CallSettings({
                       onClick={() => setSelectedQuality(preset)}
                       className={`p-3 rounded-xl border-2 text-left transition-all ${
                         selectedQuality.id === preset.id
-                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20"
+                          : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-900 dark:text-white">{preset.name}</span>
+                        <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{preset.name}</span>
                         {selectedQuality.id === preset.id && (
                           <Check className="w-4 h-4 text-blue-500" />
                         )}
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{preset.description}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 mt-1">{preset.description}</p>
                     </button>
                   ))}
                 </div>
@@ -721,7 +721,7 @@ export default function CallSettings({
           {/* Background Settings */}
           {activeTab === "background" && showVideoSettings && (
             <div className="space-y-6">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 flex items-center gap-2">
                 <ImageIcon className="w-4 h-4" />
                 Virtual Background
               </label>
@@ -735,11 +735,11 @@ export default function CallSettings({
                     className={`relative aspect-video rounded-xl overflow-hidden border-2 transition-all ${
                       selectedBackground.id === bg.id
                         ? "border-blue-500 ring-2 ring-blue-500/30"
-                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                        : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
                     }`}
                   >
                     {bg.type === "none" ? (
-                      <div className="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                      <div className="w-full h-full bg-gray-100 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] flex items-center justify-center">
                         <X className="w-6 h-6 text-gray-400" />
                       </div>
                     ) : bg.type === "blur" ? (
@@ -774,7 +774,7 @@ export default function CallSettings({
                 ))}
               </div>
 
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60">
                 Note: Virtual backgrounds may require additional processing power and good lighting for best results.
               </p>
             </div>
@@ -782,10 +782,10 @@ export default function CallSettings({
         </div>
 
         {/* Footer */}
-        <div className="p-5 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+        <div className="p-5 bg-gray-50 dark:bg-gray-800/50 midnight:bg-[#0a0f1f] purple:bg-[#150a28] border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-colors font-medium"
+            className="px-5 py-2.5 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 rounded-xl transition-colors font-medium"
           >
             Cancel
           </button>

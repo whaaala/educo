@@ -361,15 +361,15 @@ export default function VoiceCallRoom({
             />
           </div>
 
-          <p className="text-gray-800 dark:text-white text-xl font-semibold mb-1">
+          <p className="text-gray-800 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xl font-semibold mb-1">
             Calling...
           </p>
-          <p className="text-gray-600 dark:text-gray-400 text-lg">
+          <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 text-lg">
             {recipientName || "User"}
           </p>
 
           {/* Powered by branding */}
-          <div className="mt-8 text-sm text-gray-500 dark:text-gray-500">
+          <div className="mt-8 text-sm text-gray-500 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50">
             Powered by {tenantName}
           </div>
         </div>
@@ -386,17 +386,17 @@ export default function VoiceCallRoom({
           background: `linear-gradient(135deg, ${primaryColor}11 0%, ${secondaryColor}11 100%)`,
         }}
       >
-        <div className="text-center max-w-md p-8 bg-white dark:bg-gray-800 rounded-3xl shadow-2xl mx-4">
+        <div className="text-center max-w-md p-8 bg-white dark:bg-gray-800 midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-3xl shadow-2xl mx-4 midnight:border midnight:border-cyan-500/20 purple:border purple:border-pink-500/20">
           <div
             className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
             style={{ backgroundColor: `${primaryColor}20` }}
           >
             <PhoneOff className="w-10 h-10" style={{ color: primaryColor }} />
           </div>
-          <h2 className="text-gray-900 dark:text-white text-2xl font-bold mb-3">
+          <h2 className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-2xl font-bold mb-3">
             Connection Failed
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+          <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-6">{error}</p>
           <button
             onClick={onCallEnd}
             className="px-8 py-3 text-white rounded-xl transition-all font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -416,7 +416,7 @@ export default function VoiceCallRoom({
   const activeParticipant = remoteParticipants[0];
 
   return (
-    <div className="relative flex flex-col h-full bg-gray-100 dark:bg-gray-900">
+    <div className="relative flex flex-col h-full bg-gray-100 dark:bg-gray-900 midnight:bg-[#060a1a] purple:bg-[#120622]">
       {/* Header */}
       <CallHeader
         title={meetingTitle || "Voice Call"}
@@ -440,7 +440,7 @@ export default function VoiceCallRoom({
           className={cn(
           "flex-1 flex flex-col items-center justify-center relative",
           "transition-all duration-300",
-          "bg-gradient-to-b from-gray-50 via-gray-100 to-gray-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900",
+          "bg-gradient-to-b from-gray-50 via-gray-100 to-gray-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 midnight:from-[#060a1a] midnight:via-[#0f1729] midnight:to-[#060a1a] purple:from-[#120622] purple:via-[#2a1a3e] purple:to-[#120622]",
             (showParticipants || showChat) && "lg:mr-80"
           )}
         >
@@ -513,13 +513,13 @@ export default function VoiceCallRoom({
           </div>
 
           {/* Name and status */}
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-1.5 text-center px-4">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1.5 text-center px-4">
             {activeParticipant?.name || recipientName || "Waiting..."}
           </h2>
 
           {/* Call status indicator */}
           <div
-            className="px-2.5 sm:px-3 py-1 rounded-full text-gray-700 dark:text-white/80 text-xs sm:text-sm font-medium border border-gray-200 dark:border-transparent"
+            className="px-2.5 sm:px-3 py-1 rounded-full text-gray-700 dark:text-white/80 midnight:text-cyan-200 purple:text-pink-200 text-xs sm:text-sm font-medium border border-gray-200 dark:border-transparent midnight:border-cyan-500/20 purple:border-pink-500/20"
             style={{ backgroundColor: `${primaryColor}25` }}
           >
             {session?.state === "connected" ? "Connected" : "Connecting..."}
@@ -527,7 +527,7 @@ export default function VoiceCallRoom({
 
           {/* Muted indicator */}
           {activeParticipant?.isMuted && (
-            <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 mt-3 bg-gray-200/60 dark:bg-gray-800/40 px-3 py-1.5 rounded-full">
+            <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 mt-3 bg-gray-200/60 dark:bg-gray-800/40 midnight:bg-cyan-900/20 purple:bg-pink-900/20 px-3 py-1.5 rounded-full">
               <MicOff className="w-3.5 h-3.5" />
               <span className="text-xs">Microphone muted</span>
             </div>
@@ -537,7 +537,7 @@ export default function VoiceCallRoom({
           {remoteParticipants.length > 1 && (
             <button
               onClick={() => setShowParticipants(true)}
-              className="flex items-center gap-1.5 text-gray-600 dark:text-white/60 hover:text-gray-900 dark:hover:text-white bg-gray-200/50 dark:bg-white/5 hover:bg-gray-300/50 dark:hover:bg-white/10 px-3 py-1.5 rounded-full transition-colors mt-4 text-sm"
+              className="flex items-center gap-1.5 text-gray-600 dark:text-white/60 midnight:text-cyan-200/60 purple:text-pink-200/60 hover:text-gray-900 dark:hover:text-white bg-gray-200/50 dark:bg-white/5 midnight:bg-cyan-900/10 purple:bg-pink-900/10 hover:bg-gray-300/50 dark:hover:bg-white/10 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 px-3 py-1.5 rounded-full transition-colors mt-4 text-sm"
             >
               <Users className="w-3.5 h-3.5" />
               <span>+{remoteParticipants.length - 1} more</span>
@@ -554,7 +554,7 @@ export default function VoiceCallRoom({
               "flex items-center gap-2 px-4 py-2.5 rounded-full transition-all",
                 isSpeakerOff
                   ? "bg-red-500/20 text-red-500 dark:text-red-400 border border-red-500/30"
-                  : "bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-white/80 hover:bg-gray-300 dark:hover:bg-white/15 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-white/10"
+                  : "bg-gray-200 dark:bg-white/10 midnight:bg-cyan-900/20 purple:bg-pink-900/20 text-gray-700 dark:text-white/80 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-300 dark:hover:bg-white/15 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-white/10 midnight:border-cyan-500/20 purple:border-pink-500/20"
               )}
             >
               {isSpeakerOff ? (
@@ -615,7 +615,7 @@ export default function VoiceCallRoom({
 
       {/* Mobile Panels - Full screen overlay */}
       {(showParticipants || showChat) && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-white dark:bg-gray-900">
+        <div className="lg:hidden fixed inset-0 z-50 bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e]">
           {showParticipants && (
             <ParticipantsPanel
               participants={uiParticipants}

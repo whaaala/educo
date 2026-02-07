@@ -23,7 +23,8 @@
       "Bash(npx next build:*)",
       "Bash(npx tsc:*)",
       "Bash(npm install:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npx next dev)"
     ],
     "deny": [],
     "ask": []
