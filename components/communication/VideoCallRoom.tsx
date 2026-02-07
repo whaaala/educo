@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
 import {
   Video,
@@ -267,27 +267,43 @@ export default function VideoCallRoom({
     };
   }, [roomId, userId, userName, userAvatar, isHost, callType, settings, getBestAvailablePlatform, onCallEnd, onError, selectedQuality]);
 
-  // Attach local stream to all local video elements
-  useEffect(() => {
-    if (localStreamReady && localStreamRef.current) {
-      const stream = localStreamRef.current;
+  // Function to connect local stream to video elements
+  const connectLocalStream = useCallback(() => {
+    if (!localStreamRef.current) return;
+    const stream = localStreamRef.current;
 
-      // Connect to main local video
-      if (localVideoRef.current && localVideoRef.current.srcObject !== stream) {
-        localVideoRef.current.srcObject = stream;
-      }
-
-      // Connect to thumbnail video (normal view)
-      if (localThumbnailVideoRef.current && localThumbnailVideoRef.current.srcObject !== stream) {
-        localThumbnailVideoRef.current.srcObject = stream;
-      }
-
-      // Connect to screen share sidebar video
-      if (screenShareSidebarVideoRef.current && screenShareSidebarVideoRef.current.srcObject !== stream) {
-        screenShareSidebarVideoRef.current.srcObject = stream;
-      }
+    // Connect to main local video
+    if (localVideoRef.current && localVideoRef.current.srcObject !== stream) {
+      localVideoRef.current.srcObject = stream;
     }
-  }, [localStreamReady, session, isVideoOff, screenShareStream]);
+
+    // Connect to thumbnail video (normal view)
+    if (localThumbnailVideoRef.current && localThumbnailVideoRef.current.srcObject !== stream) {
+      localThumbnailVideoRef.current.srcObject = stream;
+    }
+
+    // Connect to screen share sidebar video
+    if (screenShareSidebarVideoRef.current && screenShareSidebarVideoRef.current.srcObject !== stream) {
+      screenShareSidebarVideoRef.current.srcObject = stream;
+    }
+  }, []);
+
+  // Attach local stream to all local video elements - use useLayoutEffect for immediate DOM updates
+  useLayoutEffect(() => {
+    if (localStreamReady) {
+      // Connect immediately
+      connectLocalStream();
+
+      // Also connect after a short delay to catch any elements that mount later
+      const timeoutId = setTimeout(connectLocalStream, 100);
+      const timeoutId2 = setTimeout(connectLocalStream, 500);
+
+      return () => {
+        clearTimeout(timeoutId);
+        clearTimeout(timeoutId2);
+      };
+    }
+  }, [localStreamReady, session, isVideoOff, screenShareStream, connectLocalStream]);
 
   // Attach remote streams to video elements
   useEffect(() => {
@@ -499,7 +515,7 @@ export default function VideoCallRoom({
     return (
       <div
         ref={containerRef}
-        className="flex items-center justify-center h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+        className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
       >
         <div className="text-center px-4">
           {tenantLogo && (
@@ -518,22 +534,22 @@ export default function VideoCallRoom({
                   background: `conic-gradient(${primaryColor}, ${secondaryColor}, ${primaryColor})`,
                   mask: "radial-gradient(farthest-side, transparent calc(100% - 3px), #fff calc(100% - 3px))",
                   WebkitMask:
-                    "radial-gradient(farthest-side, transparent calc(100% - 3px), #fff calc(100% - 3px))",
+                  "radial-gradient(farthest-side, transparent calc(100% - 3px), #fff calc(100% - 3px))",
                 }}
               />
             </div>
           </div>
 
-          <p className="text-white text-lg sm:text-xl font-semibold mb-2">
+          <p className="text-gray-900 dark:text-white text-lg sm:text-xl font-semibold mb-2">
             Connecting to call...
           </p>
-          <p className="text-gray-400 text-sm">
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
             Room: {roomId.slice(0, 12)}...
           </p>
 
-          <div className="mt-4 sm:mt-6 inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 rounded-full">
+          <div className="mt-4 sm:mt-6 inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-black/10 dark:bg-white/10 rounded-full">
             <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
-            <span className="text-white/80 text-xs sm:text-sm">{selectedQuality.name}</span>
+            <span className="text-gray-700 dark:text-white/80 text-xs sm:text-sm">{selectedQuality.name}</span>
           </div>
 
           <div className="mt-6 sm:mt-8 text-xs sm:text-sm text-gray-500">
@@ -549,19 +565,19 @@ export default function VideoCallRoom({
     return (
       <div
         ref={containerRef}
-        className="flex items-center justify-center h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+        className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
       >
-        <div className="text-center max-w-md p-6 sm:p-8 bg-gray-800/80 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl mx-4 border border-white/10">
+        <div className="text-center max-w-md p-6 sm:p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl mx-4 border border-gray-200 dark:border-white/10">
           <div
             className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6"
             style={{ backgroundColor: `${primaryColor}20` }}
           >
             <PhoneOff className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: primaryColor }} />
           </div>
-          <h2 className="text-white text-xl sm:text-2xl font-bold mb-2 sm:mb-3">
+          <h2 className="text-gray-900 dark:text-white text-xl sm:text-2xl font-bold mb-2 sm:mb-3">
             Connection Failed
           </h2>
-          <p className="text-gray-400 text-sm sm:text-base mb-4 sm:mb-6">{error}</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base mb-4 sm:mb-6">{error}</p>
           <button
             onClick={onCallEnd}
             className="px-6 sm:px-8 py-2.5 sm:py-3 text-white rounded-xl transition-all font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
@@ -624,7 +640,7 @@ export default function VideoCallRoom({
           {screenShareStream && (
             <div className="flex-1 flex gap-2 sm:gap-3 lg:gap-4 min-h-0">
               {/* Main screen share */}
-              <div className="flex-1 relative bg-gray-900 rounded-xl sm:rounded-2xl overflow-hidden">
+              <div className="flex-1 relative bg-gray-200 dark:bg-gray-900 rounded-xl sm:rounded-2xl overflow-hidden">
                 <video
                   ref={screenShareVideoRef}
                   autoPlay
@@ -664,22 +680,27 @@ export default function VideoCallRoom({
                 {/* Local video */}
                 <div
                   className={cn(
-                    "relative aspect-video bg-gray-800 rounded-xl overflow-hidden flex-shrink-0 shadow-lg",
+                  "relative aspect-video bg-gray-200 dark:bg-gray-800 rounded-xl overflow-hidden flex-shrink-0 shadow-lg",
                     isSpeaking && "ring-2 ring-green-500"
                   )}
                 >
                   <video
-                    ref={screenShareSidebarVideoRef}
+                    ref={(el) => {
+                      screenShareSidebarVideoRef.current = el;
+                      if (el && localStreamRef.current && el.srcObject !== localStreamRef.current) {
+                        el.srcObject = localStreamRef.current;
+                      }
+                    }}
                     autoPlay
                     muted
                     playsInline
                     className={cn(
-                      "w-full h-full object-cover",
+                    "w-full h-full object-cover",
                       isVideoOff && "hidden"
                     )}
                   />
                   {isVideoOff && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-800">
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
                       {userAvatar ? (
                         <Image
                           src={userAvatar}
@@ -701,7 +722,7 @@ export default function VideoCallRoom({
                     </div>
                   )}
                   <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                    <span className="px-2 py-0.5 bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-white">
+                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white">
                       You
                     </span>
                     {isMuted && (
@@ -722,7 +743,7 @@ export default function VideoCallRoom({
                     <div
                       key={participant.id}
                       className={cn(
-                        "relative aspect-video bg-gray-800 rounded-xl overflow-hidden flex-shrink-0 shadow-lg",
+                      "relative aspect-video bg-gray-200 dark:bg-gray-800 rounded-xl overflow-hidden flex-shrink-0 shadow-lg",
                         participant.isSpeaking && "ring-2 ring-green-500"
                       )}
                     >
@@ -738,12 +759,12 @@ export default function VideoCallRoom({
                         autoPlay
                         playsInline
                         className={cn(
-                          "w-full h-full object-cover",
+                        "w-full h-full object-cover",
                           !showVideo && "hidden"
                         )}
                       />
                       {!showVideo && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-800">
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
                           {participant.avatar ? (
                             <Image
                               src={participant.avatar}
@@ -765,7 +786,7 @@ export default function VideoCallRoom({
                         </div>
                       )}
                       <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                        <span className="px-2 py-0.5 bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-white truncate max-w-[100px]">
+                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white truncate max-w-[100px]">
                           {participant.name}
                         </span>
                         {participant.isMuted && (
@@ -787,7 +808,7 @@ export default function VideoCallRoom({
               {/* Main speaker view (spotlight) or grid */}
               <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-4 min-h-0">
                 {/* Primary Video (large) */}
-                <div className="flex-1 relative bg-gray-900 dark:bg-gray-800 rounded-xl sm:rounded-2xl overflow-hidden min-h-0">
+                <div className="flex-1 relative bg-gray-200 dark:bg-gray-800 rounded-xl sm:rounded-2xl overflow-hidden min-h-0">
                   {remoteParticipants.length > 0 ? (
                     <>
                       <video
@@ -801,12 +822,12 @@ export default function VideoCallRoom({
                         autoPlay
                         playsInline
                         className={cn(
-                          "w-full h-full object-cover",
+                        "w-full h-full object-cover",
                           remoteParticipants[0]?.isVideoOff && "hidden"
                         )}
                       />
                       {remoteParticipants[0]?.isVideoOff && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
                           {remoteParticipants[0].avatar ? (
                             <Image
                               src={remoteParticipants[0].avatar}
@@ -829,7 +850,7 @@ export default function VideoCallRoom({
                       )}
                       {/* Name badge */}
                       <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 flex items-center gap-2">
-                        <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-black/60 backdrop-blur rounded-lg text-xs sm:text-sm font-medium text-white">
+                        <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/80 dark:bg-black/60 backdrop-blur rounded-lg text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
                           {remoteParticipants[0]?.name}
                         </span>
                         {remoteParticipants[0]?.isMuted && (
@@ -849,17 +870,22 @@ export default function VideoCallRoom({
                     // Show local user's video when alone (waiting for others)
                     <>
                       <video
-                        ref={localVideoRef}
+                        ref={(el) => {
+                          localVideoRef.current = el;
+                          if (el && localStreamRef.current && el.srcObject !== localStreamRef.current) {
+                            el.srcObject = localStreamRef.current;
+                          }
+                        }}
                         autoPlay
                         muted
                         playsInline
                         className={cn(
-                          "w-full h-full object-cover",
+                        "w-full h-full object-cover",
                           isVideoOff && "hidden"
                         )}
                       />
                       {isVideoOff && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
                           {userAvatar ? (
                             <Image
                               src={userAvatar}
@@ -882,7 +908,7 @@ export default function VideoCallRoom({
                       )}
                       {/* Name badge for local user */}
                       <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 flex items-center gap-2">
-                        <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-black/60 backdrop-blur rounded-lg text-xs sm:text-sm font-medium text-white">
+                        <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/80 dark:bg-black/60 backdrop-blur rounded-lg text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
                           {userName} (You)
                         </span>
                         {isMuted && (
@@ -893,23 +919,23 @@ export default function VideoCallRoom({
                       </div>
                       {/* Waiting overlay message */}
                       <div className="absolute top-2 sm:top-4 left-1/2 -translate-x-1/2">
-                        <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-black/60 backdrop-blur rounded-full">
-                          <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white/70" />
-                          <span className="text-white/70 text-xs sm:text-sm">
+                        <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/80 dark:bg-black/60 backdrop-blur rounded-full">
+                          <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-600 dark:text-white/70" />
+                          <span className="text-gray-600 dark:text-white/70 text-xs sm:text-sm">
                             Waiting for others to join...
                           </span>
                         </div>
                       </div>
                       {/* Room ID at bottom */}
                       <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4">
-                        <div className="flex items-center gap-2 text-white/50 text-xs">
+                        <div className="flex items-center gap-2 text-gray-500 dark:text-white/50 text-xs">
                           <span className="hidden sm:inline">Room ID:</span>
-                          <code className="px-2 py-1 bg-black/40 backdrop-blur rounded text-xs">
+                          <code className="px-2 py-1 bg-gray-200/80 dark:bg-black/40 backdrop-blur rounded text-xs text-gray-700 dark:text-gray-300">
                             {roomId.slice(0, 12)}...
                           </code>
                           <button
                             onClick={copyRoomId}
-                            className="p-1 hover:bg-white/10 rounded transition-colors"
+                            className="p-1 hover:bg-gray-300/50 dark:hover:bg-white/10 rounded transition-colors text-gray-500 dark:text-white/50"
                             title="Copy Room ID"
                           >
                             <Copy className="w-3.5 h-3.5" />
@@ -926,23 +952,28 @@ export default function VideoCallRoom({
                   {/* Local user video thumbnail - always visible */}
                   <div
                     className={cn(
-                      "relative flex-shrink-0 bg-gray-800 rounded-xl overflow-hidden shadow-lg",
-                      "w-full aspect-video",
+                    "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg",
+                    "w-full aspect-video",
                       isSpeaking && "ring-2 ring-green-500"
                     )}
                   >
                     <video
-                      ref={localThumbnailVideoRef}
+                      ref={(el) => {
+                        localThumbnailVideoRef.current = el;
+                        if (el && localStreamRef.current && el.srcObject !== localStreamRef.current) {
+                          el.srcObject = localStreamRef.current;
+                        }
+                      }}
                       autoPlay
                       muted
                       playsInline
                       className={cn(
-                        "w-full h-full object-cover",
+                      "w-full h-full object-cover",
                         isVideoOff && "hidden"
                       )}
                     />
                     {isVideoOff && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-800">
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
                         {userAvatar ? (
                           <Image
                             src={userAvatar}
@@ -964,7 +995,7 @@ export default function VideoCallRoom({
                       </div>
                     )}
                     <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                      <span className="px-2 py-0.5 bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-white">
+                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white">
                         You
                       </span>
                       {isMuted && (
@@ -985,8 +1016,8 @@ export default function VideoCallRoom({
                       <div
                         key={participant.id}
                         className={cn(
-                          "relative flex-shrink-0 bg-gray-800 rounded-xl overflow-hidden shadow-lg",
-                          "w-full aspect-video",
+                        "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg",
+                        "w-full aspect-video",
                           participant.isSpeaking && "ring-2 ring-green-500"
                         )}
                       >
@@ -1002,12 +1033,12 @@ export default function VideoCallRoom({
                           autoPlay
                           playsInline
                           className={cn(
-                            "w-full h-full object-cover",
+                          "w-full h-full object-cover",
                             !showVideo && "hidden"
                           )}
                         />
                         {!showVideo && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-800">
+                          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
                             {participant.avatar ? (
                               <Image
                                 src={participant.avatar}
@@ -1029,7 +1060,7 @@ export default function VideoCallRoom({
                           </div>
                         )}
                         <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                          <span className="px-2 py-0.5 bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-white truncate max-w-[90px]">
+                          <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
                             {participant.name}
                           </span>
                           {participant.isMuted && (
@@ -1046,7 +1077,7 @@ export default function VideoCallRoom({
                   {remoteParticipants.length > 4 && (
                     <button
                       onClick={() => setShowParticipants(true)}
-                      className="relative flex-shrink-0 bg-gray-800/80 rounded-xl overflow-hidden shadow-lg cursor-pointer w-full aspect-video flex items-center justify-center hover:bg-gray-700/80 transition-all duration-200 hover:scale-105 active:scale-95"
+                      className="relative flex-shrink-0 bg-gray-200/80 dark:bg-gray-800/80 rounded-xl overflow-hidden shadow-lg cursor-pointer w-full aspect-video flex items-center justify-center hover:bg-gray-300/80 dark:hover:bg-gray-700/80 transition-all duration-200 hover:scale-105 active:scale-95"
                     >
                       <div className="text-center">
                         <div
@@ -1058,7 +1089,7 @@ export default function VideoCallRoom({
                         >
                           +{remoteParticipants.length - 4}
                         </div>
-                        <span className="text-white/70 text-xs mt-1.5 block font-medium">
+                        <span className="text-gray-600 dark:text-white/70 text-xs mt-1.5 block font-medium">
                           more
                         </span>
                       </div>

@@ -214,14 +214,14 @@ export function LiveChatPanel({
                   "hidden group-hover:flex items-center gap-1 mt-1 ml-10",
                   isOwn && "mr-10 ml-0 justify-end"
                 )}>
-                  <button className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
-                    <ThumbsUp className="w-3.5 h-3.5 text-gray-400" />
+                  <button className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                    <ThumbsUp className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                   </button>
-                  <button className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
-                    <Heart className="w-3.5 h-3.5 text-gray-400" />
+                  <button className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                    <Heart className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                   </button>
-                  <button className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
-                    <Smile className="w-3.5 h-3.5 text-gray-400" />
+                  <button className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                    <Smile className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                   </button>
                 </div>
               </div>
@@ -234,7 +234,7 @@ export function LiveChatPanel({
       {/* Input */}
       <div className="p-3 border-t border-gray-100 dark:border-gray-800">
         <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-2">
-          <button className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-400 cursor-pointer">
+          <button className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-400 cursor-pointer">
             <Smile className="w-5 h-5" />
           </button>
           <input
@@ -254,7 +254,7 @@ export function LiveChatPanel({
               "p-2 rounded-full transition-all duration-200 cursor-pointer",
               newMessage.trim()
                 ? "text-white hover:opacity-90 hover:scale-105 active:scale-95"
-                : "text-gray-400 cursor-not-allowed"
+                : "text-gray-400 dark:text-gray-500 cursor-not-allowed"
             )}
             style={
               newMessage.trim()

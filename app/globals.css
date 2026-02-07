@@ -7,27 +7,60 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Theme variant definitions (Tailwind CSS v4)
+ * These tell Tailwind how to resolve dark:, midnight:, purple: prefixes.
+ * To add a new theme: add @variant <name> (&:where(.<name>, .<name> *));
+ */
 @variant dark (&:where(.dark, .dark *));
 @variant midnight (&:where(.midnight, .midnight *));
 @variant purple (&:where(.purple, .purple *));
 
 :root {
-  --background: #ffffff;
+  --background: #f9fafb;
   --foreground: #171717;
+  color-scheme: light;
+}
+
+/* Dark theme variables */
+html.dark {
+  --background: #0f1115;
+  --foreground: #ededed;
+  color-scheme: dark;
+}
+
+/* Midnight theme variables - Deep blue with cyan accents */
+html.midnight {
+  --background: #0a0e27;
+  --foreground: #e2e8f0;
+  color-scheme: dark;
+}
+
+/* Purple theme variables - Deep purple with pink accents */
+html.purple {
+  --background: #1a0b2e;
+  --foreground: #f3e8ff;
+  color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light):not(.midnight):not(.purple) {
     --background: #0a0a0a;
     --foreground: #ededed;
+    color-scheme: dark;
   }
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   letter-spacing: 0.02em;
+  min-height: 100vh;
+}
+
+/* Ensure theme transitions are smooth */
+html, body {
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Modern Custom Scrollbar Styles */
@@ -65,6 +98,7 @@ body {
 .midnight {
   --midnight-glow: #00d4ff;
   --midnight-border: rgba(6, 182, 212, 0.2);
+  color-scheme: dark;
 }
 
 .midnight * {
@@ -83,6 +117,7 @@ body {
 .purple {
   --purple-glow: #ff00ff;
   --purple-border: rgba(236, 72, 153, 0.2);
+  color-scheme: dark;
 }
 
 .purple * {

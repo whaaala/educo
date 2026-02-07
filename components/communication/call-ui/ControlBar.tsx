@@ -111,7 +111,7 @@ function ControlButton({
             ? "bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-red-500/25"
             : isActive
             ? "text-white shadow-lg"
-            : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600"
+            : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
         )}
         style={
           isActive && !isDestructive
@@ -142,7 +142,7 @@ function ControlButton({
               ? "text-red-500 dark:text-red-400"
               : isActive
               ? "text-gray-900 dark:text-white"
-              : "text-gray-500 dark:text-gray-400"
+              : "text-gray-600 dark:text-gray-400"
           )}
         >
           {label}
@@ -172,7 +172,7 @@ function ControlButton({
 // Divider component for visual separation
 function ControlDivider() {
   return (
-    <div className="hidden sm:block w-px h-8 bg-gray-200 dark:bg-gray-700 mx-1" />
+    <div className="hidden sm:block w-px h-8 bg-gray-300 dark:bg-gray-700 mx-1" />
   );
 }
 

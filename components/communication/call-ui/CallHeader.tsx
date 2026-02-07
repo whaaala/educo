@@ -119,11 +119,7 @@ export function CallHeader({
 
         {/* Duration Badge */}
         <div
-          className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-white text-xs sm:text-sm font-semibold flex-shrink-0 shadow-sm"
-          style={{
-            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
-            boxShadow: `0 2px 8px ${primaryColor}30`
-          }}
+          className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white text-xs sm:text-sm font-semibold flex-shrink-0 shadow-sm border border-gray-200 dark:border-gray-700"
         >
           {isRecording && (
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -135,10 +131,10 @@ export function CallHeader({
       {/* Center Section - Badges (hidden on mobile) */}
       <div className="hidden md:flex items-center gap-2 lg:gap-3">
         {/* Participant Count Badge */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full transition-colors">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full transition-colors border border-gray-200 dark:border-gray-700">
           <LogIn className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
           <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-            Join meeting:
+            In meeting:
           </span>
           <span
             className="text-xs font-bold text-white px-1.5 py-0.5 rounded-full min-w-[20px] text-center"
@@ -150,7 +146,7 @@ export function CallHeader({
 
         {/* Invited Count Badge */}
         {invitedCount > 0 && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700">
             <Users className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
             <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
               Invited:

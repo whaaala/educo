@@ -18,14 +18,34 @@
 @variant purple (&:where(.purple, .purple *));
 
 :root {
-  --background: #ffffff;
+  --background: #f9fafb;
   --foreground: #171717;
+  color-scheme: light;
+}
+
+html.dark {
+  --background: #0f1115;
+  --foreground: #ededed;
+  color-scheme: dark;
+}
+
+html.midnight {
+  --background: #0a0e27;
+  --foreground: #e2e8f0;
+  color-scheme: dark;
+}
+
+html.purple {
+  --background: #1a0b2e;
+  --foreground: #f3e8ff;
+  color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light):not(.midnight):not(.purple) {
     --background: #0a0a0a;
     --foreground: #ededed;
+    color-scheme: dark;
   }
 }
 

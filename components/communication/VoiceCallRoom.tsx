@@ -416,7 +416,7 @@ export default function VoiceCallRoom({
   const activeParticipant = remoteParticipants[0];
 
   return (
-    <div className="relative flex flex-col h-full bg-gray-900">
+    <div className="relative flex flex-col h-full bg-gray-100 dark:bg-gray-900">
       {/* Header */}
       <CallHeader
         title={meetingTitle || "Voice Call"}
@@ -438,13 +438,11 @@ export default function VoiceCallRoom({
         {/* Main Voice Call Area */}
         <div
           className={cn(
-            "flex-1 flex flex-col items-center justify-center relative",
-            "transition-all duration-300",
+          "flex-1 flex flex-col items-center justify-center relative",
+          "transition-all duration-300",
+          "bg-gradient-to-b from-gray-50 via-gray-100 to-gray-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900",
             (showParticipants || showChat) && "lg:mr-80"
           )}
-          style={{
-            background: `linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)`,
-          }}
         >
           {/* Avatar with Audio Visualizer */}
           <div className="relative mb-4 sm:mb-6">
@@ -479,11 +477,11 @@ export default function VoiceCallRoom({
                 <img
                   src={activeParticipant?.avatar || recipientAvatar}
                   alt={activeParticipant?.name || recipientName || "User"}
-                  className="w-24 h-24 sm:w-32 sm:h-32 rounded-full shadow-2xl ring-2 ring-white/10 object-cover"
+                  className="w-24 h-24 sm:w-32 sm:h-32 rounded-full shadow-2xl ring-2 ring-gray-200 dark:ring-white/10 object-cover"
                 />
               ) : (
                 <div
-                  className="w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center shadow-2xl ring-2 ring-white/10"
+                  className="w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center shadow-2xl ring-2 ring-gray-200 dark:ring-white/10"
                   style={{
                     background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
                   }}
@@ -515,13 +513,13 @@ export default function VoiceCallRoom({
           </div>
 
           {/* Name and status */}
-          <h2 className="text-xl sm:text-2xl font-semibold text-white mb-1.5 text-center px-4">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-1.5 text-center px-4">
             {activeParticipant?.name || recipientName || "Waiting..."}
           </h2>
 
           {/* Call status indicator */}
           <div
-            className="px-2.5 sm:px-3 py-1 rounded-full text-white/80 text-xs sm:text-sm font-medium"
+            className="px-2.5 sm:px-3 py-1 rounded-full text-gray-700 dark:text-white/80 text-xs sm:text-sm font-medium border border-gray-200 dark:border-transparent"
             style={{ backgroundColor: `${primaryColor}25` }}
           >
             {session?.state === "connected" ? "Connected" : "Connecting..."}
@@ -529,7 +527,7 @@ export default function VoiceCallRoom({
 
           {/* Muted indicator */}
           {activeParticipant?.isMuted && (
-            <div className="flex items-center gap-1.5 text-gray-400 mt-3 bg-gray-800/40 px-3 py-1.5 rounded-full">
+            <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 mt-3 bg-gray-200/60 dark:bg-gray-800/40 px-3 py-1.5 rounded-full">
               <MicOff className="w-3.5 h-3.5" />
               <span className="text-xs">Microphone muted</span>
             </div>
@@ -539,7 +537,7 @@ export default function VoiceCallRoom({
           {remoteParticipants.length > 1 && (
             <button
               onClick={() => setShowParticipants(true)}
-              className="flex items-center gap-1.5 text-white/60 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-full transition-colors mt-4 text-sm"
+              className="flex items-center gap-1.5 text-gray-600 dark:text-white/60 hover:text-gray-900 dark:hover:text-white bg-gray-200/50 dark:bg-white/5 hover:bg-gray-300/50 dark:hover:bg-white/10 px-3 py-1.5 rounded-full transition-colors mt-4 text-sm"
             >
               <Users className="w-3.5 h-3.5" />
               <span>+{remoteParticipants.length - 1} more</span>
@@ -553,10 +551,10 @@ export default function VoiceCallRoom({
             <button
               onClick={() => setIsSpeakerOff(!isSpeakerOff)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-full transition-all",
+              "flex items-center gap-2 px-4 py-2.5 rounded-full transition-all",
                 isSpeakerOff
-                  ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                  : "bg-white/10 text-white/80 hover:bg-white/15 hover:text-white border border-white/10"
+                  ? "bg-red-500/20 text-red-500 dark:text-red-400 border border-red-500/30"
+                  : "bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-white/80 hover:bg-gray-300 dark:hover:bg-white/15 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-white/10"
               )}
             >
               {isSpeakerOff ? (
@@ -573,9 +571,9 @@ export default function VoiceCallRoom({
             {onSwitchToVideo && (
               <button
                 onClick={onSwitchToVideo}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-full transition-all text-white border border-white/20 hover:border-white/40"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-full transition-all text-white border border-transparent hover:border-white/20"
                 style={{
-                  background: `linear-gradient(135deg, ${primaryColor}40, ${secondaryColor}40)`,
+                  background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
                 }}
               >
                 <Video className="w-5 h-5" />
@@ -617,7 +615,7 @@ export default function VoiceCallRoom({
 
       {/* Mobile Panels - Full screen overlay */}
       {(showParticipants || showChat) && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-gray-900">
+        <div className="lg:hidden fixed inset-0 z-50 bg-white dark:bg-gray-900">
           {showParticipants && (
             <ParticipantsPanel
               participants={uiParticipants}

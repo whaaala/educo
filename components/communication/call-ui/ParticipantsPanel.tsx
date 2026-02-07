@@ -106,7 +106,7 @@ export function ParticipantsPanel({
                 </div>
               )}
               {/* Online indicator */}
-              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900" />
+              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900 shadow-sm" />
             </div>
 
             {/* Name and Username */}
@@ -116,10 +116,7 @@ export function ParticipantsPanel({
                   {participant.name}
                 </span>
                 {participant.isHost && (
-                  <span
-                    className="px-1.5 py-0.5 rounded text-[10px] font-bold text-white"
-                    style={{ backgroundColor: "#f59e0b" }}
-                  >
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-white">
                     Host
                   </span>
                 )}
