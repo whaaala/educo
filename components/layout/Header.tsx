@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import { Moon, Sun, Maximize2, MessageCircle, ChevronDown, Menu } from "lucide-react";
@@ -17,7 +17,7 @@ interface HeaderProps {
   setIsMobileSidebarOpen: (value: boolean) => void;
 }
 
-export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
+function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { theme, cycleTheme } = useTheme();
@@ -506,3 +506,5 @@ export default function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: 
     </header>
   );
 }
+
+export default memo(Header);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
@@ -259,7 +259,7 @@ interface SidebarProps {
   showTenantSwitcher?: boolean;
 }
 
-export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen, customMenuItems, showTenantSwitcher = true }: SidebarProps) {
+function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen, customMenuItems, showTenantSwitcher = true }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { isParent } = useUser();
@@ -850,3 +850,5 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
     </>
   );
 }
+
+export default memo(Sidebar);

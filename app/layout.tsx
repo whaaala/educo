@@ -1,25 +1,7 @@
-"use client";
-
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import { AcademicYearProvider } from "@/contexts/AcademicYearContext";
-import { SidebarProvider } from "@/contexts/SidebarContext";
-import { CountryProvider } from "@/contexts/CountryContext";
-import { SchoolSettingsProvider } from "@/contexts/SchoolSettingsContext";
-import { TransferProvider } from "@/contexts/TransferContext";
-import { TranscriptProvider } from "@/contexts/TranscriptContext";
-import { AttendanceProvider } from "@/contexts/AttendanceContext";
-import { GradingProvider } from "@/contexts/GradingContext";
-import { LeaveProvider } from "@/contexts/LeaveContext";
-import { ChildLeaveProvider } from "@/contexts/ChildLeaveContext";
-import { PerformanceProvider } from "@/contexts/PerformanceContext";
-import { DisciplineProvider } from "@/contexts/DisciplineContext";
-import { UserProvider } from "@/contexts/UserContext";
-import { MeetingsProvider } from "@/contexts/MeetingsContext";
-import { CommunicationProvider } from "@/contexts/CommunicationContext";
-import { CallProvider } from "@/hooks/useCall";
-import { NotificationProvider } from "@/contexts/NotificationContext";
+import Providers from "@/components/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +12,11 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+export const metadata: Metadata = {
+  title: "Educo",
+  description: "School Management System",
+};
 
 export default function RootLayout({
   children,
@@ -42,49 +29,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] transition-colors duration-300`}
       >
-        <ThemeProvider>
-          <CountryProvider>
-            <AcademicYearProvider>
-              <SchoolSettingsProvider>
-                <UserProvider>
-                  <GradingProvider>
-                    <TransferProvider>
-                      <LeaveProvider>
-                        <ChildLeaveProvider>
-                          <PerformanceProvider>
-                          <DisciplineProvider>
-                            <TranscriptProvider>
-                              <AttendanceProvider>
-                                <MeetingsProvider>
-                                  <NotificationProvider>
-                                    <CommunicationProvider>
-                                      <SidebarProvider>
-                                        <CallProvider
-                                          currentUser={{
-                                            id: "current-user-id",
-                                            name: "School Staff",
-                                            role: "Staff",
-                                          }}
-                                        >
-                                          {children}
-                                        </CallProvider>
-                                      </SidebarProvider>
-                                    </CommunicationProvider>
-                                  </NotificationProvider>
-                                </MeetingsProvider>
-                              </AttendanceProvider>
-                            </TranscriptProvider>
-                          </DisciplineProvider>
-                          </PerformanceProvider>
-                        </ChildLeaveProvider>
-                      </LeaveProvider>
-                    </TransferProvider>
-                  </GradingProvider>
-                </UserProvider>
-              </SchoolSettingsProvider>
-            </AcademicYearProvider>
-          </CountryProvider>
-        </ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

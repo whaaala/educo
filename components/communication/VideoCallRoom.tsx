@@ -869,6 +869,31 @@ export default function VideoCallRoom({
                     </span>
                   )}
                 </div>
+                {/* Waiting for recipient overlay - shown when alone in grid */}
+                {remoteParticipants.length === 0 && (
+                  <div className="absolute top-2 sm:top-3 left-1/2 -translate-x-1/2">
+                    <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/80 dark:bg-black/60 backdrop-blur rounded-full">
+                      {recipientAvatar ? (
+                        <img
+                          src={recipientAvatar}
+                          alt={recipientName || "Recipient"}
+                          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold text-white flex-shrink-0"
+                          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+                        >
+                          {(recipientName || "?").charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span className="text-gray-600 dark:text-white/70 text-xs sm:text-sm whitespace-nowrap">
+                        Waiting for {recipientName || "participant"} to join...
+                      </span>
+                      <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0" />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Remote participant tiles */}
@@ -1236,11 +1261,17 @@ export default function VideoCallRoom({
                               className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover"
                             />
                           ) : (
-                            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-600 dark:text-white/70" />
+                            <div
+                              className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold text-white flex-shrink-0"
+                              style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+                            >
+                              {(recipientName || "?").charAt(0).toUpperCase()}
+                            </div>
                           )}
-                          <span className="text-gray-600 dark:text-white/70 text-xs sm:text-sm">
+                          <span className="text-gray-600 dark:text-white/70 text-xs sm:text-sm whitespace-nowrap">
                             Waiting for {recipientName || "participant"} to join...
                           </span>
+                          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0" />
                         </div>
                       </div>
                       {/* Room ID at bottom */}
