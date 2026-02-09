@@ -739,6 +739,30 @@ export default function VideoCallRoom({
                   </div>
                 </div>
 
+                {/* Recipient waiting thumbnail - shown when alone */}
+                {remoteParticipants.length === 0 && (
+                  <div className="relative aspect-video bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg">
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
+                      {recipientAvatar ? (
+                        <img src={recipientAvatar} alt={recipientName || "Recipient"} className="w-12 h-12 lg:w-14 lg:h-14 rounded-full object-cover opacity-50" />
+                      ) : (
+                        <div
+                          className="w-12 h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-lg lg:text-xl font-bold text-white opacity-50"
+                          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+                        >
+                          {(recipientName || "?").charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
+                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white truncate max-w-[100px]">
+                        {recipientName || "Participant"}
+                      </span>
+                      <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                    </div>
+                  </div>
+                )}
+
                 {/* Remote participants */}
                 {remoteParticipants.map((participant) => {
                   const participantStream = remoteStreams.get(participant.id);
@@ -869,31 +893,6 @@ export default function VideoCallRoom({
                     </span>
                   )}
                 </div>
-                {/* Waiting for recipient overlay - shown when alone in grid */}
-                {remoteParticipants.length === 0 && (
-                  <div className="absolute top-2 sm:top-3 left-1/2 -translate-x-1/2">
-                    <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/80 dark:bg-black/60 backdrop-blur rounded-full">
-                      {recipientAvatar ? (
-                        <img
-                          src={recipientAvatar}
-                          alt={recipientName || "Recipient"}
-                          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div
-                          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold text-white flex-shrink-0"
-                          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
-                        >
-                          {(recipientName || "?").charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <span className="text-gray-600 dark:text-white/70 text-xs sm:text-sm whitespace-nowrap">
-                        Waiting for {recipientName || "participant"} to join...
-                      </span>
-                      <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0" />
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Remote participant tiles */}
@@ -1250,29 +1249,6 @@ export default function VideoCallRoom({
                             <MicOff className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                           </span>
                         )}
-                      </div>
-                      {/* Waiting for recipient overlay */}
-                      <div className="absolute top-2 sm:top-4 left-1/2 -translate-x-1/2">
-                        <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/80 dark:bg-black/60 backdrop-blur rounded-full">
-                          {recipientAvatar ? (
-                            <img
-                              src={recipientAvatar}
-                              alt={recipientName || "Recipient"}
-                              className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div
-                              className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold text-white flex-shrink-0"
-                              style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
-                            >
-                              {(recipientName || "?").charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                          <span className="text-gray-600 dark:text-white/70 text-xs sm:text-sm whitespace-nowrap">
-                            Waiting for {recipientName || "participant"} to join...
-                          </span>
-                          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0" />
-                        </div>
                       </div>
                       {/* Room ID at bottom */}
                       <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4">
