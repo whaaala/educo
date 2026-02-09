@@ -9,7 +9,6 @@ import {
   Volume2,
   Speaker,
   Check,
-  ChevronDown,
   Settings,
   X,
   Play,
@@ -19,6 +18,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import Modal from "@/components/shared/Modal";
+import FormDropdown from "@/components/shared/FormDropdown";
+import Button from "@/components/shared/Button";
 
 // Virtual background options
 export const VIRTUAL_BACKGROUNDS = [
@@ -422,386 +424,295 @@ export default function CallSettings({
     }
   };
 
-  if (!isOpen) return null;
+  // Map device lists for FormDropdown
+  const micOptions = microphones.map((d) => ({
+    value: d.deviceId,
+    label: d.label || `Microphone ${d.deviceId.slice(0, 5)}`,
+  }));
+  const speakerOptions = speakers.map((d) => ({
+    value: d.deviceId,
+    label: d.label || `Speaker ${d.deviceId.slice(0, 5)}`,
+  }));
+  const cameraOptions = cameras.map((d) => ({
+    value: d.deviceId,
+    label: d.label || `Camera ${d.deviceId.slice(0, 5)}`,
+  }));
+
+  const tabs = [
+    { id: "audio" as const, label: "Audio", icon: <Mic className="w-4 h-4" /> },
+    ...(showVideoSettings
+      ? [
+          { id: "video" as const, label: "Video", icon: <Video className="w-4 h-4" /> },
+          { id: "background" as const, label: "Background", icon: <ImageIcon className="w-4 h-4" /> },
+        ]
+      : []),
+  ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden midnight:border midnight:border-cyan-500/20 purple:border purple:border-pink-500/20">
-        {/* Header with Tenant Branding */}
-        <div
-          className="p-5 text-white relative overflow-hidden"
-          style={{
-            background: currentTenant?.branding.primaryColor
-              ? `linear-gradient(135deg, ${currentTenant.branding.primaryColor}, ${currentTenant.branding.secondaryColor || currentTenant.branding.primaryColor})`
-              : "linear-gradient(135deg, #2563eb, #1e40af)",
-          }}
-        >
-          {/* Logo/Brand */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {currentTenant?.branding.logo ? (
-                <img
-                  src={currentTenant.branding.logo}
-                  alt={currentTenant.name}
-                  className="h-10 w-auto object-contain rounded-lg bg-white/10 p-1"
-                />
-              ) : (
-                <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center">
-                  <Settings className="w-5 h-5" />
-                </div>
-              )}
-              <div>
-                <h2 className="text-xl font-bold">Call Settings</h2>
-                <p className="text-sm opacity-80">{currentTenant?.name || schoolSettings.schoolName}</p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-white/20 rounded-full transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex gap-2 mt-5">
-            <button
-              onClick={() => setActiveTab("audio")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === "audio"
-                  ? "bg-white/20 text-white"
-                  : "text-white/70 hover:text-white hover:bg-white/10"
-              }`}
-            >
-              Audio
-            </button>
-            {showVideoSettings && (
-              <>
-                <button
-                  onClick={() => setActiveTab("video")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    activeTab === "video"
-                      ? "bg-white/20 text-white"
-                      : "text-white/70 hover:text-white hover:bg-white/10"
-                  }`}
-                >
-                  Video
-                </button>
-                <button
-                  onClick={() => setActiveTab("background")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    activeTab === "background"
-                      ? "bg-white/20 text-white"
-                      : "text-white/70 hover:text-white hover:bg-white/10"
-                  }`}
-                >
-                  Background
-                </button>
-              </>
-            )}
-          </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Call Settings"
+      subtitle={currentTenant?.name || schoolSettings.schoolName}
+      icon={<Settings className="w-5 h-5" />}
+      size="2xl"
+      footer={
+        <div className="flex justify-end gap-3">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleSave}>
+            Save Settings
+          </Button>
         </div>
+      }
+    >
+      {/* Pill-style Tab Bar */}
+      <div className="flex bg-gray-100 dark:bg-gray-700/50 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl p-1 mb-6">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex-1 justify-center cursor-pointer ${
+              activeTab === tab.id
+                ? "bg-white dark:bg-gray-600 midnight:bg-cyan-500/20 purple:bg-pink-500/20 text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 shadow-sm"
+                : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 hover:text-gray-700 dark:hover:text-gray-300"
+            }`}
+          >
+            {tab.icon}
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-        {/* Content */}
-        <div className="p-6 max-h-[60vh] overflow-y-auto">
-          {/* Audio Settings */}
-          {activeTab === "audio" && (
-            <div className="space-y-6">
-              {/* Microphone */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 flex items-center gap-2">
-                  <Mic className="w-4 h-4" />
-                  Microphone
-                </label>
-                <select
-                  value={selectedMicrophone}
-                  onChange={(e) => setSelectedMicrophone(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  suppressHydrationWarning
+      {/* Audio Tab */}
+      {activeTab === "audio" && (
+        <div className="space-y-6">
+          {/* Microphone Dropdown */}
+          <FormDropdown
+            label="Microphone"
+            icon={<Mic className="w-3 h-3" />}
+            value={selectedMicrophone}
+            onChange={setSelectedMicrophone}
+            options={micOptions}
+            placeholder="Select microphone"
+          />
+
+          {/* Mic Test */}
+          <div className="flex items-center gap-3">
+            <Button
+              variant={isTestingMic ? "danger" : "outline"}
+              size="sm"
+              onClick={isTestingMic ? stopMicTest : startMicTest}
+              icon={isTestingMic ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            >
+              {isTestingMic ? "Stop Test" : "Test Microphone"}
+            </Button>
+            <div className="flex-1 h-3 bg-gray-200 dark:bg-gray-700 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-75"
+                style={{ width: `${micLevel}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Speaker Dropdown */}
+          <FormDropdown
+            label="Speaker"
+            icon={<Volume2 className="w-3 h-3" />}
+            value={selectedSpeaker}
+            onChange={setSelectedSpeaker}
+            options={speakerOptions}
+            placeholder="Select speaker"
+          />
+
+          {/* Speaker Test */}
+          <Button
+            variant={isTestingSpeaker ? "ghost" : "outline"}
+            size="sm"
+            onClick={testSpeaker}
+            disabled={isTestingSpeaker}
+            icon={<Speaker className="w-4 h-4" />}
+          >
+            {isTestingSpeaker ? "Playing..." : "Test Speaker"}
+          </Button>
+
+          {/* Audio Enhancements */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Audio Enhancements
+            </label>
+            <div className="space-y-2">
+              {[
+                { key: "noiseSuppression", label: "Noise Suppression", state: noiseSuppression, setState: setNoiseSuppression },
+                { key: "echoCancellation", label: "Echo Cancellation", state: echoCancellation, setState: setEchoCancellation },
+                { key: "autoGainControl", label: "Auto Gain Control", state: autoGainControl, setState: setAutoGainControl },
+              ].map((item) => (
+                <label
+                  key={item.key}
+                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 transition-colors"
                 >
-                  {microphones.map((mic) => (
-                    <option key={mic.deviceId} value={mic.deviceId}>
-                      {mic.label || `Microphone ${mic.deviceId.slice(0, 5)}`}
-                    </option>
-                  ))}
-                </select>
-
-                {/* Mic Test */}
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={isTestingMic ? stopMicTest : startMicTest}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      isTestingMic
-                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                        : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                  <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{item.label}</span>
+                  <div
+                    className={`w-11 h-6 rounded-full relative transition-colors cursor-pointer ${
+                      item.state
+                        ? "bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500"
+                        : "bg-gray-300 dark:bg-gray-600 midnight:bg-gray-700 purple:bg-gray-700"
                     }`}
+                    onClick={() => item.setState(!item.state)}
                   >
-                    {isTestingMic ? (
-                      <>
-                        <Square className="w-4 h-4" /> Stop Test
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4" /> Test Microphone
-                      </>
-                    )}
-                  </button>
-
-                  {/* Level Meter */}
-                  <div className="flex-1 h-3 bg-gray-200 dark:bg-gray-700 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-75"
-                      style={{ width: `${micLevel}%` }}
+                      className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                        item.state ? "translate-x-6" : "translate-x-1"
+                      }`}
                     />
                   </div>
-                </div>
-              </div>
-
-              {/* Speaker */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 flex items-center gap-2">
-                  <Volume2 className="w-4 h-4" />
-                  Speaker
                 </label>
-                <select
-                  value={selectedSpeaker}
-                  onChange={(e) => setSelectedSpeaker(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  suppressHydrationWarning
-                >
-                  {speakers.map((speaker) => (
-                    <option key={speaker.deviceId} value={speaker.deviceId}>
-                      {speaker.label || `Speaker ${speaker.deviceId.slice(0, 5)}`}
-                    </option>
-                  ))}
-                </select>
-
-                <button
-                  onClick={testSpeaker}
-                  disabled={isTestingSpeaker}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isTestingSpeaker
-                      ? "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500"
-                      : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                  }`}
-                >
-                  <Speaker className="w-4 h-4" />
-                  {isTestingSpeaker ? "Playing..." : "Test Speaker"}
-                </button>
-              </div>
-
-              {/* Audio Enhancements */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
-                  Audio Enhancements
-                </label>
-                <div className="space-y-2">
-                  {[
-                    { key: "noiseSuppression", label: "Noise Suppression", state: noiseSuppression, setState: setNoiseSuppression },
-                    { key: "echoCancellation", label: "Echo Cancellation", state: echoCancellation, setState: setEchoCancellation },
-                    { key: "autoGainControl", label: "Auto Gain Control", state: autoGainControl, setState: setAutoGainControl },
-                  ].map((item) => (
-                    <label
-                      key={item.key}
-                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 transition-colors"
-                    >
-                      <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{item.label}</span>
-                      <div
-                        className={`w-11 h-6 rounded-full relative transition-colors ${
-                          item.state ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600 midnight:bg-gray-700 purple:bg-gray-700"
-                        }`}
-                        onClick={() => item.setState(!item.state)}
-                      >
-                        <div
-                          className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                            item.state ? "translate-x-6" : "translate-x-1"
-                          }`}
-                        />
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              ))}
             </div>
-          )}
+          </div>
+        </div>
+      )}
 
-          {/* Video Settings */}
-          {activeTab === "video" && showVideoSettings && (
-            <div className="space-y-6">
-              {/* Camera */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 flex items-center gap-2">
-                  <Video className="w-4 h-4 midnight:text-cyan-300/70 purple:text-pink-300/70" />
-                  Camera
-                </label>
-                <select
-                  value={selectedCamera}
-                  onChange={(e) => setSelectedCamera(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  suppressHydrationWarning
-                >
-                  {cameras.map((camera) => (
-                    <option key={camera.deviceId} value={camera.deviceId}>
-                      {camera.label || `Camera ${camera.deviceId.slice(0, 5)}`}
-                    </option>
-                  ))}
-                </select>
-              </div>
+      {/* Video Tab */}
+      {activeTab === "video" && showVideoSettings && (
+        <div className="space-y-6">
+          {/* Camera Dropdown */}
+          <FormDropdown
+            label="Camera"
+            icon={<Video className="w-3 h-3" />}
+            value={selectedCamera}
+            onChange={setSelectedCamera}
+            options={cameraOptions}
+            placeholder="Select camera"
+          />
 
-              {/* Video Preview */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">Preview</label>
-                <div className="relative aspect-video bg-gray-900 rounded-xl overflow-hidden">
-                  <video
-                    ref={videoPreviewRef}
-                    autoPlay
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover"
-                    style={isTestingVideo && selectedBackground.type !== "none" ? getBackgroundStyle(selectedBackground) : {}}
-                  />
-                  {!isTestingVideo && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <VideoOff className="w-12 h-12 text-gray-600 mx-auto mb-2" />
-                        <p className="text-gray-500">Camera preview off</p>
-                      </div>
-                    </div>
-                  )}
+          {/* Video Preview */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
+              Preview
+            </label>
+            <div className="relative aspect-video bg-gray-900 rounded-xl overflow-hidden">
+              <video
+                ref={videoPreviewRef}
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+                style={isTestingVideo && selectedBackground.type !== "none" ? getBackgroundStyle(selectedBackground) : {}}
+              />
+              {!isTestingVideo && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <VideoOff className="w-12 h-12 text-gray-600 mx-auto mb-2" />
+                    <p className="text-gray-500 text-sm">Camera preview off</p>
+                  </div>
                 </div>
+              )}
+            </div>
+            <Button
+              variant={isTestingVideo ? "danger" : "outline"}
+              size="sm"
+              onClick={isTestingVideo ? stopVideoTest : startVideoTest}
+              icon={isTestingVideo ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            >
+              {isTestingVideo ? "Stop Preview" : "Start Preview"}
+            </Button>
+          </div>
+
+          {/* Video Quality */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
+              Video Quality
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              {VIDEO_QUALITY_PRESETS.map((preset) => (
                 <button
-                  onClick={isTestingVideo ? stopVideoTest : startVideoTest}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isTestingVideo
-                      ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                      : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                  key={preset.id}
+                  onClick={() => setSelectedQuality(preset)}
+                  className={`p-3 rounded-xl border-2 text-left transition-all cursor-pointer ${
+                    selectedQuality.id === preset.id
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 midnight:border-cyan-500 purple:bg-pink-900/20 purple:border-pink-500"
+                      : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600"
                   }`}
                 >
-                  {isTestingVideo ? (
-                    <>
-                      <Square className="w-4 h-4" /> Stop Preview
-                    </>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      {preset.name}
+                    </span>
+                    {selectedQuality.id === preset.id && (
+                      <Check className="w-4 h-4 text-blue-500 midnight:text-cyan-400 purple:text-pink-400" />
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 mt-1">
+                    {preset.description}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Background Tab */}
+      {activeTab === "background" && showVideoSettings && (
+        <div className="space-y-6">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 flex items-center gap-2">
+            <ImageIcon className="w-4 h-4" />
+            Virtual Background
+          </label>
+
+          <div className="grid grid-cols-3 gap-3">
+            {VIRTUAL_BACKGROUNDS.map((bg) => (
+              <button
+                key={bg.id}
+                onClick={() => setSelectedBackground(bg)}
+                className={`relative aspect-video rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                  selectedBackground.id === bg.id
+                    ? "border-blue-500 ring-2 ring-blue-500/30 midnight:border-cyan-500 midnight:ring-cyan-500/30 purple:border-pink-500 purple:ring-pink-500/30"
+                    : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600"
+                }`}
+              >
+                {bg.type === "none" ? (
+                  <div className="w-full h-full bg-gray-100 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] flex items-center justify-center">
+                    <X className="w-6 h-6 text-gray-400" />
+                  </div>
+                ) : bg.type === "blur" ? (
+                  <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center">
+                    <div
+                      className="w-8 h-8 rounded-full bg-white/30"
+                      style={{ filter: `blur(${bg.intensity! / 2}px)` }}
+                    />
+                  </div>
+                ) : bg.preview ? (
+                  bg.type === "image" ? (
+                    <img src={bg.preview} alt={bg.name} className="w-full h-full object-cover" />
                   ) : (
-                    <>
-                      <Play className="w-4 h-4" /> Start Preview
-                    </>
-                  )}
-                </button>
-              </div>
+                    <div className="w-full h-full" style={{ background: bg.preview }} />
+                  )
+                ) : (
+                  <div className="w-full h-full" style={getBackgroundStyle(bg)} />
+                )}
 
-              {/* Video Quality */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">Video Quality</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {VIDEO_QUALITY_PRESETS.map((preset) => (
-                    <button
-                      key={preset.id}
-                      onClick={() => setSelectedQuality(preset)}
-                      className={`p-3 rounded-xl border-2 text-left transition-all ${
-                        selectedQuality.id === preset.id
-                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20"
-                          : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{preset.name}</span>
-                        {selectedQuality.id === preset.id && (
-                          <Check className="w-4 h-4 text-blue-500" />
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 mt-1">{preset.description}</p>
-                    </button>
-                  ))}
+                {selectedBackground.id === bg.id && (
+                  <div className="absolute top-1 right-1 w-5 h-5 bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 rounded-full flex items-center justify-center">
+                    <Check className="w-3 h-3 text-white" />
+                  </div>
+                )}
+
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                  <span className="text-xs text-white font-medium">{bg.name}</span>
                 </div>
-              </div>
-            </div>
-          )}
+              </button>
+            ))}
+          </div>
 
-          {/* Background Settings */}
-          {activeTab === "background" && showVideoSettings && (
-            <div className="space-y-6">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 flex items-center gap-2">
-                <ImageIcon className="w-4 h-4" />
-                Virtual Background
-              </label>
-
-              {/* Background Options Grid */}
-              <div className="grid grid-cols-3 gap-3">
-                {VIRTUAL_BACKGROUNDS.map((bg) => (
-                  <button
-                    key={bg.id}
-                    onClick={() => setSelectedBackground(bg)}
-                    className={`relative aspect-video rounded-xl overflow-hidden border-2 transition-all ${
-                      selectedBackground.id === bg.id
-                        ? "border-blue-500 ring-2 ring-blue-500/30"
-                        : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
-                    }`}
-                  >
-                    {bg.type === "none" ? (
-                      <div className="w-full h-full bg-gray-100 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] flex items-center justify-center">
-                        <X className="w-6 h-6 text-gray-400" />
-                      </div>
-                    ) : bg.type === "blur" ? (
-                      <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center">
-                        <div
-                          className="w-8 h-8 rounded-full bg-white/30"
-                          style={{ filter: `blur(${bg.intensity! / 2}px)` }}
-                        />
-                      </div>
-                    ) : bg.preview ? (
-                      bg.type === "image" ? (
-                        <img src={bg.preview} alt={bg.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full" style={{ background: bg.preview }} />
-                      )
-                    ) : (
-                      <div className="w-full h-full" style={getBackgroundStyle(bg)} />
-                    )}
-
-                    {/* Selection indicator */}
-                    {selectedBackground.id === bg.id && (
-                      <div className="absolute top-1 right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                        <Check className="w-3 h-3 text-white" />
-                      </div>
-                    )}
-
-                    {/* Label */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                      <span className="text-xs text-white font-medium">{bg.name}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60">
-                Note: Virtual backgrounds may require additional processing power and good lighting for best results.
-              </p>
-            </div>
-          )}
+          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60">
+            Note: Virtual backgrounds may require additional processing power and good lighting for best results.
+          </p>
         </div>
-
-        {/* Footer */}
-        <div className="p-5 bg-gray-50 dark:bg-gray-800/50 midnight:bg-[#0a0f1f] purple:bg-[#150a28] border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-5 py-2.5 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 rounded-xl transition-colors font-medium"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-5 py-2.5 text-white rounded-xl font-medium transition-colors"
-            style={{
-              background: currentTenant?.branding.primaryColor
-                ? `linear-gradient(135deg, ${currentTenant.branding.primaryColor}, ${currentTenant.branding.secondaryColor || currentTenant.branding.primaryColor})`
-                : "linear-gradient(135deg, #2563eb, #1e40af)",
-            }}
-          >
-            Save Settings
-          </button>
-        </div>
-      </div>
-    </div>
+      )}
+    </Modal>
   );
 }

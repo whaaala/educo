@@ -128,35 +128,8 @@ export function CallHeader({
         </div>
       </div>
 
-      {/* Center Section - Badges (hidden on mobile) */}
-      <div className="hidden md:flex items-center gap-2 lg:gap-3">
-        {/* Participant Count Badge */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-full transition-colors border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-          <LogIn className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70" />
-          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-            In meeting:
-          </span>
-          <span
-            className="text-xs font-bold text-white px-1.5 py-0.5 rounded-full min-w-[20px] text-center"
-            style={{ backgroundColor: primaryColor }}
-          >
-            {participantCount}
-          </span>
-        </div>
-
-        {/* Invited Count Badge */}
-        {invitedCount > 0 && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-full border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-            <Users className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70" />
-            <span className="text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-              Invited:
-            </span>
-            <span className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-              {invitedCount}
-            </span>
-          </div>
-        )}
-      </div>
+      {/* Center spacer */}
+      <div className="flex-1" />
 
       {/* Right Section */}
       <div className="flex items-center gap-1 sm:gap-2">
@@ -177,32 +150,6 @@ export function CallHeader({
             <span className="hidden lg:inline">Share link</span>
           </button>
         )}
-
-        {/* Search Icon */}
-        <button
-          className={cn(
-            "hidden lg:flex p-2 rounded-lg",
-            "hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
-            "active:scale-95 cursor-pointer",
-            "transition-all duration-200",
-            "text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70"
-          )}
-        >
-          <Search className="w-5 h-5" />
-        </button>
-
-        {/* Notification Icon */}
-        <button
-          className={cn(
-            "hidden lg:flex p-2 rounded-lg relative",
-            "hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
-            "active:scale-95 cursor-pointer",
-            "transition-all duration-200",
-            "text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70"
-          )}
-        >
-          <Bell className="w-5 h-5" />
-        </button>
 
         {/* More Menu */}
         <div className="relative">
@@ -295,13 +242,6 @@ export function CallHeader({
           )}
         </div>
 
-        {/* User Avatar */}
-        <div
-          className="hidden sm:flex w-8 h-8 sm:w-9 sm:h-9 rounded-full items-center justify-center text-white text-sm font-medium ml-1 shadow-sm cursor-pointer hover:scale-105 transition-transform"
-          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
-        >
-          <span>Y</span>
-        </div>
       </div>
     </header>
   );
