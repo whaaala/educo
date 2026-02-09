@@ -115,6 +115,8 @@ export default function VideoCallRoom({
   const [showParticipants, setShowParticipants] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAddParticipant, setShowAddParticipant] = useState(false);
+  const [invitedParticipants, setInvitedParticipants] = useState<{ id: string; name: string; avatar?: string }[]>([]);
+  const [focusedId, setFocusedId] = useState<string | null>(null);
 
   // Layout
   const [layout, setLayout] = useState<"grid" | "spotlight">("spotlight");
@@ -483,6 +485,28 @@ export default function VideoCallRoom({
   );
   const totalParticipants = session?.participants.length || 1;
 
+  // Compute who should be shown in the main spotlight view
+  const spotlightPerson = (() => {
+    if (focusedId === "local") {
+      return { id: userId, name: userName, avatar: userAvatar, isMuted, isVideoOff, isSpeaking: false, isWaiting: false, isLocal: true };
+    }
+    if (focusedId === "recipient") {
+      return { id: "recipient", name: recipientName || "Participant", avatar: recipientAvatar, isMuted: false, isVideoOff: true, isSpeaking: false, isWaiting: true, isLocal: false };
+    }
+    if (focusedId) {
+      const remote = remoteParticipants.find(p => p.id === focusedId);
+      if (remote) return { id: remote.id, name: remote.name, avatar: remote.avatar || undefined, isMuted: remote.isMuted, isVideoOff: remote.isVideoOff, isSpeaking: remote.isSpeaking, isWaiting: false, isLocal: false };
+      const invited = invitedParticipants.find(p => p.id === focusedId);
+      if (invited) return { id: invited.id, name: invited.name, avatar: invited.avatar, isMuted: false, isVideoOff: true, isSpeaking: false, isWaiting: true, isLocal: false };
+    }
+    // Default: show first remote participant or local (waiting)
+    if (remoteParticipants.length > 0) {
+      const p = remoteParticipants[0];
+      return { id: p.id, name: p.name, avatar: p.avatar || undefined, isMuted: p.isMuted, isVideoOff: p.isVideoOff, isSpeaking: p.isSpeaking, isWaiting: false, isLocal: false };
+    }
+    return { id: userId, name: userName, avatar: userAvatar, isMuted, isVideoOff, isSpeaking: false, isWaiting: false, isLocal: true };
+  })();
+
   const uiMessages: UIChatMessage[] = useMemo(
     () =>
       messages.map((m) => ({
@@ -682,7 +706,7 @@ export default function VideoCallRoom({
               </div>
 
               {/* Sidebar thumbnails during screen share */}
-              <div className="hidden sm:flex w-40 lg:w-48 flex-col gap-2 lg:gap-3 overflow-y-auto">
+              <div className="hidden sm:flex w-44 lg:w-52 flex-col gap-2 lg:gap-3 overflow-y-auto p-1">
                 {/* Local video */}
                 <div
                   className={cn(
@@ -828,6 +852,30 @@ export default function VideoCallRoom({
                     </div>
                   );
                 })}
+
+                {/* Invited participants thumbnails */}
+                {invitedParticipants.map((p) => (
+                  <div key={p.id} className="relative aspect-video bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg">
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
+                      {p.avatar ? (
+                        <img src={p.avatar} alt={p.name} className="w-12 h-12 lg:w-14 lg:h-14 rounded-full object-cover opacity-50" />
+                      ) : (
+                        <div
+                          className="w-12 h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-lg lg:text-xl font-bold text-white opacity-50"
+                          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+                        >
+                          {p.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
+                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white truncate max-w-[100px]">
+                        {p.name}
+                      </span>
+                      <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -983,7 +1031,7 @@ export default function VideoCallRoom({
             </div>
 
             {/* Thumbnail strip (right side on desktop) */}
-            <div className="hidden lg:flex lg:flex-col gap-2 overflow-y-auto lg:w-36 xl:w-44 pb-2 lg:pb-0">
+            <div className="hidden lg:flex lg:flex-col gap-2 overflow-y-auto lg:w-40 xl:w-48 p-1">
               {/* Local user thumbnail */}
               <div
                 className={cn(
@@ -1109,6 +1157,30 @@ export default function VideoCallRoom({
                 );
               })}
 
+              {/* Invited participants thumbnails */}
+              {invitedParticipants.map((p) => (
+                <div key={p.id} className="relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video">
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
+                    {p.avatar ? (
+                      <img src={p.avatar} alt={p.name} className="w-12 h-12 rounded-full object-cover opacity-50" />
+                    ) : (
+                      <div
+                        className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white opacity-50"
+                        style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+                      >
+                        {p.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
+                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
+                      {p.name}
+                    </span>
+                    <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                  </div>
+                </div>
+              ))}
+
               {/* More participants indicator */}
               {remoteParticipants.length > 4 && (
                 <button
@@ -1142,65 +1214,47 @@ export default function VideoCallRoom({
               <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-4 min-h-0">
                 {/* Primary Video (large) */}
                 <div className="flex-1 relative bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden min-h-0">
-                  {remoteParticipants.length > 0 ? (
+                  {spotlightPerson.isWaiting ? (
+                    // Waiting person (invited participant or recipient)
                     <>
-                      <video
-                        ref={(el) => {
-                          if (el && remoteParticipants[0]) {
-                            remoteVideoRefs.current.set(remoteParticipants[0].id, el);
-                            const stream = remoteStreams.get(remoteParticipants[0].id);
-                            if (stream) el.srcObject = stream;
-                          }
-                        }}
-                        autoPlay
-                        playsInline
-                        className={cn(
-                        "w-full h-full object-cover",
-                          remoteParticipants[0]?.isVideoOff && "hidden"
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
+                        {spotlightPerson.avatar ? (
+                          <Image
+                            src={spotlightPerson.avatar}
+                            alt={spotlightPerson.name}
+                            width={160}
+                            height={160}
+                            className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full opacity-50"
+                          />
+                        ) : (
+                          <div
+                            className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex items-center justify-center text-4xl sm:text-5xl font-bold text-white opacity-50"
+                            style={{
+                              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                            }}
+                          >
+                            {spotlightPerson.name.charAt(0).toUpperCase()}
+                          </div>
                         )}
-                      />
-                      {remoteParticipants[0]?.isVideoOff && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
-                          {remoteParticipants[0].avatar ? (
-                            <Image
-                              src={remoteParticipants[0].avatar}
-                              alt={remoteParticipants[0].name}
-                              width={160}
-                              height={160}
-                              className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full"
-                            />
-                          ) : (
-                            <div
-                              className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex items-center justify-center text-4xl sm:text-5xl font-bold text-white"
-                              style={{
-                                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
-                              }}
-                            >
-                              {remoteParticipants[0].name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
+                      </div>
+                      {/* Waiting badge */}
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-16 sm:translate-y-20">
+                        <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/80 dark:bg-black/60 backdrop-blur rounded-full">
+                          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                          <span className="text-gray-600 dark:text-white/70 text-xs sm:text-sm">
+                            Waiting to join...
+                          </span>
                         </div>
-                      )}
+                      </div>
                       {/* Name badge */}
                       <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 flex items-center gap-2">
                         <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/80 dark:bg-black/60 backdrop-blur rounded-lg text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
-                          {remoteParticipants[0]?.name}
+                          {spotlightPerson.name}
                         </span>
-                        {remoteParticipants[0]?.isMuted && (
-                          <span className="p-1 sm:p-1.5 bg-red-500 rounded-lg">
-                            <MicOff className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
-                          </span>
-                        )}
-                        {remoteParticipants[0]?.isSpeaking && (
-                          <span
-                            className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full animate-pulse"
-                            style={{ backgroundColor: primaryColor }}
-                          />
-                        )}
                       </div>
                     </>
-                  ) : (
-                    // Show local user's video when alone (waiting for others)
+                  ) : spotlightPerson.isLocal ? (
+                    // Local user video
                     <>
                       <video
                         ref={(el) => {
@@ -1267,17 +1321,76 @@ export default function VideoCallRoom({
                         </div>
                       </div>
                     </>
+                  ) : (
+                    // Remote participant video
+                    <>
+                      <video
+                        ref={(el) => {
+                          if (el) {
+                            remoteVideoRefs.current.set(spotlightPerson.id, el);
+                            const stream = remoteStreams.get(spotlightPerson.id);
+                            if (stream) el.srcObject = stream;
+                          }
+                        }}
+                        autoPlay
+                        playsInline
+                        className={cn(
+                        "w-full h-full object-cover",
+                          spotlightPerson.isVideoOff && "hidden"
+                        )}
+                      />
+                      {spotlightPerson.isVideoOff && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
+                          {spotlightPerson.avatar ? (
+                            <Image
+                              src={spotlightPerson.avatar}
+                              alt={spotlightPerson.name}
+                              width={160}
+                              height={160}
+                              className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full"
+                            />
+                          ) : (
+                            <div
+                              className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex items-center justify-center text-4xl sm:text-5xl font-bold text-white"
+                              style={{
+                                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                              }}
+                            >
+                              {spotlightPerson.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {/* Name badge */}
+                      <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 flex items-center gap-2">
+                        <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/80 dark:bg-black/60 backdrop-blur rounded-lg text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+                          {spotlightPerson.name}
+                        </span>
+                        {spotlightPerson.isMuted && (
+                          <span className="p-1 sm:p-1.5 bg-red-500 rounded-lg">
+                            <MicOff className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                          </span>
+                        )}
+                        {spotlightPerson.isSpeaking && (
+                          <span
+                            className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full animate-pulse"
+                            style={{ backgroundColor: primaryColor }}
+                          />
+                        )}
+                      </div>
+                    </>
                   )}
                 </div>
 
                 {/* Thumbnail strip (right side on desktop) */}
-                <div className="hidden lg:flex lg:flex-col gap-2 overflow-y-auto lg:w-36 xl:w-44 pb-2 lg:pb-0">
+                <div className="hidden lg:flex lg:flex-col gap-2 overflow-y-auto lg:w-40 xl:w-48 p-1">
                   {/* Local user video thumbnail - always visible */}
                   <div
+                    onClick={() => setFocusedId(focusedId === "local" ? null : "local")}
                     className={cn(
-                    "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg",
+                    "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg cursor-pointer transition-all",
                     "w-full aspect-video",
-                      isSpeaking && "ring-2 ring-green-500"
+                      focusedId === "local" ? "ring-2 ring-blue-500" : isSpeaking && "ring-2 ring-green-500"
                     )}
                   >
                     <video
@@ -1331,7 +1444,13 @@ export default function VideoCallRoom({
 
                   {/* Recipient waiting thumbnail - shown when alone */}
                   {remoteParticipants.length === 0 && (
-                    <div className="relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video">
+                    <div
+                      onClick={() => setFocusedId(focusedId === "recipient" ? null : "recipient")}
+                      className={cn(
+                        "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer transition-all",
+                        focusedId === "recipient" && "ring-2 ring-blue-500"
+                      )}
+                    >
                       <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                         {recipientAvatar ? (
                           <img
@@ -1368,10 +1487,11 @@ export default function VideoCallRoom({
                     return (
                       <div
                         key={participant.id}
+                        onClick={() => setFocusedId(focusedId === participant.id ? null : participant.id)}
                         className={cn(
-                        "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg",
+                        "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg cursor-pointer transition-all",
                         "w-full aspect-video",
-                          participant.isSpeaking && "ring-2 ring-green-500"
+                          focusedId === participant.id ? "ring-2 ring-blue-500" : participant.isSpeaking && "ring-2 ring-green-500"
                         )}
                       >
                         <video
@@ -1425,6 +1545,37 @@ export default function VideoCallRoom({
                       </div>
                     );
                   })}
+
+                  {/* Invited participants thumbnails */}
+                  {invitedParticipants.map((p) => (
+                    <div
+                      key={p.id}
+                      onClick={() => setFocusedId(focusedId === p.id ? null : p.id)}
+                      className={cn(
+                        "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer transition-all",
+                        focusedId === p.id && "ring-2 ring-blue-500"
+                      )}
+                    >
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
+                        {p.avatar ? (
+                          <img src={p.avatar} alt={p.name} className="w-12 h-12 rounded-full object-cover opacity-50" />
+                        ) : (
+                          <div
+                            className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white opacity-50"
+                            style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+                          >
+                            {p.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
+                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
+                          {p.name}
+                        </span>
+                        <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                      </div>
+                    </div>
+                  ))}
 
                   {/* More participants indicator */}
                   {remoteParticipants.length > 4 && (
@@ -1563,7 +1714,10 @@ export default function VideoCallRoom({
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
         onAddParticipant={(participant) => {
-          console.log("Invited participant:", participant);
+          setInvitedParticipants((prev) => {
+            if (prev.some((p) => p.id === participant.id)) return prev;
+            return [...prev, { id: participant.id, name: participant.name, avatar: participant.avatar }];
+          });
         }}
       />
     </div>
