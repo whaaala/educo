@@ -11,6 +11,7 @@ import {
   ICommunicationService,
   SignalingMessage,
   MediaDeviceInfo,
+  VideoConstraints,
 } from "./types";
 import { registerStream, unregisterStream } from "@/lib/utils/stopAllMedia";
 
@@ -444,6 +445,7 @@ export class WebRTCService implements ICommunicationService {
   private config: WebRTCConfig;
   private iceTransportPolicy: RTCIceTransportPolicy = "all";
   private iceCandidatePoolSize: number = 10;
+  private videoConstraints: VideoConstraints | null = null;
 
   // Event callbacks
   private participantJoinedCallbacks: ((participant: CallParticipant) => void)[] = [];
@@ -520,10 +522,31 @@ export class WebRTCService implements ICommunicationService {
     const needsVideo = options.type === "video" && options.enableVideo !== false;
     const needsAudio = options.enableAudio !== false;
 
+    // Store video constraints for reuse when switching cameras
+    if (options.videoConstraints) {
+      this.videoConstraints = options.videoConstraints;
+    }
+
+    // Build video constraints for high-quality capture
+    const videoMediaConstraints: boolean | MediaTrackConstraints = needsVideo
+      ? options.videoConstraints
+        ? {
+            width: options.videoConstraints.width,
+            height: options.videoConstraints.height,
+            frameRate: options.videoConstraints.frameRate,
+            facingMode: options.videoConstraints.facingMode,
+          }
+        : {
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            frameRate: { ideal: 30 },
+          }
+      : false;
+
     // Get local media stream
     try {
       this.localStream = await navigator.mediaDevices.getUserMedia({
-        video: needsVideo,
+        video: videoMediaConstraints,
         audio: needsAudio,
       });
       // Register stream for nuclear cleanup tracking
@@ -979,8 +1002,22 @@ export class WebRTCService implements ICommunicationService {
 
   async setVideoDevice(deviceId: string): Promise<void> {
     try {
+      const videoConfig: MediaTrackConstraints = {
+        deviceId: { exact: deviceId },
+        ...(this.videoConstraints
+          ? {
+              width: this.videoConstraints.width,
+              height: this.videoConstraints.height,
+              frameRate: this.videoConstraints.frameRate,
+            }
+          : {
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+              frameRate: { ideal: 30 },
+            }),
+      };
       const newStream = await navigator.mediaDevices.getUserMedia({
-        video: { deviceId: { exact: deviceId } },
+        video: videoConfig,
         audio: false,
       });
 

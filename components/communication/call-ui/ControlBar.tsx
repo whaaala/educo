@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Mic,
   MicOff,
@@ -17,8 +17,10 @@ import {
   Circle,
   Settings,
   LayoutGrid,
+  Smile,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EmojiReactionBar } from "./EmojiReactionBar";
 
 export interface ControlBarProps {
   // Media states
@@ -55,6 +57,11 @@ export interface ControlBarProps {
   onSettings?: () => void;
   onChangeLayout?: () => void;
 
+  // Reactions
+  onReaction?: (emoji: string) => void;
+  onGiphy?: (gif: { url: string; title: string }) => void;
+  giphyApiKey?: string;
+
   className?: string;
 }
 
@@ -67,7 +74,6 @@ interface ControlButtonProps {
   onClick: () => void;
   primaryColor?: string;
   className?: string;
-  hideOnMobile?: boolean;
   disabled?: boolean;
   tooltip?: string;
 }
@@ -81,7 +87,6 @@ function ControlButton({
   onClick,
   primaryColor = "#2563eb",
   className,
-  hideOnMobile,
   disabled,
   tooltip,
 }: ControlButtonProps) {
@@ -91,44 +96,51 @@ function ControlButton({
       disabled={disabled}
       title={tooltip || label}
       className={cn(
-        "relative flex flex-col items-center justify-center gap-1",
-        "transition-all duration-200 ease-out",
+        "group relative flex flex-col items-center justify-center gap-0.5 sm:gap-1",
+        "transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
         "cursor-pointer select-none",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500",
-        "active:scale-95",
-        hideOnMobile && "hidden sm:flex",
-        disabled && "opacity-50 cursor-not-allowed",
+        "active:scale-[0.92]",
+        disabled && "opacity-40 cursor-not-allowed pointer-events-none",
         className
       )}
     >
-      {/* Circle Button */}
+      {/* Button circle */}
       <div
         className={cn(
-          "relative w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center",
-          "transition-all duration-200 ease-out",
-          "shadow-sm hover:shadow-lg hover:scale-105",
+          "relative w-9 h-9 sm:w-[46px] sm:h-[46px] rounded-full flex items-center justify-center",
+          "transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
+          "group-hover:scale-110",
           isDestructive
-            ? "bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-red-500/25"
+            ? "bg-red-500 text-white shadow-[0_4px_16px_rgba(239,68,68,0.4)] group-hover:bg-red-400 group-hover:shadow-[0_6px_24px_rgba(239,68,68,0.5)]"
             : isActive
             ? "text-white shadow-lg"
-            : "bg-white dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] text-gray-700 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+            : [
+                "bg-gray-50 dark:bg-white/[0.08] midnight:bg-white/[0.06] purple:bg-white/[0.06]",
+                "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200",
+                "group-hover:bg-gray-100 dark:group-hover:bg-white/[0.14] midnight:group-hover:bg-white/[0.1] purple:group-hover:bg-white/[0.1]",
+                "group-hover:text-gray-900 dark:group-hover:text-white",
+                "group-hover:shadow-md dark:group-hover:shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
+              ]
         )}
         style={
           isActive && !isDestructive
             ? {
-                background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)`,
-                boxShadow: `0 4px 14px ${primaryColor}40`,
+                background: primaryColor,
+                boxShadow: `0 4px 18px ${primaryColor}45`,
               }
             : {}
         }
       >
-        {icon}
+        <div className="transition-transform duration-200 ease-out">
+          {icon}
+        </div>
 
-        {/* Active indicator ring */}
+        {/* Subtle active ring */}
         {isActive && !isDestructive && (
           <div
-            className="absolute inset-0 rounded-full animate-pulse opacity-30"
-            style={{ boxShadow: `0 0 0 3px ${primaryColor}` }}
+            className="absolute -inset-[2px] rounded-full opacity-25"
+            style={{ border: `2px solid ${primaryColor}` }}
           />
         )}
       </div>
@@ -137,12 +149,13 @@ function ControlButton({
       {label && (
         <span
           className={cn(
-            "text-[10px] sm:text-xs font-medium transition-colors duration-200",
+            "hidden sm:block text-[10px] sm:text-[11px] font-medium tracking-wide transition-all duration-300",
+            "group-hover:tracking-wider",
             isDestructive
-              ? "text-red-500 dark:text-red-400"
+              ? "text-red-500 dark:text-red-400 group-hover:text-red-400"
               : isActive
               ? "text-gray-900 dark:text-white"
-              : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70"
+              : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 group-hover:text-gray-700 dark:group-hover:text-gray-200"
           )}
         >
           {label}
@@ -152,14 +165,7 @@ function ControlButton({
       {/* Badge */}
       {badge !== undefined && badge > 0 && (
         <span
-          className={cn(
-            "absolute -top-0.5 -right-0.5 sm:top-0 sm:right-0",
-            "min-w-[18px] h-[18px] px-1 rounded-full",
-            "text-[10px] font-bold text-white",
-            "flex items-center justify-center",
-            "shadow-sm",
-            "animate-in fade-in zoom-in duration-200"
-          )}
+          className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white flex items-center justify-center ring-2 ring-white dark:ring-gray-900 midnight:ring-[#0f1729] purple:ring-[#2a1a3e]"
           style={{ backgroundColor: primaryColor }}
         >
           {badge > 99 ? "99+" : badge}
@@ -172,7 +178,7 @@ function ControlButton({
 // Divider component for visual separation
 function ControlDivider() {
   return (
-    <div className="hidden sm:block w-px h-8 bg-gray-300 dark:bg-gray-700 midnight:bg-cyan-500/20 purple:bg-pink-500/20 mx-1" />
+    <div className="hidden sm:block w-px h-7 bg-gray-200 dark:bg-gray-700/50 midnight:bg-cyan-500/15 purple:bg-pink-500/15 mx-1.5 rounded-full" />
   );
 }
 
@@ -199,23 +205,42 @@ export function ControlBar({
   onEndCall,
   onSettings,
   onChangeLayout,
+  onReaction,
+  onGiphy,
+  giphyApiKey,
   className,
 }: ControlBarProps) {
+  const [showReactions, setShowReactions] = useState(false);
+
   return (
     <div
       className={cn(
-        "flex items-center justify-center gap-1.5 sm:gap-2 lg:gap-3 px-3 sm:px-6 py-3 sm:py-4",
+        "relative flex flex-wrap items-center justify-center gap-1 sm:gap-2 lg:gap-3 px-2 sm:px-6 py-2 sm:py-4",
         "bg-white/98 dark:bg-gray-900/98 midnight:bg-[#0f1729]/98 purple:bg-[#2a1a3e]/98 backdrop-blur-xl",
         "border-t border-gray-100 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20",
         "shadow-[0_-4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.3)]",
         className
       )}
     >
+      {/* Emoji Reaction Bar (floating above) */}
+      {onReaction && (
+        <EmojiReactionBar
+          isOpen={showReactions}
+          onClose={() => setShowReactions(false)}
+          onReaction={(emoji) => {
+            onReaction(emoji);
+            setShowReactions(false);
+          }}
+          onGiphy={onGiphy}
+          primaryColor={primaryColor}
+          giphyApiKey={giphyApiKey}
+        />
+      )}
       {/* Primary Controls - Audio/Video */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="flex items-center gap-1 sm:gap-2">
         {/* Mute */}
         <ControlButton
-          icon={isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+          icon={isMuted ? <MicOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Mic className="w-4 h-4 sm:w-5 sm:h-5" />}
           label={isMuted ? "Unmute" : "Mute"}
           isActive={isMuted}
           onClick={onToggleMute}
@@ -225,7 +250,7 @@ export function ControlBar({
 
         {/* Video */}
         <ControlButton
-          icon={isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
+          icon={isVideoOff ? <VideoOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Video className="w-4 h-4 sm:w-5 sm:h-5" />}
           label={isVideoOff ? "Start" : "Stop"}
           isActive={isVideoOff}
           onClick={onToggleVideo}
@@ -237,14 +262,14 @@ export function ControlBar({
       <ControlDivider />
 
       {/* Secondary Controls - Recording/Sharing */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="flex items-center gap-1 sm:gap-2">
         {/* Record */}
         {onToggleRecording && (
           <ControlButton
             icon={
               <Circle
                 className={cn(
-                  "w-5 h-5 transition-all",
+                  "w-4 h-4 sm:w-5 sm:h-5 transition-all",
                   isRecording && "fill-current text-red-500"
                 )}
               />
@@ -253,7 +278,6 @@ export function ControlBar({
             isActive={isRecording}
             onClick={onToggleRecording}
             primaryColor="#ef4444"
-            hideOnMobile
             tooltip={isRecording ? "Stop recording" : "Start recording"}
           />
         )}
@@ -263,16 +287,15 @@ export function ControlBar({
           <ControlButton
             icon={
               isScreenSharing ? (
-                <MonitorOff className="w-5 h-5" />
+                <MonitorOff className="w-4 h-4 sm:w-5 sm:h-5" />
               ) : (
-                <Monitor className="w-5 h-5" />
+                <Monitor className="w-4 h-4 sm:w-5 sm:h-5" />
               )
             }
             label="Share"
             isActive={isScreenSharing}
             onClick={onToggleScreenShare}
             primaryColor={primaryColor}
-            hideOnMobile
             tooltip={isScreenSharing ? "Stop sharing screen" : "Share your screen"}
           />
         )}
@@ -280,11 +303,22 @@ export function ControlBar({
         {/* Layout Toggle */}
         {onChangeLayout && (
           <ControlButton
-            icon={<LayoutGrid className="w-5 h-5" />}
+            icon={<LayoutGrid className="w-4 h-4 sm:w-5 sm:h-5" />}
             label="Layout"
             onClick={onChangeLayout}
-            hideOnMobile
             tooltip="Change layout"
+          />
+        )}
+
+        {/* Reactions */}
+        {onReaction && (
+          <ControlButton
+            icon={<Smile className="w-4 h-4 sm:w-5 sm:h-5" />}
+            label="React"
+            isActive={showReactions}
+            onClick={() => setShowReactions(!showReactions)}
+            primaryColor={primaryColor}
+            tooltip="Send a reaction"
           />
         )}
       </div>
@@ -292,9 +326,9 @@ export function ControlBar({
       <ControlDivider />
 
       {/* End Call - Prominent */}
-      <div className="mx-1 sm:mx-2">
+      <div className="mx-0.5 sm:mx-2">
         <ControlButton
-          icon={<PhoneOff className="w-5 h-5" />}
+          icon={<PhoneOff className="w-4 h-4 sm:w-5 sm:h-5" />}
           label="End"
           isDestructive
           onClick={onEndCall}
@@ -305,28 +339,26 @@ export function ControlBar({
       <ControlDivider />
 
       {/* Tertiary Controls - Panels */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="flex items-center gap-1 sm:gap-2">
         {/* Chat */}
         <ControlButton
-          icon={<MessageSquare className="w-5 h-5" />}
+          icon={<MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />}
           label="Chat"
           isActive={showChat}
           badge={unreadMessageCount}
           onClick={onToggleChat}
           primaryColor={primaryColor}
-          hideOnMobile
           tooltip="Toggle chat panel"
         />
 
         {/* Participants */}
         <ControlButton
-          icon={<Users className="w-5 h-5" />}
+          icon={<Users className="w-4 h-4 sm:w-5 sm:h-5" />}
           label={participantCount.toString()}
           isActive={showParticipants}
           badge={participantCount}
           onClick={onToggleParticipants}
           primaryColor={primaryColor}
-          hideOnMobile
           tooltip="Toggle participants panel"
         />
 
@@ -334,22 +366,20 @@ export function ControlBar({
         <ControlButton
           icon={
             isFullscreen ? (
-              <Minimize2 className="w-5 h-5" />
+              <Minimize2 className="w-4 h-4 sm:w-5 sm:h-5" />
             ) : (
-              <Maximize2 className="w-5 h-5" />
+              <Maximize2 className="w-4 h-4 sm:w-5 sm:h-5" />
             )
           }
           onClick={onToggleFullscreen}
-          hideOnMobile
           tooltip={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
         />
 
         {/* Settings (if provided) */}
         {onSettings && (
           <ControlButton
-            icon={<Settings className="w-5 h-5" />}
+            icon={<Settings className="w-4 h-4 sm:w-5 sm:h-5" />}
             onClick={onSettings}
-            hideOnMobile
             tooltip="Open settings"
           />
         )}

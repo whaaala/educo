@@ -41,15 +41,15 @@ interface AddParticipantModalProps {
 
 // Mock data for participants - in a real app, this would come from an API
 const MOCK_PARTICIPANTS: Participant[] = [
-  { id: "t1", name: "Mr. John Smith", email: "john.smith@school.edu", role: "teacher", department: "Mathematics", avatar: "/avatars/teacher1.jpg" },
-  { id: "t2", name: "Mrs. Sarah Johnson", email: "sarah.j@school.edu", role: "teacher", department: "Science", avatar: "/avatars/teacher2.jpg" },
-  { id: "t3", name: "Dr. Michael Brown", email: "m.brown@school.edu", role: "teacher", department: "English", avatar: "/avatars/teacher3.jpg" },
-  { id: "p1", name: "Mrs. Emily Davis", email: "emily.davis@gmail.com", phone: "+234 801 234 5678", role: "parent", avatar: "/avatars/parent1.jpg" },
-  { id: "p2", name: "Mr. Robert Wilson", email: "r.wilson@yahoo.com", phone: "+234 802 345 6789", role: "parent", avatar: "/avatars/parent2.jpg" },
-  { id: "p3", name: "Mrs. Jennifer Taylor", email: "jen.taylor@gmail.com", phone: "+234 803 456 7890", role: "parent", avatar: "/avatars/parent3.jpg" },
-  { id: "s1", name: "James Davis", email: "james.d@student.edu", role: "student", classLevel: "Grade 10A", avatar: "/avatars/student1.jpg" },
-  { id: "s2", name: "Emma Wilson", email: "emma.w@student.edu", role: "student", classLevel: "Grade 10A", avatar: "/avatars/student2.jpg" },
-  { id: "s3", name: "Oliver Taylor", email: "oliver.t@student.edu", role: "student", classLevel: "Grade 9B", avatar: "/avatars/student3.jpg" },
+  { id: "t1", name: "Mr. John Smith", email: "john.smith@school.edu", role: "teacher", department: "Mathematics" },
+  { id: "t2", name: "Mrs. Sarah Johnson", email: "sarah.j@school.edu", role: "teacher", department: "Science" },
+  { id: "t3", name: "Dr. Michael Brown", email: "m.brown@school.edu", role: "teacher", department: "English" },
+  { id: "p1", name: "Mrs. Emily Davis", email: "emily.davis@gmail.com", phone: "+234 801 234 5678", role: "parent" },
+  { id: "p2", name: "Mr. Robert Wilson", email: "r.wilson@yahoo.com", phone: "+234 802 345 6789", role: "parent" },
+  { id: "p3", name: "Mrs. Jennifer Taylor", email: "jen.taylor@gmail.com", phone: "+234 803 456 7890", role: "parent" },
+  { id: "s1", name: "James Davis", email: "james.d@student.edu", role: "student", classLevel: "Grade 10A" },
+  { id: "s2", name: "Emma Wilson", email: "emma.w@student.edu", role: "student", classLevel: "Grade 10A" },
+  { id: "s3", name: "Oliver Taylor", email: "oliver.t@student.edu", role: "student", classLevel: "Grade 9B" },
 ];
 
 export default function AddParticipantModal({

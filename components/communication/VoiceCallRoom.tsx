@@ -33,6 +33,7 @@ import {
   type Participant,
   type ChatMessage as UIChatMessage,
 } from "./call-ui";
+import { ReactionOverlay, useReactionOverlay } from "./call-ui/ReactionOverlay";
 
 interface VoiceCallRoomProps {
   roomId: string;
@@ -97,6 +98,9 @@ export default function VoiceCallRoom({
   const [layout, setLayout] = useState<"spotlight" | "grid">("spotlight");
   const screenShareStreamRef = useRef<MediaStream | null>(null);
   const screenShareVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Reactions
+  const { reactions: floatingReactions, addReaction } = useReactionOverlay();
 
   // Chat
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -295,13 +299,17 @@ export default function VoiceCallRoom({
   };
 
   // Toggle fullscreen
-  const toggleFullscreen = useCallback(() => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen?.();
-      setIsFullscreen(false);
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen?.();
+        setIsFullscreen(true);
+      } else {
+        await document.exitFullscreen?.();
+        setIsFullscreen(false);
+      }
+    } catch {
+      setIsFullscreen(!!document.fullscreenElement);
     }
   }, []);
 
@@ -343,12 +351,28 @@ export default function VoiceCallRoom({
     }
   }, [isScreenSharing]);
 
-  // Pipe screen share stream to video element
-  useEffect(() => {
-    if (screenShareVideoRef.current && screenShareStream) {
-      screenShareVideoRef.current.srcObject = screenShareStream;
-    }
-  }, [screenShareStream]);
+  // Callback ref that sets srcObject whenever a video element mounts (handles layout switches)
+  const setScreenShareVideoRef = useCallback(
+    (el: HTMLVideoElement | null) => {
+      screenShareVideoRef.current = el;
+      if (el && screenShareStream) {
+        el.srcObject = screenShareStream;
+        el.play().catch(() => {});
+      }
+    },
+    [screenShareStream]
+  );
+
+  // Stable callback ref for the screen share thumbnail video (separate from the main one)
+  const setScreenShareThumbRef = useCallback(
+    (el: HTMLVideoElement | null) => {
+      if (el && screenShareStream) {
+        el.srcObject = screenShareStream;
+        el.play().catch(() => {});
+      }
+    },
+    [screenShareStream]
+  );
 
   // Clean up screen share on unmount
   useEffect(() => {
@@ -524,89 +548,167 @@ export default function VoiceCallRoom({
         className="z-10"
       />
 
+      {/* Floating Reaction Overlay */}
+      <ReactionOverlay reactions={floatingReactions} />
+
       {/* Main Content Area */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
         <div className="flex-1 flex flex-col p-2 sm:p-3 lg:p-4 overflow-hidden">
-          {/* Screen Share View */}
-          {screenShareStream && (
+          {/* Screen Share View (spotlight layout) */}
+          {screenShareStream && layout === "spotlight" && (
             <div className="flex-1 flex gap-2 sm:gap-3 lg:gap-4 min-h-0">
-              {/* Main screen share */}
-              <div className="flex-1 relative bg-gray-200 dark:bg-gray-900 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden">
-                <video
-                  ref={screenShareVideoRef}
-                  autoPlay
-                  muted
-                  playsInline
-                  className="w-full h-full object-contain"
-                />
-                <div className="absolute top-2 sm:top-4 left-2 sm:left-4">
-                  <div
-                    className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-white text-xs sm:text-sm font-medium"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    <Monitor className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">You are sharing</span>
-                    <span className="sm:hidden">Sharing</span>
+              {/* Main view: screen share (default) or focused person */}
+              {!focusedId ? (
+                <div className="flex-1 relative bg-gray-200 dark:bg-gray-900 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden">
+                  <video
+                    ref={setScreenShareVideoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    className="w-full h-full object-contain"
+                  />
+                  <div className="absolute top-2 sm:top-4 left-2 sm:left-4">
+                    <div
+                      className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-white text-xs sm:text-sm font-medium"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      <Monitor className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">You are sharing</span>
+                      <span className="sm:hidden">Sharing</span>
+                    </div>
+                  </div>
+                  <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2">
+                    <button
+                      onClick={toggleScreenShare}
+                      className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium shadow-lg cursor-pointer"
+                    >
+                      <MonitorOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <span>Stop Sharing</span>
+                    </button>
                   </div>
                 </div>
-                <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2">
-                  <button
-                    onClick={toggleScreenShare}
-                    className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium shadow-lg"
-                  >
-                    <MonitorOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    <span>Stop Sharing</span>
-                  </button>
+              ) : (
+                <div className="flex-1 relative bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden min-h-0">
+                  {!spotlightPerson.isWaiting ? (
+                    <>
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="flex items-end justify-center gap-1 h-48 w-48 sm:h-56 sm:w-56">
+                            {audioLevels.map((level, i) => (
+                              <div key={i} className="w-1 sm:w-1.5 rounded-full transition-all duration-150 ease-out" style={{ height: `${Math.max(8, level * 0.6)}%`, background: primaryColor, opacity: 0.15 }} />
+                            ))}
+                          </div>
+                        </div>
+                        {spotlightPerson.avatar ? (
+                          <img src={spotlightPerson.avatar} alt={spotlightPerson.name} className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full relative z-10 object-cover" />
+                        ) : (
+                          <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex items-center justify-center text-4xl sm:text-5xl font-bold text-white relative z-10" style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}>
+                            {spotlightPerson.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 flex items-center gap-2">
+                        <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/80 dark:bg-black/60 backdrop-blur rounded-lg text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+                          {spotlightPerson.name}{spotlightPerson.isLocal ? " (You)" : ""}
+                        </span>
+                        {spotlightPerson.isMuted && (
+                          <span className="p-1 sm:p-1.5 bg-red-500 rounded-lg"><MicOff className="w-3 h-3 sm:w-4 sm:h-4 text-white" /></span>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
+                        {spotlightPerson.avatar ? (
+                          <img src={spotlightPerson.avatar} alt={spotlightPerson.name} className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full object-cover opacity-50" />
+                        ) : (
+                          <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex items-center justify-center text-4xl sm:text-5xl font-bold text-white opacity-50" style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}>
+                            {spotlightPerson.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-16 sm:translate-y-20">
+                        <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/80 dark:bg-black/60 backdrop-blur rounded-full">
+                          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                          <span className="text-gray-600 dark:text-white/70 text-xs sm:text-sm">Waiting to join...</span>
+                        </div>
+                      </div>
+                      <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4">
+                        <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/80 dark:bg-black/60 backdrop-blur rounded-lg text-xs sm:text-sm font-medium text-gray-900 dark:text-white">{spotlightPerson.name}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
-              </div>
+              )}
 
               {/* Sidebar thumbnails during screen share */}
               <div className="hidden sm:flex w-44 lg:w-52 flex-col gap-2 lg:gap-3 overflow-y-auto p-1">
+                {/* Screen share thumbnail */}
+                <div
+                  onClick={() => setFocusedId(null)}
+                  className={cn(
+                    "relative aspect-video bg-gray-900 rounded-xl overflow-hidden flex-shrink-0 shadow-lg cursor-pointer transition-all",
+                    !focusedId && "ring-2 ring-blue-500"
+                  )}
+                >
+                  <video
+                    ref={focusedId ? setScreenShareVideoRef : setScreenShareThumbRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    className="w-full h-full object-contain cursor-pointer"
+                  />
+                  <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between pointer-events-none">
+                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white flex items-center gap-1">
+                      <Monitor className="w-2.5 h-2.5" />
+                      Screen
+                    </span>
+                  </div>
+                </div>
+
                 {/* Local user */}
-                <div className="relative aspect-video bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg">
+                <div
+                  onClick={() => setFocusedId(focusedId === "local" ? null : "local")}
+                  className={cn(
+                    "relative aspect-video bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg cursor-pointer transition-all",
+                    focusedId === "local" && "ring-2 ring-blue-500"
+                  )}
+                >
                   <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                     {userAvatar ? (
                       <img src={userAvatar} alt={userName} className="w-12 h-12 lg:w-14 lg:h-14 rounded-full object-cover" />
                     ) : (
-                      <div
-                        className="w-12 h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-lg lg:text-xl font-bold text-white"
-                        style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
-                      >
+                      <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-lg lg:text-xl font-bold text-white" style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}>
                         {userName.charAt(0).toUpperCase()}
                       </div>
                     )}
                   </div>
                   <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white">
-                      You
-                    </span>
-                    {isMuted && (
-                      <span className="p-1 bg-red-500 rounded-md">
-                        <MicOff className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-white" />
-                      </span>
-                    )}
+                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white">You</span>
+                    {isMuted && (<span className="p-1 bg-red-500 rounded-md"><MicOff className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-white" /></span>)}
                   </div>
                 </div>
 
-                {/* Recipient waiting thumbnail - shown when alone */}
+                {/* Recipient waiting thumbnail */}
                 {remoteParticipants.length === 0 && (
-                  <div className="relative aspect-video bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg">
+                  <div
+                    onClick={() => setFocusedId(focusedId === "recipient" ? null : "recipient")}
+                    className={cn(
+                      "relative aspect-video bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg cursor-pointer transition-all",
+                      focusedId === "recipient" && "ring-2 ring-blue-500"
+                    )}
+                  >
                     <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                       {recipientAvatar ? (
                         <img src={recipientAvatar} alt={recipientName || "Recipient"} className="w-12 h-12 lg:w-14 lg:h-14 rounded-full object-cover opacity-50" />
                       ) : (
-                        <div
-                          className="w-12 h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-lg lg:text-xl font-bold text-white opacity-50"
-                          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
-                        >
+                        <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-lg lg:text-xl font-bold text-white opacity-50" style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}>
                           {(recipientName || "?").charAt(0).toUpperCase()}
                         </div>
                       )}
                     </div>
                     <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white truncate max-w-[100px]">
-                        {recipientName || "Participant"}
-                      </span>
+                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white truncate max-w-[100px]">{recipientName || "Participant"}</span>
                       <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                     </div>
                   </div>
@@ -616,32 +718,50 @@ export default function VoiceCallRoom({
                 {remoteParticipants.map((participant) => (
                   <div
                     key={participant.id}
+                    onClick={() => setFocusedId(focusedId === participant.id ? null : participant.id)}
                     className={cn(
-                      "relative aspect-video bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg",
-                      participant.isSpeaking && "ring-2 ring-green-500"
+                      "relative aspect-video bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg cursor-pointer transition-all",
+                      focusedId === participant.id ? "ring-2 ring-blue-500" : participant.isSpeaking && "ring-2 ring-green-500"
                     )}
                   >
                     <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                       {participant.avatar ? (
                         <img src={participant.avatar} alt={participant.name} className="w-12 h-12 lg:w-14 lg:h-14 rounded-full object-cover" />
                       ) : (
-                        <div
-                          className="w-12 h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-lg lg:text-xl font-bold text-white"
-                          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
-                        >
+                        <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-lg lg:text-xl font-bold text-white" style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}>
                           {participant.name.charAt(0).toUpperCase()}
                         </div>
                       )}
                     </div>
                     <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white truncate max-w-[100px]">
-                        {participant.name}
-                      </span>
-                      {participant.isMuted && (
-                        <span className="p-1 bg-red-500 rounded-md">
-                          <MicOff className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-white" />
-                        </span>
+                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white truncate max-w-[100px]">{participant.name}</span>
+                      {participant.isMuted && (<span className="p-1 bg-red-500 rounded-md"><MicOff className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-white" /></span>)}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Invited participants */}
+                {invitedParticipants.map((p) => (
+                  <div
+                    key={p.id}
+                    onClick={() => setFocusedId(focusedId === p.id ? null : p.id)}
+                    className={cn(
+                      "relative aspect-video bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg cursor-pointer transition-all",
+                      focusedId === p.id && "ring-2 ring-blue-500"
+                    )}
+                  >
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
+                      {p.avatar ? (
+                        <img src={p.avatar} alt={p.name} className="w-12 h-12 lg:w-14 lg:h-14 rounded-full object-cover opacity-50" />
+                      ) : (
+                        <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-lg lg:text-xl font-bold text-white opacity-50" style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}>
+                          {p.name.charAt(0).toUpperCase()}
+                        </div>
                       )}
+                    </div>
+                    <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
+                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white truncate max-w-[100px]">{p.name}</span>
+                      <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                     </div>
                   </div>
                 ))}
@@ -939,11 +1059,12 @@ export default function VoiceCallRoom({
           )}
 
           {/* Voice Call - Grid Layout */}
-          {!screenShareStream && layout === "grid" && (() => {
-            // Count rendered tiles: local user + remotes + waiting placeholder if alone
-            const gridItemCount = remoteParticipants.length === 0
-              ? 2  // local user + "waiting for others" placeholder
-              : 1 + remoteParticipants.length;  // local user + remotes
+          {layout === "grid" && (() => {
+            // Count rendered tiles: local user + remotes + invited + waiting placeholder if alone + screen share if active
+            const baseCount = remoteParticipants.length === 0
+              ? 2 + invitedParticipants.length  // local user + "waiting for others" placeholder + invited
+              : 1 + remoteParticipants.length + invitedParticipants.length;  // local user + remotes + invited
+            const gridItemCount = baseCount + (screenShareStream ? 1 : 0);
             return (
             <div className="flex-1 flex gap-2 sm:gap-3 lg:gap-4 min-h-0">
             <div
@@ -1052,6 +1173,72 @@ export default function VoiceCallRoom({
                 </div>
               ))}
 
+              {/* Screen share tile (shown in grid when screen sharing) */}
+              {screenShareStream && (
+                <div className="relative bg-gray-900 rounded-xl sm:rounded-2xl overflow-hidden min-h-0">
+                  <video
+                    ref={setScreenShareVideoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    className="w-full h-full object-contain"
+                  />
+                  <div className="absolute top-2 left-2">
+                    <div
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-white text-xs font-medium"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      <Monitor className="w-3.5 h-3.5" />
+                      <span>You are sharing</span>
+                    </div>
+                  </div>
+                  {isScreenSharing && (
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
+                      <button
+                        onClick={toggleScreenShare}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500 hover:bg-red-600 text-white text-xs font-medium shadow-lg cursor-pointer"
+                      >
+                        <MonitorOff className="w-3.5 h-3.5" />
+                        <span>Stop Sharing</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Invited participant tiles */}
+              {invitedParticipants.map((p) => (
+                <div
+                  key={p.id}
+                  className="relative bg-gray-200/60 dark:bg-gray-800/50 midnight:bg-[#0d1220]/50 purple:bg-[#1f0d33]/50 rounded-xl sm:rounded-2xl overflow-hidden min-h-0 border-2 border-dashed border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                >
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                    {p.avatar ? (
+                      <img
+                        src={p.avatar}
+                        alt={p.name}
+                        className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full object-cover opacity-50"
+                      />
+                    ) : (
+                      <div
+                        className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full flex items-center justify-center text-2xl sm:text-3xl font-bold text-white opacity-50"
+                        style={{
+                          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                        }}
+                      >
+                        {p.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                      <span className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
+                        {p.name} — invited
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
               {/* Recipient tile - waiting to join (only when alone) */}
               {remoteParticipants.length === 0 && (
                 <div className="relative bg-gray-200/60 dark:bg-gray-800/50 midnight:bg-[#0d1220]/50 purple:bg-[#1f0d33]/50 rounded-xl sm:rounded-2xl overflow-hidden min-h-0 border-2 border-dashed border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
@@ -1084,7 +1271,25 @@ export default function VoiceCallRoom({
             </div>
 
             {/* Thumbnail strip (right side on desktop) */}
-            <div className="hidden lg:flex lg:flex-col gap-2 overflow-y-auto lg:w-36 xl:w-44 pb-2 lg:pb-0">
+            <div className="hidden lg:flex lg:flex-col gap-2 overflow-y-auto lg:w-36 xl:w-44 p-1">
+              {/* Screen share thumbnail (shown in grid when screen sharing) */}
+              {screenShareStream && (
+                <div className="relative flex-shrink-0 bg-gray-900 rounded-xl overflow-hidden shadow-lg w-full aspect-video">
+                  <video
+                    ref={setScreenShareThumbRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    className="w-full h-full object-contain"
+                  />
+                  <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
+                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white flex items-center gap-1">
+                      <Monitor className="w-2.5 h-2.5" /> Screen
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* Local user thumbnail */}
               <div
                 className={cn(
@@ -1328,6 +1533,7 @@ export default function VoiceCallRoom({
         onEndCall={endCall}
         onSettings={() => setShowSettings(true)}
         onChangeLayout={() => setLayout(layout === "spotlight" ? "grid" : "spotlight")}
+        onReaction={addReaction}
         className="z-30"
       />
 

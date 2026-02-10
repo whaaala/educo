@@ -16,3 +16,9 @@ export type { VideoTileProps } from "./VideoTile";
 
 export { JoinRequestNotification } from "./JoinRequestNotification";
 export type { JoinRequestNotificationProps, JoinRequest } from "./JoinRequestNotification";
+
+export { EmojiReactionBar } from "./EmojiReactionBar";
+export type { EmojiReactionBarProps, EmojiReaction } from "./EmojiReactionBar";
+
+export { ReactionOverlay, useReactionOverlay } from "./ReactionOverlay";
+export type { ReactionOverlayProps } from "./ReactionOverlay";
