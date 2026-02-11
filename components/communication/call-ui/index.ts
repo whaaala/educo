@@ -22,3 +22,6 @@ export type { EmojiReactionBarProps, EmojiReaction } from "./EmojiReactionBar";
 
 export { ReactionOverlay, useReactionOverlay } from "./ReactionOverlay";
 export type { ReactionOverlayProps } from "./ReactionOverlay";
+
+export { WhiteboardPanel } from "./WhiteboardPanel";
+export type { WhiteboardPanelProps } from "./WhiteboardPanel";

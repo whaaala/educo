@@ -26,7 +26,16 @@
       "Bash(ls:*)",
       "Bash(npx next dev)",
       "Bash(timeout:*)",
-      "Bash(if exist \"c:\\\\Users\\\\eyite\\\\educo\\\\.next\" rmdir /s /q \"c:\\\\Users\\\\eyite\\\\educo\\\\.next\")"
+      "Bash(if exist \"c:\\\\Users\\\\eyite\\\\educo\\\\.next\" rmdir /s /q \"c:\\\\Users\\\\eyite\\\\educo\\\\.next\")",
+      "WebFetch(domain:library.zoom.com)",
+      "WebFetch(domain:www.innovationtraining.org)",
+      "WebFetch(domain:www.zoom.com)",
+      "WebFetch(domain:www.classpoint.io)",
+      "WebFetch(domain:www.figma.com)",
+      "Bash(npx next dev:*)",
+      "WebFetch(domain:support.zoom.com)",
+      "WebFetch(domain:www.drawio.com)",
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": []

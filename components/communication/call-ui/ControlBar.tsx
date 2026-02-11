@@ -18,6 +18,7 @@ import {
   Settings,
   LayoutGrid,
   Smile,
+  PenTool,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmojiReactionBar } from "./EmojiReactionBar";
@@ -33,6 +34,7 @@ export interface ControlBarProps {
   // Panel states
   showChat: boolean;
   showParticipants: boolean;
+  showWhiteboard?: boolean;
 
   // Counts
   participantCount: number;
@@ -56,6 +58,7 @@ export interface ControlBarProps {
   onEndCall: () => void;
   onSettings?: () => void;
   onChangeLayout?: () => void;
+  onToggleWhiteboard?: () => void;
 
   // Reactions
   onReaction?: (emoji: string) => void;
@@ -190,6 +193,7 @@ export function ControlBar({
   isRecording,
   showChat,
   showParticipants,
+  showWhiteboard,
   participantCount,
   unreadMessageCount,
   callType,
@@ -205,6 +209,7 @@ export function ControlBar({
   onEndCall,
   onSettings,
   onChangeLayout,
+  onToggleWhiteboard,
   onReaction,
   onGiphy,
   giphyApiKey,
@@ -307,6 +312,18 @@ export function ControlBar({
             label="Layout"
             onClick={onChangeLayout}
             tooltip="Change layout"
+          />
+        )}
+
+        {/* Whiteboard */}
+        {onToggleWhiteboard && (
+          <ControlButton
+            icon={<PenTool className="w-4 h-4 sm:w-5 sm:h-5" />}
+            label="Board"
+            isActive={showWhiteboard}
+            onClick={onToggleWhiteboard}
+            primaryColor={primaryColor}
+            tooltip={showWhiteboard ? "Close whiteboard" : "Open whiteboard"}
           />
         )}
 
