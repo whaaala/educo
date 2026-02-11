@@ -56,6 +56,7 @@ import {
   type Participant,
 } from "./call-ui";
 import { ReactionOverlay, useReactionOverlay } from "./call-ui/ReactionOverlay";
+import CallConnecting from "./CallConnecting";
 
 export interface VideoCallRoomProps {
   roomId: string;
@@ -567,49 +568,12 @@ export default function VideoCallRoom({
   // Loading state (skip when upgrading from voice call - show main UI while connecting)
   if (isConnecting && !isUpgradeFromVoice) {
     return (
-      <div
-        ref={containerRef}
-        className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 midnight:from-[#060a1a] midnight:via-[#0f1729] midnight:to-[#060a1a] purple:from-[#120622] purple:via-[#2a1a3e] purple:to-[#120622]"
-      >
-        <div className="text-center px-4">
-          {tenantLogo && (
-            <img
-              src={tenantLogo}
-              alt={tenantName}
-              className="h-10 sm:h-12 w-auto mx-auto mb-6 sm:mb-8 opacity-80"
-            />
-          )}
-
-          <div className="relative mb-6 sm:mb-8">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto">
-              <div
-                className="absolute inset-0 rounded-full animate-spin"
-                style={{
-                  background: `conic-gradient(${primaryColor}, ${secondaryColor}, ${primaryColor})`,
-                  mask: "radial-gradient(farthest-side, transparent calc(100% - 3px), #fff calc(100% - 3px))",
-                  WebkitMask:
-                  "radial-gradient(farthest-side, transparent calc(100% - 3px), #fff calc(100% - 3px))",
-                }}
-              />
-            </div>
-          </div>
-
-          <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-lg sm:text-xl font-semibold mb-2">
-            Connecting to call...
-          </p>
-          <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 text-sm">
-            Room: {roomId.slice(0, 12)}...
-          </p>
-
-          <div className="mt-4 sm:mt-6 inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-black/10 dark:bg-white/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10 rounded-full">
-            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
-            <span className="text-gray-700 dark:text-white/80 midnight:text-cyan-200 purple:text-pink-200 text-xs sm:text-sm">{selectedQuality.name}</span>
-          </div>
-
-          <div className="mt-6 sm:mt-8 text-xs sm:text-sm text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50">
-            Powered by {tenantName}
-          </div>
-        </div>
+      <div ref={containerRef} className="h-full">
+        <CallConnecting
+          callType="video"
+          qualityLabel={selectedQuality.name}
+          tenantName={tenantName}
+        />
       </div>
     );
   }

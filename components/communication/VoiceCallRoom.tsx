@@ -34,6 +34,7 @@ import {
   type ChatMessage as UIChatMessage,
 } from "./call-ui";
 import { ReactionOverlay, useReactionOverlay } from "./call-ui/ReactionOverlay";
+import CallConnecting from "./CallConnecting";
 
 interface VoiceCallRoomProps {
   roomId: string;
@@ -414,64 +415,12 @@ export default function VoiceCallRoom({
   // Loading state
   if (isConnecting) {
     return (
-      <div
-        className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 midnight:from-[#060a1a] midnight:via-[#0f1729] midnight:to-[#060a1a] purple:from-[#120622] purple:via-[#2a1a3e] purple:to-[#120622]"
-      >
-        <div className="text-center">
-          {/* Tenant Logo */}
-          {tenantLogo && (
-            <img
-              src={tenantLogo}
-              alt={tenantName}
-              className="h-12 w-auto mx-auto mb-6 opacity-80"
-            />
-          )}
-
-          {/* Calling Animation */}
-          <div className="relative mb-4 sm:mb-6">
-            {recipientAvatar ? (
-              <img
-                src={recipientAvatar}
-                alt={recipientName || "Calling"}
-                className="w-20 h-20 sm:w-28 sm:h-28 rounded-full mx-auto shadow-2xl object-cover ring-2 ring-gray-300 dark:ring-white/20 midnight:ring-cyan-500/30 purple:ring-pink-500/30"
-              />
-            ) : (
-              <div
-                className="w-20 h-20 sm:w-28 sm:h-28 rounded-full flex items-center justify-center mx-auto shadow-2xl ring-2 ring-gray-300 dark:ring-white/20 midnight:ring-cyan-500/30 purple:ring-pink-500/30"
-                style={{
-                  background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
-                }}
-              >
-                <span className="text-3xl sm:text-4xl font-semibold text-white">
-                  {(recipientName || "?").charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
-
-            {/* Ripple Effect */}
-            <div
-              className="absolute inset-0 rounded-full animate-ping opacity-20"
-              style={{ backgroundColor: primaryColor }}
-            />
-            <div
-              className="absolute -inset-3 rounded-full animate-pulse opacity-15"
-              style={{ backgroundColor: primaryColor }}
-            />
-          </div>
-
-          <p className="text-gray-800 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xl font-semibold mb-1">
-            Calling...
-          </p>
-          <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 text-lg">
-            {recipientName || "User"}
-          </p>
-
-          {/* Powered by branding */}
-          <div className="mt-8 text-sm text-gray-500 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50">
-            Powered by {tenantName}
-          </div>
-        </div>
-      </div>
+      <CallConnecting
+        callType="voice"
+        recipientName={recipientName}
+        recipientAvatar={recipientAvatar}
+        tenantName={tenantName}
+      />
     );
   }
 
