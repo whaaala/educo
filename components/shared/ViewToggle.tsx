@@ -24,11 +24,11 @@ export default function ViewToggle({
 
       <button
         onClick={() => onViewModeChange("list")}
-        className="relative z-[1] px-[11px] py-[7px] rounded-md transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] cursor-pointer transform hover:scale-110 active:scale-95"
+        className="relative z-[1] px-2 sm:px-[11px] py-1.5 sm:py-[7px] rounded-md transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] cursor-pointer transform hover:scale-110 active:scale-95"
         aria-label="List view"
         title="List view"
       >
-        <List className={`w-4 h-4 transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+        <List className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
           viewMode === "list"
             ? "text-white scale-110 drop-shadow-sm"
             : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 scale-100"
@@ -36,11 +36,11 @@ export default function ViewToggle({
       </button>
       <button
         onClick={() => onViewModeChange("grid")}
-        className="relative z-[1] px-[11px] py-[7px] rounded-md transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] cursor-pointer transform hover:scale-110 active:scale-95"
+        className="relative z-[1] px-2 sm:px-[11px] py-1.5 sm:py-[7px] rounded-md transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] cursor-pointer transform hover:scale-110 active:scale-95"
         aria-label="Grid view"
         title="Grid view"
       >
-        <Grid3x3 className={`w-4 h-4 transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+        <Grid3x3 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
           viewMode === "grid"
             ? "text-white scale-110 drop-shadow-sm"
             : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 scale-100"

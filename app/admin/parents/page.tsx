@@ -20,6 +20,7 @@ import {
   parentSortOptions,
   sortParents,
   filterParents,
+  searchParents,
   getCurrencySymbol,
 } from "./config";
 
@@ -237,6 +238,8 @@ export default function AdminParentsPage() {
       columns={[]}
       filterFields={parentFilterFields}
       filterFn={filterParents}
+      searchFn={searchParents}
+      searchPlaceholder="Search parents..."
       sortOptions={parentSortOptions}
       sortFn={sortParents}
       defaultSort="ascending"
@@ -244,15 +247,15 @@ export default function AdminParentsPage() {
       enableViewToggle
       gridCardComponent={ParentGridCard}
       gridColumns={{ sm: 1, md: 2, lg: 3, xl: 4 }}
-      customListComponent={
+      customListRender={(filteredData) => (
         <ParentsTable
-          parents={parents}
+          parents={filteredData as AdminParent[]}
           isLoading={false}
           onClearFilters={() => {}}
           hasActiveFilters={false}
           totalParentsCount={parents.length}
         />
-      }
+      )}
       enableSelection
       bulkActions={[
         {

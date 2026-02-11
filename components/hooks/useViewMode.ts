@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import type { UseViewModeReturn } from "@/types/components";
 
@@ -55,14 +55,20 @@ export function useViewMode({
   const [viewMode, setViewModeState] = useState<ViewMode>(getInitialMode);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Sync with URL on mount and URL changes
+  // Ref to track programmatic updates — prevents the URL-sync effect
+  // from reverting state before router.replace updates searchParams
+  const isProgrammaticUpdate = useRef(false);
+
+  // Sync with URL on external navigation (browser back/forward)
   useEffect(() => {
+    if (isProgrammaticUpdate.current) {
+      isProgrammaticUpdate.current = false;
+      return;
+    }
     if (syncWithUrl) {
       const urlMode = searchParams.get(urlParamName);
       if (urlMode === "grid" || urlMode === "list") {
-        if (urlMode !== viewMode) {
-          setViewModeState(urlMode);
-        }
+        setViewModeState(urlMode);
       }
     }
   }, [searchParams, syncWithUrl, urlParamName, viewMode]);
@@ -73,20 +79,21 @@ export function useViewMode({
       if (mode === viewMode) return;
 
       setIsTransitioning(true);
+      isProgrammaticUpdate.current = true;
 
-      // Update URL if syncing
+      // Update state immediately for instant feedback
+      setViewModeState(mode);
+      onModeChange?.(mode);
+
+      // Update URL as side effect (replace to avoid polluting history)
       if (syncWithUrl) {
         const params = new URLSearchParams(searchParams.toString());
         params.set(urlParamName, mode);
-        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
       }
 
-      // Delay state update for smooth transition
-      setTimeout(() => {
-        setViewModeState(mode);
-        onModeChange?.(mode);
-        setTimeout(() => setIsTransitioning(false), 100);
-      }, transitionDuration);
+      // Clear transition after animation completes
+      setTimeout(() => setIsTransitioning(false), transitionDuration);
     },
     [
       viewMode,

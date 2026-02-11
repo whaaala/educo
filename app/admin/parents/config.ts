@@ -99,6 +99,24 @@ export const filterParents = (
   });
 };
 
+// Search function for parents
+export const searchParents = (data: AdminParent[], query: string): AdminParent[] => {
+  const q = query.toLowerCase();
+  return data.filter((parent) => {
+    const fullName = `${parent.firstName} ${parent.lastName}`.toLowerCase();
+    return (
+      fullName.includes(q) ||
+      parent.email.toLowerCase().includes(q) ||
+      parent.phone.toLowerCase().includes(q) ||
+      (parent.occupation || "").toLowerCase().includes(q) ||
+      parent.relationship.toLowerCase().includes(q) ||
+      parent.children.some((c) =>
+        `${c.firstName} ${c.lastName}`.toLowerCase().includes(q)
+      )
+    );
+  });
+};
+
 // Get currency symbol from settings
 export const getCurrencySymbol = (currencyCode: string): string => {
   try {

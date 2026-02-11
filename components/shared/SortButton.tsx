@@ -80,27 +80,27 @@ export default function SortButton({
       {/* Sort Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 cursor-pointer ${
+        className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg border transition-all duration-200 cursor-pointer ${
           isOpen
             ? "bg-blue-50 border-blue-300 dark:bg-blue-500/20 dark:border-blue-500 midnight:bg-cyan-500/20 midnight:border-cyan-500 purple:bg-pink-500/20 purple:border-pink-500"
             : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
         }`}
       >
-        <div className={`transition-colors ${
+        <div className={`transition-colors [&>svg]:w-3.5 [&>svg]:h-3.5 sm:[&>svg]:w-4 sm:[&>svg]:h-4 ${
           isOpen
             ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
             : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400"
         }`}>
           {getIconForOption(selectedOption)}
         </div>
-        <span className={`text-sm whitespace-nowrap transition-colors ${
+        <span className={`hidden sm:inline text-sm whitespace-nowrap transition-colors ${
           isOpen
             ? "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
             : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300"
         }`}>
           {selectedLabel}
         </span>
-        <ChevronDown className={`w-4 h-4 transition-all duration-200 ${
+        <ChevronDown className={`hidden sm:block w-4 h-4 transition-all duration-200 ${
           isOpen
             ? "rotate-180 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
             : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400"
@@ -109,7 +109,7 @@ export default function SortButton({
 
       {/* Dropdown Menu with Enhanced Design */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-64 bg-gradient-to-br from-white via-white to-gray-50/80 dark:from-[#1a1d23] dark:via-[#1a1d23] dark:to-[#151821] midnight:from-[#0f1729] midnight:via-[#0f1729] midnight:to-[#0a0f1a] purple:from-[#2a1a3e] purple:via-[#2a1a3e] purple:to-[#1f1430] rounded-2xl shadow-2xl border-2 border-gray-200/80 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden z-50 animate-in fade-in slide-in-from-top-3 duration-300 backdrop-blur-sm">
+        <div className="absolute left-0 sm:right-0 sm:left-auto mt-3 w-64 bg-gradient-to-br from-white via-white to-gray-50/80 dark:from-[#1a1d23] dark:via-[#1a1d23] dark:to-[#151821] midnight:from-[#0f1729] midnight:via-[#0f1729] midnight:to-[#0a0f1a] purple:from-[#2a1a3e] purple:via-[#2a1a3e] purple:to-[#1f1430] rounded-2xl shadow-2xl border-2 border-gray-200/80 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden z-50 animate-in fade-in slide-in-from-top-3 duration-300 backdrop-blur-sm">
           <div className="p-2 space-y-1">
             {options.map((option, index) => {
               const isSelected = selectedOption === option.value;

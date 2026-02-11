@@ -378,11 +378,13 @@ export interface UseDataManagementReturn<T> {
   searchQuery: string;
   isFiltering: boolean;
   isSorting: boolean;
+  isSearching: boolean;
   handleFilterChange: (filters: FilterValues) => void;
   handleSortChange: (sort: string) => void;
   handleSearchChange: (query: string) => void;
   resetFilters: () => void;
   resetAll: () => void;
+  clearSearch: () => void;
 }
 
 /**

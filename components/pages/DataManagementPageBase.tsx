@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo, useCallback, type ReactNode, type ComponentType } from "react";
+import { useState, useMemo, useCallback, useEffect, type ReactNode, type ComponentType } from "react";
 import PageHeader from "@/components/shared/PageHeader";
+import InPageSpinner from "@/components/shared/InPageSpinner";
 import PageLoader from "@/components/shared/PageLoader";
 import PageActions from "@/components/shared/PageActions";
 import DataTable from "@/components/shared/DataTable";
@@ -177,8 +178,10 @@ export interface DataManagementPageBaseProps<T> {
   headerContent?: ReactNode;
   /** Content to render below the action bar */
   beforeContent?: ReactNode;
-  /** Custom list view component (overrides default DataTable) */
+  /** Custom list view component (overrides default DataTable) - receives raw data */
   customListComponent?: ReactNode;
+  /** Custom list render function - receives filtered/sorted data (preferred over customListComponent) */
+  customListRender?: (data: T[]) => ReactNode;
   /** Modal children */
   children?: ReactNode;
 
@@ -280,6 +283,7 @@ export default function DataManagementPageBase<T>({
   headerContent,
   beforeContent,
   customListComponent,
+  customListRender,
   children,
 
   // Styling
@@ -298,10 +302,13 @@ export default function DataManagementPageBase<T>({
     sortOption,
     searchQuery,
     isFiltering,
+    isSorting,
+    isSearching,
     handleFilterChange,
     handleSortChange,
     handleSearchChange,
     resetFilters,
+    clearSearch,
   } = useDataManagement({
     data,
     filterFn,
@@ -354,6 +361,7 @@ export default function DataManagementPageBase<T>({
   const { viewMode, setViewMode, isTransitioning } = useViewMode({
     defaultMode: defaultViewMode,
     syncWithUrl: true,
+    transitionDuration: 600,
   });
 
   // Export hook
@@ -400,6 +408,18 @@ export default function DataManagementPageBase<T>({
   const handleLoadMore = useCallback(() => {
     setDisplayedGridCount((c) => c + loadMoreCount);
   }, [loadMoreCount]);
+
+  // Reset grid count when filtered data changes (filters, sort, date range, search)
+  useEffect(() => {
+    setDisplayedGridCount(initialGridCount);
+  }, [filters, sortOption, searchQuery, dateRange, initialGridCount]);
+
+  // Clear grid search when switching views so searches are independent
+  useEffect(() => {
+    if (searchFn) {
+      clearSearch();
+    }
+  }, [viewMode, searchFn, clearSearch]);
 
   // Handle refresh
   const handleRefresh = useCallback(() => {
@@ -455,11 +475,22 @@ export default function DataManagementPageBase<T>({
     handleSelectItem,
   ]);
 
+  // Whether any loading transition is active
+  const isLoadingContent = isTransitioning || isFiltering || isSorting || isSearching;
+
+  // Get spinner message based on what's happening
+  const getSpinnerMessage = () => {
+    if (isTransitioning) {
+      return viewMode === "grid" ? "Loading Grid Data" : "Loading Table Data";
+    }
+    if (isSearching) return "Searching";
+    if (isFiltering) return "Filtering Data";
+    if (isSorting) return "Sorting Data";
+    return "Loading";
+  };
+
   // Content transition classes
-  const contentClasses = `
-    transition-all duration-300
-    ${isFiltering || isTransitioning ? "opacity-50 scale-[0.99]" : "opacity-100 scale-100"}
-  `;
+  const contentClasses = "mt-4";
 
   const effectiveShowTableSearch = showTableSearch && !searchFn;
 
@@ -502,7 +533,7 @@ export default function DataManagementPageBase<T>({
         )}
 
         {/* Action Bar */}
-        <div className="mb-4">
+        <div className="mt-6 mb-4">
           <ActionBar
             filterFields={filterFields}
             filters={filters}
@@ -527,15 +558,13 @@ export default function DataManagementPageBase<T>({
             itemLabel={itemLabel}
             itemLabelPlural={itemLabelPlural}
             leftContent={
-              searchFn ? (
-                <div className="w-full sm:w-[360px]">
-                  <SearchBar
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                    placeholder={searchPlaceholder}
-                    fullWidth
-                  />
-                </div>
+              searchFn && viewMode === "grid" ? (
+                <SearchBar
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  placeholder={searchPlaceholder}
+                  fullWidth
+                />
               ) : undefined
             }
           />
@@ -546,7 +575,12 @@ export default function DataManagementPageBase<T>({
 
         {/* Data Display */}
         <div className={contentClasses}>
-          {dateRangeFilteredData.length === 0 ? (
+          {isLoadingContent ? (
+            <InPageSpinner
+              loadingText={getSpinnerMessage()}
+              subText="Please wait a moment..."
+            />
+          ) : dateRangeFilteredData.length === 0 ? (
             <EmptyState
               icon={emptyStateConfig?.icon}
               title={emptyStateConfig?.title || `No ${itemLabelPlural} found`}
@@ -574,6 +608,8 @@ export default function DataManagementPageBase<T>({
               onLoadMore={handleLoadMore}
               hasMore={displayedGridCount < dateRangeFilteredData.length}
             />
+          ) : customListRender ? (
+            customListRender(dateRangeFilteredData)
           ) : customListComponent ? (
             customListComponent
           ) : (

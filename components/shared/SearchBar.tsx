@@ -1,7 +1,7 @@
 "use client";
 
 import { Search, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface SearchBarProps {
   value: string;
@@ -10,6 +10,8 @@ interface SearchBarProps {
   className?: string;
   size?: "sm" | "md" | "lg";
   fullWidth?: boolean;
+  /** Debounce delay in ms (0 = no debounce) */
+  debounce?: number;
 }
 
 export default function SearchBar({
@@ -19,10 +21,30 @@ export default function SearchBar({
   className = "",
   size = "md",
   fullWidth = false,
+  debounce = 300,
 }: SearchBarProps) {
   const [isFocused, setIsFocused] = useState(false);
+  const [localValue, setLocalValue] = useState(value);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // Sync local value when external value changes (e.g., on clear/reset)
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  const handleChange = (newValue: string) => {
+    setLocalValue(newValue);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (debounce > 0) {
+      debounceRef.current = setTimeout(() => onChange(newValue), debounce);
+    } else {
+      onChange(newValue);
+    }
+  };
 
   const handleClear = () => {
+    setLocalValue("");
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     onChange("");
   };
 
@@ -49,9 +71,9 @@ export default function SearchBar({
 
   return (
     <div
-      className={`group relative flex items-center gap-2.5 ${currentSize.container} bg-white dark:bg-[#252930] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg border transition-all duration-200 ${
+      className={`group relative flex items-center gap-2.5 ${currentSize.container} bg-white dark:bg-[#252930] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg border transition-all duration-300 ${
         isFocused
-          ? "border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400"
+          ? "border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 ring-2 ring-blue-500/20 dark:ring-blue-400/20 midnight:ring-cyan-400/20 purple:ring-pink-400/20 shadow-sm"
           : "border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-500 midnight:hover:border-cyan-400/30 purple:hover:border-pink-400/30"
       } ${fullWidth ? "w-full" : "w-auto"} ${className}`}
     >
@@ -67,8 +89,8 @@ export default function SearchBar({
       {/* Input Field */}
       <input
         type="search"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={localValue}
+        onChange={(e) => handleChange(e.target.value)}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         placeholder={placeholder}
@@ -77,7 +99,7 @@ export default function SearchBar({
       />
 
       {/* Clear Button */}
-      {value && (
+      {localValue && (
         <button
           onClick={handleClear}
           className="flex-shrink-0 p-1 rounded-md transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 hover:scale-110 active:scale-95"

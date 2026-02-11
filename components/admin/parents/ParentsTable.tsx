@@ -364,12 +364,12 @@ export default function ParentsTable({
       key: "children",
       label: "Children",
       sortable: true,
-      className: "text-left min-w-[80px] md:min-w-[120px]",
+      className: "text-center sm:text-left min-w-[40px] sm:min-w-[80px] md:min-w-[120px]",
       sortValue: (parent) => parent.children.length,
       render: (parent) => {
         const childrenNames = parent.children.map((c) => c.firstName).join(", ");
         return (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-center sm:justify-start gap-1.5">
             <span className="inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] sm:text-xs font-bold">
               {parent.children.length}
             </span>

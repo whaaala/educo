@@ -124,21 +124,21 @@ export default function FilterButton({ fields, onFilterChange, className = "", r
       {/* Filter Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 cursor-pointer ${
+        className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg border transition-all duration-200 cursor-pointer ${
           isOpen
             ? "bg-blue-50 border-blue-300 dark:bg-blue-500/20 dark:border-blue-500 midnight:bg-cyan-500/20 midnight:border-cyan-500 purple:bg-pink-500/20 purple:border-pink-500"
             : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
         }`}
       >
         <Filter
-          className={`w-4 h-4 transition-colors ${
+          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${
             isOpen
               ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
               : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400"
           }`}
         />
         <span
-          className={`text-sm whitespace-nowrap transition-colors ${
+          className={`hidden sm:inline text-sm whitespace-nowrap transition-colors ${
             isOpen
               ? "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
               : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300"
@@ -147,12 +147,12 @@ export default function FilterButton({ fields, onFilterChange, className = "", r
           Filter
         </span>
         {activeFilterCount > 0 && (
-          <span className="px-1.5 py-0.5 text-xs font-bold bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white rounded-full shadow-sm">
+          <span className="px-1.5 py-0.5 text-[10px] sm:text-xs font-bold bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white rounded-full shadow-sm">
             {activeFilterCount}
           </span>
         )}
         <ChevronDown
-          className={`w-4 h-4 transition-all duration-200 ${
+          className={`hidden sm:block w-4 h-4 transition-all duration-200 ${
             isOpen
               ? "rotate-180 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
               : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400"

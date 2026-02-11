@@ -52,6 +52,7 @@ export function useDataManagement<T>({
   const [searchQuery, setSearchQuery] = useState("");
   const [isFiltering, setIsFiltering] = useState(false);
   const [isSorting, setIsSorting] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Process data through filter -> search -> sort pipeline
   const processedData = useMemo(() => {
@@ -99,10 +100,17 @@ export function useDataManagement<T>({
     [animationDelay]
   );
 
-  // Handle search change
-  const handleSearchChange = useCallback((query: string) => {
-    setSearchQuery(query);
-  }, []);
+  // Handle search change with animation
+  const handleSearchChange = useCallback(
+    (query: string) => {
+      setIsSearching(true);
+      setTimeout(() => {
+        setSearchQuery(query);
+        setTimeout(() => setIsSearching(false), 100);
+      }, animationDelay);
+    },
+    [animationDelay]
+  );
 
   // Reset filters
   const resetFilters = useCallback(() => {
@@ -112,6 +120,11 @@ export function useDataManagement<T>({
       setTimeout(() => setIsFiltering(false), 100);
     }, animationDelay);
   }, [defaultFilters, animationDelay]);
+
+  // Clear search immediately (no animation, used for view mode switches)
+  const clearSearch = useCallback(() => {
+    setSearchQuery("");
+  }, []);
 
   // Reset all (filters, sort, search)
   const resetAll = useCallback(() => {
@@ -131,11 +144,13 @@ export function useDataManagement<T>({
     searchQuery,
     isFiltering,
     isSorting,
+    isSearching,
     handleFilterChange,
     handleSortChange,
     handleSearchChange,
     resetFilters,
     resetAll,
+    clearSearch,
   };
 }
 

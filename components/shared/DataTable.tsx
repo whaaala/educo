@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, ReactNode } from "react";
-import { ChevronLeft, ChevronRight, Loader2, Search, FileX } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Search, SearchX, FileX } from "lucide-react";
 import SearchBar from "./SearchBar";
+import EmptyState from "@/components/pages/components/EmptyState";
 import Tooltip from "./Tooltip";
 
 export interface ColumnConfig<T> {
@@ -424,55 +425,37 @@ export default function DataTable<T>({
               })
             ) : (
               <tr>
-                <td
-                  colSpan={columns.length}
-                  className="px-4 py-16 sm:py-20 text-center"
-                >
-                  <div className="flex flex-col items-center justify-center max-w-md mx-auto">
-                    {/* Icon with simple circular background */}
-                    <div className="relative mb-6">
-                      {/* Simple circular background */}
-                      <div className="flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-blue-50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10">
-                        {searchQuery.trim() ? (
-                          <Search className="w-10 h-10 sm:w-12 sm:h-12 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" strokeWidth={2} />
-                        ) : (
-                          <FileX className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/60 purple:text-pink-400/60" strokeWidth={2} />
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Title */}
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-2">
-                      {searchQuery.trim() ? 'No results found' : 'No data available'}
-                    </h3>
-
-                    {/* Description */}
-                    <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 leading-relaxed">
-                      {searchQuery.trim()
+                <td colSpan={columns.length}>
+                  <EmptyState
+                    icon={searchQuery.trim() ? SearchX : FileX}
+                    title={searchQuery.trim() ? 'No results found' : 'No data available'}
+                    description={
+                      searchQuery.trim()
                         ? `No results match "${searchQuery}". Try a different search term.`
                         : hasActiveFilters
                         ? 'No results match the current filters. Try adjusting your filters.'
-                        : emptyMessage}
-                    </p>
-
-                    {/* Clear search/filters button */}
-                    {(searchQuery.trim() || (hasActiveFilters && onClearFilters)) && (
-                      <button
-                        onClick={() => {
-                          if (searchQuery.trim()) {
+                        : emptyMessage
+                    }
+                    actionLabel={
+                      searchQuery.trim()
+                        ? 'Clear search'
+                        : hasActiveFilters && onClearFilters
+                        ? 'Clear filters'
+                        : undefined
+                    }
+                    onAction={
+                      searchQuery.trim()
+                        ? () => {
                             setIsSearching(true);
                             setSearchQuery('');
                             setCurrentPage(1);
-                          } else if (onClearFilters) {
-                            onClearFilters();
                           }
-                        }}
-                        className="mt-6 px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 text-white text-sm font-semibold shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
-                      >
-                        {searchQuery.trim() ? 'Clear search' : 'Clear filters'}
-                      </button>
-                    )}
-                  </div>
+                        : hasActiveFilters && onClearFilters
+                        ? onClearFilters
+                        : undefined
+                    }
+                    size="md"
+                  />
                 </td>
               </tr>
             )}
