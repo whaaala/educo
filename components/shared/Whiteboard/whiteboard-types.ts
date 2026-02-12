@@ -29,7 +29,13 @@ export type WhiteboardTool =
   | "flowchart-decision"
   | "flowchart-terminal"
   | "flowchart-data"
-  | "flowchart-document";
+  | "flowchart-document"
+  // Media
+  | "image"
+  // Tables
+  | "table"
+  // Charts
+  | "chart";
 
 export interface Point {
   x: number;
@@ -63,8 +69,23 @@ export interface WhiteboardElement {
   fontSize?: number;
   borderRadius?: number;
   stickyColor?: string;
+  // Transform
+  rotation?: number;       // Degrees (0, 90, 180, 270, or any angle)
+  flipH?: boolean;         // Flip horizontally
+  flipV?: boolean;         // Flip vertically
+  // Image
+  imageUrl?: string;       // Data URL or external URL for image elements
+  // Table
+  tableRows?: number;
+  tableCols?: number;
+  tableData?: string[][];  // 2D array of cell values
+  // Chart
+  chartType?: "bar" | "column" | "line" | "pie";
+  chartData?: { labels: string[]; values: number[]; colors?: string[] };
   // Selection state
   isSelected?: boolean;
+  // Grouping
+  groupId?: string;
 }
 
 export interface Viewport {

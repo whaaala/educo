@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   MousePointer2,
   Hand,
-  Pencil,
+  PenLine,
   Highlighter,
   Eraser,
   Square,
@@ -21,32 +21,48 @@ import {
   StickyNote,
   RectangleHorizontal,
   FileText,
-  ChevronRight,
+  ChevronDown,
   LayoutTemplate,
   GraduationCap,
   Briefcase,
   Repeat,
-  X,
+  PanelLeftOpen,
+  PanelLeftClose,
+  Check,
+  Shapes,
+  ImagePlus,
+  Table2,
+  BarChart3,
+  LineChart,
+  PieChart,
+  Download,
+  Copy,
 } from "lucide-react";
 import type { WhiteboardTool, WhiteboardElement } from "./whiteboard-types";
+import {
+  DEFAULT_COLORS,
+  FILL_COLORS,
+  FILL_TOOLS,
+  STICKY_COLORS,
+  STROKE_WIDTHS,
+} from "./whiteboard-types";
 import { TEMPLATES, TEMPLATE_CATEGORIES } from "./whiteboard-templates";
 
-// ─── Icon types ──────────────────────────────────────────
+// ─── Custom SVG icons (refined) ─────────────────────────
 
 type IconComp = React.ComponentType<{ className?: string }>;
 
-// Custom SVG icons for shapes that don't have lucide equivalents
 function RoundedRectIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="5" width="18" height="14" rx="4" ry="4" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="18" height="14" rx="5" ry="5" />
     </svg>
   );
 }
 
 function CylinderIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <ellipse cx="12" cy="6" rx="7" ry="3" />
       <path d="M5 6v12c0 1.66 3.13 3 7 3s7-1.34 7-3V6" />
     </svg>
@@ -55,7 +71,7 @@ function CylinderIcon({ className }: { className?: string }) {
 
 function ParallelogramIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <polygon points="7,4 22,4 17,20 2,20" />
     </svg>
   );
@@ -63,7 +79,7 @@ function ParallelogramIcon({ className }: { className?: string }) {
 
 function PillIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="7" width="20" height="10" rx="5" ry="5" />
     </svg>
   );
@@ -71,7 +87,7 @@ function PillIcon({ className }: { className?: string }) {
 
 function FlowDataIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <polygon points="6,4 22,4 18,20 2,20" />
     </svg>
   );
@@ -88,8 +104,8 @@ interface ToolDef {
 const PRIMARY_TOOLS: ToolDef[] = [
   { id: "select", icon: MousePointer2, label: "Select" },
   { id: "hand", icon: Hand, label: "Pan" },
-  { id: "pen", icon: Pencil, label: "Pen" },
-  { id: "highlighter", icon: Highlighter, label: "Highlighter" },
+  { id: "pen", icon: PenLine, label: "Pen" },
+  { id: "highlighter", icon: Highlighter, label: "Highlight" },
   { id: "eraser", icon: Eraser, label: "Eraser" },
 ];
 
@@ -105,7 +121,7 @@ const SECTIONS: ToolSection[] = [
   {
     id: "shapes",
     label: "Shapes",
-    icon: Square,
+    icon: Shapes,
     columns: 3,
     tools: [
       { id: "rectangle", icon: Square, label: "Rectangle" },
@@ -161,61 +177,133 @@ const SECTIONS: ToolSection[] = [
 interface WhiteboardToolbarProps {
   activeTool: WhiteboardTool;
   onToolChange: (tool: WhiteboardTool) => void;
+  activeColor: string;
+  activeStrokeWidth: number;
+  activeFillColor: string | null;
+  activeFontSize: number;
+  activeStickyColor: string;
+  onColorChange: (color: string) => void;
+  onStrokeWidthChange: (width: number) => void;
+  onFillColorChange: (color: string | null) => void;
+  onFontSizeChange: (size: number) => void;
+  onStickyColorChange: (color: string) => void;
   onLoadTemplate?: (elements: WhiteboardElement[]) => void;
+  onInsertImage?: () => void;
+  onInsertTable?: (rows: number, cols: number) => void;
+  onInsertChart?: (type: "bar" | "column" | "line" | "pie") => void;
+  onExportPNG?: () => void;
+  onExportJSON?: () => void;
+  onCopyToClipboard?: () => void;
   readOnly?: boolean;
 }
 
-// ─── Component ───────────────────────────────────────────
+// ─── Main Component ──────────────────────────────────────
 
 export default function WhiteboardToolbar({
   activeTool,
   onToolChange,
+  activeColor,
+  activeStrokeWidth,
+  activeFillColor,
+  activeFontSize,
+  activeStickyColor,
+  onColorChange,
+  onStrokeWidthChange,
+  onFillColorChange,
+  onFontSizeChange,
+  onStickyColorChange,
   onLoadTemplate,
+  onInsertImage,
+  onInsertTable,
+  onInsertChart,
+  onExportPNG,
+  onExportJSON,
+  onCopyToClipboard,
   readOnly = false,
 }: WhiteboardToolbarProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [templateCategory, setTemplateCategory] = useState<string>("education");
-  const toolbarRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
-  // Close flyout when clicking outside
+  // Hover flyout state for collapsed mode
+  const [hoveredSection, setHoveredSection] = useState<string | null>(null);
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Close when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (toolbarRef.current && !toolbarRef.current.contains(e.target as Node)) {
+      if (sidebarRef.current && !sidebarRef.current.contains(e.target as Node)) {
         setExpandedSection(null);
         setShowTemplates(false);
+        setHoveredSection(null);
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Cleanup hover timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    };
+  }, []);
+
   if (readOnly) return null;
 
   const toggleSection = (id: string) => {
-    setExpandedSection((prev) => (prev === id ? null : id));
-    setShowTemplates(false);
+    if (!isOpen) {
+      setIsOpen(true);
+      setExpandedSection(id);
+      setShowTemplates(false);
+    } else {
+      setExpandedSection((prev) => (prev === id ? null : id));
+      setShowTemplates(false);
+    }
   };
 
   const selectTool = (tool: WhiteboardTool) => {
     onToolChange(tool);
     setExpandedSection(null);
+    setHoveredSection(null);
   };
 
   const toggleTemplates = () => {
-    setShowTemplates((prev) => !prev);
-    setExpandedSection(null);
+    if (!isOpen) {
+      setIsOpen(true);
+      setShowTemplates(true);
+      setExpandedSection(null);
+    } else {
+      setShowTemplates((prev) => !prev);
+      setExpandedSection(null);
+    }
   };
 
-  const loadTemplate = (elements: WhiteboardElement[]) => {
-    // Deep clone with fresh IDs
-    const cloned = elements.map((el, i) => ({
-      ...el,
-      id: `tpl-${Date.now()}-${i}`,
-      points: el.points ? el.points.map((p) => ({ ...p })) : undefined,
-    }));
-    onLoadTemplate?.(cloned);
-    setShowTemplates(false);
+  const loadTemplate = useCallback(
+    (elements: WhiteboardElement[]) => {
+      const cloned = elements.map((el, i) => ({
+        ...el,
+        id: `tpl-${Date.now()}-${i}`,
+        points: el.points ? el.points.map((p) => ({ ...p })) : undefined,
+      }));
+      onLoadTemplate?.(cloned);
+      setShowTemplates(false);
+    },
+    [onLoadTemplate]
+  );
+
+  // Flyout hover handlers
+  const handleFlyoutEnter = (sectionId: string) => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    setHoveredSection(sectionId);
+  };
+
+  const handleFlyoutLeave = () => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredSection(null);
+    }, 150);
   };
 
   // Check if active tool is in a section
@@ -228,114 +316,449 @@ export default function WhiteboardToolbar({
 
   const activeSection = getActiveSection();
 
-  return (
-    <div
-      ref={toolbarRef}
-      className="flex flex-col bg-white dark:bg-gray-800 midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-r border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm select-none overflow-y-auto overflow-x-hidden scrollbar-thin"
-      style={{ width: 180 }}
-    >
-      {/* Primary tools — always visible */}
-      <div className="flex flex-wrap gap-1 p-2 pb-1">
-        {PRIMARY_TOOLS.map((tool) => (
-          <PrimaryToolButton
-            key={tool.id}
-            tool={tool}
-            isActive={activeTool === tool.id}
-            onClick={() => {
-              onToolChange(tool.id);
-              setExpandedSection(null);
-              setShowTemplates(false);
-            }}
-          />
-        ))}
-      </div>
+  // Property visibility
+  const showProperties = !["select", "eraser", "hand"].includes(activeTool);
+  const showStrokeWidth = [
+    "pen", "highlighter", "line", "arrow", "double-arrow", "connector",
+    "rectangle", "circle", "triangle", "diamond", "star", "hexagon",
+    "rounded-rect", "cylinder", "parallelogram",
+    "flowchart-process", "flowchart-decision", "flowchart-terminal",
+    "flowchart-data", "flowchart-document",
+  ].includes(activeTool);
+  const showFillColors = FILL_TOOLS.includes(activeTool);
+  const showFontSize = activeTool === "text";
+  const showStickyColors = activeTool === "sticky";
 
-      <Divider />
+  // ─── Collapsed view ─────────────────────────────────────
 
-      {/* Accordion sections */}
-      {SECTIONS.map((section) => (
-        <div key={section.id}>
-          <SectionHeader
-            section={section}
-            isExpanded={expandedSection === section.id}
-            isActive={activeSection === section.id}
-            onClick={() => toggleSection(section.id)}
-          />
-          {expandedSection === section.id && (
-            <SectionGrid
-              section={section}
-              activeTool={activeTool}
-              onSelect={selectTool}
-            />
-          )}
-          <Divider />
-        </div>
-      ))}
-
-      {/* Templates section */}
-      <div>
+  if (!isOpen) {
+    return (
+      <div
+        ref={sidebarRef}
+        className="absolute left-3 top-3 z-[50] flex flex-col items-center w-11 py-1.5 gap-0.5 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-xl shadow-lg shadow-black/5 dark:shadow-black/20 select-none"
+      >
+        {/* Toggle open */}
         <button
-          onClick={toggleTemplates}
-          className={`flex items-center gap-2 w-full px-3 py-2.5 text-left transition-colors duration-150 cursor-pointer ${
-            showTemplates
-              ? "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20"
-              : "hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
-          }`}
+          onClick={() => setIsOpen(true)}
+          className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-150 cursor-pointer mb-0.5"
+          title="Expand toolbar"
         >
-          <LayoutTemplate className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 flex-shrink-0" />
-          <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 flex-1 truncate">
-            Templates
-          </span>
-          <ChevronRight
-            className={`w-3.5 h-3.5 text-gray-400 dark:text-gray-500 transition-transform duration-200 flex-shrink-0 ${
-              showTemplates ? "rotate-90" : ""
-            }`}
-          />
+          <PanelLeftOpen className="w-4 h-4" />
         </button>
 
+        <div className="w-6 h-px bg-gray-200/60 dark:bg-gray-700/60 midnight:bg-cyan-500/10 purple:bg-pink-500/10" />
+
+        {/* Primary tools */}
+        {PRIMARY_TOOLS.map((tool) => {
+          const Icon = tool.icon;
+          const isActive = activeTool === tool.id;
+          return (
+            <button
+              key={tool.id}
+              onClick={() => onToolChange(tool.id)}
+              className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150 cursor-pointer ${
+                isActive
+                  ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400"
+                  : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+              }`}
+              title={tool.label}
+            >
+              <Icon className="w-[17px] h-[17px]" />
+            </button>
+          );
+        })}
+
+        <div className="w-6 h-px bg-gray-200/60 dark:bg-gray-700/60 midnight:bg-cyan-500/10 purple:bg-pink-500/10 my-0.5" />
+
+        {/* Section icons with hover flyout */}
+        {SECTIONS.map((section) => {
+          const Icon = section.icon;
+          const isActive = activeSection === section.id;
+          const isHovered = hoveredSection === section.id;
+          return (
+            <div key={section.id} className="relative">
+              <button
+                onMouseEnter={() => handleFlyoutEnter(section.id)}
+                onMouseLeave={handleFlyoutLeave}
+                onClick={() => toggleSection(section.id)}
+                className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150 cursor-pointer ${
+                  isActive || isHovered
+                    ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400"
+                    : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                }`}
+                title={section.label}
+              >
+                <Icon className="w-[17px] h-[17px]" />
+              </button>
+
+              {/* Hover flyout popup */}
+              {isHovered && (
+                <div
+                  className="absolute left-full top-1/2 -translate-y-1/2 ml-2 z-[60] animate-in fade-in slide-in-from-left-1 duration-150"
+                  onMouseEnter={() => handleFlyoutEnter(section.id)}
+                  onMouseLeave={handleFlyoutLeave}
+                >
+                  {/* Arrow pointer */}
+                  <div className="absolute left-0 top-1/2 -translate-x-[5px] -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-white dark:bg-gray-800 midnight:bg-[#0d1526] purple:bg-[#1f1035] border-l border-b border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15" />
+                  <div className="relative bg-white/95 dark:bg-gray-800/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-xl shadow-lg shadow-black/8 dark:shadow-black/30 p-2 min-w-[140px]">
+                    <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50 px-1 mb-1.5">
+                      {section.label}
+                    </div>
+                    <div
+                      className="grid gap-1"
+                      style={{ gridTemplateColumns: `repeat(${section.columns || 3}, 1fr)` }}
+                    >
+                      {section.tools.map((tool) => {
+                        const ToolIcon = tool.icon;
+                        const isToolActive = activeTool === tool.id;
+                        return (
+                          <button
+                            key={tool.id}
+                            onClick={() => selectTool(tool.id)}
+                            className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg transition-all duration-100 cursor-pointer ${
+                              isToolActive
+                                ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400"
+                                : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                            }`}
+                            title={tool.label}
+                          >
+                            <ToolIcon className="w-[18px] h-[18px]" />
+                            <span className="text-[8px] font-medium leading-none truncate w-full text-center opacity-70">
+                              {tool.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        <div className="w-6 h-px bg-gray-200/60 dark:bg-gray-700/60 midnight:bg-cyan-500/10 purple:bg-pink-500/10 my-0.5" />
+
+        {/* Templates shortcut */}
+        <button
+          onClick={toggleTemplates}
+          className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-150 cursor-pointer"
+          title="Templates"
+        >
+          <LayoutTemplate className="w-[17px] h-[17px]" />
+        </button>
+
+        {/* Insert image */}
+        <button
+          onClick={onInsertImage}
+          className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-150 cursor-pointer"
+          title="Insert image"
+        >
+          <ImagePlus className="w-[17px] h-[17px]" />
+        </button>
+
+        {/* Export */}
+        <button
+          onClick={onExportPNG}
+          className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-150 cursor-pointer"
+          title="Download as PNG"
+        >
+          <Download className="w-[17px] h-[17px]" />
+        </button>
+      </div>
+    );
+  }
+
+  // ─── Expanded view ──────────────────────────────────────
+
+  return (
+    <div
+      ref={sidebarRef}
+      className="absolute left-3 top-3 z-[50] flex flex-col w-[220px] max-h-[calc(100%-24px)] bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-xl shadow-lg shadow-black/5 dark:shadow-black/20 select-none overflow-hidden"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-500/60 purple:text-pink-500/60">
+          Tools
+        </span>
+        <button
+          onClick={() => setIsOpen(false)}
+          className="flex items-center justify-center w-6 h-6 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-150 cursor-pointer"
+          title="Collapse toolbar"
+        >
+          <PanelLeftClose className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin">
+        {/* Primary tools row */}
+        <div className="flex items-center gap-0.5 px-2.5 py-2">
+          {PRIMARY_TOOLS.map((tool) => {
+            const Icon = tool.icon;
+            const isActive = activeTool === tool.id;
+            return (
+              <button
+                key={tool.id}
+                onClick={() => {
+                  onToolChange(tool.id);
+                  setExpandedSection(null);
+                  setShowTemplates(false);
+                }}
+                className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-150 cursor-pointer ${
+                  isActive
+                    ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400 ring-1 ring-blue-500/15 dark:ring-blue-500/25 midnight:ring-cyan-500/25 purple:ring-pink-500/25"
+                    : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                }`}
+                title={tool.label}
+              >
+                <Icon className="w-[17px] h-[17px]" />
+              </button>
+            );
+          })}
+        </div>
+
+        <SectionDivider />
+
+        {/* Accordion sections */}
+        {SECTIONS.map((section) => (
+          <div key={section.id}>
+            <AccordionHeader
+              section={section}
+              isExpanded={expandedSection === section.id}
+              isActive={activeSection === section.id}
+              onClick={() => toggleSection(section.id)}
+            />
+            {expandedSection === section.id && (
+              <ToolGrid
+                section={section}
+                activeTool={activeTool}
+                onSelect={selectTool}
+              />
+            )}
+          </div>
+        ))}
+
+        <SectionDivider />
+
+        {/* Templates */}
+        <AccordionHeaderSimple
+          icon={LayoutTemplate}
+          label="Templates"
+          isExpanded={showTemplates}
+          onClick={toggleTemplates}
+        />
         {showTemplates && (
           <TemplatePanel
             category={templateCategory}
             onCategoryChange={setTemplateCategory}
             onSelect={loadTemplate}
-            onClose={() => setShowTemplates(false)}
           />
+        )}
+
+        <SectionDivider />
+
+        {/* Insert section */}
+        <div className="px-3 py-2 space-y-1.5">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-600 midnight:text-cyan-500/40 purple:text-pink-500/40 block">
+            Insert
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={onInsertImage}
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+              title="Insert image"
+            >
+              <ImagePlus className="w-3.5 h-3.5" />
+              Image
+            </button>
+            <TableSizePicker onSelect={onInsertTable} />
+          </div>
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={() => onInsertChart?.("bar")}
+              className="flex items-center gap-1 px-1.5 py-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+              title="Bar chart"
+            >
+              <BarChart3 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => onInsertChart?.("line")}
+              className="flex items-center gap-1 px-1.5 py-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+              title="Line chart"
+            >
+              <LineChart className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => onInsertChart?.("pie")}
+              className="flex items-center gap-1 px-1.5 py-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+              title="Pie chart"
+            >
+              <PieChart className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        <SectionDivider />
+
+        {/* Save / Export */}
+        <div className="px-3 py-2 space-y-1.5">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-600 midnight:text-cyan-500/40 purple:text-pink-500/40 block">
+            Save & Share
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={onExportPNG}
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+              title="Download as PNG"
+            >
+              <Download className="w-3.5 h-3.5" />
+              PNG
+            </button>
+            <button
+              onClick={onExportJSON}
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+              title="Download as JSON"
+            >
+              <Download className="w-3.5 h-3.5" />
+              JSON
+            </button>
+            <button
+              onClick={onCopyToClipboard}
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+              title="Copy to clipboard"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              Copy
+            </button>
+          </div>
+        </div>
+
+        <SectionDivider />
+
+        {/* Properties */}
+        {showProperties && (
+          <div className="px-3 py-2 space-y-3">
+            {/* Stroke color */}
+            <PropertySection label="Stroke">
+              <div className="grid grid-cols-5 gap-1.5">
+                {DEFAULT_COLORS.map((color) => (
+                  <ColorSwatch
+                    key={color}
+                    color={color}
+                    isSelected={activeColor === color}
+                    onClick={() => onColorChange(color)}
+                  />
+                ))}
+              </div>
+            </PropertySection>
+
+            {/* Fill color */}
+            {showFillColors && (
+              <PropertySection label="Fill">
+                <div className="grid grid-cols-5 gap-1.5">
+                  {FILL_COLORS.map((color) => (
+                    <button
+                      key={color ?? "no-fill"}
+                      onClick={() => onFillColorChange(color)}
+                      className={`w-7 h-7 rounded-lg border-2 transition-all duration-150 cursor-pointer hover:scale-110 flex items-center justify-center ${
+                        activeFillColor === color
+                          ? "border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 shadow-sm"
+                          : "border-gray-200/80 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                      }`}
+                      style={{ backgroundColor: color ?? "transparent" }}
+                      title={color ?? "No fill"}
+                    >
+                      {color === null ? (
+                        <svg viewBox="0 0 20 20" className="w-4 h-4">
+                          <line x1="4" y1="16" x2="16" y2="4" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      ) : (
+                        activeFillColor === color && (
+                          <Check className={`w-3.5 h-3.5 ${color === "#ffffff" || color === "#fefce8" ? "text-gray-600" : "text-gray-500"}`} />
+                        )
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </PropertySection>
+            )}
+
+            {/* Stroke width */}
+            {showStrokeWidth && (
+              <PropertySection label="Size">
+                <div className="flex items-center gap-1.5">
+                  {STROKE_WIDTHS.map((w) => (
+                    <button
+                      key={w}
+                      onClick={() => onStrokeWidthChange(w)}
+                      className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150 cursor-pointer ${
+                        activeStrokeWidth === w
+                          ? "bg-blue-500/12 dark:bg-blue-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20 ring-1 ring-blue-500/15 dark:ring-blue-500/25 midnight:ring-cyan-500/25 purple:ring-pink-500/25"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                      }`}
+                      title={`${w}px`}
+                    >
+                      <div
+                        className="rounded-full bg-gray-700 dark:bg-gray-300 midnight:bg-cyan-300 purple:bg-pink-300"
+                        style={{
+                          width: Math.min(w * 1.8, 20),
+                          height: Math.min(w * 1.8, 20),
+                        }}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </PropertySection>
+            )}
+
+            {/* Font size */}
+            {showFontSize && (
+              <PropertySection label="Font Size">
+                <div className="flex items-center gap-1">
+                  {[12, 16, 20, 28, 36].map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => onFontSizeChange(size)}
+                      className={`flex items-center justify-center w-8 h-8 rounded-lg text-[10px] font-bold transition-all duration-150 cursor-pointer ${
+                        activeFontSize === size
+                          ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400"
+                          : "text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                      }`}
+                      title={`${size}px`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </PropertySection>
+            )}
+
+            {/* Sticky note color */}
+            {showStickyColors && (
+              <PropertySection label="Note Color">
+                <div className="flex items-center gap-1.5">
+                  {STICKY_COLORS.map((color) => (
+                    <ColorSwatch
+                      key={color}
+                      color={color}
+                      isSelected={activeStickyColor === color}
+                      onClick={() => onStickyColorChange(color)}
+                    />
+                  ))}
+                </div>
+              </PropertySection>
+            )}
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-// ─── Primary tool button ─────────────────────────────────
+// ─── Sub-components ──────────────────────────────────────
 
-function PrimaryToolButton({
-  tool,
-  isActive,
-  onClick,
-}: {
-  tool: ToolDef;
-  isActive: boolean;
-  onClick: () => void;
-}) {
-  const Icon = tool.icon;
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150 cursor-pointer ${
-        isActive
-          ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 midnight:bg-cyan-900/30 midnight:text-cyan-400 purple:bg-pink-900/30 purple:text-pink-400 shadow-sm ring-1 ring-blue-200 dark:ring-blue-800 midnight:ring-cyan-700 purple:ring-pink-700"
-          : "text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
-      }`}
-      title={tool.label}
-    >
-      <Icon className="w-4 h-4" />
-    </button>
-  );
-}
-
-// ─── Accordion section header ────────────────────────────
-
-function SectionHeader({
+function AccordionHeader({
   section,
   isExpanded,
   isActive,
@@ -350,45 +773,76 @@ function SectionHeader({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 w-full px-3 py-2.5 text-left transition-colors duration-150 cursor-pointer ${
+      className={`flex items-center gap-2.5 w-full px-3 py-2 text-left transition-all duration-150 cursor-pointer ${
         isExpanded
-          ? "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20"
+          ? "bg-blue-50/60 dark:bg-blue-500/8 midnight:bg-cyan-500/8 purple:bg-pink-500/8"
           : isActive
-          ? "bg-gray-50 dark:bg-gray-700/30 midnight:bg-cyan-900/10 purple:bg-pink-900/10"
-          : "hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
+          ? "bg-gray-50/80 dark:bg-gray-800/40 midnight:bg-cyan-500/5 purple:bg-pink-500/5"
+          : "hover:bg-gray-50/80 dark:hover:bg-gray-800/40 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
       }`}
     >
       <Icon
         className={`w-4 h-4 flex-shrink-0 ${
-          isActive
+          isActive || isExpanded
             ? "text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
-            : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70"
+            : "text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50"
         }`}
       />
       <span
-        className={`text-xs font-semibold flex-1 truncate ${
-          isActive
+        className={`text-[11px] font-semibold flex-1 ${
+          isActive || isExpanded
             ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-300 purple:text-pink-300"
-            : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
+            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200/80 purple:text-pink-200/80"
         }`}
       >
         {section.label}
       </span>
-      <span className="text-[10px] text-gray-400 dark:text-gray-500 flex-shrink-0">
+      <span className="text-[10px] text-gray-400 dark:text-gray-600 tabular-nums">
         {section.tools.length}
       </span>
-      <ChevronRight
-        className={`w-3.5 h-3.5 text-gray-400 dark:text-gray-500 transition-transform duration-200 flex-shrink-0 ${
-          isExpanded ? "rotate-90" : ""
+      <ChevronDown
+        className={`w-3 h-3 text-gray-400 dark:text-gray-600 transition-transform duration-200 ${
+          isExpanded ? "rotate-180" : ""
         }`}
       />
     </button>
   );
 }
 
-// ─── Section tool grid ───────────────────────────────────
+function AccordionHeaderSimple({
+  icon: Icon,
+  label,
+  isExpanded,
+  onClick,
+}: {
+  icon: IconComp;
+  label: string;
+  isExpanded: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-2.5 w-full px-3 py-2 text-left transition-all duration-150 cursor-pointer ${
+        isExpanded
+          ? "bg-blue-50/60 dark:bg-blue-500/8 midnight:bg-cyan-500/8 purple:bg-pink-500/8"
+          : "hover:bg-gray-50/80 dark:hover:bg-gray-800/40 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
+      }`}
+    >
+      <Icon className="w-4 h-4 flex-shrink-0 text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50" />
+      <span className="text-[11px] font-semibold flex-1 text-gray-600 dark:text-gray-300 midnight:text-cyan-200/80 purple:text-pink-200/80">
+        {label}
+      </span>
+      <ChevronDown
+        className={`w-3 h-3 text-gray-400 dark:text-gray-600 transition-transform duration-200 ${
+          isExpanded ? "rotate-180" : ""
+        }`}
+      />
+    </button>
+  );
+}
 
-function SectionGrid({
+function ToolGrid({
   section,
   activeTool,
   onSelect,
@@ -400,7 +854,7 @@ function SectionGrid({
   const cols = section.columns || 3;
   return (
     <div
-      className="grid gap-1 p-2 pt-1 bg-gray-50/50 dark:bg-gray-800/50 midnight:bg-cyan-900/5 purple:bg-pink-900/5"
+      className="grid gap-1 px-3 py-2 bg-gray-50/40 dark:bg-gray-800/20 midnight:bg-cyan-500/3 purple:bg-pink-500/3"
       style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
     >
       {section.tools.map((tool) => {
@@ -412,13 +866,13 @@ function SectionGrid({
             onClick={() => onSelect(tool.id)}
             className={`flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-lg transition-all duration-150 cursor-pointer ${
               isActive
-                ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 midnight:bg-cyan-900/30 midnight:text-cyan-400 purple:bg-pink-900/30 purple:text-pink-400 shadow-sm ring-1 ring-blue-200 dark:ring-blue-800 midnight:ring-cyan-700 purple:ring-pink-700"
-                : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:bg-white dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:shadow-sm"
+                ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400 ring-1 ring-blue-500/15 dark:ring-blue-500/25 midnight:ring-cyan-500/25 purple:ring-pink-500/25"
+                : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 hover:bg-white dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
             }`}
             title={tool.label}
           >
-            <Icon className="w-5 h-5" />
-            <span className="text-[9px] font-medium leading-tight truncate w-full text-center">
+            <Icon className="w-[18px] h-[18px]" />
+            <span className="text-[9px] font-medium leading-tight truncate w-full text-center opacity-75">
               {tool.label}
             </span>
           </button>
@@ -440,59 +894,49 @@ function TemplatePanel({
   category,
   onCategoryChange,
   onSelect,
-  onClose,
 }: {
   category: string;
   onCategoryChange: (cat: string) => void;
   onSelect: (elements: WhiteboardElement[]) => void;
-  onClose: () => void;
 }) {
   const templates = TEMPLATES.filter((t) => t.category === category);
 
   return (
-    <div className="bg-gray-50/50 dark:bg-gray-800/50 midnight:bg-cyan-900/5 purple:bg-pink-900/5 border-t border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10">
+    <div className="px-3 py-2 bg-gray-50/40 dark:bg-gray-800/20 midnight:bg-cyan-500/3 purple:bg-pink-500/3">
       {/* Category tabs */}
-      <div className="flex gap-0.5 px-2 pt-2">
+      <div className="flex gap-1 mb-2">
         {TEMPLATE_CATEGORIES.map((cat) => {
           const CatIcon = CATEGORY_ICONS[cat.id] || LayoutTemplate;
           return (
             <button
               key={cat.id}
               onClick={() => onCategoryChange(cat.id)}
-              className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-[10px] font-semibold transition-colors duration-150 cursor-pointer ${
+              className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-150 cursor-pointer ${
                 category === cat.id
-                  ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 midnight:bg-cyan-900/30 midnight:text-cyan-400 purple:bg-pink-900/30 purple:text-pink-400"
-                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                  ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400"
+                  : "text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
               }`}
               title={cat.label}
             >
               <CatIcon className="w-3 h-3" />
-              <span className="hidden lg:inline">{cat.label.split(" ")[0]}</span>
+              <span>{cat.label.split(" ")[0]}</span>
             </button>
           );
         })}
-        <div className="flex-1" />
-        <button
-          onClick={onClose}
-          className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-          title="Close templates"
-        >
-          <X className="w-3.5 h-3.5" />
-        </button>
       </div>
 
       {/* Template list */}
-      <div className="flex flex-col gap-1 p-2 max-h-[280px] overflow-y-auto scrollbar-thin">
+      <div className="flex flex-col gap-0.5 max-h-[240px] overflow-y-auto scrollbar-thin">
         {templates.map((tpl) => (
           <button
             key={tpl.id}
             onClick={() => onSelect(tpl.elements)}
-            className="flex flex-col gap-0.5 px-3 py-2 rounded-lg text-left transition-all duration-150 cursor-pointer hover:bg-white dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:shadow-sm group"
+            className="flex flex-col gap-0.5 px-2.5 py-2 rounded-lg text-left transition-all duration-150 cursor-pointer hover:bg-white dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 group"
           >
-            <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
+            <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
               {tpl.name}
             </span>
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 leading-tight">
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 leading-tight">
               {tpl.description}
             </span>
           </button>
@@ -502,10 +946,129 @@ function TemplatePanel({
   );
 }
 
-// ─── Divider ─────────────────────────────────────────────
+// ─── Property helpers ────────────────────────────────────
 
-function Divider() {
+function PropertySection({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="h-px mx-3 bg-gray-100 dark:bg-gray-700/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10" />
+    <div>
+      <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-600 midnight:text-cyan-500/40 purple:text-pink-500/40 mb-1.5 block">
+        {label}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+function ColorSwatch({
+  color,
+  isSelected,
+  onClick,
+}: {
+  color: string;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  const isLight = color === "#ffffff" || color === "#fef08a" || color === "#fefce8";
+  return (
+    <button
+      onClick={onClick}
+      className={`w-7 h-7 rounded-lg border-2 transition-all duration-150 cursor-pointer hover:scale-110 flex items-center justify-center ${
+        isSelected
+          ? "border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 shadow-sm scale-105"
+          : "border-gray-200/80 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+      }`}
+      style={{ backgroundColor: color }}
+      title={color}
+    >
+      {isSelected && (
+        <Check className={`w-3.5 h-3.5 ${isLight ? "text-gray-700" : "text-white"}`} />
+      )}
+    </button>
+  );
+}
+
+function SectionDivider() {
+  return (
+    <div className="h-px mx-3 bg-gray-100 dark:bg-gray-800/60 midnight:bg-cyan-500/6 purple:bg-pink-500/6" />
+  );
+}
+
+// ─── Table size picker (Google Slides style grid) ────────
+
+function TableSizePicker({
+  onSelect,
+}: {
+  onSelect?: (rows: number, cols: number) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [hoverRow, setHoverRow] = useState(0);
+  const [hoverCol, setHoverCol] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [isOpen]);
+
+  const maxRows = 6;
+  const maxCols = 6;
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+        title="Insert table"
+      >
+        <Table2 className="w-3.5 h-3.5" />
+        Table
+      </button>
+      {isOpen && (
+        <div className="absolute left-0 top-full mt-1 z-[60] p-2 bg-white dark:bg-gray-800 midnight:bg-[#0d1526] purple:bg-[#1f1035] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-lg">
+          <div className="text-[10px] text-gray-500 dark:text-gray-400 text-center mb-1.5 font-medium">
+            {hoverRow > 0 ? `${hoverRow} × ${hoverCol}` : "Select size"}
+          </div>
+          <div className="grid gap-0.5" style={{ gridTemplateColumns: `repeat(${maxCols}, 1fr)` }}>
+            {Array.from({ length: maxRows * maxCols }, (_, i) => {
+              const r = Math.floor(i / maxCols) + 1;
+              const c = (i % maxCols) + 1;
+              const isHighlighted = r <= hoverRow && c <= hoverCol;
+              return (
+                <button
+                  key={i}
+                  onMouseEnter={() => {
+                    setHoverRow(r);
+                    setHoverCol(c);
+                  }}
+                  onClick={() => {
+                    onSelect?.(r, c);
+                    setIsOpen(false);
+                    setHoverRow(0);
+                    setHoverCol(0);
+                  }}
+                  className={`w-5 h-5 rounded border transition-colors cursor-pointer ${
+                    isHighlighted
+                      ? "bg-blue-500/20 border-blue-400 dark:bg-blue-500/30 midnight:bg-cyan-500/30 purple:bg-pink-500/30 midnight:border-cyan-400 purple:border-pink-400"
+                      : "bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border-gray-200 dark:border-gray-600 midnight:border-gray-700 purple:border-gray-700"
+                  }`}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

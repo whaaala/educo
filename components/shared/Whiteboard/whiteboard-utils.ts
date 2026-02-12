@@ -9,6 +9,39 @@ export function generateId(): string {
 }
 
 // ---------------------------------------------------------------------------
+// Image cache — avoids re-creating HTMLImageElement on every redraw
+// ---------------------------------------------------------------------------
+const imageCache = new Map<string, HTMLImageElement>();
+
+export function getCachedImage(url: string): HTMLImageElement | null {
+  if (imageCache.has(url)) {
+    const img = imageCache.get(url)!;
+    return img.complete ? img : null;
+  }
+  const img = new Image();
+  img.src = url;
+  imageCache.set(url, img);
+  // Return null until loaded; next redraw will pick it up
+  return null;
+}
+
+export function preloadImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    if (imageCache.has(url)) {
+      const cached = imageCache.get(url)!;
+      if (cached.complete) { resolve(cached); return; }
+      cached.onload = () => resolve(cached);
+      cached.onerror = reject;
+      return;
+    }
+    const img = new Image();
+    img.onload = () => { imageCache.set(url, img); resolve(img); };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Fill helper — call before stroke for shapes with fillColor
 // ---------------------------------------------------------------------------
 function applyFill(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
@@ -35,6 +68,20 @@ export function drawElement(
   ctx.lineWidth = el.strokeWidth;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
+
+  // Apply rotation/flip transforms around element center
+  if (el.rotation || el.flipH || el.flipV) {
+    const bbox = getBoundingBox(el);
+    if (bbox) {
+      const cx = bbox.x + bbox.width / 2;
+      const cy = bbox.y + bbox.height / 2;
+      ctx.translate(cx, cy);
+      if (el.rotation) ctx.rotate((el.rotation * Math.PI) / 180);
+      if (el.flipH) ctx.scale(-1, 1);
+      if (el.flipV) ctx.scale(1, -1);
+      ctx.translate(-cx, -cy);
+    }
+  }
 
   switch (el.type) {
     case "pen":
@@ -93,6 +140,15 @@ export function drawElement(
     case "sticky":
       drawSticky(ctx, el);
       break;
+    case "image":
+      drawImageElement(ctx, el);
+      break;
+    case "table":
+      drawTable(ctx, el);
+      break;
+    case "chart":
+      drawChart(ctx, el);
+      break;
   }
 
   // Centered label for flowchart shapes
@@ -111,6 +167,65 @@ export function drawElement(
       ctx.strokeRect(bbox.x - 4, bbox.y - 4, bbox.width + 8, bbox.height + 8);
       ctx.setLineDash([]);
     }
+  }
+
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------------------
+// Group outlines — draws a subtle outline around grouped elements
+// ---------------------------------------------------------------------------
+
+export function drawGroupOutlines(
+  ctx: CanvasRenderingContext2D,
+  elements: WhiteboardElement[],
+  viewport: { x: number; y: number; zoom: number }
+) {
+  // Collect groups
+  const groups = new Map<string, { minX: number; minY: number; maxX: number; maxY: number }>();
+  for (const el of elements) {
+    if (!el.groupId) continue;
+    const bbox = getBoundingBox(el);
+    if (!bbox) continue;
+    const existing = groups.get(el.groupId);
+    if (existing) {
+      existing.minX = Math.min(existing.minX, bbox.x);
+      existing.minY = Math.min(existing.minY, bbox.y);
+      existing.maxX = Math.max(existing.maxX, bbox.x + bbox.width);
+      existing.maxY = Math.max(existing.maxY, bbox.y + bbox.height);
+    } else {
+      groups.set(el.groupId, {
+        minX: bbox.x,
+        minY: bbox.y,
+        maxX: bbox.x + bbox.width,
+        maxY: bbox.y + bbox.height,
+      });
+    }
+  }
+
+  if (groups.size === 0) return;
+
+  ctx.save();
+  ctx.translate(viewport.x, viewport.y);
+  ctx.scale(viewport.zoom, viewport.zoom);
+
+  const pad = 8;
+  const radius = 6;
+  for (const [, bounds] of groups) {
+    const x = bounds.minX - pad;
+    const y = bounds.minY - pad;
+    const w = bounds.maxX - bounds.minX + pad * 2;
+    const h = bounds.maxY - bounds.minY + pad * 2;
+
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, radius);
+    ctx.fillStyle = "rgba(59, 130, 246, 0.04)";
+    ctx.fill();
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = "rgba(59, 130, 246, 0.25)";
+    ctx.lineWidth = 1.5 / viewport.zoom;
+    ctx.stroke();
+    ctx.setLineDash([]);
   }
 
   ctx.restore();
@@ -435,6 +550,178 @@ function drawShapeLabel(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
   ctx.textBaseline = "alphabetic";
 }
 
+// --- Image ---
+
+function drawImageElement(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
+  if (!el.imageUrl || el.x === undefined || el.y === undefined) return;
+  const img = getCachedImage(el.imageUrl);
+  if (!img) return; // Not loaded yet; will render on next redraw
+  const w = el.width || img.naturalWidth;
+  const h = el.height || img.naturalHeight;
+
+  // Draw shadow
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.1)";
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.drawImage(img, el.x, el.y, w, h);
+  ctx.restore();
+
+  // Stroke border
+  if (el.strokeWidth > 0) {
+    ctx.strokeStyle = el.color || "#d1d5db";
+    ctx.lineWidth = el.strokeWidth;
+    ctx.strokeRect(el.x, el.y, w, h);
+  }
+}
+
+// --- Table ---
+
+function drawTable(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
+  if (el.x === undefined || el.y === undefined) return;
+  const rows = el.tableRows || 3;
+  const cols = el.tableCols || 3;
+  const w = el.width || cols * 100;
+  const h = el.height || rows * 36;
+  const cellW = w / cols;
+  const cellH = h / rows;
+
+  // Fill background
+  ctx.fillStyle = el.fillColor || "#ffffff";
+  ctx.fillRect(el.x, el.y, w, h);
+
+  // Header row
+  ctx.fillStyle = el.color || "#3b82f6";
+  ctx.globalAlpha = 0.12;
+  ctx.fillRect(el.x, el.y, w, cellH);
+  ctx.globalAlpha = el.opacity;
+
+  // Grid lines
+  ctx.strokeStyle = "#d1d5db";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(el.x, el.y, w, h);
+
+  for (let r = 1; r < rows; r++) {
+    ctx.beginPath();
+    ctx.moveTo(el.x, el.y + r * cellH);
+    ctx.lineTo(el.x + w, el.y + r * cellH);
+    ctx.stroke();
+  }
+  for (let c = 1; c < cols; c++) {
+    ctx.beginPath();
+    ctx.moveTo(el.x + c * cellW, el.y);
+    ctx.lineTo(el.x + c * cellW, el.y + h);
+    ctx.stroke();
+  }
+
+  // Cell text
+  if (el.tableData) {
+    ctx.fillStyle = "#374151";
+    ctx.font = `${el.fontSize || 13}px Inter, system-ui, sans-serif`;
+    ctx.textBaseline = "middle";
+    for (let r = 0; r < rows && r < el.tableData.length; r++) {
+      for (let c = 0; c < cols && c < el.tableData[r].length; c++) {
+        const text = el.tableData[r][c];
+        if (text) {
+          const cx = el.x + c * cellW + 8;
+          const cy = el.y + r * cellH + cellH / 2;
+          ctx.fillText(text, cx, cy);
+        }
+      }
+    }
+    ctx.textBaseline = "alphabetic";
+  }
+}
+
+// --- Chart ---
+
+function drawChart(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
+  if (el.x === undefined || el.y === undefined) return;
+  const w = el.width || 300;
+  const h = el.height || 200;
+  const chartType = el.chartType || "bar";
+  const data = el.chartData || { labels: ["A", "B", "C", "D"], values: [40, 70, 30, 90], colors: undefined };
+  const defaultColors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+  const colors = data.colors || defaultColors;
+
+  // Background
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(el.x, el.y, w, h);
+  ctx.strokeStyle = "#e5e7eb";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(el.x, el.y, w, h);
+
+  const pad = 30;
+  const chartX = el.x + pad;
+  const chartY = el.y + pad;
+  const chartW = w - pad * 2;
+  const chartH = h - pad * 2;
+  const maxVal = Math.max(...data.values, 1);
+
+  if (chartType === "bar" || chartType === "column") {
+    const barW = chartW / data.values.length * 0.7;
+    const gap = chartW / data.values.length * 0.3;
+    for (let i = 0; i < data.values.length; i++) {
+      const barH = (data.values[i] / maxVal) * chartH;
+      const bx = chartX + i * (barW + gap) + gap / 2;
+      const by = chartY + chartH - barH;
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fillRect(bx, by, barW, barH);
+      // Label
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "11px Inter, system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(data.labels[i] || "", bx + barW / 2, chartY + chartH + 14);
+    }
+    ctx.textAlign = "start";
+  } else if (chartType === "line") {
+    ctx.beginPath();
+    for (let i = 0; i < data.values.length; i++) {
+      const px = chartX + (i / Math.max(data.values.length - 1, 1)) * chartW;
+      const py = chartY + chartH - (data.values[i] / maxVal) * chartH;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.strokeStyle = colors[0];
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    // Points
+    for (let i = 0; i < data.values.length; i++) {
+      const px = chartX + (i / Math.max(data.values.length - 1, 1)) * chartW;
+      const py = chartY + chartH - (data.values[i] / maxVal) * chartH;
+      ctx.beginPath();
+      ctx.arc(px, py, 4, 0, Math.PI * 2);
+      ctx.fillStyle = colors[0];
+      ctx.fill();
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "11px Inter, system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(data.labels[i] || "", px, chartY + chartH + 14);
+    }
+    ctx.textAlign = "start";
+  } else if (chartType === "pie") {
+    const total = data.values.reduce((s, v) => s + v, 0) || 1;
+    const cx = el.x + w / 2;
+    const cy = el.y + h / 2;
+    const radius = Math.min(chartW, chartH) / 2 - 5;
+    let startAngle = -Math.PI / 2;
+    for (let i = 0; i < data.values.length; i++) {
+      const sliceAngle = (data.values[i] / total) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, radius, startAngle, startAngle + sliceAngle);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      startAngle += sliceAngle;
+    }
+  }
+}
+
 function wrapText(
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -493,10 +780,17 @@ export function getBoundingBox(el: WhiteboardElement): { x: number; y: number; w
     return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
   }
 
-  // Bounding-box shapes
-  if (BBOX_SHAPE_TOOLS.includes(el.type) || el.type === "sticky") {
+  // Bounding-box shapes — normalize negative dimensions from right-to-left drawing
+  if (BBOX_SHAPE_TOOLS.includes(el.type) || el.type === "sticky" || el.type === "image" || el.type === "table" || el.type === "chart") {
     if (el.x === undefined || el.y === undefined) return null;
-    return { x: el.x, y: el.y, width: el.width || 0, height: el.height || 0 };
+    const w = el.width || 0;
+    const h = el.height || 0;
+    return {
+      x: w < 0 ? el.x + w : el.x,
+      y: h < 0 ? el.y + h : el.y,
+      width: Math.abs(w),
+      height: Math.abs(h),
+    };
   }
 
   // Line-based shapes

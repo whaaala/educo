@@ -3,7 +3,14 @@
 import { useRef, useEffect, useCallback } from "react";
 import type { WhiteboardElement, WhiteboardTool, Point, Viewport } from "./whiteboard-types";
 import { BBOX_SHAPE_TOOLS, LINE_TOOLS } from "./whiteboard-types";
-import { drawElement, screenToCanvas, hitTest, generateId } from "./whiteboard-utils";
+import { drawElement, screenToCanvas, hitTest, generateId, getBoundingBox, drawGroupOutlines } from "./whiteboard-utils";
+
+interface ContextMenuEvent {
+  x: number;
+  y: number;
+  canvasPoint: { x: number; y: number };
+  elementId: string | null;
+}
 
 interface WhiteboardCanvasProps {
   elements: WhiteboardElement[];
@@ -17,12 +24,17 @@ interface WhiteboardCanvasProps {
   activeStickyColor: string;
   readOnly?: boolean;
   onAddElement: (element: WhiteboardElement) => void;
-  onUpdateElement: (id: string, updates: Partial<WhiteboardElement>) => void;
+  onBatchUpdate: (updates: Map<string, Partial<WhiteboardElement>>) => void;
   onRemoveElement: (id: string) => void;
-  onSelectElement: (id: string | null) => void;
+  onSelectElement: (id: string | null, addToSelection?: boolean) => void;
+  onSelectMultiple: (ids: string[]) => void;
   onViewportChange: (viewport: Viewport) => void;
   onTextEdit: (element: WhiteboardElement) => void;
+  onMoveStart: () => void;
+  onContextMenu?: (event: ContextMenuEvent) => void;
 }
+
+export type { ContextMenuEvent };
 
 export default function WhiteboardCanvas({
   elements,
@@ -36,11 +48,14 @@ export default function WhiteboardCanvas({
   activeStickyColor,
   readOnly = false,
   onAddElement,
-  onUpdateElement,
+  onBatchUpdate,
   onRemoveElement,
   onSelectElement,
+  onSelectMultiple,
   onViewportChange,
   onTextEdit,
+  onMoveStart,
+  onContextMenu: onContextMenuProp,
 }: WhiteboardCanvasProps) {
   const staticCanvasRef = useRef<HTMLCanvasElement>(null);
   const activeCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -48,9 +63,20 @@ export default function WhiteboardCanvas({
   const isDrawing = useRef(false);
   const activeElement = useRef<WhiteboardElement | null>(null);
   const dragStart = useRef<Point | null>(null);
-  const dragElementStart = useRef<{ x: number; y: number } | null>(null);
+  const dragOriginals = useRef<Map<string, WhiteboardElement> | null>(null);
+  const hasDragMoved = useRef(false);
   const panStart = useRef<Point | null>(null);
+  const panRafId = useRef<number | null>(null);
+  const pendingViewport = useRef<Viewport | null>(null);
   const lastPinchDist = useRef<number | null>(null);
+  const rafId = useRef<number | null>(null);
+  const needsRedraw = useRef(false);
+  const marqueeStart = useRef<Point | null>(null);
+  const marqueeEnd = useRef<Point | null>(null);
+
+  // Stable ref for elements — avoids recreating handlers on every elements change
+  const elementsRef = useRef(elements);
+  elementsRef.current = elements;
 
   // Resize canvases to match container
   const resizeCanvases = useCallback(() => {
@@ -72,7 +98,7 @@ export default function WhiteboardCanvas({
     }
   }, []);
 
-  // Redraw static canvas
+  // Redraw static canvas — uses refs so the function itself is stable
   const redrawStatic = useCallback(() => {
     const canvas = staticCanvasRef.current;
     if (!canvas) return;
@@ -87,12 +113,16 @@ export default function WhiteboardCanvas({
     // Draw dot grid
     drawDotGrid(ctx, viewport, canvas.width / dpr, canvas.height / dpr);
 
+    // Draw group outlines (behind selection outlines)
+    const els = elementsRef.current;
+    drawGroupOutlines(ctx, els, viewport);
+
     // Draw all committed elements
-    for (const el of elements) {
+    for (const el of els) {
       drawElement(ctx, el, viewport);
     }
     ctx.restore();
-  }, [elements, viewport]);
+  }, [viewport]);
 
   // Clear active canvas
   const clearActive = useCallback(() => {
@@ -107,8 +137,8 @@ export default function WhiteboardCanvas({
     ctx.restore();
   }, []);
 
-  // Draw active element preview
-  const drawActivePreview = useCallback(() => {
+  // Draw active element preview (RAF-throttled for smooth rendering)
+  const flushActivePreview = useCallback(() => {
     const canvas = activeCanvasRef.current;
     if (!canvas || !activeElement.current) return;
     const ctx = canvas.getContext("2d");
@@ -119,7 +149,23 @@ export default function WhiteboardCanvas({
     ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
     drawElement(ctx, activeElement.current, viewport);
     ctx.restore();
+    needsRedraw.current = false;
   }, [viewport]);
+
+  const drawActivePreview = useCallback(() => {
+    if (!needsRedraw.current) {
+      needsRedraw.current = true;
+      rafId.current = requestAnimationFrame(flushActivePreview);
+    }
+  }, [flushActivePreview]);
+
+  // Cleanup RAF on unmount
+  useEffect(() => {
+    return () => {
+      if (rafId.current !== null) cancelAnimationFrame(rafId.current);
+      if (panRafId.current !== null) cancelAnimationFrame(panRafId.current);
+    };
+  }, []);
 
   // Resize observer
   useEffect(() => {
@@ -136,7 +182,7 @@ export default function WhiteboardCanvas({
   // Redraw when elements or viewport change
   useEffect(() => {
     redrawStatic();
-  }, [redrawStatic]);
+  }, [redrawStatic, elements]);
 
   // Get canvas point from pointer event
   const getCanvasPoint = useCallback(
@@ -146,6 +192,12 @@ export default function WhiteboardCanvas({
     },
     [viewport]
   );
+
+  // Deep-copy an element (including points array)
+  const cloneElement = (el: WhiteboardElement): WhiteboardElement => ({
+    ...el,
+    points: el.points ? el.points.map((p) => ({ ...p })) : undefined,
+  });
 
   // Pointer down
   const handlePointerDown = useCallback(
@@ -172,6 +224,86 @@ export default function WhiteboardCanvas({
       canvas.setPointerCapture(e.pointerId);
 
       const pt = getCanvasPoint(e);
+
+      // Select tool — handles single-select, shift+multi-select, and group-aware selection
+      if (activeTool === "select") {
+        const els = elementsRef.current;
+        let found = false;
+        for (let i = els.length - 1; i >= 0; i--) {
+          if (hitTest(pt, els[i])) {
+            const clickedEl = els[i];
+            const isShift = e.shiftKey;
+
+            // Handle selection
+            if (isShift) {
+              onSelectElement(clickedEl.id, true);
+            } else if (!clickedEl.isSelected) {
+              onSelectElement(clickedEl.id, false);
+            }
+            // If already selected and no shift, keep existing selection (enables group drag)
+
+            // Determine which elements will be dragged
+            dragStart.current = pt;
+            hasDragMoved.current = false;
+            dragOriginals.current = new Map();
+
+            // Collect IDs of all elements that should move together
+            const dragIds = new Set<string>();
+
+            if (isShift && clickedEl.isSelected) {
+              // Shift-clicking a selected item = deselecting, no drag
+              dragStart.current = null;
+              dragOriginals.current = null;
+            } else if (isShift) {
+              // Adding to selection: drag all currently selected + this one + group members
+              for (const el of els) {
+                if (el.isSelected) dragIds.add(el.id);
+              }
+              dragIds.add(clickedEl.id);
+              if (clickedEl.groupId) {
+                for (const el of els) {
+                  if (el.groupId === clickedEl.groupId) dragIds.add(el.id);
+                }
+              }
+            } else if (clickedEl.isSelected) {
+              // Already selected: drag all currently selected elements
+              for (const el of els) {
+                if (el.isSelected) dragIds.add(el.id);
+              }
+            } else {
+              // New selection: drag this element + its group members
+              dragIds.add(clickedEl.id);
+              if (clickedEl.groupId) {
+                for (const el of els) {
+                  if (el.groupId === clickedEl.groupId) dragIds.add(el.id);
+                }
+              }
+            }
+
+            // Store originals for all drag targets
+            if (dragOriginals.current) {
+              for (const el of els) {
+                if (dragIds.has(el.id)) {
+                  dragOriginals.current.set(el.id, cloneElement(el));
+                }
+              }
+            }
+
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          onSelectElement(null);
+          dragStart.current = null;
+          dragOriginals.current = null;
+          // Start marquee selection on empty space
+          marqueeStart.current = pt;
+          marqueeEnd.current = pt;
+        }
+        return;
+      }
+
       isDrawing.current = true;
 
       switch (activeTool) {
@@ -188,10 +320,10 @@ export default function WhiteboardCanvas({
           break;
 
         case "eraser": {
-          // Find and remove element under cursor
-          for (let i = elements.length - 1; i >= 0; i--) {
-            if (hitTest(pt, elements[i])) {
-              onRemoveElement(elements[i].id);
+          const els = elementsRef.current;
+          for (let i = els.length - 1; i >= 0; i--) {
+            if (hitTest(pt, els[i])) {
+              onRemoveElement(els[i].id);
               break;
             }
           }
@@ -279,67 +411,149 @@ export default function WhiteboardCanvas({
           isDrawing.current = false;
           break;
         }
-
-        case "select": {
-          let found = false;
-          for (let i = elements.length - 1; i >= 0; i--) {
-            if (hitTest(pt, elements[i])) {
-              onSelectElement(elements[i].id);
-              dragStart.current = pt;
-              const el = elements[i];
-              dragElementStart.current = {
-                x: el.x ?? el.startX ?? 0,
-                y: el.y ?? el.startY ?? 0,
-              };
-              found = true;
-              break;
-            }
-          }
-          if (!found) onSelectElement(null);
-          break;
-        }
       }
     },
     [
       readOnly, activeTool, activeColor, activeFillColor, activeStrokeWidth, activeOpacity,
-      activeFontSize, activeStickyColor, viewport, elements, getCanvasPoint,
+      activeFontSize, activeStickyColor, viewport, getCanvasPoint,
       onAddElement, onRemoveElement, onSelectElement, onTextEdit,
     ]
   );
 
+  // Compute position updates for an element given a delta
+  const computeMoveUpdates = (orig: WhiteboardElement, dx: number, dy: number): Partial<WhiteboardElement> => {
+    const updates: Partial<WhiteboardElement> = {};
+    if (orig.x !== undefined) {
+      updates.x = orig.x + dx;
+      updates.y = (orig.y ?? 0) + dy;
+    }
+    if (orig.startX !== undefined) {
+      updates.startX = orig.startX + dx;
+      updates.startY = (orig.startY ?? 0) + dy;
+      if (orig.endX !== undefined) {
+        updates.endX = orig.endX + dx;
+        updates.endY = (orig.endY ?? 0) + dy;
+      }
+    }
+    if (orig.points) {
+      updates.points = orig.points.map((p) => ({
+        x: p.x + dx,
+        y: p.y + dy,
+      }));
+    }
+    return updates;
+  };
+
   // Pointer move
   const handlePointerMove = useCallback(
     (e: React.PointerEvent) => {
-      // Pan
+      // Pan — RAF-throttled for smooth, jitter-free movement
       if (panStart.current) {
-        onViewportChange({
+        const newViewport: Viewport = {
           ...viewport,
           x: e.clientX - panStart.current.x,
           y: e.clientY - panStart.current.y,
-        });
+        };
+        pendingViewport.current = newViewport;
+        if (panRafId.current === null) {
+          panRafId.current = requestAnimationFrame(() => {
+            if (pendingViewport.current) {
+              onViewportChange(pendingViewport.current);
+            }
+            panRafId.current = null;
+          });
+        }
+        return;
+      }
+
+      // Select/drag — move all selected elements using stored originals
+      if (dragStart.current && dragOriginals.current && dragOriginals.current.size > 0) {
+        const pt = getCanvasPoint(e);
+        if (!hasDragMoved.current) {
+          hasDragMoved.current = true;
+          onMoveStart();
+        }
+        const dx = pt.x - dragStart.current.x;
+        const dy = pt.y - dragStart.current.y;
+
+        const allUpdates = new Map<string, Partial<WhiteboardElement>>();
+        for (const [id, orig] of dragOriginals.current) {
+          allUpdates.set(id, computeMoveUpdates(orig, dx, dy));
+        }
+        onBatchUpdate(allUpdates);
+        return;
+      }
+
+      // Marquee selection — draw rubber band rectangle on active canvas
+      if (marqueeStart.current) {
+        const pt = getCanvasPoint(e);
+        marqueeEnd.current = pt;
+        // Draw marquee on active canvas
+        const canvas = activeCanvasRef.current;
+        if (canvas) {
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            const dpr = window.devicePixelRatio || 1;
+            ctx.save();
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+
+            const sx = marqueeStart.current.x * viewport.zoom + viewport.x;
+            const sy = marqueeStart.current.y * viewport.zoom + viewport.y;
+            const ex = pt.x * viewport.zoom + viewport.x;
+            const ey = pt.y * viewport.zoom + viewport.y;
+            const rx = Math.min(sx, ex);
+            const ry = Math.min(sy, ey);
+            const rw = Math.abs(ex - sx);
+            const rh = Math.abs(ey - sy);
+
+            ctx.fillStyle = "rgba(59, 130, 246, 0.08)";
+            ctx.fillRect(rx, ry, rw, rh);
+            ctx.strokeStyle = "#3b82f6";
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 3]);
+            ctx.strokeRect(rx, ry, rw, rh);
+            ctx.setLineDash([]);
+            ctx.restore();
+          }
+        }
         return;
       }
 
       if (!isDrawing.current || readOnly) return;
       const pt = getCanvasPoint(e);
 
+      // Coalesced pointer events for smoother pen/highlighter strokes
+      const coalescedEvents = (e as unknown as { getCoalescedEvents?: () => PointerEvent[] }).getCoalescedEvents?.() || [];
+
       switch (activeTool) {
         case "pen":
         case "highlighter":
           if (activeElement.current?.points) {
-            activeElement.current.points.push(pt);
+            if (coalescedEvents.length > 1) {
+              const rect = containerRef.current!.getBoundingClientRect();
+              for (const ce of coalescedEvents) {
+                activeElement.current.points.push(
+                  screenToCanvas(ce.clientX, ce.clientY, viewport, rect)
+                );
+              }
+            } else {
+              activeElement.current.points.push(pt);
+            }
             drawActivePreview();
           }
           break;
 
-        case "eraser":
-          for (let i = elements.length - 1; i >= 0; i--) {
-            if (hitTest(pt, elements[i])) {
-              onRemoveElement(elements[i].id);
+        case "eraser": {
+          const els = elementsRef.current;
+          for (let i = els.length - 1; i >= 0; i--) {
+            if (hitTest(pt, els[i])) {
+              onRemoveElement(els[i].id);
               break;
             }
           }
           break;
+        }
 
         case "rectangle":
         case "circle":
@@ -372,68 +586,104 @@ export default function WhiteboardCanvas({
             drawActivePreview();
           }
           break;
-
-        case "select":
-          if (dragStart.current && dragElementStart.current) {
-            const dx = pt.x - dragStart.current.x;
-            const dy = pt.y - dragStart.current.y;
-            const selectedEl = elements.find((el) => el.isSelected);
-            if (selectedEl) {
-              const updates: Partial<WhiteboardElement> = {};
-              if (selectedEl.x !== undefined) {
-                updates.x = dragElementStart.current.x + dx;
-                updates.y = dragElementStart.current.y + dy;
-              }
-              if (selectedEl.startX !== undefined) {
-                updates.startX = dragElementStart.current.x + dx;
-                updates.startY = dragElementStart.current.y + dy;
-                if (selectedEl.endX !== undefined && selectedEl.endY !== undefined) {
-                  const origDx = selectedEl.endX - (selectedEl.startX || 0);
-                  const origDy = selectedEl.endY - (selectedEl.startY || 0);
-                  updates.endX = dragElementStart.current.x + dx + origDx;
-                  updates.endY = dragElementStart.current.y + dy + origDy;
-                }
-              }
-              if (selectedEl.points) {
-                updates.points = selectedEl.points.map((p) => ({
-                  x: p.x + dx,
-                  y: p.y + dy,
-                }));
-              }
-              onUpdateElement(selectedEl.id, updates);
-            }
-          }
-          break;
       }
     },
     [
-      readOnly, activeTool, viewport, elements, getCanvasPoint,
-      drawActivePreview, onViewportChange, onRemoveElement, onUpdateElement,
+      readOnly, activeTool, viewport, getCanvasPoint,
+      drawActivePreview, onViewportChange, onRemoveElement, onBatchUpdate, onMoveStart,
     ]
   );
 
   // Pointer up
   const handlePointerUp = useCallback(() => {
+    // Flush any pending pan viewport update
+    if (panStart.current && pendingViewport.current) {
+      if (panRafId.current !== null) {
+        cancelAnimationFrame(panRafId.current);
+        panRafId.current = null;
+      }
+      onViewportChange(pendingViewport.current);
+      pendingViewport.current = null;
+    }
     panStart.current = null;
+
+    // Clean up select/drag state
     dragStart.current = null;
-    dragElementStart.current = null;
+    dragOriginals.current = null;
+    hasDragMoved.current = false;
+
+    // Finalize marquee selection
+    if (marqueeStart.current && marqueeEnd.current) {
+      const ms = marqueeStart.current;
+      const me = marqueeEnd.current;
+      const minX = Math.min(ms.x, me.x);
+      const minY = Math.min(ms.y, me.y);
+      const maxX = Math.max(ms.x, me.x);
+      const maxY = Math.max(ms.y, me.y);
+
+      // Only count as marquee if dragged at least a small distance
+      if (maxX - minX > 4 || maxY - minY > 4) {
+        const els = elementsRef.current;
+        const hitIds: string[] = [];
+        for (const el of els) {
+          const bbox = getBoundingBox(el);
+          if (!bbox) continue;
+          // Element is inside marquee if its bounding box overlaps the marquee rect
+          if (
+            bbox.x + bbox.width >= minX &&
+            bbox.x <= maxX &&
+            bbox.y + bbox.height >= minY &&
+            bbox.y <= maxY
+          ) {
+            hitIds.push(el.id);
+          }
+        }
+        if (hitIds.length > 0) {
+          onSelectMultiple(hitIds);
+        }
+      }
+
+      marqueeStart.current = null;
+      marqueeEnd.current = null;
+      clearActive();
+    }
 
     if (!isDrawing.current) return;
     isDrawing.current = false;
 
     if (activeElement.current) {
-      onAddElement(activeElement.current);
+      const el = activeElement.current;
+
+      // Minimum size threshold: discard tiny/accidental shapes
+      const MIN_SIZE = 4;
+      const isBbox = el.width !== undefined && el.height !== undefined;
+      const isLine = el.startX !== undefined && el.endX !== undefined;
+      const isPen = el.points && el.points.length > 0;
+
+      let tooSmall = false;
+      if (isBbox && Math.abs(el.width!) < MIN_SIZE && Math.abs(el.height!) < MIN_SIZE) {
+        tooSmall = true;
+      } else if (isLine) {
+        const dx = (el.endX || 0) - (el.startX || 0);
+        const dy = (el.endY || 0) - (el.startY || 0);
+        if (Math.hypot(dx, dy) < MIN_SIZE) tooSmall = true;
+      } else if (isPen && el.points!.length < 2) {
+        tooSmall = true;
+      }
+
+      if (!tooSmall) {
+        onAddElement(el);
+      }
       activeElement.current = null;
       clearActive();
     }
-  }, [onAddElement, clearActive]);
+  }, [onAddElement, clearActive, onViewportChange, onSelectMultiple]);
 
   // Wheel for zoom/pan
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
       e.preventDefault();
       if (e.ctrlKey || e.metaKey) {
-        // Zoom
         const delta = e.deltaY > 0 ? 0.9 : 1.1;
         const newZoom = Math.min(5, Math.max(0.1, viewport.zoom * delta));
         const rect = containerRef.current!.getBoundingClientRect();
@@ -445,7 +695,6 @@ export default function WhiteboardCanvas({
           zoom: newZoom,
         });
       } else {
-        // Pan
         onViewportChange({
           ...viewport,
           x: viewport.x - e.deltaX,
@@ -485,20 +734,145 @@ export default function WhiteboardCanvas({
       if (readOnly) return;
       const rect = containerRef.current!.getBoundingClientRect();
       const pt = screenToCanvas(e.clientX, e.clientY, viewport, rect);
-      for (let i = elements.length - 1; i >= 0; i--) {
-        const el = elements[i];
+      const els = elementsRef.current;
+      for (let i = els.length - 1; i >= 0; i--) {
+        const el = els[i];
         if ((el.type === "text" || el.type === "sticky") && hitTest(pt, el)) {
           onTextEdit(el);
           return;
         }
       }
     },
-    [readOnly, viewport, elements, onTextEdit]
+    [readOnly, viewport, onTextEdit]
+  );
+
+  // Right-click context menu
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (!onContextMenuProp) return;
+      const rect = containerRef.current!.getBoundingClientRect();
+      const pt = screenToCanvas(e.clientX, e.clientY, viewport, rect);
+
+      // Hit test to find element under cursor
+      const els = elementsRef.current;
+      let elementId: string | null = null;
+      for (let i = els.length - 1; i >= 0; i--) {
+        if (hitTest(pt, els[i])) {
+          elementId = els[i].id;
+          // Select the element if not already selected
+          if (!els[i].isSelected) {
+            onSelectElement(elementId, false);
+          }
+          break;
+        }
+      }
+
+      onContextMenuProp({
+        x: e.clientX,
+        y: e.clientY,
+        canvasPoint: pt,
+        elementId,
+      });
+    },
+    [viewport, onSelectElement, onContextMenuProp]
+  );
+
+  // Image drag-and-drop
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      if (readOnly) return;
+      const rect = containerRef.current!.getBoundingClientRect();
+      const pt = screenToCanvas(e.clientX, e.clientY, viewport, rect);
+
+      // Handle dropped files (images)
+      const files = Array.from(e.dataTransfer.files).filter((f) =>
+        f.type.startsWith("image/")
+      );
+
+      // Handle dropped URLs / HTML images
+      const html = e.dataTransfer.getData("text/html");
+      const url = e.dataTransfer.getData("text/uri-list") || e.dataTransfer.getData("text/plain");
+
+      if (files.length > 0) {
+        files.forEach((file, i) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const dataUrl = reader.result as string;
+            const img = new Image();
+            img.onload = () => {
+              // Scale down large images to fit reasonable whiteboard dimensions
+              let w = img.naturalWidth;
+              let h = img.naturalHeight;
+              const maxDim = 600;
+              if (w > maxDim || h > maxDim) {
+                const scale = maxDim / Math.max(w, h);
+                w = Math.round(w * scale);
+                h = Math.round(h * scale);
+              }
+              onAddElement({
+                id: generateId(),
+                type: "image",
+                x: pt.x + i * 20,
+                y: pt.y + i * 20,
+                width: w,
+                height: h,
+                imageUrl: dataUrl,
+                color: "#d1d5db",
+                strokeWidth: 0,
+                opacity: 1,
+              });
+            };
+            img.src = dataUrl;
+          };
+          reader.readAsDataURL(file);
+        });
+      } else if (html) {
+        // Extract image URL from dropped HTML
+        const match = html.match(/<img[^>]+src="([^"]+)"/);
+        if (match && match[1]) {
+          onAddElement({
+            id: generateId(),
+            type: "image",
+            x: pt.x,
+            y: pt.y,
+            width: 300,
+            height: 200,
+            imageUrl: match[1],
+            color: "#d1d5db",
+            strokeWidth: 0,
+            opacity: 1,
+          });
+        }
+      } else if (url && (url.startsWith("http") || url.startsWith("data:"))) {
+        onAddElement({
+          id: generateId(),
+          type: "image",
+          x: pt.x,
+          y: pt.y,
+          width: 300,
+          height: 200,
+          imageUrl: url,
+          color: "#d1d5db",
+          strokeWidth: 0,
+          opacity: 1,
+        });
+      }
+    },
+    [readOnly, viewport, onAddElement]
   );
 
   // Cursor based on active tool
   const getCursor = () => {
     if (readOnly) return "default";
+    if (dragStart.current && hasDragMoved.current) return "grabbing";
+    if (panStart.current) return "grabbing";
     switch (activeTool) {
       case "pen":
       case "highlighter":
@@ -519,25 +893,23 @@ export default function WhiteboardCanvas({
   return (
     <div
       ref={containerRef}
-      className="relative h-full overflow-hidden bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e]"
+      className="absolute inset-0 z-0 overflow-hidden bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e]"
       style={{ cursor: getCursor(), touchAction: "none" }}
       onWheel={handleWheel}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onContextMenu={handleContextMenu}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
     >
-      {/* Static layer - committed elements */}
-      <canvas
-        ref={staticCanvasRef}
-        className="absolute inset-0"
-      />
-      {/* Active layer - in-progress drawing */}
+      <canvas ref={staticCanvasRef} className="absolute inset-0 whiteboard-static-canvas" />
       <canvas
         ref={activeCanvasRef}
         className="absolute inset-0"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerUp}
+        onLostPointerCapture={handlePointerUp}
         onDoubleClick={handleDoubleClick}
       />
     </div>
@@ -552,7 +924,7 @@ function drawDotGrid(
   height: number
 ) {
   const spacing = 24 * viewport.zoom;
-  if (spacing < 6) return; // Too zoomed out, skip dots
+  if (spacing < 6) return;
 
   ctx.save();
   ctx.fillStyle = "rgba(0,0,0,0.08)";

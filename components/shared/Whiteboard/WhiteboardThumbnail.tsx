@@ -214,6 +214,14 @@ function ElementSVG({ el }: { el: WhiteboardElement }) {
     case "flowchart-document":
       return <FlowchartDocumentSVG el={el} />;
 
+    // --- new element types ---
+    case "image":
+      return <ImageSVG el={el} />;
+    case "table":
+      return <TableSVG el={el} />;
+    case "chart":
+      return <ChartSVG el={el} />;
+
     default:
       return null;
   }
@@ -723,6 +731,109 @@ function FlowchartDocumentSVG({ el }: { el: WhiteboardElement }) {
         strokeLinejoin="round"
       />
       <LabelText el={el} cx={x + w / 2} cy={y + bodyH / 2} />
+    </g>
+  );
+}
+
+// ===========================================================================
+// Image, Table, Chart renderers
+// ===========================================================================
+
+/** Image: placeholder rectangle with icon (actual image not loaded in SVG thumbnail) */
+function ImageSVG({ el }: { el: WhiteboardElement }) {
+  if (el.x === undefined || el.y === undefined) return null;
+  const { x, y, w, h } = normaliseBBox(el);
+  return (
+    <g opacity={el.opacity}>
+      <rect
+        x={x} y={y} width={w} height={h}
+        fill="#f3f4f6" stroke="#d1d5db" strokeWidth={1} rx={4}
+      />
+      {/* Simple image icon */}
+      <g transform={`translate(${x + w / 2 - 10}, ${y + h / 2 - 10})`} opacity={0.3}>
+        <rect width="20" height="20" rx="2" fill="none" stroke="#6b7280" strokeWidth="1.5" />
+        <circle cx="7" cy="7" r="2" fill="#6b7280" />
+        <polyline points="3,16 8,10 12,14 15,11 17,14" fill="none" stroke="#6b7280" strokeWidth="1.5" />
+      </g>
+    </g>
+  );
+}
+
+/** Table: grid of cells */
+function TableSVG({ el }: { el: WhiteboardElement }) {
+  if (el.x === undefined || el.y === undefined) return null;
+  const { x, y, w, h } = normaliseBBox(el);
+  const rows = el.tableRows || 3;
+  const cols = el.tableCols || 3;
+  const cellW = w / cols;
+  const cellH = h / rows;
+
+  const lines: React.ReactNode[] = [];
+  // Horizontal lines
+  for (let r = 0; r <= rows; r++) {
+    lines.push(
+      <line key={`h${r}`} x1={x} y1={y + r * cellH} x2={x + w} y2={y + r * cellH}
+        stroke="#d1d5db" strokeWidth={1} />
+    );
+  }
+  // Vertical lines
+  for (let c = 0; c <= cols; c++) {
+    lines.push(
+      <line key={`v${c}`} x1={x + c * cellW} y1={y} x2={x + c * cellW} y2={y + h}
+        stroke="#d1d5db" strokeWidth={1} />
+    );
+  }
+
+  return (
+    <g opacity={el.opacity}>
+      <rect x={x} y={y} width={w} height={h} fill="#ffffff" />
+      <rect x={x} y={y} width={w} height={cellH} fill="#eff6ff" />
+      {lines}
+    </g>
+  );
+}
+
+/** Chart: simplified bar/line/pie representation */
+function ChartSVG({ el }: { el: WhiteboardElement }) {
+  if (el.x === undefined || el.y === undefined) return null;
+  const { x, y, w, h } = normaliseBBox(el);
+  const chartType = el.chartType || "bar";
+  const data = el.chartData || { labels: ["A", "B", "C", "D"], values: [40, 70, 30, 90] };
+  const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+  const maxVal = Math.max(...data.values, 1);
+
+  return (
+    <g opacity={el.opacity}>
+      <rect x={x} y={y} width={w} height={h} fill="#ffffff" stroke="#e5e7eb" strokeWidth={1} rx={4} />
+      {chartType === "pie" ? (
+        (() => {
+          const cx = x + w / 2;
+          const cy = y + h / 2;
+          const r = Math.min(w, h) / 2 - 10;
+          const total = data.values.reduce((s, v) => s + v, 0) || 1;
+          let startAngle = -Math.PI / 2;
+          return data.values.map((v, i) => {
+            const angle = (v / total) * Math.PI * 2;
+            const x1 = cx + r * Math.cos(startAngle);
+            const y1 = cy + r * Math.sin(startAngle);
+            const x2 = cx + r * Math.cos(startAngle + angle);
+            const y2 = cy + r * Math.sin(startAngle + angle);
+            const largeArc = angle > Math.PI ? 1 : 0;
+            const d = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+            startAngle += angle;
+            return <path key={i} d={d} fill={colors[i % colors.length]} stroke="#ffffff" strokeWidth={1} />;
+          });
+        })()
+      ) : (
+        data.values.map((v, i) => {
+          const barW = (w - 20) / data.values.length * 0.7;
+          const gap = (w - 20) / data.values.length * 0.3;
+          const barH = (v / maxVal) * (h - 30);
+          const bx = x + 10 + i * (barW + gap) + gap / 2;
+          const by = y + h - 10 - barH;
+          return <rect key={i} x={bx} y={by} width={barW} height={barH} fill={colors[i % colors.length]} rx={2} />;
+        })
+      )}
     </g>
   );
 }
