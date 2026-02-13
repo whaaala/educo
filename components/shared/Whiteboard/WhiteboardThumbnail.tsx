@@ -888,46 +888,134 @@ function TableSVG({ el }: { el: WhiteboardElement }) {
   );
 }
 
+/** Resolve a color string for SVG: returns fill value and optional gradient def */
+function svgChartColor(color: string, id: string): { fill: string; def: React.ReactNode | null } {
+  if (color.startsWith("gradient:")) {
+    const parts = color.split(":");
+    const gradId = `cg-${id}`;
+    return {
+      fill: `url(#${gradId})`,
+      def: (
+        <linearGradient key={gradId} id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={parts[1]} />
+          <stop offset="100%" stopColor={parts[2]} />
+        </linearGradient>
+      ),
+    };
+  }
+  return { fill: color, def: null };
+}
+
 /** Chart: simplified bar/line/pie representation */
 function ChartSVG({ el }: { el: WhiteboardElement }) {
   if (el.x === undefined || el.y === undefined) return null;
   const { x, y, w, h } = normaliseBBox(el);
   const chartType = el.chartType || "bar";
   const data = el.chartData || { labels: ["A", "B", "C", "D"], values: [40, 70, 30, 90] };
-  const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+  const colors = data.colors || ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
   const maxVal = Math.max(...data.values, 1);
+  const hasTitle = !!el.chartTitle;
+  const tFontSize = el.chartTitleFontSize || 14;
+  const tFontFamily = el.chartTitleFontFamily || "Inter";
+  const tFontWeight = el.chartTitleFontWeight || "bold";
+  const tFontStyle = el.chartTitleFontStyle || "normal";
+  const tTextDecoration = el.chartTitleTextDecoration || "none";
+  const tTextAlign = el.chartTitleTextAlign || "center";
+  const svgTitleFontSize = Math.max(8, Math.min(tFontSize, Math.min(w, h) * 0.06 + tFontSize * 0.3));
+  const titleOffset = hasTitle ? svgTitleFontSize + 8 : 0;
+  const titleColor = el.chartTitleColor || "#374151";
+
+  // Collect gradient defs
+  const gradDefs: React.ReactNode[] = [];
+  const resolvedColors = colors.map((c, i) => {
+    const { fill, def } = svgChartColor(c, `${el.id}-${i}`);
+    if (def) gradDefs.push(def);
+    return fill;
+  });
 
   return (
     <g opacity={el.opacity}>
-      <rect x={x} y={y} width={w} height={h} fill="#ffffff" stroke="#e5e7eb" strokeWidth={1} rx={4} />
+      {gradDefs.length > 0 && <defs>{gradDefs}</defs>}
+      {hasTitle && (
+        <text
+          x={tTextAlign === "left" ? x + 10 : tTextAlign === "right" ? x + w - 10 : x + w / 2}
+          y={y + svgTitleFontSize + 2}
+          textAnchor={tTextAlign === "left" ? "start" : tTextAlign === "right" ? "end" : "middle"}
+          fontSize={svgTitleFontSize}
+          fontWeight={tFontWeight}
+          fontStyle={tFontStyle}
+          fontFamily={`${tFontFamily}, system-ui, sans-serif`}
+          fill={titleColor}
+          textDecoration={tTextDecoration === "underline" ? "underline" : undefined}
+        >
+          {el.chartTitle}
+        </text>
+      )}
+      {/* Axes for bar/line charts */}
+      {chartType !== "pie" && (
+        <>
+          <line x1={x + 10} y1={y + titleOffset + 10} x2={x + 10} y2={y + h - 10} stroke="#d1d5db" strokeWidth={1} />
+          <line x1={x + 10} y1={y + h - 10} x2={x + w - 10} y2={y + h - 10} stroke="#d1d5db" strokeWidth={1} />
+        </>
+      )}
       {chartType === "pie" ? (
         (() => {
           const cx = x + w / 2;
-          const cy = y + h / 2;
-          const r = Math.min(w, h) / 2 - 10;
+          const cy = y + titleOffset + (h - titleOffset) / 2;
+          const r = Math.min(w, h - titleOffset) / 2 - 10;
           const total = data.values.reduce((s, v) => s + v, 0) || 1;
           let startAngle = -Math.PI / 2;
-          return data.values.map((v, i) => {
+          const slices: React.ReactNode[] = [];
+          const labelEls: React.ReactNode[] = [];
+          data.values.forEach((v, i) => {
             const angle = (v / total) * Math.PI * 2;
+            const slicePercent = v / total;
             const x1 = cx + r * Math.cos(startAngle);
             const y1 = cy + r * Math.sin(startAngle);
             const x2 = cx + r * Math.cos(startAngle + angle);
             const y2 = cy + r * Math.sin(startAngle + angle);
             const largeArc = angle > Math.PI ? 1 : 0;
             const d = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+            slices.push(<path key={`s${i}`} d={d} fill={resolvedColors[i % resolvedColors.length]} stroke="#ffffff" strokeWidth={1.5} />);
+            // Label — proportional font size
+            const label = data.labels[i] || "";
+            if (label && angle > 0.25) {
+              const midAngle = startAngle + angle / 2;
+              const labelR = r * 0.6;
+              const lx = cx + labelR * Math.cos(midAngle);
+              const ly = cy + labelR * Math.sin(midAngle);
+              const pieFontSize = Math.max(6, Math.min(12, r * 0.12 * Math.min(1, slicePercent * 6)));
+              labelEls.push(
+                <text key={`l${i}`} x={lx} y={ly} textAnchor="middle" dominantBaseline="central" fontSize={Math.round(pieFontSize)} fontWeight="600" fill="#ffffff" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}>
+                  {label}
+                </text>
+              );
+            }
             startAngle += angle;
-            return <path key={i} d={d} fill={colors[i % colors.length]} stroke="#ffffff" strokeWidth={1} />;
           });
+          return [...slices, ...labelEls];
         })()
       ) : (
-        data.values.map((v, i) => {
-          const barW = (w - 20) / data.values.length * 0.7;
-          const gap = (w - 20) / data.values.length * 0.3;
-          const barH = (v / maxVal) * (h - 30);
-          const bx = x + 10 + i * (barW + gap) + gap / 2;
-          const by = y + h - 10 - barH;
-          return <rect key={i} x={bx} y={by} width={barW} height={barH} fill={colors[i % colors.length]} rx={2} />;
-        })
+        (() => {
+          const barFontSize = Math.max(6, Math.min(10, Math.min(w, h) * 0.05));
+          return data.values.map((v, i) => {
+            const barW = (w - 20) / data.values.length * 0.7;
+            const gap = (w - 20) / data.values.length * 0.3;
+            const barH = (v / maxVal) * (h - 30 - titleOffset);
+            const bx = x + 10 + i * (barW + gap) + gap / 2;
+            const by = y + h - 10 - barH;
+            return (
+              <g key={i}>
+                <rect x={bx} y={by} width={barW} height={barH} fill={resolvedColors[i % resolvedColors.length]} rx={2} />
+                {data.labels[i] && (
+                  <text x={bx + barW / 2} y={y + h - 10 + barFontSize + 2} textAnchor="middle" fontSize={Math.round(barFontSize)} fill="#6b7280">
+                    {data.labels[i]}
+                  </text>
+                )}
+              </g>
+            );
+          });
+        })()
       )}
     </g>
   );

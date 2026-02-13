@@ -810,6 +810,22 @@ function drawTable(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
 
 // --- Chart ---
 
+/** Resolve a color string to a canvas fill style, supporting gradient:from:to format */
+function resolveChartColor(
+  ctx: CanvasRenderingContext2D,
+  color: string,
+  x: number, y: number, w: number, h: number
+): string | CanvasGradient {
+  if (color.startsWith("gradient:")) {
+    const parts = color.split(":");
+    const grad = ctx.createLinearGradient(x, y, x, y + h);
+    grad.addColorStop(0, parts[1]);
+    grad.addColorStop(1, parts[2]);
+    return grad;
+  }
+  return color;
+}
+
 function drawChart(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
   if (el.x === undefined || el.y === undefined) return;
   const w = el.width || 300;
@@ -819,19 +835,100 @@ function drawChart(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
   const defaultColors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
   const colors = data.colors || defaultColors;
 
-  // Background
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(el.x, el.y, w, h);
-  ctx.strokeStyle = "#e5e7eb";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(el.x, el.y, w, h);
+  // Title
+  const hasTitle = !!el.chartTitle;
+  const tFontSizeForLayout = el.chartTitleFontSize || 14;
+  const titleHeight = hasTitle ? tFontSizeForLayout + 10 : 0;
 
   const pad = 30;
   const chartX = el.x + pad;
-  const chartY = el.y + pad;
+  const chartY = el.y + pad + titleHeight;
   const chartW = w - pad * 2;
-  const chartH = h - pad * 2;
+  const chartH = h - pad * 2 - titleHeight;
   const maxVal = Math.max(...data.values, 1);
+
+  if (hasTitle) {
+    ctx.save();
+    const tFontFamily = el.chartTitleFontFamily || "Inter";
+    const tFontSize = el.chartTitleFontSize || 14;
+    const tFontWeight = el.chartTitleFontWeight || "bold";
+    const tFontStyle = el.chartTitleFontStyle || "normal";
+    const tTextDecoration = el.chartTitleTextDecoration || "none";
+    const tTextAlign = el.chartTitleTextAlign || "center";
+    ctx.fillStyle = el.chartTitleColor || el.color || "#374151";
+    ctx.font = `${tFontStyle === "italic" ? "italic " : ""}${tFontWeight} ${tFontSize}px ${tFontFamily}, system-ui, sans-serif`;
+    ctx.textAlign = tTextAlign;
+    const titleTextX =
+      tTextAlign === "left" ? el.x + pad :
+      tTextAlign === "right" ? el.x + w - pad :
+      el.x + w / 2;
+    ctx.fillText(el.chartTitle!, titleTextX, el.y + pad + 4);
+    // Underline
+    if (tTextDecoration === "underline") {
+      const metrics = ctx.measureText(el.chartTitle!);
+      const ulY = el.y + pad + 4 + 3;
+      let ulX = titleTextX;
+      if (tTextAlign === "center") ulX -= metrics.width / 2;
+      else if (tTextAlign === "right") ulX -= metrics.width;
+      ctx.strokeStyle = ctx.fillStyle as string;
+      ctx.lineWidth = Math.max(1, tFontSize / 14);
+      ctx.beginPath();
+      ctx.moveTo(ulX, ulY);
+      ctx.lineTo(ulX + metrics.width, ulY);
+      ctx.stroke();
+    }
+    ctx.textAlign = "start";
+    ctx.restore();
+  }
+
+  // Draw axes for bar/column and line charts
+  if (chartType !== "pie") {
+    ctx.save();
+    ctx.strokeStyle = "#d1d5db";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+    // Y-axis
+    ctx.beginPath();
+    ctx.moveTo(chartX, chartY);
+    ctx.lineTo(chartX, chartY + chartH);
+    ctx.stroke();
+    // X-axis
+    ctx.beginPath();
+    ctx.moveTo(chartX, chartY + chartH);
+    ctx.lineTo(chartX + chartW, chartY + chartH);
+    ctx.stroke();
+    // Y-axis tick marks and grid lines
+    const tickCount = 4;
+    const tickFontSize = Math.max(7, Math.min(11, Math.min(chartW, chartH) * 0.045));
+    ctx.fillStyle = "#9ca3af";
+    ctx.font = `${Math.round(tickFontSize)}px Inter, system-ui, sans-serif`;
+    ctx.textAlign = "right";
+    for (let t = 0; t <= tickCount; t++) {
+      const ratio = t / tickCount;
+      const yPos = chartY + chartH - ratio * chartH;
+      const val = Math.round(maxVal * ratio);
+      // Grid line (dashed)
+      if (t > 0) {
+        ctx.save();
+        ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = "#e5e7eb";
+        ctx.beginPath();
+        ctx.moveTo(chartX, yPos);
+        ctx.lineTo(chartX + chartW, yPos);
+        ctx.stroke();
+        ctx.restore();
+      }
+      // Tick label
+      ctx.fillText(String(val), chartX - 5, yPos + 3);
+    }
+    ctx.textAlign = "start";
+    ctx.restore();
+  }
+
+  // Scale font size proportionally to chart dimensions
+  const baseFontSize = Math.max(8, Math.min(14, Math.min(chartW, chartH) * 0.06));
+  const labelFont = `${Math.round(baseFontSize)}px Inter, system-ui, sans-serif`;
+  const axisLabelOffset = baseFontSize + 4;
 
   if (chartType === "bar" || chartType === "column") {
     const barW = chartW / data.values.length * 0.7;
@@ -840,16 +937,32 @@ function drawChart(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
       const barH = (data.values[i] / maxVal) * chartH;
       const bx = chartX + i * (barW + gap) + gap / 2;
       const by = chartY + chartH - barH;
-      ctx.fillStyle = colors[i % colors.length];
-      ctx.fillRect(bx, by, barW, barH);
-      // Label
+      // Draw bar with rounded top corners
+      const cornerR = Math.min(3, barW / 4);
+      ctx.beginPath();
+      ctx.moveTo(bx, by + cornerR);
+      ctx.arcTo(bx, by, bx + cornerR, by, cornerR);
+      ctx.arcTo(bx + barW, by, bx + barW, by + cornerR, cornerR);
+      ctx.lineTo(bx + barW, by + barH);
+      ctx.lineTo(bx, by + barH);
+      ctx.closePath();
+      ctx.fillStyle = resolveChartColor(ctx, colors[i % colors.length], bx, by, barW, barH);
+      ctx.fill();
+      // Label below X axis
       ctx.fillStyle = "#6b7280";
-      ctx.font = "11px Inter, system-ui, sans-serif";
+      ctx.font = labelFont;
       ctx.textAlign = "center";
-      ctx.fillText(data.labels[i] || "", bx + barW / 2, chartY + chartH + 14);
+      ctx.fillText(data.labels[i] || "", bx + barW / 2, chartY + chartH + axisLabelOffset);
+      // Value on top of bar (only if bar is tall enough)
+      if (barH > baseFontSize + 6) {
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `bold ${Math.round(baseFontSize * 0.85)}px Inter, system-ui, sans-serif`;
+        ctx.fillText(String(data.values[i]), bx + barW / 2, by + baseFontSize + 2);
+      }
     }
     ctx.textAlign = "start";
   } else if (chartType === "line") {
+    // Draw line with smooth stroke
     ctx.beginPath();
     for (let i = 0; i < data.values.length; i++) {
       const px = chartX + (i / Math.max(data.values.length - 1, 1)) * chartW;
@@ -857,42 +970,96 @@ function drawChart(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
       if (i === 0) ctx.moveTo(px, py);
       else ctx.lineTo(px, py);
     }
-    ctx.strokeStyle = colors[0];
+    ctx.strokeStyle = resolveChartColor(ctx, colors[0], chartX, chartY, chartW, chartH);
     ctx.lineWidth = 2.5;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
     ctx.stroke();
-    // Points
+    // Points and labels
+    const pointR = Math.max(3, Math.min(6, baseFontSize * 0.4));
     for (let i = 0; i < data.values.length; i++) {
       const px = chartX + (i / Math.max(data.values.length - 1, 1)) * chartW;
       const py = chartY + chartH - (data.values[i] / maxVal) * chartH;
+      // White ring around point
       ctx.beginPath();
-      ctx.arc(px, py, 4, 0, Math.PI * 2);
-      ctx.fillStyle = colors[0];
+      ctx.arc(px, py, pointR + 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff";
       ctx.fill();
+      // Colored point
+      ctx.beginPath();
+      ctx.arc(px, py, pointR, 0, Math.PI * 2);
+      ctx.fillStyle = resolveChartColor(ctx, colors[i % colors.length], px - pointR, py - pointR, pointR * 2, pointR * 2);
+      ctx.fill();
+      // Label below X axis
       ctx.fillStyle = "#6b7280";
-      ctx.font = "11px Inter, system-ui, sans-serif";
+      ctx.font = labelFont;
       ctx.textAlign = "center";
-      ctx.fillText(data.labels[i] || "", px, chartY + chartH + 14);
+      ctx.fillText(data.labels[i] || "", px, chartY + chartH + axisLabelOffset);
     }
     ctx.textAlign = "start";
   } else if (chartType === "pie") {
     const total = data.values.reduce((s, v) => s + v, 0) || 1;
-    const cx = el.x + w / 2;
-    const cy = el.y + h / 2;
+    const cx = chartX + chartW / 2;
+    const cy = chartY + chartH / 2;
     const radius = Math.min(chartW, chartH) / 2 - 5;
     let startAngle = -Math.PI / 2;
+    // Draw slices
     for (let i = 0; i < data.values.length; i++) {
       const sliceAngle = (data.values[i] / total) * Math.PI * 2;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, radius, startAngle, startAngle + sliceAngle);
       ctx.closePath();
-      ctx.fillStyle = colors[i % colors.length];
+      ctx.fillStyle = resolveChartColor(ctx, colors[i % colors.length], cx - radius, cy - radius, radius * 2, radius * 2);
       ctx.fill();
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 2;
       ctx.stroke();
       startAngle += sliceAngle;
     }
+    // Draw labels — font size proportional to radius and slice size
+    startAngle = -Math.PI / 2;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    for (let i = 0; i < data.values.length; i++) {
+      const sliceAngle = (data.values[i] / total) * Math.PI * 2;
+      const slicePercent = data.values[i] / total;
+      const midAngle = startAngle + sliceAngle / 2;
+      const label = data.labels[i] || "";
+      // Only show label if slice is big enough
+      if (label && sliceAngle > 0.25) {
+        // Font size scales with radius and slice proportion
+        const pieFontSize = Math.max(8, Math.min(16, radius * 0.14 * Math.min(1, slicePercent * 6)));
+        ctx.font = `600 ${Math.round(pieFontSize)}px Inter, system-ui, sans-serif`;
+        // Position label at ~60% of radius from center
+        const labelR = radius * 0.6;
+        const lx = cx + labelR * Math.cos(midAngle);
+        const ly = cy + labelR * Math.sin(midAngle);
+        // White text shadow for readability
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.35)";
+        ctx.shadowBlur = 3;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 1;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(label, lx, ly);
+        ctx.restore();
+        // Show percentage below label for larger slices
+        if (slicePercent > 0.08 && radius > 50) {
+          const pctFontSize = Math.round(pieFontSize * 0.75);
+          ctx.font = `${pctFontSize}px Inter, system-ui, sans-serif`;
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,0.3)";
+          ctx.shadowBlur = 2;
+          ctx.fillStyle = "rgba(255,255,255,0.85)";
+          ctx.fillText(`${Math.round(slicePercent * 100)}%`, lx, ly + pieFontSize + 1);
+          ctx.restore();
+        }
+      }
+      startAngle += sliceAngle;
+    }
+    ctx.textAlign = "start";
+    ctx.textBaseline = "alphabetic";
   }
 }
 

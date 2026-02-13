@@ -18,6 +18,7 @@ import type { ContextMenuEvent } from "./WhiteboardCanvas";
 import WhiteboardToolbar from "./WhiteboardToolbar";
 import WhiteboardBottomBar from "./WhiteboardBottomBar";
 import FloatingTextToolbar from "./FloatingTextToolbar";
+import FloatingChartEditor from "./FloatingChartEditor";
 import WhiteboardContextMenu, { buildContextMenuActions } from "./WhiteboardContextMenu";
 import type { ContextMenuAction } from "./WhiteboardContextMenu";
 
@@ -41,7 +42,7 @@ export default function Whiteboard({
   // Tool state
   const [activeTool, setActiveTool] = useState<WhiteboardTool>("pen");
   const [activeColor, setActiveColor] = useState("#000000");
-  const [activeStrokeWidth, setActiveStrokeWidth] = useState(4);
+  const [activeStrokeWidth, setActiveStrokeWidth] = useState(2);
   const [activeOpacity, setActiveOpacity] = useState(1);
   const [activeFontSize, setActiveFontSize] = useState(16);
   const [activeFillColor, setActiveFillColor] = useState<string | null>(null);
@@ -685,6 +686,7 @@ export default function Whiteboard({
         chartData: {
           labels: ["Q1", "Q2", "Q3", "Q4"],
           values: [35, 65, 45, 80],
+          colors: ["#3b82f6", "#10b981", "#f59e0b", "#ef4444"],
         },
         color: "#3b82f6",
         strokeWidth: 1,
@@ -693,6 +695,29 @@ export default function Whiteboard({
     },
     [handleAddElement]
   );
+
+  // ── Chart editing ──────────────────────────────────────────────────────
+
+  const chartEditUndoPushedRef = useRef(false);
+
+  const handleChartUpdate = useCallback(
+    (id: string, updates: Partial<WhiteboardElement>) => {
+      if (!chartEditUndoPushedRef.current) {
+        pushUndo(elementsRef.current);
+        chartEditUndoPushedRef.current = true;
+      }
+      setElements((prev) =>
+        prev.map((el) => (el.id === id ? { ...el, ...updates } : el))
+      );
+    },
+    [pushUndo]
+  );
+
+  // Reset undo tracking when chart selection changes
+  useEffect(() => {
+    const selectedChart = elements.find((el) => el.isSelected && el.type === "chart");
+    if (!selectedChart) chartEditUndoPushedRef.current = false;
+  }, [elements]);
 
   // ── Color / Fill / Stroke change (update selected elements too) ──────
 
@@ -778,6 +803,29 @@ export default function Whiteboard({
         setElements((prev) =>
           prev.map((el) =>
             ids.has(el.id) ? { ...el, fontSize: size } : el
+          )
+        );
+      }
+    },
+    [pushUndo]
+  );
+
+  const handleStickyColorChange = useCallback(
+    (color: string) => {
+      setActiveStickyColor(color);
+      const selected = elementsRef.current.filter((el) => el.isSelected && el.type === "sticky");
+      if (selected.length > 0) {
+        pushUndo(elementsRef.current);
+        const groupIds = new Set<string>();
+        for (const el of selected) {
+          if (el.groupId) groupIds.add(el.groupId);
+        }
+        const selectedIds = new Set(selected.map((el) => el.id));
+        setElements((prev) =>
+          prev.map((el) =>
+            (selectedIds.has(el.id) || (el.groupId && groupIds.has(el.groupId))) && el.type === "sticky"
+              ? { ...el, stickyColor: color }
+              : el
           )
         );
       }
@@ -1194,48 +1242,51 @@ export default function Whiteboard({
       }
 
       const isEditing = editingTextRef.current;
+      // Also skip shortcuts when focus is inside an input/textarea (e.g. FloatingChartEditor)
+      const activeTag = (document.activeElement as HTMLElement)?.tagName;
+      const isInInput = activeTag === "INPUT" || activeTag === "TEXTAREA" || (document.activeElement as HTMLElement)?.isContentEditable;
 
       // Undo: Ctrl+Z (skip when editing text — let browser handle it)
-      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey && !isEditing) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey && !isEditing && !isInInput) {
         e.preventDefault();
         handleUndoRef.current();
       }
       // Redo: Ctrl+Y or Ctrl+Shift+Z (skip when editing text)
       if (
         (((e.ctrlKey || e.metaKey) && e.key === "y") ||
-        ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "z")) && !isEditing
+        ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "z")) && !isEditing && !isInInput
       ) {
         e.preventDefault();
         handleRedoRef.current();
       }
       // Copy: Ctrl+C
-      if ((e.ctrlKey || e.metaKey) && e.key === "c" && !isEditing) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "c" && !isEditing && !isInInput) {
         handleCopyRef.current();
       }
       // Paste: Ctrl+V (element paste — image paste handled in paste event listener)
-      if ((e.ctrlKey || e.metaKey) && e.key === "v" && !isEditing) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "v" && !isEditing && !isInInput) {
         if (clipboardRef.current.length > 0) {
           e.preventDefault();
           handlePasteRef.current();
         }
       }
       // Duplicate: Ctrl+D
-      if ((e.ctrlKey || e.metaKey) && e.key === "d" && !isEditing) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "d" && !isEditing && !isInInput) {
         e.preventDefault();
         handleDuplicateRef.current();
       }
       // Group: Ctrl+G
-      if ((e.ctrlKey || e.metaKey) && e.key === "g" && !e.shiftKey && !isEditing) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "g" && !e.shiftKey && !isEditing && !isInInput) {
         e.preventDefault();
         handleGroupRef.current();
       }
       // Ungroup: Ctrl+Shift+G
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "G" && !isEditing) {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "G" && !isEditing && !isInInput) {
         e.preventDefault();
         handleUngroupRef.current();
       }
       // Delete all selected
-      if ((e.key === "Delete" || e.key === "Backspace") && !isEditing) {
+      if ((e.key === "Delete" || e.key === "Backspace") && !isEditing && !isInInput) {
         const hasSelected = elementsRef.current.some((el) => el.isSelected);
         if (hasSelected) {
           e.preventDefault();
@@ -1243,7 +1294,7 @@ export default function Whiteboard({
         }
       }
       // Z-ordering shortcuts
-      if ((e.ctrlKey || e.metaKey) && e.key === "ArrowUp" && !isEditing) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "ArrowUp" && !isEditing && !isInInput) {
         e.preventDefault();
         if (e.shiftKey) {
           handleBringToFrontRef.current();
@@ -1251,7 +1302,7 @@ export default function Whiteboard({
           handleBringForwardRef.current();
         }
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === "ArrowDown" && !isEditing) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "ArrowDown" && !isEditing && !isInInput) {
         e.preventDefault();
         if (e.shiftKey) {
           handleSendToBackRef.current();
@@ -1320,6 +1371,7 @@ export default function Whiteboard({
         <WhiteboardToolbar
           activeTool={activeTool}
           onToolChange={setActiveTool}
+          hasSelection={elements.some((el) => el.isSelected)}
           activeColor={activeColor}
           activeStrokeWidth={activeStrokeWidth}
           activeFillColor={activeFillColor}
@@ -1336,7 +1388,7 @@ export default function Whiteboard({
           onStrokeWidthChange={handleStrokeWidthChange}
           onFillColorChange={handleFillColorChange}
           onFontSizeChange={handleFontSizeChange}
-          onStickyColorChange={setActiveStickyColor}
+          onStickyColorChange={handleStickyColorChange}
           onFontFamilyChange={handleFontFamilyChange}
           onFontWeightToggle={handleFontWeightToggle}
           onFontStyleToggle={handleFontStyleToggle}
@@ -1376,6 +1428,25 @@ export default function Whiteboard({
               onFontStyleToggle={handleFontStyleToggle}
               onTextDecorationToggle={handleTextDecorationToggle}
               onTextAlignChange={handleTextAlignChange}
+            />
+          );
+        })()}
+
+        {/* Floating chart editor — appears when a chart element is selected */}
+        {(() => {
+          const selectedChartEl = elements.find(
+            (el) => el.isSelected && el.type === "chart"
+          );
+          if (!selectedChartEl || editingText) return null;
+          return (
+            <FloatingChartEditor
+              element={selectedChartEl}
+              viewport={viewport}
+              onUpdate={handleChartUpdate}
+              onClose={() => {
+                handleSelectElement(null);
+                chartEditUndoPushedRef.current = false;
+              }}
             />
           );
         })()}

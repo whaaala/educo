@@ -23,9 +23,6 @@ import {
   FileText,
   ChevronDown,
   LayoutTemplate,
-  GraduationCap,
-  Briefcase,
-  Repeat,
   PanelLeftOpen,
   PanelLeftClose,
   Check,
@@ -62,7 +59,9 @@ import {
   LINE_TOOLS,
   BBOX_SHAPE_TOOLS,
 } from "./whiteboard-types";
-import { TEMPLATES, TEMPLATE_CATEGORIES } from "./whiteboard-templates";
+import VerticalToolbar from "../VerticalToolbar";
+import type { ToolbarEntry } from "../VerticalToolbar";
+import TemplatePicker from "../TemplatePicker";
 
 // ─── Custom SVG icons (refined) ─────────────────────────
 
@@ -235,6 +234,8 @@ const SECTIONS: ToolSection[] = [
 interface WhiteboardToolbarProps {
   activeTool: WhiteboardTool;
   onToolChange: (tool: WhiteboardTool) => void;
+  /** True when at least one element is selected (enables styling selection while in Select tool) */
+  hasSelection?: boolean;
   activeColor: string;
   activeStrokeWidth: number;
   activeFillColor: string | null;
@@ -274,6 +275,7 @@ interface WhiteboardToolbarProps {
 export default function WhiteboardToolbar({
   activeTool,
   onToolChange,
+  hasSelection = false,
   activeColor,
   activeStrokeWidth,
   activeFillColor,
@@ -310,7 +312,6 @@ export default function WhiteboardToolbar({
   const [isOpen, setIsOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
-  const [templateCategory, setTemplateCategory] = useState<string>("education");
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Hover flyout state for collapsed mode
@@ -409,195 +410,111 @@ export default function WhiteboardToolbar({
   const activeSection = getActiveSection();
 
   // Property visibility
-  const showProperties = !["select", "eraser", "hand"].includes(activeTool);
+  const isSelectionEditMode = hasSelection && activeTool === "select";
+  const showProperties = isSelectionEditMode || !["select", "eraser", "hand"].includes(activeTool);
   const showStrokeWidth = [
     "pen", "highlighter", "line", "arrow", "double-arrow", "connector",
     "rectangle", "circle", "triangle", "diamond", "star", "hexagon",
     "rounded-rect", "cylinder", "parallelogram",
     "flowchart-process", "flowchart-decision", "flowchart-terminal",
     "flowchart-data", "flowchart-document",
-  ].includes(activeTool);
-  const showFillColors = FILL_TOOLS.includes(activeTool);
-  const showFontSize = activeTool === "text" || activeTool === "sticky";
-  const showTextFormatting = activeTool === "text" || activeTool === "sticky";
-  const showStrokeDash = [...BBOX_SHAPE_TOOLS, ...LINE_TOOLS, "pen", "highlighter", "polyline", "scribble"].includes(activeTool);
-  const showStickyColors = activeTool === "sticky";
+  ].includes(activeTool) || isSelectionEditMode;
+  const showFillColors = FILL_TOOLS.includes(activeTool) || isSelectionEditMode;
+  const showFontSize = activeTool === "text" || activeTool === "sticky" || isSelectionEditMode;
+  const showTextFormatting = activeTool === "text" || activeTool === "sticky" || isSelectionEditMode;
+  const showStrokeDash =
+    [...BBOX_SHAPE_TOOLS, ...LINE_TOOLS, "pen", "highlighter", "polyline", "scribble"].includes(activeTool) ||
+    isSelectionEditMode;
+  const showStickyColors = activeTool === "sticky" || isSelectionEditMode;
 
   // ─── Collapsed view ─────────────────────────────────────
 
   if (!isOpen) {
-    return (
-      <div
-        ref={sidebarRef}
-        className="absolute left-3 top-3 z-[50] flex flex-col items-center w-11 py-1.5 gap-0.5 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-xl shadow-lg shadow-black/5 dark:shadow-black/20 select-none"
-      >
-        {/* Toggle open */}
-        <button
-          onClick={() => setIsOpen(true)}
-          className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-150 cursor-pointer mb-0.5"
-          title="Expand toolbar"
-        >
-          <PanelLeftOpen className="w-4 h-4" />
-        </button>
-
-        <div className="w-6 h-px bg-gray-200/60 dark:bg-gray-700/60 midnight:bg-cyan-500/10 purple:bg-pink-500/10" />
-
-        {/* Primary tools */}
-        {PRIMARY_TOOLS.map((tool) => {
-          const Icon = tool.icon;
-          const isActive = activeTool === tool.id;
-          return (
+    const collapsedEntries: ToolbarEntry[] = [
+      // Primary tools
+      ...PRIMARY_TOOLS.map((tool) => ({
+        type: "button" as const,
+        id: tool.id,
+        icon: tool.icon,
+        label: tool.label,
+      })),
+      { type: "divider" as const },
+      // Section tools with hover flyouts
+      ...SECTIONS.map((section) => ({
+        type: "section" as const,
+        id: section.id,
+        icon: section.icon,
+        label: section.label,
+        columns: section.columns,
+        tools: section.tools.map((t) => ({ id: t.id, icon: t.icon, label: t.label })),
+      })),
+      { type: "divider" as const },
+      // Color picker (custom slot)
+      {
+        type: "custom" as const,
+        render: () => (
+          <div className="relative">
             <button
-              key={tool.id}
-              onClick={() => onToolChange(tool.id)}
+              onClick={() => setShowColorPicker((prev) => !prev)}
               className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150 cursor-pointer ${
-                isActive
-                  ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400"
-                  : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                showColorPicker
+                  ? "bg-blue-500/12 dark:bg-blue-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
               }`}
-              title={tool.label}
+              title="Color palette"
             >
-              <Icon className="w-[17px] h-[17px]" />
-            </button>
-          );
-        })}
-
-        <div className="w-6 h-px bg-gray-200/60 dark:bg-gray-700/60 midnight:bg-cyan-500/10 purple:bg-pink-500/10 my-0.5" />
-
-        {/* Section icons with hover flyout */}
-        {SECTIONS.map((section) => {
-          const Icon = section.icon;
-          const isActive = activeSection === section.id;
-          const isHovered = hoveredSection === section.id;
-          return (
-            <div key={section.id} className="relative">
-              <button
-                onMouseEnter={() => handleFlyoutEnter(section.id)}
-                onMouseLeave={handleFlyoutLeave}
-                onClick={() => toggleSection(section.id)}
-                className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150 cursor-pointer ${
-                  isActive || isHovered
-                    ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400"
-                    : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
-                }`}
-                title={section.label}
-              >
-                <Icon className="w-[17px] h-[17px]" />
-              </button>
-
-              {/* Hover flyout popup */}
-              {isHovered && (
+              <div className="relative w-[18px] h-[18px]">
+                <Palette className="w-[18px] h-[18px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60" />
                 <div
-                  className="absolute left-full top-1/2 -translate-y-1/2 ml-2 z-[60] animate-in fade-in slide-in-from-left-1 duration-150"
-                  onMouseEnter={() => handleFlyoutEnter(section.id)}
-                  onMouseLeave={handleFlyoutLeave}
-                >
-                  {/* Arrow pointer */}
-                  <div className="absolute left-0 top-1/2 -translate-x-[5px] -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-white dark:bg-gray-800 midnight:bg-[#0d1526] purple:bg-[#1f1035] border-l border-b border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15" />
-                  <div className="relative bg-white/95 dark:bg-gray-800/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-xl shadow-lg shadow-black/8 dark:shadow-black/30 p-2 min-w-[140px]">
-                    <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50 px-1 mb-1.5">
-                      {section.label}
-                    </div>
-                    <div
-                      className="grid gap-1"
-                      style={{ gridTemplateColumns: `repeat(${section.columns || 3}, 1fr)` }}
-                    >
-                      {section.tools.map((tool) => {
-                        const ToolIcon = tool.icon;
-                        const isToolActive = activeTool === tool.id;
-                        return (
-                          <button
-                            key={tool.id}
-                            onClick={() => selectTool(tool.id)}
-                            className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg transition-all duration-100 cursor-pointer ${
-                              isToolActive
-                                ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400"
-                                : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
-                            }`}
-                            title={tool.label}
-                          >
-                            <ToolIcon className="w-[18px] h-[18px]" />
-                            <span className="text-[8px] font-medium leading-none truncate w-full text-center opacity-70">
-                              {tool.label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        <div className="w-6 h-px bg-gray-200/60 dark:bg-gray-700/60 midnight:bg-cyan-500/10 purple:bg-pink-500/10 my-0.5" />
-
-        {/* Color picker flyout */}
-        <div className="relative">
-          <button
-            onClick={() => setShowColorPicker((prev) => !prev)}
-            className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150 cursor-pointer ${
-              showColorPicker
-                ? "bg-blue-500/12 dark:bg-blue-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20"
-                : "hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
-            }`}
-            title="Color palette"
-          >
-            <div className="relative w-[18px] h-[18px]">
-              <Palette className="w-[18px] h-[18px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60" />
-              {/* Active color dot indicator */}
-              <div
-                className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900 midnight:border-[#0d1526] purple:border-[#1f1035]"
-                style={{ backgroundColor: activeColor }}
+                  className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900 midnight:border-[#0d1526] purple:border-[#1f1035]"
+                  style={{ backgroundColor: activeColor }}
+                />
+              </div>
+            </button>
+            {showColorPicker && (
+              <ColorPickerFlyout
+                hasSelection={hasSelection}
+                activeColor={activeColor}
+                activeFillColor={activeFillColor}
+                activeStrokeWidth={activeStrokeWidth}
+                activeFontSize={activeFontSize}
+                activeTool={activeTool}
+                onColorChange={(c) => { onColorChange(c); }}
+                onFillColorChange={onFillColorChange}
+                onStrokeWidthChange={onStrokeWidthChange}
+                onFontSizeChange={onFontSizeChange}
+                onClose={() => setShowColorPicker(false)}
               />
-            </div>
-          </button>
+            )}
+          </div>
+        ),
+      },
+      { type: "divider" as const },
+      // Action buttons
+      { type: "button" as const, id: "templates", icon: LayoutTemplate, label: "Templates", onClick: toggleTemplates },
+      { type: "button" as const, id: "insert-image", icon: ImagePlus, label: "Insert image", onClick: onInsertImage },
+      { type: "button" as const, id: "export-png", icon: Download, label: "Download as PNG", onClick: onExportPNG },
+    ];
 
-          {showColorPicker && (
-            <ColorPickerFlyout
-              activeColor={activeColor}
-              activeFillColor={activeFillColor}
-              activeStrokeWidth={activeStrokeWidth}
-              activeFontSize={activeFontSize}
-              activeTool={activeTool}
-              onColorChange={(c) => { onColorChange(c); }}
-              onFillColorChange={onFillColorChange}
-              onStrokeWidthChange={onStrokeWidthChange}
-              onFontSizeChange={onFontSizeChange}
-              onClose={() => setShowColorPicker(false)}
-            />
-          )}
-        </div>
-
-        <div className="w-6 h-px bg-gray-200/60 dark:bg-gray-700/60 midnight:bg-cyan-500/10 purple:bg-pink-500/10 my-0.5" />
-
-        {/* Templates shortcut */}
-        <button
-          onClick={toggleTemplates}
-          className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-150 cursor-pointer"
-          title="Templates"
-        >
-          <LayoutTemplate className="w-[17px] h-[17px]" />
-        </button>
-
-        {/* Insert image */}
-        <button
-          onClick={onInsertImage}
-          className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-150 cursor-pointer"
-          title="Insert image"
-        >
-          <ImagePlus className="w-[17px] h-[17px]" />
-        </button>
-
-        {/* Export */}
-        <button
-          onClick={onExportPNG}
-          className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-150 cursor-pointer"
-          title="Download as PNG"
-        >
-          <Download className="w-[17px] h-[17px]" />
-        </button>
+    return (
+      <div ref={sidebarRef} className="absolute left-3 top-3 z-[50]">
+        <VerticalToolbar
+          entries={collapsedEntries}
+          activeId={activeTool}
+          onSelect={(id) => selectTool(id as WhiteboardTool)}
+          header={
+            <>
+              <button
+                onClick={() => setIsOpen(true)}
+                className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-150 cursor-pointer mb-0.5"
+                title="Expand toolbar"
+              >
+                <PanelLeftOpen className="w-4 h-4" />
+              </button>
+              <div className="w-6 h-px bg-gray-200/60 dark:bg-gray-700/60 midnight:bg-cyan-500/10 purple:bg-pink-500/10" />
+            </>
+          }
+        />
       </div>
     );
   }
@@ -682,11 +599,12 @@ export default function WhiteboardToolbar({
           onClick={toggleTemplates}
         />
         {showTemplates && (
-          <TemplatePanel
-            category={templateCategory}
-            onCategoryChange={setTemplateCategory}
-            onSelect={loadTemplate}
-          />
+          <div className="px-3 py-2 bg-gray-50/40 dark:bg-gray-800/20 midnight:bg-cyan-500/3 purple:bg-pink-500/3">
+            <TemplatePicker
+              compact
+              onSelect={(elements) => loadTemplate(elements)}
+            />
+          </div>
         )}
 
         <SectionDivider />
@@ -1079,70 +997,6 @@ function ToolGrid({
   );
 }
 
-// ─── Template panel ──────────────────────────────────────
-
-const CATEGORY_ICONS: Record<string, IconComp> = {
-  education: GraduationCap,
-  agile: Repeat,
-  project: Briefcase,
-};
-
-function TemplatePanel({
-  category,
-  onCategoryChange,
-  onSelect,
-}: {
-  category: string;
-  onCategoryChange: (cat: string) => void;
-  onSelect: (elements: WhiteboardElement[]) => void;
-}) {
-  const templates = TEMPLATES.filter((t) => t.category === category);
-
-  return (
-    <div className="px-3 py-2 bg-gray-50/40 dark:bg-gray-800/20 midnight:bg-cyan-500/3 purple:bg-pink-500/3">
-      {/* Category tabs */}
-      <div className="flex gap-1 mb-2">
-        {TEMPLATE_CATEGORIES.map((cat) => {
-          const CatIcon = CATEGORY_ICONS[cat.id] || LayoutTemplate;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => onCategoryChange(cat.id)}
-              className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-150 cursor-pointer ${
-                category === cat.id
-                  ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400"
-                  : "text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
-              }`}
-              title={cat.label}
-            >
-              <CatIcon className="w-3 h-3" />
-              <span>{cat.label.split(" ")[0]}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Template list */}
-      <div className="flex flex-col gap-0.5 max-h-[240px] overflow-y-auto scrollbar-thin">
-        {templates.map((tpl) => (
-          <button
-            key={tpl.id}
-            onClick={() => onSelect(tpl.elements)}
-            className="flex flex-col gap-0.5 px-2.5 py-2 rounded-lg text-left transition-all duration-150 cursor-pointer hover:bg-white dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 group"
-          >
-            <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
-              {tpl.name}
-            </span>
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 leading-tight">
-              {tpl.description}
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ─── Property helpers ────────────────────────────────────
 
 function PropertySection({
@@ -1227,6 +1081,7 @@ const GRADIENT_FILLS: { color: string | null; gradient: string; label: string }[
 ];
 
 function ColorPickerFlyout({
+  hasSelection,
   activeColor,
   activeFillColor,
   activeStrokeWidth,
@@ -1238,6 +1093,7 @@ function ColorPickerFlyout({
   onFontSizeChange,
   onClose,
 }: {
+  hasSelection: boolean;
   activeColor: string;
   activeFillColor: string | null;
   activeStrokeWidth: number;
@@ -1249,11 +1105,11 @@ function ColorPickerFlyout({
   onFontSizeChange: (size: number) => void;
   onClose: () => void;
 }) {
-  const showFill = FILL_TOOLS.includes(activeTool);
+  const showFill = FILL_TOOLS.includes(activeTool) || (hasSelection && activeTool === "select");
   const showWidth = ![
     "select", "eraser", "hand", "text", "sticky",
-  ].includes(activeTool);
-  const showFontSize = activeTool === "text" || activeTool === "sticky";
+  ].includes(activeTool) || (hasSelection && activeTool === "select");
+  const showFontSize = activeTool === "text" || activeTool === "sticky" || (hasSelection && activeTool === "select");
 
   return (
     <div

@@ -372,6 +372,7 @@ export default function WhiteboardCanvas({
             color: activeColor,
             strokeWidth: activeTool === "highlighter" ? activeStrokeWidth * 2 : activeStrokeWidth,
             opacity: activeTool === "highlighter" ? 0.35 : activeOpacity,
+            strokeDash: activeStrokeDash,
           };
           break;
 

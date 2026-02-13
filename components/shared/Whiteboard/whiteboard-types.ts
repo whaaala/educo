@@ -123,6 +123,14 @@ export interface WhiteboardElement {
   // Chart
   chartType?: "bar" | "column" | "line" | "pie";
   chartData?: { labels: string[]; values: number[]; colors?: string[] };
+  chartTitle?: string;
+  chartTitleColor?: string;
+  chartTitleFontFamily?: FontFamily;
+  chartTitleFontSize?: number;
+  chartTitleFontWeight?: "normal" | "bold";
+  chartTitleFontStyle?: "normal" | "italic";
+  chartTitleTextDecoration?: "none" | "underline";
+  chartTitleTextAlign?: TextAlign;
   // Selection state
   isSelected?: boolean;
   // Grouping
