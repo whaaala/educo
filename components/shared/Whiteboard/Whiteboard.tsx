@@ -7,6 +7,9 @@ import type {
   Viewport,
   WhiteboardProps,
   WhiteboardState,
+  FontFamily,
+  TextAlign,
+  StrokeDashPattern,
 } from "./whiteboard-types";
 import { DEFAULT_VIEWPORT, STICKY_COLORS } from "./whiteboard-types";
 import { generateId, preloadImage } from "./whiteboard-utils";
@@ -14,6 +17,7 @@ import WhiteboardCanvas from "./WhiteboardCanvas";
 import type { ContextMenuEvent } from "./WhiteboardCanvas";
 import WhiteboardToolbar from "./WhiteboardToolbar";
 import WhiteboardBottomBar from "./WhiteboardBottomBar";
+import FloatingTextToolbar from "./FloatingTextToolbar";
 import WhiteboardContextMenu, { buildContextMenuActions } from "./WhiteboardContextMenu";
 import type { ContextMenuAction } from "./WhiteboardContextMenu";
 
@@ -42,6 +46,13 @@ export default function Whiteboard({
   const [activeFontSize, setActiveFontSize] = useState(16);
   const [activeFillColor, setActiveFillColor] = useState<string | null>(null);
   const [activeStickyColor, setActiveStickyColor] = useState(STICKY_COLORS[0]);
+  const [activeFontFamily, setActiveFontFamily] = useState<FontFamily>("Inter");
+  const [activeFontWeight, setActiveFontWeight] = useState<"normal" | "bold">("normal");
+  const [activeFontStyle, setActiveFontStyle] = useState<"normal" | "italic">("normal");
+  const [activeTextDecoration, setActiveTextDecoration] = useState<"none" | "underline">("none");
+  const [activeTextAlign, setActiveTextAlign] = useState<TextAlign>("left");
+  const [activeLineSpacing, setActiveLineSpacing] = useState(1.4);
+  const [activeStrokeDash, setActiveStrokeDash] = useState<StrokeDashPattern>("solid");
 
   // Undo/redo stacks
   const [undoStack, setUndoStack] = useState<WhiteboardElement[][]>([]);
@@ -49,7 +60,7 @@ export default function Whiteboard({
 
   // Text editing overlay
   const [editingText, setEditingText] = useState<WhiteboardElement | null>(null);
-  const textInputRef = useRef<HTMLTextAreaElement>(null);
+  const textInputRef = useRef<HTMLDivElement>(null);
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
@@ -212,29 +223,76 @@ export default function Whiteboard({
     []
   );
 
-  // Text edit handler
+  // Text edit handler — also syncs formatting state from the element
   const handleTextEdit = useCallback((element: WhiteboardElement) => {
     setEditingText(element);
-    setTimeout(() => textInputRef.current?.focus(), 50);
+    // Sync formatting state from element being edited
+    if (element.fontFamily) setActiveFontFamily(element.fontFamily);
+    if (element.fontWeight) setActiveFontWeight(element.fontWeight);
+    if (element.fontStyle) setActiveFontStyle(element.fontStyle);
+    if (element.textDecoration) setActiveTextDecoration(element.textDecoration);
+    if (element.textAlign) setActiveTextAlign(element.textAlign);
+    if (element.lineSpacing) setActiveLineSpacing(element.lineSpacing);
+    setTimeout(() => {
+      const el = textInputRef.current;
+      if (el) {
+        el.focus();
+        // Place cursor at end
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+      }
+    }, 50);
   }, []);
 
   // Commit text — update existing element or add new one
   const commitText = useCallback(() => {
     if (editingText && editingText.text?.trim()) {
+      // Capture editor dimensions before committing
+      let finalEl = {
+        ...editingText,
+        fontFamily: activeFontFamily,
+        fontWeight: activeFontWeight,
+        fontStyle: activeFontStyle,
+        textDecoration: activeTextDecoration,
+        textAlign: activeTextAlign,
+        lineSpacing: activeLineSpacing,
+      };
+      if (textInputRef.current) {
+        finalEl.width = textInputRef.current.offsetWidth / viewport.zoom;
+        finalEl.height = textInputRef.current.offsetHeight / viewport.zoom;
+      }
       pushUndo(elementsRef.current);
-      const exists = elementsRef.current.some((el) => el.id === editingText.id);
+      const exists = elementsRef.current.some((el) => el.id === finalEl.id);
       if (exists) {
         setElements((prev) =>
           prev.map((el) =>
-            el.id === editingText.id ? { ...el, text: editingText.text } : el
+            el.id === finalEl.id
+              ? {
+                  ...el,
+                  text: finalEl.text,
+                  width: finalEl.width,
+                  height: finalEl.height,
+                  fontSize: finalEl.fontSize,
+                  fontFamily: finalEl.fontFamily,
+                  fontWeight: finalEl.fontWeight,
+                  fontStyle: finalEl.fontStyle,
+                  textDecoration: finalEl.textDecoration,
+                  textAlign: finalEl.textAlign,
+                  lineSpacing: finalEl.lineSpacing,
+                }
+              : el
           )
         );
       } else {
-        setElements((prev) => [...prev, editingText]);
+        setElements((prev) => [...prev, finalEl]);
       }
     }
     setEditingText(null);
-  }, [editingText, pushUndo]);
+  }, [editingText, pushUndo, viewport.zoom, activeFontFamily, activeFontWeight, activeFontStyle, activeTextDecoration, activeTextAlign, activeLineSpacing]);
 
   // Undo — uses functional updates to avoid depending on undoStack/redoStack
   const handleUndo = useCallback(() => {
@@ -691,6 +749,152 @@ export default function Whiteboard({
     [pushUndo]
   );
 
+  const handleFontSizeChange = useCallback(
+    (size: number) => {
+      setActiveFontSize(size);
+      // Update selected text/sticky elements
+      const selected = elementsRef.current.filter((el) => el.isSelected);
+      const textEls = selected.filter((el) => el.type === "text" || el.type === "sticky");
+      if (textEls.length > 0) {
+        pushUndo(elementsRef.current);
+        const ids = new Set(textEls.map((el) => el.id));
+        setElements((prev) =>
+          prev.map((el) =>
+            ids.has(el.id) ? { ...el, fontSize: size } : el
+          )
+        );
+      }
+    },
+    [pushUndo]
+  );
+
+  // ── Text formatting handlers ──────────────────────────────────────────
+
+  const handleFontFamilyChange = useCallback(
+    (font: FontFamily) => {
+      setActiveFontFamily(font);
+      const selected = elementsRef.current.filter((el) => el.isSelected);
+      const textEls = selected.filter((el) => el.type === "text" || el.type === "sticky");
+      if (textEls.length > 0) {
+        pushUndo(elementsRef.current);
+        const ids = new Set(textEls.map((el) => el.id));
+        setElements((prev) =>
+          prev.map((el) =>
+            ids.has(el.id) ? { ...el, fontFamily: font } : el
+          )
+        );
+      }
+    },
+    [pushUndo]
+  );
+
+  const handleFontWeightToggle = useCallback(() => {
+    const newWeight = activeFontWeight === "bold" ? "normal" : "bold";
+    setActiveFontWeight(newWeight);
+    const selected = elementsRef.current.filter((el) => el.isSelected);
+    const textEls = selected.filter((el) => el.type === "text" || el.type === "sticky");
+    if (textEls.length > 0) {
+      pushUndo(elementsRef.current);
+      const ids = new Set(textEls.map((el) => el.id));
+      setElements((prev) =>
+        prev.map((el) =>
+          ids.has(el.id) ? { ...el, fontWeight: newWeight } : el
+        )
+      );
+    }
+  }, [activeFontWeight, pushUndo]);
+
+  const handleFontStyleToggle = useCallback(() => {
+    const newStyle = activeFontStyle === "italic" ? "normal" : "italic";
+    setActiveFontStyle(newStyle);
+    const selected = elementsRef.current.filter((el) => el.isSelected);
+    const textEls = selected.filter((el) => el.type === "text" || el.type === "sticky");
+    if (textEls.length > 0) {
+      pushUndo(elementsRef.current);
+      const ids = new Set(textEls.map((el) => el.id));
+      setElements((prev) =>
+        prev.map((el) =>
+          ids.has(el.id) ? { ...el, fontStyle: newStyle } : el
+        )
+      );
+    }
+  }, [activeFontStyle, pushUndo]);
+
+  const handleTextDecorationToggle = useCallback(() => {
+    const newDeco = activeTextDecoration === "underline" ? "none" : "underline";
+    setActiveTextDecoration(newDeco);
+    const selected = elementsRef.current.filter((el) => el.isSelected);
+    const textEls = selected.filter((el) => el.type === "text" || el.type === "sticky");
+    if (textEls.length > 0) {
+      pushUndo(elementsRef.current);
+      const ids = new Set(textEls.map((el) => el.id));
+      setElements((prev) =>
+        prev.map((el) =>
+          ids.has(el.id) ? { ...el, textDecoration: newDeco } : el
+        )
+      );
+    }
+  }, [activeTextDecoration, pushUndo]);
+
+  const handleTextAlignChange = useCallback(
+    (align: TextAlign) => {
+      setActiveTextAlign(align);
+      const selected = elementsRef.current.filter((el) => el.isSelected);
+      const textEls = selected.filter((el) => el.type === "text" || el.type === "sticky");
+      if (textEls.length > 0) {
+        pushUndo(elementsRef.current);
+        const ids = new Set(textEls.map((el) => el.id));
+        setElements((prev) =>
+          prev.map((el) =>
+            ids.has(el.id) ? { ...el, textAlign: align } : el
+          )
+        );
+      }
+    },
+    [pushUndo]
+  );
+
+  const handleLineSpacingChange = useCallback(
+    (spacing: number) => {
+      setActiveLineSpacing(spacing);
+      const selected = elementsRef.current.filter((el) => el.isSelected);
+      const textEls = selected.filter((el) => el.type === "text" || el.type === "sticky");
+      if (textEls.length > 0) {
+        pushUndo(elementsRef.current);
+        const ids = new Set(textEls.map((el) => el.id));
+        setElements((prev) =>
+          prev.map((el) =>
+            ids.has(el.id) ? { ...el, lineSpacing: spacing } : el
+          )
+        );
+      }
+    },
+    [pushUndo]
+  );
+
+  const handleStrokeDashChange = useCallback(
+    (pattern: StrokeDashPattern) => {
+      setActiveStrokeDash(pattern);
+      const selected = elementsRef.current.filter((el) => el.isSelected);
+      if (selected.length > 0) {
+        pushUndo(elementsRef.current);
+        const groupIds = new Set<string>();
+        for (const el of selected) {
+          if (el.groupId) groupIds.add(el.groupId);
+        }
+        const selectedIds = new Set(selected.map((el) => el.id));
+        setElements((prev) =>
+          prev.map((el) =>
+            selectedIds.has(el.id) || (el.groupId && groupIds.has(el.groupId))
+              ? { ...el, strokeDash: pattern }
+              : el
+          )
+        );
+      }
+    },
+    [pushUndo]
+  );
+
   // ── Context menu handler ──────────────────────────────────────────────
 
   const handleContextMenu = useCallback(
@@ -1055,6 +1259,13 @@ export default function Whiteboard({
           activeFillColor={activeFillColor}
           activeFontSize={activeFontSize}
           activeStickyColor={activeStickyColor}
+          activeFontFamily={activeFontFamily}
+          activeFontWeight={activeFontWeight}
+          activeFontStyle={activeFontStyle}
+          activeTextDecoration={activeTextDecoration}
+          activeTextAlign={activeTextAlign}
+          activeLineSpacing={activeLineSpacing}
+          activeStrokeDash={activeStrokeDash}
           readOnly={readOnly}
           onAddElement={handleAddElement}
           onBatchUpdate={handleBatchUpdate}
@@ -1076,11 +1287,25 @@ export default function Whiteboard({
           activeFillColor={activeFillColor}
           activeFontSize={activeFontSize}
           activeStickyColor={activeStickyColor}
+          activeFontFamily={activeFontFamily}
+          activeFontWeight={activeFontWeight}
+          activeFontStyle={activeFontStyle}
+          activeTextDecoration={activeTextDecoration}
+          activeTextAlign={activeTextAlign}
+          activeLineSpacing={activeLineSpacing}
+          activeStrokeDash={activeStrokeDash}
           onColorChange={handleColorChange}
           onStrokeWidthChange={handleStrokeWidthChange}
           onFillColorChange={handleFillColorChange}
-          onFontSizeChange={setActiveFontSize}
+          onFontSizeChange={handleFontSizeChange}
           onStickyColorChange={setActiveStickyColor}
+          onFontFamilyChange={handleFontFamilyChange}
+          onFontWeightToggle={handleFontWeightToggle}
+          onFontStyleToggle={handleFontStyleToggle}
+          onTextDecorationToggle={handleTextDecorationToggle}
+          onTextAlignChange={handleTextAlignChange}
+          onLineSpacingChange={handleLineSpacingChange}
+          onStrokeDashChange={handleStrokeDashChange}
           onLoadTemplate={handleLoadTemplate}
           onInsertImage={handleInsertImage}
           onInsertTable={handleInsertTable}
@@ -1091,6 +1316,32 @@ export default function Whiteboard({
           readOnly={readOnly}
         />
 
+        {/* Floating text toolbar — above selected text/sticky */}
+        {(() => {
+          const selectedTextEl = elements.find(
+            (el) => el.isSelected && (el.type === "text" || el.type === "sticky")
+          );
+          if (!selectedTextEl || editingText) return null;
+          return (
+            <FloatingTextToolbar
+              element={selectedTextEl}
+              viewport={viewport}
+              activeFontFamily={activeFontFamily}
+              activeFontSize={activeFontSize}
+              activeFontWeight={activeFontWeight}
+              activeFontStyle={activeFontStyle}
+              activeTextDecoration={activeTextDecoration}
+              activeTextAlign={activeTextAlign}
+              onFontFamilyChange={handleFontFamilyChange}
+              onFontSizeChange={handleFontSizeChange}
+              onFontWeightToggle={handleFontWeightToggle}
+              onFontStyleToggle={handleFontStyleToggle}
+              onTextDecorationToggle={handleTextDecorationToggle}
+              onTextAlignChange={handleTextAlignChange}
+            />
+          );
+        })()}
+
         {/* Text editing overlay */}
         {editingText && (
           <div
@@ -1100,12 +1351,14 @@ export default function Whiteboard({
               top: (editingText.y || 0) * viewport.zoom + viewport.y,
             }}
           >
-            <textarea
+            <div
               ref={textInputRef}
-              value={editingText.text || ""}
-              onChange={(e) =>
-                setEditingText({ ...editingText, text: e.target.value })
-              }
+              contentEditable
+              suppressContentEditableWarning
+              onInput={(e) => {
+                const text = (e.target as HTMLDivElement).textContent || "";
+                setEditingText((prev) => prev ? { ...prev, text } : null);
+              }}
               onBlur={commitText}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -1113,9 +1366,28 @@ export default function Whiteboard({
                   commitText();
                 }
               }}
-              className="min-w-[120px] min-h-[40px] p-2 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-2 border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 rounded-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 outline-none resize-both shadow-lg"
-              style={{ fontSize: editingText.fontSize || 16 }}
-              placeholder="Type here..."
+              className="p-1 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-2 border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 rounded-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 outline-none resize shadow-lg whitespace-pre-wrap break-words"
+              style={{
+                fontSize: (editingText.fontSize || 16) * viewport.zoom,
+                fontFamily: `${editingText.fontFamily || "Inter"}, system-ui, sans-serif`,
+                fontWeight: editingText.fontWeight || "normal",
+                fontStyle: editingText.fontStyle || "normal",
+                textDecoration: editingText.textDecoration === "underline" ? "underline" : "none",
+                textAlign: editingText.textAlign || "left",
+                lineHeight: editingText.lineSpacing || 1.4,
+                width: editingText.width
+                  ? editingText.width * viewport.zoom
+                  : 200,
+                minHeight: editingText.height
+                  ? editingText.height * viewport.zoom
+                  : 40,
+                minWidth: 120,
+              }}
+              dangerouslySetInnerHTML={
+                editingText.text
+                  ? { __html: editingText.text.replace(/</g, "&lt;").replace(/>/g, "&gt;") }
+                  : undefined
+              }
             />
           </div>
         )}

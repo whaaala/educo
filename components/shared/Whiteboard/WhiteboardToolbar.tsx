@@ -39,14 +39,28 @@ import {
   Copy,
   Palette,
   Ban,
+  Bold,
+  Italic,
+  Underline,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  ChevronsUpDown,
 } from "lucide-react";
-import type { WhiteboardTool, WhiteboardElement } from "./whiteboard-types";
+import type { WhiteboardTool, WhiteboardElement, FontFamily, TextAlign, StrokeDashPattern } from "./whiteboard-types";
 import {
   DEFAULT_COLORS,
   FILL_COLORS,
   FILL_TOOLS,
   STICKY_COLORS,
   STROKE_WIDTHS,
+  FONT_FAMILIES,
+  FONT_SIZES,
+  LINE_SPACINGS,
+  STROKE_DASH_PATTERNS,
+  EXTENDED_STROKE_WIDTHS,
+  LINE_TOOLS,
+  BBOX_SHAPE_TOOLS,
 } from "./whiteboard-types";
 import { TEMPLATES, TEMPLATE_CATEGORIES } from "./whiteboard-templates";
 
@@ -91,6 +105,44 @@ function FlowDataIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <polygon points="6,4 22,4 18,20 2,20" />
+    </svg>
+  );
+}
+
+function CurvedConnectorIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 6 C12 6 12 18 20 18" />
+      <circle cx="4" cy="6" r="1.5" fill="currentColor" />
+      <circle cx="20" cy="18" r="1.5" fill="currentColor" />
+    </svg>
+  );
+}
+
+function CurveIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 18 Q12 2 20 18" />
+    </svg>
+  );
+}
+
+function PolylineIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="4,18 9,8 15,14 20,4" />
+      <circle cx="4" cy="18" r="1.5" fill="currentColor" />
+      <circle cx="9" cy="8" r="1.5" fill="currentColor" />
+      <circle cx="15" cy="14" r="1.5" fill="currentColor" />
+      <circle cx="20" cy="4" r="1.5" fill="currentColor" />
+    </svg>
+  );
+}
+
+function ScribbleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 16 C6 10 8 14 10 8 C12 2 14 12 16 6 C18 0 20 10 20 8" />
     </svg>
   );
 }
@@ -146,7 +198,11 @@ const SECTIONS: ToolSection[] = [
       { id: "line", icon: Minus, label: "Line" },
       { id: "arrow", icon: MoveRight, label: "Arrow" },
       { id: "double-arrow", icon: MoveHorizontal, label: "Both ways" },
-      { id: "connector", icon: Spline, label: "Connector" },
+      { id: "connector", icon: Spline, label: "Elbow" },
+      { id: "curved-connector", icon: CurvedConnectorIcon, label: "Curved" },
+      { id: "curve", icon: CurveIcon, label: "Curve" },
+      { id: "polyline", icon: PolylineIcon, label: "Polyline" },
+      { id: "scribble", icon: ScribbleIcon, label: "Scribble" },
     ],
   },
   {
@@ -184,11 +240,25 @@ interface WhiteboardToolbarProps {
   activeFillColor: string | null;
   activeFontSize: number;
   activeStickyColor: string;
+  activeFontFamily: FontFamily;
+  activeFontWeight: "normal" | "bold";
+  activeFontStyle: "normal" | "italic";
+  activeTextDecoration: "none" | "underline";
+  activeTextAlign: TextAlign;
+  activeLineSpacing: number;
+  activeStrokeDash: StrokeDashPattern;
   onColorChange: (color: string) => void;
   onStrokeWidthChange: (width: number) => void;
   onFillColorChange: (color: string | null) => void;
   onFontSizeChange: (size: number) => void;
   onStickyColorChange: (color: string) => void;
+  onFontFamilyChange: (font: FontFamily) => void;
+  onFontWeightToggle: () => void;
+  onFontStyleToggle: () => void;
+  onTextDecorationToggle: () => void;
+  onTextAlignChange: (align: TextAlign) => void;
+  onLineSpacingChange: (spacing: number) => void;
+  onStrokeDashChange: (pattern: StrokeDashPattern) => void;
   onLoadTemplate?: (elements: WhiteboardElement[]) => void;
   onInsertImage?: () => void;
   onInsertTable?: (rows: number, cols: number) => void;
@@ -209,11 +279,25 @@ export default function WhiteboardToolbar({
   activeFillColor,
   activeFontSize,
   activeStickyColor,
+  activeFontFamily,
+  activeFontWeight,
+  activeFontStyle,
+  activeTextDecoration,
+  activeTextAlign,
+  activeLineSpacing,
+  activeStrokeDash,
   onColorChange,
   onStrokeWidthChange,
   onFillColorChange,
   onFontSizeChange,
   onStickyColorChange,
+  onFontFamilyChange,
+  onFontWeightToggle,
+  onFontStyleToggle,
+  onTextDecorationToggle,
+  onTextAlignChange,
+  onLineSpacingChange,
+  onStrokeDashChange,
   onLoadTemplate,
   onInsertImage,
   onInsertTable,
@@ -334,7 +418,9 @@ export default function WhiteboardToolbar({
     "flowchart-data", "flowchart-document",
   ].includes(activeTool);
   const showFillColors = FILL_TOOLS.includes(activeTool);
-  const showFontSize = activeTool === "text";
+  const showFontSize = activeTool === "text" || activeTool === "sticky";
+  const showTextFormatting = activeTool === "text" || activeTool === "sticky";
+  const showStrokeDash = [...BBOX_SHAPE_TOOLS, ...LINE_TOOLS, "pen", "highlighter", "polyline", "scribble"].includes(activeTool);
   const showStickyColors = activeTool === "sticky";
 
   // ─── Collapsed view ─────────────────────────────────────
@@ -473,10 +559,12 @@ export default function WhiteboardToolbar({
               activeColor={activeColor}
               activeFillColor={activeFillColor}
               activeStrokeWidth={activeStrokeWidth}
+              activeFontSize={activeFontSize}
               activeTool={activeTool}
               onColorChange={(c) => { onColorChange(c); }}
               onFillColorChange={onFillColorChange}
               onStrokeWidthChange={onStrokeWidthChange}
+              onFontSizeChange={onFontSizeChange}
               onClose={() => setShowColorPicker(false)}
             />
           )}
@@ -757,25 +845,89 @@ export default function WhiteboardToolbar({
               </PropertySection>
             )}
 
-            {/* Font size */}
+            {/* Font family */}
+            {showTextFormatting && (
+              <PropertySection label="Font">
+                <FontFamilyDropdown
+                  value={activeFontFamily}
+                  onChange={onFontFamilyChange}
+                />
+              </PropertySection>
+            )}
+
+            {/* Font size with +/- */}
             {showFontSize && (
               <PropertySection label="Font Size">
+                <FontSizeInput
+                  value={activeFontSize}
+                  onChange={onFontSizeChange}
+                />
+              </PropertySection>
+            )}
+
+            {/* Bold / Italic / Underline */}
+            {showTextFormatting && (
+              <PropertySection label="Style">
                 <div className="flex items-center gap-1">
-                  {[12, 16, 20, 28, 36].map((size) => (
+                  <ToggleButton active={activeFontWeight === "bold"} onClick={onFontWeightToggle} title="Bold (B)">
+                    <Bold className="w-3.5 h-3.5" />
+                  </ToggleButton>
+                  <ToggleButton active={activeFontStyle === "italic"} onClick={onFontStyleToggle} title="Italic (I)">
+                    <Italic className="w-3.5 h-3.5" />
+                  </ToggleButton>
+                  <ToggleButton active={activeTextDecoration === "underline"} onClick={onTextDecorationToggle} title="Underline (U)">
+                    <Underline className="w-3.5 h-3.5" />
+                  </ToggleButton>
+                </div>
+              </PropertySection>
+            )}
+
+            {/* Text alignment */}
+            {showTextFormatting && (
+              <PropertySection label="Alignment">
+                <div className="flex items-center gap-1">
+                  <ToggleButton active={activeTextAlign === "left"} onClick={() => onTextAlignChange("left")} title="Align left">
+                    <AlignLeft className="w-3.5 h-3.5" />
+                  </ToggleButton>
+                  <ToggleButton active={activeTextAlign === "center"} onClick={() => onTextAlignChange("center")} title="Align center">
+                    <AlignCenter className="w-3.5 h-3.5" />
+                  </ToggleButton>
+                  <ToggleButton active={activeTextAlign === "right"} onClick={() => onTextAlignChange("right")} title="Align right">
+                    <AlignRight className="w-3.5 h-3.5" />
+                  </ToggleButton>
+                </div>
+              </PropertySection>
+            )}
+
+            {/* Line spacing */}
+            {showTextFormatting && (
+              <PropertySection label="Line Spacing">
+                <div className="flex items-center gap-1">
+                  {LINE_SPACINGS.map((ls) => (
                     <button
-                      key={size}
-                      onClick={() => onFontSizeChange(size)}
-                      className={`flex items-center justify-center w-8 h-8 rounded-lg text-[10px] font-bold transition-all duration-150 cursor-pointer ${
-                        activeFontSize === size
+                      key={ls.value}
+                      onClick={() => onLineSpacingChange(ls.value)}
+                      className={`flex items-center justify-center px-2 h-7 rounded-lg text-[10px] font-bold transition-all duration-150 cursor-pointer ${
+                        Math.abs(activeLineSpacing - ls.value) < 0.05
                           ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400"
                           : "text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                       }`}
-                      title={`${size}px`}
+                      title={ls.label}
                     >
-                      {size}
+                      {ls.label}
                     </button>
                   ))}
                 </div>
+              </PropertySection>
+            )}
+
+            {/* Stroke dash pattern */}
+            {showStrokeDash && (
+              <PropertySection label="Line Style">
+                <StrokeDashControl
+                  value={activeStrokeDash}
+                  onChange={onStrokeDashChange}
+                />
               </PropertySection>
             )}
 
@@ -1078,25 +1230,30 @@ function ColorPickerFlyout({
   activeColor,
   activeFillColor,
   activeStrokeWidth,
+  activeFontSize,
   activeTool,
   onColorChange,
   onFillColorChange,
   onStrokeWidthChange,
+  onFontSizeChange,
   onClose,
 }: {
   activeColor: string;
   activeFillColor: string | null;
   activeStrokeWidth: number;
+  activeFontSize: number;
   activeTool: WhiteboardTool;
   onColorChange: (color: string) => void;
   onFillColorChange: (color: string | null) => void;
   onStrokeWidthChange: (width: number) => void;
+  onFontSizeChange: (size: number) => void;
   onClose: () => void;
 }) {
   const showFill = FILL_TOOLS.includes(activeTool);
   const showWidth = ![
     "select", "eraser", "hand", "text", "sticky",
   ].includes(activeTool);
+  const showFontSize = activeTool === "text" || activeTool === "sticky";
 
   return (
     <div
@@ -1216,6 +1373,31 @@ function ColorPickerFlyout({
             </div>
           </div>
         )}
+
+        {/* Font Size — for text/sticky tools */}
+        {showFontSize && (
+          <div className="mt-3">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50 mb-2 block">
+              Font Size
+            </span>
+            <div className="flex items-center gap-1">
+              {[12, 16, 20, 28, 36, 48].map((size) => (
+                <button
+                  key={size}
+                  onClick={() => onFontSizeChange(size)}
+                  className={`flex items-center justify-center w-8 h-7 rounded-lg text-[10px] font-bold transition-all duration-150 cursor-pointer ${
+                    activeFontSize === size
+                      ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400"
+                      : "text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                  }`}
+                  title={`${size}px`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1291,6 +1473,216 @@ function TableSizePicker({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Toggle button (for B/I/U and alignment) ─────────────
+
+function ToggleButton({
+  active,
+  onClick,
+  title,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150 cursor-pointer ${
+        active
+          ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400 ring-1 ring-blue-500/15 dark:ring-blue-500/25 midnight:ring-cyan-500/25 purple:ring-pink-500/25"
+          : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+      }`}
+      title={title}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ─── Font family dropdown ─────────────────────────────────
+
+function FontFamilyDropdown({
+  value,
+  onChange,
+}: {
+  value: FontFamily;
+  onChange: (font: FontFamily) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [isOpen]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-between w-full px-2 py-1.5 rounded-lg text-[11px] font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-50 dark:bg-gray-800 midnight:bg-gray-800/50 purple:bg-gray-800/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+        style={{ fontFamily: `${value}, system-ui, sans-serif` }}
+      >
+        <span className="truncate">{value}</span>
+        <ChevronDown className={`w-3 h-3 ml-1 flex-shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+      {isOpen && (
+        <div className="absolute left-0 top-full mt-1 z-[60] w-full max-h-[200px] overflow-y-auto scrollbar-thin bg-white dark:bg-gray-800 midnight:bg-[#0d1526] purple:bg-[#1f1035] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-lg">
+          {FONT_FAMILIES.map((font) => (
+            <button
+              key={font}
+              onClick={() => { onChange(font); setIsOpen(false); }}
+              className={`w-full text-left px-2.5 py-1.5 text-[11px] transition-colors cursor-pointer ${
+                value === font
+                  ? "bg-blue-50 dark:bg-blue-500/15 midnight:bg-cyan-500/15 purple:bg-pink-500/15 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                  : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+              }`}
+              style={{ fontFamily: `${font}, system-ui, sans-serif` }}
+            >
+              {font}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Font size input with +/- buttons ─────────────────────
+
+function FontSizeInput({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (size: number) => void;
+}) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isDropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [isDropdownOpen]);
+
+  const decrease = () => {
+    const idx = FONT_SIZES.findIndex((s) => s >= value);
+    const prev = idx > 0 ? FONT_SIZES[idx - 1] : FONT_SIZES[0];
+    onChange(prev);
+  };
+
+  const increase = () => {
+    const idx = FONT_SIZES.findIndex((s) => s > value);
+    const next = idx >= 0 ? FONT_SIZES[idx] : FONT_SIZES[FONT_SIZES.length - 1];
+    onChange(next);
+  };
+
+  return (
+    <div ref={ref} className="relative flex items-center gap-0.5">
+      <button
+        onClick={decrease}
+        className="flex items-center justify-center w-7 h-7 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer text-sm font-bold"
+        title="Decrease font size"
+      >
+        −
+      </button>
+      <button
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        className="flex items-center justify-center min-w-[36px] h-7 px-1 rounded-lg text-[11px] font-bold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-50 dark:bg-gray-800 midnight:bg-gray-800/50 purple:bg-gray-800/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+      >
+        {value}
+      </button>
+      <button
+        onClick={increase}
+        className="flex items-center justify-center w-7 h-7 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer text-sm font-bold"
+        title="Increase font size"
+      >
+        +
+      </button>
+      {isDropdownOpen && (
+        <div className="absolute left-0 top-full mt-1 z-[60] w-full max-h-[180px] overflow-y-auto scrollbar-thin bg-white dark:bg-gray-800 midnight:bg-[#0d1526] purple:bg-[#1f1035] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-lg">
+          {FONT_SIZES.map((size) => (
+            <button
+              key={size}
+              onClick={() => { onChange(size); setIsDropdownOpen(false); }}
+              className={`w-full text-left px-2.5 py-1 text-[11px] font-medium transition-colors cursor-pointer ${
+                value === size
+                  ? "bg-blue-50 dark:bg-blue-500/15 midnight:bg-cyan-500/15 purple:bg-pink-500/15 text-blue-600 dark:text-blue-400"
+                  : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              }`}
+            >
+              {size}px
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Stroke dash control with SVG previews ────────────────
+
+function StrokeDashControl({
+  value,
+  onChange,
+}: {
+  value: StrokeDashPattern;
+  onChange: (pattern: StrokeDashPattern) => void;
+}) {
+  const dashArrays: Record<StrokeDashPattern, string> = {
+    solid: "",
+    dashed: "8 6",
+    dotted: "2 4",
+    "dash-dot": "8 4 2 4",
+    "dash-dot-dot": "8 4 2 4 2 4",
+  };
+
+  return (
+    <div className="flex flex-col gap-1">
+      {STROKE_DASH_PATTERNS.map((pattern) => (
+        <button
+          key={pattern}
+          onClick={() => onChange(pattern)}
+          className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all duration-150 cursor-pointer ${
+            value === pattern
+              ? "bg-blue-500/12 dark:bg-blue-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20 ring-1 ring-blue-500/15 dark:ring-blue-500/25"
+              : "hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+          }`}
+          title={pattern}
+        >
+          <svg width="60" height="8" className="flex-shrink-0">
+            <line
+              x1="2" y1="4" x2="58" y2="4"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeDasharray={dashArrays[pattern] || undefined}
+              className="text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300"
+            />
+          </svg>
+          <span className="text-[9px] font-medium text-gray-400 dark:text-gray-500 capitalize">
+            {pattern}
+          </span>
+        </button>
+      ))}
     </div>
   );
 }

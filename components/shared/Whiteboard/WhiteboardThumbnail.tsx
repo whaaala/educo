@@ -1,7 +1,7 @@
 "use client";
 
 import type { WhiteboardElement, Viewport } from "./whiteboard-types";
-import { getBoundingBox } from "./whiteboard-utils";
+import { getBoundingBox, getStrokeDashArray } from "./whiteboard-utils";
 
 interface WhiteboardThumbnailProps {
   elements: WhiteboardElement[];
@@ -147,7 +147,9 @@ function LabelText({
       y={cy}
       fill={el.color}
       fontSize={el.fontSize || 14}
-      fontFamily="Inter, system-ui, sans-serif"
+      fontFamily={`${el.fontFamily || "Inter"}, system-ui, sans-serif`}
+      fontWeight={el.fontWeight || "normal"}
+      fontStyle={el.fontStyle || "normal"}
       textAnchor="middle"
       dominantBaseline="central"
       opacity={el.opacity}
@@ -201,6 +203,14 @@ function ElementSVG({ el }: { el: WhiteboardElement }) {
       return <DoubleArrowSVG el={el} />;
     case "connector":
       return <ConnectorSVG el={el} />;
+    case "curved-connector":
+      return <CurvedConnectorSVG el={el} />;
+    case "curve":
+      return <CurveSVG el={el} />;
+    case "polyline":
+      return <PolylineSVG el={el} />;
+    case "scribble":
+      return <PathSVG el={el} />;
 
     // --- flowchart shapes ---
     case "flowchart-process":
@@ -231,6 +241,11 @@ function ElementSVG({ el }: { el: WhiteboardElement }) {
 // Existing renderers (unchanged)
 // ===========================================================================
 
+/** Helper to get stroke-dasharray for an element */
+function dash(el: WhiteboardElement): string | undefined {
+  return getStrokeDashArray(el.strokeDash, el.strokeWidth);
+}
+
 function PathSVG({ el }: { el: WhiteboardElement }) {
   if (!el.points || el.points.length < 2) return null;
   let d = `M ${el.points[0].x} ${el.points[0].y}`;
@@ -249,6 +264,7 @@ function PathSVG({ el }: { el: WhiteboardElement }) {
       strokeWidth={el.strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeDasharray={dash(el)}
       opacity={el.opacity}
     />
   );
@@ -265,6 +281,7 @@ function RectSVG({ el }: { el: WhiteboardElement }) {
       fill="none"
       stroke={el.color}
       strokeWidth={el.strokeWidth}
+      strokeDasharray={dash(el)}
       opacity={el.opacity}
     />
   );
@@ -283,6 +300,7 @@ function EllipseSVG({ el }: { el: WhiteboardElement }) {
       fill="none"
       stroke={el.color}
       strokeWidth={el.strokeWidth}
+      strokeDasharray={dash(el)}
       opacity={el.opacity}
     />
   );
@@ -299,6 +317,7 @@ function LineSVG({ el }: { el: WhiteboardElement }) {
       stroke={el.color}
       strokeWidth={el.strokeWidth}
       strokeLinecap="round"
+      strokeDasharray={dash(el)}
       opacity={el.opacity}
     />
   );
@@ -331,13 +350,20 @@ function ArrowSVG({ el }: { el: WhiteboardElement }) {
 
 function TextSVG({ el }: { el: WhiteboardElement }) {
   if (el.x === undefined || el.y === undefined || !el.text) return null;
+  const align = el.textAlign || "left";
+  const anchor = align === "center" ? "middle" : align === "right" ? "end" : "start";
+  const xPos = align === "center" ? el.x + (el.width || 200) / 2 : align === "right" ? el.x + (el.width || 200) : el.x;
   return (
     <text
-      x={el.x}
+      x={xPos}
       y={el.y + (el.fontSize || 16)}
       fill={el.color}
       fontSize={el.fontSize || 16}
-      fontFamily="Inter, system-ui, sans-serif"
+      fontFamily={`${el.fontFamily || "Inter"}, system-ui, sans-serif`}
+      fontWeight={el.fontWeight || "normal"}
+      fontStyle={el.fontStyle || "normal"}
+      textDecoration={el.textDecoration === "underline" ? "underline" : undefined}
+      textAnchor={anchor}
       opacity={el.opacity}
     >
       {el.text}
@@ -367,7 +393,10 @@ function StickySVG({ el }: { el: WhiteboardElement }) {
           y={el.y + 28}
           fill="#1f2937"
           fontSize={el.fontSize || 14}
-          fontFamily="Inter, system-ui, sans-serif"
+          fontFamily={`${el.fontFamily || "Inter"}, system-ui, sans-serif`}
+          fontWeight={el.fontWeight || "normal"}
+          fontStyle={el.fontStyle || "normal"}
+          textDecoration={el.textDecoration === "underline" ? "underline" : undefined}
         >
           {el.text.length > 30 ? el.text.slice(0, 30) + "..." : el.text}
         </text>
@@ -392,6 +421,7 @@ function TriangleSVG({ el }: { el: WhiteboardElement }) {
       stroke={el.color}
       strokeWidth={el.strokeWidth}
       strokeLinejoin="round"
+      strokeDasharray={dash(el)}
       opacity={el.opacity}
     />
   );
@@ -409,6 +439,7 @@ function DiamondSVG({ el }: { el: WhiteboardElement }) {
       stroke={el.color}
       strokeWidth={el.strokeWidth}
       strokeLinejoin="round"
+      strokeDasharray={dash(el)}
       opacity={el.opacity}
     />
   );
@@ -440,6 +471,7 @@ function StarSVG({ el }: { el: WhiteboardElement }) {
       stroke={el.color}
       strokeWidth={el.strokeWidth}
       strokeLinejoin="round"
+      strokeDasharray={dash(el)}
       opacity={el.opacity}
     />
   );
@@ -466,6 +498,7 @@ function HexagonSVG({ el }: { el: WhiteboardElement }) {
       stroke={el.color}
       strokeWidth={el.strokeWidth}
       strokeLinejoin="round"
+      strokeDasharray={dash(el)}
       opacity={el.opacity}
     />
   );
@@ -487,6 +520,7 @@ function RoundedRectSVG({ el }: { el: WhiteboardElement }) {
       fill={fill(el)}
       stroke={el.color}
       strokeWidth={el.strokeWidth}
+      strokeDasharray={dash(el)}
       opacity={el.opacity}
     />
   );
@@ -550,6 +584,7 @@ function ParallelogramSVG({ el }: { el: WhiteboardElement }) {
       stroke={el.color}
       strokeWidth={el.strokeWidth}
       strokeLinejoin="round"
+      strokeDasharray={dash(el)}
       opacity={el.opacity}
     />
   );
@@ -612,6 +647,66 @@ function ConnectorSVG({ el }: { el: WhiteboardElement }) {
       strokeWidth={el.strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeDasharray={dash(el)}
+      opacity={el.opacity}
+    />
+  );
+}
+
+function CurvedConnectorSVG({ el }: { el: WhiteboardElement }) {
+  if (el.startX === undefined || el.startY === undefined || el.endX === undefined || el.endY === undefined) return null;
+  const midX = (el.startX + el.endX) / 2;
+  const d = `M ${el.startX} ${el.startY} C ${midX} ${el.startY}, ${midX} ${el.endY}, ${el.endX} ${el.endY}`;
+  return (
+    <path
+      d={d}
+      fill="none"
+      stroke={el.color}
+      strokeWidth={el.strokeWidth}
+      strokeLinecap="round"
+      strokeDasharray={dash(el)}
+      opacity={el.opacity}
+    />
+  );
+}
+
+function CurveSVG({ el }: { el: WhiteboardElement }) {
+  if (el.startX === undefined || el.startY === undefined || el.endX === undefined || el.endY === undefined) return null;
+  const midX = (el.startX + el.endX) / 2;
+  const midY = (el.startY + el.endY) / 2;
+  const dx = el.endX - el.startX;
+  const dy = el.endY - el.startY;
+  const dist = Math.hypot(dx, dy);
+  const offset = dist * 0.35;
+  const angle = Math.atan2(dy, dx) - Math.PI / 2;
+  const cpX = midX + Math.cos(angle) * offset;
+  const cpY = midY + Math.sin(angle) * offset;
+  const d = `M ${el.startX} ${el.startY} Q ${cpX} ${cpY}, ${el.endX} ${el.endY}`;
+  return (
+    <path
+      d={d}
+      fill="none"
+      stroke={el.color}
+      strokeWidth={el.strokeWidth}
+      strokeLinecap="round"
+      strokeDasharray={dash(el)}
+      opacity={el.opacity}
+    />
+  );
+}
+
+function PolylineSVG({ el }: { el: WhiteboardElement }) {
+  if (!el.points || el.points.length < 2) return null;
+  const pts = el.points.map(p => `${p.x},${p.y}`).join(" ");
+  return (
+    <polyline
+      points={pts}
+      fill="none"
+      stroke={el.color}
+      strokeWidth={el.strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeDasharray={dash(el)}
       opacity={el.opacity}
     />
   );

@@ -1,5 +1,11 @@
-import type { WhiteboardElement, Point, WhiteboardTool } from "./whiteboard-types";
+import type { WhiteboardElement, Point, WhiteboardTool, StrokeDashPattern, TextAlign } from "./whiteboard-types";
 import { BBOX_SHAPE_TOOLS, LINE_TOOLS } from "./whiteboard-types";
+
+// ---------------------------------------------------------------------------
+// Resize handle types
+// ---------------------------------------------------------------------------
+
+export type ResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'line-start' | 'line-end';
 
 let idCounter = 0;
 
@@ -52,6 +58,70 @@ function applyFill(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
 }
 
 // ---------------------------------------------------------------------------
+// Font string builder — constructs CSS font string from element fields
+// ---------------------------------------------------------------------------
+
+export function buildFontString(el: WhiteboardElement): string {
+  const style = el.fontStyle === "italic" ? "italic " : "";
+  const weight = el.fontWeight === "bold" ? "bold " : "";
+  const size = el.fontSize || 16;
+  const family = el.fontFamily || "Inter";
+  return `${style}${weight}${size}px ${family}, system-ui, sans-serif`;
+}
+
+// ---------------------------------------------------------------------------
+// Stroke dash helper — sets ctx.setLineDash from pattern name
+// ---------------------------------------------------------------------------
+
+export function applyStrokeDash(
+  ctx: CanvasRenderingContext2D,
+  pattern: StrokeDashPattern | undefined,
+  strokeWidth: number
+) {
+  if (!pattern || pattern === "solid") {
+    ctx.setLineDash([]);
+    return;
+  }
+  const w = Math.max(strokeWidth, 1);
+  switch (pattern) {
+    case "dashed":
+      ctx.setLineDash([w * 4, w * 3]);
+      break;
+    case "dotted":
+      ctx.setLineDash([w, w * 2]);
+      break;
+    case "dash-dot":
+      ctx.setLineDash([w * 4, w * 2, w, w * 2]);
+      break;
+    case "dash-dot-dot":
+      ctx.setLineDash([w * 4, w * 2, w, w * 2, w, w * 2]);
+      break;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// SVG stroke-dasharray helper (for thumbnails)
+// ---------------------------------------------------------------------------
+
+export function getStrokeDashArray(
+  pattern: StrokeDashPattern | undefined,
+  strokeWidth: number
+): string | undefined {
+  if (!pattern || pattern === "solid") return undefined;
+  const w = Math.max(strokeWidth, 1);
+  switch (pattern) {
+    case "dashed":
+      return `${w * 4} ${w * 3}`;
+    case "dotted":
+      return `${w} ${w * 2}`;
+    case "dash-dot":
+      return `${w * 4} ${w * 2} ${w} ${w * 2}`;
+    case "dash-dot-dot":
+      return `${w * 4} ${w * 2} ${w} ${w * 2} ${w} ${w * 2}`;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Main draw dispatcher
 // ---------------------------------------------------------------------------
 export function drawElement(
@@ -68,6 +138,9 @@ export function drawElement(
   ctx.lineWidth = el.strokeWidth;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
+
+  // Apply stroke dash pattern
+  applyStrokeDash(ctx, el.strokeDash, el.strokeWidth);
 
   // Apply rotation/flip transforms around element center
   if (el.rotation || el.flipH || el.flipV) {
@@ -133,6 +206,18 @@ export function drawElement(
       break;
     case "connector":
       drawConnector(ctx, el);
+      break;
+    case "curved-connector":
+      drawCurvedConnector(ctx, el);
+      break;
+    case "curve":
+      drawCurve(ctx, el);
+      break;
+    case "polyline":
+      drawPolyline(ctx, el);
+      break;
+    case "scribble":
+      drawPath(ctx, el);
       break;
     case "text":
       drawText(ctx, el);
@@ -494,12 +579,81 @@ function drawArrowHead(
   ctx.stroke();
 }
 
+// --- Curved connector (S-curve between start and end) ---
+
+function drawCurvedConnector(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
+  if (el.startX === undefined || el.startY === undefined || el.endX === undefined || el.endY === undefined) return;
+  const midX = (el.startX + el.endX) / 2;
+  ctx.beginPath();
+  ctx.moveTo(el.startX, el.startY);
+  ctx.bezierCurveTo(midX, el.startY, midX, el.endY, el.endX, el.endY);
+  ctx.stroke();
+  drawArrowHead(ctx, midX, el.endY, el.endX, el.endY, el.strokeWidth);
+}
+
+// --- Curve (smooth bezier arc between start and end) ---
+
+function drawCurve(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
+  if (el.startX === undefined || el.startY === undefined || el.endX === undefined || el.endY === undefined) return;
+  // Control point offset perpendicular to the line
+  const midX = (el.startX + el.endX) / 2;
+  const midY = (el.startY + el.endY) / 2;
+  const dx = el.endX - el.startX;
+  const dy = el.endY - el.startY;
+  const dist = Math.hypot(dx, dy);
+  const offset = dist * 0.35;
+  const angle = Math.atan2(dy, dx) - Math.PI / 2;
+  const cpX = midX + Math.cos(angle) * offset;
+  const cpY = midY + Math.sin(angle) * offset;
+  ctx.beginPath();
+  ctx.moveTo(el.startX, el.startY);
+  ctx.quadraticCurveTo(cpX, cpY, el.endX, el.endY);
+  ctx.stroke();
+}
+
+// --- Polyline (connected straight line segments) ---
+
+function drawPolyline(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
+  if (!el.points || el.points.length < 2) return;
+  ctx.beginPath();
+  ctx.moveTo(el.points[0].x, el.points[0].y);
+  for (let i = 1; i < el.points.length; i++) {
+    ctx.lineTo(el.points[i].x, el.points[i].y);
+  }
+  ctx.stroke();
+}
+
 // --- Text & sticky ---
 
 function drawText(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
   if (el.x === undefined || el.y === undefined || !el.text) return;
-  ctx.font = `${el.fontSize || 16}px Inter, system-ui, sans-serif`;
-  ctx.fillText(el.text, el.x, el.y + (el.fontSize || 16));
+  const fontSize = el.fontSize || 16;
+  ctx.font = buildFontString(el);
+  const lineSpacing = el.lineSpacing || 1.4;
+  const lineHeight = fontSize * lineSpacing;
+  const align = el.textAlign || "left";
+  const underline = el.textDecoration === "underline";
+
+  if (el.width && el.height) {
+    const padding = 4;
+    wrapTextFormatted(ctx, el.text, el.x + padding, el.y + fontSize + padding, el.width - padding * 2, lineHeight, align, underline, fontSize);
+  } else {
+    // Legacy single-line text
+    const oldAlign = ctx.textAlign;
+    ctx.textAlign = align;
+    const xPos = align === "center" ? el.x + 100 : align === "right" ? el.x + 200 : el.x;
+    ctx.fillText(el.text, xPos, el.y + fontSize);
+    if (underline) {
+      const metrics = ctx.measureText(el.text);
+      const ux = align === "center" ? xPos - metrics.width / 2 : align === "right" ? xPos - metrics.width : xPos;
+      ctx.beginPath();
+      ctx.moveTo(ux, el.y + fontSize + 2);
+      ctx.lineTo(ux + metrics.width, el.y + fontSize + 2);
+      ctx.lineWidth = Math.max(1, fontSize / 14);
+      ctx.stroke();
+    }
+    ctx.textAlign = oldAlign;
+  }
 }
 
 function drawSticky(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
@@ -530,8 +684,13 @@ function drawSticky(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
   if (el.text) {
     ctx.globalAlpha = 1;
     ctx.fillStyle = "#1f2937";
-    ctx.font = `${el.fontSize || 14}px Inter, system-ui, sans-serif`;
-    wrapText(ctx, el.text, el.x + 12, el.y + 28, w - 24, (el.fontSize || 14) * 1.4);
+    ctx.font = buildFontString(el);
+    const fontSize = el.fontSize || 14;
+    const lineSpacing = el.lineSpacing || 1.4;
+    const lineHeight = fontSize * lineSpacing;
+    const align = el.textAlign || "left";
+    const underline = el.textDecoration === "underline";
+    wrapTextFormatted(ctx, el.text, el.x + 12, el.y + 28, w - 24, lineHeight, align, underline, fontSize);
   }
 }
 
@@ -541,7 +700,7 @@ function drawShapeLabel(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
   const w = el.width || 0;
   const h = el.height || 0;
   ctx.fillStyle = el.color;
-  ctx.font = `${el.fontSize || 14}px Inter, system-ui, sans-serif`;
+  ctx.font = buildFontString(el);
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.globalAlpha = 1;
@@ -730,22 +889,60 @@ function wrapText(
   maxWidth: number,
   lineHeight: number
 ) {
+  wrapTextFormatted(ctx, text, x, y, maxWidth, lineHeight, "left", false, 16);
+}
+
+function wrapTextFormatted(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+  align: TextAlign,
+  underline: boolean,
+  fontSize: number
+) {
+  const oldAlign = ctx.textAlign;
+  ctx.textAlign = align;
+  const anchorX = align === "center" ? x + maxWidth / 2 : align === "right" ? x + maxWidth : x;
+
   const words = text.split(" ");
   let line = "";
   let currentY = y;
+
+  const drawLine = (lineText: string, ly: number) => {
+    ctx.fillText(lineText, anchorX, ly);
+    if (underline && lineText) {
+      const metrics = ctx.measureText(lineText);
+      const ux = align === "center" ? anchorX - metrics.width / 2 : align === "right" ? anchorX - metrics.width : anchorX;
+      const savedStroke = ctx.strokeStyle;
+      const savedLW = ctx.lineWidth;
+      ctx.strokeStyle = ctx.fillStyle as string;
+      ctx.lineWidth = Math.max(1, fontSize / 14);
+      ctx.beginPath();
+      ctx.moveTo(ux, ly + 2);
+      ctx.lineTo(ux + metrics.width, ly + 2);
+      ctx.stroke();
+      ctx.strokeStyle = savedStroke;
+      ctx.lineWidth = savedLW;
+    }
+  };
 
   for (const word of words) {
     const testLine = line + word + " ";
     const metrics = ctx.measureText(testLine);
     if (metrics.width > maxWidth && line !== "") {
-      ctx.fillText(line.trim(), x, currentY);
+      drawLine(line.trim(), currentY);
       line = word + " ";
       currentY += lineHeight;
     } else {
       line = testLine;
     }
   }
-  ctx.fillText(line.trim(), x, currentY);
+  drawLine(line.trim(), currentY);
+
+  ctx.textAlign = oldAlign;
 }
 
 // ---------------------------------------------------------------------------
@@ -768,7 +965,7 @@ function normalizeRect(x: number, y: number, w: number, h: number) {
 
 export function getBoundingBox(el: WhiteboardElement): { x: number; y: number; width: number; height: number } | null {
   // Path-based elements
-  if (el.type === "pen" || el.type === "highlighter") {
+  if (el.type === "pen" || el.type === "highlighter" || el.type === "polyline" || el.type === "scribble") {
     if (!el.points || el.points.length === 0) return null;
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     for (const p of el.points) {
@@ -807,7 +1004,9 @@ export function getBoundingBox(el: WhiteboardElement): { x: number; y: number; w
   // Text
   if (el.type === "text") {
     if (el.x === undefined || el.y === undefined) return null;
-    return { x: el.x, y: el.y, width: 200, height: el.fontSize || 16 };
+    const w = el.width || 200;
+    const h = el.height || (el.fontSize || 16) + 8;
+    return { x: el.x, y: el.y, width: w, height: h };
   }
 
   return null;
@@ -838,4 +1037,79 @@ export function screenToCanvas(
     x: (screenX - canvasRect.left - viewport.x) / viewport.zoom,
     y: (screenY - canvasRect.top - viewport.y) / viewport.zoom,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Resize handles — positions, drawing, hit testing
+// ---------------------------------------------------------------------------
+
+export function getResizeHandles(
+  el: WhiteboardElement
+): { handle: ResizeHandle; x: number; y: number }[] {
+  // Line-based elements: handles at start and end points
+  if (LINE_TOOLS.includes(el.type)) {
+    if (el.startX === undefined || el.endX === undefined) return [];
+    return [
+      { handle: 'line-start', x: el.startX, y: el.startY ?? 0 },
+      { handle: 'line-end', x: el.endX, y: el.endY ?? 0 },
+    ];
+  }
+
+  const bbox = getBoundingBox(el);
+  if (!bbox) return [];
+  const { x, y, width: w, height: h } = bbox;
+  return [
+    { handle: 'nw', x, y },
+    { handle: 'n', x: x + w / 2, y },
+    { handle: 'ne', x: x + w, y },
+    { handle: 'e', x: x + w, y: y + h / 2 },
+    { handle: 'se', x: x + w, y: y + h },
+    { handle: 's', x: x + w / 2, y: y + h },
+    { handle: 'sw', x, y: y + h },
+    { handle: 'w', x, y: y + h / 2 },
+  ];
+}
+
+export function drawResizeHandles(
+  ctx: CanvasRenderingContext2D,
+  el: WhiteboardElement,
+  viewport: { x: number; y: number; zoom: number }
+) {
+  const handles = getResizeHandles(el);
+  if (handles.length === 0) return;
+
+  ctx.save();
+  ctx.translate(viewport.x, viewport.y);
+  ctx.scale(viewport.zoom, viewport.zoom);
+
+  const size = 8 / viewport.zoom;
+  const half = size / 2;
+
+  for (const h of handles) {
+    ctx.beginPath();
+    ctx.rect(h.x - half, h.y - half, size, size);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 1.5 / viewport.zoom;
+    ctx.setLineDash([]);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+export function hitTestResizeHandle(
+  pt: Point,
+  el: WhiteboardElement,
+  zoom: number
+): ResizeHandle | null {
+  const handles = getResizeHandles(el);
+  const tolerance = 10 / zoom;
+  for (const h of handles) {
+    if (Math.abs(pt.x - h.x) <= tolerance && Math.abs(pt.y - h.y) <= tolerance) {
+      return h.handle;
+    }
+  }
+  return null;
 }

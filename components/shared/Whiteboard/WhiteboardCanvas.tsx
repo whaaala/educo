@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef, useEffect, useCallback } from "react";
-import type { WhiteboardElement, WhiteboardTool, Point, Viewport } from "./whiteboard-types";
+import type { WhiteboardElement, WhiteboardTool, Point, Viewport, FontFamily, TextAlign, StrokeDashPattern } from "./whiteboard-types";
 import { BBOX_SHAPE_TOOLS, LINE_TOOLS } from "./whiteboard-types";
-import { drawElement, screenToCanvas, hitTest, generateId, getBoundingBox, drawGroupOutlines } from "./whiteboard-utils";
+import { drawElement, screenToCanvas, hitTest, generateId, getBoundingBox, drawGroupOutlines, getResizeHandles, drawResizeHandles, hitTestResizeHandle } from "./whiteboard-utils";
+import type { ResizeHandle } from "./whiteboard-utils";
 
 interface ContextMenuEvent {
   x: number;
@@ -22,6 +23,13 @@ interface WhiteboardCanvasProps {
   activeFillColor: string | null;
   activeFontSize: number;
   activeStickyColor: string;
+  activeFontFamily: FontFamily;
+  activeFontWeight: "normal" | "bold";
+  activeFontStyle: "normal" | "italic";
+  activeTextDecoration: "none" | "underline";
+  activeTextAlign: TextAlign;
+  activeLineSpacing: number;
+  activeStrokeDash: StrokeDashPattern;
   readOnly?: boolean;
   onAddElement: (element: WhiteboardElement) => void;
   onBatchUpdate: (updates: Map<string, Partial<WhiteboardElement>>) => void;
@@ -46,6 +54,13 @@ export default function WhiteboardCanvas({
   activeFillColor,
   activeFontSize,
   activeStickyColor,
+  activeFontFamily,
+  activeFontWeight,
+  activeFontStyle,
+  activeTextDecoration,
+  activeTextAlign,
+  activeLineSpacing,
+  activeStrokeDash,
   readOnly = false,
   onAddElement,
   onBatchUpdate,
@@ -73,6 +88,10 @@ export default function WhiteboardCanvas({
   const needsRedraw = useRef(false);
   const marqueeStart = useRef<Point | null>(null);
   const marqueeEnd = useRef<Point | null>(null);
+  const resizeHandleRef = useRef<ResizeHandle | null>(null);
+  const resizeOriginal = useRef<WhiteboardElement | null>(null);
+  const resizeElementId = useRef<string | null>(null);
+  const hasResizeMoved = useRef(false);
 
   // Stable ref for elements — avoids recreating handlers on every elements change
   const elementsRef = useRef(elements);
@@ -121,6 +140,13 @@ export default function WhiteboardCanvas({
     for (const el of els) {
       drawElement(ctx, el, viewport);
     }
+
+    // Draw resize handles for single-selected element
+    const selectedEls = els.filter(el => el.isSelected);
+    if (selectedEls.length === 1) {
+      drawResizeHandles(ctx, selectedEls[0], viewport);
+    }
+
     ctx.restore();
   }, [viewport]);
 
@@ -179,6 +205,19 @@ export default function WhiteboardCanvas({
     return () => observer.disconnect();
   }, [resizeCanvases, redrawStatic]);
 
+  // Commit active polyline when switching away from polyline tool
+  useEffect(() => {
+    if (activeTool !== "polyline" && activeElement.current?.type === "polyline") {
+      const pts = activeElement.current.points!;
+      if (pts.length > 2) pts.pop();
+      if (pts.length >= 2) {
+        onAddElement(activeElement.current);
+      }
+      activeElement.current = null;
+      clearActive();
+    }
+  }, [activeTool, onAddElement, clearActive]);
+
   // Redraw when elements or viewport change
   useEffect(() => {
     redrawStatic();
@@ -228,6 +267,20 @@ export default function WhiteboardCanvas({
       // Select tool — handles single-select, shift+multi-select, and group-aware selection
       if (activeTool === "select") {
         const els = elementsRef.current;
+
+        // Check resize handles first (single selection only)
+        const selectedEls = els.filter(el => el.isSelected);
+        if (selectedEls.length === 1) {
+          const handleHit = hitTestResizeHandle(pt, selectedEls[0], viewport.zoom);
+          if (handleHit) {
+            resizeHandleRef.current = handleHit;
+            resizeOriginal.current = cloneElement(selectedEls[0]);
+            resizeElementId.current = selectedEls[0].id;
+            hasResizeMoved.current = false;
+            return;
+          }
+        }
+
         let found = false;
         for (let i = els.length - 1; i >= 0; i--) {
           if (hitTest(pt, els[i])) {
@@ -309,6 +362,7 @@ export default function WhiteboardCanvas({
       switch (activeTool) {
         case "pen":
         case "highlighter":
+        case "scribble":
           activeElement.current = {
             id: generateId(),
             type: activeTool,
@@ -356,6 +410,7 @@ export default function WhiteboardCanvas({
             strokeWidth: activeStrokeWidth,
             opacity: activeOpacity,
             borderRadius: activeTool === "rounded-rect" ? 12 : undefined,
+            strokeDash: activeStrokeDash,
           };
           break;
 
@@ -363,6 +418,8 @@ export default function WhiteboardCanvas({
         case "arrow":
         case "double-arrow":
         case "connector":
+        case "curved-connector":
+        case "curve":
           activeElement.current = {
             id: generateId(),
             type: activeTool,
@@ -373,7 +430,30 @@ export default function WhiteboardCanvas({
             color: activeColor,
             strokeWidth: activeStrokeWidth,
             opacity: activeOpacity,
+            strokeDash: activeStrokeDash,
           };
+          break;
+
+        case "polyline":
+          // Polyline: click to place points, double-click to finish
+          if (activeElement.current?.type === "polyline") {
+            // Add another point to existing polyline
+            activeElement.current.points!.push(pt);
+            drawActivePreview();
+            isDrawing.current = false;
+          } else {
+            // Start new polyline
+            activeElement.current = {
+              id: generateId(),
+              type: "polyline",
+              points: [pt, { ...pt }],
+              color: activeColor,
+              strokeWidth: activeStrokeWidth,
+              opacity: activeOpacity,
+              strokeDash: activeStrokeDash,
+            };
+            isDrawing.current = false;
+          }
           break;
 
         case "text":
@@ -387,6 +467,12 @@ export default function WhiteboardCanvas({
             strokeWidth: 1,
             opacity: 1,
             fontSize: activeFontSize,
+            fontFamily: activeFontFamily,
+            fontWeight: activeFontWeight,
+            fontStyle: activeFontStyle,
+            textDecoration: activeTextDecoration,
+            textAlign: activeTextAlign,
+            lineSpacing: activeLineSpacing,
           });
           isDrawing.current = false;
           break;
@@ -405,6 +491,12 @@ export default function WhiteboardCanvas({
             opacity: 1,
             fontSize: 14,
             stickyColor: activeStickyColor,
+            fontFamily: activeFontFamily,
+            fontWeight: activeFontWeight,
+            fontStyle: activeFontStyle,
+            textDecoration: activeTextDecoration,
+            textAlign: activeTextAlign,
+            lineSpacing: activeLineSpacing,
           };
           onAddElement(stickyElement);
           onTextEdit(stickyElement);
@@ -415,10 +507,76 @@ export default function WhiteboardCanvas({
     },
     [
       readOnly, activeTool, activeColor, activeFillColor, activeStrokeWidth, activeOpacity,
-      activeFontSize, activeStickyColor, viewport, getCanvasPoint,
+      activeFontSize, activeStickyColor, activeFontFamily, activeFontWeight, activeFontStyle,
+      activeTextDecoration, activeTextAlign, activeLineSpacing, activeStrokeDash,
+      viewport, getCanvasPoint,
       onAddElement, onRemoveElement, onSelectElement, onTextEdit,
     ]
   );
+
+  // Compute resize updates for an element given a handle and pointer position
+  const computeResizeUpdates = (
+    orig: WhiteboardElement,
+    handle: ResizeHandle,
+    pt: Point
+  ): Partial<WhiteboardElement> => {
+    // Line endpoints — just move start or end
+    if (handle === 'line-start') {
+      return { startX: pt.x, startY: pt.y };
+    }
+    if (handle === 'line-end') {
+      return { endX: pt.x, endY: pt.y };
+    }
+
+    const bbox = getBoundingBox(orig);
+    if (!bbox) return {};
+
+    let left = bbox.x;
+    let top = bbox.y;
+    let right = bbox.x + bbox.width;
+    let bottom = bbox.y + bbox.height;
+
+    // Adjust edges based on which handle is being dragged
+    if (handle.includes('n')) top = pt.y;
+    if (handle.includes('s')) bottom = pt.y;
+    if (handle.includes('w')) left = pt.x;
+    if (handle.includes('e')) right = pt.x;
+
+    // Enforce minimum size (prevent collapsing)
+    const MIN = 10;
+    if (right - left < MIN) {
+      if (handle.includes('w')) left = right - MIN;
+      else right = left + MIN;
+    }
+    if (bottom - top < MIN) {
+      if (handle.includes('n')) top = bottom - MIN;
+      else bottom = top + MIN;
+    }
+
+    // Pen/highlighter: scale all points proportionally
+    if (orig.points && orig.points.length > 0) {
+      const scaleX = bbox.width > 0 ? (right - left) / bbox.width : 1;
+      const scaleY = bbox.height > 0 ? (bottom - top) / bbox.height : 1;
+      return {
+        points: orig.points.map(p => ({
+          x: left + (p.x - bbox.x) * scaleX,
+          y: top + (p.y - bbox.y) * scaleY,
+        })),
+      };
+    }
+
+    // Bbox-based shapes (rect, circle, sticky, image, table, chart, etc.)
+    if (orig.x !== undefined) {
+      return {
+        x: left,
+        y: top,
+        width: right - left,
+        height: bottom - top,
+      };
+    }
+
+    return {};
+  };
 
   // Compute position updates for an element given a delta
   const computeMoveUpdates = (orig: WhiteboardElement, dx: number, dy: number): Partial<WhiteboardElement> => {
@@ -463,6 +621,18 @@ export default function WhiteboardCanvas({
             panRafId.current = null;
           });
         }
+        return;
+      }
+
+      // Resize drag — resize the single selected element
+      if (resizeHandleRef.current && resizeOriginal.current && resizeElementId.current) {
+        const pt = getCanvasPoint(e);
+        if (!hasResizeMoved.current) {
+          hasResizeMoved.current = true;
+          onMoveStart();
+        }
+        const updates = computeResizeUpdates(resizeOriginal.current, resizeHandleRef.current, pt);
+        onBatchUpdate(new Map([[resizeElementId.current, updates]]));
         return;
       }
 
@@ -520,6 +690,17 @@ export default function WhiteboardCanvas({
         return;
       }
 
+      // Polyline preview — update last point to follow cursor (even when not "drawing")
+      if (activeElement.current?.type === "polyline" && activeTool === "polyline") {
+        const pt = getCanvasPoint(e);
+        const pts = activeElement.current.points!;
+        if (pts.length >= 2) {
+          pts[pts.length - 1] = pt;
+          drawActivePreview();
+        }
+        return;
+      }
+
       if (!isDrawing.current || readOnly) return;
       const pt = getCanvasPoint(e);
 
@@ -529,6 +710,7 @@ export default function WhiteboardCanvas({
       switch (activeTool) {
         case "pen":
         case "highlighter":
+        case "scribble":
           if (activeElement.current?.points) {
             if (coalescedEvents.length > 1) {
               const rect = containerRef.current!.getBoundingClientRect();
@@ -580,6 +762,8 @@ export default function WhiteboardCanvas({
         case "arrow":
         case "double-arrow":
         case "connector":
+        case "curved-connector":
+        case "curve":
           if (activeElement.current) {
             activeElement.current.endX = pt.x;
             activeElement.current.endY = pt.y;
@@ -606,6 +790,12 @@ export default function WhiteboardCanvas({
       pendingViewport.current = null;
     }
     panStart.current = null;
+
+    // Clean up resize state
+    resizeHandleRef.current = null;
+    resizeOriginal.current = null;
+    resizeElementId.current = null;
+    hasResizeMoved.current = false;
 
     // Clean up select/drag state
     dragStart.current = null;
@@ -728,10 +918,23 @@ export default function WhiteboardCanvas({
     lastPinchDist.current = null;
   }, []);
 
-  // Double-click to edit existing text/sticky elements
+  // Double-click to edit existing text/sticky elements or finish polyline
   const handleDoubleClick = useCallback(
     (e: React.MouseEvent) => {
       if (readOnly) return;
+
+      // Finish active polyline on double-click
+      if (activeElement.current?.type === "polyline") {
+        const pts = activeElement.current.points!;
+        // Remove the trailing "follow cursor" point
+        if (pts.length > 2) pts.pop();
+        if (pts.length >= 2) {
+          onAddElement(activeElement.current);
+        }
+        activeElement.current = null;
+        clearActive();
+        return;
+      }
       const rect = containerRef.current!.getBoundingClientRect();
       const pt = screenToCanvas(e.clientX, e.clientY, viewport, rect);
       const els = elementsRef.current;
@@ -871,6 +1074,15 @@ export default function WhiteboardCanvas({
   // Cursor based on active tool
   const getCursor = () => {
     if (readOnly) return "default";
+    if (resizeHandleRef.current) {
+      switch (resizeHandleRef.current) {
+        case 'nw': case 'se': return 'nwse-resize';
+        case 'ne': case 'sw': return 'nesw-resize';
+        case 'n': case 's': return 'ns-resize';
+        case 'e': case 'w': return 'ew-resize';
+        case 'line-start': case 'line-end': return 'crosshair';
+      }
+    }
     if (dragStart.current && hasDragMoved.current) return "grabbing";
     if (panStart.current) return "grabbing";
     switch (activeTool) {

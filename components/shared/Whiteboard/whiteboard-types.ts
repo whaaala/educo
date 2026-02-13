@@ -1,3 +1,30 @@
+// ─── Text formatting types ──────────────────────────────────────────────
+
+export type FontFamily =
+  | "Inter"
+  | "Arial"
+  | "Comic Sans MS"
+  | "Courier New"
+  | "Georgia"
+  | "Impact"
+  | "Times New Roman"
+  | "Trebuchet MS"
+  | "Caveat"
+  | "Comfortaa"
+  | "EB Garamond"
+  | "Lexend"
+  | "Lobster"
+  | "Lora"
+  | "Montserrat"
+  | "Nunito"
+  | "Oswald";
+
+export type TextAlign = "left" | "center" | "right";
+
+export type StrokeDashPattern = "solid" | "dashed" | "dotted" | "dash-dot" | "dash-dot-dot";
+
+// ─── Tool type ──────────────────────────────────────────────────────────
+
 export type WhiteboardTool =
   // Pointer tools
   | "select"
@@ -21,6 +48,10 @@ export type WhiteboardTool =
   | "arrow"
   | "double-arrow"
   | "connector"
+  | "curved-connector"
+  | "curve"
+  | "polyline"
+  | "scribble"
   // Text & content
   | "text"
   | "sticky"
@@ -69,6 +100,15 @@ export interface WhiteboardElement {
   fontSize?: number;
   borderRadius?: number;
   stickyColor?: string;
+  // Text formatting
+  fontFamily?: FontFamily;
+  fontWeight?: "normal" | "bold";
+  fontStyle?: "normal" | "italic";
+  textDecoration?: "none" | "underline";
+  textAlign?: TextAlign;
+  lineSpacing?: number;        // Line-height multiplier (1.0, 1.15, 1.5, 2.0)
+  // Line/shape stroke dash
+  strokeDash?: StrokeDashPattern;
   // Transform
   rotation?: number;       // Degrees (0, 90, 180, 270, or any angle)
   flipH?: boolean;         // Flip horizontally
@@ -131,6 +171,8 @@ export const LINE_TOOLS: WhiteboardTool[] = [
   "arrow",
   "double-arrow",
   "connector",
+  "curved-connector",
+  "curve",
 ];
 
 /** Tools that show fill color in properties */
@@ -187,5 +229,29 @@ export const STICKY_COLORS = [
 ];
 
 export const STROKE_WIDTHS = [2, 4, 6, 8, 12];
+
+// ─── Text formatting constants ─────────────────────────────────────────
+
+export const FONT_FAMILIES: FontFamily[] = [
+  "Inter", "Arial", "Comic Sans MS", "Courier New", "Georgia",
+  "Impact", "Times New Roman", "Trebuchet MS",
+  "Caveat", "Comfortaa", "EB Garamond", "Lexend", "Lobster",
+  "Lora", "Montserrat", "Nunito", "Oswald",
+];
+
+export const FONT_SIZES = [6, 8, 10, 12, 14, 18, 24, 30, 36, 48, 60, 72, 96];
+
+export const LINE_SPACINGS = [
+  { value: 1.0, label: "Single" },
+  { value: 1.15, label: "1.15" },
+  { value: 1.5, label: "1.5" },
+  { value: 2.0, label: "Double" },
+];
+
+export const STROKE_DASH_PATTERNS: StrokeDashPattern[] = [
+  "solid", "dashed", "dotted", "dash-dot", "dash-dot-dot",
+];
+
+export const EXTENDED_STROKE_WIDTHS = [1, 2, 3, 4, 8, 12, 16, 24];
 
 export const DEFAULT_VIEWPORT: Viewport = { x: 0, y: 0, zoom: 1 };
