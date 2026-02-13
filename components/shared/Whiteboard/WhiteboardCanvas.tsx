@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useLayoutEffect, useCallback } from "react";
 import type { WhiteboardElement, WhiteboardTool, Point, Viewport, FontFamily, TextAlign, StrokeDashPattern } from "./whiteboard-types";
 import { BBOX_SHAPE_TOOLS, LINE_TOOLS } from "./whiteboard-types";
 import { drawElement, screenToCanvas, hitTest, generateId, getBoundingBox, drawGroupOutlines, getResizeHandles, drawResizeHandles, hitTestResizeHandle } from "./whiteboard-utils";
@@ -218,8 +218,10 @@ export default function WhiteboardCanvas({
     }
   }, [activeTool, onAddElement, clearActive]);
 
-  // Redraw when elements or viewport change
-  useEffect(() => {
+  // Redraw when elements or viewport change — useLayoutEffect ensures the canvas
+  // is redrawn synchronously before the browser paints, so resize/drag/move
+  // updates are immediately visible without a one-frame lag.
+  useLayoutEffect(() => {
     redrawStatic();
   }, [redrawStatic, elements]);
 

@@ -9,6 +9,8 @@ import {
   AlignCenter,
   AlignRight,
   ChevronDown,
+  Minus,
+  Plus,
 } from "lucide-react";
 import type { FontFamily, TextAlign, WhiteboardElement, Viewport } from "./whiteboard-types";
 import { FONT_FAMILIES, FONT_SIZES } from "./whiteboard-types";
@@ -51,6 +53,7 @@ export default function FloatingTextToolbar({
   const [showSizeDropdown, setShowSizeDropdown] = useState(false);
   const fontRef = useRef<HTMLDivElement>(null);
   const sizeRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -69,9 +72,9 @@ export default function FloatingTextToolbar({
   const bbox = getBoundingBox(element);
   if (!bbox) return null;
 
-  // Position above the element
-  const left = bbox.x * viewport.zoom + viewport.x;
-  const top = bbox.y * viewport.zoom + viewport.y - 44;
+  // Center the toolbar above the element
+  const elCenterX = bbox.x * viewport.zoom + viewport.x + (bbox.width * viewport.zoom) / 2;
+  const topY = bbox.y * viewport.zoom + viewport.y - 54;
 
   const decrease = () => {
     const idx = FONT_SIZES.findIndex((s) => s >= activeFontSize);
@@ -85,37 +88,39 @@ export default function FloatingTextToolbar({
     onFontSizeChange(next);
   };
 
-  const btnBase = "flex items-center justify-center w-7 h-7 rounded-md transition-all duration-100 cursor-pointer";
-  const btnActive = "bg-blue-500/15 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400";
-  const btnInactive = "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10";
-
   return (
     <div
-      className="absolute z-[55] flex items-center gap-0.5 px-1.5 py-1 bg-white/95 dark:bg-gray-800/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/60 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-xl shadow-lg shadow-black/8 dark:shadow-black/30 select-none"
-      style={{ left, top }}
+      ref={toolbarRef}
+      className="absolute z-[70] flex items-center gap-1 px-2 py-1.5 bg-white dark:bg-gray-800 midnight:bg-[#111827] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl shadow-xl shadow-black/15 dark:shadow-black/40 select-none"
+      style={{
+        left: elCenterX,
+        top: topY,
+        transform: "translateX(-50%)",
+      }}
       onPointerDown={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
     >
-      {/* Font family */}
+      {/* Font family dropdown */}
       <div ref={fontRef} className="relative">
         <button
           onClick={() => { setShowFontDropdown(!showFontDropdown); setShowSizeDropdown(false); }}
-          className="flex items-center gap-0.5 px-1.5 h-7 rounded-md text-[10px] font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer max-w-[80px]"
+          className="flex items-center gap-1 px-2.5 h-8 rounded-lg text-xs font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-100 dark:hover:bg-gray-600 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer min-w-[100px]"
           style={{ fontFamily: `${activeFontFamily}, system-ui, sans-serif` }}
           title="Font family"
         >
           <span className="truncate">{activeFontFamily}</span>
-          <ChevronDown className="w-2.5 h-2.5 flex-shrink-0 opacity-50" />
+          <ChevronDown className={`w-3.5 h-3.5 flex-shrink-0 opacity-60 transition-transform ${showFontDropdown ? "rotate-180" : ""}`} />
         </button>
         {showFontDropdown && (
-          <div className="absolute left-0 top-full mt-1 z-[60] w-[140px] max-h-[200px] overflow-y-auto scrollbar-thin bg-white dark:bg-gray-800 midnight:bg-[#0d1526] purple:bg-[#1f1035] border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg">
+          <div className="absolute left-0 top-full mt-1.5 z-[80] w-[180px] max-h-[240px] overflow-y-auto scrollbar-thin bg-white dark:bg-gray-800 midnight:bg-[#111827] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-xl shadow-2xl shadow-black/20 dark:shadow-black/50">
             {FONT_FAMILIES.map((font) => (
               <button
                 key={font}
                 onClick={() => { onFontFamilyChange(font); setShowFontDropdown(false); }}
-                className={`w-full text-left px-2 py-1 text-[10px] cursor-pointer ${
+                className={`w-full text-left px-3 py-2 text-sm transition-colors cursor-pointer ${
                   activeFontFamily === font
-                    ? "bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    ? "bg-blue-50 dark:bg-blue-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-semibold"
+                    : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                 }`}
                 style={{ fontFamily: `${font}, system-ui, sans-serif` }}
               >
@@ -126,62 +131,103 @@ export default function FloatingTextToolbar({
         )}
       </div>
 
-      <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
+      {/* Divider */}
+      <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 midnight:bg-cyan-500/20 purple:bg-pink-500/20 mx-0.5" />
 
       {/* Font size */}
-      <div ref={sizeRef} className="relative flex items-center">
-        <button onClick={decrease} className={`${btnBase} ${btnInactive} w-5 text-[11px] font-bold`} title="Decrease">−</button>
+      <div ref={sizeRef} className="relative flex items-center gap-0.5">
+        <button
+          onClick={decrease}
+          className="flex items-center justify-center w-7 h-8 rounded-lg text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+          title="Decrease font size"
+        >
+          <Minus className="w-3.5 h-3.5" />
+        </button>
         <button
           onClick={() => { setShowSizeDropdown(!showSizeDropdown); setShowFontDropdown(false); }}
-          className="flex items-center justify-center min-w-[28px] h-6 px-0.5 text-[10px] font-bold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+          className="flex items-center justify-center min-w-[38px] h-8 px-1.5 text-xs font-bold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
         >
           {activeFontSize}
         </button>
-        <button onClick={increase} className={`${btnBase} ${btnInactive} w-5 text-[11px] font-bold`} title="Increase">+</button>
+        <button
+          onClick={increase}
+          className="flex items-center justify-center w-7 h-8 rounded-lg text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+          title="Increase font size"
+        >
+          <Plus className="w-3.5 h-3.5" />
+        </button>
         {showSizeDropdown && (
-          <div className="absolute left-0 top-full mt-1 z-[60] w-[60px] max-h-[160px] overflow-y-auto scrollbar-thin bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg">
+          <div className="absolute left-0 top-full mt-1.5 z-[80] w-[70px] max-h-[200px] overflow-y-auto scrollbar-thin bg-white dark:bg-gray-800 midnight:bg-[#111827] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 rounded-xl shadow-2xl shadow-black/20 dark:shadow-black/50">
             {FONT_SIZES.map((size) => (
               <button
                 key={size}
                 onClick={() => { onFontSizeChange(size); setShowSizeDropdown(false); }}
-                className={`w-full text-left px-2 py-0.5 text-[10px] cursor-pointer ${
+                className={`w-full text-left px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
                   activeFontSize === size
-                    ? "bg-blue-50 dark:bg-blue-500/15 text-blue-600"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    ? "bg-blue-50 dark:bg-blue-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20 text-blue-600 dark:text-blue-400 font-bold"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                 }`}
               >
-                {size}
+                {size}px
               </button>
             ))}
           </div>
         )}
       </div>
 
-      <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
+      {/* Divider */}
+      <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 midnight:bg-cyan-500/20 purple:bg-pink-500/20 mx-0.5" />
 
       {/* B / I / U */}
-      <button onClick={onFontWeightToggle} className={`${btnBase} ${activeFontWeight === "bold" ? btnActive : btnInactive}`} title="Bold">
-        <Bold className="w-3.5 h-3.5" />
-      </button>
-      <button onClick={onFontStyleToggle} className={`${btnBase} ${activeFontStyle === "italic" ? btnActive : btnInactive}`} title="Italic">
-        <Italic className="w-3.5 h-3.5" />
-      </button>
-      <button onClick={onTextDecorationToggle} className={`${btnBase} ${activeTextDecoration === "underline" ? btnActive : btnInactive}`} title="Underline">
-        <Underline className="w-3.5 h-3.5" />
-      </button>
+      <ToolbarButton active={activeFontWeight === "bold"} onClick={onFontWeightToggle} title="Bold">
+        <Bold className="w-4 h-4" />
+      </ToolbarButton>
+      <ToolbarButton active={activeFontStyle === "italic"} onClick={onFontStyleToggle} title="Italic">
+        <Italic className="w-4 h-4" />
+      </ToolbarButton>
+      <ToolbarButton active={activeTextDecoration === "underline"} onClick={onTextDecorationToggle} title="Underline">
+        <Underline className="w-4 h-4" />
+      </ToolbarButton>
 
-      <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
+      {/* Divider */}
+      <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 midnight:bg-cyan-500/20 purple:bg-pink-500/20 mx-0.5" />
 
       {/* Alignment */}
-      <button onClick={() => onTextAlignChange("left")} className={`${btnBase} ${activeTextAlign === "left" ? btnActive : btnInactive}`} title="Left">
-        <AlignLeft className="w-3.5 h-3.5" />
-      </button>
-      <button onClick={() => onTextAlignChange("center")} className={`${btnBase} ${activeTextAlign === "center" ? btnActive : btnInactive}`} title="Center">
-        <AlignCenter className="w-3.5 h-3.5" />
-      </button>
-      <button onClick={() => onTextAlignChange("right")} className={`${btnBase} ${activeTextAlign === "right" ? btnActive : btnInactive}`} title="Right">
-        <AlignRight className="w-3.5 h-3.5" />
-      </button>
+      <ToolbarButton active={activeTextAlign === "left"} onClick={() => onTextAlignChange("left")} title="Align left">
+        <AlignLeft className="w-4 h-4" />
+      </ToolbarButton>
+      <ToolbarButton active={activeTextAlign === "center"} onClick={() => onTextAlignChange("center")} title="Align center">
+        <AlignCenter className="w-4 h-4" />
+      </ToolbarButton>
+      <ToolbarButton active={activeTextAlign === "right"} onClick={() => onTextAlignChange("right")} title="Align right">
+        <AlignRight className="w-4 h-4" />
+      </ToolbarButton>
     </div>
+  );
+}
+
+function ToolbarButton({
+  active,
+  onClick,
+  title,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-100 cursor-pointer ${
+        active
+          ? "bg-blue-100 text-blue-600 dark:bg-blue-500/25 dark:text-blue-400 midnight:bg-cyan-500/25 midnight:text-cyan-400 purple:bg-pink-500/25 purple:text-pink-400 ring-1 ring-blue-400/30 dark:ring-blue-500/30 midnight:ring-cyan-500/30 purple:ring-pink-500/30"
+          : "text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+      }`}
+      title={title}
+    >
+      {children}
+    </button>
   );
 }

@@ -91,6 +91,7 @@ export interface WhiteboardElement {
   endY?: number;
   // Content
   text?: string;
+  richText?: string;        // HTML rich text (from contentEditable)
   label?: string;
   // Style
   color: string;

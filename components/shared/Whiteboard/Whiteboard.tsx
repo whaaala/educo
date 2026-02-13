@@ -61,6 +61,7 @@ export default function Whiteboard({
   // Text editing overlay
   const [editingText, setEditingText] = useState<WhiteboardElement | null>(null);
   const textInputRef = useRef<HTMLDivElement>(null);
+  const editingTextContentRef = useRef("");
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
@@ -225,6 +226,7 @@ export default function Whiteboard({
 
   // Text edit handler — also syncs formatting state from the element
   const handleTextEdit = useCallback((element: WhiteboardElement) => {
+    editingTextContentRef.current = element.text || "";
     setEditingText(element);
     // Sync formatting state from element being edited
     if (element.fontFamily) setActiveFontFamily(element.fontFamily);
@@ -236,6 +238,12 @@ export default function Whiteboard({
     setTimeout(() => {
       const el = textInputRef.current;
       if (el) {
+        // Load rich text (HTML) if available, otherwise plain text
+        if (element.richText) {
+          el.innerHTML = element.richText;
+        } else {
+          el.textContent = element.text || "";
+        }
         el.focus();
         // Place cursor at end
         const range = document.createRange();
@@ -250,10 +258,18 @@ export default function Whiteboard({
 
   // Commit text — update existing element or add new one
   const commitText = useCallback(() => {
-    if (editingText && editingText.text?.trim()) {
+    // Read text from ref (not state) to avoid stale closure
+    const currentText = editingTextContentRef.current;
+    if (editingText && currentText.trim()) {
+      // Capture rich text (HTML) from the contentEditable
+      const richHTML = textInputRef.current?.innerHTML || "";
+      const hasRichFormatting = richHTML !== currentText && /<[a-z][\s\S]*>/i.test(richHTML);
+
       // Capture editor dimensions before committing
       let finalEl = {
         ...editingText,
+        text: currentText,
+        richText: hasRichFormatting ? richHTML : undefined,
         fontFamily: activeFontFamily,
         fontWeight: activeFontWeight,
         fontStyle: activeFontStyle,
@@ -274,6 +290,7 @@ export default function Whiteboard({
               ? {
                   ...el,
                   text: finalEl.text,
+                  richText: finalEl.richText,
                   width: finalEl.width,
                   height: finalEl.height,
                   fontSize: finalEl.fontSize,
@@ -788,7 +805,24 @@ export default function Whiteboard({
     [pushUndo]
   );
 
+  // Helper: check if we're actively editing text and should use inline formatting
+  const applyInlineCommand = useCallback((command: string): boolean => {
+    if (!editingText || !textInputRef.current) return false;
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && textInputRef.current.contains(sel.anchorNode)) {
+      document.execCommand(command, false);
+      // Update the ref with new text content (innerText preserves line breaks)
+      editingTextContentRef.current = textInputRef.current.innerText || "";
+      // Refocus the editor
+      textInputRef.current.focus();
+      return true;
+    }
+    return false;
+  }, [editingText]);
+
   const handleFontWeightToggle = useCallback(() => {
+    // If editing text, apply inline bold
+    if (applyInlineCommand("bold")) return;
     const newWeight = activeFontWeight === "bold" ? "normal" : "bold";
     setActiveFontWeight(newWeight);
     const selected = elementsRef.current.filter((el) => el.isSelected);
@@ -802,9 +836,11 @@ export default function Whiteboard({
         )
       );
     }
-  }, [activeFontWeight, pushUndo]);
+  }, [activeFontWeight, pushUndo, applyInlineCommand]);
 
   const handleFontStyleToggle = useCallback(() => {
+    // If editing text, apply inline italic
+    if (applyInlineCommand("italic")) return;
     const newStyle = activeFontStyle === "italic" ? "normal" : "italic";
     setActiveFontStyle(newStyle);
     const selected = elementsRef.current.filter((el) => el.isSelected);
@@ -818,9 +854,11 @@ export default function Whiteboard({
         )
       );
     }
-  }, [activeFontStyle, pushUndo]);
+  }, [activeFontStyle, pushUndo, applyInlineCommand]);
 
   const handleTextDecorationToggle = useCallback(() => {
+    // If editing text, apply inline underline
+    if (applyInlineCommand("underline")) return;
     const newDeco = activeTextDecoration === "underline" ? "none" : "underline";
     setActiveTextDecoration(newDeco);
     const selected = elementsRef.current.filter((el) => el.isSelected);
@@ -834,7 +872,7 @@ export default function Whiteboard({
         )
       );
     }
-  }, [activeTextDecoration, pushUndo]);
+  }, [activeTextDecoration, pushUndo, applyInlineCommand]);
 
   const handleTextAlignChange = useCallback(
     (align: TextAlign) => {
@@ -1157,15 +1195,15 @@ export default function Whiteboard({
 
       const isEditing = editingTextRef.current;
 
-      // Undo: Ctrl+Z
-      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+      // Undo: Ctrl+Z (skip when editing text — let browser handle it)
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey && !isEditing) {
         e.preventDefault();
         handleUndoRef.current();
       }
-      // Redo: Ctrl+Y or Ctrl+Shift+Z
+      // Redo: Ctrl+Y or Ctrl+Shift+Z (skip when editing text)
       if (
-        ((e.ctrlKey || e.metaKey) && e.key === "y") ||
-        ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "z")
+        (((e.ctrlKey || e.metaKey) && e.key === "y") ||
+        ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "z")) && !isEditing
       ) {
         e.preventDefault();
         handleRedoRef.current();
@@ -1350,44 +1388,50 @@ export default function Whiteboard({
               left: (editingText.x || 0) * viewport.zoom + viewport.x,
               top: (editingText.y || 0) * viewport.zoom + viewport.y,
             }}
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             <div
               ref={textInputRef}
               contentEditable
               suppressContentEditableWarning
               onInput={(e) => {
-                const text = (e.target as HTMLDivElement).textContent || "";
-                setEditingText((prev) => prev ? { ...prev, text } : null);
+                editingTextContentRef.current = (e.target as HTMLDivElement).innerText || "";
               }}
-              onBlur={commitText}
+              onBlur={(e) => {
+                // Don't commit if focus moves to a toolbar button or within the editing overlay
+                const related = e.relatedTarget as HTMLElement | null;
+                if (related && e.currentTarget.parentElement?.contains(related)) return;
+                // Use timeout so toolbar button clicks can fire before commit
+                // The button handler (e.g. bold) can refocus the editor, cancelling the commit
+                const editorEl = textInputRef.current;
+                setTimeout(() => {
+                  // Only commit if the editor is no longer focused
+                  if (document.activeElement !== editorEl && !editorEl?.contains(document.activeElement)) {
+                    commitText();
+                  }
+                }, 150);
+              }}
               onKeyDown={(e) => {
+                e.stopPropagation();
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   commitText();
                 }
               }}
-              className="p-1 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-2 border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 rounded-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 outline-none resize shadow-lg whitespace-pre-wrap break-words"
+              className="p-1 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-2 border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 rounded-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 outline-none shadow-lg whitespace-pre-wrap break-words cursor-text"
               style={{
                 fontSize: (editingText.fontSize || 16) * viewport.zoom,
-                fontFamily: `${editingText.fontFamily || "Inter"}, system-ui, sans-serif`,
-                fontWeight: editingText.fontWeight || "normal",
-                fontStyle: editingText.fontStyle || "normal",
-                textDecoration: editingText.textDecoration === "underline" ? "underline" : "none",
-                textAlign: editingText.textAlign || "left",
-                lineHeight: editingText.lineSpacing || 1.4,
-                width: editingText.width
-                  ? editingText.width * viewport.zoom
-                  : 200,
-                minHeight: editingText.height
-                  ? editingText.height * viewport.zoom
-                  : 40,
+                fontFamily: `${activeFontFamily || "Inter"}, system-ui, sans-serif`,
+                fontWeight: activeFontWeight || "normal",
+                fontStyle: activeFontStyle || "normal",
+                textDecoration: activeTextDecoration === "underline" ? "underline" : "none",
+                textAlign: activeTextAlign || "left",
+                lineHeight: activeLineSpacing || 1.4,
                 minWidth: 120,
+                maxWidth: 600,
+                minHeight: 40,
               }}
-              dangerouslySetInnerHTML={
-                editingText.text
-                  ? { __html: editingText.text.replace(/</g, "&lt;").replace(/>/g, "&gt;") }
-                  : undefined
-              }
             />
           </div>
         )}

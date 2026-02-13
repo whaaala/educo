@@ -633,10 +633,19 @@ function drawText(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
   const lineHeight = fontSize * lineSpacing;
   const align = el.textAlign || "left";
   const underline = el.textDecoration === "underline";
+  const family = el.fontFamily || "Inter";
+
+  const padding = 4;
+  const drawWidth = el.width ? el.width - padding * 2 : 600;
+
+  // Use rich text rendering if available
+  if (el.richText) {
+    drawRichTextFormatted(ctx, el.richText, el.x + padding, el.y + fontSize + padding, drawWidth, lineHeight, align, fontSize, family, underline);
+    return;
+  }
 
   if (el.width && el.height) {
-    const padding = 4;
-    wrapTextFormatted(ctx, el.text, el.x + padding, el.y + fontSize + padding, el.width - padding * 2, lineHeight, align, underline, fontSize);
+    wrapTextFormatted(ctx, el.text, el.x + padding, el.y + fontSize + padding, drawWidth, lineHeight, align, underline, fontSize);
   } else {
     // Legacy single-line text
     const oldAlign = ctx.textAlign;
@@ -690,7 +699,13 @@ function drawSticky(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
     const lineHeight = fontSize * lineSpacing;
     const align = el.textAlign || "left";
     const underline = el.textDecoration === "underline";
-    wrapTextFormatted(ctx, el.text, el.x + 12, el.y + 28, w - 24, lineHeight, align, underline, fontSize);
+    const family = el.fontFamily || "Inter";
+
+    if (el.richText) {
+      drawRichTextFormatted(ctx, el.richText, el.x + 12, el.y + 28, w - 24, lineHeight, align, fontSize, family, underline);
+    } else {
+      wrapTextFormatted(ctx, el.text, el.x + 12, el.y + 28, w - 24, lineHeight, align, underline, fontSize);
+    }
   }
 }
 
@@ -881,6 +896,191 @@ function drawChart(ctx: CanvasRenderingContext2D, el: WhiteboardElement) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Rich text (HTML) parsing and canvas rendering
+// ---------------------------------------------------------------------------
+
+interface StyledSegment {
+  text: string;
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+}
+
+interface StyledWord {
+  word: string;
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  trailingSpace: boolean;
+}
+
+/** Parse HTML from contentEditable into styled segments */
+export function parseRichText(html: string): StyledSegment[] {
+  if (typeof DOMParser === "undefined") {
+    return [{ text: html.replace(/<[^>]*>/g, ""), bold: false, italic: false, underline: false }];
+  }
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(`<body>${html}</body>`, "text/html");
+  const segments: StyledSegment[] = [];
+
+  function walk(node: Node, bold: boolean, italic: boolean, underline: boolean) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const t = node.textContent || "";
+      if (t) segments.push({ text: t, bold, italic, underline });
+      return;
+    }
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node as HTMLElement;
+      const tag = el.tagName.toLowerCase();
+      let b = bold, i = italic, u = underline;
+      if (tag === "b" || tag === "strong") b = true;
+      if (tag === "i" || tag === "em") i = true;
+      if (tag === "u") u = true;
+      // Check inline style (execCommand sometimes uses style instead of tags)
+      const style = el.style;
+      if (style.fontWeight === "bold" || parseInt(style.fontWeight) >= 700) b = true;
+      if (style.fontStyle === "italic") i = true;
+      if (style.textDecoration?.includes("underline") || style.textDecorationLine?.includes("underline")) u = true;
+      // Handle <br> and <div> as newlines
+      if (tag === "br") {
+        segments.push({ text: "\n", bold, italic, underline });
+        return;
+      }
+      if ((tag === "div" || tag === "p") && segments.length > 0) {
+        const last = segments[segments.length - 1];
+        if (last.text && !last.text.endsWith("\n")) {
+          segments.push({ text: "\n", bold: false, italic: false, underline: false });
+        }
+      }
+      for (const child of Array.from(el.childNodes)) {
+        walk(child, b, i, u);
+      }
+    }
+  }
+
+  walk(doc.body, false, false, false);
+  return segments;
+}
+
+/** Split styled segments into words with style info */
+function segmentsToWords(segments: StyledSegment[]): StyledWord[] {
+  const words: StyledWord[] = [];
+  for (const seg of segments) {
+    if (seg.text === "\n") {
+      words.push({ word: "\n", bold: seg.bold, italic: seg.italic, underline: seg.underline, trailingSpace: false });
+      continue;
+    }
+    const parts = seg.text.split(/( +)/);
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      if (!part) continue;
+      if (/^ +$/.test(part)) {
+        // Attach trailing space to previous word
+        if (words.length > 0 && words[words.length - 1].word !== "\n") {
+          words[words.length - 1].trailingSpace = true;
+        }
+      } else {
+        words.push({ word: part, bold: seg.bold, italic: seg.italic, underline: seg.underline, trailingSpace: false });
+      }
+    }
+  }
+  return words;
+}
+
+/** Build a font string for a styled word */
+function buildWordFont(
+  word: { bold: boolean; italic: boolean },
+  baseFontSize: number,
+  baseFontFamily: string
+): string {
+  const style = word.italic ? "italic " : "";
+  const weight = word.bold ? "bold " : "";
+  return `${style}${weight}${baseFontSize}px ${baseFontFamily}, system-ui, sans-serif`;
+}
+
+/** Render rich text (HTML) on canvas with word wrapping and mixed styles */
+function drawRichTextFormatted(
+  ctx: CanvasRenderingContext2D,
+  html: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+  align: TextAlign,
+  baseFontSize: number,
+  baseFontFamily: string,
+  baseUnderline: boolean
+) {
+  const segments = parseRichText(html);
+  const words = segmentsToWords(segments);
+  if (words.length === 0) return;
+
+  const oldAlign = ctx.textAlign;
+  ctx.textAlign = "left"; // We'll manually position for alignment
+
+  // Build lines by measuring words
+  interface LineWord { word: string; bold: boolean; italic: boolean; underline: boolean; width: number; spaceWidth: number; }
+  type Line = LineWord[];
+  const lines: Line[] = [];
+  let currentLine: LineWord[] = [];
+  let currentLineWidth = 0;
+
+  for (const w of words) {
+    if (w.word === "\n") {
+      lines.push(currentLine);
+      currentLine = [];
+      currentLineWidth = 0;
+      continue;
+    }
+    ctx.font = buildWordFont(w, baseFontSize, baseFontFamily);
+    const wordWidth = ctx.measureText(w.word).width;
+    const spaceWidth = w.trailingSpace ? ctx.measureText(" ").width : 0;
+    const totalWord = wordWidth + spaceWidth;
+
+    if (currentLineWidth + wordWidth > maxWidth && currentLine.length > 0) {
+      lines.push(currentLine);
+      currentLine = [];
+      currentLineWidth = 0;
+    }
+    currentLine.push({ word: w.word, bold: w.bold, italic: w.italic, underline: w.underline || baseUnderline, width: wordWidth, spaceWidth });
+    currentLineWidth += totalWord;
+  }
+  if (currentLine.length > 0) lines.push(currentLine);
+
+  // Render lines
+  let currentY = y;
+  for (const line of lines) {
+    const lineWidth = line.reduce((sum, w) => sum + w.width + w.spaceWidth, 0) - (line.length > 0 ? line[line.length - 1].spaceWidth : 0);
+    let drawX = x;
+    if (align === "center") drawX = x + (maxWidth - lineWidth) / 2;
+    else if (align === "right") drawX = x + maxWidth - lineWidth;
+
+    for (const lw of line) {
+      ctx.font = buildWordFont(lw, baseFontSize, baseFontFamily);
+      ctx.fillText(lw.word, drawX, currentY);
+
+      if (lw.underline) {
+        const savedStroke = ctx.strokeStyle;
+        const savedLW = ctx.lineWidth;
+        ctx.strokeStyle = ctx.fillStyle as string;
+        ctx.lineWidth = Math.max(1, baseFontSize / 14);
+        ctx.beginPath();
+        ctx.moveTo(drawX, currentY + 2);
+        ctx.lineTo(drawX + lw.width, currentY + 2);
+        ctx.stroke();
+        ctx.strokeStyle = savedStroke;
+        ctx.lineWidth = savedLW;
+      }
+
+      drawX += lw.width + lw.spaceWidth;
+    }
+    currentY += lineHeight;
+  }
+
+  ctx.textAlign = oldAlign;
+}
+
 function wrapText(
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -907,10 +1107,6 @@ function wrapTextFormatted(
   ctx.textAlign = align;
   const anchorX = align === "center" ? x + maxWidth / 2 : align === "right" ? x + maxWidth : x;
 
-  const words = text.split(" ");
-  let line = "";
-  let currentY = y;
-
   const drawLine = (lineText: string, ly: number) => {
     ctx.fillText(lineText, anchorX, ly);
     if (underline && lineText) {
@@ -929,18 +1125,34 @@ function wrapTextFormatted(
     }
   };
 
-  for (const word of words) {
-    const testLine = line + word + " ";
-    const metrics = ctx.measureText(testLine);
-    if (metrics.width > maxWidth && line !== "") {
-      drawLine(line.trim(), currentY);
-      line = word + " ";
+  // Split by newlines first to preserve explicit line breaks
+  const paragraphs = text.split("\n");
+  let currentY = y;
+
+  for (const paragraph of paragraphs) {
+    if (paragraph === "") {
+      // Empty line — just advance Y
+      drawLine("", currentY);
       currentY += lineHeight;
-    } else {
-      line = testLine;
+      continue;
     }
+    const words = paragraph.split(" ");
+    let line = "";
+
+    for (const word of words) {
+      const testLine = line + word + " ";
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && line !== "") {
+        drawLine(line.trim(), currentY);
+        line = word + " ";
+        currentY += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    drawLine(line.trim(), currentY);
+    currentY += lineHeight;
   }
-  drawLine(line.trim(), currentY);
 
   ctx.textAlign = oldAlign;
 }
