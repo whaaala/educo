@@ -619,6 +619,78 @@ export default function Whiteboard({
     [handleAddElement]
   );
 
+  // ── Color / Fill / Stroke change (update selected elements too) ──────
+
+  const handleColorChange = useCallback(
+    (color: string) => {
+      setActiveColor(color);
+      const selected = elementsRef.current.filter((el) => el.isSelected);
+      if (selected.length > 0) {
+        pushUndo(elementsRef.current);
+        // Collect all group IDs from selection so entire groups are updated
+        const groupIds = new Set<string>();
+        for (const el of selected) {
+          if (el.groupId) groupIds.add(el.groupId);
+        }
+        const selectedIds = new Set(selected.map((el) => el.id));
+        setElements((prev) =>
+          prev.map((el) =>
+            selectedIds.has(el.id) || (el.groupId && groupIds.has(el.groupId))
+              ? { ...el, color }
+              : el
+          )
+        );
+      }
+    },
+    [pushUndo]
+  );
+
+  const handleFillColorChange = useCallback(
+    (fillColor: string | null) => {
+      setActiveFillColor(fillColor);
+      const selected = elementsRef.current.filter((el) => el.isSelected);
+      if (selected.length > 0) {
+        pushUndo(elementsRef.current);
+        const groupIds = new Set<string>();
+        for (const el of selected) {
+          if (el.groupId) groupIds.add(el.groupId);
+        }
+        const selectedIds = new Set(selected.map((el) => el.id));
+        setElements((prev) =>
+          prev.map((el) =>
+            selectedIds.has(el.id) || (el.groupId && groupIds.has(el.groupId))
+              ? { ...el, fillColor }
+              : el
+          )
+        );
+      }
+    },
+    [pushUndo]
+  );
+
+  const handleStrokeWidthChange = useCallback(
+    (strokeWidth: number) => {
+      setActiveStrokeWidth(strokeWidth);
+      const selected = elementsRef.current.filter((el) => el.isSelected);
+      if (selected.length > 0) {
+        pushUndo(elementsRef.current);
+        const groupIds = new Set<string>();
+        for (const el of selected) {
+          if (el.groupId) groupIds.add(el.groupId);
+        }
+        const selectedIds = new Set(selected.map((el) => el.id));
+        setElements((prev) =>
+          prev.map((el) =>
+            selectedIds.has(el.id) || (el.groupId && groupIds.has(el.groupId))
+              ? { ...el, strokeWidth }
+              : el
+          )
+        );
+      }
+    },
+    [pushUndo]
+  );
+
   // ── Context menu handler ──────────────────────────────────────────────
 
   const handleContextMenu = useCallback(
@@ -1004,9 +1076,9 @@ export default function Whiteboard({
           activeFillColor={activeFillColor}
           activeFontSize={activeFontSize}
           activeStickyColor={activeStickyColor}
-          onColorChange={setActiveColor}
-          onStrokeWidthChange={setActiveStrokeWidth}
-          onFillColorChange={setActiveFillColor}
+          onColorChange={handleColorChange}
+          onStrokeWidthChange={handleStrokeWidthChange}
+          onFillColorChange={handleFillColorChange}
           onFontSizeChange={setActiveFontSize}
           onStickyColorChange={setActiveStickyColor}
           onLoadTemplate={handleLoadTemplate}

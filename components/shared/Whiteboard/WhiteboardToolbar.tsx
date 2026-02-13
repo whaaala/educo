@@ -37,6 +37,8 @@ import {
   PieChart,
   Download,
   Copy,
+  Palette,
+  Ban,
 } from "lucide-react";
 import type { WhiteboardTool, WhiteboardElement } from "./whiteboard-types";
 import {
@@ -231,6 +233,10 @@ export default function WhiteboardToolbar({
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Color flyout state for collapsed mode
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const colorPickerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Close when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -238,16 +244,18 @@ export default function WhiteboardToolbar({
         setExpandedSection(null);
         setShowTemplates(false);
         setHoveredSection(null);
+        setShowColorPicker(false);
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Cleanup hover timeout on unmount
+  // Cleanup hover timeouts on unmount
   useEffect(() => {
     return () => {
       if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+      if (colorPickerTimeoutRef.current) clearTimeout(colorPickerTimeoutRef.current);
     };
   }, []);
 
@@ -436,6 +444,43 @@ export default function WhiteboardToolbar({
             </div>
           );
         })}
+
+        <div className="w-6 h-px bg-gray-200/60 dark:bg-gray-700/60 midnight:bg-cyan-500/10 purple:bg-pink-500/10 my-0.5" />
+
+        {/* Color picker flyout */}
+        <div className="relative">
+          <button
+            onClick={() => setShowColorPicker((prev) => !prev)}
+            className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150 cursor-pointer ${
+              showColorPicker
+                ? "bg-blue-500/12 dark:bg-blue-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20"
+                : "hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+            }`}
+            title="Color palette"
+          >
+            <div className="relative w-[18px] h-[18px]">
+              <Palette className="w-[18px] h-[18px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60" />
+              {/* Active color dot indicator */}
+              <div
+                className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900 midnight:border-[#0d1526] purple:border-[#1f1035]"
+                style={{ backgroundColor: activeColor }}
+              />
+            </div>
+          </button>
+
+          {showColorPicker && (
+            <ColorPickerFlyout
+              activeColor={activeColor}
+              activeFillColor={activeFillColor}
+              activeStrokeWidth={activeStrokeWidth}
+              activeTool={activeTool}
+              onColorChange={(c) => { onColorChange(c); }}
+              onFillColorChange={onFillColorChange}
+              onStrokeWidthChange={onStrokeWidthChange}
+              onClose={() => setShowColorPicker(false)}
+            />
+          )}
+        </div>
 
         <div className="w-6 h-px bg-gray-200/60 dark:bg-gray-700/60 midnight:bg-cyan-500/10 purple:bg-pink-500/10 my-0.5" />
 
@@ -996,6 +1041,183 @@ function ColorSwatch({
 function SectionDivider() {
   return (
     <div className="h-px mx-3 bg-gray-100 dark:bg-gray-800/60 midnight:bg-cyan-500/6 purple:bg-pink-500/6" />
+  );
+}
+
+// ─── Color Picker Flyout (collapsed toolbar) ─────────────
+// A sleek gradient-styled flyout for quick color access.
+
+const GRADIENT_COLORS: { color: string; gradient: string; label: string }[] = [
+  { color: "#000000", gradient: "linear-gradient(135deg, #1a1a2e, #16213e)", label: "Black" },
+  { color: "#374151", gradient: "linear-gradient(135deg, #4b5563, #374151)", label: "Gray" },
+  { color: "#ef4444", gradient: "linear-gradient(135deg, #f87171, #dc2626)", label: "Red" },
+  { color: "#f97316", gradient: "linear-gradient(135deg, #fb923c, #ea580c)", label: "Orange" },
+  { color: "#eab308", gradient: "linear-gradient(135deg, #fbbf24, #ca8a04)", label: "Yellow" },
+  { color: "#22c55e", gradient: "linear-gradient(135deg, #4ade80, #16a34a)", label: "Green" },
+  { color: "#3b82f6", gradient: "linear-gradient(135deg, #60a5fa, #2563eb)", label: "Blue" },
+  { color: "#8b5cf6", gradient: "linear-gradient(135deg, #a78bfa, #7c3aed)", label: "Purple" },
+  { color: "#ec4899", gradient: "linear-gradient(135deg, #f472b6, #db2777)", label: "Pink" },
+  { color: "#06b6d4", gradient: "linear-gradient(135deg, #22d3ee, #0891b2)", label: "Cyan" },
+  { color: "#14b8a6", gradient: "linear-gradient(135deg, #2dd4bf, #0d9488)", label: "Teal" },
+  { color: "#ffffff", gradient: "linear-gradient(135deg, #ffffff, #e5e7eb)", label: "White" },
+];
+
+const GRADIENT_FILLS: { color: string | null; gradient: string; label: string }[] = [
+  { color: null, gradient: "none", label: "No fill" },
+  { color: "#fef2f2", gradient: "linear-gradient(135deg, #fef2f2, #fecaca)", label: "Light red" },
+  { color: "#fff7ed", gradient: "linear-gradient(135deg, #fff7ed, #fed7aa)", label: "Light orange" },
+  { color: "#fefce8", gradient: "linear-gradient(135deg, #fefce8, #fef08a)", label: "Light yellow" },
+  { color: "#f0fdf4", gradient: "linear-gradient(135deg, #f0fdf4, #bbf7d0)", label: "Light green" },
+  { color: "#eff6ff", gradient: "linear-gradient(135deg, #eff6ff, #bfdbfe)", label: "Light blue" },
+  { color: "#f5f3ff", gradient: "linear-gradient(135deg, #f5f3ff, #ddd6fe)", label: "Light purple" },
+  { color: "#fdf2f8", gradient: "linear-gradient(135deg, #fdf2f8, #fbcfe8)", label: "Light pink" },
+  { color: "#f3f4f6", gradient: "linear-gradient(135deg, #f3f4f6, #d1d5db)", label: "Light gray" },
+];
+
+function ColorPickerFlyout({
+  activeColor,
+  activeFillColor,
+  activeStrokeWidth,
+  activeTool,
+  onColorChange,
+  onFillColorChange,
+  onStrokeWidthChange,
+  onClose,
+}: {
+  activeColor: string;
+  activeFillColor: string | null;
+  activeStrokeWidth: number;
+  activeTool: WhiteboardTool;
+  onColorChange: (color: string) => void;
+  onFillColorChange: (color: string | null) => void;
+  onStrokeWidthChange: (width: number) => void;
+  onClose: () => void;
+}) {
+  const showFill = FILL_TOOLS.includes(activeTool);
+  const showWidth = ![
+    "select", "eraser", "hand", "text", "sticky",
+  ].includes(activeTool);
+
+  return (
+    <div
+      className="absolute left-full top-1/2 -translate-y-1/2 ml-2.5 z-[60] animate-in fade-in slide-in-from-left-1 duration-150"
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      {/* Arrow pointer */}
+      <div className="absolute left-0 top-1/2 -translate-x-[5px] -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-white dark:bg-gray-800 midnight:bg-[#0d1526] purple:bg-[#1f1035] border-l border-b border-gray-200/80 dark:border-gray-700/60 midnight:border-cyan-500/15 purple:border-pink-500/15" />
+
+      <div className="relative bg-white/95 dark:bg-gray-800/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-md border border-gray-200/80 dark:border-gray-700/60 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-2xl shadow-xl shadow-black/8 dark:shadow-black/30 p-3 min-w-[200px]">
+        {/* Stroke Colors */}
+        <div className="mb-3">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50 mb-2 block">
+            Stroke Color
+          </span>
+          <div className="grid grid-cols-6 gap-1.5">
+            {GRADIENT_COLORS.map((c) => {
+              const isSelected = activeColor === c.color;
+              const isLight = c.color === "#ffffff" || c.color === "#fefce8";
+              return (
+                <button
+                  key={c.color}
+                  onClick={() => onColorChange(c.color)}
+                  className={`group relative w-7 h-7 rounded-xl transition-all duration-200 cursor-pointer ${
+                    isSelected
+                      ? "ring-2 ring-offset-1 ring-blue-500 dark:ring-blue-400 midnight:ring-cyan-400 purple:ring-pink-400 dark:ring-offset-gray-800 midnight:ring-offset-[#0d1526] purple:ring-offset-[#1f1035] scale-110"
+                      : "hover:scale-110 hover:shadow-md"
+                  }`}
+                  style={{ background: c.gradient }}
+                  title={c.label}
+                >
+                  {isSelected && (
+                    <Check className={`absolute inset-0 m-auto w-3 h-3 ${isLight ? "text-gray-700" : "text-white"} drop-shadow-sm`} />
+                  )}
+                  <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 ring-1 ring-inset ring-white/20" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Fill Colors — only for shape tools */}
+        {showFill && (
+          <div className="mb-3">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50 mb-2 block">
+              Fill Color
+            </span>
+            <div className="grid grid-cols-5 gap-1.5">
+              {GRADIENT_FILLS.map((c) => {
+                const isSelected = activeFillColor === c.color;
+                return (
+                  <button
+                    key={c.color ?? "no-fill"}
+                    onClick={() => onFillColorChange(c.color)}
+                    className={`group relative w-7 h-7 rounded-xl transition-all duration-200 cursor-pointer ${
+                      isSelected
+                        ? "ring-2 ring-offset-1 ring-blue-500 dark:ring-blue-400 midnight:ring-cyan-400 purple:ring-pink-400 dark:ring-offset-gray-800 midnight:ring-offset-[#0d1526] purple:ring-offset-[#1f1035] scale-110"
+                        : "hover:scale-110 hover:shadow-md"
+                    }`}
+                    style={{ background: c.color ? c.gradient : "transparent" }}
+                    title={c.label}
+                  >
+                    {c.color === null ? (
+                      <Ban className={`absolute inset-0 m-auto w-3.5 h-3.5 ${isSelected ? "text-red-500" : "text-gray-400 dark:text-gray-500 midnight:text-cyan-500/40 purple:text-pink-500/40"}`} />
+                    ) : (
+                      isSelected && (
+                        <Check className="absolute inset-0 m-auto w-3 h-3 text-gray-600 drop-shadow-sm" />
+                      )
+                    )}
+                    {c.color !== null && (
+                      <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 ring-1 ring-inset ring-white/20" />
+                    )}
+                    {c.color === null && (
+                      <div className={`absolute inset-0 rounded-xl border-2 border-dashed ${
+                        isSelected
+                          ? "border-red-400/60"
+                          : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                      }`} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Stroke Width */}
+        {showWidth && (
+          <div>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50 mb-2 block">
+              Stroke Width
+            </span>
+            <div className="flex items-center gap-1">
+              {STROKE_WIDTHS.map((w) => (
+                <button
+                  key={w}
+                  onClick={() => onStrokeWidthChange(w)}
+                  className={`flex items-center justify-center w-8 h-7 rounded-lg transition-all duration-150 cursor-pointer ${
+                    activeStrokeWidth === w
+                      ? "bg-blue-500/12 dark:bg-blue-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20 ring-1 ring-blue-500/20 dark:ring-blue-500/30 midnight:ring-cyan-500/30 purple:ring-pink-500/30"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                  }`}
+                  title={`${w}px`}
+                >
+                  <div
+                    className="rounded-full"
+                    style={{
+                      width: Math.min(w * 1.5, 16),
+                      height: Math.min(w * 1.5, 16),
+                      background: activeColor === "#ffffff"
+                        ? "linear-gradient(135deg, #9ca3af, #6b7280)"
+                        : `linear-gradient(135deg, ${activeColor}88, ${activeColor})`,
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
