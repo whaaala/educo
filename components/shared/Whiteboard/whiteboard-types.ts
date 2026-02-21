@@ -1,23 +1,85 @@
 // ─── Text formatting types ──────────────────────────────────────────────
 
 export type FontFamily =
+  // Sans-serif
   | "Inter"
   | "Arial"
-  | "Comic Sans MS"
-  | "Courier New"
-  | "Georgia"
-  | "Impact"
-  | "Times New Roman"
+  | "Calibri"
+  | "Helvetica"
+  | "Verdana"
+  | "Tahoma"
   | "Trebuchet MS"
-  | "Caveat"
-  | "Comfortaa"
-  | "EB Garamond"
-  | "Lexend"
-  | "Lobster"
-  | "Lora"
+  | "Segoe UI"
+  | "Century Gothic"
+  | "Candara"
+  | "Gill Sans"
+  | "Lucida Sans"
+  | "Open Sans"
+  | "Roboto"
+  | "Lato"
   | "Montserrat"
   | "Nunito"
-  | "Oswald";
+  | "Poppins"
+  | "Raleway"
+  | "Source Sans 3"
+  | "Ubuntu"
+  | "Work Sans"
+  | "Lexend"
+  | "Comfortaa"
+  | "Oswald"
+  | "PT Sans"
+  | "Rubik"
+  | "Karla"
+  | "Manrope"
+  | "DM Sans"
+  // Serif
+  | "Times New Roman"
+  | "Georgia"
+  | "Garamond"
+  | "Cambria"
+  | "Palatino Linotype"
+  | "Book Antiqua"
+  | "Constantia"
+  | "Merriweather"
+  | "Playfair Display"
+  | "Lora"
+  | "EB Garamond"
+  | "PT Serif"
+  | "Libre Baskerville"
+  | "Crimson Text"
+  | "Noto Serif"
+  | "Cormorant Garamond"
+  | "Bitter"
+  // Monospace
+  | "Courier New"
+  | "Consolas"
+  | "Lucida Console"
+  | "Roboto Mono"
+  | "Source Code Pro"
+  | "Fira Code"
+  | "JetBrains Mono"
+  | "IBM Plex Mono"
+  | "Space Mono"
+  // Display & Handwriting
+  | "Impact"
+  | "Comic Sans MS"
+  | "Caveat"
+  | "Lobster"
+  | "Pacifico"
+  | "Dancing Script"
+  | "Satisfy"
+  | "Indie Flower"
+  | "Permanent Marker"
+  | "Amatic SC"
+  | "Shadows Into Light"
+  | "Patrick Hand"
+  | "Sacramento"
+  | "Great Vibes"
+  | "Abril Fatface"
+  | "Righteous"
+  | "Bebas Neue"
+  | "Anton"
+  | "Fredoka";
 
 export type TextAlign = "left" | "center" | "right";
 
@@ -242,10 +304,64 @@ export const STROKE_WIDTHS = [2, 4, 6, 8, 12];
 // ─── Text formatting constants ─────────────────────────────────────────
 
 export const FONT_FAMILIES: FontFamily[] = [
-  "Inter", "Arial", "Comic Sans MS", "Courier New", "Georgia",
-  "Impact", "Times New Roman", "Trebuchet MS",
-  "Caveat", "Comfortaa", "EB Garamond", "Lexend", "Lobster",
-  "Lora", "Montserrat", "Nunito", "Oswald",
+  // Sans-serif
+  "Inter", "Arial", "Calibri", "Helvetica", "Verdana", "Tahoma",
+  "Trebuchet MS", "Segoe UI", "Century Gothic", "Candara", "Gill Sans", "Lucida Sans",
+  "Open Sans", "Roboto", "Lato", "Montserrat", "Nunito", "Poppins",
+  "Raleway", "Source Sans 3", "Ubuntu", "Work Sans", "Lexend", "Comfortaa",
+  "Oswald", "PT Sans", "Rubik", "Karla", "Manrope", "DM Sans",
+  // Serif
+  "Times New Roman", "Georgia", "Garamond", "Cambria", "Palatino Linotype",
+  "Book Antiqua", "Constantia", "Merriweather", "Playfair Display", "Lora",
+  "EB Garamond", "PT Serif", "Libre Baskerville", "Crimson Text", "Noto Serif",
+  "Cormorant Garamond", "Bitter",
+  // Monospace
+  "Courier New", "Consolas", "Lucida Console", "Roboto Mono",
+  "Source Code Pro", "Fira Code", "JetBrains Mono", "IBM Plex Mono", "Space Mono",
+  // Display & Handwriting
+  "Impact", "Comic Sans MS", "Caveat", "Lobster", "Pacifico",
+  "Dancing Script", "Satisfy", "Indie Flower", "Permanent Marker", "Amatic SC",
+  "Shadows Into Light", "Patrick Hand", "Sacramento", "Great Vibes",
+  "Abril Fatface", "Righteous", "Bebas Neue", "Anton", "Fredoka",
+];
+
+/** Font families organized by category for UI display */
+export const FONT_FAMILY_CATEGORIES: { label: string; fonts: FontFamily[] }[] = [
+  {
+    label: "Sans-serif",
+    fonts: [
+      "Inter", "Arial", "Calibri", "Helvetica", "Verdana", "Tahoma",
+      "Trebuchet MS", "Segoe UI", "Century Gothic", "Candara", "Gill Sans", "Lucida Sans",
+      "Open Sans", "Roboto", "Lato", "Montserrat", "Nunito", "Poppins",
+      "Raleway", "Source Sans 3", "Ubuntu", "Work Sans", "Lexend", "Comfortaa",
+      "Oswald", "PT Sans", "Rubik", "Karla", "Manrope", "DM Sans",
+    ],
+  },
+  {
+    label: "Serif",
+    fonts: [
+      "Times New Roman", "Georgia", "Garamond", "Cambria", "Palatino Linotype",
+      "Book Antiqua", "Constantia", "Merriweather", "Playfair Display", "Lora",
+      "EB Garamond", "PT Serif", "Libre Baskerville", "Crimson Text", "Noto Serif",
+      "Cormorant Garamond", "Bitter",
+    ],
+  },
+  {
+    label: "Monospace",
+    fonts: [
+      "Courier New", "Consolas", "Lucida Console", "Roboto Mono",
+      "Source Code Pro", "Fira Code", "JetBrains Mono", "IBM Plex Mono", "Space Mono",
+    ],
+  },
+  {
+    label: "Display & Handwriting",
+    fonts: [
+      "Impact", "Comic Sans MS", "Caveat", "Lobster", "Pacifico",
+      "Dancing Script", "Satisfy", "Indie Flower", "Permanent Marker", "Amatic SC",
+      "Shadows Into Light", "Patrick Hand", "Sacramento", "Great Vibes",
+      "Abril Fatface", "Righteous", "Bebas Neue", "Anton", "Fredoka",
+    ],
+  },
 ];
 
 export const FONT_SIZES = [6, 8, 10, 12, 14, 18, 24, 30, 36, 48, 60, 72, 96];

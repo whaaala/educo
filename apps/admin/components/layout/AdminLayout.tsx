@@ -12,6 +12,7 @@ import {
   Globe,
   ToggleLeft,
   CreditCard,
+  Languages,
 } from "lucide-react";
 
 const adminMenuItems: MenuItem[] = [
@@ -62,6 +63,12 @@ const adminMenuItems: MenuItem[] = [
         label: "Feature Flags",
         icon: <ToggleLeft className="w-4 h-4" />,
         href: "/feature-flags",
+      },
+      {
+        id: "translation",
+        label: "Translation",
+        icon: <Languages className="w-4 h-4" />,
+        href: "/translation",
       },
       {
         id: "subscription",

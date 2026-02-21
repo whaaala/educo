@@ -38,6 +38,11 @@ export const mockTenants: Tenant[] = [
         "FF_Grading_Primary",
         "FF_Grading_Secondary",
       ],
+      translation: {
+        enabled: true,
+        allowedProviders: ["deepl", "google"],
+        defaultProvider: "deepl",
+      },
       bankAccount: {
         bankName: "First Bank Nigeria",
         accountNumber: "1234567890",

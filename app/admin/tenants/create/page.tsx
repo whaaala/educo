@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Building2, Globe, Mail, Phone, MapPin, Palette, Video, MessageSquare, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Save, Building2, Globe, Mail, Phone, MapPin, Palette, Video, MessageSquare, CheckCircle2, Languages } from "lucide-react";
 import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
 import { createTenant } from "@/lib/mockTenants";
-import { Tenant, InstitutionType, EducationLevel, CommunicationProvider, CommunicationType } from "@/types/school";
+import { Tenant, InstitutionType, EducationLevel, CommunicationProvider, CommunicationType, type TranslationProvider } from "@/types/school";
 
 interface CreateTenantForm {
   // Basic Information
@@ -52,6 +52,13 @@ interface CreateTenantForm {
   defaultMeetingDuration: number;
   allowParentInitiatedCalls: boolean;
   requireMeetingApproval: boolean;
+
+  // Translation
+  translationEnabled: boolean;
+  translationAllowDeepL: boolean;
+  translationAllowGoogleCloud: boolean;
+  translationAllowGoogle: boolean;
+  translationDefaultProvider: TranslationProvider;
 }
 
 export default function CreateTenantPage() {
@@ -103,6 +110,13 @@ export default function CreateTenantPage() {
     defaultMeetingDuration: 30,
     allowParentInitiatedCalls: true,
     requireMeetingApproval: false,
+
+    // Translation
+    translationEnabled: false,
+    translationAllowDeepL: true,
+    translationAllowGoogleCloud: false,
+    translationAllowGoogle: true,
+    translationDefaultProvider: "deepl",
   });
 
   const handleInputChange = (field: keyof CreateTenantForm, value: any) => {
@@ -243,6 +257,35 @@ export default function CreateTenantPage() {
               },
             },
           },
+          translation: (() => {
+            const allowed = ([
+              formData.translationAllowDeepL ? "deepl" : null,
+              formData.translationAllowGoogleCloud ? "google-cloud" : null,
+              formData.translationAllowGoogle ? "google" : null,
+            ].filter(Boolean) as TranslationProvider[]);
+            const safeAllowed = allowed.length ? allowed : (["google"] as TranslationProvider[]);
+            return {
+              enabled: formData.translationEnabled,
+              allowedProviders: safeAllowed,
+              defaultProvider: (() => {
+                const requested = formData.translationDefaultProvider;
+                if (requested === "google") {
+                  return safeAllowed.includes("deepl")
+                    ? "deepl"
+                    : safeAllowed.includes("google-cloud")
+                      ? "google-cloud"
+                      : "google";
+                }
+                return safeAllowed.includes(requested)
+                  ? requested
+                  : safeAllowed.includes("deepl")
+                    ? "deepl"
+                    : safeAllowed.includes("google-cloud")
+                      ? "google-cloud"
+                      : safeAllowed[0];
+              })(),
+            };
+          })(),
         },
         contact: {
           email: formData.email,
@@ -683,6 +726,109 @@ export default function CreateTenantPage() {
                     </p>
                   </div>
                 </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Translation Settings */}
+          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-sky-100 dark:bg-sky-900/30 rounded-lg">
+                <Languages className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+              </div>
+              <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                Translation Settings
+              </h2>
+            </div>
+
+            <div className="space-y-5">
+              <label className="flex items-center gap-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
+                <input
+                  type="checkbox"
+                  checked={formData.translationEnabled}
+                  onChange={(e) => handleInputChange("translationEnabled", e.target.checked)}
+                  className="w-5 h-5 text-sky-600 rounded"
+                />
+                <div>
+                  <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                    Enable document translation
+                  </p>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    Controls whether apps in this tenant can translate documents.
+                  </p>
+                </div>
+              </label>
+
+              <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 ${formData.translationEnabled ? "" : "opacity-50 pointer-events-none"}`}>
+                <label className="flex items-start gap-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
+                  <input
+                    type="checkbox"
+                    checked={formData.translationAllowDeepL}
+                    onChange={(e) => handleInputChange("translationAllowDeepL", e.target.checked)}
+                    className="w-5 h-5 text-sky-600 rounded mt-0.5"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">DeepL</p>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      Requires server `DEEPL_AUTH_KEY` (free tier limits apply).
+                    </p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
+                  <input
+                    type="checkbox"
+                    checked={formData.translationAllowGoogleCloud}
+                    onChange={(e) => handleInputChange("translationAllowGoogleCloud", e.target.checked)}
+                    className="w-5 h-5 text-sky-600 rounded mt-0.5"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">Google Cloud</p>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      Paid Google translation (requires `GOOGLE_CLOUD_TRANSLATE_API_KEY`).
+                    </p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
+                  <input
+                    type="checkbox"
+                    checked={formData.translationAllowGoogle}
+                    onChange={(e) => handleInputChange("translationAllowGoogle", e.target.checked)}
+                    className="w-5 h-5 text-sky-600 rounded mt-0.5"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">Google</p>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      Unofficial endpoint (fallback only).
+                    </p>
+                  </div>
+                </label>
+              </div>
+
+              <div className={`${formData.translationEnabled ? "" : "opacity-50 pointer-events-none"}`}>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  Primary engine
+                </label>
+                <select
+                  value={formData.translationDefaultProvider}
+                  onChange={(e) => {
+                    const v = e.target.value as TranslationProvider;
+                    setFormData((prev) => ({
+                      ...prev,
+                      translationDefaultProvider: v,
+                      translationAllowDeepL: v === "deepl" ? true : prev.translationAllowDeepL,
+                      translationAllowGoogleCloud: v === "google-cloud" ? true : prev.translationAllowGoogleCloud,
+                    }));
+                  }}
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
+                >
+                  <option value="deepl">DeepL Free</option>
+                  <option value="google-cloud">Google Cloud (paid)</option>
+                </select>
+                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                  Unofficial Google is always fallback-only.
+                </p>
               </div>
             </div>
           </div>

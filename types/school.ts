@@ -78,8 +78,26 @@ export interface SchoolConfiguration {
   // Communication Settings
   communication?: CommunicationConfig;
 
+  // Translation / Localization (tenant-controlled)
+  translation?: TenantTranslationConfig;
+
   // Additional Settings
   customSettings?: Record<string, any>; // For school-specific configurations
+}
+
+// Translation providers:
+// - "deepl": DeepL Free tier (requires DEEPL_AUTH_KEY)
+// - "google": Unofficial Google endpoint (fallback only; not production-safe)
+// - "google-cloud": Official Google Cloud Translation API (paid; requires GOOGLE_CLOUD_TRANSLATE_API_KEY)
+export type TranslationProvider = "deepl" | "google" | "google-cloud";
+
+export interface TenantTranslationConfig {
+  /** If false/undefined, translation API requests should be rejected for this tenant */
+  enabled: boolean;
+  /** Providers the tenant is allowed to use */
+  allowedProviders: TranslationProvider[];
+  /** Which provider to try first */
+  defaultProvider: TranslationProvider;
 }
 
 /**

@@ -50,6 +50,101 @@ export const TEXT_COLORS = [
   "#ffffff", "#1e293b", "#4338ca", "#be185d",
 ];
 
+/** Extended text color matrix — 10 columns per row, organized by hue + shade (dark→light) */
+export const TEXT_COLORS_MATRIX: string[][] = [
+  // Grayscale
+  ["#000000", "#1a1a1a", "#333333", "#4d4d4d", "#666666", "#808080", "#999999", "#b3b3b3", "#d9d9d9", "#ffffff"],
+  // Red
+  ["#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fca5a5", "#fecaca", "#fee2e2", "#fef2f2"],
+  // Orange
+  ["#7c2d12", "#9a3412", "#c2410c", "#ea580c", "#f97316", "#fb923c", "#fdba74", "#fed7aa", "#ffedd5", "#fff7ed"],
+  // Amber
+  ["#713f12", "#854d0e", "#a16207", "#ca8a04", "#eab308", "#facc15", "#fde047", "#fef08a", "#fef9c3", "#fefce8"],
+  // Green
+  ["#14532d", "#166534", "#15803d", "#16a34a", "#22c55e", "#4ade80", "#86efac", "#bbf7d0", "#dcfce7", "#f0fdf4"],
+  // Teal
+  ["#134e4a", "#115e59", "#0f766e", "#0d9488", "#14b8a6", "#2dd4bf", "#5eead4", "#99f6e4", "#ccfbf1", "#f0fdfa"],
+  // Blue
+  ["#1e3a8a", "#1e40af", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe", "#dbeafe", "#eff6ff"],
+  // Indigo
+  ["#312e81", "#3730a3", "#4338ca", "#4f46e5", "#6366f1", "#818cf8", "#a5b4fc", "#c7d2fe", "#e0e7ff", "#eef2ff"],
+  // Purple
+  ["#581c87", "#6b21a8", "#7e22ce", "#9333ea", "#a855f7", "#c084fc", "#d8b4fe", "#e9d5ff", "#f3e8ff", "#faf5ff"],
+  // Pink
+  ["#831843", "#9d174d", "#be185d", "#db2777", "#ec4899", "#f472b6", "#f9a8d4", "#fbcfe8", "#fce7f3", "#fdf2f8"],
+];
+
+/** Gradient presets for text (stored as "gradient:#from:#to") */
+export const TEXT_GRADIENT_COLORS = [
+  // Warm
+  "gradient:#ef4444:#f97316",   // Red → Orange
+  "gradient:#f97316:#eab308",   // Orange → Amber
+  "gradient:#eab308:#22c55e",   // Amber → Green
+  "gradient:#dc2626:#ec4899",   // Red → Pink
+  "gradient:#f59e0b:#ef4444",   // Amber → Red
+  "gradient:#f43f5e:#f97316",   // Rose → Orange
+  // Cool
+  "gradient:#3b82f6:#06b6d4",   // Blue → Cyan
+  "gradient:#6366f1:#3b82f6",   // Indigo → Blue
+  "gradient:#8b5cf6:#6366f1",   // Purple → Indigo
+  "gradient:#06b6d4:#22c55e",   // Cyan → Green
+  "gradient:#0ea5e9:#8b5cf6",   // Sky → Violet
+  "gradient:#10b981:#3b82f6",   // Emerald → Blue
+  // Vivid
+  "gradient:#8b5cf6:#ec4899",   // Purple → Pink
+  "gradient:#ec4899:#f43f5e",   // Pink → Rose
+  "gradient:#d946ef:#6366f1",   // Fuchsia → Indigo
+  "gradient:#7c3aed:#0ea5e9",   // Violet → Sky
+  "gradient:#e11d48:#d946ef",   // Rose → Fuchsia
+  "gradient:#1d4ed8:#ec4899",   // Blue → Pink
+  // Special
+  "gradient:#667eea:#764ba2",   // Periwinkle → Amethyst
+  "gradient:#f093fb:#f5576c",   // Orchid → Coral
+  "gradient:#4facfe:#00f2fe",   // Azure → Aqua
+  "gradient:#43e97b:#38f9d7",   // Emerald → Mint
+  "gradient:#fa709a:#fee140",   // Rose → Sunflower
+  "gradient:#a18cd1:#fbc2eb",   // Lavender → Pink
+];
+
+/** Glossy / metallic gradient presets (stored as "gradient:#from:#to") */
+export const GLOSSY_COLORS = [
+  // Gold
+  "gradient:#FFD700:#B8860B",
+  "gradient:#F5CF52:#C49B17",
+  "gradient:#FFE066:#DAA520",
+  // Rose Gold
+  "gradient:#E0BFB8:#B76E79",
+  "gradient:#F4C2C2:#C88EA7",
+  "gradient:#EDAFB8:#D4848C",
+  // Silver
+  "gradient:#E8E8E8:#A0A0A0",
+  "gradient:#C0C0C0:#808080",
+  "gradient:#D1D1D1:#9E9E9E",
+  // Bronze / Copper
+  "gradient:#CD853F:#8B6914",
+  "gradient:#B87333:#8B4513",
+  "gradient:#DA8A67:#A0522D",
+  // Platinum / Chrome
+  "gradient:#E5E4E2:#B0B0B0",
+  "gradient:#C9D6FF:#A3BDED",
+  "gradient:#89ABE3:#637AB7",
+  // Emerald Gloss
+  "gradient:#50C878:#1B813E",
+  "gradient:#2ECC71:#196F3D",
+  // Ruby Gloss
+  "gradient:#E0115F:#9B111E",
+  "gradient:#DC143C:#8B0000",
+  // Sapphire Gloss
+  "gradient:#0F52BA:#082567",
+  "gradient:#1560BD:#003171",
+  // Amethyst Gloss
+  "gradient:#9966CC:#663399",
+  "gradient:#B19CD9:#7851A9",
+  // Onyx / Obsidian
+  "gradient:#353839:#1a1a2e",
+  "gradient:#2c3e50:#1a1a2e",
+];
+
 // ─── Utility Functions ──────────────────────────────────────────────────
 
 /** Convert a color value to CSS string for display (handles gradients) */
