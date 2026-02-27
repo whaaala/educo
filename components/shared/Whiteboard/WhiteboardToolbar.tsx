@@ -25,7 +25,6 @@ import {
   LayoutTemplate,
   PanelLeftOpen,
   PanelLeftClose,
-  Check,
   Shapes,
   ImagePlus,
   Table2,
@@ -35,7 +34,6 @@ import {
   Download,
   Copy,
   Palette,
-  Ban,
   Bold,
   Italic,
   Underline,
@@ -61,6 +59,7 @@ import {
 } from "./whiteboard-types";
 import VerticalToolbar from "../VerticalToolbar";
 import type { ToolbarEntry } from "../VerticalToolbar";
+import { ColorGrid } from "@/components/shared/ColorPalettePicker";
 import TemplatePicker from "../TemplatePicker";
 
 // ─── Custom SVG icons (refined) ─────────────────────────
@@ -692,46 +691,22 @@ export default function WhiteboardToolbar({
           <div className="px-3 py-2 space-y-3">
             {/* Stroke color */}
             <PropertySection label="Stroke">
-              <div className="grid grid-cols-5 gap-1.5">
-                {DEFAULT_COLORS.map((color) => (
-                  <ColorSwatch
-                    key={color}
-                    color={color}
-                    isSelected={activeColor === color}
-                    onClick={() => onColorChange(color)}
-                  />
-                ))}
-              </div>
+              <ColorGrid colors={DEFAULT_COLORS} selectedColor={activeColor} onSelect={onColorChange} columns={5} swatchSize="md" />
             </PropertySection>
 
             {/* Fill color */}
             {showFillColors && (
               <PropertySection label="Fill">
-                <div className="grid grid-cols-5 gap-1.5">
-                  {FILL_COLORS.map((color) => (
-                    <button
-                      key={color ?? "no-fill"}
-                      onClick={() => onFillColorChange(color)}
-                      className={`w-7 h-7 rounded-lg border-2 transition-all duration-150 cursor-pointer hover:scale-110 flex items-center justify-center ${
-                        activeFillColor === color
-                          ? "border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 shadow-sm"
-                          : "border-gray-200/80 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                      }`}
-                      style={{ backgroundColor: color ?? "transparent" }}
-                      title={color ?? "No fill"}
-                    >
-                      {color === null ? (
-                        <svg viewBox="0 0 20 20" className="w-4 h-4">
-                          <line x1="4" y1="16" x2="16" y2="4" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" />
-                        </svg>
-                      ) : (
-                        activeFillColor === color && (
-                          <Check className={`w-3.5 h-3.5 ${color === "#ffffff" || color === "#fefce8" ? "text-gray-600" : "text-gray-500"}`} />
-                        )
-                      )}
-                    </button>
-                  ))}
-                </div>
+                <ColorGrid
+                  colors={FILL_COLORS.filter((c): c is string => c !== null)}
+                  selectedColor={activeFillColor}
+                  onSelect={onFillColorChange}
+                  columns={5}
+                  swatchSize="md"
+                  allowNoFill
+                  noFillSelected={activeFillColor === null}
+                  onNoFill={() => onFillColorChange(null)}
+                />
               </PropertySection>
             )}
 
@@ -852,16 +827,7 @@ export default function WhiteboardToolbar({
             {/* Sticky note color */}
             {showStickyColors && (
               <PropertySection label="Note Color">
-                <div className="flex items-center gap-1.5">
-                  {STICKY_COLORS.map((color) => (
-                    <ColorSwatch
-                      key={color}
-                      color={color}
-                      isSelected={activeStickyColor === color}
-                      onClick={() => onStickyColorChange(color)}
-                    />
-                  ))}
-                </div>
+                <ColorGrid colors={STICKY_COLORS} selectedColor={activeStickyColor} onSelect={onStickyColorChange} columns={6} swatchSize="md" />
               </PropertySection>
             )}
           </div>
@@ -1016,69 +982,11 @@ function PropertySection({
   );
 }
 
-function ColorSwatch({
-  color,
-  isSelected,
-  onClick,
-}: {
-  color: string;
-  isSelected: boolean;
-  onClick: () => void;
-}) {
-  const isLight = color === "#ffffff" || color === "#fef08a" || color === "#fefce8";
-  return (
-    <button
-      onClick={onClick}
-      className={`w-7 h-7 rounded-lg border-2 transition-all duration-150 cursor-pointer hover:scale-110 flex items-center justify-center ${
-        isSelected
-          ? "border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 shadow-sm scale-105"
-          : "border-gray-200/80 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-      }`}
-      style={{ backgroundColor: color }}
-      title={color}
-    >
-      {isSelected && (
-        <Check className={`w-3.5 h-3.5 ${isLight ? "text-gray-700" : "text-white"}`} />
-      )}
-    </button>
-  );
-}
-
 function SectionDivider() {
   return (
     <div className="h-px mx-3 bg-gray-100 dark:bg-gray-800/60 midnight:bg-cyan-500/6 purple:bg-pink-500/6" />
   );
 }
-
-// ─── Color Picker Flyout (collapsed toolbar) ─────────────
-// A sleek gradient-styled flyout for quick color access.
-
-const GRADIENT_COLORS: { color: string; gradient: string; label: string }[] = [
-  { color: "#000000", gradient: "linear-gradient(135deg, #1a1a2e, #16213e)", label: "Black" },
-  { color: "#374151", gradient: "linear-gradient(135deg, #4b5563, #374151)", label: "Gray" },
-  { color: "#ef4444", gradient: "linear-gradient(135deg, #f87171, #dc2626)", label: "Red" },
-  { color: "#f97316", gradient: "linear-gradient(135deg, #fb923c, #ea580c)", label: "Orange" },
-  { color: "#eab308", gradient: "linear-gradient(135deg, #fbbf24, #ca8a04)", label: "Yellow" },
-  { color: "#22c55e", gradient: "linear-gradient(135deg, #4ade80, #16a34a)", label: "Green" },
-  { color: "#3b82f6", gradient: "linear-gradient(135deg, #60a5fa, #2563eb)", label: "Blue" },
-  { color: "#8b5cf6", gradient: "linear-gradient(135deg, #a78bfa, #7c3aed)", label: "Purple" },
-  { color: "#ec4899", gradient: "linear-gradient(135deg, #f472b6, #db2777)", label: "Pink" },
-  { color: "#06b6d4", gradient: "linear-gradient(135deg, #22d3ee, #0891b2)", label: "Cyan" },
-  { color: "#14b8a6", gradient: "linear-gradient(135deg, #2dd4bf, #0d9488)", label: "Teal" },
-  { color: "#ffffff", gradient: "linear-gradient(135deg, #ffffff, #e5e7eb)", label: "White" },
-];
-
-const GRADIENT_FILLS: { color: string | null; gradient: string; label: string }[] = [
-  { color: null, gradient: "none", label: "No fill" },
-  { color: "#fef2f2", gradient: "linear-gradient(135deg, #fef2f2, #fecaca)", label: "Light red" },
-  { color: "#fff7ed", gradient: "linear-gradient(135deg, #fff7ed, #fed7aa)", label: "Light orange" },
-  { color: "#fefce8", gradient: "linear-gradient(135deg, #fefce8, #fef08a)", label: "Light yellow" },
-  { color: "#f0fdf4", gradient: "linear-gradient(135deg, #f0fdf4, #bbf7d0)", label: "Light green" },
-  { color: "#eff6ff", gradient: "linear-gradient(135deg, #eff6ff, #bfdbfe)", label: "Light blue" },
-  { color: "#f5f3ff", gradient: "linear-gradient(135deg, #f5f3ff, #ddd6fe)", label: "Light purple" },
-  { color: "#fdf2f8", gradient: "linear-gradient(135deg, #fdf2f8, #fbcfe8)", label: "Light pink" },
-  { color: "#f3f4f6", gradient: "linear-gradient(135deg, #f3f4f6, #d1d5db)", label: "Light gray" },
-];
 
 function ColorPickerFlyout({
   hasSelection,
@@ -1125,30 +1033,7 @@ function ColorPickerFlyout({
           <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50 mb-2 block">
             Stroke Color
           </span>
-          <div className="grid grid-cols-6 gap-1.5">
-            {GRADIENT_COLORS.map((c) => {
-              const isSelected = activeColor === c.color;
-              const isLight = c.color === "#ffffff" || c.color === "#fefce8";
-              return (
-                <button
-                  key={c.color}
-                  onClick={() => onColorChange(c.color)}
-                  className={`group relative w-7 h-7 rounded-xl transition-all duration-200 cursor-pointer ${
-                    isSelected
-                      ? "ring-2 ring-offset-1 ring-blue-500 dark:ring-blue-400 midnight:ring-cyan-400 purple:ring-pink-400 dark:ring-offset-gray-800 midnight:ring-offset-[#0d1526] purple:ring-offset-[#1f1035] scale-110"
-                      : "hover:scale-110 hover:shadow-md"
-                  }`}
-                  style={{ background: c.gradient }}
-                  title={c.label}
-                >
-                  {isSelected && (
-                    <Check className={`absolute inset-0 m-auto w-3 h-3 ${isLight ? "text-gray-700" : "text-white"} drop-shadow-sm`} />
-                  )}
-                  <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 ring-1 ring-inset ring-white/20" />
-                </button>
-              );
-            })}
-          </div>
+          <ColorGrid colors={DEFAULT_COLORS} selectedColor={activeColor} onSelect={onColorChange} columns={6} swatchSize="md" />
         </div>
 
         {/* Fill Colors — only for shape tools */}
@@ -1157,42 +1042,16 @@ function ColorPickerFlyout({
             <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50 mb-2 block">
               Fill Color
             </span>
-            <div className="grid grid-cols-5 gap-1.5">
-              {GRADIENT_FILLS.map((c) => {
-                const isSelected = activeFillColor === c.color;
-                return (
-                  <button
-                    key={c.color ?? "no-fill"}
-                    onClick={() => onFillColorChange(c.color)}
-                    className={`group relative w-7 h-7 rounded-xl transition-all duration-200 cursor-pointer ${
-                      isSelected
-                        ? "ring-2 ring-offset-1 ring-blue-500 dark:ring-blue-400 midnight:ring-cyan-400 purple:ring-pink-400 dark:ring-offset-gray-800 midnight:ring-offset-[#0d1526] purple:ring-offset-[#1f1035] scale-110"
-                        : "hover:scale-110 hover:shadow-md"
-                    }`}
-                    style={{ background: c.color ? c.gradient : "transparent" }}
-                    title={c.label}
-                  >
-                    {c.color === null ? (
-                      <Ban className={`absolute inset-0 m-auto w-3.5 h-3.5 ${isSelected ? "text-red-500" : "text-gray-400 dark:text-gray-500 midnight:text-cyan-500/40 purple:text-pink-500/40"}`} />
-                    ) : (
-                      isSelected && (
-                        <Check className="absolute inset-0 m-auto w-3 h-3 text-gray-600 drop-shadow-sm" />
-                      )
-                    )}
-                    {c.color !== null && (
-                      <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 ring-1 ring-inset ring-white/20" />
-                    )}
-                    {c.color === null && (
-                      <div className={`absolute inset-0 rounded-xl border-2 border-dashed ${
-                        isSelected
-                          ? "border-red-400/60"
-                          : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20"
-                      }`} />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            <ColorGrid
+              colors={FILL_COLORS.filter((c): c is string => c !== null)}
+              selectedColor={activeFillColor}
+              onSelect={onFillColorChange}
+              columns={5}
+              swatchSize="md"
+              allowNoFill
+              noFillSelected={activeFillColor === null}
+              onNoFill={() => onFillColorChange(null)}
+            />
           </div>
         )}
 

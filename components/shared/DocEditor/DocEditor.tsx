@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   ChevronRight,
   Plus,
@@ -53,12 +54,18 @@ import {
   Type,
 } from "lucide-react";
 import { DOC_LANGUAGES } from "./languages";
-import { ColorGrid, SOLID_COLORS, TEXT_COLORS_MATRIX, TEXT_GRADIENT_COLORS, GLOSSY_COLORS, colorToCSS } from "@/components/shared/ColorPalettePicker";
+import { ColorGrid, TabbedColorPalette, SOLID_COLORS, TEXT_COLORS_MATRIX, TEXT_GRADIENT_COLORS, GLOSSY_COLORS, BORDER_COLORS, CELL_BG_COLORS, colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { FONT_FAMILY_CATEGORIES, FONT_SIZES } from "@/components/shared/Whiteboard/whiteboard-types";
 import type { FontFamily } from "@/components/shared/Whiteboard/whiteboard-types";
 
 const MenuCloseContext = createContext<(() => void) | null>(null);
 const SubmenuCloseContext = createContext<(() => void) | null>(null);
+/** Provides the MenuItem container ref so SubmenuPanel (portalled) can position itself. */
+const SubmenuAnchorContext = createContext<React.RefObject<HTMLDivElement | null> | null>(null);
+/** Provides timer management so the portalled SubmenuPanel can cancel/schedule close. */
+const SubmenuTimerContext = createContext<{ cancelClose: () => void; scheduleClose: () => void } | null>(null);
+/** Module-level ref tracking the currently-open submenu portal panel element for hover checks. */
+const activeSubmenuPanelEl: { current: HTMLElement | null } = { current: null };
 
 const DOC_PAGE_BREAK_MARKER = `<div data-doc-page-break="true"></div>`;
 const DOC_PAGE_BREAK_REGEX = /<div[^>]*data-doc-page-break=(?:"true"|'true')[^>]*>\s*<\/div>/gi;
@@ -112,6 +119,7 @@ interface TableCellTextFormat {
   italic?: boolean;
   underline?: boolean;
   textAlign?: "left" | "center" | "right";
+  verticalAlign?: "top" | "middle" | "bottom";
   color?: string; // text/font color
 }
 
@@ -120,6 +128,9 @@ interface TableWidgetCell {
   bg?: string; // per-cell background override (if set, takes priority over table-level cellBg)
   border?: Partial<{ color: string; widthPx: number; style: "solid" | "dashed" | "dotted" }>; // per-cell border override
   textFmt?: TableCellTextFormat; // per-cell text format override
+  colspan?: number;   // columns spanned (default 1, only set on the owner/top-left cell)
+  rowspan?: number;   // rows spanned (default 1, only set on the owner/top-left cell)
+  mergedInto?: { r: number; c: number }; // if set, this cell is hidden — covered by the owner cell at (r,c)
 }
 
 interface TableWidgetModel {
@@ -145,11 +156,6 @@ interface TableWidgetModel {
   bodyTextFmt?: TableCellTextFormat;
   // Default text format for header cells (headerRow row-0 / headerCol col-0)
   headerTextFmt?: TableCellTextFormat;
-  // Text wrapping mode: none (inline block), wrap (positioned, text flows around)
-  wrapMode?: "none" | "wrap";
-  // Position when wrapMode is "wrap" (px from top-left of content area)
-  wrapX?: number;
-  wrapY?: number;
 }
 
 function encodeTableWidgetModel(model: TableWidgetModel): string {
@@ -169,6 +175,238 @@ function decodeTableWidgetModel(raw: string | null | undefined): TableWidgetMode
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
+}
+
+// ── Cell merge helpers (pure functions) ──
+
+function normalizeRange(r1: number, c1: number, r2: number, c2: number) {
+  return { r1: Math.min(r1, r2), c1: Math.min(c1, c2), r2: Math.max(r1, r2), c2: Math.max(c1, c2) };
+}
+
+/** Expand a selection range to fully include any partially-overlapped merged cells. */
+function expandRangeForMerges(
+  rows: TableWidgetCell[][],
+  range: { r1: number; c1: number; r2: number; c2: number }
+): { r1: number; c1: number; r2: number; c2: number } {
+  let { r1, c1, r2, c2 } = range;
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let r = r1; r <= r2; r++) {
+      for (let c = c1; c <= c2; c++) {
+        const cell = rows[r]?.[c];
+        if (!cell) continue;
+        if (cell.mergedInto) {
+          const { r: or, c: oc } = cell.mergedInto;
+          const owner = rows[or]?.[oc];
+          if (owner) {
+            const er = or + (owner.rowspan ?? 1) - 1;
+            const ec = oc + (owner.colspan ?? 1) - 1;
+            if (or < r1 || oc < c1 || er > r2 || ec > c2) {
+              r1 = Math.min(r1, or); c1 = Math.min(c1, oc);
+              r2 = Math.max(r2, er); c2 = Math.max(c2, ec);
+              changed = true;
+            }
+          }
+        } else if ((cell.colspan ?? 1) > 1 || (cell.rowspan ?? 1) > 1) {
+          const er = r + (cell.rowspan ?? 1) - 1;
+          const ec = c + (cell.colspan ?? 1) - 1;
+          if (er > r2 || ec > c2 || r < r1 || c < c1) {
+            r1 = Math.min(r1, r); c1 = Math.min(c1, c);
+            r2 = Math.max(r2, er); c2 = Math.max(c2, ec);
+            changed = true;
+          }
+        }
+      }
+    }
+  }
+  return { r1, c1, r2, c2 };
+}
+
+/** Merge cells in the given range into one spanning cell. */
+function mergeCells(model: TableWidgetModel, rawRange: { r1: number; c1: number; r2: number; c2: number }): TableWidgetModel {
+  const range = expandRangeForMerges(model.rows, rawRange);
+  const { r1, c1, r2, c2 } = range;
+  if (r1 === r2 && c1 === c2) return model;
+  const rows = model.rows.map((row) => row.map((cell) => ({ ...cell })));
+  const contentParts: string[] = [];
+  for (let r = r1; r <= r2; r++) {
+    for (let c = c1; c <= c2; c++) {
+      const cell = rows[r][c];
+      if (cell && !cell.mergedInto && cell.html && cell.html !== "&nbsp;") {
+        contentParts.push(cell.html);
+      }
+    }
+  }
+  const owner = rows[r1][c1];
+  owner.html = contentParts.join(" ") || "&nbsp;";
+  owner.colspan = c2 - c1 + 1;
+  owner.rowspan = r2 - r1 + 1;
+  delete owner.mergedInto;
+  for (let r = r1; r <= r2; r++) {
+    for (let c = c1; c <= c2; c++) {
+      if (r === r1 && c === c1) continue;
+      const cell = rows[r][c];
+      cell.html = "&nbsp;";
+      cell.mergedInto = { r: r1, c: c1 };
+      delete cell.colspan;
+      delete cell.rowspan;
+    }
+  }
+  return { ...model, rows };
+}
+
+/** Unmerge a merged cell, restoring all slave cells to independent cells. */
+function unmergeCells(model: TableWidgetModel, r: number, c: number): TableWidgetModel {
+  const rows = model.rows.map((row) => row.map((cell) => ({ ...cell })));
+  const cell = rows[r]?.[c];
+  if (!cell) return model;
+  const ownerR = cell.mergedInto ? cell.mergedInto.r : r;
+  const ownerC = cell.mergedInto ? cell.mergedInto.c : c;
+  const ownerCell = rows[ownerR]?.[ownerC];
+  if (!ownerCell) return model;
+  const rs = ownerCell.rowspan ?? 1;
+  const cs = ownerCell.colspan ?? 1;
+  if (rs === 1 && cs === 1) return model;
+  delete ownerCell.colspan;
+  delete ownerCell.rowspan;
+  for (let ri = ownerR; ri < ownerR + rs; ri++) {
+    for (let ci = ownerC; ci < ownerC + cs; ci++) {
+      if (ri === ownerR && ci === ownerC) continue;
+      const sl = rows[ri]?.[ci];
+      if (sl) { sl.html = "&nbsp;"; delete sl.mergedInto; delete sl.colspan; delete sl.rowspan; }
+    }
+  }
+  return { ...model, rows };
+}
+
+/** Adjust merges when a row is inserted at insertAt. */
+function adjustMergesForRowInsert(rows: TableWidgetCell[][], insertAt: number): TableWidgetCell[][] {
+  const result = rows.map((row) => row.map((cell) => ({ ...cell })));
+  for (let r = 0; r < result.length; r++) {
+    for (let c = 0; c < result[r].length; c++) {
+      const cell = result[r][c];
+      if (cell.mergedInto) {
+        // Shift owner pointer if it's at or below the insertion point
+        if (cell.mergedInto.r >= insertAt) {
+          cell.mergedInto = { ...cell.mergedInto, r: cell.mergedInto.r + 1 };
+        }
+      } else if ((cell.rowspan ?? 1) > 1) {
+        const spanEnd = r + (cell.rowspan ?? 1) - 1;
+        if (r < insertAt && spanEnd >= insertAt) {
+          cell.rowspan = (cell.rowspan ?? 1) + 1;
+        }
+      }
+    }
+  }
+  // Mark the new row's cells as slaves where they fall within an existing rowspan
+  const newRow = result[insertAt];
+  if (newRow) {
+    for (let c = 0; c < newRow.length; c++) {
+      // Find if any owner above spans across this row
+      for (let r = 0; r < insertAt; r++) {
+        const above = result[r]?.[c];
+        if (above && !above.mergedInto && (above.rowspan ?? 1) > 1) {
+          const spanEnd = r + (above.rowspan ?? 1) - 1;
+          if (spanEnd >= insertAt) {
+            newRow[c] = { html: "&nbsp;", mergedInto: { r, c } };
+            break;
+          }
+        }
+      }
+    }
+  }
+  return result;
+}
+
+/** Adjust merges when a row is deleted. Dissolves any merge crossing the deleted row. */
+function adjustMergesForRowDelete(model: TableWidgetModel, deleteIdx: number): TableWidgetModel {
+  let rows = model.rows.map((row) => row.map((cell) => ({ ...cell })));
+  // First: dissolve any merge whose owner spans the deleted row
+  for (let r = 0; r < rows.length; r++) {
+    for (let c = 0; c < rows[r].length; c++) {
+      const cell = rows[r][c];
+      if (!cell.mergedInto && (cell.rowspan ?? 1) > 1) {
+        const spanEnd = r + (cell.rowspan ?? 1) - 1;
+        if (r <= deleteIdx && spanEnd >= deleteIdx) {
+          const m = unmergeCells({ ...model, rows }, r, c);
+          rows = m.rows.map((row) => row.map((cl) => ({ ...cl })));
+        }
+      }
+    }
+  }
+  // Shift mergedInto.r pointers for rows above the deleted one
+  for (let r = 0; r < rows.length; r++) {
+    for (let c = 0; c < rows[r].length; c++) {
+      const cell = rows[r][c];
+      if (cell.mergedInto && cell.mergedInto.r > deleteIdx) {
+        cell.mergedInto = { ...cell.mergedInto, r: cell.mergedInto.r - 1 };
+      }
+    }
+  }
+  return { ...model, rows };
+}
+
+/** Adjust merges when a column is inserted at insertAt. */
+function adjustMergesForColInsert(rows: TableWidgetCell[][], insertAt: number): TableWidgetCell[][] {
+  const result = rows.map((row) => row.map((cell) => ({ ...cell })));
+  for (let r = 0; r < result.length; r++) {
+    for (let c = 0; c < result[r].length; c++) {
+      const cell = result[r][c];
+      if (cell.mergedInto) {
+        if (cell.mergedInto.c >= insertAt) {
+          cell.mergedInto = { ...cell.mergedInto, c: cell.mergedInto.c + 1 };
+        }
+      } else if ((cell.colspan ?? 1) > 1) {
+        const spanEnd = c + (cell.colspan ?? 1) - 1;
+        if (c < insertAt && spanEnd >= insertAt) {
+          cell.colspan = (cell.colspan ?? 1) + 1;
+        }
+      }
+    }
+  }
+  // Mark the new column's cells as slaves where they fall within an existing colspan
+  for (let r = 0; r < result.length; r++) {
+    const newCell = result[r]?.[insertAt];
+    if (!newCell) continue;
+    for (let c = 0; c < insertAt; c++) {
+      const left = result[r]?.[c];
+      if (left && !left.mergedInto && (left.colspan ?? 1) > 1) {
+        const spanEnd = c + (left.colspan ?? 1) - 1;
+        if (spanEnd >= insertAt) {
+          result[r][insertAt] = { html: "&nbsp;", mergedInto: { r, c } };
+          break;
+        }
+      }
+    }
+  }
+  return result;
+}
+
+/** Adjust merges when a column is deleted. Dissolves any merge crossing the deleted column. */
+function adjustMergesForColDelete(model: TableWidgetModel, deleteIdx: number): TableWidgetModel {
+  let rows = model.rows.map((row) => row.map((cell) => ({ ...cell })));
+  for (let r = 0; r < rows.length; r++) {
+    for (let c = 0; c < rows[r].length; c++) {
+      const cell = rows[r][c];
+      if (!cell.mergedInto && (cell.colspan ?? 1) > 1) {
+        const spanEnd = c + (cell.colspan ?? 1) - 1;
+        if (c <= deleteIdx && spanEnd >= deleteIdx) {
+          const m = unmergeCells({ ...model, rows }, r, c);
+          rows = m.rows.map((row) => row.map((cl) => ({ ...cl })));
+        }
+      }
+    }
+  }
+  for (let r = 0; r < rows.length; r++) {
+    for (let c = 0; c < rows[r].length; c++) {
+      const cell = rows[r][c];
+      if (cell.mergedInto && cell.mergedInto.c > deleteIdx) {
+        cell.mergedInto = { ...cell.mergedInto, c: cell.mergedInto.c - 1 };
+      }
+    }
+  }
+  return { ...model, rows };
 }
 
 function createTableWidgetModel(rows: number, cols: number): TableWidgetModel {
@@ -211,8 +449,13 @@ function renderTableWidgetHtml(model: TableWidgetModel): string {
       const rowStyle = h ? ` style="height:${Math.max(24, Math.round(h))}px"` : "";
       const cells = row
         .map((cell, cIdx) => {
+          // Skip slave cells — they are visually covered by their owner via colspan/rowspan
+          if (cell.mergedInto) return "";
           const isHeader = (model.headerRow && rIdx === 0) || (model.headerCol && cIdx === 0);
           const tag = isHeader ? "th" : "td";
+          const cs = cell.colspan ?? 1;
+          const rs = cell.rowspan ?? 1;
+          const spanAttrs = [cs > 1 ? `colspan="${cs}"` : "", rs > 1 ? `rowspan="${rs}"` : ""].filter(Boolean).join(" ");
           // Per-cell bg takes priority, then header bg, then table-level bg
           const cellBgOverride = cell.bg && cell.bg !== "transparent" ? cell.bg : "";
           const effectiveBg = cellBgOverride || (isHeader ? "#f3f4f6" : bg);
@@ -231,12 +474,16 @@ function renderTableWidgetHtml(model: TableWidgetModel): string {
           const txtItalic = cellTxtFmt.italic ?? baseTxtFmt.italic;
           const txtUnderline = cellTxtFmt.underline ?? baseTxtFmt.underline;
           const txtAlign = cellTxtFmt.textAlign ?? baseTxtFmt.textAlign;
+          const txtVAlign = cellTxtFmt.verticalAlign ?? baseTxtFmt.verticalAlign ?? "top";
           const txtColor = cellTxtFmt.color ?? baseTxtFmt.color;
           const style = [
             `border:${cellBorderStr}`,
             "padding:6px 8px",
-            "vertical-align:top",
+            `vertical-align:${txtVAlign}`,
             "min-height:24px",
+            "overflow-wrap:break-word",
+            "word-break:break-word",
+            "overflow:hidden",
             effectiveBg ? `background:${effectiveBg}` : "",
             txtFont ? `font-family:${txtFont},system-ui,sans-serif` : "",
             txtSize ? `font-size:${txtSize}px` : "",
@@ -251,7 +498,7 @@ function renderTableWidgetHtml(model: TableWidgetModel): string {
             .filter(Boolean)
             .join(";");
           const safeHtml = cell?.html?.length ? cell.html : "&nbsp;";
-          return `<${tag} style="${style}">${safeHtml}</${tag}>`;
+          return `<${tag}${spanAttrs ? " " + spanAttrs : ""} style="${style}">${safeHtml}</${tag}>`;
         })
         .join("");
       return `<tr${rowStyle}>${cells}</tr>`;
@@ -271,14 +518,17 @@ function renderTableWidgetHtml(model: TableWidgetModel): string {
   return `<table style="${tableStyle}">${colgroup}<tbody>${body}</tbody></table>`;
 }
 
-/** Returns the inline style string for a table widget container div based on its wrap mode. */
-function getTableContainerStyle(model: TableWidgetModel): string {
-  const base = "cursor:pointer;overflow:hidden";
-  if (model.wrapMode === "wrap") {
-    const x = model.wrapX ?? 0;
-    const y = model.wrapY ?? 0;
-    return `position:absolute;left:${x}px;top:${y}px;z-index:10;${base}`;
+/** Returns the inline style string for a table widget container div.
+ *  Auto-floats left with padding when the table is narrower than the page content width. */
+function getTableContainerStyle(model: TableWidgetModel, maxContentWidth?: number): string {
+  const borderW = model.border?.widthPx ?? 1;
+  const base = `cursor:pointer;padding-right:${borderW}px;padding-bottom:${borderW}px`;
+  const totalW = model.colWidthsPx?.reduce((a, b) => a + b, 0) ?? 0;
+  // Auto-float when table is narrower than page content width
+  if (maxContentWidth && totalW > 0 && totalW < maxContentWidth) {
+    return `float:left;width:${totalW + borderW}px;margin:8px 24px 8px 0;${base}`;
   }
+  // Full width or unknown: normal block flow
   return `margin:12px 0;max-width:100%;${base}`;
 }
 
@@ -457,6 +707,7 @@ export default function DocEditor({
     widgetId: string;
     model: TableWidgetModel;
     activeCell: { r: number; c: number };
+    selectionRange?: { r1: number; c1: number; r2: number; c2: number };
   }>(null);
   const tableWidgetEditorRef = useRef(tableWidgetEditor);
   useEffect(() => {
@@ -474,6 +725,8 @@ export default function DocEditor({
 
   // Refs for contentEditable cells in the React editor panel
   const cellEditRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
+  // Drag-to-select state for cell merging
+  const cellSelectDragRef = useRef<{ active: boolean; anchorR: number; anchorC: number }>({ active: false, anchorR: 0, anchorC: 0 });
   // Ref for the panel element itself (to measure its actual height for positioning)
   const tablePanelElRef = useRef<HTMLDivElement>(null);
   // Revision counter — increments on structural changes to force React to re-create cell elements
@@ -487,7 +740,6 @@ export default function DocEditor({
   const [bgScope, setBgScope] = useState<"cell" | "all">("cell");
   const [textFmtScope, setTextFmtScope] = useState<"cell" | "all" | "header">("all");
   const [tableTextPopover, setTableTextPopover] = useState(false);
-  const [textColorTab, setTextColorTab] = useState<"solid" | "gradient" | "glossy">("solid");
 
   const effectiveTenantId =
     tenantId ||
@@ -865,55 +1117,22 @@ export default function DocEditor({
   }, []);
 
   /** Write model back to the DOM element as encoded data + static preview HTML. */
+  const maxContentWidth = pageWidthPx - 2 * pagePaddingPx - 2;
   const commitTableWidget = useCallback((el: HTMLElement, model: TableWidgetModel) => {
     try {
       el.dataset.docTableWidgetModel = encodeTableWidgetModel(model);
       el.innerHTML = renderTableWidgetHtml(model);
-      el.style.cssText = getTableContainerStyle(model);
+      el.style.cssText = getTableContainerStyle(model, maxContentWidth);
 
-      // Manage the float proxy: an invisible element that makes text wrap around the table.
-      // It sits in the normal flow with float + matching dimensions so text avoids that area.
+      // Clean up any old float proxies from the previous implementation
       const proxyId = `${el.dataset.docTableWidgetId}_proxy`;
       const parent = el.parentElement;
-      let proxy = parent?.querySelector(`[data-table-proxy-id="${proxyId}"]`) as HTMLElement | null;
-
-      if (model.wrapMode === "wrap" && parent) {
-        const tableW = model.colWidthsPx ? model.colWidthsPx.reduce((a, b) => a + b, 0) : 520;
-        const tableH = (model.rowHeightsPx ? model.rowHeightsPx.reduce((a, b) => a + b, 0) : model.rows.length * 40)
-          + (model.border.widthPx * 2);
-        const x = model.wrapX ?? 0;
-        const y = model.wrapY ?? 0;
-        const contentW = parent.clientWidth || 780;
-        // Determine float side: if table is in left half, float left; otherwise float right
-        const floatSide = x + tableW / 2 < contentW / 2 ? "left" : "right";
-        const marginOpp = floatSide === "left" ? "margin-right" : "margin-left";
-
-        if (!proxy) {
-          proxy = document.createElement("div");
-          proxy.setAttribute("data-table-proxy-id", proxyId);
-          proxy.setAttribute("contenteditable", "false");
-          // Insert proxy as first child so it's before all text
-          parent.insertBefore(proxy, parent.firstChild);
-        }
-        proxy.style.cssText = [
-          `float:${floatSide}`,
-          `width:${tableW}px`,
-          `height:${tableH}px`,
-          `margin-top:${y}px`,
-          `${marginOpp}:16px`,
-          `margin-bottom:8px`,
-          "visibility:hidden",
-          "pointer-events:none",
-          "clear:both",
-        ].join(";");
-      } else if (proxy) {
-        // Remove proxy when wrap mode is off
-        proxy.remove();
-      }
+      const proxy = parent?.querySelector(`[data-table-proxy-id="${proxyId}"]`) as HTMLElement | null;
+      if (proxy) proxy.remove();
     } catch {
       // ignore best-effort
     }
-  }, []);
+  }, [maxContentWidth]);
 
   /** Open the React editor panel for a table widget element. */
   const openTableWidgetEditor = useCallback(
@@ -938,11 +1157,18 @@ export default function DocEditor({
       const model: TableWidgetModel = { ...baseModel, colWidthsPx, rowHeightsPx };
 
       cellEditRefs.current.clear();
-      setTableWidgetEditor({ widgetId, model, activeCell: { r: focusCellR, c: focusCellC } });
+      // If the focused cell is a slave (covered by merge), redirect to its owner
+      let effectiveR = focusCellR, effectiveC = focusCellC;
+      const focusCell = model.rows[focusCellR]?.[focusCellC];
+      if (focusCell?.mergedInto) {
+        effectiveR = focusCell.mergedInto.r;
+        effectiveC = focusCell.mergedInto.c;
+      }
+      setTableWidgetEditor({ widgetId, model, activeCell: { r: effectiveR, c: effectiveC } });
 
       // Focus the target cell in the panel after React renders it.
       requestAnimationFrame(() => {
-        const cellRef = cellEditRefs.current.get(`${focusCellR},${focusCellC}`);
+        const cellRef = cellEditRefs.current.get(`${effectiveR},${effectiveC}`);
         cellRef?.focus();
       });
     },
@@ -1132,7 +1358,9 @@ export default function DocEditor({
         const rows = [...m.rows.slice(0, insertAt), newRow, ...m.rows.slice(insertAt)];
         const rowHeightsPx = m.rowHeightsPx ? [...m.rowHeightsPx] : undefined;
         if (rowHeightsPx) rowHeightsPx.splice(insertAt, 0, 40);
-        return { ...m, rows, rowHeightsPx };
+        // Adjust merges: extend any rowspan that crosses insertAt, mark new row cells as slaves where needed
+        const adjustedRows = adjustMergesForRowInsert(rows, insertAt);
+        return { ...m, rows: adjustedRows, rowHeightsPx };
       });
       commitWidgetSoon(true);
       showToast(where === "above" ? "Row added above" : "Row added below");
@@ -1152,15 +1380,18 @@ export default function DocEditor({
           next.splice(insertAt, 0, { html: "&nbsp;" });
           return next;
         });
+        // Adjust merges: extend any colspan that crosses insertAt, mark new col cells as slaves where needed
+        const adjustedRows = adjustMergesForColInsert(rows, insertAt);
         // Redistribute column widths evenly across the total table width (capped to page).
-        const newColCount = rows[0]?.length ?? 1;
-        const maxW = pageWidthPx - 2 * pagePaddingPx;
+        const newColCount = adjustedRows[0]?.length ?? 1;
+        // Subtract 2 for the 1px border on each side of the page wrapper (border-box)
+        const maxW = pageWidthPx - 2 * pagePaddingPx - 2;
         const totalWidth = Math.min(maxW, m.colWidthsPx
           ? m.colWidthsPx.reduce((a, b) => a + b, 0)
           : Math.max(400, newColCount * 120));
         const evenWidth = Math.max(60, Math.floor(totalWidth / newColCount));
         const colWidthsPx = Array.from({ length: newColCount }, () => evenWidth);
-        return { ...m, rows, colWidthsPx };
+        return { ...m, rows: adjustedRows, colWidthsPx };
       });
       commitWidgetSoon(true);
       showToast(where === "left" ? "Column added left" : "Column added right");
@@ -1180,22 +1411,26 @@ export default function DocEditor({
     showToast("Header column toggled");
   }, [commitWidgetSoon, showToast, updateTableWidgetModel]);
 
-  const setTableWrapMode = useCallback(
-    (mode: "none" | "wrap") => {
-      updateTableWidgetModel((m) => {
-        if (mode === "wrap" && !m.wrapX && !m.wrapY) {
-          // Default position: centered, a bit down from top
-          const tableW = m.colWidthsPx ? m.colWidthsPx.reduce((a, b) => a + b, 0) : 520;
-          const contentW = pageWidthPx - 2 * pagePaddingPx;
-          return { ...m, wrapMode: mode, wrapX: Math.round((contentW - tableW) / 2), wrapY: 20 };
-        }
-        return { ...m, wrapMode: mode };
-      });
-      commitWidgetSoon(true);
-      showToast(mode === "none" ? "Table inline (no wrapping)" : "Table positioned (text wraps around)");
-    },
-    [commitWidgetSoon, showToast, updateTableWidgetModel, pageWidthPx, pagePaddingPx]
-  );
+  const mergeSelectedCells = useCallback(() => {
+    const cur = tableWidgetEditorRef.current;
+    if (!cur?.selectionRange) return;
+    const range = cur.selectionRange;
+    updateTableWidgetModel((m) => mergeCells(m, range));
+    setTableWidgetEditor((prev) =>
+      prev ? { ...prev, activeCell: { r: range.r1, c: range.c1 }, selectionRange: undefined } : prev
+    );
+    commitWidgetSoon(true);
+    showToast("Cells merged");
+  }, [commitWidgetSoon, showToast, updateTableWidgetModel]);
+
+  const unmergeActiveCell = useCallback(() => {
+    const cur = tableWidgetEditorRef.current;
+    if (!cur) return;
+    const ac = cur.activeCell;
+    updateTableWidgetModel((m) => unmergeCells(m, ac.r, ac.c));
+    commitWidgetSoon(true);
+    showToast("Cell unmerged");
+  }, [commitWidgetSoon, showToast, updateTableWidgetModel]);
 
   const setWidgetBorder = useCallback(
     (patch: Partial<TableWidgetModel["border"]>, scope?: "cell" | "all") => {
@@ -1266,13 +1501,25 @@ export default function DocEditor({
         if (effectiveScope === "header") {
           return { ...m, headerTextFmt: { ...(m.headerTextFmt ?? {}), ...patch } };
         }
-        // Apply to active cell only
+        // Apply to selection range (if any) or active cell
+        const sel = tableWidgetEditorRef.current?.selectionRange;
         const ac = tableWidgetEditorRef.current?.activeCell;
         if (!ac) return { ...m, bodyTextFmt: { ...(m.bodyTextFmt ?? {}), ...patch } };
         const rows = m.rows.map((r) => r.map((c) => ({ ...c })));
-        const cell = rows[ac.r]?.[ac.c];
-        if (cell) {
-          cell.textFmt = { ...(cell.textFmt ?? {}), ...patch };
+        if (sel) {
+          for (let r = sel.r1; r <= sel.r2; r++) {
+            for (let c = sel.c1; c <= sel.c2; c++) {
+              const cell = rows[r]?.[c];
+              if (cell && !cell.mergedInto) {
+                cell.textFmt = { ...(cell.textFmt ?? {}), ...patch };
+              }
+            }
+          }
+        } else {
+          const cell = rows[ac.r]?.[ac.c];
+          if (cell) {
+            cell.textFmt = { ...(cell.textFmt ?? {}), ...patch };
+          }
         }
         return { ...m, rows };
       });
@@ -1286,9 +1533,11 @@ export default function DocEditor({
       if (m.rows.length <= 1) return m; // Keep at least 1 row.
       const activeR = tableWidgetEditorRef.current?.activeCell?.r ?? m.rows.length - 1;
       const idx = clamp(activeR, 0, m.rows.length - 1);
-      const rows = m.rows.filter((_, i) => i !== idx);
-      const rowHeightsPx = m.rowHeightsPx ? m.rowHeightsPx.filter((_, i) => i !== idx) : undefined;
-      return { ...m, rows, rowHeightsPx };
+      // Dissolve any merge crossing the deleted row before removing it
+      const adjusted = adjustMergesForRowDelete(m, idx);
+      const rows = adjusted.rows.filter((_, i) => i !== idx);
+      const rowHeightsPx = adjusted.rowHeightsPx ? adjusted.rowHeightsPx.filter((_, i) => i !== idx) : undefined;
+      return { ...adjusted, rows, rowHeightsPx };
     });
     commitWidgetSoon(true);
     showToast("Row deleted");
@@ -1300,15 +1549,17 @@ export default function DocEditor({
       if (cols <= 1) return m; // Keep at least 1 column.
       const activeC = tableWidgetEditorRef.current?.activeCell?.c ?? cols - 1;
       const idx = clamp(activeC, 0, cols - 1);
-      const rows = m.rows.map((r) => r.filter((_, i) => i !== idx));
+      // Dissolve any merge crossing the deleted column before removing it
+      const adjusted = adjustMergesForColDelete(m, idx);
+      const rows = adjusted.rows.map((r) => r.filter((_, i) => i !== idx));
       // Redistribute column widths evenly after deletion.
       const newColCount = rows[0]?.length ?? 1;
-      const totalWidth = m.colWidthsPx
-        ? m.colWidthsPx.reduce((a, b) => a + b, 0)
+      const totalWidth = adjusted.colWidthsPx
+        ? adjusted.colWidthsPx.reduce((a, b) => a + b, 0)
         : Math.max(400, newColCount * 120);
       const evenWidth = Math.max(60, Math.floor(totalWidth / newColCount));
       const colWidthsPx = Array.from({ length: newColCount }, () => evenWidth);
-      return { ...m, rows, colWidthsPx };
+      return { ...adjusted, rows, colWidthsPx };
     });
     commitWidgetSoon(true);
     showToast("Column deleted");
@@ -1352,6 +1603,18 @@ export default function DocEditor({
       emitChange();
       setTableWidgetEditor((p) => p ? { ...p } : p);
       showToast("Table moved up");
+    } else if (container) {
+      // No previous sibling — create an empty paragraph after the table so it can be "moved up"
+      // (the table stays at top, but now there's content below it to type in)
+      const p = document.createElement("p");
+      p.innerHTML = "<br>";
+      if (block.nextElementSibling) {
+        container.insertBefore(p, block.nextElementSibling);
+      } else {
+        container.appendChild(p);
+      }
+      emitChange();
+      showToast("Already at top");
     }
   }, [emitChange, showToast, getWidgetEl]);
 
@@ -1372,6 +1635,13 @@ export default function DocEditor({
       emitChange();
       setTableWidgetEditor((p) => p ? { ...p } : p);
       showToast("Table moved down");
+    } else if (container) {
+      // No next sibling — create an empty paragraph after the table
+      const p = document.createElement("p");
+      p.innerHTML = "<br>";
+      container.appendChild(p);
+      emitChange();
+      showToast("Already at bottom");
     }
   }, [emitChange, showToast, getWidgetEl]);
 
@@ -1472,72 +1742,6 @@ export default function DocEditor({
       e.preventDefault();
       e.stopPropagation();
 
-      // If the table is in "wrap" mode, allow dragging to reposition
-      const model = decodeTableWidgetModel(widget.dataset.docTableWidgetModel);
-      if (model?.wrapMode === "wrap") {
-        const startX = e.clientX;
-        const startY = e.clientY;
-        const startWrapX = model.wrapX ?? 0;
-        const startWrapY = model.wrapY ?? 0;
-        let dragged = false;
-
-        const onMove = (me: PointerEvent) => {
-          const dx = me.clientX - startX;
-          const dy = me.clientY - startY;
-          if (!dragged && Math.abs(dx) + Math.abs(dy) < 5) return; // dead zone
-          dragged = true;
-          const contentW = (widget.parentElement?.clientWidth || 780);
-          const tableW = model.colWidthsPx ? model.colWidthsPx.reduce((a, b) => a + b, 0) : 520;
-          const newX = Math.max(0, Math.min(contentW - tableW, Math.round(startWrapX + dx)));
-          const newY = Math.max(0, Math.round(startWrapY + dy));
-          widget.style.left = `${newX}px`;
-          widget.style.top = `${newY}px`;
-          // Live-update the proxy
-          const proxyId = `${widget.dataset.docTableWidgetId}_proxy`;
-          const proxy = widget.parentElement?.querySelector(`[data-table-proxy-id="${proxyId}"]`) as HTMLElement | null;
-          if (proxy) {
-            proxy.style.marginTop = `${newY}px`;
-            const floatSide = newX + tableW / 2 < contentW / 2 ? "left" : "right";
-            proxy.style.cssFloat = floatSide;
-          }
-        };
-        const onUp = (me: PointerEvent) => {
-          window.removeEventListener("pointermove", onMove);
-          window.removeEventListener("pointerup", onUp);
-          document.body.style.cursor = "";
-          if (dragged) {
-            // Save final position to the model
-            const dx = me.clientX - startX;
-            const dy = me.clientY - startY;
-            const contentW = (widget.parentElement?.clientWidth || 780);
-            const tableW = model.colWidthsPx ? model.colWidthsPx.reduce((a, b) => a + b, 0) : 520;
-            const finalX = Math.max(0, Math.min(contentW - tableW, Math.round(startWrapX + dx)));
-            const finalY = Math.max(0, Math.round(startWrapY + dy));
-            const newModel = { ...model, wrapX: finalX, wrapY: finalY };
-            commitTableWidget(widget, newModel);
-            emitChange();
-            // Update editor state if this table is being edited
-            setTableWidgetEditor((prev) => {
-              if (prev && prev.widgetId === widget.dataset.docTableWidgetId) {
-                return { ...prev, model: newModel };
-              }
-              return prev;
-            });
-          } else {
-            // It was a click, not a drag — open the editor
-            const cur = tableWidgetEditorRef.current;
-            const widgetId = widget.dataset.docTableWidgetId;
-            if (cur && widgetId && cur.widgetId === widgetId) return;
-            if (cur) closeTableWidgetEditor();
-            openTableWidgetEditor(widget, 0, 0);
-          }
-        };
-        document.body.style.cursor = "grabbing";
-        window.addEventListener("pointermove", onMove);
-        window.addEventListener("pointerup", onUp);
-        return;
-      }
-
       const cur = tableWidgetEditorRef.current;
       const widgetId = widget.dataset.docTableWidgetId;
       if (cur && widgetId && cur.widgetId === widgetId) return; // Already editing this table.
@@ -1545,9 +1749,75 @@ export default function DocEditor({
       openTableWidgetEditor(widget, 0, 0);
     };
 
+    // Handle clicks between adjacent non-editable blocks (e.g. two tables):
+    // If the user clicks directly on the contentEditable root (not inside any child block),
+    // find the closest gap and insert/focus an editable paragraph there.
+    const onClickGap = (e: MouseEvent) => {
+      if (!canEdit) return;
+      const target = e.target as HTMLElement | null;
+      if (!target || target !== root) return; // Only handle clicks directly on the root
+      const y = e.clientY;
+      // Walk through top-level children and find two adjacent non-editable blocks surrounding the click Y
+      const children = Array.from(root.children) as HTMLElement[];
+      for (let i = 0; i < children.length - 1; i++) {
+        const a = children[i];
+        const b = children[i + 1];
+        const aRect = a.getBoundingClientRect();
+        const bRect = b.getBoundingClientRect();
+        if (y >= aRect.bottom && y <= bRect.top) {
+          // Click is in the gap between child[i] and child[i+1]
+          const aIsWidget = a.hasAttribute("data-doc-table-widget") || a.querySelector("[data-doc-table-widget]");
+          const bIsWidget = b.hasAttribute("data-doc-table-widget") || b.querySelector("[data-doc-table-widget]");
+          if (aIsWidget || bIsWidget) {
+            // Insert an editable paragraph between them
+            const p = document.createElement("p");
+            p.innerHTML = "<br>";
+            root.insertBefore(p, b);
+            // Focus it
+            const sel = window.getSelection();
+            if (sel) {
+              sel.removeAllRanges();
+              const range = document.createRange();
+              range.setStart(p, 0);
+              range.collapse(true);
+              sel.addRange(range);
+            }
+            emitChange();
+            e.preventDefault();
+            return;
+          }
+        }
+      }
+      // Also handle click below the last child
+      if (children.length > 0) {
+        const last = children[children.length - 1];
+        const lastRect = last.getBoundingClientRect();
+        if (y > lastRect.bottom) {
+          const isWidget = last.hasAttribute("data-doc-table-widget") || last.querySelector("[data-doc-table-widget]");
+          if (isWidget) {
+            const p = document.createElement("p");
+            p.innerHTML = "<br>";
+            root.appendChild(p);
+            const sel = window.getSelection();
+            if (sel) {
+              sel.removeAllRanges();
+              const range = document.createRange();
+              range.setStart(p, 0);
+              range.collapse(true);
+              sel.addRange(range);
+            }
+            emitChange();
+            e.preventDefault();
+          }
+        }
+      }
+    };
+
     root.addEventListener("pointerdown", onPointerDown as any, true);
+    root.addEventListener("click", onClickGap as any);
     return () => {
       root.removeEventListener("pointerdown", onPointerDown as any, true);
+      root.removeEventListener("click", onClickGap as any);
     };
   }, [canEdit, openTableWidgetEditor, closeTableWidgetEditor, commitTableWidget, emitChange]);
 
@@ -1957,22 +2227,47 @@ export default function DocEditor({
     if (!canEdit) return;
     const id = `tblw_${Math.random().toString(36).slice(2, 9)}`;
     const model = createTableWidgetModel(rows, cols);
-    const style = getTableContainerStyle(model);
+    // Default width = full page content width (account for 1px border each side)
+    const contentW = pageWidthPx - 2 * pagePaddingPx - 2;
+    const colW = Math.max(40, Math.floor(contentW / cols));
+    model.colWidthsPx = Array.from({ length: cols }, () => colW);
+    const style = getTableContainerStyle(model, maxContentWidth);
     const html = `<div contenteditable="false" data-doc-table-widget="true" data-doc-table-widget-id="${id}" data-doc-table-widget-model="${encodeTableWidgetModel(model)}" style="${style}">${renderTableWidgetHtml(model)}</div>`.trim();
     focusEditor();
     exec("insertHTML", html);
-    emitChange();
 
-    // Open the editor panel for the just-inserted table.
-    // Use double-rAF to wait for React re-render (emitChange triggers state update → re-render → innerHTML sync).
+    // Ensure there are editable paragraphs before and after the table so the user
+    // can always place the cursor above/below and move the table via drag/reorder.
     requestAnimationFrame(() => {
+      const root = editorRootRef.current;
+      if (!root) return;
+      const widget = root.querySelector(`[data-doc-table-widget-id="${id}"]`) as HTMLElement | null;
+      if (!widget) return;
+      // Walk up to the top-level block (the table might be wrapped in a <p> by the browser)
+      const container = widget.closest('[contenteditable="true"]') as HTMLElement | null;
+      if (!container) return;
+      let block: HTMLElement = widget;
+      while (block.parentElement && block.parentElement !== container) {
+        block = block.parentElement as HTMLElement;
+      }
+      // Add empty paragraph before the table if it's the first child
+      if (!block.previousElementSibling) {
+        const p = document.createElement("p");
+        p.innerHTML = "<br>";
+        container.insertBefore(p, block);
+      }
+      // Add empty paragraph after the table if it's the last child
+      if (!block.nextElementSibling) {
+        const p = document.createElement("p");
+        p.innerHTML = "<br>";
+        container.appendChild(p);
+      }
+      emitChange();
+
+      // Open the editor panel for the just-inserted table.
       requestAnimationFrame(() => {
-        const root = editorRootRef.current;
-        if (!root) return;
-        const widget = root.querySelector(`[data-doc-table-widget-id="${id}"]`) as HTMLElement | null;
-        if (widget) {
-          openTableWidgetEditor(widget, 0, 0);
-        }
+        const w = root.querySelector(`[data-doc-table-widget-id="${id}"]`) as HTMLElement | null;
+        if (w) openTableWidgetEditor(w, 0, 0);
       });
     });
   };
@@ -2240,80 +2535,15 @@ export default function DocEditor({
                     {/* Font color — tabbed: Solid / Gradient / Glossy */}
                     <div className="pt-1 border-t border-gray-100 dark:border-gray-700/50">
                       <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-1.5">Color</div>
-                      {/* Tab switcher */}
-                      <div className="flex rounded-lg bg-gray-100 dark:bg-gray-800 p-0.5 mb-2">
-                        {(["solid", "gradient", "glossy"] as const).map((t) => (
-                          <button key={t} type="button"
-                            className={`flex-1 py-1 text-[9px] font-semibold rounded-md cursor-pointer transition-all capitalize ${textColorTab === t ? "bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"}`}
-                            onClick={() => setTextColorTab(t)}
-                          >{t}</button>
-                        ))}
-                      </div>
-
-                      {/* Solid tab — color matrix organized by hue */}
-                      {textColorTab === "solid" && (
-                        <div className="max-h-[180px] overflow-y-auto scrollbar-thin space-y-0.5 mb-1.5">
-                          {TEXT_COLORS_MATRIX.map((row, ri) => (
-                            <div key={ri} className="grid grid-cols-10 gap-[3px]">
-                              {row.map((c, ci) => (
-                                <button key={ci} type="button"
-                                  className={`w-[23px] h-[23px] rounded-md cursor-pointer transition-all hover:scale-110 hover:shadow-md hover:z-10 ${effColor === c ? "ring-2 ring-blue-500 ring-offset-1 z-10" : "border border-gray-200/60 dark:border-gray-600/60"}`}
-                                  style={{ background: c }}
-                                  title={c}
-                                  onClick={() => setWidgetTextFmt({ color: c })}
-                                />
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Gradient tab */}
-                      {textColorTab === "gradient" && (
-                        <div className="max-h-[180px] overflow-y-auto scrollbar-thin mb-1.5">
-                          <div className="grid grid-cols-6 gap-1.5">
-                            {TEXT_GRADIENT_COLORS.map((c, i) => (
-                              <button key={i} type="button"
-                                className={`w-full aspect-square rounded-lg cursor-pointer transition-all hover:scale-110 hover:shadow-md hover:z-10 ${effColor === c ? "ring-2 ring-blue-500 ring-offset-1 z-10" : "border border-gray-200/60 dark:border-gray-600/60"}`}
-                                style={{ background: colorToCSS(c) }}
-                                title={c.replace(/gradient:/g, "").replace(/:/g, " → ")}
-                                onClick={() => setWidgetTextFmt({ color: c })}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Glossy / Metallic tab */}
-                      {textColorTab === "glossy" && (
-                        <div className="max-h-[180px] overflow-y-auto scrollbar-thin mb-1.5">
-                          <div className="grid grid-cols-6 gap-1.5">
-                            {GLOSSY_COLORS.map((c, i) => (
-                              <button key={i} type="button"
-                                className={`w-full aspect-square rounded-lg cursor-pointer transition-all hover:scale-110 hover:shadow-md hover:z-10 ${effColor === c ? "ring-2 ring-blue-500 ring-offset-1 z-10" : "border border-gray-200/60 dark:border-gray-600/60"}`}
-                                style={{ background: colorToCSS(c) }}
-                                title={c.replace(/gradient:/g, "").replace(/:/g, " → ")}
-                                onClick={() => setWidgetTextFmt({ color: c })}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Custom color picker */}
-                      <div className="flex items-center gap-2">
-                        <label className="relative cursor-pointer">
-                          <input type="color" value={effColor.startsWith("gradient:") ? effColor.split(":")[1] : effColor} onChange={(e) => setWidgetTextFmt({ color: e.target.value })} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                          <div className="w-7 h-7 rounded-lg border border-gray-200 dark:border-gray-600 shadow-inner" style={{ background: effColor.startsWith("gradient:") ? colorToCSS(effColor) : effColor }}>
-                            <div className="w-full h-full rounded-lg" style={{ background: "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)", opacity: 0.3 }} />
-                          </div>
-                        </label>
-                        <span className="text-[10px] text-gray-400 dark:text-gray-500">Custom</span>
-                        <input type="text" value={effColor} onChange={(e) => { const v = e.target.value; if (/^#[0-9a-fA-F]{6}$/.test(v)) setWidgetTextFmt({ color: v }); }}
-                          className="flex-1 px-2 py-1 text-[11px] font-mono rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 outline-none focus:border-blue-400"
-                          maxLength={7} spellCheck={false}
-                        />
-                      </div>
+                      <TabbedColorPalette
+                        solidColors={TEXT_COLORS_MATRIX.flat()}
+                        gradientColors={TEXT_GRADIENT_COLORS}
+                        glossyColors={GLOSSY_COLORS}
+                        selectedColor={effColor}
+                        onSelect={(c) => setWidgetTextFmt({ color: c })}
+                        columns={10}
+                        showCustomHex
+                      />
                     </div>
                   </div>
                 </div>
@@ -2419,48 +2649,14 @@ export default function DocEditor({
                     {/* Color */}
                     <div>
                       <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-2">Color</div>
-                      {/* Neutrals row */}
-                      <div className="grid grid-cols-8 gap-1.5 mb-1.5">
-                        {["#000000","#374151","#6b7280","#9ca3af","#d1d5db","#e5e7eb","#f3f4f6","#ffffff"].map((c, i) => (
-                          <button key={i} type="button" className={`w-7 h-7 rounded-lg border cursor-pointer transition-all hover:scale-110 hover:shadow-md ${effectiveBorderColor === c ? "ring-2 ring-blue-500 ring-offset-1" : "border-gray-200 dark:border-gray-600"}`} style={{ background: c }} onClick={() => setWidgetBorder({ color: c })} />
-                        ))}
-                      </div>
-                      {/* Main palette */}
-                      <div className="grid grid-cols-8 gap-1.5 mb-2">
-                        {[
-                          "#ef4444","#f97316","#f59e0b","#eab308","#84cc16","#22c55e","#14b8a6","#06b6d4",
-                          "#0ea5e9","#3b82f6","#6366f1","#8b5cf6","#a855f7","#d946ef","#ec4899","#f43f5e",
-                          "#dc2626","#ea580c","#d97706","#ca8a04","#65a30d","#16a34a","#0d9488","#0891b2",
-                          "#0284c7","#2563eb","#4f46e5","#7c3aed","#9333ea","#c026d3","#db2777","#e11d48",
-                          "#991b1b","#9a3412","#92400e","#854d0e","#3f6212","#166534","#115e59","#155e75",
-                          "#075985","#1e40af","#3730a3","#5b21b6","#6b21a8","#86198f","#9d174d","#9f1239",
-                        ].map((c, i) => (
-                          <button key={i} type="button" className={`w-7 h-7 rounded-lg border-0 cursor-pointer transition-all hover:scale-110 hover:shadow-md ${effectiveBorderColor === c ? "ring-2 ring-blue-500 ring-offset-1" : ""}`} style={{ background: c }} onClick={() => setWidgetBorder({ color: c })} />
-                        ))}
-                      </div>
-                      {/* Custom color input */}
-                      <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700/50">
-                        <label className="relative cursor-pointer">
-                          <input
-                            type="color"
-                            value={effectiveBorderColor}
-                            onChange={(e) => setWidgetBorder({ color: e.target.value })}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          />
-                          <div className="w-7 h-7 rounded-lg border border-gray-200 dark:border-gray-600 shadow-inner" style={{ background: effectiveBorderColor }}>
-                            <div className="w-full h-full rounded-lg" style={{ background: "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)", opacity: 0.3 }} />
-                          </div>
-                        </label>
-                        <span className="text-[11px] text-gray-400 dark:text-gray-500">Custom</span>
-                        <input
-                          type="text"
-                          value={effectiveBorderColor}
-                          onChange={(e) => { if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) setWidgetBorder({ color: e.target.value }); }}
-                          className="flex-1 px-2 py-1 text-[11px] font-mono rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 outline-none focus:border-blue-400"
-                          maxLength={7}
-                          spellCheck={false}
-                        />
-                      </div>
+                      <ColorGrid
+                        colors={BORDER_COLORS}
+                        selectedColor={effectiveBorderColor}
+                        onSelect={(c) => setWidgetBorder({ color: c })}
+                        columns={8}
+                        swatchSize="md"
+                        showCustomHex
+                      />
                     </div>
                   </div>
                 </div>
@@ -2526,66 +2722,17 @@ export default function DocEditor({
                       </button>
                     </div>
                     <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Background</div>
-                    {/* No fill button */}
-                    <button
-                      type="button"
-                      onClick={() => setWidgetCellBg("transparent")}
-                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] transition-all cursor-pointer ${
-                        isNoFill
-                          ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700"
-                          : "text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
-                      }`}
-                    >
-                      <svg viewBox="0 0 20 20" className="w-4 h-4 shrink-0">
-                        <rect x="2" y="2" width="16" height="16" rx="3" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                        <line x1="4" y1="16" x2="16" y2="4" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" />
-                      </svg>
-                      No fill (transparent)
-                    </button>
-                    {/* Neutrals */}
-                    <div className="grid grid-cols-8 gap-1.5">
-                      {["#ffffff","#f9fafb","#f3f4f6","#e5e7eb","#d1d5db","#9ca3af","#6b7280","#374151"].map((c, i) => (
-                        <button key={i} type="button" className={`w-7 h-7 rounded-lg border cursor-pointer transition-all hover:scale-110 hover:shadow-md ${effectiveCellBg === c ? "ring-2 ring-blue-500 ring-offset-1" : "border-gray-200 dark:border-gray-600"}`} style={{ background: c }} onClick={() => setWidgetCellBg(c)} />
-                      ))}
-                    </div>
-                    {/* Light tints (for cell backgrounds) */}
-                    <div className="grid grid-cols-8 gap-1.5">
-                      {[
-                        "#fef2f2","#fff7ed","#fffbeb","#fefce8","#f7fee7","#f0fdf4","#f0fdfa","#ecfeff",
-                        "#fecaca","#fed7aa","#fde68a","#fef08a","#d9f99d","#bbf7d0","#99f6e4","#a5f3fc",
-                        "#fca5a5","#fdba74","#fcd34d","#facc15","#bef264","#86efac","#5eead4","#67e8f9",
-                        "#f87171","#fb923c","#fbbf24","#eab308","#a3e635","#4ade80","#2dd4bf","#22d3ee",
-                        "#ef4444","#f97316","#f59e0b","#d97706","#84cc16","#22c55e","#14b8a6","#06b6d4",
-                        "#bfdbfe","#c7d2fe","#ddd6fe","#e9d5ff","#f5d0fe","#fbcfe8","#fecdd3","#e2e8f0",
-                        "#93c5fd","#a5b4fc","#c4b5fd","#d8b4fe","#f0abfc","#f9a8d4","#fda4af","#cbd5e1",
-                        "#3b82f6","#6366f1","#8b5cf6","#a855f7","#d946ef","#ec4899","#f43f5e","#64748b",
-                      ].map((c, i) => (
-                        <button key={i} type="button" className={`w-7 h-7 rounded-lg border-0 cursor-pointer transition-all hover:scale-110 hover:shadow-md ${effectiveCellBg === c ? "ring-2 ring-blue-500 ring-offset-1" : ""}`} style={{ background: c }} onClick={() => setWidgetCellBg(c)} />
-                      ))}
-                    </div>
-                    {/* Custom color input */}
-                    <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700/50">
-                      <label className="relative cursor-pointer">
-                        <input
-                          type="color"
-                          value={isNoFill ? "#ffffff" : effectiveCellBg}
-                          onChange={(e) => setWidgetCellBg(e.target.value)}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                        <div className="w-7 h-7 rounded-lg border border-gray-200 dark:border-gray-600 shadow-inner" style={{ background: isNoFill ? "#fff" : effectiveCellBg }}>
-                          <div className="w-full h-full rounded-lg" style={{ background: "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)", opacity: 0.3 }} />
-                        </div>
-                      </label>
-                      <span className="text-[11px] text-gray-400 dark:text-gray-500">Custom</span>
-                      <input
-                        type="text"
-                        value={effectiveCellBg}
-                        onChange={(e) => { if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) setWidgetCellBg(e.target.value); }}
-                        className="flex-1 px-2 py-1 text-[11px] font-mono rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 outline-none focus:border-blue-400"
-                        maxLength={7}
-                        spellCheck={false}
-                      />
-                    </div>
+                    <ColorGrid
+                      colors={CELL_BG_COLORS}
+                      selectedColor={effectiveCellBg}
+                      onSelect={(c) => setWidgetCellBg(c)}
+                      columns={8}
+                      swatchSize="md"
+                      allowNoFill
+                      noFillSelected={isNoFill}
+                      onNoFill={() => setWidgetCellBg("transparent")}
+                      showCustomHex
+                    />
                   </div>
                 </div>
                 );
@@ -2617,7 +2764,8 @@ export default function DocEditor({
                   updateTableWidgetModel((m) => {
                     const cols = m.rows[0]?.length ?? 1;
                     const totalW = m.colWidthsPx ? m.colWidthsPx.reduce((a, b) => a + b, 0) : cols * 120;
-                    const maxW = pageWidthPx - 2 * pagePaddingPx;
+                    // Subtract 2 for the 1px border on each side of the page wrapper (border-box)
+                    const maxW = pageWidthPx - 2 * pagePaddingPx - 2;
                     const newTotal = Math.min(maxW, totalW + 40);
                     const evenW = Math.max(40, Math.floor(newTotal / cols));
                     return { ...m, colWidthsPx: Array.from({ length: cols }, () => evenW) };
@@ -2659,49 +2807,123 @@ export default function DocEditor({
 
             <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
 
-            {/* Table position mode */}
-            <div className="flex items-center gap-0.5">
-              {/* Inline (block flow) */}
-              <button
-                type="button"
-                title="Inline — table flows with text"
-                className={`p-1 rounded-md cursor-pointer transition-colors text-[9px] font-medium ${
-                  (!tableWidgetEditor.model.wrapMode || tableWidgetEditor.model.wrapMode === "none")
-                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400"
-                    : "hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
-                }`}
-                onClick={() => setTableWrapMode("none")}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <line x1="3" y1="4" x2="21" y2="4" />
-                  <rect x="5" y="8" width="14" height="8" rx="1" />
-                  <line x1="3" y1="20" x2="21" y2="20" />
-                </svg>
-              </button>
-              {/* Positioned — draggable, text wraps around */}
-              <button
-                type="button"
-                title="Positioned — drag to move, text wraps around"
-                className={`p-1 rounded-md cursor-pointer transition-colors text-[9px] font-medium ${
-                  tableWidgetEditor.model.wrapMode === "wrap"
-                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400"
-                    : "hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
-                }`}
-                onClick={() => setTableWrapMode("wrap")}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <rect x="7" y="5" width="10" height="7" rx="1" />
-                  <line x1="3" y1="4" x2="5" y2="4" />
-                  <line x1="19" y1="4" x2="21" y2="4" />
-                  <line x1="3" y1="8" x2="5" y2="8" />
-                  <line x1="19" y1="8" x2="21" y2="8" />
-                  <line x1="3" y1="12" x2="5" y2="12" />
-                  <line x1="19" y1="12" x2="21" y2="12" />
-                  <line x1="3" y1="16" x2="21" y2="16" />
-                  <line x1="3" y1="20" x2="21" y2="20" />
-                </svg>
-              </button>
-            </div>
+            {/* Merge / Unmerge */}
+            {(() => {
+              const sel = tableWidgetEditor.selectionRange;
+              const canMerge = !!sel && !(sel.r1 === sel.r2 && sel.c1 === sel.c2);
+              const ac = tableWidgetEditor.activeCell;
+              const acCell = tableWidgetEditor.model.rows[ac.r]?.[ac.c];
+              const canUnmerge = acCell
+                ? !!acCell.mergedInto || (acCell.colspan ?? 1) > 1 || (acCell.rowspan ?? 1) > 1
+                : false;
+              return (
+                <div className="flex items-center gap-0.5">
+                  <button
+                    type="button"
+                    title={canMerge ? "Merge selected cells" : "Drag across cells to select, then merge"}
+                    disabled={!canMerge}
+                    className={`px-1.5 py-1 rounded-md text-[10px] font-medium transition-colors ${
+                      canMerge
+                        ? "cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                        : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                    }`}
+                    onClick={canMerge ? mergeSelectedCells : undefined}
+                  >
+                    Merge
+                  </button>
+                  <button
+                    type="button"
+                    title={canUnmerge ? "Unmerge cell" : "Select a merged cell to unmerge"}
+                    disabled={!canUnmerge}
+                    className={`px-1.5 py-1 rounded-md text-[10px] font-medium transition-colors ${
+                      canUnmerge
+                        ? "cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/30 text-orange-600 dark:text-orange-400"
+                        : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                    }`}
+                    onClick={canUnmerge ? unmergeActiveCell : undefined}
+                  >
+                    Unmerge
+                  </button>
+                </div>
+              );
+            })()}
+
+            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
+
+            {/* Vertical alignment */}
+            {(() => {
+              const ac = tableWidgetEditor.activeCell;
+              const sel = tableWidgetEditor.selectionRange;
+              const m = tableWidgetEditor.model;
+              // Determine current vertical alignment — if selection, check if all selected cells agree
+              let curVAlign: "top" | "middle" | "bottom" | "mixed" = "top";
+              if (sel) {
+                const aligns = new Set<string>();
+                for (let r = sel.r1; r <= sel.r2; r++) {
+                  for (let c = sel.c1; c <= sel.c2; c++) {
+                    const cell = m.rows[r]?.[c];
+                    if (cell && !cell.mergedInto) {
+                      const base = (m.headerRow && r === 0) || (m.headerCol && c === 0)
+                        ? (m.headerTextFmt ?? {}) : (m.bodyTextFmt ?? {});
+                      aligns.add(cell.textFmt?.verticalAlign ?? base.verticalAlign ?? "top");
+                    }
+                  }
+                }
+                curVAlign = aligns.size === 1 ? ([...aligns][0] as "top" | "middle" | "bottom") : "mixed";
+              } else {
+                const acCell = m.rows[ac.r]?.[ac.c];
+                const baseFmt = (m.headerRow && ac.r === 0) || (m.headerCol && ac.c === 0)
+                  ? (m.headerTextFmt ?? {}) : (m.bodyTextFmt ?? {});
+                curVAlign = acCell?.textFmt?.verticalAlign ?? baseFmt.verticalAlign ?? "top";
+              }
+              const opts: Array<{ value: "top" | "middle" | "bottom"; title: string; icon: React.ReactNode }> = [
+                { value: "top", title: "Align top", icon: (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <line x1="4" y1="4" x2="20" y2="4" />
+                    <line x1="12" y1="8" x2="12" y2="20" />
+                    <line x1="8" y1="12" x2="12" y2="8" />
+                    <line x1="16" y1="12" x2="12" y2="8" />
+                  </svg>
+                )},
+                { value: "middle", title: "Align middle", icon: (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <line x1="4" y1="12" x2="20" y2="12" />
+                    <line x1="12" y1="4" x2="12" y2="20" />
+                    <line x1="8" y1="8" x2="12" y2="4" />
+                    <line x1="16" y1="8" x2="12" y2="4" />
+                    <line x1="8" y1="16" x2="12" y2="20" />
+                    <line x1="16" y1="16" x2="12" y2="20" />
+                  </svg>
+                )},
+                { value: "bottom", title: "Align bottom", icon: (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <line x1="4" y1="20" x2="20" y2="20" />
+                    <line x1="12" y1="4" x2="12" y2="16" />
+                    <line x1="8" y1="12" x2="12" y2="16" />
+                    <line x1="16" y1="12" x2="12" y2="16" />
+                  </svg>
+                )},
+              ];
+              return (
+                <div className="flex items-center gap-0.5">
+                  {opts.map((o) => (
+                    <button
+                      key={o.value}
+                      type="button"
+                      title={o.title}
+                      className={`p-1 rounded-md cursor-pointer transition-colors ${
+                        curVAlign === o.value
+                          ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400"
+                          : "hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+                      }`}
+                      onClick={() => setWidgetTextFmt({ verticalAlign: o.value }, "cell")}
+                    >
+                      {o.icon}
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
 
             <div className="flex-1" />
 
@@ -2727,6 +2949,8 @@ export default function DocEditor({
                   return (
                     <tr key={`${tableRevision}-${rIdx}`} style={rowH ? { height: `${Math.max(24, Math.round(rowH))}px` } : undefined}>
                       {row.map((cell, cIdx) => {
+                        // Skip slave cells — they are visually covered by their owner via colSpan/rowSpan
+                        if (cell.mergedInto) return null;
                         const isHeader = (tableWidgetEditor.model.headerRow && rIdx === 0) || (tableWidgetEditor.model.headerCol && cIdx === 0);
                         // Per-cell bg takes priority, then header bg, then table-level bg
                         const cellBgOverride = cell.bg && cell.bg !== "transparent" ? cell.bg : "";
@@ -2746,22 +2970,72 @@ export default function DocEditor({
                         const txtItalic = cellTxtFmt.italic ?? baseTxtFmt.italic ?? false;
                         const txtUnderline = cellTxtFmt.underline ?? baseTxtFmt.underline ?? false;
                         const txtAlign = cellTxtFmt.textAlign ?? baseTxtFmt.textAlign ?? "left";
+                        const txtVAlign = cellTxtFmt.verticalAlign ?? baseTxtFmt.verticalAlign ?? "top";
                         const txtColor = cellTxtFmt.color ?? baseTxtFmt.color;
                         const isActive = tableWidgetEditor.activeCell.r === rIdx && tableWidgetEditor.activeCell.c === cIdx;
+                        const selRange = tableWidgetEditor.selectionRange;
+                        const inSelection = selRange
+                          ? rIdx >= selRange.r1 && rIdx <= selRange.r2 && cIdx >= selRange.c1 && cIdx <= selRange.c2
+                          : false;
                         const cellKey = `${rIdx},${cIdx}`;
+                        const cs = cell.colspan ?? 1;
+                        const rs = cell.rowspan ?? 1;
                         return (
                           <td
                             key={`${tableRevision}-${rIdx}-${cIdx}`}
+                            data-r={rIdx}
+                            data-c={cIdx}
+                            colSpan={cs > 1 ? cs : undefined}
+                            rowSpan={rs > 1 ? rs : undefined}
                             style={{
                               border: borderStr,
                               padding: 0,
-                              verticalAlign: "top",
-                              background: effectiveBg || undefined,
-                              outline: isActive ? "2px solid rgba(37,99,235,0.8)" : undefined,
-                              outlineOffset: isActive ? "-2px" : undefined,
+                              verticalAlign: txtVAlign,
+                              background: inSelection ? "rgba(37,99,235,0.1)" : (effectiveBg || undefined),
+                              outline: isActive ? "2px solid rgba(37,99,235,0.8)" : inSelection ? "1px solid rgba(37,99,235,0.4)" : undefined,
+                              outlineOffset: isActive ? "-2px" : inSelection ? "-1px" : undefined,
                               position: "relative",
                             }}
+                            onMouseDown={(e) => {
+                              // Start potential drag-to-select
+                              if (e.button !== 0) return; // left button only
+                              const anchorR = rIdx, anchorC = cIdx;
+                              let dragged = false;
+                              const onMove = (me: MouseEvent) => {
+                                const el = document.elementFromPoint(me.clientX, me.clientY);
+                                const td = (el as HTMLElement | null)?.closest?.("td[data-r]") as HTMLElement | null;
+                                if (!td) return;
+                                const r = parseInt(td.dataset.r ?? "0");
+                                const c = parseInt(td.dataset.c ?? "0");
+                                if (r === anchorR && c === anchorC) return;
+                                if (!dragged) {
+                                  dragged = true;
+                                  // Clear text selection created by contentEditable
+                                  window.getSelection()?.removeAllRanges();
+                                }
+                                const raw = normalizeRange(anchorR, anchorC, r, c);
+                                const expanded = expandRangeForMerges(tableWidgetEditor.model.rows, raw);
+                                setTableWidgetEditor((prev) => prev ? { ...prev, selectionRange: expanded, activeCell: { r: anchorR, c: anchorC } } : prev);
+                              };
+                              const onUp = () => {
+                                window.removeEventListener("mousemove", onMove);
+                                window.removeEventListener("mouseup", onUp);
+                                if (dragged) {
+                                  // Clear any text selection from the drag
+                                  window.getSelection()?.removeAllRanges();
+                                }
+                              };
+                              window.addEventListener("mousemove", onMove);
+                              window.addEventListener("mouseup", onUp);
+                            }}
                             onClick={(e) => {
+                              if (e.shiftKey && tableWidgetEditor.activeCell) {
+                                // Shift+click: extend selection from activeCell to this cell
+                                const raw = normalizeRange(tableWidgetEditor.activeCell.r, tableWidgetEditor.activeCell.c, rIdx, cIdx);
+                                const expanded = expandRangeForMerges(tableWidgetEditor.model.rows, raw);
+                                setTableWidgetEditor((prev) => prev ? { ...prev, selectionRange: expanded } : prev);
+                                return;
+                              }
                               const ref = cellEditRefs.current.get(cellKey);
                               // If click was on the td padding/border (not on the editable div),
                               // focus the div and place cursor at the end.
@@ -2777,8 +3051,8 @@ export default function DocEditor({
                               requestAnimationFrame(() => {
                                 setTableWidgetEditor((prev) => {
                                   if (!prev) return prev;
-                                  if (prev.activeCell.r === rIdx && prev.activeCell.c === cIdx) return prev; // no change
-                                  return { ...prev, activeCell: { r: rIdx, c: cIdx } };
+                                  if (prev.activeCell.r === rIdx && prev.activeCell.c === cIdx && !prev.selectionRange) return prev;
+                                  return { ...prev, activeCell: { r: rIdx, c: cIdx }, selectionRange: undefined };
                                 });
                               });
                             }}
@@ -2808,6 +3082,8 @@ export default function DocEditor({
                                 textDecoration: txtUnderline ? "underline" : "none",
                                 textAlign: txtAlign,
                                 padding: "6px 8px",
+                                overflowWrap: "break-word",
+                                wordBreak: "break-word",
                                 ...(txtColor?.startsWith("gradient:")
                                   ? {
                                       background: colorToCSS(txtColor),
@@ -2818,7 +3094,9 @@ export default function DocEditor({
                                   : { color: txtColor || undefined }),
                               }}
                               onFocus={() => {
-                                // Defer to avoid re-render that resets cursor position
+                                // Defer to avoid re-render that resets cursor position.
+                                // Do NOT clear selectionRange here — onClick handles that for regular clicks,
+                                // and Shift+click sets it intentionally.
                                 requestAnimationFrame(() => {
                                   setTableWidgetEditor((prev) => {
                                     if (!prev) return prev;
@@ -2837,17 +3115,29 @@ export default function DocEditor({
                               onKeyDown={(e) => {
                                 if (e.key === "Tab") {
                                   e.preventDefault();
+                                  // Clear selection when tabbing
+                                  setTableWidgetEditor((prev) => prev?.selectionRange ? { ...prev, selectionRange: undefined } : prev);
                                   const cols = tableWidgetEditor.model.rows[0]?.length ?? 1;
                                   const totalRows = tableWidgetEditor.model.rows.length;
                                   let nextR = rIdx, nextC = cIdx;
-                                  if (e.shiftKey) {
-                                    nextC--;
-                                    if (nextC < 0) { nextR--; nextC = cols - 1; }
-                                    if (nextR < 0) { nextR = 0; nextC = 0; }
-                                  } else {
-                                    nextC++;
-                                    if (nextC >= cols) { nextR++; nextC = 0; }
-                                    if (nextR >= totalRows) {
+                                  const advance = () => {
+                                    if (e.shiftKey) {
+                                      nextC--;
+                                      if (nextC < 0) { nextR--; nextC = cols - 1; }
+                                    } else {
+                                      nextC++;
+                                      if (nextC >= cols) { nextR++; nextC = 0; }
+                                    }
+                                  };
+                                  advance();
+                                  // Skip slave cells
+                                  while (nextR >= 0 && nextR < totalRows && nextC >= 0 && nextC < cols &&
+                                    tableWidgetEditor.model.rows[nextR]?.[nextC]?.mergedInto) {
+                                    advance();
+                                  }
+                                  if (nextR < 0) { nextR = 0; nextC = 0; }
+                                  if (nextR >= totalRows) {
+                                    if (!e.shiftKey) {
                                       insertWidgetRow("below");
                                       nextR = totalRows;
                                       nextC = 0;
@@ -2864,26 +3154,28 @@ export default function DocEditor({
                               }}
                             />
                             {/* Column resize handle */}
-                            {cIdx < (tableWidgetEditor.model.rows[0]?.length ?? 1) - 1 && (
+                            {(cIdx + (cs - 1)) < (tableWidgetEditor.model.rows[0]?.length ?? 1) - 1 && (
                               <div
                                 className="absolute top-0 -right-[3px] w-[6px] h-full cursor-col-resize hover:bg-blue-400/40 z-10"
                                 onMouseDown={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
+                                  const resizeColIdx = cIdx + (cs - 1); // last physical column covered by this span
                                   const startX = e.clientX;
-                                  const startW = tableWidgetEditor.model.colWidthsPx?.[cIdx] ?? 120;
-                                  const maxTableW = pageWidthPx - 2 * pagePaddingPx;
+                                  const startW = tableWidgetEditor.model.colWidthsPx?.[resizeColIdx] ?? 120;
+                                  // Subtract 2 for the 1px border on each side of the page wrapper (border-box)
+                                  const maxTableW = pageWidthPx - 2 * pagePaddingPx - 2;
                                   const onMove = (me: MouseEvent) => {
                                     const delta = me.clientX - startX;
                                     const nextW = Math.max(40, Math.round(startW + delta));
                                     setTableWidgetEditor((prev) => {
                                       if (!prev) return prev;
                                       const widths = [...(prev.model.colWidthsPx ?? [])];
-                                      widths[cIdx] = nextW;
+                                      widths[resizeColIdx] = nextW;
                                       // Clamp so total table width never exceeds available page width
                                       const totalW = widths.reduce((a, b) => a + b, 0);
                                       if (totalW > maxTableW) {
-                                        widths[cIdx] = Math.max(40, nextW - (totalW - maxTableW));
+                                        widths[resizeColIdx] = Math.max(40, nextW - (totalW - maxTableW));
                                       }
                                       return { ...prev, model: { ...prev.model, colWidthsPx: widths } };
                                     });
@@ -3892,7 +4184,7 @@ export default function DocEditor({
                   if (el && el.innerHTML !== (pages[0] || "")) el.innerHTML = pages[0] || "";
                 }}
                 className={[
-                  "min-h-[520px] outline-none relative",
+                  "min-h-[520px] outline-none overflow-hidden relative",
                   "text-[14px] leading-6 text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50",
                   "selection:bg-blue-200/60 dark:selection:bg-blue-500/25 midnight:selection:bg-cyan-500/20 purple:selection:bg-pink-500/20",
                   "[&_h2]:text-[20px] [&_h2]:leading-7 [&_h2]:font-bold [&_h2]:mt-6 [&_h2]:mb-3",
@@ -3928,7 +4220,6 @@ export default function DocEditor({
               border-radius: 4px;
               transition: outline 0.15s;
               max-width: 100%;
-              overflow: hidden;
             }
             [data-doc-table-widget="true"]:hover {
               outline: 2px solid rgba(37, 99, 235, 0.25);
@@ -3938,12 +4229,10 @@ export default function DocEditor({
               outline: 2px solid rgba(37, 99, 235, 0.6);
               outline-offset: 2px;
             }
-            /* Grab cursor for positioned (wrap mode) tables */
-            [data-doc-table-widget="true"][style*="position:absolute"] {
-              cursor: grab;
-            }
-            [data-doc-table-widget="true"][style*="position:absolute"]:active {
-              cursor: grabbing;
+            /* Ensure empty paragraphs next to tables are clickable */
+            [data-doc-table-widget="true"] + p:empty,
+            [data-doc-table-widget="true"] + p:has(> br:only-child) {
+              min-height: 1em;
             }
             [contenteditable="true"]::after {
               content: "";
@@ -4242,53 +4531,67 @@ function SubmenuPanel({
   className?: string;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useContext(SubmenuAnchorContext);
+  const timerCtx = useContext(SubmenuTimerContext);
 
   useLayoutEffect(() => {
     const el = panelRef.current;
-    const menuItem = el?.parentElement; // MenuItem container div
-    if (!el || !menuItem) return;
+    const anchor = anchorRef?.current;
+    if (!el || !anchor) return;
 
-    // Calibrate: backdrop-filter on an ancestor makes position:fixed relative
-    // to that ancestor instead of the viewport. Measure the actual offset.
-    el.style.top = "0px";
-    el.style.left = "0px";
-    const base = el.getBoundingClientRect();
-    const offsetX = base.left; // 0 if truly viewport-relative, otherwise ancestor's position
-    const offsetY = base.top;
+    // Register as the active submenu panel for hover detection
+    activeSubmenuPanelEl.current = el;
 
-    // Use the parent menu panel's right edge for horizontal alignment
-    const parentPanel = menuItem.closest("[data-doc-menu-panel]");
-    const itemRect = menuItem.getBoundingClientRect();
-    const panelRect = parentPanel?.getBoundingClientRect();
-    let top = itemRect.top - offsetY;
-    let left = (panelRect ? panelRect.right : itemRect.right) - offsetX;
-    // Prevent going off the right edge — flip to left side if needed
+    // Position relative to the parent menu item (viewport coordinates — no calibration
+    // needed because the portal renders at document.body, outside backdrop-blur).
+    const parentPanel = anchor.closest("[data-doc-menu-panel]");
+    const itemRect = anchor.getBoundingClientRect();
+    const panelRect = parentPanel?.getBoundingClientRect() ?? null;
+
+    let left = panelRect ? panelRect.right : itemRect.right;
+    let top = itemRect.top;
+
+    // Flip to left side if going off the right edge
     const pw = el.offsetWidth;
-    const targetLeftVp = panelRect ? panelRect.right : itemRect.right;
-    if (targetLeftVp + pw > window.innerWidth) {
-      left = ((panelRect ? panelRect.left : itemRect.left) - pw) - offsetX;
+    if (left + pw > window.innerWidth) {
+      left = (panelRect ? panelRect.left : itemRect.left) - pw;
     }
     // Prevent going off the bottom edge
     const ph = el.offsetHeight;
-    if (itemRect.top + ph > window.innerHeight) {
-      top = Math.max(4 - offsetY, (window.innerHeight - ph) - offsetY);
+    if (top + ph > window.innerHeight) {
+      top = Math.max(4, window.innerHeight - ph);
     }
+
     el.style.top = `${top}px`;
     el.style.left = `${left}px`;
   });
 
-  return (
+  useEffect(() => {
+    return () => {
+      if (activeSubmenuPanelEl.current === panelRef.current) {
+        activeSubmenuPanelEl.current = null;
+      }
+    };
+  }, []);
+
+  // SSR guard: createPortal needs document.body
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <SubmenuCloseContext.Provider value={null}>
       <div
         ref={panelRef}
         data-doc-menu-panel
-        className={`fixed z-[130] rounded-2xl border border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] shadow-xl shadow-black/10 dark:shadow-black/40 overflow-visible ${className}`}
+        className={`fixed z-[10000] rounded-2xl border border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] shadow-xl shadow-black/10 dark:shadow-black/40 overflow-visible ${className}`}
+        onMouseEnter={() => timerCtx?.cancelClose()}
+        onMouseLeave={() => timerCtx?.scheduleClose()}
       >
         {/* Invisible bridge connecting parent menu item to this submenu */}
         <div className="absolute -left-4 top-0 w-4 h-full" />
         <div className="py-1">{children}</div>
       </div>
-    </SubmenuCloseContext.Provider>
+    </SubmenuCloseContext.Provider>,
+    document.body,
   );
 }
 
@@ -4327,12 +4630,30 @@ function MenuItem({
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSubmenuOpenRef = useRef(isSubmenuOpen);
   isSubmenuOpenRef.current = isSubmenuOpen;
+  const onLeaveRef = useRef(onLeave);
+  onLeaveRef.current = onLeave;
 
   useEffect(() => {
     return () => {
       if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
     };
   }, []);
+
+  // Stable timer callbacks shared with the portalled SubmenuPanel via context.
+  const timerCallbacks = useMemo(() => ({
+    cancelClose: () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+    },
+    scheduleClose: () => {
+      closeTimerRef.current = setTimeout(() => {
+        if (!isSubmenuOpenRef.current) return;
+        onLeaveRef.current?.();
+      }, 350);
+    },
+  }), []);
 
   const handleClick = () => {
     if (disabled) return;
@@ -4345,11 +4666,8 @@ function MenuItem({
       ref={containerRef}
       className="relative"
       onMouseEnter={() => {
-        // Cancel this item's own pending close timer
-        if (closeTimerRef.current) {
-          clearTimeout(closeTimerRef.current);
-          closeTimerRef.current = null;
-        }
+        // Cancel any pending close timer (mouse returned to this item)
+        timerCallbacks.cancelClose();
         if (hasSubmenu) {
           // Open this submenu (implicitly closes any other open submenu via state)
           onHover?.();
@@ -4358,19 +4676,11 @@ function MenuItem({
           closeSubmenus?.();
         }
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={() => {
         // Only run close logic for items with an open submenu
         if (!hasSubmenu || !isSubmenuOpen || !onLeave) return;
-        // If moving to a DOM descendant (e.g. fixed-position submenu panel), stay open
-        const rt = e.relatedTarget;
-        if (rt instanceof Node && containerRef.current?.contains(rt)) return;
-        closeTimerRef.current = setTimeout(() => {
-          // If another submenu already opened (state changed), skip
-          if (!isSubmenuOpenRef.current) return;
-          // If mouse is still somewhere in our container (including submenu panel), skip
-          if (containerRef.current?.matches(":hover")) return;
-          onLeave();
-        }, 350);
+        // Schedule close — the portalled SubmenuPanel's onMouseEnter will cancel if mouse goes there
+        timerCallbacks.scheduleClose();
       }}
     >
       <button
@@ -4394,7 +4704,11 @@ function MenuItem({
         {shortcut && <span className="text-[12px] text-gray-400 dark:text-gray-500">{shortcut}</span>}
         {hasSubmenu && <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />}
       </button>
-      {submenu && isSubmenuOpen && submenu}
+      <SubmenuTimerContext.Provider value={hasSubmenu ? timerCallbacks : null}>
+        <SubmenuAnchorContext.Provider value={containerRef}>
+          {submenu && isSubmenuOpen && submenu}
+        </SubmenuAnchorContext.Provider>
+      </SubmenuTimerContext.Provider>
     </div>
   );
 }

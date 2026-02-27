@@ -1,8 +1,8 @@
 "use client";
 
-import { Check } from "lucide-react";
 import type { WhiteboardTool } from "./whiteboard-types";
 import { DEFAULT_COLORS, FILL_COLORS, FILL_TOOLS, STICKY_COLORS, STROKE_WIDTHS } from "./whiteboard-types";
+import { ColorGrid } from "@/components/shared/ColorPalettePicker";
 
 interface WhiteboardPropertiesProps {
   activeTool: WhiteboardTool;
@@ -52,25 +52,7 @@ export default function WhiteboardProperties({
         <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50">
           Color
         </span>
-        <div className="flex flex-col gap-1">
-          {DEFAULT_COLORS.map((color) => (
-            <button
-              key={color}
-              onClick={() => onColorChange(color)}
-              className={`w-5 h-5 rounded-full border-2 transition-all duration-150 cursor-pointer hover:scale-125 ${
-                activeColor === color
-                  ? "border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 scale-110"
-                  : "border-gray-200 dark:border-gray-600 midnight:border-gray-700 purple:border-gray-700"
-              }`}
-              style={{ backgroundColor: color }}
-              title={color}
-            >
-              {activeColor === color && (
-                <Check className={`w-3 h-3 mx-auto ${color === "#ffffff" || color === "#fef08a" ? "text-gray-800" : "text-white"}`} />
-              )}
-            </button>
-          ))}
-        </div>
+        <ColorGrid colors={DEFAULT_COLORS} selectedColor={activeColor} onSelect={onColorChange} columns={2} />
       </div>
 
       {/* Fill color picker */}
@@ -79,43 +61,15 @@ export default function WhiteboardProperties({
           <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50">
             Fill
           </span>
-          <div className="flex flex-col gap-1">
-            {FILL_COLORS.map((color, idx) => (
-              <button
-                key={color ?? "no-fill"}
-                onClick={() => onFillColorChange(color)}
-                className={`w-5 h-5 rounded-full border-2 transition-all duration-150 cursor-pointer hover:scale-125 ${
-                  activeFillColor === color
-                    ? "border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 scale-110"
-                    : "border-gray-200 dark:border-gray-600 midnight:border-gray-700 purple:border-gray-700"
-                }`}
-                style={{ backgroundColor: color ?? "transparent" }}
-                title={color ?? "No fill"}
-              >
-                {color === null ? (
-                  /* Diagonal strikethrough for "no fill" */
-                  <svg
-                    viewBox="0 0 20 20"
-                    className="w-3 h-3 mx-auto"
-                  >
-                    <line
-                      x1="4" y1="16" x2="16" y2="4"
-                      stroke="#ef4444"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                ) : (
-                  activeFillColor === color && (
-                    <Check className={`w-3 h-3 mx-auto ${color === "#ffffff" || color === "#fefce8" ? "text-gray-800" : "text-gray-600"}`} />
-                  )
-                )}
-                {color === null && activeFillColor === null && (
-                  <Check className="w-2.5 h-2.5 mx-auto -mt-2.5 text-gray-600 dark:text-gray-300" />
-                )}
-              </button>
-            ))}
-          </div>
+          <ColorGrid
+            colors={FILL_COLORS.filter((c): c is string => c !== null)}
+            selectedColor={activeFillColor}
+            onSelect={onFillColorChange}
+            columns={2}
+            allowNoFill
+            noFillSelected={activeFillColor === null}
+            onNoFill={() => onFillColorChange(null)}
+          />
         </div>
       )}
 
@@ -178,25 +132,7 @@ export default function WhiteboardProperties({
           <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50">
             Note
           </span>
-          <div className="flex flex-col gap-1">
-            {STICKY_COLORS.map((color) => (
-              <button
-                key={color}
-                onClick={() => onStickyColorChange(color)}
-                className={`w-5 h-5 rounded border-2 transition-all duration-150 cursor-pointer hover:scale-125 ${
-                  activeStickyColor === color
-                    ? "border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 scale-110"
-                    : "border-gray-200 dark:border-gray-600"
-                }`}
-                style={{ backgroundColor: color }}
-                title="Sticky color"
-              >
-                {activeStickyColor === color && (
-                  <Check className="w-3 h-3 mx-auto text-gray-700" />
-                )}
-              </button>
-            ))}
-          </div>
+          <ColorGrid colors={STICKY_COLORS} selectedColor={activeStickyColor} onSelect={onStickyColorChange} columns={2} />
         </div>
       )}
     </div>

@@ -23,3 +23,6 @@ class ResizeObserver {
 
 globalThis.ResizeObserver = ResizeObserver;
 
+// Mock scrollIntoView for components that use it
+Element.prototype.scrollIntoView = () => {};
+

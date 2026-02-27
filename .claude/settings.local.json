@@ -36,7 +36,8 @@
       "WebFetch(domain:support.zoom.com)",
       "WebFetch(domain:www.drawio.com)",
       "Bash(node -e:*)",
-      "Bash(cmd.exe /c \"netstat -ano | findstr :3000\")"
+      "Bash(cmd.exe /c \"netstat -ano | findstr :3000\")",
+      "Bash(npx vitest run)"
     ],
     "deny": [],
     "ask": []

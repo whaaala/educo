@@ -10,6 +10,7 @@ export default defineConfig({
     globals: true,
     setupFiles: [path.resolve(__dirname, "test/setup.ts")],
     css: true,
+    exclude: ["**/node_modules/**", "**/e2e/**", "**/*.spec.ts"],
     clearMocks: true,
     mockReset: true,
     restoreMocks: true,

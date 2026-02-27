@@ -7,6 +7,7 @@ import AdminPageShell from "@admin/components/pages/AdminPageShell";
 import Button from "@/components/shared/Button";
 import { createTenant } from "@/lib/mockTenants";
 import { Tenant, InstitutionType, EducationLevel, type TranslationProvider } from "@/types/school";
+import { ColorPickerPopover, colorToSolid } from "@/components/shared/ColorPalettePicker";
 
 interface CreateTenantForm {
   // Basic Information
@@ -814,42 +815,40 @@ export default function CreateTenantPage() {
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   Primary Color
                 </label>
-                <div className="flex gap-2">
-                  <input
-                    type="color"
-                    value={formData.primaryColor}
-                    onChange={(e) => handleInputChange("primaryColor", e.target.value)}
-                    className="w-12 h-10 border border-neutral-300 dark:border-neutral-600 rounded"
-                  />
-                  <input
-                    type="text"
-                    value={formData.primaryColor}
-                    onChange={(e) => handleInputChange("primaryColor", e.target.value)}
-                    className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
-                    placeholder="#2563eb"
-                  />
-                </div>
+                <ColorPickerPopover
+                  selectedColor={formData.primaryColor}
+                  onSelect={(c) => handleInputChange("primaryColor", colorToSolid(c))}
+                  mode="solid"
+                  label="Primary Color"
+                  width={220}
+                >
+                  <div className="flex gap-2 cursor-pointer">
+                    <div className="w-12 h-10 rounded border border-neutral-300 dark:border-neutral-600" style={{ backgroundColor: formData.primaryColor }} />
+                    <div className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 text-sm font-mono">
+                      {formData.primaryColor}
+                    </div>
+                  </div>
+                </ColorPickerPopover>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   Secondary Color
                 </label>
-                <div className="flex gap-2">
-                  <input
-                    type="color"
-                    value={formData.secondaryColor}
-                    onChange={(e) => handleInputChange("secondaryColor", e.target.value)}
-                    className="w-12 h-10 border border-neutral-300 dark:border-neutral-600 rounded"
-                  />
-                  <input
-                    type="text"
-                    value={formData.secondaryColor}
-                    onChange={(e) => handleInputChange("secondaryColor", e.target.value)}
-                    className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
-                    placeholder="#1e40af"
-                  />
-                </div>
+                <ColorPickerPopover
+                  selectedColor={formData.secondaryColor}
+                  onSelect={(c) => handleInputChange("secondaryColor", colorToSolid(c))}
+                  mode="solid"
+                  label="Secondary Color"
+                  width={220}
+                >
+                  <div className="flex gap-2 cursor-pointer">
+                    <div className="w-12 h-10 rounded border border-neutral-300 dark:border-neutral-600" style={{ backgroundColor: formData.secondaryColor }} />
+                    <div className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 text-sm font-mono">
+                      {formData.secondaryColor}
+                    </div>
+                  </div>
+                </ColorPickerPopover>
               </div>
             </div>
           </div>

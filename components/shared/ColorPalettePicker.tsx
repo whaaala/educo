@@ -145,6 +145,34 @@ export const GLOSSY_COLORS = [
   "gradient:#2c3e50:#1a1a2e",
 ];
 
+/** Border color palette — 8 neutrals + 48 hue colors */
+export const BORDER_COLORS = [
+  // Neutrals
+  "#000000","#374151","#6b7280","#9ca3af","#d1d5db","#e5e7eb","#f3f4f6","#ffffff",
+  // Hue palette (3 saturation rows × 8 hues)
+  "#ef4444","#f97316","#f59e0b","#eab308","#84cc16","#22c55e","#14b8a6","#06b6d4",
+  "#0ea5e9","#3b82f6","#6366f1","#8b5cf6","#a855f7","#d946ef","#ec4899","#f43f5e",
+  "#dc2626","#ea580c","#d97706","#ca8a04","#65a30d","#16a34a","#0d9488","#0891b2",
+  "#0284c7","#2563eb","#4f46e5","#7c3aed","#9333ea","#c026d3","#db2777","#e11d48",
+  "#991b1b","#9a3412","#92400e","#854d0e","#3f6212","#166534","#115e59","#155e75",
+  "#075985","#1e40af","#3730a3","#5b21b6","#6b21a8","#86198f","#9d174d","#9f1239",
+];
+
+/** Cell background color palette — 8 neutrals + 64 light tints */
+export const CELL_BG_COLORS = [
+  // Neutrals (light to dark)
+  "#ffffff","#f9fafb","#f3f4f6","#e5e7eb","#d1d5db","#9ca3af","#6b7280","#374151",
+  // Light tints (8 rows × 8 hues)
+  "#fef2f2","#fff7ed","#fffbeb","#fefce8","#f7fee7","#f0fdf4","#f0fdfa","#ecfeff",
+  "#fecaca","#fed7aa","#fde68a","#fef08a","#d9f99d","#bbf7d0","#99f6e4","#a5f3fc",
+  "#fca5a5","#fdba74","#fcd34d","#facc15","#bef264","#86efac","#5eead4","#67e8f9",
+  "#f87171","#fb923c","#fbbf24","#eab308","#a3e635","#4ade80","#2dd4bf","#22d3ee",
+  "#ef4444","#f97316","#f59e0b","#d97706","#84cc16","#22c55e","#14b8a6","#06b6d4",
+  "#bfdbfe","#c7d2fe","#ddd6fe","#e9d5ff","#f5d0fe","#fbcfe8","#fecdd3","#e2e8f0",
+  "#93c5fd","#a5b4fc","#c4b5fd","#d8b4fe","#f0abfc","#f9a8d4","#fda4af","#cbd5e1",
+  "#3b82f6","#6366f1","#8b5cf6","#a855f7","#d946ef","#ec4899","#f43f5e","#64748b",
+];
+
 // ─── Utility Functions ──────────────────────────────────────────────────
 
 /** Convert a color value to CSS string for display (handles gradients) */
@@ -173,6 +201,31 @@ export function isLightColor(hex: string): boolean {
   return (r * 299 + g * 587 + b * 114) / 1000 > 150;
 }
 
+// ─── Custom Hex Input Row ────────────────────────────────────────────────
+
+function CustomHexRow({ color, onSelect }: { color: string; onSelect: (c: string) => void }) {
+  const nativeVal = color.startsWith("gradient:") ? color.split(":")[1] : color;
+  return (
+    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/50">
+      <label className="relative cursor-pointer">
+        <input type="color" value={nativeVal} onChange={(e) => onSelect(e.target.value)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+        <div className="w-7 h-7 rounded-lg border border-gray-200 dark:border-gray-600 shadow-inner" style={{ background: color.startsWith("gradient:") ? colorToCSS(color) : color }}>
+          <div className="w-full h-full rounded-lg" style={{ background: "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)", opacity: 0.3 }} />
+        </div>
+      </label>
+      <span className="text-[10px] text-gray-400 dark:text-gray-500">Custom</span>
+      <input
+        type="text"
+        value={color}
+        onChange={(e) => { if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) onSelect(e.target.value); }}
+        className="flex-1 px-2 py-1 text-[11px] font-mono rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 outline-none focus:border-blue-400"
+        maxLength={7}
+        spellCheck={false}
+      />
+    </div>
+  );
+}
+
 // ─── Inline Color Grid (no dropdown, just the grid) ─────────────────────
 
 interface ColorGridProps {
@@ -184,6 +237,7 @@ interface ColorGridProps {
   allowNoFill?: boolean;
   noFillSelected?: boolean;
   onNoFill?: () => void;
+  showCustomHex?: boolean;
 }
 
 /**
@@ -199,95 +253,107 @@ export function ColorGrid({
   allowNoFill = false,
   noFillSelected = false,
   onNoFill,
+  showCustomHex = false,
 }: ColorGridProps) {
   const size = swatchSize === "sm" ? "w-6 h-6" : "w-7 h-7";
 
   return (
-    <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
-      {allowNoFill && (
-        <button
-          onClick={onNoFill}
-          className={`${size} rounded-md border cursor-pointer hover:scale-110 transition-transform flex items-center justify-center ${
-            noFillSelected
-              ? "ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-gray-800"
-              : "border-gray-200 dark:border-gray-600"
-          }`}
-          style={{ backgroundColor: "transparent" }}
-          title="No fill"
-        >
-          <svg viewBox="0 0 20 20" className="w-4 h-4">
-            <line x1="4" y1="16" x2="16" y2="4" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        </button>
+    <div>
+      <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+        {allowNoFill && (
+          <button
+            onClick={onNoFill}
+            className={`${size} rounded-md border cursor-pointer hover:scale-110 transition-transform flex items-center justify-center ${
+              noFillSelected
+                ? "ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-gray-800"
+                : "border-gray-200 dark:border-gray-600"
+            }`}
+            style={{ backgroundColor: "transparent" }}
+            title="No fill"
+          >
+            <svg viewBox="0 0 20 20" className="w-4 h-4">
+              <line x1="4" y1="16" x2="16" y2="4" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </button>
+        )}
+        {colors.map((c) => (
+          <button
+            key={c}
+            onClick={() => onSelect(c)}
+            className={`${size} rounded-md border cursor-pointer hover:scale-110 transition-transform ${
+              selectedColor === c
+                ? "ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-gray-800"
+                : "border-gray-200 dark:border-gray-600"
+            }`}
+            style={{ background: colorToCSS(c) }}
+          />
+        ))}
+      </div>
+      {showCustomHex && (
+        <CustomHexRow color={selectedColor ?? "#000000"} onSelect={onSelect} />
       )}
-      {colors.map((c) => (
-        <button
-          key={c}
-          onClick={() => onSelect(c)}
-          className={`${size} rounded-md border cursor-pointer hover:scale-110 transition-transform ${
-            selectedColor === c
-              ? "ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-gray-800"
-              : "border-gray-200 dark:border-gray-600"
-          }`}
-          style={{ background: colorToCSS(c) }}
-        />
-      ))}
     </div>
   );
 }
 
 // ─── Tabbed Color Palette (Solid / Gradient) ────────────────────────────
 
+type ColorTabName = "solid" | "gradient" | "glossy";
+
 interface TabbedColorPaletteProps {
   selectedColor?: string | null;
   onSelect: (color: string) => void;
   solidColors?: string[];
   gradientColors?: string[];
+  glossyColors?: string[];
   columns?: number;
   swatchSize?: "sm" | "md";
+  showCustomHex?: boolean;
 }
 
 /**
- * Color palette with Solid / Gradient tab switcher.
- * Does NOT handle dropdown/popover positioning — just the content.
+ * Color palette with Solid / Gradient / Glossy tab switcher.
+ * Shows Glossy tab only when glossyColors is provided.
  */
 export function TabbedColorPalette({
   selectedColor,
   onSelect,
   solidColors = SOLID_COLORS,
   gradientColors = GRADIENT_COLORS,
+  glossyColors,
   columns = 6,
   swatchSize = "sm",
+  showCustomHex = false,
 }: TabbedColorPaletteProps) {
-  const [tab, setTab] = useState<"solid" | "gradient">(
+  const tabs: ColorTabName[] = glossyColors
+    ? ["solid", "gradient", "glossy"]
+    : ["solid", "gradient"];
+
+  const [tab, setTab] = useState<ColorTabName>(
     selectedColor?.startsWith("gradient:") ? "gradient" : "solid"
   );
 
-  const currentPalette = tab === "solid" ? solidColors : gradientColors;
+  const currentPalette =
+    tab === "solid" ? solidColors :
+    tab === "glossy" && glossyColors ? glossyColors :
+    gradientColors;
 
   return (
     <div>
       <div className="flex items-center gap-1 mb-2">
-        <button
-          onClick={() => setTab("solid")}
-          className={`flex-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-colors cursor-pointer ${
-            tab === "solid"
-              ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400"
-              : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-          }`}
-        >
-          Solid
-        </button>
-        <button
-          onClick={() => setTab("gradient")}
-          className={`flex-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-colors cursor-pointer ${
-            tab === "gradient"
-              ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400"
-              : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-          }`}
-        >
-          Gradient
-        </button>
+        {tabs.map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`flex-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-colors cursor-pointer capitalize ${
+              tab === t
+                ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400"
+                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+            }`}
+          >
+            {t}
+          </button>
+        ))}
       </div>
       <ColorGrid
         colors={currentPalette}
@@ -295,6 +361,7 @@ export function TabbedColorPalette({
         onSelect={onSelect}
         columns={columns}
         swatchSize={swatchSize}
+        showCustomHex={showCustomHex}
       />
     </div>
   );
