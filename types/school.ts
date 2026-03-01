@@ -81,6 +81,9 @@ export interface SchoolConfiguration {
   // Translation / Localization (tenant-controlled)
   translation?: TenantTranslationConfig;
 
+  // Cloud Storage (tenant-controlled)
+  storage?: TenantStorageConfig;
+
   // Additional Settings
   customSettings?: Record<string, any>; // For school-specific configurations
 }
@@ -98,6 +101,36 @@ export interface TenantTranslationConfig {
   allowedProviders: TranslationProvider[];
   /** Which provider to try first */
   defaultProvider: TranslationProvider;
+}
+
+// Storage providers:
+// - "supabase": Supabase Storage (primary, zero-config, automatic for all users)
+// - "dropbox": Dropbox (overflow when Supabase quota exceeded, uses OAuth2 + PKCE)
+// - "google-drive": Google Drive (requires Google Cloud project)
+// - "onedrive": Microsoft OneDrive (requires Azure AD app)
+// - "local": Platform-hosted storage (fallback)
+export type StorageProviderType = "dropbox" | "google-drive" | "onedrive" | "local" | "supabase";
+
+export interface TenantStorageConfig {
+  /** If false/undefined, cloud storage features are disabled for this tenant */
+  enabled: boolean;
+  /** Which storage provider this tenant uses */
+  provider: StorageProviderType;
+  /** Config mode: platform = shared credentials, tenant = school provides own app */
+  configMode: "platform" | "tenant";
+  /** Tenant-specific app credentials (only used in "tenant" mode) */
+  appCredentials?: {
+    appKey?: string;
+    appSecret?: string; // Stored securely server-side, never in localStorage
+  };
+  /** Storage quota per user in MB (0 = unlimited) */
+  userQuotaMb?: number;
+  /** Root folder path template for this tenant (e.g., "/Educo/{tenantSlug}") */
+  rootFolderTemplate?: string;
+  /** Enable Dropbox as overflow when Supabase quota is exhausted */
+  dropboxOverflowEnabled?: boolean;
+  /** Supabase bucket name override (defaults to tenant-{tenantId}) */
+  supabaseBucketName?: string;
 }
 
 /**

@@ -609,7 +609,482 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
   });
 
   // ────────────────────────────────────────────────
-  // 11. Print Layout
+  // 11. File Menu Items
+  // ────────────────────────────────────────────────
+  describe("File menu items", () => {
+    /**
+     * Helper to open the File menu and return the menu panel element.
+     */
+    function openFileMenu(container: HTMLElement): HTMLElement {
+      const menuRoots = container.querySelectorAll("[data-doc-menu-root]");
+      let fileButton: HTMLElement | null = null;
+      menuRoots.forEach((root) => {
+        const btn = root.querySelector("button");
+        if (btn && btn.textContent?.trim() === "File") {
+          fileButton = btn;
+        }
+      });
+      expect(fileButton).not.toBeNull();
+      fireEvent.click(fileButton!);
+      const menuPanel = container.querySelector("[data-doc-menu-panel]");
+      expect(menuPanel).not.toBeNull();
+      return menuPanel as HTMLElement;
+    }
+
+    /** Collects all visible button text from a menu panel. */
+    function getMenuItemLabels(menuPanel: HTMLElement): string[] {
+      const buttons = menuPanel.querySelectorAll("button");
+      const labels: string[] = [];
+      buttons.forEach((btn) => {
+        const text = btn.textContent?.trim();
+        if (text) labels.push(text);
+      });
+      return labels;
+    }
+
+    it("'Move to bin' is NOT in the File menu", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+      const menuPanel = openFileMenu(container);
+      const labels = getMenuItemLabels(menuPanel);
+      expect(labels.some((l) => l.includes("Move to bin"))).toBe(false);
+    });
+
+    it("File menu contains expected core items", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+      const menuPanel = openFileMenu(container);
+      const labels = getMenuItemLabels(menuPanel);
+      const expectedItems = ["New", "Open", "Make a copy", "Rename", "Details", "Print"];
+      for (const item of expectedItems) {
+        expect(labels.some((l) => l.includes(item)), `File menu should contain "${item}"`).toBe(true);
+      }
+    });
+
+    it("File > Share submenu contains 'Share with others' and 'Publish'", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+      const menuPanel = openFileMenu(container);
+
+      // Find and hover over the "Share" menu item to open its submenu
+      const menuButtons = menuPanel.querySelectorAll("button");
+      let shareButton: HTMLElement | null = null;
+      menuButtons.forEach((btn) => {
+        // The Share button's text content includes "Share" and a chevron
+        const text = btn.textContent?.trim();
+        if (text && /^Share/.test(text)) {
+          shareButton = btn;
+        }
+      });
+      expect(shareButton).not.toBeNull();
+
+      // Hover over the Share item to open the submenu
+      const shareParent = shareButton!.closest(".relative");
+      expect(shareParent).not.toBeNull();
+      fireEvent.mouseEnter(shareParent!);
+
+      // Now check for submenu items — search all buttons in the container
+      const allButtons = container.querySelectorAll("button");
+      const allLabels: string[] = [];
+      allButtons.forEach((btn) => {
+        const text = btn.textContent?.trim();
+        if (text) allLabels.push(text);
+      });
+
+      expect(allLabels.some((l) => l.includes("Share with others"))).toBe(true);
+      expect(allLabels.some((l) => l.includes("Publish"))).toBe(true);
+      // "Publish to web" should NOT exist
+      expect(allLabels.some((l) => l.includes("Publish to web"))).toBe(false);
+    });
+  });
+
+  // ────────────────────────────────────────────────
+  // 12. Menu Item Tooltips (custom Tooltip, no native title)
+  // ────────────────────────────────────────────────
+  describe("menu item tooltips", () => {
+    it("menu items do NOT have native title attribute on label spans", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+
+      // Open the File menu
+      const menuRoots = container.querySelectorAll("[data-doc-menu-root]");
+      let fileButton: HTMLElement | null = null;
+      menuRoots.forEach((root) => {
+        const btn = root.querySelector("button");
+        if (btn && btn.textContent?.trim() === "File") {
+          fileButton = btn;
+        }
+      });
+      expect(fileButton).not.toBeNull();
+      fireEvent.click(fileButton!);
+
+      const menuPanel = container.querySelector("[data-doc-menu-panel]");
+      expect(menuPanel).not.toBeNull();
+
+      // Check that no span inside menu item buttons has a title attribute
+      const menuButtons = menuPanel!.querySelectorAll("button");
+      menuButtons.forEach((btn) => {
+        const spans = btn.querySelectorAll("span");
+        spans.forEach((span) => {
+          expect(
+            span.hasAttribute("title"),
+            `Menu item span "${span.textContent}" should not have native title attribute`
+          ).toBe(false);
+        });
+      });
+    });
+
+    it("toolbar buttons use aria-label instead of title attribute", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+
+      const sampleButtons = [
+        "Bold (Ctrl+B)",
+        "Italic (Ctrl+I)",
+        "Undo (Ctrl+Z)",
+      ];
+
+      for (const label of sampleButtons) {
+        const btn = container.querySelector(`button[aria-label="${label}"]`);
+        expect(btn, `Button "${label}" should exist with aria-label`).not.toBeNull();
+        // Should NOT have a title attribute (which would cause native tooltip)
+        expect(
+          btn!.hasAttribute("title"),
+          `Button "${label}" should not have native title attribute`
+        ).toBe(false);
+      }
+    });
+
+    it("toolbar dropdown buttons use aria-label instead of title attribute", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+
+      const dropdowns = ["Zoom", "Font family", "Font size", "Styles"];
+      for (const label of dropdowns) {
+        const btn = container.querySelector(`button[aria-label="${label}"]`);
+        expect(btn, `Dropdown "${label}" should exist with aria-label`).not.toBeNull();
+        expect(
+          btn!.hasAttribute("title"),
+          `Dropdown "${label}" should not have native title attribute`
+        ).toBe(false);
+      }
+    });
+  });
+
+  // ────────────────────────────────────────────────
+  // 13. Publish Dialog
+  // ────────────────────────────────────────────────
+  describe("publish dialog", () => {
+    it("Publish dialog opens when clicking File > Share > Publish", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+
+      // Open File menu
+      const menuRoots = container.querySelectorAll("[data-doc-menu-root]");
+      let fileButton: HTMLElement | null = null;
+      menuRoots.forEach((root) => {
+        const btn = root.querySelector("button");
+        if (btn && btn.textContent?.trim() === "File") {
+          fileButton = btn;
+        }
+      });
+      fireEvent.click(fileButton!);
+
+      const menuPanel = container.querySelector("[data-doc-menu-panel]");
+
+      // Hover over Share to open submenu
+      const menuButtons = menuPanel!.querySelectorAll("button");
+      let shareButton: HTMLElement | null = null;
+      menuButtons.forEach((btn) => {
+        if (btn.textContent?.trim().startsWith("Share")) {
+          shareButton = btn;
+        }
+      });
+      const shareParent = shareButton!.closest(".relative");
+      fireEvent.mouseEnter(shareParent!);
+
+      // Click Publish
+      const allButtons = container.querySelectorAll("button");
+      let publishButton: HTMLElement | null = null;
+      allButtons.forEach((btn) => {
+        const text = btn.textContent?.trim();
+        if (text === "Publish") {
+          publishButton = btn;
+        }
+      });
+      expect(publishButton).not.toBeNull();
+      fireEvent.click(publishButton!);
+
+      // PublishDialog should now be open — it uses Modal which renders via portal
+      // Check that the Modal content is present (it contains "Publish" in the header)
+      const modalContent = container.querySelector(".fixed.inset-0");
+      expect(modalContent).not.toBeNull();
+      expect(modalContent!.textContent).toContain("Publish");
+    });
+
+    it("Publish dialog has Classes, Groups, and All Users tabs", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+
+      // Open File > Share > Publish
+      const menuRoots = container.querySelectorAll("[data-doc-menu-root]");
+      let fileButton: HTMLElement | null = null;
+      menuRoots.forEach((root) => {
+        const btn = root.querySelector("button");
+        if (btn && btn.textContent?.trim() === "File") {
+          fileButton = btn;
+        }
+      });
+      fireEvent.click(fileButton!);
+
+      const menuPanel = container.querySelector("[data-doc-menu-panel]");
+      const menuButtons = menuPanel!.querySelectorAll("button");
+      let shareButton: HTMLElement | null = null;
+      menuButtons.forEach((btn) => {
+        if (btn.textContent?.trim().startsWith("Share")) {
+          shareButton = btn;
+        }
+      });
+      const shareParent = shareButton!.closest(".relative");
+      fireEvent.mouseEnter(shareParent!);
+
+      let publishButton: HTMLElement | null = null;
+      container.querySelectorAll("button").forEach((btn) => {
+        if (btn.textContent?.trim() === "Publish") {
+          publishButton = btn;
+        }
+      });
+      fireEvent.click(publishButton!);
+
+      // Check for tab buttons
+      const modalContent = container.querySelector(".fixed.inset-0");
+      expect(modalContent).not.toBeNull();
+      const tabTexts = modalContent!.textContent;
+      expect(tabTexts).toContain("Classes");
+      expect(tabTexts).toContain("Groups");
+      expect(tabTexts).toContain("All Users");
+    });
+
+    it("Publish dialog has 'Attach to subject / session' section", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+
+      // Open File > Share > Publish
+      const menuRoots = container.querySelectorAll("[data-doc-menu-root]");
+      let fileButton: HTMLElement | null = null;
+      menuRoots.forEach((root) => {
+        const btn = root.querySelector("button");
+        if (btn && btn.textContent?.trim() === "File") {
+          fileButton = btn;
+        }
+      });
+      fireEvent.click(fileButton!);
+
+      const menuPanel = container.querySelector("[data-doc-menu-panel]");
+      const menuButtons = menuPanel!.querySelectorAll("button");
+      let shareButton: HTMLElement | null = null;
+      menuButtons.forEach((btn) => {
+        if (btn.textContent?.trim().startsWith("Share")) {
+          shareButton = btn;
+        }
+      });
+      const shareParent = shareButton!.closest(".relative");
+      fireEvent.mouseEnter(shareParent!);
+
+      let publishButton: HTMLElement | null = null;
+      container.querySelectorAll("button").forEach((btn) => {
+        if (btn.textContent?.trim() === "Publish") {
+          publishButton = btn;
+        }
+      });
+      fireEvent.click(publishButton!);
+
+      const modalContent = container.querySelector(".fixed.inset-0");
+      expect(modalContent).not.toBeNull();
+      expect(modalContent!.textContent).toContain("Attach to subject / session");
+    });
+
+    it("Publish button is disabled when no scope is selected", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+
+      // Open File > Share > Publish
+      const menuRoots = container.querySelectorAll("[data-doc-menu-root]");
+      let fileButton: HTMLElement | null = null;
+      menuRoots.forEach((root) => {
+        const btn = root.querySelector("button");
+        if (btn && btn.textContent?.trim() === "File") {
+          fileButton = btn;
+        }
+      });
+      fireEvent.click(fileButton!);
+
+      const menuPanel = container.querySelector("[data-doc-menu-panel]");
+      const menuButtons = menuPanel!.querySelectorAll("button");
+      let shareButton: HTMLElement | null = null;
+      menuButtons.forEach((btn) => {
+        if (btn.textContent?.trim().startsWith("Share")) {
+          shareButton = btn;
+        }
+      });
+      const shareParent = shareButton!.closest(".relative");
+      fireEvent.mouseEnter(shareParent!);
+
+      let publishMenuBtn: HTMLElement | null = null;
+      container.querySelectorAll("button").forEach((btn) => {
+        if (btn.textContent?.trim() === "Publish") {
+          publishMenuBtn = btn;
+        }
+      });
+      fireEvent.click(publishMenuBtn!);
+
+      // Find the Publish action button in the dialog footer (disabled state)
+      const modalContent = container.querySelector(".fixed.inset-0");
+      expect(modalContent).not.toBeNull();
+      const footerButtons = modalContent!.querySelectorAll("button");
+      let publishActionBtn: HTMLElement | null = null;
+      footerButtons.forEach((btn) => {
+        if (btn.textContent?.trim() === "Publish" && btn.closest(".fixed.inset-0")) {
+          // Check if this is the footer Publish button (has bg-blue-600 class)
+          if (btn.getAttribute("class")?.includes("bg-blue-600")) {
+            publishActionBtn = btn;
+          }
+        }
+      });
+      expect(publishActionBtn).not.toBeNull();
+      expect(publishActionBtn!.hasAttribute("disabled")).toBe(true);
+    });
+  });
+
+  // ────────────────────────────────────────────────
+  // 14. Version History
+  // ────────────────────────────────────────────────
+  describe("version history", () => {
+    /**
+     * Helper to open File > Version history submenu
+     */
+    function openVersionHistorySubmenu(container: HTMLElement): void {
+      // Open File menu
+      const menuRoots = container.querySelectorAll("[data-doc-menu-root]");
+      let fileButton: HTMLElement | null = null;
+      menuRoots.forEach((root) => {
+        const btn = root.querySelector("button");
+        if (btn && btn.textContent?.trim() === "File") {
+          fileButton = btn;
+        }
+      });
+      expect(fileButton).not.toBeNull();
+      fireEvent.click(fileButton!);
+
+      // Find and hover "Version history" to open submenu
+      const menuPanel = container.querySelector("[data-doc-menu-panel]");
+      expect(menuPanel).not.toBeNull();
+      const menuButtons = menuPanel!.querySelectorAll("button");
+      let versionHistoryButton: HTMLElement | null = null;
+      menuButtons.forEach((btn) => {
+        const text = btn.textContent?.trim();
+        if (text && /^Version history/.test(text)) {
+          versionHistoryButton = btn;
+        }
+      });
+      expect(versionHistoryButton).not.toBeNull();
+      const vhParent = versionHistoryButton!.closest(".relative");
+      expect(vhParent).not.toBeNull();
+      fireEvent.mouseEnter(vhParent!);
+    }
+
+    it("Version history submenu contains 'Save version' and 'View versions'", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+      openVersionHistorySubmenu(container);
+
+      const allButtons = container.querySelectorAll("button");
+      const allLabels: string[] = [];
+      allButtons.forEach((btn) => {
+        const text = btn.textContent?.trim();
+        if (text) allLabels.push(text);
+      });
+
+      expect(allLabels.some((l) => l.includes("Save version"))).toBe(true);
+      expect(allLabels.some((l) => l.includes("View versions"))).toBe(true);
+    });
+
+    it("View versions dialog shows empty state message mentioning auto-save", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+      openVersionHistorySubmenu(container);
+
+      // Click "View versions"
+      const allButtons = container.querySelectorAll("button");
+      let viewVersionsBtn: HTMLElement | null = null;
+      allButtons.forEach((btn) => {
+        const text = btn.textContent?.trim();
+        if (text && text.includes("View versions")) {
+          viewVersionsBtn = btn;
+        }
+      });
+      expect(viewVersionsBtn).not.toBeNull();
+      fireEvent.click(viewVersionsBtn!);
+
+      // Check that the empty state message mentions automatic saving
+      const dialogText = container.textContent || "";
+      expect(dialogText).toContain("No saved versions yet");
+      expect(dialogText).toContain("automatically");
+    });
+
+    it("Save version creates a version entry visible in the dialog", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+
+      // Save a version
+      openVersionHistorySubmenu(container);
+      const allButtons = container.querySelectorAll("button");
+      let saveBtn: HTMLElement | null = null;
+      allButtons.forEach((btn) => {
+        const text = btn.textContent?.trim();
+        if (text && text.includes("Save version")) {
+          saveBtn = btn;
+        }
+      });
+      expect(saveBtn).not.toBeNull();
+      fireEvent.click(saveBtn!);
+
+      // Now open View versions dialog
+      openVersionHistorySubmenu(container);
+      const allButtons2 = container.querySelectorAll("button");
+      let viewBtn: HTMLElement | null = null;
+      allButtons2.forEach((btn) => {
+        const text = btn.textContent?.trim();
+        if (text && text.includes("View versions")) {
+          viewBtn = btn;
+        }
+      });
+      expect(viewBtn).not.toBeNull();
+      fireEvent.click(viewBtn!);
+
+      // Should show the version with "Manual" badge and "Manual save" label
+      const dialogText = container.textContent || "";
+      expect(dialogText).toContain("Manual");
+      expect(dialogText).toContain("Manual save");
+      expect(dialogText).not.toContain("No saved versions yet");
+    });
+  });
+
+  // ────────────────────────────────────────────────
+  // 15. Print Layout
   // ────────────────────────────────────────────────
   describe("print layout", () => {
     it("default print layout has bg-gray-50 on editor root area", () => {

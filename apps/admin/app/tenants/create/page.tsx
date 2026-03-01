@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Building2, Globe, Mail, Phone, MapPin, Palette, Languages } from "lucide-react";
+import { ArrowLeft, Save, Building2, Globe, Mail, Phone, MapPin, Palette, Languages, Cloud } from "lucide-react";
 import AdminPageShell from "@admin/components/pages/AdminPageShell";
 import Button from "@/components/shared/Button";
 import { createTenant } from "@/lib/mockTenants";
-import { Tenant, InstitutionType, EducationLevel, type TranslationProvider } from "@/types/school";
+import { Tenant, InstitutionType, EducationLevel, type TranslationProvider, type StorageProviderType } from "@/types/school";
 import { ColorPickerPopover, colorToSolid } from "@/components/shared/ColorPalettePicker";
 
 interface CreateTenantForm {
@@ -53,6 +53,11 @@ interface CreateTenantForm {
   translationAllowGoogleCloud: boolean;
   translationAllowGoogle: boolean;
   translationDefaultProvider: TranslationProvider;
+
+  // Cloud Storage
+  storageEnabled: boolean;
+  storageProvider: StorageProviderType;
+  storageConfigMode: "platform" | "tenant";
 }
 
 export default function CreateTenantPage() {
@@ -104,6 +109,11 @@ export default function CreateTenantPage() {
     translationAllowGoogleCloud: false,
     translationAllowGoogle: true,
     translationDefaultProvider: "deepl",
+
+    // Cloud Storage
+    storageEnabled: true,
+    storageProvider: "supabase",
+    storageConfigMode: "platform",
   });
 
   const handleInputChange = (field: keyof CreateTenantForm, value: any) => {
@@ -251,6 +261,11 @@ export default function CreateTenantPage() {
                     ? "google-cloud"
                     : safeAllowed[0];
             })(),
+          },
+          storage: {
+            enabled: formData.storageEnabled,
+            provider: formData.storageProvider,
+            configMode: formData.storageConfigMode,
           },
         },
         contact: {
@@ -650,6 +665,83 @@ export default function CreateTenantPage() {
                 <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
                   Unofficial Google is always fallback-only.
                 </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Cloud Storage Settings */}
+          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                <Cloud className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                  Cloud Storage
+                </h2>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  Configure cloud storage for document saving and sharing between users.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              <label className="flex items-center gap-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
+                <input
+                  type="checkbox"
+                  checked={formData.storageEnabled}
+                  onChange={(e) => handleInputChange("storageEnabled", e.target.checked)}
+                  className="w-5 h-5 text-indigo-600 rounded"
+                />
+                <div>
+                  <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                    Enable cloud storage
+                  </p>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    Users can save and share files via cloud storage. Each user connects their own account.
+                  </p>
+                </div>
+              </label>
+
+              <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${formData.storageEnabled ? "" : "opacity-50 pointer-events-none"}`}>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                    Storage Provider
+                  </label>
+                  <select
+                    value={formData.storageProvider}
+                    onChange={(e) => handleInputChange("storageProvider", e.target.value)}
+                    className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
+                  >
+                    <option value="supabase">Platform Storage (Recommended)</option>
+                    <option value="dropbox">Dropbox</option>
+                    <option value="google-drive">Google Drive</option>
+                    <option value="onedrive">OneDrive</option>
+                  </select>
+                  <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                    Platform Storage (Supabase) is recommended. Dropbox is available as overflow.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                    Credentials Mode
+                  </label>
+                  <select
+                    value={formData.storageConfigMode}
+                    onChange={(e) => handleInputChange("storageConfigMode", e.target.value)}
+                    className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
+                  >
+                    <option value="platform">Platform (shared credentials)</option>
+                    <option value="tenant">Tenant (school provides own app)</option>
+                  </select>
+                  <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                    {formData.storageConfigMode === "platform"
+                      ? "Uses the platform's cloud storage app — no setup needed."
+                      : "School must create their own app and provide credentials."
+                    }
+                  </p>
+                </div>
               </div>
             </div>
           </div>

@@ -7,7 +7,8 @@ import UserPermissionManagement from "@/components/settings/UserPermissionManage
 import AttendanceSettings from "@/components/settings/AttendanceSettings";
 import FeeSettings from "@/components/settings/FeeSettings";
 import BankAccountSettings from "@/components/settings/BankAccountSettings";
-import { Settings as SettingsIcon, Palette, Calendar, Clock, Shield, UserCheck, DollarSign, GraduationCap, Landmark, ExternalLink } from "lucide-react";
+import StorageSettings from "@/components/settings/StorageSettings";
+import { Settings as SettingsIcon, Palette, Calendar, Clock, Shield, UserCheck, DollarSign, GraduationCap, Landmark, ExternalLink, Cloud } from "lucide-react";
 import Link from "next/link";
 
 export default function SettingsPage() {
@@ -119,6 +120,28 @@ export default function SettingsPage() {
             {/* Section Content */}
             <div className="p-6">
               <BankAccountSettings />
+            </div>
+          </section>
+
+          {/* Cloud Storage Section */}
+          <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 px-6 py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
+                  <Cloud className="w-4 h-4 text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    Cloud Storage
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+                    Connect and manage your cloud storage for file saving and sharing
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6">
+              <StorageSettings />
             </div>
           </section>
 

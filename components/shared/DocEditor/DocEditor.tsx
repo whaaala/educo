@@ -84,7 +84,7 @@ import PublishDialog from "@/components/shared/PublishDialog";
 import type { PublishScope, PublishAttachment } from "@/components/shared/PublishDialog";
 // Safe imports: these hooks throw if no Provider, so we use try-catch wrappers
 import { useUser as _useUser } from "@/contexts/UserContext";
-import { useNotifications as _useNotifications } from "@/contexts/NotificationContext";
+import { useNotifications as _useNotifications, formatTimeAgo } from "@/contexts/NotificationContext";
 function useSafeUser() {
   try { return _useUser(); } catch { return { user: null }; }
 }
@@ -756,8 +756,28 @@ export default function DocEditor({
   const [pagePaddingPx, setPagePaddingPx] = useState(40);
   const [pages, setPages] = useState<string[]>(() => parseHtmlPages(value.html));
 
-  const [versions, setVersions] = useState<Array<{ ts: number; title: string; html: string; language?: string }>>([]);
+  const [versions, setVersions] = useState<Array<{
+    ts: number;
+    title: string;
+    html: string;
+    language?: string;
+    author?: { name: string; avatar?: string };
+    label?: string;
+    type: "manual" | "auto";
+  }>>(() => {
+    try {
+      const stored = localStorage.getItem("educo_doc_versions");
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
   const htmlByLanguageRef = useRef<Map<string, string>>(new Map());
+
+  // Persist versions to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("educo_doc_versions", JSON.stringify(versions));
+    } catch { /* localStorage full */ }
+  }, [versions]);
 
   // ── Share dialog dependencies ──
   const { user: currentUser } = useSafeUser();
@@ -818,11 +838,26 @@ export default function DocEditor({
     saveSharedDoc("viewer");
   }, [saveSharedDoc]);
 
+  // Save a version snapshot (used by manual save, auto-save on share/publish)
+  const saveVersion = useCallback((label?: string, type: "manual" | "auto" = "manual") => {
+    const authorName = currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : undefined;
+    setVersions((prev) => [{
+      ts: Date.now(),
+      title: value.title?.trim() || "Untitled document",
+      html: value.html,
+      language: value.language || "en",
+      author: authorName ? { name: authorName, avatar: currentUser?.avatar } : undefined,
+      label,
+      type,
+    }, ...prev].slice(0, 30));
+  }, [currentUser, value.title, value.html, value.language]);
+
   // Save shared doc to localStorage and send notification
   const handleShareDocument = useCallback(({ sharedWith: target, role }: { sharedWith: ShareTarget; role: "viewer" | "editor" }) => {
     const ownerName = currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : "Someone";
     const title = value.title?.trim() || "Untitled document";
     saveSharedDoc(role, target);
+    saveVersion(`Shared with ${target.name}`, "auto");
     addNotification({
       type: "document_shared",
       title: "Document Shared",
@@ -834,7 +869,7 @@ export default function DocEditor({
       avatar: currentUser?.avatar,
       userName: ownerName,
     });
-  }, [currentUser, value.title, saveSharedDoc, addNotification]);
+  }, [currentUser, value.title, saveSharedDoc, saveVersion, addNotification]);
 
   // Publish document to a class/group/all
   const handlePublishDocument = useCallback(({ scope, attachment }: { scope: PublishScope; attachment?: PublishAttachment }) => {
@@ -871,6 +906,7 @@ export default function DocEditor({
     } catch { /* localStorage full or unavailable */ }
 
     const scopeLabel = scope.type === "all" ? "all users" : scope.name;
+    saveVersion(`Published to ${scopeLabel}`, "auto");
     addNotification({
       type: "document_published",
       title: "Document Published",
@@ -881,7 +917,7 @@ export default function DocEditor({
       userName: ownerName,
     });
     setDialog(null);
-  }, [currentUser, value.title, value.html, value.language, getShareLinkId, addNotification]);
+  }, [currentUser, value.title, value.html, value.language, getShareLinkId, saveVersion, addNotification]);
 
   const canEdit = !readOnly && docMode !== "viewing";
 
@@ -3790,22 +3826,6 @@ export default function DocEditor({
             />
             <MenuDivider />
             <MenuItem label="Rename" onClick={handleRename} />
-            <MenuItem label="Move to bin" onClick={() => {
-              // Clear the document content (simulates moving to bin)
-              setSidebarTabs((prev) => prev.map((t) =>
-                t.id === activeTabId ? { ...t, html: "" } : t
-              ));
-              const emptyPages = ["<p></p>"];
-              pagesRef.current = emptyPages;
-              setPages(emptyPages);
-              lastSerializedHtmlRef.current = "";
-              requestAnimationFrame(() => {
-                const el = pageRefs.current[0];
-                if (el) el.innerHTML = "<p></p>";
-              });
-              onChange({ title: "Untitled document", html: "", language: "en" });
-              showToast("Document moved to bin");
-            }} />
             <MenuDivider />
             <MenuItem
               label="Version history"
@@ -3819,8 +3839,9 @@ export default function DocEditor({
                   <MenuItem
                     label="Save version"
                     onClick={() => {
-                      setVersions((prev) => [{ ts: Date.now(), title: docTitle, html: value.html, language }, ...prev].slice(0, 30));
+                      saveVersion("Manual save", "manual");
                       showToast("Version saved");
+                      setDialog("versions");
                     }}
                   />
                   <MenuItem label="View versions" onClick={() => setDialog("versions")} />
@@ -5387,26 +5408,61 @@ export default function DocEditor({
       {dialog === "versions" && (
         <DocDialog title="Version history" onClose={() => setDialog(null)}>
           {versions.length === 0 ? (
-            <div className="text-[12px] text-gray-500 dark:text-gray-400">
-              No saved versions yet. Use File → Version history → Save version.
+            <div className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 text-center py-4">
+              No saved versions yet. Versions are saved automatically when you share or publish,
+              or manually via File &rarr; Version history &rarr; Save version.
             </div>
           ) : (
-            <div className="max-h-[320px] overflow-auto scrollbar-thin">
+            <div className="max-h-[320px] overflow-auto scrollbar-thin space-y-1">
               {versions.map((v) => (
                 <button
                   key={v.ts}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                  className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 transition-colors cursor-pointer group"
                   onClick={() => {
                     updateValue({ title: v.title, html: v.html, language: v.language });
                     showToast("Version restored");
                     setDialog(null);
                   }}
                 >
-                  <div className="text-[12px] font-semibold text-gray-700 dark:text-gray-200">
-                    {new Date(v.ts).toLocaleString()}
-                  </div>
-                  <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
-                    {v.title}
+                  <div className="flex items-center gap-2">
+                    {v.author?.avatar ? (
+                      <img src={v.author.avatar} alt="" className="w-5 h-5 rounded-full flex-shrink-0" />
+                    ) : v.author?.name ? (
+                      <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20 flex items-center justify-center text-[9px] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 flex-shrink-0">
+                        {v.author.name.charAt(0).toUpperCase()}
+                      </div>
+                    ) : null}
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[12px] font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200">
+                          {formatTimeAgo(new Date(v.ts).toISOString())}
+                        </span>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
+                          v.type === "auto"
+                            ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 midnight:bg-cyan-500/10 midnight:text-cyan-400 purple:bg-pink-500/10 purple:text-pink-400"
+                            : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 midnight:bg-gray-700 midnight:text-gray-400 purple:bg-gray-700 purple:text-gray-400"
+                        }`}>
+                          {v.type === "auto" ? "Auto" : "Manual"}
+                        </span>
+                      </div>
+
+                      {v.label && (
+                        <div className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 truncate">
+                          {v.label}
+                        </div>
+                      )}
+
+                      {v.author?.name && (
+                        <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-gray-500 purple:text-gray-500">
+                          by {v.author.name}
+                        </div>
+                      )}
+                    </div>
+
+                    <span className="text-[10px] text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                      Restore
+                    </span>
                   </div>
                 </button>
               ))}

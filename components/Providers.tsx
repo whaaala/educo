@@ -16,6 +16,7 @@ import { DisciplineProvider } from "@/contexts/DisciplineContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { MeetingsProvider } from "@/contexts/MeetingsContext";
 import { CommunicationProvider } from "@/contexts/CommunicationContext";
+import { StorageProvider } from "@/contexts/StorageContext";
 import { CallProvider } from "@/hooks/useCall";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 
@@ -37,17 +38,19 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                               <MeetingsProvider>
                                 <NotificationProvider>
                                   <CommunicationProvider>
-                                    <SidebarProvider>
-                                      <CallProvider
+                                    <StorageProvider>
+                                      <SidebarProvider>
+                                        <CallProvider
                                         currentUser={{
                                           id: "current-user-id",
                                           name: "School Staff",
                                           role: "Staff",
                                         }}
                                       >
-                                        {children}
-                                      </CallProvider>
-                                    </SidebarProvider>
+                                          {children}
+                                        </CallProvider>
+                                      </SidebarProvider>
+                                    </StorageProvider>
                                   </CommunicationProvider>
                                 </NotificationProvider>
                               </MeetingsProvider>

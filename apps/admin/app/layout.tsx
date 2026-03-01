@@ -8,6 +8,7 @@ import { SchoolSettingsProvider } from "@/contexts/SchoolSettingsContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { StorageProvider } from "@/contexts/StorageContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,9 +35,11 @@ export default function RootLayout({
             <SchoolSettingsProvider>
               <UserProvider>
                 <NotificationProvider>
-                  <SidebarProvider>
-                    {children}
-                  </SidebarProvider>
+                  <StorageProvider>
+                    <SidebarProvider>
+                      {children}
+                    </SidebarProvider>
+                  </StorageProvider>
                 </NotificationProvider>
               </UserProvider>
             </SchoolSettingsProvider>
