@@ -254,7 +254,7 @@ describe("DocEditor — Visual / CSS", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const boldBtn = container.querySelector('[title="Bold (Ctrl+B)"]');
+      const boldBtn = container.querySelector('[aria-label="Bold (Ctrl+B)"]');
       expect(boldBtn).not.toBeNull();
       expectClasses(boldBtn, [
         "w-7",
@@ -294,7 +294,7 @@ describe("DocEditor — Visual / CSS", () => {
       ];
 
       for (const title of toolbarButtonTitles) {
-        const btn = container.querySelector(`[title="${title}"]`);
+        const btn = container.querySelector(`[aria-label="${title}"]`);
         expect(btn, `Toolbar button "${title}" should exist`).not.toBeNull();
         expectClasses(btn, [
           "w-7",
@@ -311,7 +311,7 @@ describe("DocEditor — Visual / CSS", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const boldBtn = container.querySelector('[title="Bold (Ctrl+B)"]');
+      const boldBtn = container.querySelector('[aria-label="Bold (Ctrl+B)"]');
       expect(boldBtn).not.toBeNull();
 
       // Icon is the first child SVG inside the button
@@ -357,7 +357,7 @@ describe("DocEditor — Visual / CSS", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const stylesBtn = container.querySelector('[title="Styles"]');
+      const stylesBtn = container.querySelector('[aria-label="Styles"]');
       expect(stylesBtn).not.toBeNull();
       expectClasses(stylesBtn, [
         "h-7",

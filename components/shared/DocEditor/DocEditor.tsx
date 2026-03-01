@@ -80,6 +80,8 @@ import { DOC_LANGUAGES } from "./languages";
 import Tooltip from "@/components/shared/Tooltip";
 import ShareDialog from "@/components/shared/ShareDialog";
 import type { ShareTarget } from "@/components/shared/ShareDialog";
+import PublishDialog from "@/components/shared/PublishDialog";
+import type { PublishScope, PublishAttachment } from "@/components/shared/PublishDialog";
 // Safe imports: these hooks throw if no Provider, so we use try-catch wrappers
 import { useUser as _useUser } from "@/contexts/UserContext";
 import { useNotifications as _useNotifications } from "@/contexts/NotificationContext";
@@ -745,7 +747,7 @@ export default function DocEditor({
   const translateRequestIdRef = useRef(0);
   const [tenantTranslationEnabled, setTenantTranslationEnabled] = useState(true);
 
-  const [dialog, setDialog] = useState<null | "share" | "findReplace" | "pageSetup" | "details" | "security" | "versions">(null);
+  const [dialog, setDialog] = useState<null | "share" | "publish" | "findReplace" | "pageSetup" | "details" | "security" | "versions">(null);
   const [findQuery, setFindQuery] = useState("");
   const [replaceQuery, setReplaceQuery] = useState("");
   const lastFindIndexRef = useRef(0);
@@ -833,6 +835,53 @@ export default function DocEditor({
       userName: ownerName,
     });
   }, [currentUser, value.title, saveSharedDoc, addNotification]);
+
+  // Publish document to a class/group/all
+  const handlePublishDocument = useCallback(({ scope, attachment }: { scope: PublishScope; attachment?: PublishAttachment }) => {
+    const ownerName = currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : "Someone";
+    const title = value.title?.trim() || "Untitled document";
+    const lang = value.language || "en";
+    const linkId = getShareLinkId();
+    try {
+      const publishedDocs: Array<{ id: string; [k: string]: unknown }> = JSON.parse(
+        localStorage.getItem("educo_published_documents") || "[]"
+      );
+      const existingIdx = publishedDocs.findIndex((d) => d.id === linkId);
+      const entry = {
+        id: linkId,
+        title,
+        html: value.html,
+        language: lang,
+        publishedBy: {
+          name: ownerName,
+          email: currentUser?.email || "",
+          avatar: currentUser?.avatar,
+        },
+        scope,
+        attachment,
+        publishedAt: existingIdx >= 0 ? (publishedDocs[existingIdx] as Record<string, unknown>).publishedAt as string : new Date().toISOString(),
+        updatedAt: existingIdx >= 0 ? new Date().toISOString() : undefined,
+      };
+      if (existingIdx >= 0) {
+        publishedDocs[existingIdx] = entry;
+      } else {
+        publishedDocs.push(entry);
+      }
+      localStorage.setItem("educo_published_documents", JSON.stringify(publishedDocs));
+    } catch { /* localStorage full or unavailable */ }
+
+    const scopeLabel = scope.type === "all" ? "all users" : scope.name;
+    addNotification({
+      type: "document_published",
+      title: "Document Published",
+      message: `${ownerName} published "${title}" to ${scopeLabel}`,
+      actionUrl: "/documents/published",
+      priority: "normal",
+      avatar: currentUser?.avatar,
+      userName: ownerName,
+    });
+    setDialog(null);
+  }, [currentUser, value.title, value.html, value.language, getShareLinkId, addNotification]);
 
   const canEdit = !readOnly && docMode !== "viewing";
 
@@ -3699,7 +3748,7 @@ export default function DocEditor({
               submenu={
                 <SubmenuPanel className="w-[240px]">
                   <MenuItem label="Share with others" icon={UserPlus} onClick={() => setDialog("share")} />
-                  <MenuItem label="Publish to web" icon={Globe} onClick={() => showToast("Publishing to web is not available yet")} />
+                  <MenuItem label="Publish" icon={Globe} onClick={() => setDialog("publish")} />
                 </SubmenuPanel>
               }
             />
@@ -5217,6 +5266,12 @@ export default function DocEditor({
         linkUrl={shareLinkUrl}
         onCopyLink={handleCopyLink}
       />
+      <PublishDialog
+        isOpen={dialog === "publish"}
+        onClose={() => setDialog(null)}
+        title={docTitle}
+        onPublish={handlePublishDocument}
+      />
 
       {dialog === "findReplace" && (
         <DocDialog title="Find and replace" onClose={() => setDialog(null)}>
@@ -5416,7 +5471,7 @@ function ToolbarDropdown({
           onMouseDown={(e) => { if (!disabled) e.preventDefault(); }}
           onClick={onToggle}
           disabled={disabled}
-          title={title}
+          aria-label={title}
           className="h-7 inline-flex items-center gap-1 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-[11px] font-medium text-gray-600 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"
         >
           {Icon && <Icon className="w-3.5 h-3.5" />}
@@ -5666,7 +5721,7 @@ function MenuItem({
     if (!hasSubmenu) requestCloseMenus?.();
   };
 
-  return (
+  const content = (
     <div
       ref={containerRef}
       className="relative"
@@ -5705,7 +5760,7 @@ function MenuItem({
             <Icon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           ) : null}
         </span>
-        <span className="flex-1 min-w-0 truncate" title={label}>{label}</span>
+        <span className="flex-1 min-w-0 truncate">{label}</span>
         {shortcut && <span className="text-[12px] text-gray-400 dark:text-gray-500">{shortcut}</span>}
         {hasSubmenu && <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />}
       </button>
@@ -5715,6 +5770,12 @@ function MenuItem({
         </SubmenuAnchorContext.Provider>
       </SubmenuTimerContext.Provider>
     </div>
+  );
+
+  return (
+    <Tooltip content={label} block delay={500}>
+      {content}
+    </Tooltip>
   );
 }
 
@@ -5782,7 +5843,7 @@ function ToolbarButton({
         }}
         onClick={onClick}
         disabled={disabled}
-        title={title}
+        aria-label={title}
         className="w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Icon className="w-4 h-4 text-gray-600 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100" />

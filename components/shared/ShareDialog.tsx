@@ -83,7 +83,7 @@ const DEFAULT_PEOPLE: ShareTarget[] = [
   { name: "Tunde Oladipo", email: "tunde.oladipo@educo.africa", avatar: "https://i.pravatar.cc/150?img=57" },
 ];
 
-const DEFAULT_CLASSES: ShareTarget[] = [
+export const DEFAULT_CLASSES: ShareTarget[] = [
   { name: "JSS 1-A", email: "class:jss1-a", isClass: true, studentCount: 35 },
   { name: "JSS 2-B", email: "class:jss2-b", isClass: true, studentCount: 32 },
   { name: "JSS 3-A", email: "class:jss3-a", isClass: true, studentCount: 30 },
@@ -96,7 +96,7 @@ const DEFAULT_CLASSES: ShareTarget[] = [
   { name: "Electrical Engineering 301", email: "class:eng-301", isClass: true, studentCount: 45 },
 ];
 
-const DEFAULT_GROUPS: ShareTarget[] = [
+export const DEFAULT_GROUPS: ShareTarget[] = [
   { name: "All Staff", email: "group:staff-all", isGroup: true, memberCount: 48 },
   { name: "Mathematics Teachers", email: "group:teachers-math", isGroup: true, memberCount: 6 },
   { name: "Science Teachers", email: "group:teachers-science", isGroup: true, memberCount: 8 },

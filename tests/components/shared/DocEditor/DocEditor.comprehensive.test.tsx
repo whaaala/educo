@@ -163,7 +163,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const zoomBtn = container.querySelector('button[title="Zoom"]');
+      const zoomBtn = container.querySelector('button[aria-label="Zoom"]');
       expect(zoomBtn).not.toBeNull();
       expectClasses(zoomBtn, [
         "h-7",
@@ -180,7 +180,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const fontBtn = container.querySelector('button[title="Font family"]');
+      const fontBtn = container.querySelector('button[aria-label="Font family"]');
       expect(fontBtn).not.toBeNull();
       expect(fontBtn!.textContent).toContain("Arial");
       expectClasses(fontBtn, ["h-7", "rounded"]);
@@ -190,7 +190,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const sizeBtn = container.querySelector('button[title="Font size"]');
+      const sizeBtn = container.querySelector('button[aria-label="Font size"]');
       expect(sizeBtn).not.toBeNull();
       expect(sizeBtn!.textContent).toContain("11");
     });
@@ -199,7 +199,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const btn = container.querySelector('button[title="Text color"]');
+      const btn = container.querySelector('button[aria-label="Text color"]');
       expect(btn).not.toBeNull();
       const svg = btn!.querySelector("svg");
       expect(svg).not.toBeNull();
@@ -209,7 +209,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const btn = container.querySelector('button[title="Highlight color"]');
+      const btn = container.querySelector('button[aria-label="Highlight color"]');
       expect(btn).not.toBeNull();
       const svg = btn!.querySelector("svg");
       expect(svg).not.toBeNull();
@@ -219,7 +219,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const btn = container.querySelector('button[title="Line & paragraph spacing"]');
+      const btn = container.querySelector('button[aria-label="Line & paragraph spacing"]');
       expect(btn).not.toBeNull();
       const svg = btn!.querySelector("svg");
       expect(svg).not.toBeNull();
@@ -234,16 +234,16 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      expect(container.querySelector('button[title="Strikethrough"]')).toBeNull();
-      expect(container.querySelector('button[title="Superscript"]')).toBeNull();
-      expect(container.querySelector('button[title="Subscript"]')).toBeNull();
+      expect(container.querySelector('button[aria-label="Strikethrough"]')).toBeNull();
+      expect(container.querySelector('button[aria-label="Superscript"]')).toBeNull();
+      expect(container.querySelector('button[aria-label="Subscript"]')).toBeNull();
     });
 
     it("Alignment dropdown exists with correct title", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const alignDropdown = container.querySelector('[title="Align & indent"]');
+      const alignDropdown = container.querySelector('[aria-label="Align & indent"]');
       expect(alignDropdown).not.toBeNull();
     });
 
@@ -251,7 +251,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const listsDropdown = container.querySelector('[title="Lists"]');
+      const listsDropdown = container.querySelector('[aria-label="Lists"]');
       expect(listsDropdown).not.toBeNull();
     });
 
@@ -259,8 +259,8 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const increaseBtn = container.querySelector('button[title="Increase indent"]');
-      const decreaseBtn = container.querySelector('button[title="Decrease indent"]');
+      const increaseBtn = container.querySelector('button[aria-label="Increase indent"]');
+      const decreaseBtn = container.querySelector('button[aria-label="Decrease indent"]');
       expect(increaseBtn).not.toBeNull();
       expect(decreaseBtn).not.toBeNull();
       expectClasses(increaseBtn, [
@@ -295,7 +295,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
         "Add comment (Ctrl+Alt+M)",
       ];
       for (const title of newButtons) {
-        const btn = container.querySelector(`button[title="${title}"]`);
+        const btn = container.querySelector(`button[aria-label="${title}"]`);
         expect(btn, `Toolbar button "${title}" should exist`).not.toBeNull();
         expectClasses(btn, [
           "w-7",
@@ -563,7 +563,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const boldBtn = container.querySelector('button[title="Bold (Ctrl+B)"]');
+      const boldBtn = container.querySelector('button[aria-label="Bold (Ctrl+B)"]');
       expect(boldBtn).not.toBeNull();
     });
   });
@@ -576,7 +576,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} readOnly />
       );
-      const boldBtn = container.querySelector('button[title="Bold (Ctrl+B)"]');
+      const boldBtn = container.querySelector('button[aria-label="Bold (Ctrl+B)"]');
       expect(boldBtn).not.toBeNull();
       expect(boldBtn!.hasAttribute("disabled")).toBe(true);
       expectClasses(boldBtn, ["disabled:opacity-50"]);
@@ -586,7 +586,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} readOnly />
       );
-      const boldBtn = container.querySelector('button[title="Bold (Ctrl+B)"]');
+      const boldBtn = container.querySelector('button[aria-label="Bold (Ctrl+B)"]');
       expect(boldBtn).not.toBeNull();
       expect(boldBtn!.hasAttribute("disabled")).toBe(true);
       expectClasses(boldBtn, ["disabled:cursor-not-allowed"]);

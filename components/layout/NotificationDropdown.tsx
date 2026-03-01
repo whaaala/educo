@@ -129,6 +129,7 @@ export default function NotificationDropdown() {
       warning: { bg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-600 dark:text-amber-400", gradient: "from-amber-500 to-yellow-500" },
       info: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", gradient: "from-blue-500 to-indigo-500" },
       document_shared: { bg: "bg-sky-50 dark:bg-sky-500/10", text: "text-sky-600 dark:text-sky-400", gradient: "from-sky-500 to-blue-500" },
+      document_published: { bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", gradient: "from-emerald-500 to-green-500" },
     };
     return colors[type] || colors.general;
   };

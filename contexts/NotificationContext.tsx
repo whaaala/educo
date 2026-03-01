@@ -22,7 +22,8 @@ export type NotificationType =
   | "success"
   | "warning"
   | "info"
-  | "document_shared";
+  | "document_shared"
+  | "document_published";
 
 export type NotificationPriority = "low" | "normal" | "high" | "urgent";
 
