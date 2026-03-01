@@ -1,0 +1,818 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - status [ref=e2]:
+    - generic [ref=e3]:
+      - img [ref=e5]
+      - generic [ref=e7]:
+        - text: Static route
+        - button "Hide static indicator" [ref=e8] [cursor=pointer]:
+          - img [ref=e9]
+  - alert [ref=e12]
+  - generic [ref=e13]:
+    - complementary [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - link "Educo School ERP System" [ref=e17] [cursor=pointer]:
+            - /url: /
+            - img [ref=e19]
+            - generic [ref=e22]:
+              - heading "Educo" [level=1] [ref=e23]
+              - paragraph [ref=e24]: School ERP System
+          - button "Collapse sidebar" [ref=e25] [cursor=pointer]:
+            - img [ref=e26]
+        - navigation [ref=e29]:
+          - generic [ref=e30]:
+            - link "Dashboard" [ref=e32] [cursor=pointer]:
+              - /url: /
+              - generic [ref=e33]:
+                - img [ref=e35]
+                - generic [ref=e41]: Dashboard
+            - generic [ref=e42]:
+              - button "School Management" [ref=e43] [cursor=pointer]:
+                - generic [ref=e44]:
+                  - img [ref=e46]
+                  - generic [ref=e51]: School Management
+                - img [ref=e53]
+              - generic [ref=e55]:
+                - link "School Information" [ref=e56] [cursor=pointer]:
+                  - /url: /school/info
+                  - generic [ref=e57]:
+                    - img [ref=e59]
+                    - generic [ref=e63]: School Information
+                - link "Branches" [ref=e64] [cursor=pointer]:
+                  - /url: /school/branches
+                  - generic [ref=e65]:
+                    - img [ref=e67]
+                    - generic [ref=e72]: Branches
+                - link "Academic Years" [ref=e73] [cursor=pointer]:
+                  - /url: /school/academic-years
+                  - generic [ref=e74]:
+                    - img [ref=e76]
+                    - generic [ref=e78]: Academic Years
+                - link "Sections" [ref=e79] [cursor=pointer]:
+                  - /url: /school/sections
+                  - generic [ref=e80]:
+                    - img [ref=e82]
+                    - generic [ref=e85]: Sections
+                - link "Departments" [ref=e86] [cursor=pointer]:
+                  - /url: /school/departments
+                  - generic [ref=e87]:
+                    - img [ref=e89]
+                    - generic [ref=e94]: Departments
+            - generic [ref=e95]:
+              - button "Peoples" [ref=e96] [cursor=pointer]:
+                - generic [ref=e97]:
+                  - img [ref=e99]
+                  - generic [ref=e105]: Peoples
+                - img [ref=e107]
+              - generic [ref=e109]:
+                - generic [ref=e110]:
+                  - button "Students" [ref=e111] [cursor=pointer]:
+                    - generic [ref=e112]:
+                      - img [ref=e114]
+                      - generic [ref=e118]: Students
+                    - img [ref=e120]
+                  - generic [ref=e122]:
+                    - link "All Students" [ref=e123] [cursor=pointer]:
+                      - /url: /students?view=grid
+                      - generic [ref=e124]:
+                        - img [ref=e126]
+                        - generic [ref=e129]: All Students
+                    - link "Student List" [ref=e130] [cursor=pointer]:
+                      - /url: /students?view=list
+                      - generic [ref=e131]:
+                        - img [ref=e133]
+                        - generic [ref=e136]: Student List
+                    - link "Attendance" [ref=e137] [cursor=pointer]:
+                      - /url: /students/attendance
+                      - generic [ref=e138]:
+                        - img [ref=e140]
+                        - generic [ref=e144]: Attendance
+                    - link "Grading" [ref=e145] [cursor=pointer]:
+                      - /url: /students/grading
+                      - generic [ref=e146]:
+                        - img [ref=e148]
+                        - generic [ref=e152]: Grading
+                    - link "Report Cards" [ref=e153] [cursor=pointer]:
+                      - /url: /students/report-cards
+                      - generic [ref=e154]:
+                        - img [ref=e156]
+                        - generic [ref=e159]: Report Cards
+                    - link "Cumulative Report" [ref=e160] [cursor=pointer]:
+                      - /url: /students/cumulative-report
+                      - generic [ref=e161]:
+                        - img [ref=e163]
+                        - generic [ref=e165]: Cumulative Report
+                    - link "Transcripts" [ref=e166] [cursor=pointer]:
+                      - /url: /students/transcripts
+                      - generic [ref=e167]:
+                        - img [ref=e169]
+                        - generic [ref=e172]: Transcripts
+                    - link "Student Promotion" [ref=e173] [cursor=pointer]:
+                      - /url: /students/promotion
+                      - generic [ref=e174]:
+                        - img [ref=e176]
+                        - generic [ref=e179]: Student Promotion
+                    - link "Transfer Requests" [ref=e180] [cursor=pointer]:
+                      - /url: /students/transfers
+                      - generic [ref=e181]:
+                        - img [ref=e183]
+                        - generic [ref=e185]: Transfer Requests
+                    - link "Discipline" [ref=e186] [cursor=pointer]:
+                      - /url: /students/discipline
+                      - generic [ref=e187]:
+                        - img [ref=e189]
+                        - generic [ref=e191]: Discipline
+                    - link "Bulk Import" [ref=e192] [cursor=pointer]:
+                      - /url: /students/bulk-import
+                      - generic [ref=e193]:
+                        - img [ref=e195]
+                        - generic [ref=e198]: Bulk Import
+                - generic [ref=e199]:
+                  - button "Parents" [ref=e200] [cursor=pointer]:
+                    - generic [ref=e201]:
+                      - img [ref=e203]
+                      - generic [ref=e209]: Parents
+                    - img [ref=e211]
+                  - generic [ref=e213]:
+                    - link "Overview" [ref=e214] [cursor=pointer]:
+                      - /url: /admin/parents/dashboard
+                      - generic [ref=e215]:
+                        - img [ref=e217]
+                        - generic [ref=e222]: Overview
+                    - link "All Parents" [ref=e223] [cursor=pointer]:
+                      - /url: /admin/parents?view=grid
+                      - generic [ref=e224]:
+                        - img [ref=e226]
+                        - generic [ref=e231]: All Parents
+                    - link "Parent List" [ref=e232] [cursor=pointer]:
+                      - /url: /admin/parents?view=list
+                      - generic [ref=e233]:
+                        - img [ref=e235]
+                        - generic [ref=e240]: Parent List
+                    - link "₦ Fee Records" [ref=e241] [cursor=pointer]:
+                      - /url: /admin/parents/fees
+                      - generic [ref=e242]:
+                        - generic [ref=e244]: ₦
+                        - generic [ref=e245]: Fee Records
+                    - link "Messages" [ref=e246] [cursor=pointer]:
+                      - /url: /admin/parents/messages
+                      - generic [ref=e247]:
+                        - img [ref=e249]
+                        - generic [ref=e251]: Messages
+                    - link "Chat" [ref=e252] [cursor=pointer]:
+                      - /url: /admin/parents/chat
+                      - generic [ref=e253]:
+                        - img [ref=e255]
+                        - generic [ref=e257]: Chat
+                    - link "Events" [ref=e258] [cursor=pointer]:
+                      - /url: /admin/parents/events
+                      - generic [ref=e259]:
+                        - img [ref=e261]
+                        - generic [ref=e263]: Events
+                - generic [ref=e264]:
+                  - button "Personnel" [ref=e265] [cursor=pointer]:
+                    - generic [ref=e266]:
+                      - img [ref=e268]
+                      - generic [ref=e274]: Personnel
+                    - img [ref=e276]
+                  - generic [ref=e278]:
+                    - link "All Personnel" [ref=e279] [cursor=pointer]:
+                      - /url: /staff?view=grid
+                      - generic [ref=e280]:
+                        - img [ref=e282]
+                        - generic [ref=e287]: All Personnel
+                    - link "Personnel List" [ref=e288] [cursor=pointer]:
+                      - /url: /staff?view=list
+                      - generic [ref=e289]:
+                        - img [ref=e291]
+                        - generic [ref=e296]: Personnel List
+                    - link "Leave Requests" [ref=e297] [cursor=pointer]:
+                      - /url: /staff/leave-requests
+                      - generic [ref=e298]:
+                        - img [ref=e300]
+                        - generic [ref=e304]: Leave Requests
+                    - link "Performance Reviews" [ref=e305] [cursor=pointer]:
+                      - /url: /staff/performance-reviews
+                      - generic [ref=e306]:
+                        - img [ref=e308]
+                        - generic [ref=e310]: Performance Reviews
+                    - link "Discipline & Complaints" [ref=e311] [cursor=pointer]:
+                      - /url: /staff/discipline
+                      - generic [ref=e312]:
+                        - img [ref=e314]
+                        - generic [ref=e316]: Discipline & Complaints
+            - generic [ref=e317]:
+              - button "Academic" [ref=e318] [cursor=pointer]:
+                - generic [ref=e319]:
+                  - img [ref=e321]
+                  - generic [ref=e324]: Academic
+                - img [ref=e326]
+              - generic [ref=e328]:
+                - generic [ref=e329]:
+                  - button "Classes" [ref=e330] [cursor=pointer]:
+                    - generic [ref=e331]:
+                      - img [ref=e333]
+                      - generic [ref=e344]: Classes
+                    - img [ref=e346]
+                  - generic [ref=e348]:
+                    - link "All Classes" [ref=e349] [cursor=pointer]:
+                      - /url: /classes?view=grid
+                      - generic [ref=e350]:
+                        - img [ref=e352]
+                        - generic [ref=e362]: All Classes
+                    - link "Class List" [ref=e363] [cursor=pointer]:
+                      - /url: /classes?view=list
+                      - generic [ref=e364]:
+                        - img [ref=e366]
+                        - generic [ref=e376]: Class List
+                - link "Subjects" [ref=e377] [cursor=pointer]:
+                  - /url: /subjects
+                  - generic [ref=e378]:
+                    - img [ref=e380]
+                    - generic [ref=e382]: Subjects
+                - link "Exams" [ref=e383] [cursor=pointer]:
+                  - /url: /exams
+                  - generic [ref=e384]:
+                    - img [ref=e386]
+                    - generic [ref=e389]: Exams
+                - link "Syllabus" [ref=e390] [cursor=pointer]:
+                  - /url: /syllabus
+                  - generic [ref=e391]:
+                    - img [ref=e393]
+                    - generic [ref=e396]: Syllabus
+                - link "Assignments" [ref=e397] [cursor=pointer]:
+                  - /url: /assignments
+                  - generic [ref=e398]:
+                    - img [ref=e400]
+                    - generic [ref=e403]: Assignments
+            - generic [ref=e404]:
+              - button "Management" [ref=e405] [cursor=pointer]:
+                - generic [ref=e406]:
+                  - img [ref=e408]
+                  - generic [ref=e412]: Management
+                - img [ref=e414]
+              - generic [ref=e416]:
+                - generic [ref=e417]:
+                  - button "₦ Finance" [ref=e418] [cursor=pointer]:
+                    - generic [ref=e419]:
+                      - generic [ref=e421]: ₦
+                      - generic [ref=e423]: Finance
+                    - img [ref=e425]
+                  - generic [ref=e427]:
+                    - link "Fee Structure" [ref=e428] [cursor=pointer]:
+                      - /url: /finance/fee-structure
+                      - generic [ref=e429]:
+                        - img [ref=e431]
+                        - generic [ref=e434]: Fee Structure
+                    - link "Installment Plans" [ref=e435] [cursor=pointer]:
+                      - /url: /finance/installments
+                      - generic [ref=e436]:
+                        - img [ref=e438]
+                        - generic [ref=e448]: Installment Plans
+                    - link "Receipts" [ref=e449] [cursor=pointer]:
+                      - /url: /finance/receipts
+                      - generic [ref=e450]:
+                        - img [ref=e452]
+                        - generic [ref=e455]: Receipts
+                - generic [ref=e456]:
+                  - button "Library" [ref=e457] [cursor=pointer]:
+                    - generic [ref=e458]:
+                      - img [ref=e460]
+                      - generic [ref=e463]: Library
+                    - img [ref=e465]
+                  - generic [ref=e467]:
+                    - link "Book Catalog" [ref=e468] [cursor=pointer]:
+                      - /url: /library
+                      - generic [ref=e469]:
+                        - img [ref=e471]
+                        - generic [ref=e473]: Book Catalog
+                    - link "Borrowing & Returns" [ref=e474] [cursor=pointer]:
+                      - /url: /library/borrowing
+                      - generic [ref=e475]:
+                        - img [ref=e477]
+                        - generic [ref=e479]: Borrowing & Returns
+                    - link "Library Members" [ref=e480] [cursor=pointer]:
+                      - /url: /library/members
+                      - generic [ref=e481]:
+                        - img [ref=e483]
+                        - generic [ref=e488]: Library Members
+                    - link "Fines & Payments" [ref=e489] [cursor=pointer]:
+                      - /url: /library/fines
+                      - generic [ref=e490]:
+                        - img [ref=e492]
+                        - generic [ref=e495]: Fines & Payments
+                - link "Dormitory" [ref=e496] [cursor=pointer]:
+                  - /url: /dormitory
+                  - generic [ref=e497]:
+                    - img [ref=e499]
+                    - generic [ref=e502]: Dormitory
+                - link "Transport" [ref=e503] [cursor=pointer]:
+                  - /url: /transport
+                  - generic [ref=e504]:
+                    - img [ref=e506]
+                    - generic [ref=e510]: Transport
+            - link "Attendance" [ref=e512] [cursor=pointer]:
+              - /url: /attendance
+              - generic [ref=e513]:
+                - img [ref=e515]
+                - generic [ref=e518]: Attendance
+            - generic [ref=e519]:
+              - button "Settings" [ref=e520] [cursor=pointer]:
+                - generic [ref=e521]:
+                  - img [ref=e523]
+                  - generic [ref=e527]: Settings
+                - img [ref=e529]
+              - generic [ref=e531]:
+                - link "Settings Overview" [ref=e532] [cursor=pointer]:
+                  - /url: /settings
+                  - generic [ref=e533]:
+                    - img [ref=e535]
+                    - generic [ref=e538]: Settings Overview
+                - link "General Settings" [ref=e539] [cursor=pointer]:
+                  - /url: /settings/general
+                  - generic [ref=e540]:
+                    - img [ref=e542]
+                    - generic [ref=e545]: General Settings
+                - link "Communication" [ref=e546] [cursor=pointer]:
+                  - /url: /admin/settings/communication
+                  - generic [ref=e547]:
+                    - img [ref=e549]
+                    - generic [ref=e552]: Communication
+                - link "Schools & Branches" [ref=e553] [cursor=pointer]:
+                  - /url: /settings/schools
+                  - generic [ref=e554]:
+                    - img [ref=e556]
+                    - generic [ref=e559]: Schools & Branches
+                - link "User Management" [ref=e560] [cursor=pointer]:
+                  - /url: /settings/users
+                  - generic [ref=e561]:
+                    - img [ref=e563]
+                    - generic [ref=e568]: User Management
+                - link "Admin Console" [ref=e569] [cursor=pointer]:
+                  - /url: http://localhost:3001
+                  - generic [ref=e570]:
+                    - img [ref=e572]
+                    - generic [ref=e576]: Admin Console
+        - generic [ref=e577]:
+          - button "Current School Educo Demo School" [ref=e579]:
+            - img [ref=e581]
+            - generic [ref=e585]:
+              - paragraph [ref=e586]: Current School
+              - paragraph [ref=e587]: Educo Demo School
+            - img [ref=e588]
+          - generic [ref=e590]:
+            - paragraph [ref=e591]:
+              - img [ref=e592]
+              - text: Need Help?
+            - paragraph [ref=e594]: Check our documentation & support
+    - generic [ref=e595]:
+      - banner [ref=e596]:
+        - generic [ref=e597]:
+          - generic [ref=e598]:
+            - generic [ref=e600]:
+              - img [ref=e601]
+              - searchbox "Search for anything..." [ref=e604]
+            - generic [ref=e606]: Admin Portal
+          - generic [ref=e607]:
+            - 'button "Academic Year : 2024 / 2025" [ref=e609] [cursor=pointer]':
+              - img [ref=e610]
+              - generic [ref=e612]: "Academic Year : 2024 / 2025"
+              - img [ref=e613]
+            - button "🌍 English" [ref=e616] [cursor=pointer]:
+              - generic [ref=e617]: 🌍
+              - generic [ref=e618]: English
+              - img [ref=e619]
+            - button "Add New" [ref=e622] [cursor=pointer]:
+              - img [ref=e623]
+            - button "Cycle Theme" [ref=e625] [cursor=pointer]:
+              - img [ref=e626]
+            - button "Notifications" [ref=e629] [cursor=pointer]:
+              - img [ref=e630]
+              - generic [ref=e633]: "3"
+            - button "Messages" [ref=e634] [cursor=pointer]:
+              - img [ref=e635]
+            - button "Reception Strength" [ref=e638] [cursor=pointer]:
+              - img [ref=e639]
+            - button "Toggle Fullscreen" [ref=e642] [cursor=pointer]:
+              - img [ref=e643]
+            - button "System Administrator" [ref=e649]:
+              - img "System Administrator" [ref=e651]
+      - main [ref=e652]:
+        - generic [ref=e653]:
+          - generic [ref=e655]:
+            - generic [ref=e656]:
+              - heading "Parents" [level=1] [ref=e657]
+              - generic [ref=e658]:
+                - generic [ref=e659]:
+                  - link "Dashboard" [ref=e660] [cursor=pointer]:
+                    - /url: /
+                  - generic [ref=e661]: /
+                - generic [ref=e662]:
+                  - generic [ref=e663]: Admin
+                  - generic [ref=e664]: /
+                - generic [ref=e666]: Parents
+            - generic [ref=e668]:
+              - generic [ref=e669]:
+                - button "Refresh" [ref=e670] [cursor=pointer]:
+                  - img [ref=e671]
+                - button "Print" [ref=e676] [cursor=pointer]:
+                  - img [ref=e677]
+              - generic [ref=e681]:
+                - button "Export" [ref=e683] [cursor=pointer]:
+                  - img [ref=e684]
+                  - generic [ref=e687]: Export
+                  - img [ref=e688]
+                - button "Add Parent" [ref=e690] [cursor=pointer]:
+                  - img [ref=e691]
+                  - generic [ref=e692]: Add Parent
+          - generic [ref=e696]:
+            - button "Filter" [ref=e698] [cursor=pointer]:
+              - img [ref=e699]
+              - generic [ref=e701]: Filter
+              - img [ref=e702]
+            - button "A-Z" [ref=e705] [cursor=pointer]:
+              - img [ref=e707]
+              - generic [ref=e711]: A-Z
+              - img [ref=e712]
+            - button "02/21/2026 - 02/27/2026" [ref=e715] [cursor=pointer]:
+              - img [ref=e716]
+              - generic [ref=e718]: 02/21/2026 - 02/27/2026
+              - img [ref=e719]
+            - generic [ref=e721]: 12 parents
+            - generic [ref=e722]:
+              - button "List view" [ref=e724] [cursor=pointer]:
+                - img [ref=e725]
+              - button "Grid view" [ref=e726] [cursor=pointer]:
+                - img [ref=e727]
+          - generic [ref=e731]:
+            - generic [ref=e732]:
+              - heading "Parent Records" [level=2] [ref=e733]
+              - generic [ref=e735]:
+                - img [ref=e736]
+                - searchbox "Search parents..." [ref=e739]
+            - table [ref=e741]:
+              - rowgroup [ref=e742]:
+                - row "Parent Name Email Phone Children Outstanding Status Action" [ref=e743]:
+                  - columnheader [ref=e744]:
+                    - checkbox [ref=e746] [cursor=pointer]
+                  - columnheader "Parent Name" [ref=e747] [cursor=pointer]:
+                    - generic [ref=e749]:
+                      - generic [ref=e750]: Parent Name
+                      - img [ref=e752]
+                  - columnheader "Email" [ref=e754] [cursor=pointer]:
+                    - generic [ref=e756]:
+                      - generic [ref=e757]: Email
+                      - img [ref=e759]
+                  - columnheader "Phone" [ref=e761] [cursor=pointer]:
+                    - generic [ref=e763]:
+                      - generic [ref=e764]: Phone
+                      - img [ref=e766]
+                  - columnheader "Children" [ref=e768] [cursor=pointer]:
+                    - generic [ref=e770]:
+                      - generic [ref=e771]: Children
+                      - img [ref=e773]
+                  - columnheader "Outstanding" [ref=e775] [cursor=pointer]:
+                    - generic [ref=e777]:
+                      - generic [ref=e778]: Outstanding
+                      - img [ref=e780]
+                  - columnheader "Status" [ref=e782] [cursor=pointer]:
+                    - generic [ref=e784]:
+                      - generic [ref=e785]: Status
+                      - img [ref=e787]
+                  - columnheader "Action" [ref=e789]:
+                    - generic [ref=e792]: Action
+              - rowgroup [ref=e793]:
+                - row "Adebayo Bakare Adebayo Bakare Father adebayo.bakare@email.com +234 807 890 1234 1 David NGN100,000 Active" [ref=e794]:
+                  - cell [ref=e795]:
+                    - checkbox [ref=e797] [cursor=pointer]
+                  - cell "Adebayo Bakare Adebayo Bakare Father" [ref=e798]:
+                    - generic [ref=e799]:
+                      - img "Adebayo Bakare" [ref=e802] [cursor=pointer]
+                      - generic [ref=e803]:
+                        - generic [ref=e805] [cursor=pointer]: Adebayo Bakare
+                        - generic [ref=e806]: Father
+                  - cell "adebayo.bakare@email.com" [ref=e807]:
+                    - generic [ref=e809]: adebayo.bakare@email.com
+                  - cell "+234 807 890 1234" [ref=e810]
+                  - cell "1 David" [ref=e811]:
+                    - generic [ref=e812]:
+                      - generic [ref=e813]: "1"
+                      - generic [ref=e814]: David
+                  - cell "NGN100,000" [ref=e815]
+                  - cell "Active" [ref=e816]:
+                    - generic [ref=e817]: Active
+                  - cell [ref=e818]:
+                    - generic [ref=e819]:
+                      - button [ref=e821] [cursor=pointer]:
+                        - img [ref=e822]
+                      - button [ref=e825] [cursor=pointer]:
+                        - img [ref=e826]
+                      - button [ref=e829] [cursor=pointer]:
+                        - img [ref=e830]
+                      - button [ref=e834] [cursor=pointer]:
+                        - img [ref=e835]
+                      - button [ref=e840] [cursor=pointer]:
+                        - img [ref=e841]
+                - row "Babatunde Johnson Babatunde Johnson Father babatunde.johnson@email.com +234 805 678 9012 3 Steven, Mary, James NGN125,000 Active" [ref=e845]:
+                  - cell [ref=e846]:
+                    - checkbox [ref=e848] [cursor=pointer]
+                  - cell "Babatunde Johnson Babatunde Johnson Father" [ref=e849]:
+                    - generic [ref=e850]:
+                      - img "Babatunde Johnson" [ref=e853] [cursor=pointer]
+                      - generic [ref=e854]:
+                        - generic [ref=e856] [cursor=pointer]: Babatunde Johnson
+                        - generic [ref=e857]: Father
+                  - cell "babatunde.johnson@email.com" [ref=e858]:
+                    - generic [ref=e860]: babatunde.johnson@email.com
+                  - cell "+234 805 678 9012" [ref=e861]
+                  - cell "3 Steven, Mary, James" [ref=e862]:
+                    - generic [ref=e863]:
+                      - generic [ref=e864]: "3"
+                      - generic [ref=e865]: Steven, Mary, James
+                  - cell "NGN125,000" [ref=e866]
+                  - cell "Active" [ref=e867]:
+                    - generic [ref=e868]: Active
+                  - cell [ref=e869]:
+                    - generic [ref=e870]:
+                      - button [ref=e872] [cursor=pointer]:
+                        - img [ref=e873]
+                      - button [ref=e876] [cursor=pointer]:
+                        - img [ref=e877]
+                      - button [ref=e880] [cursor=pointer]:
+                        - img [ref=e881]
+                      - button [ref=e885] [cursor=pointer]:
+                        - img [ref=e886]
+                      - button [ref=e891] [cursor=pointer]:
+                        - img [ref=e892]
+                - row "Chidinma Nwosu Chidinma Nwosu Mother chidinma.nwosu@email.com +234 806 789 0123 1 Lisa NGN50,000 Active" [ref=e896]:
+                  - cell [ref=e897]:
+                    - checkbox [ref=e899] [cursor=pointer]
+                  - cell "Chidinma Nwosu Chidinma Nwosu Mother" [ref=e900]:
+                    - generic [ref=e901]:
+                      - img "Chidinma Nwosu" [ref=e904] [cursor=pointer]
+                      - generic [ref=e905]:
+                        - generic [ref=e907] [cursor=pointer]: Chidinma Nwosu
+                        - generic [ref=e908]: Mother
+                  - cell "chidinma.nwosu@email.com" [ref=e909]:
+                    - generic [ref=e911]: chidinma.nwosu@email.com
+                  - cell "+234 806 789 0123" [ref=e912]
+                  - cell "1 Lisa" [ref=e913]:
+                    - generic [ref=e914]:
+                      - generic [ref=e915]: "1"
+                      - generic [ref=e916]: Lisa
+                  - cell "NGN50,000" [ref=e917]
+                  - cell "Active" [ref=e918]:
+                    - generic [ref=e919]: Active
+                  - cell [ref=e920]:
+                    - generic [ref=e921]:
+                      - button [ref=e923] [cursor=pointer]:
+                        - img [ref=e924]
+                      - button [ref=e927] [cursor=pointer]:
+                        - img [ref=e928]
+                      - button [ref=e931] [cursor=pointer]:
+                        - img [ref=e932]
+                      - button [ref=e936] [cursor=pointer]:
+                        - img [ref=e937]
+                      - button [ref=e942] [cursor=pointer]:
+                        - img [ref=e943]
+                - row "Chinedu Obi Chinedu Obi Guardian chinedu.obi@email.com +234 810 123 4567 1 Jennifer NGN150,000 Active" [ref=e947]:
+                  - cell [ref=e948]:
+                    - checkbox [ref=e950] [cursor=pointer]
+                  - cell "Chinedu Obi Chinedu Obi Guardian" [ref=e951]:
+                    - generic [ref=e952]:
+                      - img "Chinedu Obi" [ref=e955] [cursor=pointer]
+                      - generic [ref=e956]:
+                        - generic [ref=e958] [cursor=pointer]: Chinedu Obi
+                        - generic [ref=e959]: Guardian
+                  - cell "chinedu.obi@email.com" [ref=e960]:
+                    - generic [ref=e962]: chinedu.obi@email.com
+                  - cell "+234 810 123 4567" [ref=e963]
+                  - cell "1 Jennifer" [ref=e964]:
+                    - generic [ref=e965]:
+                      - generic [ref=e966]: "1"
+                      - generic [ref=e967]: Jennifer
+                  - cell "NGN150,000" [ref=e968]
+                  - cell "Active" [ref=e969]:
+                    - generic [ref=e970]: Active
+                  - cell [ref=e971]:
+                    - generic [ref=e972]:
+                      - button [ref=e974] [cursor=pointer]:
+                        - img [ref=e975]
+                      - button [ref=e978] [cursor=pointer]:
+                        - img [ref=e979]
+                      - button [ref=e982] [cursor=pointer]:
+                        - img [ref=e983]
+                      - button [ref=e987] [cursor=pointer]:
+                        - img [ref=e988]
+                      - button [ref=e993] [cursor=pointer]:
+                        - img [ref=e994]
+                - row "Emeka Okonkwo Emeka Okonkwo Father emeka.okonkwo@email.com +234 803 456 7890 2 Janet, Joann NGN75,000 Active" [ref=e998]:
+                  - cell [ref=e999]:
+                    - checkbox [ref=e1001] [cursor=pointer]
+                  - cell "Emeka Okonkwo Emeka Okonkwo Father" [ref=e1002]:
+                    - generic [ref=e1003]:
+                      - img "Emeka Okonkwo" [ref=e1006] [cursor=pointer]
+                      - generic [ref=e1007]:
+                        - generic [ref=e1009] [cursor=pointer]: Emeka Okonkwo
+                        - generic [ref=e1010]: Father
+                  - cell "emeka.okonkwo@email.com" [ref=e1011]:
+                    - generic [ref=e1013]: emeka.okonkwo@email.com
+                  - cell "+234 803 456 7890" [ref=e1014]
+                  - cell "2 Janet, Joann" [ref=e1015]:
+                    - generic [ref=e1016]:
+                      - generic [ref=e1017]: "2"
+                      - generic [ref=e1018]: Janet, Joann
+                  - cell "NGN75,000" [ref=e1019]
+                  - cell "Active" [ref=e1020]:
+                    - generic [ref=e1021]: Active
+                  - cell [ref=e1022]:
+                    - generic [ref=e1023]:
+                      - button [ref=e1025] [cursor=pointer]:
+                        - img [ref=e1026]
+                      - button [ref=e1029] [cursor=pointer]:
+                        - img [ref=e1030]
+                      - button [ref=e1033] [cursor=pointer]:
+                        - img [ref=e1034]
+                      - button [ref=e1038] [cursor=pointer]:
+                        - img [ref=e1039]
+                      - button [ref=e1044] [cursor=pointer]:
+                        - img [ref=e1045]
+                - row "Folake Adeyemi Folake Adeyemi Mother folake.adeyemi@email.com +234 802 345 6789 1 Sharon NGN0 Active" [ref=e1049]:
+                  - cell [ref=e1050]:
+                    - checkbox [ref=e1052] [cursor=pointer]
+                  - cell "Folake Adeyemi Folake Adeyemi Mother" [ref=e1053]:
+                    - generic [ref=e1054]:
+                      - img "Folake Adeyemi" [ref=e1057] [cursor=pointer]
+                      - generic [ref=e1058]:
+                        - generic [ref=e1060] [cursor=pointer]: Folake Adeyemi
+                        - generic [ref=e1061]: Mother
+                  - cell "folake.adeyemi@email.com" [ref=e1062]:
+                    - generic [ref=e1064]: folake.adeyemi@email.com
+                  - cell "+234 802 345 6789" [ref=e1065]
+                  - cell "1 Sharon" [ref=e1066]:
+                    - generic [ref=e1067]:
+                      - generic [ref=e1068]: "1"
+                      - generic [ref=e1069]: Sharon
+                  - cell "NGN0" [ref=e1070]
+                  - cell "Active" [ref=e1071]:
+                    - generic [ref=e1072]: Active
+                  - cell [ref=e1073]:
+                    - generic [ref=e1074]:
+                      - button [ref=e1076] [cursor=pointer]:
+                        - img [ref=e1077]
+                      - button [ref=e1080] [cursor=pointer]:
+                        - img [ref=e1081]
+                      - button [ref=e1084] [cursor=pointer]:
+                        - img [ref=e1085]
+                      - button [ref=e1089] [cursor=pointer]:
+                        - img [ref=e1090]
+                      - button [ref=e1095] [cursor=pointer]:
+                        - img [ref=e1096]
+                - row "Funmilayo Adeleke Funmilayo Adeleke Mother funmilayo.adeleke@email.com +234 814 567 8901 2 Sandra, Daniel NGN45,000 Active" [ref=e1100]:
+                  - cell [ref=e1101]:
+                    - checkbox [ref=e1103] [cursor=pointer]
+                  - cell "Funmilayo Adeleke Funmilayo Adeleke Mother" [ref=e1104]:
+                    - generic [ref=e1105]:
+                      - img "Funmilayo Adeleke" [ref=e1108] [cursor=pointer]
+                      - generic [ref=e1109]:
+                        - generic [ref=e1111] [cursor=pointer]: Funmilayo Adeleke
+                        - generic [ref=e1112]: Mother
+                  - cell "funmilayo.adeleke@email.com" [ref=e1113]:
+                    - generic [ref=e1115]: funmilayo.adeleke@email.com
+                  - cell "+234 814 567 8901" [ref=e1116]
+                  - cell "2 Sandra, Daniel" [ref=e1117]:
+                    - generic [ref=e1118]:
+                      - generic [ref=e1119]: "2"
+                      - generic [ref=e1120]: Sandra, Daniel
+                  - cell "NGN45,000" [ref=e1121]
+                  - cell "Active" [ref=e1122]:
+                    - generic [ref=e1123]: Active
+                  - cell [ref=e1124]:
+                    - generic [ref=e1125]:
+                      - button [ref=e1127] [cursor=pointer]:
+                        - img [ref=e1128]
+                      - button [ref=e1131] [cursor=pointer]:
+                        - img [ref=e1132]
+                      - button [ref=e1135] [cursor=pointer]:
+                        - img [ref=e1136]
+                      - button [ref=e1140] [cursor=pointer]:
+                        - img [ref=e1141]
+                      - button [ref=e1146] [cursor=pointer]:
+                        - img [ref=e1147]
+                - row "Ngozi Eze Ngozi Eze Mother ngozi.eze@email.com +234 808 901 2345 2 Emily, Michael NGN25,000 Active" [ref=e1151]:
+                  - cell [ref=e1152]:
+                    - checkbox [ref=e1154] [cursor=pointer]
+                  - cell "Ngozi Eze Ngozi Eze Mother" [ref=e1155]:
+                    - generic [ref=e1156]:
+                      - img "Ngozi Eze" [ref=e1159] [cursor=pointer]
+                      - generic [ref=e1160]:
+                        - generic [ref=e1162] [cursor=pointer]: Ngozi Eze
+                        - generic [ref=e1163]: Mother
+                  - cell "ngozi.eze@email.com" [ref=e1164]:
+                    - generic [ref=e1166]: ngozi.eze@email.com
+                  - cell "+234 808 901 2345" [ref=e1167]
+                  - cell "2 Emily, Michael" [ref=e1168]:
+                    - generic [ref=e1169]:
+                      - generic [ref=e1170]: "2"
+                      - generic [ref=e1171]: Emily, Michael
+                  - cell "NGN25,000" [ref=e1172]
+                  - cell "Active" [ref=e1173]:
+                    - generic [ref=e1174]: Active
+                  - cell [ref=e1175]:
+                    - generic [ref=e1176]:
+                      - button [ref=e1178] [cursor=pointer]:
+                        - img [ref=e1179]
+                      - button [ref=e1182] [cursor=pointer]:
+                        - img [ref=e1183]
+                      - button [ref=e1186] [cursor=pointer]:
+                        - img [ref=e1187]
+                      - button [ref=e1191] [cursor=pointer]:
+                        - img [ref=e1192]
+                      - button [ref=e1197] [cursor=pointer]:
+                        - img [ref=e1198]
+                - row "Obinna Okoro Obinna Okoro Father obinna.okoro@email.com +234 812 345 6789 1 Angela NGN35,000 Active" [ref=e1202]:
+                  - cell [ref=e1203]:
+                    - checkbox [ref=e1205] [cursor=pointer]
+                  - cell "Obinna Okoro Obinna Okoro Father" [ref=e1206]:
+                    - generic [ref=e1207]:
+                      - img "Obinna Okoro" [ref=e1210] [cursor=pointer]
+                      - generic [ref=e1211]:
+                        - generic [ref=e1213] [cursor=pointer]: Obinna Okoro
+                        - generic [ref=e1214]: Father
+                  - cell "obinna.okoro@email.com" [ref=e1215]:
+                    - generic [ref=e1217]: obinna.okoro@email.com
+                  - cell "+234 812 345 6789" [ref=e1218]
+                  - cell "1 Angela" [ref=e1219]:
+                    - generic [ref=e1220]:
+                      - generic [ref=e1221]: "1"
+                      - generic [ref=e1222]: Angela
+                  - cell "NGN35,000" [ref=e1223]
+                  - cell "Active" [ref=e1224]:
+                    - generic [ref=e1225]: Active
+                  - cell [ref=e1226]:
+                    - generic [ref=e1227]:
+                      - button [ref=e1229] [cursor=pointer]:
+                        - img [ref=e1230]
+                      - button [ref=e1233] [cursor=pointer]:
+                        - img [ref=e1234]
+                      - button [ref=e1237] [cursor=pointer]:
+                        - img [ref=e1238]
+                      - button [ref=e1242] [cursor=pointer]:
+                        - img [ref=e1243]
+                      - button [ref=e1248] [cursor=pointer]:
+                        - img [ref=e1249]
+                - row "Oluwole Afolabi Oluwole Afolabi Father oluwole.afolabi@email.com +234 809 012 3456 1 Robert NGN60,000 Active" [ref=e1253]:
+                  - cell [ref=e1254]:
+                    - checkbox [ref=e1256] [cursor=pointer]
+                  - cell "Oluwole Afolabi Oluwole Afolabi Father" [ref=e1257]:
+                    - generic [ref=e1258]:
+                      - img "Oluwole Afolabi" [ref=e1261] [cursor=pointer]
+                      - generic [ref=e1262]:
+                        - generic [ref=e1264] [cursor=pointer]: Oluwole Afolabi
+                        - generic [ref=e1265]: Father
+                  - cell "oluwole.afolabi@email.com" [ref=e1266]:
+                    - generic [ref=e1268]: oluwole.afolabi@email.com
+                  - cell "+234 809 012 3456" [ref=e1269]
+                  - cell "1 Robert" [ref=e1270]:
+                    - generic [ref=e1271]:
+                      - generic [ref=e1272]: "1"
+                      - generic [ref=e1273]: Robert
+                  - cell "NGN60,000" [ref=e1274]
+                  - cell "Active" [ref=e1275]:
+                    - generic [ref=e1276]: Active
+                  - cell [ref=e1277]:
+                    - generic [ref=e1278]:
+                      - button [ref=e1280] [cursor=pointer]:
+                        - img [ref=e1281]
+                      - button [ref=e1284] [cursor=pointer]:
+                        - img [ref=e1285]
+                      - button [ref=e1288] [cursor=pointer]:
+                        - img [ref=e1289]
+                      - button [ref=e1293] [cursor=pointer]:
+                        - img [ref=e1294]
+                      - button [ref=e1299] [cursor=pointer]:
+                        - img [ref=e1300]
+            - generic [ref=e1304]:
+              - generic [ref=e1305]: Showing 1 to 10 of 12 total entries
+              - generic [ref=e1306]:
+                - button "Previous page" [disabled] [ref=e1307]:
+                  - img [ref=e1308]
+                - generic [ref=e1310]:
+                  - button "1" [ref=e1311] [cursor=pointer]
+                  - button "2" [ref=e1312] [cursor=pointer]
+                - button "Next page" [ref=e1313] [cursor=pointer]:
+                  - img [ref=e1314]
+              - generic [ref=e1316]:
+                - generic [ref=e1317]: "Items per page:"
+                - generic [ref=e1318]:
+                  - combobox "Items per page:" [ref=e1319] [cursor=pointer]:
+                    - option "10" [selected]
+                    - option "20"
+                    - option "50"
+                    - option "100"
+                  - generic:
+                    - img
+```

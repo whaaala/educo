@@ -1,7 +1,40 @@
 "use client";
 
-import { useState } from "react";
-import DocEditor, { type DocEditorValue } from "@/components/shared/DocEditor/DocEditor";
+import { useState, useEffect } from "react";
+import { FileText, Mail } from "lucide-react";
+import DocEditor, { type DocEditorValue, type DocTemplate } from "@/components/shared/DocEditor/DocEditor";
+
+const defaultTemplates: DocTemplate[] = [
+  {
+    id: "meeting-notes",
+    label: "Meeting notes",
+    icon: FileText,
+    html: [
+      "<h2>Meeting notes</h2>",
+      "<p><strong>Date:</strong> </p>",
+      "<p><strong>Attendees:</strong> </p>",
+      "<h3>Agenda</h3>",
+      "<ul><li></li></ul>",
+      "<h3>Notes</h3>",
+      "<ul><li></li></ul>",
+      "<h3>Action items</h3>",
+      '<ul><li><strong>Owner</strong> — </li></ul>',
+    ].join(""),
+  },
+  {
+    id: "email-draft",
+    label: "Email draft",
+    icon: Mail,
+    html: [
+      "<h2>Email draft</h2>",
+      "<p><strong>To:</strong> </p>",
+      "<p><strong>Subject:</strong> </p>",
+      "<p>Hello,</p>",
+      "<p></p>",
+      "<p>Best regards,</p>",
+    ].join(""),
+  },
+];
 
 export default function DocEditorTestPage() {
   const [doc, setDoc] = useState<DocEditorValue>({
@@ -9,31 +42,66 @@ export default function DocEditorTestPage() {
     html: "",
     language: "en",
   });
+  const [isReadOnly, setIsReadOnly] = useState(false);
+
+  // Load copied or shared document from localStorage
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    // Handle "Make a copy" — opens copy in new tab
+    if (params.get("copy") === "true") {
+      const copyData = localStorage.getItem("educo_doc_pending_copy");
+      if (copyData) {
+        localStorage.removeItem("educo_doc_pending_copy");
+        try {
+          const parsed = JSON.parse(copyData) as DocEditorValue;
+          setDoc({
+            title: parsed.title || "Untitled document",
+            html: parsed.html || "",
+            language: parsed.language || "en",
+          });
+        } catch { /* ignore invalid data */ }
+      }
+      window.history.replaceState({}, "", window.location.pathname);
+      return;
+    }
+
+    // Handle shared document — load by ID with permission enforcement
+    const sharedId = params.get("shared");
+    if (sharedId) {
+      try {
+        const sharedDocs = JSON.parse(
+          localStorage.getItem("educo_shared_documents") || "[]"
+        );
+        const sharedDoc = sharedDocs.find(
+          (d: { id: string }) => d.id === sharedId
+        );
+        if (sharedDoc) {
+          setDoc({
+            title: sharedDoc.title || "Untitled document",
+            html: sharedDoc.html || "",
+            language: sharedDoc.language || "en",
+          });
+          // Enforce permission: viewer = read-only, editor = full edit
+          if (sharedDoc.role === "viewer") {
+            setIsReadOnly(true);
+          }
+        }
+      } catch { /* ignore invalid data */ }
+      // Keep ?shared= in the URL so the link stays valid on refresh
+    }
+  }, []);
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="max-w-[1100px] mx-auto">
-        <div className="mb-3">
-          <h1 className="text-lg font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
-            Doc Editor Test
-          </h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-200/60 purple:text-pink-200/60">
-            Use the toolbar + templates, then confirm the HTML updates below.
-          </p>
-        </div>
-
-        <DocEditor value={doc} onChange={setDoc} />
-
-        <div className="mt-6">
-          <div className="text-xs font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 mb-2">
-            Saved HTML preview
-          </div>
-          <pre className="whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-950 midnight:bg-[#0b1220] purple:bg-[#170a27] p-3 rounded-lg border border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 text-[11px] text-gray-600 dark:text-gray-300 overflow-auto max-h-[240px]">
-            {doc.html}
-          </pre>
-        </div>
-      </div>
+    <div className="h-screen w-screen overflow-hidden">
+      <DocEditor
+        value={doc}
+        onChange={setDoc}
+        templates={defaultTemplates}
+        readOnly={isReadOnly}
+      />
+      {/* Hidden HTML output for E2E tests */}
+      <pre data-testid="html-output" className="hidden">{doc.html}</pre>
     </div>
   );
 }
-

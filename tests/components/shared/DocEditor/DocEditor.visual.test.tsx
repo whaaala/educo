@@ -27,6 +27,7 @@ vi.mock("@/components/shared/ColorPalettePicker", () => ({
 vi.mock("@/components/shared/Whiteboard/whiteboard-types", () => ({
   FONT_FAMILY_CATEGORIES: [],
   FONT_SIZES: [],
+  LINE_SPACINGS: [],
 }));
 
 // ── Import after mocks ──
@@ -249,29 +250,20 @@ describe("DocEditor — Visual / CSS", () => {
   // 4. Toolbar
   // ────────────────────────────────────────────────
   describe("toolbar", () => {
-    it("toolbar buttons have theme borders and backgrounds", () => {
+    it("toolbar buttons have hover backgrounds and rounded corners", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const boldBtn = container.querySelector('[title="Bold"]');
+      const boldBtn = container.querySelector('[title="Bold (Ctrl+B)"]');
       expect(boldBtn).not.toBeNull();
       expectClasses(boldBtn, [
-        "w-8",
-        "h-8",
+        "w-7",
+        "h-7",
         "inline-flex",
         "items-center",
         "justify-center",
-        "rounded-lg",
-        "border",
-        "border-gray-200",
-        "dark:border-gray-700",
-        "midnight:border-cyan-500/20",
-        "purple:border-pink-500/20",
-        "bg-white/60",
-        "dark:bg-gray-800/50",
-        "midnight:bg-[#111827]/60",
-        "purple:bg-[#2a1447]/60",
-        "hover:bg-gray-50",
+        "rounded",
+        "hover:bg-gray-100",
         "dark:hover:bg-gray-800",
         "midnight:hover:bg-cyan-500/10",
         "purple:hover:bg-pink-500/10",
@@ -286,29 +278,31 @@ describe("DocEditor — Visual / CSS", () => {
       );
 
       const toolbarButtonTitles = [
-        "Undo",
-        "Redo",
-        "Bold",
-        "Italic",
-        "Underline",
-        "Bulleted list",
-        "Numbered list",
-        "Align left",
-        "Align center",
-        "Align right",
-        "Insert link",
+        "Undo (Ctrl+Z)",
+        "Redo (Ctrl+Y)",
+        "Bold (Ctrl+B)",
+        "Italic (Ctrl+I)",
+        "Underline (Ctrl+U)",
+        "Insert link (Ctrl+K)",
+        "Search",
+        "Print (Ctrl+P)",
+        "Spelling and grammar check",
+        "Paint format",
+        "Insert image",
+        "Clear formatting",
+        "Add comment (Ctrl+Alt+M)",
       ];
 
       for (const title of toolbarButtonTitles) {
         const btn = container.querySelector(`[title="${title}"]`);
         expect(btn, `Toolbar button "${title}" should exist`).not.toBeNull();
         expectClasses(btn, [
-          "w-8",
-          "h-8",
+          "w-7",
+          "h-7",
           "inline-flex",
           "items-center",
           "justify-center",
-          "rounded-lg",
+          "rounded",
         ]);
       }
     });
@@ -317,7 +311,7 @@ describe("DocEditor — Visual / CSS", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const boldBtn = container.querySelector('[title="Bold"]');
+      const boldBtn = container.querySelector('[title="Bold (Ctrl+B)"]');
       expect(boldBtn).not.toBeNull();
 
       // Icon is the first child SVG inside the button
@@ -338,89 +332,43 @@ describe("DocEditor — Visual / CSS", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // ToolbarDivider is a div with w-px h-6 between toolbar groups
-      // Find dividers in the toolbar area (inside px-3 pt-3 pb-2)
+      // ToolbarDivider is a div with w-px h-5 between toolbar groups
+      // Find dividers in the toolbar area
       const root = container.querySelector("[data-doc-editor-root]");
       expect(root).not.toBeNull();
 
-      // ToolbarDividers are w-px h-6 divs with mx-1
-      const dividers = root!.querySelectorAll(".w-px.h-6.mx-1");
+      // ToolbarDividers are w-px h-5 divs with mx-0.5
+      const dividers = root!.querySelectorAll(".w-px.h-5");
       expect(dividers.length).toBeGreaterThanOrEqual(1);
 
       const firstDivider = dividers[0];
       expectClasses(firstDivider, [
         "w-px",
-        "h-6",
-        "bg-gray-200",
-        "dark:bg-gray-700",
+        "h-5",
+        "bg-gray-300",
+        "dark:bg-gray-600",
         "midnight:bg-cyan-500/15",
         "purple:bg-pink-500/15",
-        "mx-1",
+        "mx-0.5",
       ]);
     });
 
-    it("heading button has theme styling with correct text size", () => {
+    it("paragraph style dropdown has correct styling and shows 'Normal text'", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const headingBtn = container.querySelector('[title="Heading"]');
-      expect(headingBtn).not.toBeNull();
-      expectClasses(headingBtn, [
-        "px-2.5",
-        "h-8",
-        "rounded-lg",
+      const stylesBtn = container.querySelector('[title="Styles"]');
+      expect(stylesBtn).not.toBeNull();
+      expectClasses(stylesBtn, [
+        "h-7",
+        "inline-flex",
+        "items-center",
+        "rounded",
         "text-[11px]",
-        "font-bold",
-        "border",
-        "border-gray-200",
-        "dark:border-gray-700",
-        "midnight:border-cyan-500/20",
-        "purple:border-pink-500/20",
-        "bg-white/60",
-        "dark:bg-gray-800/50",
-        "midnight:bg-[#111827]/60",
-        "purple:bg-[#2a1447]/60",
-        "hover:bg-gray-50",
-        "dark:hover:bg-gray-800",
-        "midnight:hover:bg-cyan-500/10",
-        "purple:hover:bg-pink-500/10",
-        "transition-colors",
-        "cursor-pointer",
+        "font-medium",
       ]);
-      // Content should be "H"
-      expect(headingBtn!.textContent?.trim()).toBe("H");
-    });
-
-    it("paragraph (Normal text) button has theme styling", () => {
-      const { container } = render(
-        <DocEditor value={defaultValue} onChange={onChange} />
-      );
-      const paraBtn = container.querySelector('[title="Normal text"]');
-      expect(paraBtn).not.toBeNull();
-      expectClasses(paraBtn, [
-        "px-2.5",
-        "h-8",
-        "rounded-lg",
-        "text-[11px]",
-        "font-bold",
-        "border",
-        "border-gray-200",
-        "dark:border-gray-700",
-        "midnight:border-cyan-500/20",
-        "purple:border-pink-500/20",
-        "bg-white/60",
-        "dark:bg-gray-800/50",
-        "midnight:bg-[#111827]/60",
-        "purple:bg-[#2a1447]/60",
-        "hover:bg-gray-50",
-        "dark:hover:bg-gray-800",
-        "midnight:hover:bg-cyan-500/10",
-        "purple:hover:bg-pink-500/10",
-        "transition-colors",
-        "cursor-pointer",
-      ]);
-      // Content should be "P"
-      expect(paraBtn!.textContent?.trim()).toBe("P");
+      // Content should include "Normal text"
+      expect(stylesBtn!.textContent).toContain("Normal text");
     });
   });
 
@@ -451,12 +399,12 @@ describe("DocEditor — Visual / CSS", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // The page wrapper div has: w-full rounded-2xl shadow-md
-      const pageWrapper = container.querySelector(".rounded-2xl.shadow-md");
+      // The page wrapper div has: w-full rounded-sm shadow-md
+      const pageWrapper = container.querySelector(".rounded-sm.shadow-md");
       expect(pageWrapper).not.toBeNull();
       expectClasses(pageWrapper, [
         "w-full",
-        "rounded-2xl",
+        "rounded-sm",
         "shadow-md",
         "bg-white",
         "dark:bg-gray-950",

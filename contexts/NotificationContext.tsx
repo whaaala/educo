@@ -21,7 +21,8 @@ export type NotificationType =
   | "alert"
   | "success"
   | "warning"
-  | "info";
+  | "info"
+  | "document_shared";
 
 export type NotificationPriority = "low" | "normal" | "high" | "urgent";
 

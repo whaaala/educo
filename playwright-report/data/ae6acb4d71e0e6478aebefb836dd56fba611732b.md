@@ -1,0 +1,447 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - link "Educo School ERP System" [ref=e6] [cursor=pointer]:
+            - /url: /
+            - img [ref=e8]
+            - generic [ref=e11]:
+              - heading "Educo" [level=1] [ref=e12]
+              - paragraph [ref=e13]: School ERP System
+          - button "Collapse sidebar" [ref=e14] [cursor=pointer]:
+            - img [ref=e15]
+        - navigation [ref=e18]:
+          - generic [ref=e19]:
+            - link "Dashboard" [ref=e21] [cursor=pointer]:
+              - /url: /
+              - generic [ref=e22]:
+                - img [ref=e24]
+                - generic [ref=e30]: Dashboard
+            - generic [ref=e31]:
+              - button "School Management" [ref=e32] [cursor=pointer]:
+                - generic [ref=e33]:
+                  - img [ref=e35]
+                  - generic [ref=e40]: School Management
+                - img [ref=e42]
+              - generic [ref=e44]:
+                - link "School Information" [ref=e45] [cursor=pointer]:
+                  - /url: /school/info
+                  - generic [ref=e46]:
+                    - img [ref=e48]
+                    - generic [ref=e52]: School Information
+                - link "Branches" [ref=e53] [cursor=pointer]:
+                  - /url: /school/branches
+                  - generic [ref=e54]:
+                    - img [ref=e56]
+                    - generic [ref=e61]: Branches
+                - link "Academic Years" [ref=e62] [cursor=pointer]:
+                  - /url: /school/academic-years
+                  - generic [ref=e63]:
+                    - img [ref=e65]
+                    - generic [ref=e67]: Academic Years
+                - link "Sections" [ref=e68] [cursor=pointer]:
+                  - /url: /school/sections
+                  - generic [ref=e69]:
+                    - img [ref=e71]
+                    - generic [ref=e74]: Sections
+                - link "Departments" [ref=e75] [cursor=pointer]:
+                  - /url: /school/departments
+                  - generic [ref=e76]:
+                    - img [ref=e78]
+                    - generic [ref=e83]: Departments
+            - generic [ref=e84]:
+              - button "Peoples" [ref=e85] [cursor=pointer]:
+                - generic [ref=e86]:
+                  - img [ref=e88]
+                  - generic [ref=e94]: Peoples
+                - img [ref=e96]
+              - generic [ref=e98]:
+                - generic [ref=e99]:
+                  - button "Students" [ref=e100] [cursor=pointer]:
+                    - generic [ref=e101]:
+                      - img [ref=e103]
+                      - generic [ref=e107]: Students
+                    - img [ref=e109]
+                  - generic [ref=e111]:
+                    - link "All Students" [ref=e112] [cursor=pointer]:
+                      - /url: /students?view=grid
+                      - generic [ref=e113]:
+                        - img [ref=e115]
+                        - generic [ref=e118]: All Students
+                    - link "Student List" [ref=e119] [cursor=pointer]:
+                      - /url: /students?view=list
+                      - generic [ref=e120]:
+                        - img [ref=e122]
+                        - generic [ref=e125]: Student List
+                    - link "Attendance" [ref=e126] [cursor=pointer]:
+                      - /url: /students/attendance
+                      - generic [ref=e127]:
+                        - img [ref=e129]
+                        - generic [ref=e133]: Attendance
+                    - link "Grading" [ref=e134] [cursor=pointer]:
+                      - /url: /students/grading
+                      - generic [ref=e135]:
+                        - img [ref=e137]
+                        - generic [ref=e141]: Grading
+                    - link "Report Cards" [ref=e142] [cursor=pointer]:
+                      - /url: /students/report-cards
+                      - generic [ref=e143]:
+                        - img [ref=e145]
+                        - generic [ref=e148]: Report Cards
+                    - link "Cumulative Report" [ref=e149] [cursor=pointer]:
+                      - /url: /students/cumulative-report
+                      - generic [ref=e150]:
+                        - img [ref=e152]
+                        - generic [ref=e154]: Cumulative Report
+                    - link "Transcripts" [ref=e155] [cursor=pointer]:
+                      - /url: /students/transcripts
+                      - generic [ref=e156]:
+                        - img [ref=e158]
+                        - generic [ref=e161]: Transcripts
+                    - link "Student Promotion" [ref=e162] [cursor=pointer]:
+                      - /url: /students/promotion
+                      - generic [ref=e163]:
+                        - img [ref=e165]
+                        - generic [ref=e168]: Student Promotion
+                    - link "Transfer Requests" [ref=e169] [cursor=pointer]:
+                      - /url: /students/transfers
+                      - generic [ref=e170]:
+                        - img [ref=e172]
+                        - generic [ref=e174]: Transfer Requests
+                    - link "Discipline" [ref=e175] [cursor=pointer]:
+                      - /url: /students/discipline
+                      - generic [ref=e176]:
+                        - img [ref=e178]
+                        - generic [ref=e180]: Discipline
+                    - link "Bulk Import" [ref=e181] [cursor=pointer]:
+                      - /url: /students/bulk-import
+                      - generic [ref=e182]:
+                        - img [ref=e184]
+                        - generic [ref=e187]: Bulk Import
+                - generic [ref=e188]:
+                  - button "Parents" [ref=e189] [cursor=pointer]:
+                    - generic [ref=e190]:
+                      - img [ref=e192]
+                      - generic [ref=e198]: Parents
+                    - img [ref=e200]
+                  - generic [ref=e202]:
+                    - link "Overview" [ref=e203] [cursor=pointer]:
+                      - /url: /admin/parents/dashboard
+                      - generic [ref=e204]:
+                        - img [ref=e206]
+                        - generic [ref=e211]: Overview
+                    - link "All Parents" [ref=e212] [cursor=pointer]:
+                      - /url: /admin/parents?view=grid
+                      - generic [ref=e213]:
+                        - img [ref=e215]
+                        - generic [ref=e220]: All Parents
+                    - link "Parent List" [ref=e221] [cursor=pointer]:
+                      - /url: /admin/parents?view=list
+                      - generic [ref=e222]:
+                        - img [ref=e224]
+                        - generic [ref=e229]: Parent List
+                    - link "₦ Fee Records" [ref=e230] [cursor=pointer]:
+                      - /url: /admin/parents/fees
+                      - generic [ref=e231]:
+                        - generic [ref=e233]: ₦
+                        - generic [ref=e234]: Fee Records
+                    - link "Messages" [ref=e235] [cursor=pointer]:
+                      - /url: /admin/parents/messages
+                      - generic [ref=e236]:
+                        - img [ref=e238]
+                        - generic [ref=e240]: Messages
+                    - link "Chat" [ref=e241] [cursor=pointer]:
+                      - /url: /admin/parents/chat
+                      - generic [ref=e242]:
+                        - img [ref=e244]
+                        - generic [ref=e246]: Chat
+                    - link "Events" [ref=e247] [cursor=pointer]:
+                      - /url: /admin/parents/events
+                      - generic [ref=e248]:
+                        - img [ref=e250]
+                        - generic [ref=e252]: Events
+                - generic [ref=e253]:
+                  - button "Personnel" [ref=e254] [cursor=pointer]:
+                    - generic [ref=e255]:
+                      - img [ref=e257]
+                      - generic [ref=e263]: Personnel
+                    - img [ref=e265]
+                  - generic [ref=e267]:
+                    - link "All Personnel" [ref=e268] [cursor=pointer]:
+                      - /url: /staff?view=grid
+                      - generic [ref=e269]:
+                        - img [ref=e271]
+                        - generic [ref=e276]: All Personnel
+                    - link "Personnel List" [ref=e277] [cursor=pointer]:
+                      - /url: /staff?view=list
+                      - generic [ref=e278]:
+                        - img [ref=e280]
+                        - generic [ref=e285]: Personnel List
+                    - link "Leave Requests" [ref=e286] [cursor=pointer]:
+                      - /url: /staff/leave-requests
+                      - generic [ref=e287]:
+                        - img [ref=e289]
+                        - generic [ref=e293]: Leave Requests
+                    - link "Performance Reviews" [ref=e294] [cursor=pointer]:
+                      - /url: /staff/performance-reviews
+                      - generic [ref=e295]:
+                        - img [ref=e297]
+                        - generic [ref=e299]: Performance Reviews
+                    - link "Discipline & Complaints" [ref=e300] [cursor=pointer]:
+                      - /url: /staff/discipline
+                      - generic [ref=e301]:
+                        - img [ref=e303]
+                        - generic [ref=e305]: Discipline & Complaints
+            - generic [ref=e306]:
+              - button "Academic" [ref=e307] [cursor=pointer]:
+                - generic [ref=e308]:
+                  - img [ref=e310]
+                  - generic [ref=e313]: Academic
+                - img [ref=e315]
+              - generic [ref=e317]:
+                - generic [ref=e318]:
+                  - button "Classes" [ref=e319] [cursor=pointer]:
+                    - generic [ref=e320]:
+                      - img [ref=e322]
+                      - generic [ref=e333]: Classes
+                    - img [ref=e335]
+                  - generic [ref=e337]:
+                    - link "All Classes" [ref=e338] [cursor=pointer]:
+                      - /url: /classes?view=grid
+                      - generic [ref=e339]:
+                        - img [ref=e341]
+                        - generic [ref=e351]: All Classes
+                    - link "Class List" [ref=e352] [cursor=pointer]:
+                      - /url: /classes?view=list
+                      - generic [ref=e353]:
+                        - img [ref=e355]
+                        - generic [ref=e365]: Class List
+                - link "Subjects" [ref=e366] [cursor=pointer]:
+                  - /url: /subjects
+                  - generic [ref=e367]:
+                    - img [ref=e369]
+                    - generic [ref=e371]: Subjects
+                - link "Exams" [ref=e372] [cursor=pointer]:
+                  - /url: /exams
+                  - generic [ref=e373]:
+                    - img [ref=e375]
+                    - generic [ref=e378]: Exams
+                - link "Syllabus" [ref=e379] [cursor=pointer]:
+                  - /url: /syllabus
+                  - generic [ref=e380]:
+                    - img [ref=e382]
+                    - generic [ref=e385]: Syllabus
+                - link "Assignments" [ref=e386] [cursor=pointer]:
+                  - /url: /assignments
+                  - generic [ref=e387]:
+                    - img [ref=e389]
+                    - generic [ref=e392]: Assignments
+            - generic [ref=e393]:
+              - button "Management" [ref=e394] [cursor=pointer]:
+                - generic [ref=e395]:
+                  - img [ref=e397]
+                  - generic [ref=e401]: Management
+                - img [ref=e403]
+              - generic [ref=e405]:
+                - generic [ref=e406]:
+                  - button "₦ Finance" [ref=e407] [cursor=pointer]:
+                    - generic [ref=e408]:
+                      - generic [ref=e410]: ₦
+                      - generic [ref=e412]: Finance
+                    - img [ref=e414]
+                  - generic [ref=e416]:
+                    - link "Fee Structure" [ref=e417] [cursor=pointer]:
+                      - /url: /finance/fee-structure
+                      - generic [ref=e418]:
+                        - img [ref=e420]
+                        - generic [ref=e423]: Fee Structure
+                    - link "Installment Plans" [ref=e424] [cursor=pointer]:
+                      - /url: /finance/installments
+                      - generic [ref=e425]:
+                        - img [ref=e427]
+                        - generic [ref=e437]: Installment Plans
+                    - link "Receipts" [ref=e438] [cursor=pointer]:
+                      - /url: /finance/receipts
+                      - generic [ref=e439]:
+                        - img [ref=e441]
+                        - generic [ref=e444]: Receipts
+                - generic [ref=e445]:
+                  - button "Library" [ref=e446] [cursor=pointer]:
+                    - generic [ref=e447]:
+                      - img [ref=e449]
+                      - generic [ref=e452]: Library
+                    - img [ref=e454]
+                  - generic [ref=e456]:
+                    - link "Book Catalog" [ref=e457] [cursor=pointer]:
+                      - /url: /library
+                      - generic [ref=e458]:
+                        - img [ref=e460]
+                        - generic [ref=e462]: Book Catalog
+                    - link "Borrowing & Returns" [ref=e463] [cursor=pointer]:
+                      - /url: /library/borrowing
+                      - generic [ref=e464]:
+                        - img [ref=e466]
+                        - generic [ref=e468]: Borrowing & Returns
+                    - link "Library Members" [ref=e469] [cursor=pointer]:
+                      - /url: /library/members
+                      - generic [ref=e470]:
+                        - img [ref=e472]
+                        - generic [ref=e477]: Library Members
+                    - link "Fines & Payments" [ref=e478] [cursor=pointer]:
+                      - /url: /library/fines
+                      - generic [ref=e479]:
+                        - img [ref=e481]
+                        - generic [ref=e484]: Fines & Payments
+                - link "Dormitory" [ref=e485] [cursor=pointer]:
+                  - /url: /dormitory
+                  - generic [ref=e486]:
+                    - img [ref=e488]
+                    - generic [ref=e491]: Dormitory
+                - link "Transport" [ref=e492] [cursor=pointer]:
+                  - /url: /transport
+                  - generic [ref=e493]:
+                    - img [ref=e495]
+                    - generic [ref=e499]: Transport
+            - link "Attendance" [ref=e501] [cursor=pointer]:
+              - /url: /attendance
+              - generic [ref=e502]:
+                - img [ref=e504]
+                - generic [ref=e507]: Attendance
+            - generic [ref=e508]:
+              - button "Settings" [ref=e509] [cursor=pointer]:
+                - generic [ref=e510]:
+                  - img [ref=e512]
+                  - generic [ref=e516]: Settings
+                - img [ref=e518]
+              - generic [ref=e520]:
+                - link "Settings Overview" [ref=e521] [cursor=pointer]:
+                  - /url: /settings
+                  - generic [ref=e522]:
+                    - img [ref=e524]
+                    - generic [ref=e527]: Settings Overview
+                - link "General Settings" [ref=e528] [cursor=pointer]:
+                  - /url: /settings/general
+                  - generic [ref=e529]:
+                    - img [ref=e531]
+                    - generic [ref=e534]: General Settings
+                - link "Communication" [ref=e535] [cursor=pointer]:
+                  - /url: /admin/settings/communication
+                  - generic [ref=e536]:
+                    - img [ref=e538]
+                    - generic [ref=e541]: Communication
+                - link "Schools & Branches" [ref=e542] [cursor=pointer]:
+                  - /url: /settings/schools
+                  - generic [ref=e543]:
+                    - img [ref=e545]
+                    - generic [ref=e548]: Schools & Branches
+                - link "User Management" [ref=e549] [cursor=pointer]:
+                  - /url: /settings/users
+                  - generic [ref=e550]:
+                    - img [ref=e552]
+                    - generic [ref=e557]: User Management
+                - link "Admin Console" [ref=e558] [cursor=pointer]:
+                  - /url: http://localhost:3001
+                  - generic [ref=e559]:
+                    - img [ref=e561]
+                    - generic [ref=e565]: Admin Console
+        - generic [ref=e566]:
+          - button "Current School Educo Demo School" [ref=e568]:
+            - img [ref=e570]
+            - generic [ref=e574]:
+              - paragraph [ref=e575]: Current School
+              - paragraph [ref=e576]: Educo Demo School
+            - img [ref=e577]
+          - generic [ref=e579]:
+            - paragraph [ref=e580]:
+              - img [ref=e581]
+              - text: Need Help?
+            - paragraph [ref=e583]: Check our documentation & support
+    - generic [ref=e584]:
+      - banner [ref=e585]:
+        - generic [ref=e586]:
+          - generic [ref=e587]:
+            - generic [ref=e589]:
+              - img [ref=e590]
+              - searchbox "Search for anything..." [ref=e593]
+            - generic [ref=e595]: Admin Portal
+          - generic [ref=e596]:
+            - 'button "Academic Year : 2024 / 2025" [ref=e598] [cursor=pointer]':
+              - img [ref=e599]
+              - generic [ref=e601]: "Academic Year : 2024 / 2025"
+              - img [ref=e602]
+            - button "🌍 English" [ref=e605] [cursor=pointer]:
+              - generic [ref=e606]: 🌍
+              - generic [ref=e607]: English
+              - img [ref=e608]
+            - button "Add New" [ref=e611] [cursor=pointer]:
+              - img [ref=e612]
+            - button "Cycle Theme" [ref=e614] [cursor=pointer]:
+              - img [ref=e615]
+            - button "Notifications" [ref=e618] [cursor=pointer]:
+              - img [ref=e619]
+              - generic [ref=e622]: "3"
+            - button "Messages" [ref=e623] [cursor=pointer]:
+              - img [ref=e624]
+            - button "Reception Strength" [ref=e627] [cursor=pointer]:
+              - img [ref=e628]
+            - button "Toggle Fullscreen" [ref=e631] [cursor=pointer]:
+              - img [ref=e632]
+            - button "System Administrator" [ref=e638]:
+              - img "System Administrator" [ref=e640]
+      - main [ref=e641]:
+        - generic [ref=e642]:
+          - generic [ref=e645]:
+            - heading "Communication Settings" [level=1] [ref=e646]
+            - generic [ref=e647]:
+              - generic [ref=e648]:
+                - link "Dashboard" [ref=e649] [cursor=pointer]:
+                  - /url: /
+                - generic [ref=e650]: /
+              - generic [ref=e651]:
+                - link "Admin" [ref=e652] [cursor=pointer]:
+                  - /url: /admin
+                - generic [ref=e653]: /
+              - generic [ref=e654]:
+                - link "Settings" [ref=e655] [cursor=pointer]:
+                  - /url: /admin/settings
+                - generic [ref=e656]: /
+              - generic [ref=e658]: Communication
+          - generic [ref=e659]:
+            - generic [ref=e662]:
+              - generic [ref=e663]:
+                - img [ref=e665]
+                - generic [ref=e668]:
+                  - heading "Communication Settings" [level=1] [ref=e669]
+                  - paragraph [ref=e670]: Configure video, voice, and chat platforms
+              - button "Save Changes" [disabled] [ref=e671]:
+                - img [ref=e672]
+                - generic [ref=e676]: Save Changes
+            - generic [ref=e678]:
+              - generic [ref=e680]:
+                - generic [ref=e681]:
+                  - img [ref=e683]
+                  - generic [ref=e687]:
+                    - heading "Select School" [level=2] [ref=e688]
+                    - paragraph [ref=e689]: Choose a school to configure
+                - button "Select a school..." [ref=e691]:
+                  - generic [ref=e692]:
+                    - img [ref=e693]
+                    - generic [ref=e696]: Select a school...
+                  - img [ref=e697]
+              - generic [ref=e700]:
+                - img [ref=e702]
+                - heading "Select a School" [level=3] [ref=e706]
+                - paragraph [ref=e707]: Choose a school from the dropdown above to configure its communication settings.
+  - status [ref=e708]:
+    - generic [ref=e709]:
+      - img [ref=e711]
+      - generic [ref=e713]:
+        - text: Static route
+        - button "Hide static indicator" [ref=e714] [cursor=pointer]:
+          - img [ref=e715]
+  - alert [ref=e718]
+```
