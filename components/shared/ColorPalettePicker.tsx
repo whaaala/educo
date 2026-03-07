@@ -201,14 +201,37 @@ export function isLightColor(hex: string): boolean {
   return (r * 299 + g * 587 + b * 114) / 1000 > 150;
 }
 
+// ─── Native Color Picker Guard ───────────────────────────────────────────
+// Module-level flag: set when <input type="color"> is opened, cleared ONLY on blur.
+// While the native picker is open, onChange fires on every drag — the flag stays true
+// so that parent onSelect callbacks can avoid closing the container.
+let _nativeColorPickerOpen = false;
+export function isNativeColorPickerOpen(): boolean { return _nativeColorPickerOpen; }
+
 // ─── Custom Hex Input Row ────────────────────────────────────────────────
 
 function CustomHexRow({ color, onSelect }: { color: string; onSelect: (c: string) => void }) {
   const nativeVal = color.startsWith("gradient:") ? color.split(":")[1] : color;
+  const [hexText, setHexText] = useState(color);
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Sync external color changes when not actively editing
+  useEffect(() => {
+    if (!isFocused) setHexText(color);
+  }, [color, isFocused]);
+
   return (
-    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/50">
+    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/50" onMouseDown={(e) => e.stopPropagation()}>
       <label className="relative cursor-pointer">
-        <input type="color" value={nativeVal} onChange={(e) => onSelect(e.target.value)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+        <input
+          type="color"
+          value={nativeVal}
+          onMouseDown={() => { _nativeColorPickerOpen = true; }}
+          onFocus={() => { _nativeColorPickerOpen = true; }}
+          onChange={(e) => { onSelect(e.target.value); }}
+          onBlur={() => { _nativeColorPickerOpen = false; }}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        />
         <div className="w-7 h-7 rounded-lg border border-gray-200 dark:border-gray-600 shadow-inner" style={{ background: color.startsWith("gradient:") ? colorToCSS(color) : color }}>
           <div className="w-full h-full rounded-lg" style={{ background: "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)", opacity: 0.3 }} />
         </div>
@@ -216,8 +239,19 @@ function CustomHexRow({ color, onSelect }: { color: string; onSelect: (c: string
       <span className="text-[10px] text-gray-400 dark:text-gray-500">Custom</span>
       <input
         type="text"
-        value={color}
-        onChange={(e) => { if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) onSelect(e.target.value); }}
+        value={hexText}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => { setIsFocused(false); setHexText(color); }}
+        onChange={(e) => {
+          const v = e.target.value;
+          setHexText(v);
+          if (/^#[0-9a-fA-F]{6}$/.test(v)) onSelect(v);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && /^#[0-9a-fA-F]{6}$/.test(hexText)) {
+            onSelect(hexText);
+          }
+        }}
         className="flex-1 px-2 py-1 text-[11px] font-mono rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 outline-none focus:border-blue-400"
         maxLength={7}
         spellCheck={false}

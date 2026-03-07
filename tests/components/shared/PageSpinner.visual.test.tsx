@@ -6,6 +6,7 @@ describe("PageSpinner — Visual / CSS", () => {
   describe("container layout", () => {
     it("has centered flex layout with min-height", () => {
       const { container } = render(<PageSpinner />);
+
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.className).toContain("flex");
       expect(wrapper.className).toContain("flex-col");
@@ -18,6 +19,7 @@ describe("PageSpinner — Visual / CSS", () => {
   describe("spinner theming", () => {
     it("spinner has theme colors", () => {
       const { container } = render(<PageSpinner />);
+
       // Lucide SVGs use getAttribute("class") in jsdom
       const spinner = container.querySelector("svg")!;
       const cls = spinner.getAttribute("class")!;
@@ -30,6 +32,7 @@ describe("PageSpinner — Visual / CSS", () => {
 
     it("pulsing background has theme colors", () => {
       const { container } = render(<PageSpinner />);
+
       const pulse = container.querySelector(".animate-pulse.rounded-full");
       expect(pulse).toBeInTheDocument();
       expect(pulse!.className).toContain("bg-blue-100");
@@ -40,6 +43,7 @@ describe("PageSpinner — Visual / CSS", () => {
   describe("size variants", () => {
     it("sm spinner is w-8 h-8", () => {
       const { container } = render(<PageSpinner size="sm" />);
+
       const spinner = container.querySelector("svg")!;
       const cls = spinner.getAttribute("class")!;
       expect(cls).toContain("w-8");
@@ -48,6 +52,7 @@ describe("PageSpinner — Visual / CSS", () => {
 
     it("md spinner is w-12 h-12", () => {
       const { container } = render(<PageSpinner size="md" />);
+
       const spinner = container.querySelector("svg")!;
       const cls = spinner.getAttribute("class")!;
       expect(cls).toContain("w-12");
@@ -56,6 +61,7 @@ describe("PageSpinner — Visual / CSS", () => {
 
     it("lg spinner is w-16 h-16", () => {
       const { container } = render(<PageSpinner size="lg" />);
+
       const spinner = container.querySelector("svg")!;
       const cls = spinner.getAttribute("class")!;
       expect(cls).toContain("w-16");
@@ -66,6 +72,7 @@ describe("PageSpinner — Visual / CSS", () => {
   describe("message theming", () => {
     it("message has theme text colors", () => {
       render(<PageSpinner message="Loading..." />);
+
       const msg = screen.getByText("Loading...");
       expect(msg.className).toContain("text-gray-600");
       expect(msg.className).toContain("dark:text-gray-400");

@@ -6,6 +6,7 @@ describe("SecondaryButton — Visual / CSS", () => {
   describe("button theming", () => {
     it("has theme-responsive backgrounds", () => {
       render(<SecondaryButton label="Cancel" />);
+
       const btn = screen.getByText("Cancel").closest("button")!;
       expect(btn.className).toContain("bg-white");
       expect(btn.className).toContain("dark:bg-gray-800");
@@ -15,6 +16,7 @@ describe("SecondaryButton — Visual / CSS", () => {
 
     it("has theme text colors", () => {
       render(<SecondaryButton label="Cancel" />);
+
       const btn = screen.getByText("Cancel").closest("button")!;
       expect(btn.className).toContain("text-gray-700");
       expect(btn.className).toContain("dark:text-gray-300");
@@ -24,6 +26,7 @@ describe("SecondaryButton — Visual / CSS", () => {
 
     it("has border with theme colors", () => {
       render(<SecondaryButton label="Cancel" />);
+
       const btn = screen.getByText("Cancel").closest("button")!;
       expect(btn.className).toContain("border");
       expect(btn.className).toContain("border-gray-200");
@@ -36,6 +39,7 @@ describe("SecondaryButton — Visual / CSS", () => {
   describe("layout", () => {
     it("has rounded-lg flex layout", () => {
       render(<SecondaryButton label="Cancel" />);
+
       const btn = screen.getByText("Cancel").closest("button")!;
       expect(btn.className).toContain("rounded-lg");
       expect(btn.className).toContain("flex");
@@ -44,6 +48,7 @@ describe("SecondaryButton — Visual / CSS", () => {
 
     it("has text-sm font-medium", () => {
       render(<SecondaryButton label="Cancel" />);
+
       const btn = screen.getByText("Cancel").closest("button")!;
       expect(btn.className).toContain("text-sm");
       expect(btn.className).toContain("font-medium");
@@ -53,6 +58,7 @@ describe("SecondaryButton — Visual / CSS", () => {
   describe("mobile text hiding", () => {
     it("hides label on mobile with hidden sm:inline", () => {
       render(<SecondaryButton label="Cancel" hideTextOnMobile />);
+
       const span = screen.getByText("Cancel");
       expect(span.className).toContain("hidden");
       expect(span.className).toContain("sm:inline");
@@ -60,6 +66,7 @@ describe("SecondaryButton — Visual / CSS", () => {
 
     it("shows label on all sizes when hideTextOnMobile is false", () => {
       render(<SecondaryButton label="Cancel" hideTextOnMobile={false} />);
+
       const span = screen.getByText("Cancel");
       expect(span.className).not.toContain("hidden");
     });

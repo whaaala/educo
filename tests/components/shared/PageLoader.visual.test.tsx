@@ -6,6 +6,7 @@ describe("PageLoader — Visual / CSS", () => {
   describe("container theming", () => {
     it("has fixed inset-0 fullscreen overlay", () => {
       const { container } = render(<PageLoader isLoading />);
+
       const overlay = container.firstChild as HTMLElement;
       expect(overlay.className).toContain("fixed");
       expect(overlay.className).toContain("inset-0");
@@ -14,6 +15,7 @@ describe("PageLoader — Visual / CSS", () => {
 
     it("has theme backgrounds", () => {
       const { container } = render(<PageLoader isLoading />);
+
       const overlay = container.firstChild as HTMLElement;
       expect(overlay.className).toContain("bg-white");
       expect(overlay.className).toContain("dark:bg-gray-900");
@@ -23,6 +25,7 @@ describe("PageLoader — Visual / CSS", () => {
 
     it("has centered flex layout", () => {
       const { container } = render(<PageLoader isLoading />);
+
       const overlay = container.firstChild as HTMLElement;
       expect(overlay.className).toContain("flex");
       expect(overlay.className).toContain("items-center");
@@ -31,6 +34,7 @@ describe("PageLoader — Visual / CSS", () => {
 
     it("has fade-in animation", () => {
       const { container } = render(<PageLoader isLoading />);
+
       const overlay = container.firstChild as HTMLElement;
       expect(overlay.className).toContain("animate-in");
       expect(overlay.className).toContain("fade-in");
@@ -40,6 +44,7 @@ describe("PageLoader — Visual / CSS", () => {
   describe("spinner theming", () => {
     it("has animated spin ring", () => {
       const { container } = render(<PageLoader isLoading />);
+
       const spinner = container.querySelector(".animate-spin");
       expect(spinner).toBeInTheDocument();
       expect(spinner!.className).toContain("border-t-blue-600");
@@ -52,6 +57,7 @@ describe("PageLoader — Visual / CSS", () => {
   describe("text theming", () => {
     it("loading text has theme colors", () => {
       render(<PageLoader isLoading loadingText="Loading" />);
+
       const text = screen.getByText("Loading");
       expect(text.className).toContain("text-xl");
       expect(text.className).toContain("font-bold");
@@ -63,6 +69,7 @@ describe("PageLoader — Visual / CSS", () => {
 
     it("subtext has subdued theme colors", () => {
       render(<PageLoader isLoading />);
+
       const sub = screen.getByText("Please wait a moment...");
       expect(sub.className).toContain("text-sm");
       expect(sub.className).toContain("text-gray-500");

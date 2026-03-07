@@ -154,7 +154,6 @@ test.describe("Doc Editor — New Toolbar Features", () => {
     await goto(page, "/doc-editor-test");
     await page.click('button[title="Text color"]');
     await page.waitForTimeout(200);
-    // The TabbedColorPalette shows tabs including "solid" (capitalized in the button)
     await expect(page.locator("button").filter({ hasText: /^solid$/i })).toBeVisible();
   });
 
@@ -162,7 +161,6 @@ test.describe("Doc Editor — New Toolbar Features", () => {
     await goto(page, "/doc-editor-test");
     await page.click('button[title="Highlight color"]');
     await page.waitForTimeout(200);
-    // The highlight picker has a "Remove highlight" button
     await expect(page.getByText("Remove highlight")).toBeVisible();
   });
 
@@ -181,7 +179,6 @@ test.describe("Doc Editor — New Toolbar Features", () => {
     await page.waitForTimeout(200);
     await page.locator("button").filter({ hasText: /^150%$/ }).click();
     await page.waitForTimeout(200);
-    // After selecting 150%, the dropdown label should update
     await expect(zoomBtn).toContainText("150%");
   });
 
@@ -214,7 +211,6 @@ test.describe("Doc Editor — New Toolbar Features", () => {
 test.describe("Doc Editor — Menu System", () => {
   test("File menu shows New, Open, Share, Download items", async ({ page }) => {
     await goto(page, "/doc-editor-test");
-    // Click the File menu label in the menubar
     await page.locator("[data-doc-menubar]").getByText("File").click();
     await page.waitForTimeout(200);
     const panel = page.locator("[data-doc-menu-panel]").first();
@@ -257,7 +253,6 @@ test.describe("Doc Editor — Menu System", () => {
     await page.locator("[data-doc-menubar]").getByText("File").click();
     await page.waitForTimeout(200);
     await expect(page.locator("[data-doc-menu-panel]").first()).toBeVisible();
-    // Click the editor area to close the menu
     await editorArea(page).click();
     await page.waitForTimeout(300);
     await expect(page.locator("[data-doc-menu-panel]")).toHaveCount(0);
@@ -294,7 +289,6 @@ test.describe("Doc Editor — Tables", () => {
     const tableItem = page.locator("[data-doc-menu-panel]").getByText("Table");
     await tableItem.hover();
     await page.waitForTimeout(400);
-    // The submenu should contain the TableGridPicker (rendered in a SubmenuPanel)
     const submenuPanels = page.locator("[data-doc-menu-panel]");
     await expect(submenuPanels.last()).toBeVisible();
   });
@@ -318,12 +312,10 @@ test.describe("Doc Editor — Find & Replace", () => {
     await editor.click();
     await page.keyboard.type("foo bar foo", { delay: 20 });
     await page.waitForTimeout(200);
-    // Open Find and Replace dialog
     await page.locator("[data-doc-menubar]").getByText("Edit").click();
     await page.waitForTimeout(200);
     await page.locator("[data-doc-menu-panel]").getByText("Find and replace").click();
     await page.waitForTimeout(200);
-    // Fill in find and replace fields
     await page.getByPlaceholder("Find\u2026").fill("foo");
     await page.getByPlaceholder("Replace with\u2026").fill("baz");
     await page.waitForTimeout(100);
@@ -341,7 +333,6 @@ test.describe("Doc Editor — Find & Replace", () => {
     await editor.click();
     await page.keyboard.type("hello world", { delay: 20 });
     await page.waitForTimeout(200);
-    // Open Find and Replace dialog
     await page.locator("[data-doc-menubar]").getByText("Edit").click();
     await page.waitForTimeout(200);
     await page.locator("[data-doc-menu-panel]").getByText("Find and replace").click();
@@ -349,7 +340,6 @@ test.describe("Doc Editor — Find & Replace", () => {
     await page.getByPlaceholder("Find\u2026").fill("hello");
     await page.getByText("Find next").click();
     await page.waitForTimeout(300);
-    // Toast should show "Found"
     await expect(page.getByText("Found")).toBeVisible();
   });
 });
@@ -365,7 +355,6 @@ test.describe("Doc Editor — Export", () => {
     const downloadItem = page.locator("[data-doc-menu-panel]").getByText("Download");
     await downloadItem.hover();
     await page.waitForTimeout(400);
-    // Check that format options are visible in the submenu
     await expect(page.getByText("Web page (.html)")).toBeVisible();
     await expect(page.getByText("PDF document (.pdf)")).toBeVisible();
   });
@@ -398,7 +387,7 @@ test.describe("Doc Editor — Page Setup", () => {
     await page.waitForTimeout(200);
     await page.locator("[data-doc-menu-panel]").getByText("Page setup").click();
     await page.waitForTimeout(200);
-    await expect(page.getByText("Width (px)")).toBeVisible();
+    await expect(page.getByText("Paper size")).toBeVisible();
   });
 });
 
@@ -411,7 +400,6 @@ test.describe("Doc Editor — Fullscreen", () => {
     await page.waitForTimeout(200);
     await page.locator("[data-doc-menu-panel]").getByText("Full screen").click();
     await page.waitForTimeout(300);
-    // The "Exit full screen" button should appear
     await expect(page.getByText("Exit full screen")).toBeVisible();
   });
 
@@ -422,7 +410,6 @@ test.describe("Doc Editor — Fullscreen", () => {
     await page.locator("[data-doc-menu-panel]").getByText("Full screen").click();
     await page.waitForTimeout(300);
     await expect(page.getByText("Exit full screen")).toBeVisible();
-    // Press Escape to exit fullscreen
     await page.keyboard.press("Escape");
     await page.waitForTimeout(300);
     await expect(page.getByText("Exit full screen")).toHaveCount(0);
@@ -469,7 +456,6 @@ test.describe("Doc Editor — Keyboard Shortcuts", () => {
     await page.waitForTimeout(200);
     const beforeUndo = await htmlOutput(page).textContent();
     expect(beforeUndo).toContain("second");
-    // Undo the last typed word
     await page.keyboard.press("Control+Z");
     await page.waitForTimeout(300);
     const afterUndo = await htmlOutput(page).textContent();

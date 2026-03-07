@@ -19,6 +19,7 @@ describe("formatChatTime", () => {
 
   it("formats today's time with hour and minute", () => {
     const result = formatChatTime("2026-02-27T09:30:00");
+
     // Should return something like "9:30 AM"
     expect(result).toMatch(/9:30\s*AM/i);
   });
@@ -37,6 +38,7 @@ describe("formatChatTime", () => {
 
   it("returns date for messages older than 7 days", () => {
     const result = formatChatTime("2026-02-15T10:00:00");
+
     // Should be "15 Feb" format (en-GB)
     expect(result).toMatch(/15 Feb/);
   });
@@ -45,6 +47,7 @@ describe("formatChatTime", () => {
 describe("calculateChatStats", () => {
   it("returns zero stats for empty array", () => {
     const stats = calculateChatStats([]);
+
     expect(stats).toEqual({
       total: 0,
       active: 0,
@@ -111,6 +114,7 @@ describe("CHAT_SORT_OPTIONS", () => {
 
   it("has correct option values", () => {
     const values = CHAT_SORT_OPTIONS.map((o) => o.value);
+
     expect(values).toEqual(["recent", "oldest", "unread", "name_asc", "name_desc"]);
   });
 });
@@ -118,17 +122,20 @@ describe("CHAT_SORT_OPTIONS", () => {
 describe("DEFAULT_CHAT_FILTER_FIELDS", () => {
   it("has status and messages filters", () => {
     const ids = DEFAULT_CHAT_FILTER_FIELDS.map((f) => f.id);
+
     expect(ids).toContain("status");
     expect(ids).toContain("messages");
   });
 
   it("status filter has Online and Offline options", () => {
     const statusField = DEFAULT_CHAT_FILTER_FIELDS.find((f) => f.id === "status");
+
     expect(statusField?.options).toEqual(["Online", "Offline"]);
   });
 
   it("messages filter has Unread and Read options", () => {
     const messagesField = DEFAULT_CHAT_FILTER_FIELDS.find((f) => f.id === "messages");
+
     expect(messagesField?.options).toEqual(["Unread", "Read"]);
   });
 });

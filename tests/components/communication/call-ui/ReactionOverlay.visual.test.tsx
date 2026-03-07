@@ -10,7 +10,7 @@ describe("ReactionOverlay — Visual / CSS", () => {
     });
 
     it("has absolute overlay with pointer-events-none", () => {
-      const reactions = [{ id: "r1", emoji: "👍", x: 50, startTime: Date.now() }];
+      const reactions = [{ id: "r1", emoji: "\u{1F44D}", x: 50, startTime: Date.now() }];
       const { container } = render(<ReactionOverlay reactions={reactions} />);
       const overlay = container.firstChild as HTMLElement;
       expect(overlay.className).toContain("absolute");
@@ -20,7 +20,7 @@ describe("ReactionOverlay — Visual / CSS", () => {
     });
 
     it("has z-40 stacking order", () => {
-      const reactions = [{ id: "r1", emoji: "👍", x: 50, startTime: Date.now() }];
+      const reactions = [{ id: "r1", emoji: "\u{1F44D}", x: 50, startTime: Date.now() }];
       const { container } = render(<ReactionOverlay reactions={reactions} />);
       const overlay = container.firstChild as HTMLElement;
       expect(overlay.className).toContain("z-40");
@@ -29,7 +29,7 @@ describe("ReactionOverlay — Visual / CSS", () => {
 
   describe("reaction items", () => {
     it("renders reaction emoji at absolute bottom position", () => {
-      const reactions = [{ id: "r1", emoji: "🎉", x: 30, startTime: Date.now() }];
+      const reactions = [{ id: "r1", emoji: "\u{1F389}", x: 30, startTime: Date.now() }];
       const { container } = render(<ReactionOverlay reactions={reactions} />);
       const reactionEl = container.querySelector(".absolute.bottom-0");
       expect(reactionEl).not.toBeNull();
@@ -37,7 +37,7 @@ describe("ReactionOverlay — Visual / CSS", () => {
     });
 
     it("positions reaction with left percentage style", () => {
-      const reactions = [{ id: "r1", emoji: "❤️", x: 45, startTime: Date.now() }];
+      const reactions = [{ id: "r1", emoji: "\u{2764}\u{FE0F}", x: 45, startTime: Date.now() }];
       const { container } = render(<ReactionOverlay reactions={reactions} />);
       const reactionEl = container.querySelector(".absolute.bottom-0") as HTMLElement;
       expect(reactionEl.style.left).toBe("45%");

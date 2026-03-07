@@ -9,6 +9,7 @@ describe("StatCard — Visual / CSS", () => {
       const { container } = render(
         <StatCard icon={Users} label="Students" value={42} color="blue" />
       );
+
       const card = container.firstChild as HTMLElement;
       expect(card.className).toContain("rounded-2xl");
       expect(card.className).toContain("p-3");
@@ -19,6 +20,7 @@ describe("StatCard — Visual / CSS", () => {
       const { container } = render(
         <StatCard icon={Users} label="Students" value={42} color="blue" />
       );
+
       const card = container.firstChild as HTMLElement;
       expect(card.className).toContain("flex");
       expect(card.className).toContain("flex-col");
@@ -29,6 +31,7 @@ describe("StatCard — Visual / CSS", () => {
       const { container } = render(
         <StatCard icon={Users} label="Students" value={42} color="blue" />
       );
+
       const card = container.firstChild as HTMLElement;
       expect(card.className).toContain("h-[100px]");
       expect(card.className).toContain("sm:h-[110px]");
@@ -38,6 +41,7 @@ describe("StatCard — Visual / CSS", () => {
       const { container } = render(
         <StatCard icon={Users} label="Students" value={42} color="blue" />
       );
+
       const card = container.firstChild as HTMLElement;
       expect(card.className).toContain("overflow-hidden");
       expect(card.className).toContain("group");
@@ -49,6 +53,7 @@ describe("StatCard — Visual / CSS", () => {
       const { container } = render(
         <StatCard icon={Users} label="Students" value={42} color="blue" />
       );
+
       const card = container.firstChild as HTMLElement;
       expect(card.className).toContain("bg-blue-50/80");
       expect(card.className).toContain("dark:bg-blue-950/30");
@@ -58,6 +63,7 @@ describe("StatCard — Visual / CSS", () => {
   describe("label typography", () => {
     it("label has uppercase tracking-wide", () => {
       render(<StatCard icon={Users} label="Students" value={42} color="blue" />);
+
       const label = screen.getByText("Students");
       expect(label.className).toContain("uppercase");
       expect(label.className).toContain("tracking-wide");
@@ -66,6 +72,7 @@ describe("StatCard — Visual / CSS", () => {
 
     it("label has responsive text size", () => {
       render(<StatCard icon={Users} label="Students" value={42} color="blue" />);
+
       const label = screen.getByText("Students");
       expect(label.className).toContain("text-[9px]");
       expect(label.className).toContain("sm:text-[10px]");
@@ -75,6 +82,7 @@ describe("StatCard — Visual / CSS", () => {
   describe("value typography", () => {
     it("value has responsive text size", () => {
       render(<StatCard icon={Users} label="Students" value={42} color="blue" />);
+
       const value = screen.getByText("42");
       expect(value.className).toContain("text-xl");
       expect(value.className).toContain("sm:text-2xl");

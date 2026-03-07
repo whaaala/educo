@@ -6,6 +6,7 @@ describe("NameLabel — Visual / CSS", () => {
   describe("base classes", () => {
     it("has dark background with theme variants", () => {
       render(<NameLabel name="John" />);
+
       const label = screen.getByText("John");
       expect(label.className).toContain("bg-gray-900");
       expect(label.className).toContain("dark:bg-gray-800");
@@ -15,6 +16,7 @@ describe("NameLabel — Visual / CSS", () => {
 
     it("has white text and font-medium", () => {
       render(<NameLabel name="John" />);
+
       const label = screen.getByText("John");
       expect(label.className).toContain("text-white");
       expect(label.className).toContain("font-medium");
@@ -22,6 +24,7 @@ describe("NameLabel — Visual / CSS", () => {
 
     it("has rounded-lg shadow-md", () => {
       render(<NameLabel name="John" />);
+
       const label = screen.getByText("John");
       expect(label.className).toContain("rounded-lg");
       expect(label.className).toContain("shadow-md");
@@ -29,6 +32,7 @@ describe("NameLabel — Visual / CSS", () => {
 
     it("has inline-block whitespace-nowrap", () => {
       render(<NameLabel name="John" />);
+
       const label = screen.getByText("John");
       expect(label.className).toContain("inline-block");
       expect(label.className).toContain("whitespace-nowrap");
@@ -38,6 +42,7 @@ describe("NameLabel — Visual / CSS", () => {
   describe("size variants", () => {
     it("compact has px-2 py-1 text-xs", () => {
       render(<NameLabel name="John" variant="compact" />);
+
       const label = screen.getByText("John");
       expect(label.className).toContain("px-2");
       expect(label.className).toContain("py-1");
@@ -46,6 +51,7 @@ describe("NameLabel — Visual / CSS", () => {
 
     it("default has px-3 py-1.5 text-sm", () => {
       render(<NameLabel name="John" variant="default" />);
+
       const label = screen.getByText("John");
       expect(label.className).toContain("px-3");
       expect(label.className).toContain("py-1.5");
@@ -54,6 +60,7 @@ describe("NameLabel — Visual / CSS", () => {
 
     it("large has px-4 py-2 text-base", () => {
       render(<NameLabel name="John" variant="large" />);
+
       const label = screen.getByText("John");
       expect(label.className).toContain("px-4");
       expect(label.className).toContain("py-2");

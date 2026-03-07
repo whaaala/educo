@@ -81,7 +81,6 @@ describe("FormInput", () => {
     expect(screen.getByText("Name")).toBeInTheDocument();
   });
 
-  // Type variants
   it.each(["text", "email", "tel"] as const)(
     "renders input type=%s",
     (type) => {

@@ -13,7 +13,6 @@ describe("ChatStats", () => {
   it("renders total chats stat", () => {
     render(<ChatStats stats={defaultStats} />);
     expect(screen.getByText("Total Chats")).toBeInTheDocument();
-    // "25" appears twice (Total Chats and Recipients both use stats.total)
     expect(screen.getAllByText("25")).toHaveLength(2);
   });
 

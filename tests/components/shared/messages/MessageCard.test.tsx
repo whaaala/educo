@@ -109,7 +109,6 @@ describe("MessageCard", () => {
     const message = makeMessage();
     render(<MessageCard message={message} {...defaultProps} onView={onView} />);
     const viewButtons = screen.getAllByRole("button");
-    // View button is the first action button
     await user.click(viewButtons[0]);
     expect(onView).toHaveBeenCalledWith(message);
   });
@@ -120,7 +119,6 @@ describe("MessageCard", () => {
     const message = makeMessage();
     render(<MessageCard message={message} {...defaultProps} onReply={onReply} />);
     const buttons = screen.getAllByRole("button");
-    // Reply button is the second action button
     await user.click(buttons[1]);
     expect(onReply).toHaveBeenCalledWith(message);
   });
@@ -131,7 +129,6 @@ describe("MessageCard", () => {
     const message = makeMessage();
     render(<MessageCard message={message} {...defaultProps} onDelete={onDelete} />);
     const buttons = screen.getAllByRole("button");
-    // Delete button is the third action button
     await user.click(buttons[2]);
     expect(onDelete).toHaveBeenCalledWith(message);
   });

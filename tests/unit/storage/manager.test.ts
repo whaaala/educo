@@ -83,6 +83,7 @@ const mockSettings: StorageSettings = {
   updatedAt: new Date().toISOString(),
 };
 
+// Feature: StorageManager singleton for managing storage providers
 describe("StorageManager", () => {
   let getStorageManager: typeof import("@/lib/services/storage").getStorageManager;
   let resetStorageManager: typeof import("@/lib/services/storage").resetStorageManager;
@@ -110,87 +111,147 @@ describe("StorageManager", () => {
   });
 
   describe("singleton pattern", () => {
+    // Scenario: Manager returns the same instance on repeated calls
     it("getStorageManager returns the same instance", () => {
+      // When getStorageManager is called twice
       const a = getStorageManager();
       const b = getStorageManager();
+
+      // Then both references should be the same instance
       expect(a).toBe(b);
     });
   });
 
   describe("getService", () => {
+    // Scenario: Getting a service for the supabase provider
     it("returns a service for supabase provider", () => {
+      // Given a manager with settings configured
       const manager = getStorageManager();
       manager.setSettings(mockSettings);
+
+      // When a supabase service is requested
       const service = manager.getService("supabase");
+
+      // Then a service should be returned
       expect(service).toBeDefined();
+      // And the current provider should be supabase
       expect(manager.getCurrentProvider()).toBe("supabase");
     });
 
+    // Scenario: Getting a service for the dropbox provider
     it("returns a service for dropbox provider", () => {
+      // Given a manager with settings configured
       const manager = getStorageManager();
       manager.setSettings(mockSettings);
+
+      // When a dropbox service is requested
       const service = manager.getService("dropbox");
+
+      // Then a service should be returned
       expect(service).toBeDefined();
+      // And the current provider should be dropbox
       expect(manager.getCurrentProvider()).toBe("dropbox");
     });
 
+    // Scenario: Google Drive falls back to dropbox
     it("falls back to dropbox for google-drive", () => {
+      // Given a manager with settings configured
       const manager = getStorageManager();
       manager.setSettings(mockSettings);
+
+      // When a google-drive service is requested
       const service = manager.getService("google-drive");
+
+      // Then a service should be returned
       expect(service).toBeDefined();
+      // And the current provider should fall back to dropbox
       expect(manager.getCurrentProvider()).toBe("dropbox");
     });
 
+    // Scenario: Local provider is not supported
     it("throws for local provider", () => {
+      // Given a manager with settings configured
       const manager = getStorageManager();
       manager.setSettings(mockSettings);
+
+      // When a local service is requested
+      // Then it should throw an error
       expect(() => manager.getService("local")).toThrow("not supported");
     });
   });
 
   describe("getHybridService", () => {
+    // Scenario: Getting a HybridStorageService instance
     it("returns a HybridStorageService", () => {
+      // Given a manager with settings configured
       const manager = getStorageManager();
       manager.setSettings(mockSettings);
+
+      // When a hybrid service is requested for a user
       const hybrid = manager.getHybridService("user1", 100 * 1024 * 1024);
+
+      // Then the hybrid service should be defined and initialized
       expect(hybrid).toBeDefined();
       expect(hybrid.isInitialized()).toBe(true);
     });
 
+    // Scenario: Hybrid service is cached per user and tenant
     it("returns same instance for same user and tenant", () => {
+      // Given a manager with settings configured
       const manager = getStorageManager();
       manager.setSettings(mockSettings);
+
+      // When a hybrid service is requested twice for the same user
       const a = manager.getHybridService("user1", 100 * 1024 * 1024);
       const b = manager.getHybridService("user1", 100 * 1024 * 1024);
+
+      // Then both references should be the same instance
       expect(a).toBe(b);
     });
   });
 
   describe("isProviderConfigured", () => {
+    // Scenario: Supabase is configured when settings are loaded
     it("returns true for supabase when configured", () => {
+      // Given a manager with settings configured
       const manager = getStorageManager();
       manager.setSettings(mockSettings);
+
+      // Then supabase should be reported as configured
       expect(manager.isProviderConfigured("supabase")).toBe(true);
     });
 
+    // Scenario: Local provider is always available
     it("returns true for local (always available)", () => {
+      // Given a manager with settings configured
       const manager = getStorageManager();
       manager.setSettings(mockSettings);
+
+      // Then local should be reported as configured
       expect(manager.isProviderConfigured("local")).toBe(true);
     });
 
+    // Scenario: Provider is not configured when no settings are loaded
     it("returns false when no settings loaded", () => {
+      // Given a manager without settings
       const manager = getStorageManager();
+
+      // Then dropbox should not be reported as configured
       expect(manager.isProviderConfigured("dropbox")).toBe(false);
     });
   });
 
   describe("getAvailableProviders", () => {
+    // Scenario: Available providers include supabase and local
     it("includes supabase and local", () => {
+      // Given a manager with settings configured
       const manager = getStorageManager();
       manager.setSettings(mockSettings);
+
+      // When available providers are retrieved
       const providers = manager.getAvailableProviders();
+
+      // Then the list should include supabase and local
       expect(providers).toContain("supabase");
       expect(providers).toContain("local");
     });

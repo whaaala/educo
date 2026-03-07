@@ -66,6 +66,9 @@ export default function Modal({
   return (
     <Portal>
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title || undefined}
         className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
         onClick={preventBackdropClose ? undefined : onClose}
       >

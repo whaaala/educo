@@ -500,3 +500,186 @@ tbody tr.sorting-animate-desc {
 .animate-shimmer {
   animation: shimmer 2s infinite;
 }
+
+/* ── Print styles for DocEditor ── */
+/* When the user prints via the toolbar print button (window.print()),
+   hide all UI chrome and show only the document pages. */
+@media print {
+  /* Hide everything outside the editor root */
+  body > *:not(:has([data-doc-editor-root])) {
+    display: none !important;
+  }
+
+  /* Hide UI chrome within the editor */
+  [data-doc-header],
+  [data-doc-menubar],
+  [data-doc-toolbar],
+  [data-doc-toolbar-restore],
+  [data-doc-sidebar],
+  [data-doc-table-editor-panel],
+  [data-doc-dialog],
+  [data-doc-menu-root],
+  [data-doc-menu-panel],
+  [data-doc-page-label],
+  [data-doc-section-indicator] {
+    display: none !important;
+  }
+
+  /* Hide sidebar expand button */
+  [data-doc-editor-root] > .flex > .flex-shrink-0:has(button[aria-label]) {
+    display: none !important;
+  }
+
+  /* Remove decorative styling from the editor root */
+  [data-doc-editor-root] {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: white !important;
+    position: static !important;
+    overflow: visible !important;
+  }
+
+  /* Remove background from page surface area */
+  [data-doc-editor-root] .bg-gray-50,
+  [data-doc-editor-root] .bg-gray-950,
+  [data-doc-editor-root] [class*="bg-[#06101f]"],
+  [data-doc-editor-root] [class*="bg-[#12061f]"] {
+    background: transparent !important;
+  }
+
+  /* Remove page shadows, borders, and rounding */
+  [data-doc-editor-root] .shadow-md,
+  [data-doc-editor-root] .shadow-sm {
+    box-shadow: none !important;
+  }
+
+  [data-doc-editor-root] .rounded-sm,
+  [data-doc-editor-root] .rounded-xl {
+    border-radius: 0 !important;
+  }
+
+  /* Pages should fill the printed page */
+  [data-doc-editor-root] [contenteditable] {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Hide template chip overlays */
+  [data-doc-editor-root] .pointer-events-none:has(button) {
+    display: none !important;
+  }
+
+  /* Hide the equation toolbar and ruler */
+  [data-doc-editor-root] .h-7.rounded-sm {
+    display: none !important;
+  }
+
+  /* Remove zoom transforms */
+  [data-doc-editor-root] [style*="transform: scale"] {
+    transform: none !important;
+    width: 100% !important;
+  }
+
+  /* Each page in print layout becomes a printed page */
+  [data-doc-editor-root] .flex.flex-col.items-center.gap-6 > div {
+    page-break-after: always;
+    break-after: page;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Don't break after the last page */
+  [data-doc-editor-root] .flex.flex-col.items-center.gap-6 > div:last-child {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* Remove gap between pages in print mode */
+  [data-doc-editor-root] .flex.flex-col.items-center.gap-6 {
+    gap: 0 !important;
+  }
+
+  /* Pages fill the printed page width */
+  [data-doc-editor-root] .flex.flex-col.items-center.gap-6 > div > div {
+    max-width: 100% !important;
+    width: 100% !important;
+    border: none !important;
+  }
+
+  /* Ensure content is visible and black on white */
+  [data-doc-editor-root] [contenteditable] {
+    color: black !important;
+    background: white !important;
+  }
+
+  /* Keep page colors if user set a custom one */
+  [data-doc-editor-root] [contenteditable][style*="backgroundColor"] {
+    color: black !important;
+  }
+
+  /* Hide the fullscreen exit button */
+  [data-doc-editor-root] > .absolute.top-3.right-3 {
+    display: none !important;
+  }
+
+  /* Set proper print margins */
+  @page {
+    margin: 0.5in;
+    size: auto;
+  }
+
+  /* Avoid breaking inside paragraphs and headings */
+  [data-doc-editor-root] p,
+  [data-doc-editor-root] h1,
+  [data-doc-editor-root] h2,
+  [data-doc-editor-root] h3 {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Don't break after headings */
+  [data-doc-editor-root] h1,
+  [data-doc-editor-root] h2,
+  [data-doc-editor-root] h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* Tables: avoid breaking inside rows */
+  [data-doc-editor-root] tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Images: avoid breaking */
+  [data-doc-editor-root] img {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    max-width: 100% !important;
+  }
+
+  /* Make links show URL for print (optional, keeps doc clean) */
+  [data-doc-editor-root] a {
+    color: black !important;
+    text-decoration: underline !important;
+  }
+
+  /* Hide any open toasts */
+  [role="status"],
+  .fixed.bottom-4,
+  .fixed.top-4 {
+    display: none !important;
+  }
+
+  /* Ensure the main flex container fills the page */
+  [data-doc-editor-root] > .flex.flex-1 {
+    display: block !important;
+  }
+
+  /* The page surface (scroll container) should not scroll in print */
+  [data-doc-editor-root] .overflow-auto,
+  [data-doc-editor-root] .overflow-y-auto {
+    overflow: visible !important;
+  }
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import React from "react";
-import { render } from "@testing-library/react";
+import { render, fireEvent, act } from "@testing-library/react";
 
 // ── Module-level mocks (hoisted by vitest) ──
 
@@ -22,6 +22,7 @@ vi.mock("@/components/shared/ColorPalettePicker", () => ({
   BORDER_COLORS: [],
   CELL_BG_COLORS: [],
   colorToCSS: (c: string) => c,
+  isNativeColorPickerOpen: () => false,
 }));
 
 vi.mock("@/components/shared/Whiteboard/whiteboard-types", () => ({
@@ -55,6 +56,7 @@ function expectClasses(el: Element | null, expected: string[]) {
 
 // ── Test suite ──
 
+// Feature: DocEditor visual and CSS styling verification
 describe("DocEditor — Visual / CSS", () => {
   let onChange: ReturnType<typeof vi.fn>;
 
@@ -80,11 +82,15 @@ describe("DocEditor — Visual / CSS", () => {
   // ────────────────────────────────────────────────
   // 1. Root container
   // ────────────────────────────────────────────────
+  // Context: root container layout and styling
   describe("root container", () => {
+    // Scenario: root has flex column layout with rounded border
     it("has flex column layout with rounded border", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
+      // Then the root element should have flex column layout with rounded corners
       const root = container.querySelector("[data-doc-editor-root]");
       expect(root).not.toBeNull();
       expectClasses(root, [
@@ -95,10 +101,13 @@ describe("DocEditor — Visual / CSS", () => {
       ]);
     });
 
+    // Scenario: root has light and dark theme border classes
     it("has light and dark theme border classes", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
+      // Then the root element should have theme-appropriate border classes
       const root = container.querySelector("[data-doc-editor-root]");
       expectClasses(root, [
         "border",
@@ -109,10 +118,13 @@ describe("DocEditor — Visual / CSS", () => {
       ]);
     });
 
+    // Scenario: root has theme background classes
     it("has theme background classes", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
+      // Then the root element should have theme-appropriate background classes
       const root = container.querySelector("[data-doc-editor-root]");
       expectClasses(root, [
         "bg-white",
@@ -122,10 +134,13 @@ describe("DocEditor — Visual / CSS", () => {
       ]);
     });
 
+    // Scenario: root has shadow-sm class
     it("has shadow-sm class", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
+      // Then the root element should have shadow-sm
       const root = container.querySelector("[data-doc-editor-root]");
       expectClasses(root, ["shadow-sm"]);
     });
@@ -134,21 +149,27 @@ describe("DocEditor — Visual / CSS", () => {
   // ────────────────────────────────────────────────
   // 2. Header row
   // ────────────────────────────────────────────────
+  // Context: header row theming and styling
   describe("header row", () => {
+    // Scenario: header has theming with border-b and backdrop-blur
     it("has header theming with border-b and backdrop-blur", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // The header row is a div with border-b that contains the title input
+      // Given the document title input exists
       const titleInput = container.querySelector('[aria-label="Document title"]');
       expect(titleInput).not.toBeNull();
-      // Walk up to the header wrapper (has border-b and backdrop-blur)
+      // Then the header wrapper should have correct border and backdrop classes
       const headerRow = titleInput!.closest(".border-b");
       expect(headerRow).not.toBeNull();
       expectClasses(headerRow, [
-        "px-4",
-        "pt-3",
-        "pb-2",
+        "px-2",
+        "sm:px-4",
+        "pt-2",
+        "sm:pt-3",
+        "pb-1.5",
+        "sm:pb-2",
         "border-b",
         "border-gray-100",
         "dark:border-gray-800",
@@ -162,16 +183,20 @@ describe("DocEditor — Visual / CSS", () => {
       ]);
     });
 
+    // Scenario: doc icon has blue background with rounded-xl
     it("doc icon has blue background with rounded-xl", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // The doc icon is a div with w-9 h-9 inside the header
-      const iconDiv = container.querySelector(".bg-blue-600.w-9.h-9");
+      // Then the doc icon should have correct size, color, and layout classes
+      const iconDiv = container.querySelector(".bg-blue-600.rounded-xl");
       expect(iconDiv).not.toBeNull();
       expectClasses(iconDiv, [
-        "w-9",
-        "h-9",
+        "w-7",
+        "h-7",
+        "sm:w-9",
+        "sm:h-9",
         "rounded-xl",
         "bg-blue-600",
         "flex",
@@ -182,15 +207,18 @@ describe("DocEditor — Visual / CSS", () => {
       ]);
     });
 
+    // Scenario: title input has transparent background and theme text colors
     it("title input has transparent background and theme text colors", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
+      // Then the title input should have transparent background and themed text
       const titleInput = container.querySelector('[aria-label="Document title"]');
       expect(titleInput).not.toBeNull();
       expectClasses(titleInput, [
         "bg-transparent",
-        "text-[18px]",
+        "sm:text-[18px]",
         "font-semibold",
         "text-gray-800",
         "dark:text-gray-100",
@@ -203,29 +231,36 @@ describe("DocEditor — Visual / CSS", () => {
   // ────────────────────────────────────────────────
   // 3. Menubar
   // ────────────────────────────────────────────────
+  // Context: menubar styling and hover states
   describe("menubar", () => {
+    // Scenario: menubar has theme text colors and proper font size
     it("has theme text colors and proper font size", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
+      // Then the menubar should have correct text size and color classes
       const menubar = container.querySelector("[data-doc-menubar]");
       expect(menubar).not.toBeNull();
       expectClasses(menubar, [
-        "text-[13px]",
+        "text-[12px]",
+        "sm:text-[13px]",
         "text-gray-700",
         "dark:text-gray-200",
       ]);
     });
 
+    // Scenario: menu root buttons have correct layout and hover classes
     it("menu root buttons have correct layout and hover classes when inactive", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // MenuRoot wraps each menu ("File", "Edit", etc.) in a div[data-doc-menu-root]
+      // Given at least 4 menu root elements exist (File, Edit, View, Insert)
       const menuRoots = container.querySelectorAll("[data-doc-menu-root]");
-      expect(menuRoots.length).toBeGreaterThanOrEqual(4); // File, Edit, View, Insert
+      expect(menuRoots.length).toBeGreaterThanOrEqual(4);
 
-      // Each menu root has a button child with px-2 py-1 styling
+      // Then the first menu button should have correct layout classes
       const firstMenuButton = menuRoots[0]?.querySelector("button");
       expect(firstMenuButton).not.toBeNull();
       expectClasses(firstMenuButton, [
@@ -236,7 +271,7 @@ describe("DocEditor — Visual / CSS", () => {
         "cursor-pointer",
       ]);
 
-      // When no menu is open (default), the button should have inactive hover classes
+      // And it should have inactive hover classes
       expectClasses(firstMenuButton, [
         "hover:bg-gray-100/70",
         "dark:hover:bg-gray-800/60",
@@ -249,11 +284,15 @@ describe("DocEditor — Visual / CSS", () => {
   // ────────────────────────────────────────────────
   // 4. Toolbar
   // ────────────────────────────────────────────────
+  // Context: toolbar button styling and theming
   describe("toolbar", () => {
+    // Scenario: toolbar buttons have hover backgrounds and rounded corners
     it("toolbar buttons have hover backgrounds and rounded corners", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
+      // Then the Bold button should have correct hover and layout classes
       const boldBtn = container.querySelector('[aria-label="Bold (Ctrl+B)"]');
       expect(boldBtn).not.toBeNull();
       expectClasses(boldBtn, [
@@ -272,11 +311,14 @@ describe("DocEditor — Visual / CSS", () => {
       ]);
     });
 
+    // Scenario: all standard toolbar buttons render with correct classes
     it("all standard toolbar buttons render with correct classes", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
 
+      // Given a list of expected toolbar button labels
       const toolbarButtonTitles = [
         "Undo (Ctrl+Z)",
         "Redo (Ctrl+Y)",
@@ -293,6 +335,7 @@ describe("DocEditor — Visual / CSS", () => {
         "Add comment (Ctrl+Alt+M)",
       ];
 
+      // Then each button should exist with correct base classes
       for (const title of toolbarButtonTitles) {
         const btn = container.querySelector(`[aria-label="${title}"]`);
         expect(btn, `Toolbar button "${title}" should exist`).not.toBeNull();
@@ -307,18 +350,20 @@ describe("DocEditor — Visual / CSS", () => {
       }
     });
 
+    // Scenario: toolbar button icons have theme color classes
     it("toolbar button icons have theme color classes", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
+      // Given the Bold button exists
       const boldBtn = container.querySelector('[aria-label="Bold (Ctrl+B)"]');
       expect(boldBtn).not.toBeNull();
 
-      // Icon is the first child SVG inside the button
+      // Then the SVG icon inside should have correct size and theme color classes
       const iconSvg = boldBtn!.querySelector("svg");
       expect(iconSvg).not.toBeNull();
 
-      // Lucide SVGs in jsdom: use getAttribute("class") instead of .className
       const iconClasses = (iconSvg!.getAttribute("class") ?? "").split(/\s+/).filter(Boolean);
       expect(iconClasses).toContain("w-4");
       expect(iconClasses).toContain("h-4");
@@ -328,19 +373,19 @@ describe("DocEditor — Visual / CSS", () => {
       expect(iconClasses).toContain("purple:text-pink-100");
     });
 
+    // Scenario: toolbar dividers have theme colors
     it("toolbar dividers have theme colors", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // ToolbarDivider is a div with w-px h-5 between toolbar groups
-      // Find dividers in the toolbar area
+      // Given at least one toolbar divider exists
       const root = container.querySelector("[data-doc-editor-root]");
       expect(root).not.toBeNull();
-
-      // ToolbarDividers are w-px h-5 divs with mx-0.5
       const dividers = root!.querySelectorAll(".w-px.h-5");
       expect(dividers.length).toBeGreaterThanOrEqual(1);
 
+      // Then the first divider should have correct theme color classes
       const firstDivider = dividers[0];
       expectClasses(firstDivider, [
         "w-px",
@@ -353,10 +398,13 @@ describe("DocEditor — Visual / CSS", () => {
       ]);
     });
 
+    // Scenario: paragraph style dropdown has correct styling and shows 'Normal text'
     it("paragraph style dropdown has correct styling and shows 'Normal text'", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
+      // Then the Styles dropdown should have correct styling
       const stylesBtn = container.querySelector('[aria-label="Styles"]');
       expect(stylesBtn).not.toBeNull();
       expectClasses(stylesBtn, [
@@ -367,7 +415,7 @@ describe("DocEditor — Visual / CSS", () => {
         "text-[11px]",
         "font-medium",
       ]);
-      // Content should include "Normal text"
+      // And it should display "Normal text"
       expect(stylesBtn!.textContent).toContain("Normal text");
     });
   });
@@ -375,19 +423,21 @@ describe("DocEditor — Visual / CSS", () => {
   // ────────────────────────────────────────────────
   // 5. Page surface (editor area)
   // ────────────────────────────────────────────────
+  // Context: page surface (editor area) styling and theming
   describe("page surface", () => {
+    // Scenario: editor area has print layout background
     it("editor area has print layout background (default showPrintLayout=true)", () => {
+      // Given a DocEditor rendered with default content (showPrintLayout defaults to true)
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // The editor root div (ref=editorRootRef) wraps the pages.
-      // It has the print-layout background classes when showPrintLayout is true (default).
-      // Find the div with min-h-full and py-6 and bg-gray-50
-      const editorRoot = container.querySelector(".py-6.bg-gray-50");
+      // Then the editor root should have print-layout background classes
+      const editorRoot = container.querySelector(".bg-gray-50");
       expect(editorRoot).not.toBeNull();
       expectClasses(editorRoot, [
         "min-h-full",
-        "py-6",
+        "py-3",
+        "sm:py-6",
         "bg-gray-50",
         "dark:bg-gray-950",
         "midnight:bg-[#06101f]",
@@ -395,11 +445,13 @@ describe("DocEditor — Visual / CSS", () => {
       ]);
     });
 
+    // Scenario: page wrapper has theme backgrounds and borders with rounded shadow
     it("page wrapper has theme backgrounds and borders with rounded shadow", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // The page wrapper div has: w-full rounded-sm shadow-md
+      // Then the page wrapper should have correct theme backgrounds, borders, and shadow
       const pageWrapper = container.querySelector(".rounded-sm.shadow-md");
       expect(pageWrapper).not.toBeNull();
       expectClasses(pageWrapper, [
@@ -418,12 +470,13 @@ describe("DocEditor — Visual / CSS", () => {
       ]);
     });
 
+    // Scenario: content editable area has theme text colors
     it("content editable area has theme text colors", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // The contentEditable div has outline-none overflow-hidden relative
-      // and text-[14px] leading-6
+      // Then the contentEditable area should have correct text and theme color classes
       const editableArea = container.querySelector('[contenteditable="true"]');
       expect(editableArea).not.toBeNull();
       expectClasses(editableArea, [
@@ -439,10 +492,13 @@ describe("DocEditor — Visual / CSS", () => {
       ]);
     });
 
+    // Scenario: content editable area has theme selection colors
     it("content editable area has theme selection colors", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
+      // Then the contentEditable area should have themed selection background classes
       const editableArea = container.querySelector('[contenteditable="true"]');
       expect(editableArea).not.toBeNull();
       expectClasses(editableArea, [
@@ -453,10 +509,13 @@ describe("DocEditor — Visual / CSS", () => {
       ]);
     });
 
+    // Scenario: content editable area has typography classes for headings and lists
     it("content editable area has typography classes for headings and lists", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
+      // Then the contentEditable area should have correct typography utility classes
       const editableArea = container.querySelector('[contenteditable="true"]');
       expect(editableArea).not.toBeNull();
       expectClasses(editableArea, [
@@ -475,10 +534,13 @@ describe("DocEditor — Visual / CSS", () => {
       ]);
     });
 
+    // Scenario: content editable area has link styling classes
     it("content editable area has link styling classes", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
+      // Then the contentEditable area should have correct link styling classes
       const editableArea = container.querySelector('[contenteditable="true"]');
       expect(editableArea).not.toBeNull();
       expectClasses(editableArea, [
@@ -488,13 +550,142 @@ describe("DocEditor — Visual / CSS", () => {
       ]);
     });
 
+    // Scenario: content editable area has cursor-text when editable
     it("content editable area has cursor-text when editable", () => {
+      // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
+      // Then the contentEditable area should have cursor-text class
       const editableArea = container.querySelector('[contenteditable="true"]');
       expect(editableArea).not.toBeNull();
       expectClasses(editableArea, ["cursor-text"]);
+    });
+  });
+
+  // ────────────────────────────────────────────────
+  // Find & Replace highlight visual tests
+  // ────────────────────────────────────────────────
+  describe("find and replace highlights", () => {
+    function openFindReplacePanel(container: HTMLElement) {
+      const menuRoots = container.querySelectorAll("[data-doc-menu-root]");
+      let editButton: HTMLElement | null = null;
+      menuRoots.forEach((root) => {
+        const btn = root.querySelector("button");
+        if (btn && btn.textContent?.trim() === "Edit") editButton = btn;
+      });
+      expect(editButton).not.toBeNull();
+      fireEvent.click(editButton!);
+      const menuPanel = container.querySelector("[data-doc-menu-panel]");
+      expect(menuPanel).not.toBeNull();
+      const menuButtons = menuPanel!.querySelectorAll("button");
+      let findReplaceButton: HTMLElement | null = null;
+      menuButtons.forEach((btn) => {
+        if (btn.textContent?.includes("Find and replace")) findReplaceButton = btn;
+      });
+      expect(findReplaceButton).not.toBeNull();
+      fireEvent.click(findReplaceButton!);
+    }
+
+    // Debug test: verify contentEditable has the expected text nodes
+    it("contentEditable contains the expected text content for find to work", () => {
+      const textContent = "hello world test document";
+      const { container } = render(
+        <DocEditor value={{ html: `<p>${textContent}</p>`, title: "Test" }} onChange={onChange} />
+      );
+      const editable = container.querySelector('[contenteditable="true"]');
+      expect(editable).not.toBeNull();
+      // Check that the text content is present
+      expect(editable!.textContent).toContain(textContent);
+      // Check that a text node exists inside
+      const walker = document.createTreeWalker(editable!, NodeFilter.SHOW_TEXT);
+      const firstTextNode = walker.nextNode();
+      expect(firstTextNode).not.toBeNull();
+      expect(firstTextNode!.textContent).toContain("hello");
+    });
+
+    // @visual: Find next inserts a yellow <mark> element into the DOM
+    it("Find next inserts a yellow <mark> with data-doc-find-highlight into the editor DOM", () => {
+      const textContent = "hello world test document";
+      const { container } = render(
+        <DocEditor value={{ html: `<p>${textContent}</p>`, title: "Test" }} onChange={onChange} />
+      );
+      openFindReplacePanel(container);
+
+      // Type a query into the Find input and flush state update
+      const panel = container.querySelector("[data-doc-find-replace-panel]") as HTMLElement;
+      expect(panel).not.toBeNull();
+      const findInput = panel.querySelector('input[placeholder="Find…"]') as HTMLInputElement;
+      expect(findInput).not.toBeNull();
+      act(() => { fireEvent.change(findInput, { target: { value: "test" } }); });
+
+      // Click Find next (after state has flushed so findQuery="test" in closure)
+      const findNextBtn = Array.from(panel.querySelectorAll("button")).find(
+        (b) => b.textContent?.trim() === "Find next"
+      ) as HTMLElement;
+      expect(findNextBtn).toBeDefined();
+      act(() => { fireEvent.click(findNextBtn); });
+
+      // A <mark data-doc-find-highlight="current"> should now exist inside the editor
+      const mark = container.querySelector('mark[data-doc-find-highlight="current"]');
+      expect(mark).not.toBeNull();
+      expect(mark!.textContent).toBe("test");
+      // The mark should have yellow background styling (jsdom converts hex to rgb)
+      expect((mark as HTMLElement).style.background).toContain("253, 224, 71");
+    });
+
+    // @visual: Clicking Find next again moves the highlight (old mark removed, new one added)
+    it("Find next clears previous highlight before adding new one", () => {
+      const textContent = "test one test two";
+      const { container } = render(
+        <DocEditor value={{ html: `<p>${textContent}</p>`, title: "Test" }} onChange={onChange} />
+      );
+      openFindReplacePanel(container);
+
+      const panel = container.querySelector("[data-doc-find-replace-panel]") as HTMLElement;
+      const findInput = panel.querySelector('input[placeholder="Find…"]') as HTMLInputElement;
+      act(() => { fireEvent.change(findInput, { target: { value: "test" } }); });
+
+      const findNextBtn = Array.from(panel.querySelectorAll("button")).find(
+        (b) => b.textContent?.trim() === "Find next"
+      ) as HTMLElement;
+
+      // First Find next
+      act(() => { fireEvent.click(findNextBtn); });
+      let marks = container.querySelectorAll('mark[data-doc-find-highlight="current"]');
+      expect(marks.length).toBe(1);
+
+      // Second Find next — should still be exactly 1 mark (old cleared, new added)
+      act(() => { fireEvent.click(findNextBtn); });
+      marks = container.querySelectorAll('mark[data-doc-find-highlight="current"]');
+      expect(marks.length).toBe(1);
+    });
+
+    // @visual: Closing the panel removes all highlight marks from the DOM
+    it("closing panel removes all mark elements from the editor", () => {
+      const { container } = render(
+        <DocEditor value={{ html: "<p>hello world</p>", title: "Test" }} onChange={onChange} />
+      );
+      openFindReplacePanel(container);
+
+      const panel = container.querySelector("[data-doc-find-replace-panel]") as HTMLElement;
+      const findInput = panel.querySelector('input[placeholder="Find…"]') as HTMLInputElement;
+      act(() => { fireEvent.change(findInput, { target: { value: "hello" } }); });
+
+      const findNextBtn = Array.from(panel.querySelectorAll("button")).find(
+        (b) => b.textContent?.trim() === "Find next"
+      ) as HTMLElement;
+      act(() => { fireEvent.click(findNextBtn); });
+
+      // Verify mark exists
+      expect(container.querySelector('mark[data-doc-find-highlight]')).not.toBeNull();
+
+      // Close the panel
+      const closeBtn = panel.querySelector('[aria-label="Close find and replace"]') as HTMLElement;
+      act(() => { fireEvent.click(closeBtn); });
+
+      // All marks should be removed
+      expect(container.querySelector('mark[data-doc-find-highlight]')).toBeNull();
     });
   });
 });

@@ -8,6 +8,7 @@ describe("ViewToggle — Visual / CSS", () => {
       const { container } = render(
         <ViewToggle viewMode="list" onViewModeChange={vi.fn()} />
       );
+
       const toggle = container.firstChild as HTMLElement;
       expect(toggle.className).toContain("bg-white");
       expect(toggle.className).toContain("dark:bg-gray-800");
@@ -19,6 +20,7 @@ describe("ViewToggle — Visual / CSS", () => {
       const { container } = render(
         <ViewToggle viewMode="list" onViewModeChange={vi.fn()} />
       );
+
       const toggle = container.firstChild as HTMLElement;
       expect(toggle.className).toContain("border");
       expect(toggle.className).toContain("border-gray-300");
@@ -29,6 +31,7 @@ describe("ViewToggle — Visual / CSS", () => {
       const { container } = render(
         <ViewToggle viewMode="list" onViewModeChange={vi.fn()} />
       );
+
       const toggle = container.firstChild as HTMLElement;
       expect(toggle.className).toContain("rounded-lg");
       expect(toggle.className).toContain("shadow-sm");
@@ -40,6 +43,7 @@ describe("ViewToggle — Visual / CSS", () => {
       const { container } = render(
         <ViewToggle viewMode="list" onViewModeChange={vi.fn()} />
       );
+
       const slider = container.querySelector(".bg-gradient-to-br");
       expect(slider).toBeInTheDocument();
       expect(slider!.className).toContain("from-blue-600");
@@ -52,6 +56,7 @@ describe("ViewToggle — Visual / CSS", () => {
       const { container } = render(
         <ViewToggle viewMode="list" onViewModeChange={vi.fn()} />
       );
+
       // Lucide SVGs need getAttribute("class") in jsdom
       const listBtn = container.querySelector('[aria-label="List view"]')!;
       const svg = listBtn.querySelector("svg")!;
@@ -63,6 +68,7 @@ describe("ViewToggle — Visual / CSS", () => {
       const { container } = render(
         <ViewToggle viewMode="list" onViewModeChange={vi.fn()} />
       );
+
       const gridBtn = container.querySelector('[aria-label="Grid view"]')!;
       const svg = gridBtn.querySelector("svg")!;
       const cls = svg.getAttribute("class")!;
@@ -74,6 +80,7 @@ describe("ViewToggle — Visual / CSS", () => {
       const { container } = render(
         <ViewToggle viewMode="list" onViewModeChange={vi.fn()} />
       );
+
       const svg = container.querySelector("svg")!;
       const cls = svg.getAttribute("class")!;
       expect(cls).toContain("w-3.5");

@@ -13,6 +13,7 @@ describe("PageHeader — Visual / CSS", () => {
           actions={[]}
         />
       );
+
       const header = container.firstChild as HTMLElement;
       expect(header.className).toContain("w-full");
     });
@@ -25,6 +26,7 @@ describe("PageHeader — Visual / CSS", () => {
           actions={[]}
         />
       );
+
       // The flex layout is on a child div inside the w-full wrapper
       const flexDiv = container.querySelector(".flex.flex-col");
       expect(flexDiv).toBeInTheDocument();
@@ -43,6 +45,7 @@ describe("PageHeader — Visual / CSS", () => {
           actions={[]}
         />
       );
+
       const title = screen.getByText("Dashboard");
       expect(title.className).toContain("dark:text-white");
     });
@@ -55,6 +58,7 @@ describe("PageHeader — Visual / CSS", () => {
           actions={[]}
         />
       );
+
       const title = screen.getByText("Dashboard");
       expect(title.className).toContain("midnight:text-cyan-50");
     });
@@ -67,6 +71,7 @@ describe("PageHeader — Visual / CSS", () => {
           actions={[]}
         />
       );
+
       const title = screen.getByText("Dashboard");
       expect(title.className).toContain("purple:text-pink-50");
     });
@@ -82,6 +87,7 @@ describe("PageHeader — Visual / CSS", () => {
           actions={[]}
         />
       );
+
       const title = screen.getByText("Dashboard");
       // Title typically has text-xl/lg:text-2xl or similar
       expect(title.className).toMatch(/text-(lg|xl|2xl)/);
@@ -98,6 +104,7 @@ describe("PageHeader — Visual / CSS", () => {
           actions={[]}
         />
       );
+
       const link = screen.getByText("Home");
       expect(link.className).toContain("hover:text-gray-700");
     });

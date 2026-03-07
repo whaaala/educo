@@ -75,6 +75,10 @@ import {
   Check,
   Globe,
   UserPlus,
+  RotateCw,
+  Maximize2,
+  Palette,
+  X,
 } from "lucide-react";
 import { DOC_LANGUAGES } from "./languages";
 import Tooltip from "@/components/shared/Tooltip";
@@ -91,7 +95,9 @@ function useSafeUser() {
 function useSafeNotifications() {
   try { return _useNotifications(); } catch { return { addNotification: () => "" }; }
 }
-import { ColorGrid, TabbedColorPalette, SOLID_COLORS, TEXT_COLORS_MATRIX, TEXT_GRADIENT_COLORS, GLOSSY_COLORS, BORDER_COLORS, CELL_BG_COLORS, colorToCSS } from "@/components/shared/ColorPalettePicker";
+import { ColorGrid, TabbedColorPalette, SOLID_COLORS, TEXT_COLORS_MATRIX, TEXT_GRADIENT_COLORS, GLOSSY_COLORS, BORDER_COLORS, CELL_BG_COLORS, colorToCSS, isNativeColorPickerOpen } from "@/components/shared/ColorPalettePicker";
+import FormDropdown from "@/components/shared/FormDropdown";
+import FormInput from "@/components/shared/FormInput";
 import { FONT_FAMILY_CATEGORIES, FONT_SIZES, LINE_SPACINGS } from "@/components/shared/Whiteboard/whiteboard-types";
 import type { FontFamily } from "@/components/shared/Whiteboard/whiteboard-types";
 
@@ -107,6 +113,86 @@ const activeSubmenuPanelEl: { current: HTMLElement | null } = { current: null };
 const DOC_PAGE_BREAK_MARKER = `<div data-doc-page-break="true"></div>`;
 const DOC_PAGE_BREAK_REGEX = /<div[^>]*data-doc-page-break=(?:"true"|'true')[^>]*>\s*<\/div>/gi;
 
+// ── Section Break ──
+const DOC_SECTION_BREAK_REGEX = /<div[^>]*data-doc-section-break="true"[^>]*data-section-setup='([^']*)'[^>]*><\/div>/gi;
+function makeSectionBreakMarker(setup: PageSetup): string {
+  return `<div data-doc-section-break="true" data-section-setup='${JSON.stringify(setup)}'></div>`;
+}
+
+interface DocSection {
+  pageSetup: PageSetup;
+  pages: string[];
+}
+
+// ── Page Setup Constants ──
+
+interface PaperSize {
+  name: string;
+  widthCm: number;
+  heightCm: number;
+}
+
+const PAPER_SIZES: PaperSize[] = [
+  { name: "Letter",    widthCm: 21.59, heightCm: 27.94 },
+  { name: "Tabloid",   widthCm: 27.94, heightCm: 43.18 },
+  { name: "Legal",     widthCm: 21.59, heightCm: 35.56 },
+  { name: "Statement", widthCm: 13.97, heightCm: 21.59 },
+  { name: "Executive", widthCm: 18.42, heightCm: 26.67 },
+  { name: "Folio",     widthCm: 21.59, heightCm: 33.02 },
+  { name: "A3",        widthCm: 29.70, heightCm: 42.00 },
+  { name: "A4",        widthCm: 21.00, heightCm: 29.70 },
+  { name: "A5",        widthCm: 14.80, heightCm: 21.00 },
+  { name: "B4",        widthCm: 25.00, heightCm: 35.30 },
+  { name: "B5",        widthCm: 17.60, heightCm: 25.00 },
+];
+
+const CM_TO_PX = 37.7953;
+function cmToPx(cm: number): number {
+  return Math.round(cm * CM_TO_PX);
+}
+
+/** Google Docs-style page colour palette — 10 columns × 8 rows */
+const PAGE_COLORS: string[] = [
+  // Row 1: Black → White
+  "#000000", "#434343", "#666666", "#999999", "#b7b7b7", "#cccccc", "#d9d9d9", "#efefef", "#f3f3f3", "#ffffff",
+  // Row 2: Accent base
+  "#980000", "#ff0000", "#ff9900", "#ffff00", "#00ff00", "#00ffff", "#4a86e8", "#0000ff", "#9900ff", "#ff00ff",
+  // Row 3: Light tint 1
+  "#e6b8af", "#f4cccc", "#fce5cd", "#fff2cc", "#d9ead3", "#d0e0e3", "#c9daf8", "#cfe2f3", "#d9d2e9", "#ead1dc",
+  // Row 4: Light tint 2
+  "#dd7e6b", "#ea9999", "#f9cb9c", "#ffe599", "#b6d7a8", "#a2c4c9", "#a4c2f4", "#9fc5e8", "#b4a7d6", "#d5a6bd",
+  // Row 5: Medium
+  "#cc4125", "#e06666", "#f6b26b", "#ffd966", "#93c47d", "#76a5af", "#6d9eeb", "#6fa8dc", "#8e7cc3", "#c27ba0",
+  // Row 6: Medium dark
+  "#a61c00", "#cc0000", "#e69138", "#f1c232", "#6aa84f", "#45818e", "#3c78d8", "#3d85c6", "#674ea7", "#a64d79",
+  // Row 7: Dark
+  "#85200c", "#990000", "#b45f06", "#bf9000", "#38761d", "#134f5c", "#1155cc", "#0b5394", "#351c75", "#741b47",
+  // Row 8: Very dark
+  "#5b0f00", "#660000", "#783f04", "#7f6000", "#274e13", "#0c343d", "#1c4587", "#073763", "#20124d", "#4c1130",
+];
+
+interface PageSetup {
+  paperSize: string;
+  orientation: "portrait" | "landscape";
+  marginTopCm: number;
+  marginBottomCm: number;
+  marginLeftCm: number;
+  marginRightCm: number;
+  pageColor: string;
+  pageless: boolean;
+}
+
+const DEFAULT_PAGE_SETUP: PageSetup = {
+  paperSize: "A4",
+  orientation: "portrait",
+  marginTopCm: 2.54,
+  marginBottomCm: 2.54,
+  marginLeftCm: 2.54,
+  marginRightCm: 2.54,
+  pageColor: "#ffffff",
+  pageless: false,
+};
+
 function parseHtmlPages(html: string): string[] {
   const normalized = (html || "").trim();
   if (!normalized) return ["<p></p>"];
@@ -118,6 +204,71 @@ function parseHtmlPages(html: string): string[] {
 function serializeHtmlPages(pages: string[]): string {
   const safe = (pages || []).map((p) => (p && p.trim().length ? p : "<p></p>"));
   return safe.join(DOC_PAGE_BREAK_MARKER);
+}
+
+// ── Section Parsing ──
+
+function parseHtmlSections(html: string, defaultSetup: PageSetup): DocSection[] {
+  const normalized = (html || "").trim();
+  if (!normalized) return [{ pageSetup: defaultSetup, pages: ["<p></p>"] }];
+
+  // Split by section breaks, capturing the data-section-setup JSON
+  const sectionBreakPattern = /<div[^>]*data-doc-section-break="true"[^>]*data-section-setup='([^']*)'[^>]*><\/div>/gi;
+  const chunks: string[] = [];
+  const setups: (PageSetup | null)[] = [null]; // first section uses default
+  let lastIdx = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = sectionBreakPattern.exec(normalized)) !== null) {
+    chunks.push(normalized.slice(lastIdx, match.index).trim());
+    try {
+      setups.push(JSON.parse(match[1]) as PageSetup);
+    } catch {
+      setups.push(null);
+    }
+    lastIdx = match.index + match[0].length;
+  }
+  chunks.push(normalized.slice(lastIdx).trim());
+
+  // Build sections
+  const sections: DocSection[] = [];
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    if (!chunk && i > 0 && i < chunks.length - 1) continue; // skip empty middle chunks
+    const setup = setups[i] || defaultSetup;
+    const pages = parseHtmlPages(chunk || "<p></p>");
+    sections.push({ pageSetup: { ...setup }, pages });
+  }
+
+  return sections.length ? sections : [{ pageSetup: defaultSetup, pages: ["<p></p>"] }];
+}
+
+function serializeHtmlSections(sections: DocSection[]): string {
+  if (!sections.length) return "<p></p>";
+  const parts: string[] = [];
+  for (let i = 0; i < sections.length; i++) {
+    if (i > 0) {
+      parts.push(makeSectionBreakMarker(sections[i].pageSetup));
+    }
+    parts.push(serializeHtmlPages(sections[i].pages));
+  }
+  return parts.join("");
+}
+
+/** Compute pixel dimensions from a PageSetup */
+function computeSectionDimensions(setup: PageSetup) {
+  const paper = PAPER_SIZES.find((p) => p.name === setup.paperSize) || PAPER_SIZES[7];
+  const isLandscape = setup.orientation === "landscape";
+  const widthCm = isLandscape ? paper.heightCm : paper.widthCm;
+  const heightCm = isLandscape ? paper.widthCm : paper.heightCm;
+  return {
+    pageWidthPx: cmToPx(widthCm),
+    pageHeightPx: cmToPx(heightCm),
+    marginTopPx: cmToPx(setup.marginTopCm),
+    marginBottomPx: cmToPx(setup.marginBottomCm),
+    marginLeftPx: cmToPx(setup.marginLeftCm),
+    marginRightPx: cmToPx(setup.marginRightCm),
+  };
 }
 
 export interface DocTemplate {
@@ -709,12 +860,82 @@ export default function DocEditor({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showRuler, setShowRuler] = useState(true);
   const [showNonPrinting, setShowNonPrinting] = useState(false);
-  const [showPrintLayout, setShowPrintLayout] = useState(true);
+
+  // ── Section-aware page setup ──
+  // sectionInfos tracks per-section page setup + page count.
+  // The flat `pages` array is the content; sectionInfos overlays structure on top.
+  const defaultPageSetup = useMemo<PageSetup>(() => {
+    try {
+      const stored = typeof window !== "undefined" ? localStorage.getItem("educo_page_setup_default") : null;
+      if (stored) return { ...DEFAULT_PAGE_SETUP, ...JSON.parse(stored) };
+    } catch { /* ignore */ }
+    return { ...DEFAULT_PAGE_SETUP };
+  }, []);
+
+  interface SectionInfo { pageCount: number; pageSetup: PageSetup; }
+  const [sectionInfos, setSectionInfos] = useState<SectionInfo[]>(() => {
+    const parsed = parseHtmlSections(value.html, defaultPageSetup);
+    return parsed.map(s => ({ pageCount: s.pages.length, pageSetup: s.pageSetup }));
+  });
+  const sectionInfosRef = useRef<SectionInfo[]>(sectionInfos);
+  sectionInfosRef.current = sectionInfos;
+
+  const [activeSectionIdx, setActiveSectionIdx] = useState(0);
+  const activeSectionIdxRef = useRef(0);
+  activeSectionIdxRef.current = activeSectionIdx;
+
+  // pageSetup = the active section's setup (for ruler, toolbar, and backward compat)
+  const pageSetup = sectionInfos[Math.min(activeSectionIdx, sectionInfos.length - 1)]?.pageSetup || DEFAULT_PAGE_SETUP;
+
+  // Custom setter: updates the active section's pageSetup
+  const setPageSetup = useCallback((updater: PageSetup | ((prev: PageSetup) => PageSetup)) => {
+    setSectionInfos(prev => {
+      const idx = Math.min(activeSectionIdxRef.current, prev.length - 1);
+      const currentSetup = prev[idx].pageSetup;
+      const newSetup = typeof updater === 'function' ? updater(currentSetup) : updater;
+      const updated = [...prev];
+      updated[idx] = { ...updated[idx], pageSetup: newSetup };
+      return updated;
+    });
+  }, []);
+
+  // Helpers: map flat page index ↔ section
+  const getSectionForPage = useCallback((flatIdx: number): number => {
+    let cumulative = 0;
+    for (let i = 0; i < sectionInfosRef.current.length; i++) {
+      cumulative += sectionInfosRef.current[i].pageCount;
+      if (flatIdx < cumulative) return i;
+    }
+    return sectionInfosRef.current.length - 1;
+  }, []);
+
+  const getSectionPageRange = useCallback((sIdx: number): [number, number] => {
+    let start = 0;
+    for (let i = 0; i < sIdx; i++) start += sectionInfosRef.current[i].pageCount;
+    return [start, start + (sectionInfosRef.current[sIdx]?.pageCount || 1) - 1];
+  }, []);
+
+  const pageDimensions = useMemo(() => computeSectionDimensions(pageSetup), [pageSetup]);
+
+  const { pageWidthPx, pageHeightPx, marginTopPx, marginBottomPx, marginLeftPx, marginRightPx } = pageDimensions;
+  const showPrintLayout = !pageSetup.pageless;
   const [showComments, setShowComments] = useState(false);
   const [showEquationToolbar, setShowEquationToolbar] = useState(false);
   const [docMode, setDocMode] = useState<"editing" | "suggesting" | "viewing">("editing");
   const [isChromeCollapsed, setIsChromeCollapsed] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
+    typeof window !== "undefined" && window.innerWidth < 768
+  );
+
+  // Auto-collapse sidebar on mobile viewport
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const handler = (e: MediaQueryListEvent) => {
+      if (e.matches) setIsSidebarCollapsed(true);
+    };
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   // ── Sidebar state ──
   const [sidebarTabs, setSidebarTabs] = useState<Array<{ id: string; name: string; html: string }>>([
@@ -751,9 +972,8 @@ export default function DocEditor({
   const [findQuery, setFindQuery] = useState("");
   const [replaceQuery, setReplaceQuery] = useState("");
   const lastFindIndexRef = useRef(0);
+  const [findMatchCount, setFindMatchCount] = useState<{ current: number; total: number } | null>(null);
 
-  const [pageWidthPx, setPageWidthPx] = useState(860);
-  const [pagePaddingPx, setPagePaddingPx] = useState(40);
   const [pages, setPages] = useState<string[]>(() => parseHtmlPages(value.html));
 
   const [versions, setVersions] = useState<Array<{
@@ -1087,13 +1307,15 @@ export default function DocEditor({
     toastTimerRef.current = setTimeout(() => setToast(null), 2400);
   }, []);
 
-  // Keep pages in sync when value.html changes externally
+  // Keep pages and sections in sync when value.html changes externally
   useEffect(() => {
     if (value.html === lastSerializedHtmlRef.current) return;
-    const nextPages = parseHtmlPages(value.html);
+    const parsed = parseHtmlSections(value.html, defaultPageSetup);
+    const nextPages = parsed.flatMap(s => s.pages);
     setPages(nextPages);
     pagesRef.current = nextPages;
-  }, [value.html]);
+    setSectionInfos(parsed.map(s => ({ pageCount: s.pages.length, pageSetup: s.pageSetup })));
+  }, [value.html, defaultPageSetup]);
 
   // Close the "More" menu on outside click
   useEffect(() => {
@@ -1204,7 +1426,22 @@ export default function DocEditor({
     });
     setPages(nextPages);
     pagesRef.current = nextPages;
-    const nextHtml = serializeHtmlPages(nextPages);
+    // Serialize using section breaks
+    const infos = sectionInfosRef.current;
+    const sections: DocSection[] = [];
+    let offset = 0;
+    for (const info of infos) {
+      const end = Math.min(offset + info.pageCount, nextPages.length);
+      sections.push({ pageSetup: info.pageSetup, pages: nextPages.slice(offset, end) });
+      offset = end;
+    }
+    // Any remaining pages belong to the last section
+    if (offset < nextPages.length && sections.length > 0) {
+      sections[sections.length - 1].pages.push(...nextPages.slice(offset));
+    } else if (sections.length === 0) {
+      sections.push({ pageSetup: DEFAULT_PAGE_SETUP, pages: nextPages });
+    }
+    const nextHtml = serializeHtmlSections(sections);
     lastSerializedHtmlRef.current = nextHtml;
     updateValue({ html: nextHtml });
   }, [updateValue]);
@@ -1216,30 +1453,45 @@ export default function DocEditor({
     try {
       const pageCount = pagesRef.current.length;
 
-      // Push overflow forward
+      // Build section boundary set — pages that start a new section (don't pull content across)
+      const sectionStartPages = new Set<number>();
+      {
+        let offset = 0;
+        for (const info of sectionInfosRef.current) {
+          if (offset > 0) sectionStartPages.add(offset);
+          offset += info.pageCount;
+        }
+      }
+
+      // Push overflow forward (within section boundaries)
       for (let i = 0; i < pageCount; i++) {
         const pageEl = pageRefs.current[i];
         if (!pageEl) continue;
-        // Ensure we have a next page if needed.
         while (pageEl.scrollHeight > pageEl.clientHeight + 2) {
-          const nextEl = pageRefs.current[i + 1];
+          let nextEl = pageRefs.current[i + 1];
           if (!nextEl) {
             const nextPages = [...pagesRef.current, "<p></p>"];
             pagesRef.current = nextPages;
             setPages(nextPages);
-            // Continue pagination once the new page mounts.
+            // Update section info: add page to current section
+            const sIdx = getSectionForPage(i);
+            setSectionInfos(prev => {
+              const updated = [...prev];
+              updated[sIdx] = { ...updated[sIdx], pageCount: updated[sIdx].pageCount + 1 };
+              return updated;
+            });
             setTimeout(() => rebalancePages(), 0);
             return;
           }
+          // Don't push content past a section boundary
+          if (sectionStartPages.has(i + 1)) break;
           const last = pageEl.lastChild;
           if (!last) break;
-          // If we can't move anything else, stop.
           if (pageEl.childNodes.length <= 1) {
             const only = pageEl.lastElementChild;
             if (only && only.tagName === "P") {
               const words = (only.textContent || "").trim().split(/\s+/).filter(Boolean);
               if (words.length < 10) break;
-              // Move roughly half the words to the next page; adjust by binary search.
               let lo = 1;
               let hi = words.length - 1;
               let best = Math.floor(words.length / 2);
@@ -1252,15 +1504,8 @@ export default function DocEditor({
                 p.textContent = moved;
                 nextEl.insertBefore(p, nextEl.firstChild);
                 const ok = pageEl.scrollHeight <= pageEl.clientHeight + 2;
-                if (!ok) {
-                  // Revert and try a different split.
-                  p.remove();
-                  only.textContent = original;
-                } else {
-                  // Keep this split, but remove the inserted paragraph so caller can finalize.
-                  p.remove();
-                  only.textContent = original;
-                }
+                p.remove();
+                only.textContent = original;
                 return ok;
               };
               while (lo <= hi) {
@@ -1286,8 +1531,10 @@ export default function DocEditor({
         }
       }
 
-      // Pull content back when there is space
+      // Pull content back when there is space (don't pull across section boundaries)
       for (let i = 0; i < pagesRef.current.length - 1; i++) {
+        // Don't pull from a page that starts a new section
+        if (sectionStartPages.has(i + 1)) continue;
         const pageEl = pageRefs.current[i];
         const nextEl = pageRefs.current[i + 1];
         if (!pageEl || !nextEl) continue;
@@ -1295,16 +1542,16 @@ export default function DocEditor({
           const node = nextEl.firstChild;
           pageEl.appendChild(node);
           if (pageEl.scrollHeight > pageEl.clientHeight + 2) {
-            // Revert if it overflowed.
             nextEl.insertBefore(node, nextEl.firstChild);
             break;
           }
         }
       }
 
-      // Trim trailing empty pages
+      // Trim trailing empty pages (but don't remove section-starting pages)
       while (pagesRef.current.length > 1) {
         const lastIdx = pagesRef.current.length - 1;
+        if (sectionStartPages.has(lastIdx)) break; // Don't remove a section's only page
         const lastEl = pageRefs.current[lastIdx];
         if (!lastEl) break;
         const html = (lastEl.innerHTML || "")
@@ -1315,6 +1562,15 @@ export default function DocEditor({
         if (text || html.replaceAll(/<p>\s*<\/p>/gi, "").replaceAll(/\s+/g, "").length > 0) break;
         pagesRef.current = pagesRef.current.slice(0, -1);
         setPages(pagesRef.current);
+        // Update section info: reduce page count of the section that lost a page
+        const sIdx = getSectionForPage(lastIdx);
+        setSectionInfos(prev => {
+          const updated = [...prev];
+          if (updated[sIdx] && updated[sIdx].pageCount > 1) {
+            updated[sIdx] = { ...updated[sIdx], pageCount: updated[sIdx].pageCount - 1 };
+          }
+          return updated;
+        });
       }
 
       // Persist DOM after any reflow/moves.
@@ -1322,7 +1578,7 @@ export default function DocEditor({
     } finally {
       paginationInProgressRef.current = false;
     }
-  }, [flushDomToState, showPrintLayout]);
+  }, [flushDomToState, showPrintLayout, getSectionForPage]);
 
   const schedulePaginate = useCallback(() => {
     if (paginateRafRef.current != null) cancelAnimationFrame(paginateRafRef.current);
@@ -1366,10 +1622,13 @@ export default function DocEditor({
   // We update pages state and let React re-render the contentEditable divs via
   // their ref callbacks — do NOT touch editorRootRef.innerHTML directly.
   const loadTabContent = useCallback((html: string) => {
-    const newPages = parseHtmlPages(html);
+    const parsed = parseHtmlSections(html, defaultPageSetup);
+    const newPages = parsed.flatMap(s => s.pages);
     if (newPages.length === 0) newPages.push("");
     pagesRef.current = newPages;
     setPages([...newPages]);
+    setSectionInfos(parsed.map(s => ({ pageCount: s.pages.length, pageSetup: s.pageSetup })));
+    setActiveSectionIdx(0);
     // Also sync each page div's innerHTML via refs
     requestAnimationFrame(() => {
       newPages.forEach((pageHtml, idx) => {
@@ -1379,7 +1638,7 @@ export default function DocEditor({
     });
     // Defer onChange to avoid setState-during-render
     setTimeout(() => onChange({ ...latestValueRef.current, html }), 0);
-  }, [onChange]);
+  }, [onChange, defaultPageSetup]);
 
   const handleCreateTab = useCallback(() => {
     const currentHtml = pagesRef.current.join("");
@@ -1497,7 +1756,7 @@ export default function DocEditor({
   }, []);
 
   /** Write model back to the DOM element as encoded data + static preview HTML. */
-  const maxContentWidth = pageWidthPx - 2 * pagePaddingPx - 2;
+  const maxContentWidth = pageWidthPx - marginLeftPx - marginRightPx - 2;
   const commitTableWidget = useCallback((el: HTMLElement, model: TableWidgetModel) => {
     try {
       el.dataset.docTableWidgetModel = encodeTableWidgetModel(model);
@@ -1765,7 +2024,7 @@ export default function DocEditor({
         // Redistribute column widths evenly across the total table width (capped to page).
         const newColCount = adjustedRows[0]?.length ?? 1;
         // Subtract 2 for the 1px border on each side of the page wrapper (border-box)
-        const maxW = pageWidthPx - 2 * pagePaddingPx - 2;
+        const maxW = pageWidthPx - marginLeftPx - marginRightPx - 2;
         const totalWidth = Math.min(maxW, m.colWidthsPx
           ? m.colWidthsPx.reduce((a, b) => a + b, 0)
           : Math.max(400, newColCount * 120));
@@ -1776,7 +2035,7 @@ export default function DocEditor({
       commitWidgetSoon(true);
       showToast(where === "left" ? "Column added left" : "Column added right");
     },
-    [commitWidgetSoon, showToast, updateTableWidgetModel, pageWidthPx, pagePaddingPx]
+    [commitWidgetSoon, showToast, updateTableWidgetModel, pageWidthPx, marginLeftPx, marginRightPx]
   );
 
   const toggleWidgetHeaderRow = useCallback(() => {
@@ -2298,6 +2557,8 @@ export default function DocEditor({
     const emptyPages = ["<p></p>"];
     pagesRef.current = emptyPages;
     setPages(emptyPages);
+    setSectionInfos([{ pageCount: 1, pageSetup: defaultPageSetup }]);
+    setActiveSectionIdx(0);
     lastSerializedHtmlRef.current = "";
     requestAnimationFrame(() => {
       const el = pageRefs.current[0];
@@ -2319,15 +2580,6 @@ export default function DocEditor({
     showToast("Copy opened in new tab");
   };
 
-  const handleSaveOffline = () => {
-    try {
-      const key = `educo_doc_offline_${safeFilename(docTitle)}`;
-      localStorage.setItem(key, JSON.stringify({ ...value, title: docTitle }));
-      showToast("Saved for offline use");
-    } catch {
-      showToast("Offline save failed");
-    }
-  };
 
   const handleOpenFile = () => {
     openFileInputRef.current?.click();
@@ -2492,54 +2744,264 @@ export default function DocEditor({
     showToast(`${format.toUpperCase()} downloaded (HTML-based)`);
   };
 
-  const findAndSelect = (query: string) => {
+  /** Remove all find/replace highlight marks and merge adjacent text nodes */
+  const clearFindHighlights = () => {
+    const root = rootRef.current;
+    if (!root) return;
+    const marks = root.querySelectorAll("mark[data-doc-find-highlight]");
+    if (marks.length === 0) return;
+    const hadReplaced = root.querySelector('mark[data-doc-find-highlight="replaced"]') !== null;
+    const parents = new Set<Node>();
+    marks.forEach((mark) => {
+      const parent = mark.parentNode;
+      if (!parent) return;
+      while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+      parent.removeChild(mark);
+      parents.add(parent);
+    });
+    // Merge adjacent text nodes so future searches map positions correctly
+    parents.forEach((p) => (p as Element).normalize?.());
+    // If replace highlights were present, pages state may contain mark HTML — sync cleaned DOM back
+    if (hadReplaced) flushDomToState();
+  };
+
+  // Clear highlights when user clicks outside the Find/Replace panel;
+  // restore them when focus returns to the panel
+  useEffect(() => {
+    if (dialog !== "findReplace") return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const panel = (rootRef.current?.parentElement ?? document).querySelector("[data-doc-find-replace-panel]");
+      if (panel && !panel.contains(e.target as Node)) {
+        clearFindHighlights();
+      }
+    };
+    const handlePanelFocusIn = () => {
+      // Restore highlight if there's an active find query and no current highlight
+      const root = rootRef.current;
+      if (findQuery && root && !root.querySelector("mark[data-doc-find-highlight]")) {
+        lastFindIndexRef.current = 0;
+        findNextAndHighlight(findQuery);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    const panel = (rootRef.current?.parentElement ?? document).querySelector("[data-doc-find-replace-panel]");
+    panel?.addEventListener("focusin", handlePanelFocusIn);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      panel?.removeEventListener("focusin", handlePanelFocusIn);
+    };
+  }, [dialog, findQuery]);
+
+  // When the Find/Replace panel opens with an existing query, restore highlights
+  useEffect(() => {
+    if (dialog === "findReplace" && findQuery) {
+      lastFindIndexRef.current = 0;
+      findNextAndHighlight(findQuery);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dialog]);
+
+  /** Walk all text nodes in editor pages; return them with a combined search string */
+  const collectTextNodes = () => {
     const els = pageRefs.current
       .slice(0, pagesRef.current.length)
       .filter(Boolean) as HTMLDivElement[];
-    if (els.length === 0) return false;
-    const pageTexts = els.map((el) => (el.innerText || "").toLowerCase());
-    const combined = pageTexts.join("\n\n");
-    if (!query) return false;
-    const needle = query.toLowerCase();
-    const idx = combined.indexOf(needle, lastFindIndexRef.current);
-    const foundAt = idx >= 0 ? idx : combined.indexOf(needle, 0);
-    if (foundAt < 0) return false;
+    if (els.length === 0) return { entries: [] as { node: Text; start: number }[], combined: "" };
+    const entries: { node: Text; start: number }[] = [];
+    let combined = "";
+    for (const el of els) {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      let cur = walker.nextNode() as Text | null;
+      while (cur) {
+        entries.push({ node: cur, start: combined.length });
+        combined += cur.data;
+        cur = walker.nextNode() as Text | null;
+      }
+    }
+    return { entries, combined };
+  };
 
-    // Map global index to a page + local index
-    let acc = 0;
-    let pageIdx = 0;
-    for (let i = 0; i < pageTexts.length; i++) {
-      const len = pageTexts[i].length;
-      if (foundAt < acc + len) {
-        pageIdx = i;
+  /** Count total occurrences of query in the editor text */
+  const countMatches = (query: string): number => {
+    if (!query) return 0;
+    const { combined } = collectTextNodes();
+    const needle = query.toLowerCase();
+    const haystack = combined.toLowerCase();
+    let count = 0;
+    let idx = 0;
+    while ((idx = haystack.indexOf(needle, idx)) >= 0) { count++; idx += needle.length; }
+    return count;
+  };
+
+  /** Find query text in editor and return a DOM Range for the match (or null) */
+  const findRange = (query: string): Range | null => {
+    if (!query) return null;
+    const { entries, combined } = collectTextNodes();
+    if (entries.length === 0) return null;
+    const needle = query.toLowerCase();
+    const haystack = combined.toLowerCase();
+    // Search from last position; wrap around to 0 if not found
+    let idx = haystack.indexOf(needle, lastFindIndexRef.current);
+    if (idx < 0) idx = haystack.indexOf(needle, 0);
+    if (idx < 0) return null;
+    const endPos = idx + needle.length;
+    // Map character positions to DOM text nodes
+    let startNode: Text | null = null;
+    let startOffset = 0;
+    let endNode: Text | null = null;
+    let endOffset = 0;
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      const nodeEnd = entry.start + entry.node.data.length;
+      if (!startNode && idx >= entry.start && idx < nodeEnd) {
+        startNode = entry.node;
+        startOffset = idx - entry.start;
+      }
+      if (endPos > entry.start && endPos <= nodeEnd) {
+        endNode = entry.node;
+        endOffset = endPos - entry.start;
         break;
       }
-      acc += len + 2; // "\n\n"
     }
-    const localFoundAt = Math.max(0, foundAt - acc);
+    if (!startNode || !endNode) return null;
+    const range = document.createRange();
+    range.setStart(startNode, startOffset);
+    range.setEnd(endNode, endOffset);
+    lastFindIndexRef.current = endPos;
+    return range;
+  };
 
-    const root = els[pageIdx];
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-    let cur = walker.nextNode() as Text | null;
-    let pos = 0;
-    while (cur) {
-      const len = cur.data.length;
-      const start = localFoundAt - pos;
-      const end = start + query.length;
-      if (start >= 0 && end <= len) {
-        const range = document.createRange();
-        range.setStart(cur, start);
-        range.setEnd(cur, end);
-        const sel = window.getSelection();
-        sel?.removeAllRanges();
-        sel?.addRange(range);
-        lastFindIndexRef.current = foundAt + query.length;
-        return true;
-      }
-      pos += len;
-      cur = walker.nextNode() as Text | null;
+  /** Find query text in editor and select it. Returns true if found. */
+  const findAndSelect = (query: string) => {
+    const range = findRange(query);
+    if (!range) return false;
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+    return true;
+  };
+
+  /** Find next match, highlight it with a yellow <mark>, scroll into view */
+  const findNextAndHighlight = (query: string): boolean => {
+    clearFindHighlights();
+    if (!query) { setFindMatchCount(null); return false; }
+    // Count total matches before any DOM modification
+    const total = countMatches(query);
+    if (total === 0) { setFindMatchCount({ current: 0, total: 0 }); return false; }
+    // Get the range directly (don't rely on browser selection which is lost on button click)
+    const range = findRange(query);
+    if (!range) { setFindMatchCount({ current: 0, total }); return false; }
+    // Calculate which match we're on
+    const foundAt = lastFindIndexRef.current - query.length;
+    const { combined } = collectTextNodes();
+    const needle = query.toLowerCase();
+    const hay = combined.toLowerCase();
+    let current = 0;
+    let searchFrom = 0;
+    while (searchFrom <= foundAt) {
+      const pos = hay.indexOf(needle, searchFrom);
+      if (pos < 0 || pos > foundAt) break;
+      current++;
+      searchFrom = pos + needle.length;
     }
-    return false;
+    // Wrap the matched text in a yellow highlight mark using direct text node splitting
+    const startContainer = range.startContainer;
+    const startOff = range.startOffset;
+    const endContainer = range.endContainer;
+    const endOff = range.endOffset;
+    try {
+      const mark = document.createElement("mark");
+      mark.setAttribute("data-doc-find-highlight", "current");
+      mark.style.cssText = "background:#fde047;border-radius:2px;padding:0 1px;color:inherit;";
+      if (startContainer === endContainer && startContainer.nodeType === Node.TEXT_NODE) {
+        const textNode = startContainer as Text;
+        if (endOff < textNode.data.length) textNode.splitText(endOff);
+        const matchNode = textNode.splitText(startOff);
+        matchNode.parentNode!.insertBefore(mark, matchNode);
+        mark.appendChild(matchNode);
+      } else {
+        const contents = range.extractContents();
+        mark.appendChild(contents);
+        range.insertNode(mark);
+      }
+      mark.scrollIntoView?.({ behavior: "smooth", block: "center", inline: "nearest" });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("[DocEditor findNextAndHighlight] failed to insert mark:", err);
+    }
+    setFindMatchCount({ current: Math.max(1, current), total });
+    return true;
+  };
+
+  /** Replace current match (or find first), highlight replacement in green */
+  const replaceAndHighlight = (query: string, replacement: string): boolean => {
+    clearFindHighlights();
+    if (!query) return false;
+    // If current selection doesn't match the query, find first
+    const sel = window.getSelection();
+    const selText = sel?.toString() || "";
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed || selText.toLowerCase() !== query.toLowerCase()) {
+      const ok = findAndSelect(query);
+      if (!ok) return false;
+    }
+    exec("insertText", replacement);
+    emitChange();
+    // Highlight the replaced text in green
+    if (replacement.length > 0) {
+      const currentSel = window.getSelection();
+      if (currentSel && currentSel.focusNode && currentSel.focusNode.nodeType === Node.TEXT_NODE) {
+        try {
+          const textNode = currentSel.focusNode as Text;
+          const focusOffset = currentSel.focusOffset;
+          const startOff = Math.max(0, focusOffset - replacement.length);
+          // Split text node to isolate the replacement text
+          if (focusOffset < textNode.data.length) textNode.splitText(focusOffset);
+          const matchNode = textNode.splitText(startOff);
+          const mark = document.createElement("mark");
+          mark.setAttribute("data-doc-find-highlight", "replaced");
+          mark.style.cssText = "background:#86efac;border-radius:2px;padding:0 1px;color:inherit;";
+          matchNode.parentNode!.insertBefore(mark, matchNode);
+          mark.appendChild(matchNode);
+          mark.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+        } catch {}
+      }
+    }
+    return true;
+  };
+
+  /** Replace all matches; highlight each replacement in green */
+  const replaceAllAndHighlight = (query: string, replacement: string): number => {
+    clearFindHighlights();
+    if (!query) return 0;
+    lastFindIndexRef.current = 0;
+    let count = 0;
+    for (let i = 0; i < 500; i++) {
+      const ok = findAndSelect(query);
+      if (!ok) break;
+      exec("insertText", replacement);
+      count++;
+      // Highlight each replacement in green
+      if (replacement.length > 0) {
+        const currentSel = window.getSelection();
+        if (currentSel && currentSel.focusNode && currentSel.focusNode.nodeType === Node.TEXT_NODE) {
+          try {
+            const textNode = currentSel.focusNode as Text;
+            const focusOffset = currentSel.focusOffset;
+            const startOff = Math.max(0, focusOffset - replacement.length);
+            if (focusOffset < textNode.data.length) textNode.splitText(focusOffset);
+            const matchNode = textNode.splitText(startOff);
+            const mark = document.createElement("mark");
+            mark.setAttribute("data-doc-find-highlight", "replaced");
+            mark.style.cssText = "background:#86efac;border-radius:2px;padding:0 1px;color:inherit;";
+            matchNode.parentNode!.insertBefore(mark, matchNode);
+            mark.appendChild(matchNode);
+          } catch {}
+        }
+      }
+    }
+    emitChange();
+    setFindMatchCount(null);
+    return count;
   };
 
   const handlePaste = async (plainOnly: boolean) => {
@@ -2656,7 +3118,7 @@ export default function DocEditor({
     const id = `tblw_${Math.random().toString(36).slice(2, 9)}`;
     const model = createTableWidgetModel(rows, cols);
     // Default width = full page content width (account for 1px border each side)
-    const contentW = pageWidthPx - 2 * pagePaddingPx - 2;
+    const contentW = pageWidthPx - marginLeftPx - marginRightPx - 2;
     const colW = Math.max(40, Math.floor(contentW / cols));
     model.colWidthsPx = Array.from({ length: cols }, () => colW);
     const style = getTableContainerStyle(model, maxContentWidth);
@@ -3212,7 +3674,7 @@ export default function DocEditor({
                     const cols = m.rows[0]?.length ?? 1;
                     const totalW = m.colWidthsPx ? m.colWidthsPx.reduce((a, b) => a + b, 0) : cols * 120;
                     // Subtract 2 for the 1px border on each side of the page wrapper (border-box)
-                    const maxW = pageWidthPx - 2 * pagePaddingPx - 2;
+                    const maxW = pageWidthPx - marginLeftPx - marginRightPx - 2;
                     const newTotal = Math.min(maxW, totalW + 40);
                     const evenW = Math.max(40, Math.floor(newTotal / cols));
                     return { ...m, colWidthsPx: Array.from({ length: cols }, () => evenW) };
@@ -3611,7 +4073,7 @@ export default function DocEditor({
                                   const startX = e.clientX;
                                   const startW = tableWidgetEditor.model.colWidthsPx?.[resizeColIdx] ?? 120;
                                   // Subtract 2 for the 1px border on each side of the page wrapper (border-box)
-                                  const maxTableW = pageWidthPx - 2 * pagePaddingPx - 2;
+                                  const maxTableW = pageWidthPx - marginLeftPx - marginRightPx - 2;
                                   const onMove = (me: MouseEvent) => {
                                     const delta = me.clientX - startX;
                                     const nextW = Math.max(40, Math.round(startW + delta));
@@ -3723,10 +4185,10 @@ export default function DocEditor({
 
       {/* Header row: doc icon + title (rename) */}
       {!isFullscreen && (
-      <div className="relative z-[50] px-4 pt-3 pb-2 border-b border-gray-100 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-gray-900/40 midnight:bg-[#0d1526]/60 purple:bg-[#1f1035]/60 backdrop-blur">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm">
-            <FileText className="w-4.5 h-4.5" />
+      <div data-doc-header className="relative z-[50] px-2 sm:px-4 pt-2 sm:pt-3 pb-1.5 sm:pb-2 border-b border-gray-100 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-gray-900/40 midnight:bg-[#0d1526]/60 purple:bg-[#1f1035]/60 backdrop-blur">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm">
+            <FileText className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 min-w-0">
@@ -3735,15 +4197,15 @@ export default function DocEditor({
                 value={docTitle}
                 onChange={(e) => updateValue({ title: e.target.value })}
                 disabled={!canEdit}
-                className="min-w-0 w-full max-w-[420px] bg-transparent text-[18px] font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 outline-none rounded-md px-2 py-1 hover:bg-gray-50/70 dark:hover:bg-gray-800/40 focus:bg-white/70 dark:focus:bg-gray-800/60 transition-colors"
+                className="min-w-0 w-full max-w-[180px] sm:max-w-[420px] bg-transparent text-[14px] sm:text-[18px] font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 outline-none rounded-md px-1 sm:px-2 py-1 hover:bg-gray-50/70 dark:hover:bg-gray-800/40 focus:bg-white/70 dark:focus:bg-gray-800/60 transition-colors"
                 aria-label="Document title"
               />
               <Tooltip content="Star" delay={400}>
                 <button
                   type="button"
-                  className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                  className="p-1 sm:p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
                 >
-                  <Star className="w-4 h-4" />
+                  <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </Tooltip>
             </div>
@@ -3751,7 +4213,7 @@ export default function DocEditor({
           <button
             type="button"
             onClick={() => setDialog("share")}
-            className="ml-auto px-4 py-1.5 rounded-full text-[13px] font-semibold text-white bg-[#1a73e8] hover:bg-[#1765cc] shadow-sm transition-colors cursor-pointer"
+            className="ml-auto px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-[12px] sm:text-[13px] font-semibold text-white bg-[#1a73e8] hover:bg-[#1765cc] shadow-sm transition-colors cursor-pointer"
           >
             Share
           </button>
@@ -3760,7 +4222,7 @@ export default function DocEditor({
         {/* Menubar */}
         <div
           data-doc-menubar
-          className="mt-2 flex items-center gap-2 text-[13px] text-gray-700 dark:text-gray-200 select-none"
+          className="mt-1 sm:mt-2 flex items-center flex-wrap gap-1 sm:gap-2 text-[12px] sm:text-[13px] text-gray-700 dark:text-gray-200 select-none"
         >
           <MenuRoot
             id="file"
@@ -3848,8 +4310,6 @@ export default function DocEditor({
                 </SubmenuPanel>
               }
             />
-            <MenuItem label="Make available offline" onClick={handleSaveOffline} />
-            <MenuDivider />
             <MenuItem label="Details" onClick={() => setDialog("details")} />
             <MenuItem label="Security limitations" onClick={() => setDialog("security")} />
             <MenuDivider />
@@ -4017,7 +4477,7 @@ export default function DocEditor({
             <MenuItem
               label="Show print layout"
               isChecked={showPrintLayout}
-              onClick={() => setShowPrintLayout((v) => !v)}
+              onClick={() => setSectionInfos((prev) => prev.map(s => ({ ...s, pageSetup: { ...s.pageSetup, pageless: !s.pageSetup.pageless } })))}
             />
             <MenuItem
               label="Show ruler"
@@ -4326,8 +4786,44 @@ export default function DocEditor({
                 <SubmenuPanel className="w-[250px]">
                   <MenuItem label="Page break" shortcut="Ctrl+Enter" onClick={handleInsertPageBreak} />
                   <MenuItem label="Column break" onClick={() => { exec("insertHTML", `<div style="border-top:1px dashed #e5e7eb;margin:16px 0;"><em>Column break</em></div>`); emitChange(); }} />
-                  <MenuItem label="Section break (next page)" onClick={() => { exec("insertHTML", `<div style="border-top:1px dashed #e5e7eb;margin:16px 0;"><em>Section break (next page)</em></div>`); emitChange(); }} />
-                  <MenuItem label="Section break (continuous)" onClick={() => { exec("insertHTML", `<div style="border-top:1px dashed #e5e7eb;margin:16px 0;"><em>Section break (continuous)</em></div>`); emitChange(); }} />
+                  <MenuItem label="Section break (next page)" onClick={() => {
+                    // Insert a functional section break: creates a new section from the next page onwards
+                    const sIdx = activeSectionIdxRef.current;
+                    const currentSetup = sectionInfosRef.current[sIdx]?.pageSetup || DEFAULT_PAGE_SETUP;
+                    // Insert a page break first, then mark it as a section boundary
+                    handleInsertPageBreak();
+                    // After the page break creates a new page, split the current section
+                    setTimeout(() => {
+                      setSectionInfos(prev => {
+                        const [rangeStart, rangeEnd] = getSectionPageRange(sIdx);
+                        // Find which page the cursor moved to after the page break
+                        let cursorPage = rangeStart;
+                        const sel = window.getSelection();
+                        if (sel?.anchorNode) {
+                          let node = sel.anchorNode as HTMLElement | null;
+                          while (node && node !== editorRootRef.current) {
+                            const pidx = pageRefs.current.indexOf(node as HTMLDivElement);
+                            if (pidx >= 0) { cursorPage = pidx; break; }
+                            node = node.parentElement;
+                          }
+                        }
+                        if (cursorPage <= rangeStart) return prev; // no split needed
+                        const pagesBeforeSplit = cursorPage - rangeStart;
+                        const pagesAfterSplit = prev[sIdx].pageCount - pagesBeforeSplit;
+                        if (pagesAfterSplit <= 0) return prev;
+                        const updated = [...prev];
+                        updated.splice(sIdx, 1,
+                          { pageCount: pagesBeforeSplit, pageSetup: { ...currentSetup } },
+                          { pageCount: pagesAfterSplit, pageSetup: { ...currentSetup } },
+                        );
+                        return updated;
+                      });
+                    }, 100);
+                  }} />
+                  <MenuItem label="Section break (continuous)" onClick={() => {
+                    exec("insertHTML", `<div style="border-top:1px dashed #e5e7eb;margin:16px 0;"><em>Section break (continuous)</em></div>`);
+                    emitChange();
+                  }} />
                 </SubmenuPanel>
               }
             />
@@ -4485,7 +4981,7 @@ export default function DocEditor({
 
       {/* Toolbar — Google Docs order */}
       {!isChromeCollapsed && (
-      <div className="px-3 pt-2 pb-1.5 border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10">
+      <div data-doc-toolbar className="px-1.5 sm:px-3 pt-1.5 sm:pt-2 pb-1 sm:pb-1.5 border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10">
         <div className="flex flex-wrap items-center gap-0.5">
           {/* Search */}
           <ToolbarButton disabled={false} onClick={() => setDialog("findReplace")} title="Search" Icon={Search} />
@@ -4659,7 +5155,7 @@ export default function DocEditor({
                     exec("foreColor", c);
                   }
                   emitChange();
-                  setTextColorOpen(false);
+                  if (!isNativeColorPickerOpen()) setTextColorOpen(false);
                 }}
                 columns={10}
                 showCustomHex
@@ -4685,7 +5181,7 @@ export default function DocEditor({
                   focusEditor();
                   exec("hiliteColor", c);
                   emitChange();
-                  setHighlightOpen(false);
+                  if (!isNativeColorPickerOpen()) setHighlightOpen(false);
                 }}
                 columns={10}
                 showCustomHex
@@ -4879,7 +5375,7 @@ export default function DocEditor({
 
       {/* Toolbar restore — show when collapsed */}
       {isChromeCollapsed && !isFullscreen && (
-        <div className="px-3 py-0.5 flex justify-end border-b border-gray-200 dark:border-gray-800">
+        <div data-doc-toolbar-restore className="px-3 py-0.5 flex justify-end border-b border-gray-200 dark:border-gray-800">
           <Tooltip content="Show the menus (Ctrl+Shift+F)" delay={400}>
             <button type="button" onClick={() => setIsChromeCollapsed(false)}
               className="w-7 h-5 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
@@ -4890,7 +5386,7 @@ export default function DocEditor({
       )}
 
       {/* Main content: sidebar + page surface */}
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 relative">
         {/* Sidebar expand button — shown when sidebar is collapsed */}
         {!isFullscreen && isSidebarCollapsed && (
           <div className="flex-shrink-0 flex flex-col items-center pt-3 px-1">
@@ -4907,7 +5403,10 @@ export default function DocEditor({
         )}
         {/* Left sidebar — Document tabs & outline */}
         {!isFullscreen && !isSidebarCollapsed && (
-          <div className="w-[260px] flex-shrink-0 border-r border-gray-200 dark:border-gray-700 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] overflow-y-auto" data-doc-sidebar onClick={() => setTabMenuOpenId(null)}>
+          <>
+          {/* Mobile backdrop overlay */}
+          <div data-doc-sidebar-backdrop className="absolute inset-0 bg-black/20 z-[90] md:hidden" onClick={() => setIsSidebarCollapsed(true)} />
+          <div className="w-[260px] flex-shrink-0 absolute md:relative z-[100] md:z-auto h-full md:h-auto border-r border-gray-200 dark:border-gray-700 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] overflow-y-auto" data-doc-sidebar onClick={() => setTabMenuOpenId(null)}>
             <div className="p-3">
               {/* Back arrow — collapses sidebar only */}
               <Tooltip content="Close sidebar" delay={400}>
@@ -5011,10 +5510,11 @@ export default function DocEditor({
               )}
             </div>
           </div>
+          </>
         )}
 
         {/* Page surface */}
-        <div className={`flex-1 min-h-0 overflow-auto ${isFullscreen ? "px-0 pb-0" : "px-4 pb-4"}`}>
+        <div className={`flex-1 min-h-0 overflow-auto ${isFullscreen ? "px-0 pb-0" : "px-1 sm:px-2 md:px-4 pb-2 sm:pb-4"}`}>
           {!isFullscreen && showEquationToolbar && (
             <div className="mx-auto w-full max-w-[860px] mb-2 px-2">
               <div className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-gray-900/60 midnight:bg-[#0b1220] purple:bg-[#170a27]">
@@ -5041,13 +5541,13 @@ export default function DocEditor({
               <div className="h-7 rounded-sm border border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white dark:bg-gray-900/60 midnight:bg-[#0b1220] purple:bg-[#170a27] relative overflow-hidden select-none">
                 {/* Ruler tick marks */}
                 <svg className="w-full h-full" preserveAspectRatio="none" viewBox={`0 0 ${pageWidthPx} 28`}>
-                  {Array.from({ length: Math.ceil((pageWidthPx - 2 * pagePaddingPx) / 96) + 1 }, (_, i) => {
-                    const x = pagePaddingPx + i * 96;
+                  {Array.from({ length: Math.ceil((pageWidthPx - marginLeftPx - marginRightPx) / 96) + 1 }, (_, i) => {
+                    const x = marginLeftPx + i * 96;
                     return (
                       <g key={i}>
                         <line x1={x} y1="14" x2={x} y2="28" stroke="#9ca3af" strokeWidth="1" />
                         <text x={x} y="11" textAnchor="middle" fontSize="9" fill="#9ca3af" fontWeight="500">{i}</text>
-                        {i < Math.ceil((pageWidthPx - 2 * pagePaddingPx) / 96) && (
+                        {i < Math.ceil((pageWidthPx - marginLeftPx - marginRightPx) / 96) && (
                           <line x1={x + 48} y1="20" x2={x + 48} y2="28" stroke="#d1d5db" strokeWidth="0.5" />
                         )}
                         {[24, 72].map((offset) => {
@@ -5060,11 +5560,11 @@ export default function DocEditor({
                   })}
                 </svg>
                 {/* Blue margin shading */}
-                <div className="absolute top-0 h-full bg-blue-100/30 dark:bg-blue-900/15" style={{ left: 0, width: pagePaddingPx }} />
-                <div className="absolute top-0 h-full bg-blue-100/30 dark:bg-blue-900/15" style={{ right: 0, width: pagePaddingPx }} />
+                <div className="absolute top-0 h-full bg-blue-100/30 dark:bg-blue-900/15" style={{ left: 0, width: marginLeftPx }} />
+                <div className="absolute top-0 h-full bg-blue-100/30 dark:bg-blue-900/15" style={{ right: 0, width: marginRightPx }} />
                 {/* Indent triangles */}
-                <Tooltip content="Left indent" delay={400}><div className="absolute bottom-0 w-0 h-0 border-l-[5px] border-r-[5px] border-b-[6px] border-l-transparent border-r-transparent border-b-blue-500 cursor-pointer" style={{ left: pagePaddingPx - 5 }} /></Tooltip>
-                <Tooltip content="Right indent" delay={400}><div className="absolute bottom-0 w-0 h-0 border-l-[5px] border-r-[5px] border-b-[6px] border-l-transparent border-r-transparent border-b-blue-500 cursor-pointer" style={{ right: pagePaddingPx - 5 }} /></Tooltip>
+                <Tooltip content="Left indent" delay={400}><div className="absolute bottom-0 w-0 h-0 border-l-[5px] border-r-[5px] border-b-[6px] border-l-transparent border-r-transparent border-b-blue-500 cursor-pointer" style={{ left: marginLeftPx - 5 }} /></Tooltip>
+                <Tooltip content="Right indent" delay={400}><div className="absolute bottom-0 w-0 h-0 border-l-[5px] border-r-[5px] border-b-[6px] border-l-transparent border-r-transparent border-b-blue-500 cursor-pointer" style={{ right: marginRightPx - 5 }} /></Tooltip>
               </div>
             </div>
           )}
@@ -5073,7 +5573,7 @@ export default function DocEditor({
             className={[
               "w-full",
               showPrintLayout
-                ? "min-h-full py-6 bg-gray-50 dark:bg-gray-950 midnight:bg-[#06101f] purple:bg-[#12061f]"
+                ? "min-h-full py-3 sm:py-6 bg-gray-50 dark:bg-gray-950 midnight:bg-[#06101f] purple:bg-[#12061f]"
                 : "min-h-full",
             ].join(" ")}
             style={zoomLevel !== 100 ? {
@@ -5083,89 +5583,122 @@ export default function DocEditor({
             } : undefined}
           >
             {showPrintLayout ? (
-              <div className="flex flex-col items-center gap-6">
-                {pages.map((html, idx) => (
-                  <div key={idx} className="w-full flex flex-col items-center">
-                    <div
-                      className={[
-                        "w-full rounded-sm shadow-md relative",
-                        "bg-white dark:bg-gray-950 midnight:bg-[#0b1220] purple:bg-[#170a27]",
-                        "border border-gray-200/80 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10",
-                      ].join(" ")}
-                      style={{
-                        maxWidth: isFullscreen ? "min(1200px, calc(100vw - 64px))" : pageWidthPx,
-                      }}
-                    >
-                      {/* Template chips overlay — inside page when empty */}
-                      {idx === 0 && hasTemplates && isDocEmpty && canEdit && (
-                        <div className="absolute inset-x-0 top-16 flex justify-center gap-2 z-10 pointer-events-none">
-                          {resolvedTemplates.slice(0, 2).map((tpl) => {
-                            const TplIcon = tpl.icon ?? FileText;
-                            return (
-                              <button key={tpl.id} onClick={() => handleTemplateInsert(tpl)}
-                                className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title={tpl.label}>
-                                <TplIcon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                                <span className="text-gray-700 dark:text-gray-200">{tpl.label}</span>
-                              </button>
-                            );
-                          })}
-                          {resolvedTemplates.length > 2 && (
-                            <button onClick={() => setMoreOpen((v) => !v)}
-                              className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title="More templates">
-                              <Package className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                              <span className="text-gray-700 dark:text-gray-200">More</span>
-                            </button>
+              <div className="flex flex-col items-center gap-3 sm:gap-6">
+                {(() => {
+                  let flatIdx = 0;
+                  return sectionInfos.map((sInfo, sIdx) => {
+                    const dims = computeSectionDimensions(sInfo.pageSetup);
+                    const sectionPages = pages.slice(flatIdx, flatIdx + sInfo.pageCount);
+                    const startIdx = flatIdx;
+                    flatIdx += sInfo.pageCount;
+                    return sectionPages.map((html, pIdx) => {
+                      const globalIdx = startIdx + pIdx;
+                      return (
+                        <div key={globalIdx} className="w-full flex flex-col items-center">
+                          {/* Section break indicator */}
+                          {sIdx > 0 && pIdx === 0 && (
+                            <div data-doc-section-indicator className="w-full flex justify-center mb-3">
+                              <div className="flex items-center gap-2 text-[11px] text-gray-400 dark:text-gray-500 select-none" style={{ maxWidth: dims.pageWidthPx }}>
+                                <div className="flex-1 border-t border-dashed border-gray-300 dark:border-gray-700" />
+                                <span>Section break</span>
+                                <div className="flex-1 border-t border-dashed border-gray-300 dark:border-gray-700" />
+                              </div>
+                            </div>
                           )}
+                          <div
+                            className={[
+                              "w-full rounded-sm shadow-md relative",
+                              sInfo.pageSetup.pageColor === "#ffffff"
+                                ? "bg-white dark:bg-gray-950 midnight:bg-[#0b1220] purple:bg-[#170a27]"
+                                : "",
+                              "border border-gray-200/80 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10",
+                            ].join(" ")}
+                            style={{
+                              maxWidth: isFullscreen ? "min(1200px, calc(100vw - 64px))" : dims.pageWidthPx,
+                              ...(sInfo.pageSetup.pageColor !== "#ffffff" ? { backgroundColor: sInfo.pageSetup.pageColor } : {}),
+                            }}
+                          >
+                            {/* Template chips overlay — inside page when empty */}
+                            {globalIdx === 0 && hasTemplates && isDocEmpty && canEdit && (
+                              <div className="absolute inset-x-0 top-16 flex justify-center gap-2 z-10 pointer-events-none">
+                                {resolvedTemplates.slice(0, 2).map((tpl) => {
+                                  const TplIcon = tpl.icon ?? FileText;
+                                  return (
+                                    <button key={tpl.id} onClick={() => handleTemplateInsert(tpl)}
+                                      className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title={tpl.label}>
+                                      <TplIcon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                                      <span className="text-gray-700 dark:text-gray-200">{tpl.label}</span>
+                                    </button>
+                                  );
+                                })}
+                                {resolvedTemplates.length > 2 && (
+                                  <button onClick={() => setMoreOpen((v) => !v)}
+                                    className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title="More templates">
+                                    <Package className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                    <span className="text-gray-700 dark:text-gray-200">More</span>
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                            <div
+                              contentEditable={canEdit}
+                              suppressContentEditableWarning
+                              ref={(el) => {
+                                pageRefs.current[globalIdx] = el;
+                                // Skip innerHTML reset if find/replace highlights are active (they modify the DOM temporarily)
+                                if (el && !el.querySelector("mark[data-doc-find-highlight]") && el.innerHTML !== html) el.innerHTML = html;
+                              }}
+                              className={[
+                                "outline-none overflow-hidden relative",
+                                "text-[14px] leading-6 text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50",
+                                "selection:bg-blue-200/60 dark:selection:bg-blue-500/25 midnight:selection:bg-cyan-500/20 purple:selection:bg-pink-500/20",
+                                "[&_h2]:text-[20px] [&_h2]:leading-7 [&_h2]:font-bold [&_h2]:mt-6 [&_h2]:mb-3",
+                                "[&_h3]:text-[16px] [&_h3]:leading-6 [&_h3]:font-bold [&_h3]:mt-5 [&_h3]:mb-2",
+                                "[&_p]:my-2",
+                                "[&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-3",
+                                "[&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-3",
+                                "[&_a]:text-blue-600 dark:[&_a]:text-blue-400 [&_a]:underline",
+                                showNonPrinting ? "[&_p]:after:content-['¶'] [&_p]:after:opacity-20" : "",
+                                canEdit ? "cursor-text" : "cursor-default",
+                              ].join(" ")}
+                              style={{
+                                height: dims.pageHeightPx,
+                                paddingTop: dims.marginTopPx,
+                                paddingBottom: dims.marginBottomPx,
+                                paddingLeft: isFullscreen ? 48 : dims.marginLeftPx,
+                                paddingRight: isFullscreen ? 48 : dims.marginRightPx,
+                              }}
+                              data-placeholder={placeholder}
+                              lang={language}
+                              dir={getTextDirectionForLanguage(language)}
+                              spellCheck
+                              onInput={emitChange}
+                              onBlur={emitChange}
+                              onFocus={() => setActiveSectionIdx(sIdx)}
+                            />
+                          </div>
+                          <div data-doc-page-label className="mt-2 text-[11px] text-gray-400 dark:text-gray-500 select-none">
+                            Page {globalIdx + 1}
+                          </div>
                         </div>
-                      )}
-                      <div
-                        contentEditable={canEdit}
-                        suppressContentEditableWarning
-                        ref={(el) => {
-                          pageRefs.current[idx] = el;
-                          if (el && el.innerHTML !== html) el.innerHTML = html;
-                        }}
-                        className={[
-                          "outline-none overflow-hidden relative",
-                          "text-[14px] leading-6 text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50",
-                          "selection:bg-blue-200/60 dark:selection:bg-blue-500/25 midnight:selection:bg-cyan-500/20 purple:selection:bg-pink-500/20",
-                          "[&_h2]:text-[20px] [&_h2]:leading-7 [&_h2]:font-bold [&_h2]:mt-6 [&_h2]:mb-3",
-                          "[&_h3]:text-[16px] [&_h3]:leading-6 [&_h3]:font-bold [&_h3]:mt-5 [&_h3]:mb-2",
-                          "[&_p]:my-2",
-                          "[&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-3",
-                          "[&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-3",
-                          "[&_a]:text-blue-600 dark:[&_a]:text-blue-400 [&_a]:underline",
-                          showNonPrinting ? "[&_p]:after:content-['¶'] [&_p]:after:opacity-20" : "",
-                          canEdit ? "cursor-text" : "cursor-default",
-                        ].join(" ")}
-                        style={{
-                          height: 1120,
-                          paddingTop: 64,
-                          paddingBottom: 64,
-                          paddingLeft: isFullscreen ? 48 : pagePaddingPx,
-                          paddingRight: isFullscreen ? 48 : pagePaddingPx,
-                        }}
-                        data-placeholder={placeholder}
-                        lang={language}
-                        dir={getTextDirectionForLanguage(language)}
-                        spellCheck
-                        onInput={emitChange}
-                        onBlur={emitChange}
-                      />
-                    </div>
-                    <div className="mt-2 text-[11px] text-gray-400 dark:text-gray-500 select-none">
-                      Page {idx + 1}
-                    </div>
-                  </div>
-                ))}
+                      );
+                    });
+                  });
+                })()}
               </div>
             ) : (
               <div
-                className="mx-auto w-full rounded-sm shadow-sm bg-white dark:bg-gray-950 midnight:bg-[#0b1220] purple:bg-[#170a27] border border-transparent py-10 relative"
+                className={[
+                  "mx-auto w-full rounded-sm shadow-sm border border-transparent py-4 sm:py-6 md:py-10 relative",
+                  pageSetup.pageColor === "#ffffff"
+                    ? "bg-white dark:bg-gray-950 midnight:bg-[#0b1220] purple:bg-[#170a27]"
+                    : "",
+                ].join(" ")}
                 style={{
                   maxWidth: isFullscreen ? "min(1200px, calc(100vw - 64px))" : pageWidthPx,
-                  paddingLeft: isFullscreen ? 48 : pagePaddingPx,
-                  paddingRight: isFullscreen ? 48 : pagePaddingPx,
+                  paddingLeft: isFullscreen ? 48 : marginLeftPx,
+                  paddingRight: isFullscreen ? 48 : marginRightPx,
+                  ...(pageSetup.pageColor !== "#ffffff" ? { backgroundColor: pageSetup.pageColor } : {}),
                 }}
               >
                 {/* Template chips overlay — inside page when empty */}
@@ -5195,7 +5728,8 @@ export default function DocEditor({
                   suppressContentEditableWarning
                   ref={(el) => {
                     pageRefs.current[0] = el;
-                    if (el && el.innerHTML !== (pages[0] || "")) el.innerHTML = pages[0] || "";
+                    // Skip innerHTML reset if find/replace highlights are active (they modify the DOM temporarily)
+                    if (el && !el.querySelector("mark[data-doc-find-highlight]") && el.innerHTML !== (pages[0] || "")) el.innerHTML = pages[0] || "";
                   }}
                   className={[
                     "min-h-[520px] outline-none overflow-hidden relative",
@@ -5261,6 +5795,27 @@ export default function DocEditor({
                 display: block;
                 clear: both;
               }
+              /* Responsive: reduce page margins on small screens */
+              @media (max-width: 639px) {
+                [data-doc-editor-root] [contenteditable] {
+                  padding-left: 16px !important;
+                  padding-right: 16px !important;
+                }
+              }
+              @media (min-width: 640px) and (max-width: 767px) {
+                [data-doc-editor-root] [contenteditable] {
+                  padding-left: 24px !important;
+                  padding-right: 24px !important;
+                }
+              }
+              /* Utility: hide scrollbar (for horizontal-scroll elements) */
+              .scrollbar-none {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+              }
+              .scrollbar-none::-webkit-scrollbar {
+                display: none;
+              }
             `}</style>
           </div>
         </div>
@@ -5294,55 +5849,94 @@ export default function DocEditor({
         onPublish={handlePublishDocument}
       />
 
+      {/* Find & Replace — floating panel (non-blocking, allows document interaction) */}
       {dialog === "findReplace" && (
-        <DocDialog title="Find and replace" onClose={() => setDialog(null)}>
-          <div className="space-y-2">
-            <input
-              value={findQuery}
-              onChange={(e) => setFindQuery(e.target.value)}
-              placeholder="Find…"
-              className="w-full px-3 py-2 rounded-xl text-[12px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none"
-            />
+        <div
+          data-doc-find-replace-panel
+          className="absolute right-3 top-[92px] z-[150] w-[300px] rounded-2xl border border-gray-200/80 dark:border-gray-700/80 midnight:border-gray-600/60 purple:border-purple-700/60 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1829]/95 purple:bg-[#1a0d2e]/95 backdrop-blur-md shadow-xl p-3"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[12px] font-bold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
+              Find and replace
+            </span>
+            <button
+              onClick={() => {
+                clearFindHighlights();
+                setFindMatchCount(null);
+                setDialog(null);
+              }}
+              className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-500 transition-colors"
+              aria-label="Close find and replace"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Find section */}
+          <div data-doc-find-section className="space-y-1.5">
+            <div className="relative">
+              <input
+                value={findQuery}
+                onChange={(e) => setFindQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    findNextAndHighlight(findQuery);
+                  }
+                }}
+                placeholder="Find…"
+                className="w-full px-3 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 midnight:bg-[#111d30] purple:bg-[#1f0f35] border border-gray-200 dark:border-gray-700 midnight:border-gray-600 purple:border-purple-700 text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 outline-none focus:ring-1 focus:ring-blue-400"
+                autoFocus
+              />
+              {findMatchCount && (
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 dark:text-gray-500 pointer-events-none">
+                  {findMatchCount.current}/{findMatchCount.total}
+                </span>
+              )}
+            </div>
+            <DialogButton
+              onClick={() => {
+                const ok = findNextAndHighlight(findQuery);
+                if (!ok) showToast("Not found");
+              }}
+            >
+              Find next
+            </DialogButton>
+          </div>
+
+          {/* Divider */}
+          <div className="my-2.5 border-t border-gray-200/60 dark:border-gray-700/60 midnight:border-gray-600/40 purple:border-purple-700/40" />
+
+          {/* Replace section */}
+          <div data-doc-replace-section className="space-y-1.5">
             <input
               value={replaceQuery}
               onChange={(e) => setReplaceQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  replaceAndHighlight(findQuery, replaceQuery);
+                }
+              }}
               placeholder="Replace with…"
-              className="w-full px-3 py-2 rounded-xl text-[12px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none"
+              className="w-full px-3 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 midnight:bg-[#111d30] purple:bg-[#1f0f35] border border-gray-200 dark:border-gray-700 midnight:border-gray-600 purple:border-purple-700 text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 outline-none focus:ring-1 focus:ring-blue-400"
             />
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <DialogButton
                 onClick={() => {
-                  const ok = findAndSelect(findQuery);
-                  showToast(ok ? "Found" : "Not found");
-                }}
-              >
-                Find next
-              </DialogButton>
-              <DialogButton
-                onClick={() => {
-                  const sel = window.getSelection();
-                  if (!sel || sel.rangeCount === 0) {
-                    const ok = findAndSelect(findQuery);
-                    if (!ok) return showToast("Not found");
+                  const ok = replaceAndHighlight(findQuery, replaceQuery);
+                  if (ok) {
+                    showToast("Replaced");
+                  } else {
+                    showToast("Not found");
                   }
-                  exec("insertText", replaceQuery);
-                  emitChange();
-                  showToast("Replaced");
                 }}
               >
                 Replace
               </DialogButton>
               <DialogButton
                 onClick={() => {
-                  lastFindIndexRef.current = 0;
-                  let count = 0;
-                  for (let i = 0; i < 500; i++) {
-                    const ok = findAndSelect(findQuery);
-                    if (!ok) break;
-                    exec("insertText", replaceQuery);
-                    count++;
-                  }
-                  emitChange();
+                  const count = replaceAllAndHighlight(findQuery, replaceQuery);
                   showToast(`Replaced ${count}`);
                 }}
               >
@@ -5350,40 +5944,62 @@ export default function DocEditor({
               </DialogButton>
             </div>
           </div>
-        </DocDialog>
+        </div>
       )}
 
       {dialog === "pageSetup" && (
-        <DocDialog title="Page setup" onClose={() => setDialog(null)}>
-          <div className="grid grid-cols-2 gap-2">
-            <label className="text-[12px] text-gray-600 dark:text-gray-300">
-              Width (px)
-              <input
-                type="number"
-                value={pageWidthPx}
-                onChange={(e) => setPageWidthPx(Math.max(560, Number(e.target.value || 860)))}
-                className="mt-1 w-full px-3 py-2 rounded-xl text-[12px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none"
-              />
-            </label>
-            <label className="text-[12px] text-gray-600 dark:text-gray-300">
-              Side padding (px)
-              <input
-                type="number"
-                value={pagePaddingPx}
-                onChange={(e) => setPagePaddingPx(Math.max(16, Number(e.target.value || 40)))}
-                className="mt-1 w-full px-3 py-2 rounded-xl text-[12px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none"
-              />
-            </label>
-          </div>
-          <div className="mt-3 flex items-center gap-2">
-            <DialogButton onClick={() => { setShowPrintLayout(true); showToast("Print layout enabled"); }}>
-              Print layout
-            </DialogButton>
-            <DialogButton onClick={() => { setShowPrintLayout(false); showToast("Web layout enabled"); }}>
-              Web layout
-            </DialogButton>
-          </div>
-        </DocDialog>
+        <PageSetupDialog
+          pageSetup={pageSetup}
+          onApply={(setup, applyTo) => {
+            if (applyTo === "selected-content") {
+              // Apply to only the active section. If there's only one section, split it.
+              setSectionInfos(prev => {
+                const sIdx = Math.min(activeSectionIdxRef.current, prev.length - 1);
+                if (prev.length === 1) {
+                  // Single section — split into up to 3 sections around the focused page
+                  const totalPages = prev[0].pageCount;
+                  // Find which page within the section the cursor is on
+                  // Use a rough estimate: page 0 for now, or we detect from DOM
+                  let focusedPageInSection = 0;
+                  const sel = window.getSelection();
+                  if (sel?.anchorNode) {
+                    let node = sel.anchorNode as HTMLElement | null;
+                    while (node && node !== editorRootRef.current) {
+                      const pidx = pageRefs.current.indexOf(node as HTMLDivElement);
+                      if (pidx >= 0) { focusedPageInSection = pidx; break; }
+                      node = node.parentElement;
+                    }
+                  }
+                  const sections: SectionInfo[] = [];
+                  if (focusedPageInSection > 0) {
+                    sections.push({ pageCount: focusedPageInSection, pageSetup: prev[0].pageSetup });
+                  }
+                  sections.push({ pageCount: 1, pageSetup: setup });
+                  const remaining = totalPages - focusedPageInSection - 1;
+                  if (remaining > 0) {
+                    sections.push({ pageCount: remaining, pageSetup: prev[0].pageSetup });
+                  }
+                  return sections;
+                }
+                // Multiple sections already — just update the active one
+                const updated = [...prev];
+                updated[sIdx] = { ...updated[sIdx], pageSetup: setup };
+                return updated;
+              });
+            } else {
+              // "This tab" — apply to ALL sections, merge into one
+              const totalPages = sectionInfosRef.current.reduce((sum, s) => sum + s.pageCount, 0);
+              setSectionInfos([{ pageCount: totalPages, pageSetup: setup }]);
+              setActiveSectionIdx(0);
+            }
+            setDialog(null);
+            showToast("Page setup updated");
+            // Trigger re-pagination after state settles
+            setTimeout(() => schedulePaginate(), 50);
+          }}
+          onClose={() => setDialog(null)}
+          showToast={showToast}
+        />
       )}
 
       {dialog === "details" && (
@@ -5511,6 +6127,7 @@ function ToolbarDropdown({
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: MouseEvent) => {
+      if (isNativeColorPickerOpen()) return;
       if (ref.current && !ref.current.contains(e.target as Node)) {
         onToggle();
       }
@@ -5590,6 +6207,255 @@ function DialogButton({
     >
       {children}
     </button>
+  );
+}
+
+function PageSetupDialog({
+  pageSetup,
+  onApply,
+  onClose,
+  showToast,
+}: {
+  pageSetup: PageSetup;
+  onApply: (setup: PageSetup, applyTo: "this-tab" | "selected-content") => void;
+  onClose: () => void;
+  showToast: (msg: string) => void;
+}) {
+  const [tab, setTab] = useState<"pages" | "pageless">(pageSetup.pageless ? "pageless" : "pages");
+  const [draft, setDraft] = useState<PageSetup>({ ...pageSetup });
+  const [applyTo, setApplyTo] = useState<"this-tab" | "selected-content">("this-tab");
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const colorRef = useRef<HTMLDivElement>(null);
+  const colorGridRef = useRef<HTMLDivElement>(null);
+
+  // Sync tab → pageless
+  useEffect(() => {
+    setDraft((d) => ({ ...d, pageless: tab === "pageless" }));
+  }, [tab]);
+
+  // Close color picker on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (isNativeColorPickerOpen()) return;
+      const target = e.target as Node;
+      if (
+        colorRef.current && !colorRef.current.contains(target) &&
+        colorGridRef.current && !colorGridRef.current.contains(target)
+      ) {
+        setShowColorPicker(false);
+      }
+    };
+    if (showColorPicker) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showColorPicker]);
+
+  const paperSizeOptions = PAPER_SIZES.map((p) => ({
+    value: p.name,
+    label: `${p.name} (${p.widthCm.toFixed(1)} × ${p.heightCm.toFixed(1)} cm)`,
+  }));
+
+  return (
+    <div data-doc-dialog className="absolute inset-0 z-[210] flex items-center justify-center bg-black/25 backdrop-blur-[2px] p-4">
+      <div className="w-full max-w-[560px] rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 pt-5 pb-1">
+          <div className="text-[16px] font-bold text-gray-800 dark:text-gray-100">Page setup</div>
+          <button className="px-2 py-1 rounded-lg text-[13px] text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer" onClick={onClose}>Close</button>
+        </div>
+
+        {/* Tab bar */}
+        <div className="flex gap-0 px-6 mt-1 border-b border-gray-200 dark:border-gray-700">
+          {(["pages", "pageless"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={[
+                "px-4 py-2.5 text-[13px] font-semibold capitalize cursor-pointer transition-colors",
+                tab === t
+                  ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300",
+              ].join(" ")}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        <div className="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
+          {/* Apply to */}
+          <FormDropdown
+            label="Apply to"
+            icon={<FileText className="w-2.5 h-2.5" />}
+            value={applyTo}
+            onChange={(v) => setApplyTo(v as "this-tab" | "selected-content")}
+            options={[
+              { value: "this-tab", label: "This tab" },
+              { value: "selected-content", label: "Selected content" },
+            ]}
+          />
+
+          {tab === "pages" && (
+            <>
+              {/* Orientation */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
+                  <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+                    <RotateCw className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <span>Orientation</span>
+                </label>
+                <div className="flex items-center gap-5">
+                  {(["portrait", "landscape"] as const).map((o) => (
+                    <label key={o} className="flex items-center gap-2.5 cursor-pointer" onClick={() => setDraft((d) => ({ ...d, orientation: o }))}>
+                      <div className={[
+                        "w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center transition-colors",
+                        draft.orientation === o ? "border-blue-600 dark:border-blue-400" : "border-gray-300 dark:border-gray-600",
+                      ].join(" ")}>
+                        {draft.orientation === o && <div className="w-2.5 h-2.5 rounded-full bg-blue-600 dark:bg-blue-400" />}
+                      </div>
+                      <span className="text-sm text-gray-700 dark:text-gray-200 capitalize">{o}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Paper size + Page colour */}
+              <div className="grid grid-cols-[1fr,auto] gap-4 items-end">
+                <FormDropdown
+                  label="Paper size"
+                  icon={<FileText className="w-2.5 h-2.5" />}
+                  value={draft.paperSize}
+                  onChange={(value) => setDraft((d) => ({ ...d, paperSize: value }))}
+                  options={paperSizeOptions}
+                />
+                <div ref={colorRef}>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
+                    <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+                      <Palette className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <span>Page colour</span>
+                  </label>
+                  <button
+                    className="flex items-center gap-2 min-h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200"
+                    onClick={() => setShowColorPicker((v) => !v)}
+                  >
+                    <div className="w-6 h-6 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm" style={{ backgroundColor: draft.pageColor }} />
+                    <ChevronRight className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${showColorPicker ? "rotate-[-90deg]" : "rotate-90"}`} />
+                  </button>
+                </div>
+              </div>
+              {showColorPicker && (
+                <div ref={colorGridRef} className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                  <div className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">Default</div>
+                  <ColorGrid
+                    colors={PAGE_COLORS}
+                    selectedColor={draft.pageColor}
+                    onSelect={(c) => { setDraft((d) => ({ ...d, pageColor: c })); if (!isNativeColorPickerOpen()) setShowColorPicker(false); }}
+                    columns={10}
+                    swatchSize="sm"
+                    showCustomHex
+                  />
+                </div>
+              )}
+
+              {/* Margins */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
+                  <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+                    <Maximize2 className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <span>Margins (centimetres)</span>
+                </label>
+                <div className="grid grid-cols-4 gap-3">
+                  {([
+                    ["Top", "marginTopCm"],
+                    ["Bottom", "marginBottomCm"],
+                    ["Left", "marginLeftCm"],
+                    ["Right", "marginRightCm"],
+                  ] as const).map(([label, key]) => (
+                    <FormInput
+                      key={key}
+                      label={label}
+                      type="number"
+                      step={0.01}
+                      min={0}
+                      value={String(draft[key])}
+                      onChange={(val) => setDraft((d) => ({ ...d, [key]: Math.max(0, Number(val) || 0) }))}
+                      iconBgColor="bg-transparent"
+                      iconColor="text-transparent"
+                    />
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {tab === "pageless" && (
+            <>
+              <div ref={colorRef}>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
+                  <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+                    <Palette className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <span>Page colour</span>
+                </label>
+                <button
+                  className="flex items-center gap-2 min-h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200"
+                  onClick={() => setShowColorPicker((v) => !v)}
+                >
+                  <div className="w-6 h-6 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm" style={{ backgroundColor: draft.pageColor }} />
+                  <ChevronRight className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${showColorPicker ? "rotate-[-90deg]" : "rotate-90"}`} />
+                </button>
+              </div>
+              {showColorPicker && (
+                <div ref={colorGridRef} className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                  <div className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">Default</div>
+                  <ColorGrid
+                    colors={PAGE_COLORS}
+                    selectedColor={draft.pageColor}
+                    onSelect={(c) => { setDraft((d) => ({ ...d, pageColor: c })); if (!isNativeColorPickerOpen()) setShowColorPicker(false); }}
+                    columns={10}
+                    swatchSize="sm"
+                    showCustomHex
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-6 pb-5 pt-1">
+          <button
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline cursor-pointer font-semibold"
+            onClick={() => {
+              try {
+                localStorage.setItem("educo_page_setup_default", JSON.stringify(draft));
+                showToast("Default page setup saved");
+              } catch {
+                showToast("Failed to save defaults");
+              }
+            }}
+          >
+            Set as default
+          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onClose}
+              className="px-5 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => onApply(draft, applyTo)}
+              className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors cursor-pointer"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -8,6 +8,7 @@ describe("Tooltip — Visual / CSS", () => {
       const { container } = render(
         <Tooltip content="Help text"><span>Hover me</span></Tooltip>
       );
+
       const trigger = container.firstChild as HTMLElement;
       expect(trigger.className).toContain("relative");
       expect(trigger.className).toContain("inline-block");
@@ -17,6 +18,7 @@ describe("Tooltip — Visual / CSS", () => {
       const { container } = render(
         <Tooltip content="Help text" block><span>Hover me</span></Tooltip>
       );
+
       const trigger = container.firstChild as HTMLElement;
       expect(trigger.className).toContain("relative");
       expect(trigger.className).toContain("block");

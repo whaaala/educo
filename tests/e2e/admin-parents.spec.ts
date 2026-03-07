@@ -15,7 +15,6 @@ test.describe("Admin Portal - Parent Management", () => {
   });
 
   test("displays parent list", async ({ page }) => {
-    // Should have a table or grid of parents
     await expect(page.locator("body")).toBeVisible();
   });
 
@@ -23,7 +22,6 @@ test.describe("Admin Portal - Parent Management", () => {
     const searchInput = page.locator("input[placeholder*='earch'], input[type='search']").first();
     if (await searchInput.isVisible()) {
       await searchInput.fill("Emeka");
-      // Results should filter
       await page.waitForTimeout(500); // debounce
     }
   });
@@ -39,7 +37,6 @@ test.describe("Admin Portal - Parent Management", () => {
     const filterBtn = page.locator("button").filter({ hasText: /filter/i }).first();
     if (await filterBtn.isVisible()) {
       await filterBtn.click();
-      // Filter dropdown should appear
       await page.waitForTimeout(300);
     }
   });
@@ -60,7 +57,6 @@ test.describe("Admin Portal - Parent Management", () => {
 test.describe("Admin Portal - Parent Detail", () => {
   test("can navigate to a parent detail page", async ({ page }) => {
     await page.goto("/admin/parents");
-    // Click on first parent card or row
     const parentLink = page.locator("a[href*='/admin/parents/']").first();
     if (await parentLink.isVisible()) {
       await parentLink.click();

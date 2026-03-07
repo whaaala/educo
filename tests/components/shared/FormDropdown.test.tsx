@@ -57,10 +57,8 @@ describe("FormDropdown", () => {
         options={options}
       />
     );
-    // Click the dropdown trigger
     const trigger = screen.getByText("Select an option");
     await user.click(trigger);
-    // All options should now be visible
     expect(screen.getByText("Male")).toBeInTheDocument();
     expect(screen.getByText("Female")).toBeInTheDocument();
     expect(screen.getByText("Other")).toBeInTheDocument();

@@ -66,7 +66,6 @@ describe("Modal", () => {
         <p>Content</p>
       </Modal>
     );
-    // Find close button (X button)
     const closeButtons = screen.getAllByRole("button");
     const closeBtn = closeButtons.find(
       (btn) => btn.querySelector("svg") !== null
@@ -95,13 +94,10 @@ describe("Modal", () => {
         <p>Content</p>
       </Modal>
     );
-    // Should not have the X close button in header
     const buttons = screen.queryAllByRole("button");
-    // If there are no buttons, close button was hidden
     expect(buttons.length).toBe(0);
   });
 
-  // Size variants
   it.each(["sm", "md", "lg", "xl", "2xl", "3xl", "4xl"] as const)(
     "renders with size=%s without crashing",
     (size) => {

@@ -32,6 +32,7 @@ describe("StorageQuotaExceededError", () => {
 
   it("handles zero values", () => {
     const err = new StorageQuotaExceededError(0, 0, 0);
+
     expect(err.currentUsage).toBe(0);
     expect(err.quotaLimit).toBe(0);
     expect(err.attemptedSize).toBe(0);

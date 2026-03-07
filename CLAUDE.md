@@ -76,3 +76,74 @@ The APK file should already be at `C:/Users/eyite/Downloads/expo-go-54.apk`. If 
 ```
 C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb
 ```
+
+## BDD Development Approach (MANDATORY)
+
+**All development MUST follow Behavior-Driven Development (BDD) principles.** This applies to both implementation and testing.
+
+### BDD for Development:
+When implementing new features or modifying existing code:
+1. **Think in behaviors first**: Define what the user/system should experience before writing code
+2. **Write tests before or alongside code**: Tests describe the expected behavior using Given/When/Then
+3. **Use descriptive naming**: Functions, components, and variables should reflect user-facing behavior
+4. **Validate against acceptance criteria**: Each feature should map to testable behavioral scenarios
+
+### BDD for Code Comments:
+When adding inline comments to implementation code, prefer behavior-oriented language:
+- Describe *what* and *why* (user behavior), not just *how* (technical detail)
+- Example: `// Allow user to drag color without closing the picker` instead of `// Set flag to true`
+
+---
+
+## Testing Requirements (MANDATORY)
+
+**Every code change MUST include corresponding test updates.** This is non-negotiable.
+
+### Workflow for every implementation:
+1. **Before coding**: Check if tests exist for the area being modified
+   - Unit tests: `tests/components/` and `tests/unit/`
+   - Visual tests: `*.visual.test.tsx` files
+   - E2E tests: `tests/e2e/`
+2. **If tests exist**: Update them to reflect the changes made
+3. **If no tests exist**: Add full test coverage in the appropriate test suite
+4. **After coding**: Run `npx vitest run` and confirm all tests pass
+
+### What tests MUST cover:
+- **Functionality**: Core logic, state changes, user interactions, event handlers
+- **UI & Look and Feel**: CSS classes, styling, theme variants (dark/midnight/purple), visual structure
+- **Responsiveness**: Layout behavior across screen sizes (mobile, tablet, desktop), breakpoint classes, flex/grid behavior, max-width/min-width constraints
+- **Accessibility**: ARIA attributes, keyboard navigation, focus management
+- **Edge cases**: Empty states, error states, boundary conditions
+
+### Gherkin `.feature` Files (MANDATORY — Single Source of Truth)
+
+Every feature, component, or test area MUST have a corresponding `.feature` file in `tests/features/`. When modifying existing code, update the relevant `.feature` file alongside tests.
+
+**Feature file structure:**
+```
+tests/features/
+├── e2e/                    # E2E feature specs
+├── components/             # Component feature specs
+│   ├── shared/             # Shared component features
+│   │   ├── DocEditor/
+│   │   ├── Whiteboard/
+│   │   ├── chat/
+│   │   └── messages/
+│   └── communication/      # Communication features
+└── unit/                   # Unit test features
+```
+
+**Rules:**
+- One `.feature` file per component/module (merge functional + visual tests into one file)
+- Use standard Gherkin: `Feature`, `Scenario`, `Given`, `When`, `Then`, `And`, `Scenario Outline`, `Examples`
+- Tag visual/CSS scenarios with `@visual`, responsive with `@responsive`
+- Feature file scenarios must match the test file scenarios 1:1
+- When adding new tests, add the corresponding scenario to the `.feature` file first
+
+### Test file locations:
+- **Feature files**: `tests/features/` (Gherkin `.feature` specs)
+- **DocEditor unit tests**: `tests/components/shared/DocEditor/DocEditor.comprehensive.test.tsx`
+- **DocEditor visual tests**: `tests/components/shared/DocEditor/DocEditor.visual.test.tsx`
+- **DocEditor e2e tests**: `tests/e2e/doc-editor.spec.ts` and `tests/e2e/doc-editor-comprehensive.spec.ts`
+- **Shared components**: `tests/components/shared/`
+- **Unit tests**: `tests/unit/`

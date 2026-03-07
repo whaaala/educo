@@ -10,6 +10,7 @@ import {
 describe("featureFlags", () => {
   describe("isFeatureEnabled", () => {
     // ---- Globally enabled flags (no constraints) ----
+
     it("returns true for globally enabled flags without context", () => {
       expect(isFeatureEnabled("FF_Student_Profile")).toBe(true);
       expect(isFeatureEnabled("FF_Student_Transfer")).toBe(true);
@@ -18,6 +19,7 @@ describe("featureFlags", () => {
     });
 
     // ---- Disabled flags ----
+
     it("returns false for disabled flags", () => {
       expect(isFeatureEnabled("FF_Staff_Payroll")).toBe(false);
       expect(isFeatureEnabled("FF_Attendance_Biometric")).toBe(false);
@@ -30,6 +32,7 @@ describe("featureFlags", () => {
     });
 
     // ---- Education level constraints ----
+
     it("enables FF_Grading_Primary only for Primary level", () => {
       expect(
         isFeatureEnabled("FF_Grading_Primary", { educationLevel: "Primary" })
@@ -82,6 +85,7 @@ describe("featureFlags", () => {
     });
 
     // ---- Institution type constraints ----
+
     it("enables FF_Finance_Private for Private and International institutions", () => {
       expect(
         isFeatureEnabled("FF_Finance_Private", {
@@ -114,6 +118,7 @@ describe("featureFlags", () => {
     });
 
     // ---- Combined constraints (AND logic) ----
+
     it("uses AND logic by default for FF_Hostel_Management", () => {
       // Both education level AND institution type must match
       expect(
@@ -145,6 +150,7 @@ describe("featureFlags", () => {
     });
 
     // ---- OR logic (matchAny) ----
+
     it("uses OR logic for FF_Branch_Hierarchy (matchAny: true)", () => {
       // International OR Tertiary
       expect(
@@ -167,6 +173,7 @@ describe("featureFlags", () => {
     });
 
     // ---- No context provided for constrained flags ----
+
     it("returns false for constrained flags when no context is provided", () => {
       expect(isFeatureEnabled("FF_Grading_Primary")).toBe(false);
       expect(isFeatureEnabled("FF_Finance_Private")).toBe(false);
