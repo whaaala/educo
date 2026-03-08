@@ -93,6 +93,14 @@ import {
   Send,
   CornerDownRight,
   PanelRightClose,
+  FolderInput,
+  Tag,
+  FilePlus2,
+  FileSpreadsheet,
+  Presentation,
+  FormInput as FormInputIcon,
+  Pencil,
+  Ellipsis,
 } from "lucide-react";
 import { DOC_LANGUAGES } from "./languages";
 import Tooltip from "@/components/shared/Tooltip";
@@ -1046,6 +1054,7 @@ export default function DocEditor({
   const [alignmentOpen, setAlignmentOpen] = useState(false);
   const [currentAlignment, setCurrentAlignment] = useState<"left" | "center" | "right" | "justify">("left");
   const [listStyleOpen, setListStyleOpen] = useState(false);
+  const [moreToolbarOpen, setMoreToolbarOpen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [currentFontFamily, setCurrentFontFamily] = useState("Arial");
   const [currentFontSize, setCurrentFontSize] = useState(11);
@@ -2516,6 +2525,7 @@ export default function DocEditor({
     setParagraphStyleOpen(false);
     setAlignmentOpen(false);
     setListStyleOpen(false);
+    setMoreToolbarOpen(false);
   }, []);
 
   // ── Sidebar tab management ──
@@ -5144,74 +5154,103 @@ export default function DocEditor({
             onOpen={(id) => setOpenMenu(id)}
             onClose={() => setOpenMenu(null)}
           >
-            <MenuPanel>
-            <MenuItem label="New" onClick={handleNewDoc} />
-            <MenuItem label="Open" shortcut="Ctrl+O" onClick={handleOpenFile} />
-            <MenuItem label="Make a copy" onClick={handleMakeCopy} />
-            <MenuDivider />
-            <MenuItem
+            <ViewMenuPanel>
+            <ViewMenuItem
+              label="New"
+              icon={FilePlus2}
+              hasSubmenu
+              onHover={() => setOpenSubmenu("file-new")}
+              onClick={() => setOpenSubmenu((prev) => (prev === "file-new" ? null : "file-new"))}
+              onLeave={() => setOpenSubmenu(null)}
+              isSubmenuOpen={openSubmenu === "file-new"}
+              submenu={
+                <SubmenuPanel className="w-[220px]">
+                  <ViewMenuItem label="Document" icon={FileText} onClick={handleNewDoc} />
+                  <ViewMenuItem label="Spreadsheet" icon={FileSpreadsheet} onClick={() => showToast("Spreadsheet: coming soon")} />
+                  <ViewMenuItem label="Presentation" icon={Presentation} onClick={() => showToast("Presentation: coming soon")} />
+                  <ViewMenuItem label="Form" icon={FormInputIcon} onClick={() => showToast("Form: coming soon")} />
+                  <ViewMenuItem label="Drawing" icon={Pencil} onClick={() => showToast("Drawing: coming soon")} />
+                </SubmenuPanel>
+              }
+            />
+            <ViewMenuItem label="Open" icon={BookOpen} shortcut="Ctrl+O" onClick={handleOpenFile} />
+            <ViewMenuItem label="Make a copy" icon={Copy} onClick={handleMakeCopy} />
+            <ViewMenuDivider />
+            <ViewMenuItem
               label="Share"
+              icon={UserPlus}
               hasSubmenu
               onHover={() => setOpenSubmenu("file-share")}
-              onClick={() => setOpenSubmenu("file-share")}
+              onClick={() => setOpenSubmenu((prev) => (prev === "file-share" ? null : "file-share"))}
               onLeave={() => setOpenSubmenu(null)}
               isSubmenuOpen={openSubmenu === "file-share"}
               submenu={
                 <SubmenuPanel className="w-[240px]">
-                  <MenuItem label="Share with others" icon={UserPlus} onClick={() => setDialog("share")} />
-                  <MenuItem label="Publish" icon={Globe} onClick={() => setDialog("publish")} />
+                  <ViewMenuItem label="Share with others" icon={UserPlus} onClick={() => setDialog("share")} />
+                  <ViewMenuItem label="Publish" icon={Globe} onClick={() => setDialog("publish")} />
                 </SubmenuPanel>
               }
             />
-            <MenuItem
+            <ViewMenuItem
               label="Email"
+              icon={Mail}
               hasSubmenu
               onHover={() => setOpenSubmenu("file-email")}
-              onClick={() => setOpenSubmenu("file-email")}
+              onClick={() => setOpenSubmenu((prev) => (prev === "file-email" ? null : "file-email"))}
               onLeave={() => setOpenSubmenu(null)}
               isSubmenuOpen={openSubmenu === "file-email"}
               submenu={
                 <SubmenuPanel className="w-[240px]">
-                  <MenuItem label="Email this document" icon={Mail} onClick={handleEmail} />
-                  <MenuItem label="Copy email-ready text" icon={Copy} onClick={() => handleShareCopy("text")} />
+                  <ViewMenuItem label="Email this document" icon={Mail} onClick={handleEmail} />
+                  <ViewMenuItem label="Copy email-ready text" icon={Copy} onClick={() => handleShareCopy("text")} />
                 </SubmenuPanel>
               }
             />
-            <MenuItem
+            <ViewMenuItem
               label="Download"
+              icon={Download}
               hasSubmenu
               onHover={() => setOpenSubmenu("file-download")}
-              onClick={() => setOpenSubmenu("file-download")}
+              onClick={() => setOpenSubmenu((prev) => (prev === "file-download" ? null : "file-download"))}
               onLeave={() => setOpenSubmenu(null)}
               isSubmenuOpen={openSubmenu === "file-download"}
               submenu={
-                <SubmenuPanel className="w-[260px]">
-                  <MenuItem label="Microsoft Word (.doc)" icon={Download} onClick={() => handleDownload("docx")} />
-                  <MenuItem label="PDF document (.pdf)" icon={Download} onClick={() => handleDownload("pdf")} />
-                  <MenuItem label="OpenDocument format (.odt)" icon={Download} onClick={() => handleDownload("odt")} />
-                  <MenuItem label="Plain text (.txt)" icon={Download} onClick={() => handleDownload("txt")} />
-                  <MenuItem label="Rich Text Format (.rtf)" icon={Download} onClick={() => handleDownload("rtf")} />
-                  <MenuItem label="Web page (.html)" icon={Download} onClick={() => handleDownload("html")} />
-                  <MenuItem label="EPUB publication (.epub)" icon={Download} onClick={() => handleDownload("epub")} />
-                  <MenuItem label="Markdown (.md)" icon={Download} onClick={() => handleDownload("md")} />
-                  <MenuDivider />
-                  <MenuItem label="JSON (.json)" icon={Download} onClick={() => handleDownload("json")} />
+                <SubmenuPanel className="w-[280px]">
+                  <ViewMenuItem label="Microsoft Word (.doc)" icon={Download} onClick={() => handleDownload("docx")} />
+                  <ViewMenuItem label="PDF document (.pdf)" icon={Download} onClick={() => handleDownload("pdf")} />
+                  <ViewMenuItem label="OpenDocument format (.odt)" icon={Download} onClick={() => handleDownload("odt")} />
+                  <ViewMenuItem label="Plain text (.txt)" icon={Download} onClick={() => handleDownload("txt")} />
+                  <ViewMenuItem label="Rich Text Format (.rtf)" icon={Download} onClick={() => handleDownload("rtf")} />
+                  <ViewMenuItem label="Web page (.html)" icon={Download} onClick={() => handleDownload("html")} />
+                  <ViewMenuItem label="EPUB publication (.epub)" icon={Download} onClick={() => handleDownload("epub")} />
+                  <ViewMenuItem label="Markdown (.md)" icon={Download} onClick={() => handleDownload("md")} />
+                  <ViewMenuDivider />
+                  <ViewMenuItem label="JSON (.json)" icon={Download} onClick={() => handleDownload("json")} />
                 </SubmenuPanel>
               }
             />
-            <MenuDivider />
-            <MenuItem label="Rename" onClick={handleRename} />
-            <MenuDivider />
-            <MenuItem
+            <ViewMenuDivider />
+            <ViewMenuItem label="Rename" icon={PenLine} onClick={handleRename} />
+            <ViewMenuItem label="Move" icon={FolderInput} onClick={() => showToast("Move: coming soon")} />
+            <ViewMenuItem label="Add shortcut to Drive" icon={Star} onClick={() => showToast("Shortcut added to Drive")} />
+            <ViewMenuItem label="Move to trash" icon={Trash2} onClick={() => { showToast("Document moved to trash"); handleNewDoc(); }} />
+            <ViewMenuDivider />
+            <ViewMenuItem
               label="Version history"
               hasSubmenu
               onHover={() => setOpenSubmenu("file-versions")}
-              onClick={() => setOpenSubmenu("file-versions")}
+              onClick={() => setOpenSubmenu((prev) => (prev === "file-versions" ? null : "file-versions"))}
               onLeave={() => setOpenSubmenu(null)}
               isSubmenuOpen={openSubmenu === "file-versions"}
               submenu={
-                <SubmenuPanel className="w-[260px]">
-                  <MenuItem
+                <SubmenuPanel className="w-[280px]">
+                  <ViewMenuItem label="Name current version" icon={Tag} onClick={() => {
+                    const name = window.prompt("Name this version:");
+                    if (!name) return;
+                    saveVersion(name, "manual");
+                    showToast(`Version named: ${name}`);
+                  }} />
+                  <ViewMenuItem
                     label="Save version"
                     onClick={() => {
                       saveVersion("Manual save", "manual");
@@ -5219,14 +5258,14 @@ export default function DocEditor({
                       setDialog("versions");
                     }}
                   />
-                  <MenuItem label="View versions" onClick={() => setDialog("versions")} />
+                  <ViewMenuItem label="View versions" onClick={() => setDialog("versions")} />
                 </SubmenuPanel>
               }
             />
-            <MenuItem label="Details" onClick={() => setDialog("details")} />
-            <MenuItem label="Security limitations" onClick={() => setDialog("security")} />
-            <MenuDivider />
-            <MenuItem
+            <ViewMenuItem label="Details" onClick={() => setDialog("details")} />
+            <ViewMenuItem label="Security limitations" onClick={() => setDialog("security")} />
+            <ViewMenuDivider />
+            <ViewMenuItem
               label="Language"
               hasSubmenu
               disabled={!tenantTranslationEnabled}
@@ -5249,18 +5288,15 @@ export default function DocEditor({
                     onWheelCapture={(e) => e.stopPropagation()}
                   >
                     {filteredLanguages.map((l) => (
-                    <MenuItem
+                    <ViewMenuItem
                       key={l.tag}
                       label={l.label}
                       onClick={() => {
                         const prevLang = language;
                         const nextLang = l.tag;
 
-                        // Save current HTML under current language.
                         htmlByLanguageRef.current.set(prevLang, latestValueRef.current.html);
 
-                        // If we've already produced content for the next language,
-                        // restore it immediately (so switching back is exact).
                         const existing = htmlByLanguageRef.current.get(nextLang);
                         if (existing) {
                           updateValue({ language: nextLang, html: existing });
@@ -5268,8 +5304,6 @@ export default function DocEditor({
                         }
 
                         updateValue({ language: nextLang });
-                        // Best-effort translation so the change is visible immediately.
-                        // Note: This converts the current document to plain text.
                         if (tenantTranslationEnabled) {
                           void handleTranslateDocument(prevLang, nextLang);
                         }
@@ -5286,16 +5320,16 @@ export default function DocEditor({
                 </SubmenuPanel>
               }
             />
-            <MenuItem label="Page setup" onClick={() => setDialog("pageSetup")} />
-            <MenuItem
+            <ViewMenuItem label="Page setup" onClick={() => setDialog("pageSetup")} />
+            <ViewMenuItem
               label="Print"
+              icon={Printer}
               shortcut="Ctrl+P"
               onClick={() => {
-                // Avoid browser print preview; export a PDF instead.
                 handleDownload("pdf");
               }}
             />
-            </MenuPanel>
+            </ViewMenuPanel>
           </MenuRoot>
 
         {/* Edit menu */}
@@ -5312,20 +5346,20 @@ export default function DocEditor({
             }}
             onClose={() => setOpenMenu(null)}
           >
-            <MenuPanel>
-            <MenuItem label="Undo" shortcut="Ctrl+Z" onClick={() => handleCommand("undo")} />
-            <MenuItem label="Redo" shortcut="Ctrl+Y" onClick={() => handleCommand("redo")} />
-            <MenuDivider />
-            <MenuItem label="Cut" shortcut="Ctrl+X" icon={Scissors} onClick={() => handleCommand("cut")} />
-            <MenuItem label="Copy" shortcut="Ctrl+C" icon={Copy} onClick={() => handleCommand("copy")} />
-            <MenuItem label="Paste" shortcut="Ctrl+V" icon={ClipboardPaste} onClick={() => handlePaste(false)} />
-            <MenuItem label="Paste without formatting" shortcut="Ctrl+Shift+V" icon={ClipboardPaste} onClick={() => handlePaste(true)} />
-            <MenuDivider />
-            <MenuItem label="Select all" shortcut="Ctrl+A" onClick={() => handleCommand("selectAll")} />
-            <MenuItem label="Delete" onClick={() => handleCommand("delete")} />
-            <MenuDivider />
-            <MenuItem label="Find and replace" shortcut="Ctrl+H" icon={Search} onClick={() => setDialog("findReplace")} />
-            </MenuPanel>
+            <ViewMenuPanel>
+            <ViewMenuItem label="Undo" shortcut="Ctrl+Z" icon={Undo2} onClick={() => handleCommand("undo")} />
+            <ViewMenuItem label="Redo" shortcut="Ctrl+Y" icon={Redo2} onClick={() => handleCommand("redo")} />
+            <ViewMenuDivider />
+            <ViewMenuItem label="Cut" shortcut="Ctrl+X" icon={Scissors} onClick={() => handleCommand("cut")} />
+            <ViewMenuItem label="Copy" shortcut="Ctrl+C" icon={Copy} onClick={() => handleCommand("copy")} />
+            <ViewMenuItem label="Paste" shortcut="Ctrl+V" icon={ClipboardPaste} onClick={() => handlePaste(false)} />
+            <ViewMenuItem label="Paste without formatting" shortcut="Ctrl+Shift+V" icon={ClipboardPaste} onClick={() => handlePaste(true)} />
+            <ViewMenuDivider />
+            <ViewMenuItem label="Select all" shortcut="Ctrl+A" onClick={() => handleCommand("selectAll")} />
+            <ViewMenuItem label="Delete" icon={Trash2} onClick={() => handleCommand("delete")} />
+            <ViewMenuDivider />
+            <ViewMenuItem label="Find and replace" shortcut="Ctrl+H" icon={Search} onClick={() => setDialog("findReplace")} />
+            </ViewMenuPanel>
           </MenuRoot>
 
         {/* View menu */}
@@ -5479,8 +5513,8 @@ export default function DocEditor({
             }}
             onClose={() => setOpenMenu(null)}
           >
-            <MenuPanel>
-            <MenuItem
+            <ViewMenuPanel>
+            <ViewMenuItem
               label="Image"
               hasSubmenu
               icon={ImageIcon}
@@ -5490,8 +5524,8 @@ export default function DocEditor({
               isSubmenuOpen={openSubmenu === "insert-image"}
               submenu={
                 <SubmenuPanel className="w-[240px]">
-                  <MenuItem label="Upload from computer" onClick={() => imageInputRef.current?.click()} />
-                  <MenuItem
+                  <ViewMenuItem label="Upload from computer" onClick={() => imageInputRef.current?.click()} />
+                  <ViewMenuItem
                     label="Search the web"
                     onClick={() => {
                       const q = window.prompt("Search images for…");
@@ -5499,24 +5533,11 @@ export default function DocEditor({
                       window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q)}`, "_blank");
                     }}
                   />
-                  <MenuItem
-                    label="Drive"
-                    onClick={() => {
-                      showToast("Pick an image (Drive integration optional)");
-                      imageInputRef.current?.click();
-                    }}
-                  />
-                  <MenuItem
-                    label="Photos"
-                    onClick={() => {
-                      showToast("Pick an image (Photos integration optional)");
-                      imageInputRef.current?.click();
-                    }}
-                  />
-                  <MenuItem
+                  <ViewMenuItem label="Drive" onClick={() => { showToast("Pick an image (Drive integration optional)"); imageInputRef.current?.click(); }} />
+                  <ViewMenuItem label="Photos" onClick={() => { showToast("Pick an image (Photos integration optional)"); imageInputRef.current?.click(); }} />
+                  <ViewMenuItem
                     label="Camera"
                     onClick={() => {
-                      // Best-effort: use a temporary capture input when supported.
                       const input = document.createElement("input");
                       input.type = "file";
                       input.accept = "image/*";
@@ -5529,7 +5550,7 @@ export default function DocEditor({
                       input.click();
                     }}
                   />
-                  <MenuItem
+                  <ViewMenuItem
                     label="By URL"
                     onClick={() => {
                       const url = window.prompt("Image URL");
@@ -5542,7 +5563,7 @@ export default function DocEditor({
                 </SubmenuPanel>
               }
             />
-            <MenuItem
+            <ViewMenuItem
               label="Table"
               hasSubmenu
               icon={TableIcon}
@@ -5561,7 +5582,7 @@ export default function DocEditor({
                 </SubmenuPanel>
               }
             />
-            <MenuItem
+            <ViewMenuItem
               label="Building blocks"
               hasSubmenu
               icon={LayoutTemplate}
@@ -5571,9 +5592,9 @@ export default function DocEditor({
               isSubmenuOpen={openSubmenu === "insert-blocks"}
               submenu={
                 <SubmenuPanel className="w-[240px]">
-                  <MenuItem label="Meeting notes" icon={FileText} onClick={() => handleTemplateInsert(resolvedTemplates[0])} />
-                  <MenuItem label="Email draft" icon={Mail} onClick={() => handleTemplateInsert(resolvedTemplates[1])} />
-                  <MenuItem
+                  <ViewMenuItem label="Meeting notes" icon={FileText} onClick={() => handleTemplateInsert(resolvedTemplates[0])} />
+                  <ViewMenuItem label="Email draft" icon={Mail} onClick={() => handleTemplateInsert(resolvedTemplates[1])} />
+                  <ViewMenuItem
                     label="Simple decision log"
                     onClick={() => {
                       handleTemplateInsert({
@@ -5583,12 +5604,12 @@ export default function DocEditor({
                       });
                     }}
                   />
-                  <MenuDivider />
-                  <MenuItem label="View more" onClick={() => setMoreOpen(true)} />
+                  <ViewMenuDivider />
+                  <ViewMenuItem label="View more" onClick={() => setMoreOpen(true)} />
                 </SubmenuPanel>
               }
             />
-            <MenuItem
+            <ViewMenuItem
               label="Smart chips"
               hasSubmenu
               onHover={() => setOpenSubmenu("insert-chips")}
@@ -5597,7 +5618,7 @@ export default function DocEditor({
               isSubmenuOpen={openSubmenu?.startsWith("insert-chips")}
               submenu={
                 <SubmenuPanel className="w-[220px]">
-                  <MenuItem
+                  <ViewMenuItem
                     label="Date"
                     icon={Calendar}
                     onClick={() => {
@@ -5606,54 +5627,26 @@ export default function DocEditor({
                       emitChange();
                     }}
                   />
-                  <MenuItem
-                    label="People"
-                    icon={User}
-                    onClick={() => {
-                      const name = window.prompt("Person name");
-                      if (!name) return;
-                      insertChip("Person", name);
-                    }}
-                  />
-                  <MenuItem
-                    label="File"
-                    icon={FileIcon}
-                    onClick={() => {
-                      const name = window.prompt("File name");
-                      if (!name) return;
-                      insertChip("File", name);
-                    }}
-                  />
-                  <MenuItem
-                    label="Place"
-                    icon={MapPin}
-                    onClick={() => {
-                      const name = window.prompt("Place");
-                      if (!name) return;
-                      insertChip("Place", name);
-                    }}
-                  />
-                  <MenuItem
+                  <ViewMenuItem label="People" icon={User} onClick={() => { const name = window.prompt("Person name"); if (!name) return; insertChip("Person", name); }} />
+                  <ViewMenuItem label="File" icon={FileIcon} onClick={() => { const name = window.prompt("File name"); if (!name) return; insertChip("File", name); }} />
+                  <ViewMenuItem label="Place" icon={MapPin} onClick={() => { const name = window.prompt("Place"); if (!name) return; insertChip("Place", name); }} />
+                  <ViewMenuItem
                     label="Placeholder chips"
                     hasSubmenu
                     onHover={() => setOpenSubmenu("insert-chips-placeholders")}
-                    onClick={() =>
-                      setOpenSubmenu((prev) =>
-                        prev === "insert-chips-placeholders" ? "insert-chips" : "insert-chips-placeholders"
-                      )
-                    }
+                    onClick={() => setOpenSubmenu((prev) => prev === "insert-chips-placeholders" ? "insert-chips" : "insert-chips-placeholders")}
                     onLeave={() => setOpenSubmenu("insert-chips")}
                     isSubmenuOpen={openSubmenu === "insert-chips-placeholders"}
                     submenu={
                       <SubmenuPanel className="w-[220px]">
-                        <MenuItem label="Document title" onClick={() => insertChip("Title", docTitle)} />
-                        <MenuItem label="Today" onClick={() => insertChip("Date", new Date().toLocaleDateString())} />
-                        <MenuItem label="Email" onClick={() => insertChip("Email", "name@example.com")} />
+                        <ViewMenuItem label="Document title" onClick={() => insertChip("Title", docTitle)} />
+                        <ViewMenuItem label="Today" onClick={() => insertChip("Date", new Date().toLocaleDateString())} />
+                        <ViewMenuItem label="Email" onClick={() => insertChip("Email", "name@example.com")} />
                       </SubmenuPanel>
                     }
                   />
-                  <MenuDivider />
-                  <MenuItem
+                  <ViewMenuDivider />
+                  <ViewMenuItem
                     label="Drop-down"
                     onClick={() => {
                       exec("insertHTML", `<select style="padding:6px 10px;border-radius:10px;border:1px solid #e5e7eb;background:#fff;"><option>Option 1</option><option>Option 2</option><option>Option 3</option></select>&nbsp;`);
@@ -5663,25 +5656,27 @@ export default function DocEditor({
                 </SubmenuPanel>
               }
             />
-            <MenuItem
+            <ViewMenuItem
               label="eSignature"
+              icon={PenLine}
               onClick={() => {
                 exec("insertHTML", `<div style="margin:12px 0;padding:12px;border:1px dashed #cbd5e1;border-radius:12px;background:#f8fafc;"><strong>Signature</strong><div style="height:32px;"></div><div style="border-top:1px solid #cbd5e1;width:240px;"></div></div>`);
                 emitChange();
               }}
             />
-            <MenuItem label="Link" shortcut="Ctrl+K" onClick={() => {
+            <ViewMenuItem label="Link" icon={Link2} shortcut="Ctrl+K" onClick={() => {
               const url = window.prompt("Enter URL");
               if (!url) return;
               handleCommand("createLink", url);
             }} />
-            <MenuItem
+            <ViewMenuItem
               label="Drawing"
+              icon={Pencil}
               onClick={() => {
                 insertSvg(`<svg width="520" height="180" viewBox="0 0 520 180" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="518" height="178" rx="14" fill="#f3f4f6" stroke="#e5e7eb"/><text x="260" y="92" text-anchor="middle" font-family="Inter, Arial" font-size="14" fill="#6b7280">Drawing placeholder</text></svg>`);
               }}
             />
-            <MenuItem
+            <ViewMenuItem
               label="Chart"
               hasSubmenu
               onHover={() => setOpenSubmenu("insert-chart")}
@@ -5690,56 +5685,39 @@ export default function DocEditor({
               isSubmenuOpen={openSubmenu === "insert-chart"}
               submenu={
                 <SubmenuPanel className="w-[220px]">
-                  <MenuItem label="Bar" onClick={() => insertSvg(`<svg width="520" height="220" viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="518" height="218" rx="14" fill="#ffffff" stroke="#e5e7eb"/><rect x="80" y="120" width="50" height="60" rx="8" fill="#3b82f6"/><rect x="160" y="90" width="50" height="90" rx="8" fill="#22c55e"/><rect x="240" y="140" width="50" height="40" rx="8" fill="#eab308"/><rect x="320" y="70" width="50" height="110" rx="8" fill="#ef4444"/><line x1="60" y1="180" x2="460" y2="180" stroke="#e5e7eb"/></svg>`)} />
-                  <MenuItem label="Column" onClick={() => insertSvg(`<svg width="520" height="220" viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="518" height="218" rx="14" fill="#ffffff" stroke="#e5e7eb"/><rect x="80" y="120" width="50" height="60" rx="8" fill="#3b82f6"/><rect x="160" y="90" width="50" height="90" rx="8" fill="#22c55e"/><rect x="240" y="140" width="50" height="40" rx="8" fill="#eab308"/><rect x="320" y="70" width="50" height="110" rx="8" fill="#8b5cf6"/><line x1="60" y1="180" x2="460" y2="180" stroke="#e5e7eb"/></svg>`)} />
-                  <MenuItem label="Line" onClick={() => insertSvg(`<svg width="520" height="220" viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="518" height="218" rx="14" fill="#ffffff" stroke="#e5e7eb"/><polyline points="70,160 160,120 250,150 340,90 430,110" fill="none" stroke="#3b82f6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="70" cy="160" r="5" fill="#3b82f6"/><circle cx="160" cy="120" r="5" fill="#3b82f6"/><circle cx="250" cy="150" r="5" fill="#3b82f6"/><circle cx="340" cy="90" r="5" fill="#3b82f6"/><circle cx="430" cy="110" r="5" fill="#3b82f6"/></svg>`)} />
-                  <MenuItem label="Pie" onClick={() => insertSvg(`<svg width="520" height="220" viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="518" height="218" rx="14" fill="#ffffff" stroke="#e5e7eb"/><g transform="translate(160,110)"><circle r="70" fill="#f3f4f6"/><path d="M0 0 L70 0 A70 70 0 0 1 -22 66 Z" fill="#3b82f6"/><path d="M0 0 L-22 66 A70 70 0 0 1 -70 0 Z" fill="#22c55e"/><path d="M0 0 L-70 0 A70 70 0 0 1 0 -70 Z" fill="#eab308"/><path d="M0 0 L0 -70 A70 70 0 0 1 70 0 Z" fill="#ef4444"/></g></svg>`)} />
-                  <MenuDivider />
-                  <MenuItem label="From Sheets" onClick={() => showToast("Sheets: add Google integration to enable")} />
+                  <ViewMenuItem label="Bar" onClick={() => insertSvg(`<svg width="520" height="220" viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="518" height="218" rx="14" fill="#ffffff" stroke="#e5e7eb"/><rect x="80" y="120" width="50" height="60" rx="8" fill="#3b82f6"/><rect x="160" y="90" width="50" height="90" rx="8" fill="#22c55e"/><rect x="240" y="140" width="50" height="40" rx="8" fill="#eab308"/><rect x="320" y="70" width="50" height="110" rx="8" fill="#ef4444"/><line x1="60" y1="180" x2="460" y2="180" stroke="#e5e7eb"/></svg>`)} />
+                  <ViewMenuItem label="Column" onClick={() => insertSvg(`<svg width="520" height="220" viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="518" height="218" rx="14" fill="#ffffff" stroke="#e5e7eb"/><rect x="80" y="120" width="50" height="60" rx="8" fill="#3b82f6"/><rect x="160" y="90" width="50" height="90" rx="8" fill="#22c55e"/><rect x="240" y="140" width="50" height="40" rx="8" fill="#eab308"/><rect x="320" y="70" width="50" height="110" rx="8" fill="#8b5cf6"/><line x1="60" y1="180" x2="460" y2="180" stroke="#e5e7eb"/></svg>`)} />
+                  <ViewMenuItem label="Line" onClick={() => insertSvg(`<svg width="520" height="220" viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="518" height="218" rx="14" fill="#ffffff" stroke="#e5e7eb"/><polyline points="70,160 160,120 250,150 340,90 430,110" fill="none" stroke="#3b82f6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="70" cy="160" r="5" fill="#3b82f6"/><circle cx="160" cy="120" r="5" fill="#3b82f6"/><circle cx="250" cy="150" r="5" fill="#3b82f6"/><circle cx="340" cy="90" r="5" fill="#3b82f6"/><circle cx="430" cy="110" r="5" fill="#3b82f6"/></svg>`)} />
+                  <ViewMenuItem label="Pie" onClick={() => insertSvg(`<svg width="520" height="220" viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="518" height="218" rx="14" fill="#ffffff" stroke="#e5e7eb"/><g transform="translate(160,110)"><circle r="70" fill="#f3f4f6"/><path d="M0 0 L70 0 A70 70 0 0 1 -22 66 Z" fill="#3b82f6"/><path d="M0 0 L-22 66 A70 70 0 0 1 -70 0 Z" fill="#22c55e"/><path d="M0 0 L-70 0 A70 70 0 0 1 0 -70 Z" fill="#eab308"/><path d="M0 0 L0 -70 A70 70 0 0 1 70 0 Z" fill="#ef4444"/></g></svg>`)} />
+                  <ViewMenuDivider />
+                  <ViewMenuItem label="From Sheets" onClick={() => showToast("Sheets: add Google integration to enable")} />
                 </SubmenuPanel>
               }
             />
-            <MenuItem
+            <ViewMenuItem
               label="Symbols"
               hasSubmenu
+              icon={Sigma}
               onHover={() => setOpenSubmenu("insert-symbols")}
               onClick={() => setOpenSubmenu((prev) => (prev === "insert-symbols" ? null : "insert-symbols"))}
               onLeave={() => setOpenSubmenu(null)}
               isSubmenuOpen={openSubmenu === "insert-symbols"}
               submenu={
                 <SubmenuPanel className="w-[220px]">
-                  <MenuItem label="Emoji" icon={Smile} onClick={() => {
-                    const e = window.prompt("Emoji");
-                    if (!e) return;
-                    exec("insertText", e);
-                    emitChange();
-                  }} />
-                  <MenuItem label="Special characters" icon={Sigma} onClick={() => {
-                    const ch = window.prompt("Character");
-                    if (!ch) return;
-                    exec("insertText", ch);
-                    emitChange();
-                  }} />
-                  <MenuItem label="Equation" icon={Sigma} onClick={() => {
-                    const eq = window.prompt("Equation (LaTeX/plain)");
-                    if (!eq) return;
-                    exec("insertHTML", `<span style="font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;padding:2px 6px;border-radius:8px;background:#f3f4f6;border:1px solid #e5e7eb;">${eq}</span>&nbsp;`);
-                    emitChange();
-                  }} />
+                  <ViewMenuItem label="Emoji" icon={Smile} onClick={() => { const e = window.prompt("Emoji"); if (!e) return; exec("insertText", e); emitChange(); }} />
+                  <ViewMenuItem label="Special characters" icon={Sigma} onClick={() => { const ch = window.prompt("Character"); if (!ch) return; exec("insertText", ch); emitChange(); }} />
+                  <ViewMenuItem label="Equation" icon={Sigma} onClick={() => { const eq = window.prompt("Equation (LaTeX/plain)"); if (!eq) return; exec("insertHTML", `<span style="font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;padding:2px 6px;border-radius:8px;background:#f3f4f6;border:1px solid #e5e7eb;">${eq}</span>&nbsp;`); emitChange(); }} />
                 </SubmenuPanel>
               }
             />
-            <MenuDivider />
-            <MenuItem
+            <ViewMenuDivider />
+            <ViewMenuItem
               label="Tab"
               shortcut="Shift+F11"
-              onClick={() => {
-                exec("insertHTML", "<span>&emsp;</span>");
-                emitChange();
-              }}
+              onClick={() => { exec("insertHTML", "<span>&emsp;</span>"); emitChange(); }}
             />
-            <MenuItem label="Horizontal line" onClick={handleInsertHorizontalLine} />
-            <MenuItem
+            <ViewMenuItem label="Horizontal line" onClick={handleInsertHorizontalLine} />
+            <ViewMenuItem
               label="Break"
               hasSubmenu
               onHover={() => setOpenSubmenu("insert-break")}
@@ -5748,19 +5726,15 @@ export default function DocEditor({
               isSubmenuOpen={openSubmenu === "insert-break"}
               submenu={
                 <SubmenuPanel className="w-[250px]">
-                  <MenuItem label="Page break" shortcut="Ctrl+Enter" onClick={handleInsertPageBreak} />
-                  <MenuItem label="Column break" onClick={() => { exec("insertHTML", `<div style="border-top:1px dashed #e5e7eb;margin:16px 0;"><em>Column break</em></div>`); emitChange(); }} />
-                  <MenuItem label="Section break (next page)" onClick={() => {
-                    // Insert a functional section break: creates a new section from the next page onwards
+                  <ViewMenuItem label="Page break" shortcut="Ctrl+Enter" onClick={handleInsertPageBreak} />
+                  <ViewMenuItem label="Column break" onClick={() => { exec("insertHTML", `<div style="border-top:1px dashed #e5e7eb;margin:16px 0;"><em>Column break</em></div>`); emitChange(); }} />
+                  <ViewMenuItem label="Section break (next page)" onClick={() => {
                     const sIdx = activeSectionIdxRef.current;
                     const currentSetup = sectionInfosRef.current[sIdx]?.pageSetup || DEFAULT_PAGE_SETUP;
-                    // Insert a page break first, then mark it as a section boundary
                     handleInsertPageBreak();
-                    // After the page break creates a new page, split the current section
                     setTimeout(() => {
                       setSectionInfos(prev => {
-                        const [rangeStart, rangeEnd] = getSectionPageRange(sIdx);
-                        // Find which page the cursor moved to after the page break
+                        const [rangeStart] = getSectionPageRange(sIdx);
                         let cursorPage = rangeStart;
                         const sel = window.getSelection();
                         if (sel?.anchorNode) {
@@ -5771,7 +5745,7 @@ export default function DocEditor({
                             node = node.parentElement;
                           }
                         }
-                        if (cursorPage <= rangeStart) return prev; // no split needed
+                        if (cursorPage <= rangeStart) return prev;
                         const pagesBeforeSplit = cursorPage - rangeStart;
                         const pagesAfterSplit = prev[sIdx].pageCount - pagesBeforeSplit;
                         if (pagesAfterSplit <= 0) return prev;
@@ -5784,15 +5758,15 @@ export default function DocEditor({
                       });
                     }, 100);
                   }} />
-                  <MenuItem label="Section break (continuous)" onClick={() => {
+                  <ViewMenuItem label="Section break (continuous)" onClick={() => {
                     exec("insertHTML", `<div style="border-top:1px dashed #e5e7eb;margin:16px 0;"><em>Section break (continuous)</em></div>`);
                     emitChange();
                   }} />
                 </SubmenuPanel>
               }
             />
-            <MenuItem label="Bookmark" icon={Bookmark} onClick={insertBookmark} />
-            <MenuItem
+            <ViewMenuItem label="Bookmark" icon={Bookmark} onClick={insertBookmark} />
+            <ViewMenuItem
               label="Page elements"
               hasSubmenu
               onHover={() => setOpenSubmenu("insert-elements")}
@@ -5801,38 +5775,39 @@ export default function DocEditor({
               isSubmenuOpen={openSubmenu === "insert-elements"}
               submenu={
                 <SubmenuPanel className="w-[240px]">
-                  <MenuItem label="Table of contents" onClick={insertTOC} />
-                  <MenuItem label="Header" onClick={() => { focusEditor(); exec("insertHTML", "<h3>Header</h3>"); emitChange(); }} />
-                  <MenuItem label="Footer" onClick={() => { focusEditor(); exec("insertHTML", "<h3>Footer</h3>"); emitChange(); }} />
-                  <MenuItem label="Watermark" onClick={() => { focusEditor(); exec("insertHTML", `<p style="text-align:center;opacity:0.18;font-size:36px;font-weight:700;letter-spacing:0.12em;">WATERMARK</p>`); emitChange(); }} />
+                  <ViewMenuItem label="Table of contents" onClick={insertTOC} />
+                  <ViewMenuItem label="Header" onClick={() => { focusEditor(); exec("insertHTML", "<h3>Header</h3>"); emitChange(); }} />
+                  <ViewMenuItem label="Footer" onClick={() => { focusEditor(); exec("insertHTML", "<h3>Footer</h3>"); emitChange(); }} />
+                  <ViewMenuItem label="Watermark" onClick={() => { focusEditor(); exec("insertHTML", `<p style="text-align:center;opacity:0.18;font-size:36px;font-weight:700;letter-spacing:0.12em;">WATERMARK</p>`); emitChange(); }} />
                 </SubmenuPanel>
               }
             />
-            </MenuPanel>
+            </ViewMenuPanel>
           </MenuRoot>
 
           {/* Format menu */}
           <MenuRoot id="format" label="Format" openMenu={openMenu} onOpen={(id) => { if (!canEdit) { showToast("Viewing mode"); return; } setOpenMenu(id); }} onClose={() => setOpenMenu(null)}>
-            <MenuPanel>
-              <MenuItem
+            <ViewMenuPanel>
+              <ViewMenuItem
                 label="Text"
+                icon={Type}
                 hasSubmenu
                 onHover={() => setOpenSubmenu("format-text")}
                 onClick={() => setOpenSubmenu((p) => (p === "format-text" ? null : "format-text"))}
                 onLeave={() => setOpenSubmenu(null)}
                 isSubmenuOpen={openSubmenu === "format-text"}
                 submenu={
-                  <SubmenuPanel className="w-[220px]">
-                    <MenuItem label="Bold" shortcut="Ctrl+B" icon={Bold} onClick={() => handleCommand("bold")} />
-                    <MenuItem label="Italic" shortcut="Ctrl+I" icon={Italic} onClick={() => handleCommand("italic")} />
-                    <MenuItem label="Underline" shortcut="Ctrl+U" icon={Underline} onClick={() => handleCommand("underline")} />
-                    <MenuItem label="Strikethrough" shortcut="Alt+Shift+5" icon={Strikethrough} onClick={() => handleCommand("strikeThrough")} />
-                    <MenuItem label="Superscript" shortcut="Ctrl+." icon={SuperscriptIcon} onClick={() => handleCommand("superscript")} />
-                    <MenuItem label="Subscript" shortcut="Ctrl+," icon={SubscriptIcon} onClick={() => handleCommand("subscript")} />
+                  <SubmenuPanel className="w-[240px]">
+                    <ViewMenuItem label="Bold" shortcut="Ctrl+B" icon={Bold} onClick={() => handleCommand("bold")} />
+                    <ViewMenuItem label="Italic" shortcut="Ctrl+I" icon={Italic} onClick={() => handleCommand("italic")} />
+                    <ViewMenuItem label="Underline" shortcut="Ctrl+U" icon={Underline} onClick={() => handleCommand("underline")} />
+                    <ViewMenuItem label="Strikethrough" shortcut="Alt+Shift+5" icon={Strikethrough} onClick={() => handleCommand("strikeThrough")} />
+                    <ViewMenuItem label="Superscript" shortcut="Ctrl+." icon={SuperscriptIcon} onClick={() => handleCommand("superscript")} />
+                    <ViewMenuItem label="Subscript" shortcut="Ctrl+," icon={SubscriptIcon} onClick={() => handleCommand("subscript")} />
                   </SubmenuPanel>
                 }
               />
-              <MenuItem
+              <ViewMenuItem
                 label="Paragraph styles"
                 hasSubmenu
                 onHover={() => setOpenSubmenu("format-para")}
@@ -5841,15 +5816,16 @@ export default function DocEditor({
                 isSubmenuOpen={openSubmenu === "format-para"}
                 submenu={
                   <SubmenuPanel className="w-[220px]">
-                    <MenuItem label="Normal text" onClick={() => { handleCommand("formatBlock", "p"); setCurrentParagraphStyle("Normal text"); }} />
-                    <MenuItem label="Heading 1" onClick={() => { handleCommand("formatBlock", "h1"); setCurrentParagraphStyle("Heading 1"); }} />
-                    <MenuItem label="Heading 2" onClick={() => { handleCommand("formatBlock", "h2"); setCurrentParagraphStyle("Heading 2"); }} />
-                    <MenuItem label="Heading 3" onClick={() => { handleCommand("formatBlock", "h3"); setCurrentParagraphStyle("Heading 3"); }} />
+                    <ViewMenuItem label="Normal text" onClick={() => { handleCommand("formatBlock", "p"); setCurrentParagraphStyle("Normal text"); }} />
+                    <ViewMenuItem label="Heading 1" onClick={() => { handleCommand("formatBlock", "h1"); setCurrentParagraphStyle("Heading 1"); }} />
+                    <ViewMenuItem label="Heading 2" onClick={() => { handleCommand("formatBlock", "h2"); setCurrentParagraphStyle("Heading 2"); }} />
+                    <ViewMenuItem label="Heading 3" onClick={() => { handleCommand("formatBlock", "h3"); setCurrentParagraphStyle("Heading 3"); }} />
                   </SubmenuPanel>
                 }
               />
-              <MenuItem
+              <ViewMenuItem
                 label="Align & indent"
+                icon={AlignLeft}
                 hasSubmenu
                 onHover={() => setOpenSubmenu("format-align")}
                 onClick={() => setOpenSubmenu((p) => (p === "format-align" ? null : "format-align"))}
@@ -5857,18 +5833,19 @@ export default function DocEditor({
                 isSubmenuOpen={openSubmenu === "format-align"}
                 submenu={
                   <SubmenuPanel className="w-[220px]">
-                    <MenuItem label="Left" icon={AlignLeft} onClick={() => handleCommand("justifyLeft")} />
-                    <MenuItem label="Center" icon={AlignCenter} onClick={() => handleCommand("justifyCenter")} />
-                    <MenuItem label="Right" icon={AlignRight} onClick={() => handleCommand("justifyRight")} />
-                    <MenuItem label="Justify" icon={AlignJustify} onClick={() => handleCommand("justifyFull")} />
-                    <MenuDivider />
-                    <MenuItem label="Increase indent" icon={IndentIncrease} onClick={() => handleCommand("indent")} />
-                    <MenuItem label="Decrease indent" icon={IndentDecrease} onClick={() => handleCommand("outdent")} />
+                    <ViewMenuItem label="Left" icon={AlignLeft} onClick={() => handleCommand("justifyLeft")} />
+                    <ViewMenuItem label="Center" icon={AlignCenter} onClick={() => handleCommand("justifyCenter")} />
+                    <ViewMenuItem label="Right" icon={AlignRight} onClick={() => handleCommand("justifyRight")} />
+                    <ViewMenuItem label="Justify" icon={AlignJustify} onClick={() => handleCommand("justifyFull")} />
+                    <ViewMenuDivider />
+                    <ViewMenuItem label="Increase indent" icon={IndentIncrease} onClick={() => handleCommand("indent")} />
+                    <ViewMenuItem label="Decrease indent" icon={IndentDecrease} onClick={() => handleCommand("outdent")} />
                   </SubmenuPanel>
                 }
               />
-              <MenuItem
+              <ViewMenuItem
                 label="Line & paragraph spacing"
+                icon={ChevronsUpDown}
                 hasSubmenu
                 onHover={() => setOpenSubmenu("format-spacing")}
                 onClick={() => setOpenSubmenu((p) => (p === "format-spacing" ? null : "format-spacing"))}
@@ -5877,14 +5854,15 @@ export default function DocEditor({
                 submenu={
                   <SubmenuPanel className="w-[200px]">
                     {[...LINE_SPACINGS, { value: 2.5, label: "2.5" }, { value: 3.0, label: "3.0" }].map((ls) => (
-                      <MenuItem key={ls.value} label={ls.label} onClick={() => handleLineSpacingChange(ls.value)} />
+                      <ViewMenuItem key={ls.value} label={ls.label} onClick={() => handleLineSpacingChange(ls.value)} />
                     ))}
                   </SubmenuPanel>
                 }
               />
-              <MenuItem label="Columns" onClick={() => showToast("Columns: coming soon")} />
-              <MenuItem
+              <ViewMenuItem label="Columns" onClick={() => showToast("Columns: coming soon")} />
+              <ViewMenuItem
                 label="Lists"
+                icon={List}
                 hasSubmenu
                 onHover={() => setOpenSubmenu("format-lists")}
                 onClick={() => setOpenSubmenu((p) => (p === "format-lists" ? null : "format-lists"))}
@@ -5892,50 +5870,50 @@ export default function DocEditor({
                 isSubmenuOpen={openSubmenu === "format-lists"}
                 submenu={
                   <SubmenuPanel className="w-[200px]">
-                    <MenuItem label="Bulleted list" icon={List} onClick={() => handleCommand("insertUnorderedList")} />
-                    <MenuItem label="Numbered list" icon={ListOrdered} onClick={() => handleCommand("insertOrderedList")} />
-                    <MenuItem label="Checklist" icon={ListChecks} onClick={() => { focusEditor(); exec("insertHTML", '<div style="display:flex;align-items:flex-start;gap:8px;margin:4px 0;"><input type="checkbox" style="margin-top:3px;cursor:pointer;" /><span>Item</span></div>'); emitChange(); }} />
+                    <ViewMenuItem label="Bulleted list" icon={List} onClick={() => handleCommand("insertUnorderedList")} />
+                    <ViewMenuItem label="Numbered list" icon={ListOrdered} onClick={() => handleCommand("insertOrderedList")} />
+                    <ViewMenuItem label="Checklist" icon={ListChecks} onClick={() => { focusEditor(); exec("insertHTML", '<div style="display:flex;align-items:flex-start;gap:8px;margin:4px 0;"><input type="checkbox" style="margin-top:3px;cursor:pointer;" /><span>Item</span></div>'); emitChange(); }} />
                   </SubmenuPanel>
                 }
               />
-              <MenuDivider />
-              <MenuItem label="Clear formatting" shortcut="Ctrl+\\" icon={RemoveFormatting} onClick={() => { focusEditor(); exec("removeFormat"); emitChange(); }} />
-            </MenuPanel>
+              <ViewMenuDivider />
+              <ViewMenuItem label="Clear formatting" shortcut="Ctrl+\\" icon={RemoveFormatting} onClick={() => { focusEditor(); exec("removeFormat"); emitChange(); }} />
+            </ViewMenuPanel>
           </MenuRoot>
 
           {/* Tools menu */}
           <MenuRoot id="tools" label="Tools" openMenu={openMenu} onOpen={(id) => setOpenMenu(id)} onClose={() => setOpenMenu(null)}>
-            <MenuPanel>
-              <MenuItem label="Spelling & grammar" icon={SpellCheck} onClick={() => showToast("Spell check: browser-native spellcheck is active")} />
-              <MenuItem label="Word count" onClick={() => {
+            <ViewMenuPanel>
+              <ViewMenuItem label="Spelling & grammar" icon={SpellCheck} onClick={() => showToast("Spell check: browser-native spellcheck is active")} />
+              <ViewMenuItem label="Word count" onClick={() => {
                 const text = pageRefs.current.map((el) => el?.textContent || "").join(" ");
                 const words = text.trim().split(/\s+/).filter(Boolean).length;
                 const chars = text.length;
                 showToast(`Words: ${words} | Characters: ${chars}`);
               }} />
-              <MenuItem label="Translate document" onClick={() => showToast("Translate: use File > Language to switch languages")} />
-              <MenuItem label="Voice typing" onClick={() => showToast("Voice typing: requires Web Speech API integration")} />
-              <MenuDivider />
-              <MenuItem label="Preferences" onClick={() => showToast("Preferences dialog: coming soon")} />
-            </MenuPanel>
+              <ViewMenuItem label="Translate document" onClick={() => showToast("Translate: use File > Language to switch languages")} />
+              <ViewMenuItem label="Voice typing" onClick={() => showToast("Voice typing: requires Web Speech API integration")} />
+              <ViewMenuDivider />
+              <ViewMenuItem label="Preferences" onClick={() => showToast("Preferences dialog: coming soon")} />
+            </ViewMenuPanel>
           </MenuRoot>
 
           {/* Extensions menu */}
           <MenuRoot id="extensions" label="Extensions" openMenu={openMenu} onOpen={(id) => setOpenMenu(id)} onClose={() => setOpenMenu(null)}>
-            <MenuPanel>
-              <MenuItem label="Add-ons" onClick={() => showToast("Add-ons marketplace: coming soon")} />
-              <MenuItem label="Apps Script" onClick={() => showToast("Apps Script: coming soon")} />
-            </MenuPanel>
+            <ViewMenuPanel>
+              <ViewMenuItem label="Add-ons" icon={Package} onClick={() => showToast("Add-ons marketplace: coming soon")} />
+              <ViewMenuItem label="Apps Script" onClick={() => showToast("Apps Script: coming soon")} />
+            </ViewMenuPanel>
           </MenuRoot>
 
           {/* Help menu */}
           <MenuRoot id="help" label="Help" openMenu={openMenu} onOpen={(id) => setOpenMenu(id)} onClose={() => setOpenMenu(null)}>
-            <MenuPanel>
-              <MenuItem label="Search the menus" icon={Search} onClick={() => showToast("Menu search: coming soon")} />
-              <MenuItem label="Keyboard shortcuts" shortcut="Ctrl+/" onClick={() => showToast("Keyboard shortcuts dialog: coming soon")} />
-              <MenuDivider />
-              <MenuItem label="Report an issue" onClick={() => showToast("Report issue: coming soon")} />
-            </MenuPanel>
+            <ViewMenuPanel>
+              <ViewMenuItem label="Search the menus" icon={Search} onClick={() => showToast("Menu search: coming soon")} />
+              <ViewMenuItem label="Keyboard shortcuts" shortcut="Ctrl+/" onClick={() => showToast("Keyboard shortcuts dialog: coming soon")} />
+              <ViewMenuDivider />
+              <ViewMenuItem label="Report an issue" onClick={() => showToast("Report issue: coming soon")} />
+            </ViewMenuPanel>
           </MenuRoot>
         </div>
       </div>
@@ -6094,6 +6072,7 @@ export default function DocEditor({
           <ToolbarButton disabled={!canEdit} onClick={() => handleCommand("bold")} title="Bold (Ctrl+B)" Icon={Bold} />
           <ToolbarButton disabled={!canEdit} onClick={() => handleCommand("italic")} title="Italic (Ctrl+I)" Icon={Italic} />
           <ToolbarButton disabled={!canEdit} onClick={() => handleCommand("underline")} title="Underline (Ctrl+U)" Icon={Underline} />
+          <ToolbarButton disabled={!canEdit} onClick={() => handleCommand("strikeThrough")} title="Strikethrough (Alt+Shift+5)" Icon={Strikethrough} />
           <ToolbarDivider />
 
           {/* Text Color */}
@@ -6168,6 +6147,8 @@ export default function DocEditor({
           <ToolbarButton disabled={!canEdit} onClick={() => imageInputRef.current?.click()} title="Insert image" Icon={ImageIcon} />
           <ToolbarDivider />
 
+          {/* ── Desktop: show alignment/spacing/lists/indent/clear inline ── */}
+          <div className="hidden lg:contents">
           {/* Alignment dropdown */}
           <ToolbarDropdown
             title="Align & indent"
@@ -6317,6 +6298,76 @@ export default function DocEditor({
 
           {/* Clear formatting */}
           <ToolbarButton disabled={!canEdit} onClick={() => { focusEditor(); exec("removeFormat"); emitChange(); }} title="Clear formatting" Icon={RemoveFormatting} />
+          </div>
+
+          {/* ── Mobile/Tablet: "More" overflow dropdown ── */}
+          <div className="relative flex lg:hidden">
+            <Tooltip content="More formatting options" delay={400}>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => { closeAllToolbarDropdowns(); setMoreToolbarOpen(!moreToolbarOpen); }}
+                className="w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              >
+                <Ellipsis className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              </button>
+            </Tooltip>
+            {moreToolbarOpen && (
+              <div
+                data-doc-menu-panel
+                className="absolute right-0 top-full mt-1 z-[120] w-[220px] rounded-2xl overflow-hidden bg-white/80 dark:bg-[#121212]/80 midnight:bg-[#0b1220]/80 purple:bg-[#1a0d2e]/80 backdrop-blur-[20px] backdrop-saturate-[180%] border border-gray-300/60 dark:border-gray-600/50 midnight:border-cyan-400/20 purple:border-pink-400/20 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_12px_24px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.3),0_12px_24px_-4px_rgba(0,0,0,0.4)] py-1.5"
+              >
+                {/* Alignment */}
+                <div className="px-2 py-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Alignment</div>
+                <div className="flex items-center gap-0.5 px-2 pb-1">
+                  {([
+                    { cmd: "justifyLeft", icon: AlignLeft, label: "Left" },
+                    { cmd: "justifyCenter", icon: AlignCenter, label: "Center" },
+                    { cmd: "justifyRight", icon: AlignRight, label: "Right" },
+                    { cmd: "justifyFull", icon: AlignJustify, label: "Justify" },
+                  ] as const).map((item) => (
+                    <button key={item.cmd} type="button" title={item.label}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => { handleCommand(item.cmd); setMoreToolbarOpen(false); }}
+                      className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"
+                    >
+                      <item.icon className="w-4 h-4" />
+                    </button>
+                  ))}
+                </div>
+                <div className="my-1 mx-3 h-px bg-gradient-to-r from-transparent via-gray-200/80 dark:via-gray-700/60 to-transparent" />
+                {/* Spacing */}
+                <div className="px-2 py-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Spacing</div>
+                <div className="flex items-center gap-0.5 px-2 pb-1">
+                  {[1.0, 1.15, 1.5, 2.0].map((v) => (
+                    <button key={v} type="button" title={`${v} spacing`}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => { handleLineSpacingChange(v); setMoreToolbarOpen(false); }}
+                      className="px-2 h-8 rounded-lg text-[11px] font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"
+                    >{v}</button>
+                  ))}
+                </div>
+                <div className="my-1 mx-3 h-px bg-gradient-to-r from-transparent via-gray-200/80 dark:via-gray-700/60 to-transparent" />
+                {/* Lists & indent */}
+                <div className="px-2 py-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Lists & indent</div>
+                <div className="flex items-center gap-0.5 px-2 pb-1">
+                  <button type="button" title="Bulleted list" onMouseDown={(e) => e.preventDefault()} onClick={() => { handleCommand("insertUnorderedList"); setMoreToolbarOpen(false); }} className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"><List className="w-4 h-4" /></button>
+                  <button type="button" title="Numbered list" onMouseDown={(e) => e.preventDefault()} onClick={() => { handleCommand("insertOrderedList"); setMoreToolbarOpen(false); }} className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"><ListOrdered className="w-4 h-4" /></button>
+                  <button type="button" title="Decrease indent" onMouseDown={(e) => e.preventDefault()} onClick={() => { handleCommand("outdent"); setMoreToolbarOpen(false); }} className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"><IndentDecrease className="w-4 h-4" /></button>
+                  <button type="button" title="Increase indent" onMouseDown={(e) => e.preventDefault()} onClick={() => { handleCommand("indent"); setMoreToolbarOpen(false); }} className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"><IndentIncrease className="w-4 h-4" /></button>
+                </div>
+                <div className="my-1 mx-3 h-px bg-gradient-to-r from-transparent via-gray-200/80 dark:via-gray-700/60 to-transparent" />
+                {/* Clear formatting */}
+                <button type="button" onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => { focusEditor(); exec("removeFormat"); emitChange(); setMoreToolbarOpen(false); }}
+                  className="w-full flex items-center gap-2.5 px-3 min-h-[40px] text-left text-[13px] text-gray-700 dark:text-gray-200 hover:bg-gray-100/60 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                >
+                  <RemoveFormatting className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  <span>Clear formatting</span>
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Spacer to push editing mode to right */}
           <div className="flex-1" />

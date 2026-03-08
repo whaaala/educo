@@ -60,8 +60,8 @@ Feature: DocEditor comprehensive look and feel verification
   # Toolbar Buttons
   # ──────────────────────────────────────────────────
 
-  Scenario: Strikethrough, Superscript, Subscript are not in the toolbar
-    Then the "Strikethrough" button should not be present in the toolbar
+  Scenario: Strikethrough is in the toolbar, Superscript and Subscript are not
+    Then the "Strikethrough (Alt+Shift+5)" button should be present in the toolbar
     And the "Superscript" button should not be present in the toolbar
     And the "Subscript" button should not be present in the toolbar
 
@@ -167,9 +167,10 @@ Feature: DocEditor comprehensive look and feel verification
   Scenario: No toast visible in default render
     Then no toast notification should be visible
 
-  Scenario: Toast appears after File > New action
+  Scenario: Toast appears after File > New > Document action
     When the File menu is opened
-    And the "New" menu item is clicked
+    And the "New" submenu is opened
+    And the "Document" submenu item is clicked
     Then the toast should be visible
     And the toast should have absolute, bottom-4, left-1/2, -translate-x-1/2, z-[220], rounded-xl, bg-gray-900, text-white, text-[12px], and shadow-xl classes
 
@@ -227,16 +228,15 @@ Feature: DocEditor comprehensive look and feel verification
   # File Menu Items
   # ──────────────────────────────────────────────────
 
-  Scenario: Move to bin is not in the File menu
-    When the File menu is opened
-    Then "Move to bin" should not appear in the menu items
-
-  Scenario: File menu contains expected core items
+  Scenario: File menu contains expected core items including new additions
     When the File menu is opened
     Then the File menu should contain "New"
     And the File menu should contain "Open"
     And the File menu should contain "Make a copy"
     And the File menu should contain "Rename"
+    And the File menu should contain "Move"
+    And the File menu should contain "Add shortcut to Drive"
+    And the File menu should contain "Move to trash"
     And the File menu should contain "Details"
     And the File menu should contain "Print"
 
@@ -413,6 +413,7 @@ Feature: DocEditor comprehensive look and feel verification
       | Bold (Ctrl+B)                |
       | Italic (Ctrl+I)              |
       | Underline (Ctrl+U)           |
+      | Strikethrough (Alt+Shift+5)  |
       | Insert link (Ctrl+K)         |
       | Search                        |
       | Print (Ctrl+P)                |
@@ -1843,3 +1844,122 @@ Feature: DocEditor comprehensive look and feel verification
     When the mention popover opens
     Then it should appear above the textarea (bottom-full positioning)
     And it should not overflow outside the visible viewport
+
+  # ──────────────────────────────────────────────────
+  # Modernized Menu System (2026 Design)
+  # ──────────────────────────────────────────────────
+
+  @visual
+  Scenario: All menus use glassmorphism ViewMenuPanel styling
+    When the File menu is opened
+    Then the menu panel should have glassmorphism classes (backdrop-blur, bg-white/80, rounded-2xl)
+    And the menu items should have min-h-[44px] touch targets
+
+  @visual
+  Scenario Outline: Each menu uses modernized ViewMenuPanel
+    When the "<menu>" menu is opened
+    Then it should render a ViewMenuPanel with glassmorphism surface
+
+    Examples:
+      | menu       |
+      | File       |
+      | Edit       |
+      | Insert     |
+      | Format     |
+      | Tools      |
+      | Extensions |
+      | Help       |
+
+  # ──────────────────────────────────────────────────
+  # File Menu — New Submenu
+  # ──────────────────────────────────────────────────
+
+  Scenario: File > New opens a submenu with document types
+    When the File menu is opened
+    And the "New" submenu is hovered
+    Then the submenu should contain "Document"
+    And the submenu should contain "Spreadsheet"
+    And the submenu should contain "Presentation"
+    And the submenu should contain "Form"
+    And the submenu should contain "Drawing"
+
+  Scenario: File > New > Document creates a new document
+    When the user clicks File > New > Document
+    Then the editor content should be reset
+    And a toast should show "New document created"
+
+  # ──────────────────────────────────────────────────
+  # File Menu — New Items
+  # ──────────────────────────────────────────────────
+
+  Scenario: File > Move shows coming soon toast
+    When the user clicks File > Move
+    Then a toast should show "Move: coming soon"
+
+  Scenario: File > Add shortcut to Drive shows confirmation
+    When the user clicks File > Add shortcut to Drive
+    Then a toast should show "Shortcut added to Drive"
+
+  Scenario: File > Move to trash resets document
+    When the user clicks File > Move to trash
+    Then a toast should show "Document moved to trash"
+    And the editor content should be reset
+
+  # ──────────────────────────────────────────────────
+  # Version History — Name Current Version
+  # ──────────────────────────────────────────────────
+
+  Scenario: File > Version history submenu includes Name current version
+    When the Version history submenu is opened via File menu
+    Then "Name current version" should be present
+    And "Save version" should be present
+    And "View versions" should be present
+
+  # ──────────────────────────────────────────────────
+  # Toolbar — Strikethrough Button
+  # ──────────────────────────────────────────────────
+
+  Scenario: Strikethrough button is present in the toolbar
+    Then the "Strikethrough (Alt+Shift+5)" button should be present in the toolbar
+    And it should be positioned after the Underline button
+
+  Scenario: Strikethrough applies strikethrough formatting
+    Given text is selected in the editor
+    When the user clicks the Strikethrough button
+    Then the selected text should have strikethrough formatting
+
+  # ──────────────────────────────────────────────────
+  # Responsive Toolbar — More Overflow Menu
+  # ──────────────────────────────────────────────────
+
+  @responsive
+  Scenario: Alignment, spacing, lists, indent, and clear formatting are hidden on small screens
+    Given the viewport is less than 1024px wide
+    Then the Alignment dropdown should not be visible
+    And the Line spacing dropdown should not be visible
+    And the Lists dropdown should not be visible
+    And the Indent buttons should not be visible
+    And the Clear formatting button should not be visible
+
+  @responsive
+  Scenario: More button appears on small screens
+    Given the viewport is less than 1024px wide
+    Then a "More formatting options" button with an ellipsis icon should be visible
+
+  @responsive
+  Scenario: More dropdown contains alignment, spacing, lists, indent, and clear formatting
+    Given the viewport is less than 1024px wide
+    When the user clicks the More button
+    Then a glassmorphism dropdown should appear
+    And it should contain Alignment buttons (Left, Center, Right, Justify)
+    And it should contain Spacing options (1, 1.15, 1.5, 2)
+    And it should contain List buttons (Bulleted, Numbered) and Indent buttons
+    And it should contain a "Clear formatting" option
+
+  @responsive
+  Scenario: Desktop viewport shows full toolbar without More button
+    Given the viewport is 1024px or wider
+    Then the Alignment dropdown should be visible
+    And the Line spacing dropdown should be visible
+    And the Lists dropdown should be visible
+    And the More button should not be visible

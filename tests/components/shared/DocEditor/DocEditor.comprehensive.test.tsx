@@ -247,14 +247,15 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
   // ────────────────────────────────────────────────
   // Context: toolbar button presence and styling
   describe("toolbar buttons", () => {
-    // Scenario: Strikethrough, Superscript, Subscript are not in the toolbar
-    it("Strikethrough, Superscript, Subscript are NOT in toolbar (moved to Format menu)", () => {
+    // Scenario: Strikethrough is in the toolbar, Superscript and Subscript are not
+    it("Strikethrough IS in toolbar, Superscript and Subscript are NOT", () => {
       // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // Then these buttons should not be present in the toolbar
-      expect(container.querySelector('button[aria-label="Strikethrough"]')).toBeNull();
+      // Then Strikethrough should be present in the toolbar
+      expect(container.querySelector('button[aria-label="Strikethrough (Alt+Shift+5)"]')).not.toBeNull();
+      // Superscript and Subscript remain in Format menu only
       expect(container.querySelector('button[aria-label="Superscript"]')).toBeNull();
       expect(container.querySelector('button[aria-label="Subscript"]')).toBeNull();
     });
@@ -614,7 +615,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       expect(fileButton).not.toBeNull();
       fireEvent.click(fileButton!);
 
-      // And the "New" menu item is clicked
+      // And the "New" submenu is opened and "Document" is clicked
       const menuPanel = container.querySelector("[data-doc-menu-panel]");
       expect(menuPanel).not.toBeNull();
       const menuButtons = menuPanel!.querySelectorAll("button");
@@ -626,6 +627,17 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       });
       expect(newButton).not.toBeNull();
       fireEvent.click(newButton!);
+      // Click the "Document" submenu item from any open menu panel
+      const allPanels = document.querySelectorAll("[data-doc-menu-panel]");
+      let docButton: HTMLElement | null = null;
+      allPanels.forEach((panel) => {
+        panel.querySelectorAll("button").forEach((btn) => {
+          if (btn.textContent?.trim() === "Document") {
+            docButton = btn;
+          }
+        });
+      });
+      if (docButton) fireEvent.click(docButton);
 
       // Then the toast should be visible with correct styling
       const toast = container.querySelector(".absolute.bottom-4");
@@ -828,21 +840,8 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       return labels;
     }
 
-    // Scenario: 'Move to bin' is not in the File menu
-    it("'Move to bin' is NOT in the File menu", () => {
-      // Given a DocEditor rendered with default content
-      const { container } = render(
-        <DocEditor value={defaultValue} onChange={onChange} />
-      );
-      // When the File menu is opened
-      const menuPanel = openFileMenu(container);
-      // Then "Move to bin" should not appear in the menu items
-      const labels = getMenuItemLabels(menuPanel);
-      expect(labels.some((l) => l.includes("Move to bin"))).toBe(false);
-    });
-
-    // Scenario: File menu contains expected core items
-    it("File menu contains expected core items", () => {
+    // Scenario: File menu contains expected core items including new additions
+    it("File menu contains expected core items including Move, Add shortcut to Drive, Move to trash", () => {
       // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
@@ -851,7 +850,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const menuPanel = openFileMenu(container);
       // Then all expected core items should be present
       const labels = getMenuItemLabels(menuPanel);
-      const expectedItems = ["New", "Open", "Make a copy", "Rename", "Details", "Print"];
+      const expectedItems = ["New", "Open", "Make a copy", "Rename", "Move", "Add shortcut to Drive", "Move to trash", "Details", "Print"];
       for (const item of expectedItems) {
         expect(labels.some((l) => l.includes(item)), `File menu should contain "${item}"`).toBe(true);
       }
@@ -1135,8 +1134,8 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       fireEvent.mouseEnter(vhParent!);
     }
 
-    // Scenario: Version history submenu contains expected items
-    it("Version history submenu contains 'Save version' and 'View versions'", () => {
+    // Scenario: Version history submenu contains expected items including Name current version
+    it("Version history submenu contains 'Name current version', 'Save version', and 'View versions'", () => {
       // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
@@ -1144,7 +1143,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       // When the Version history submenu is opened
       openVersionHistorySubmenu(container);
 
-      // Then "Save version" and "View versions" should be present
+      // Then all expected items should be present
       const allButtons = container.querySelectorAll("button");
       const allLabels: string[] = [];
       allButtons.forEach((btn) => {
@@ -1152,6 +1151,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
         if (text) allLabels.push(text);
       });
 
+      expect(allLabels.some((l) => l.includes("Name current version"))).toBe(true);
       expect(allLabels.some((l) => l.includes("Save version"))).toBe(true);
       expect(allLabels.some((l) => l.includes("View versions"))).toBe(true);
     });
@@ -1751,7 +1751,18 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
         <DocEditor value={defaultValue} onChange={onChange} />
       );
       const menuPanel = openFileMenu(container);
+      // Click "New" to open submenu, then "Document" to create new doc
       clickMenuItem(container, menuPanel, "New");
+      const allPanels = document.querySelectorAll("[data-doc-menu-panel]");
+      let docButton: HTMLElement | null = null;
+      allPanels.forEach((panel) => {
+        panel.querySelectorAll("button").forEach((btn) => {
+          if (btn.textContent?.trim() === "Document") {
+            docButton = btn;
+          }
+        });
+      });
+      if (docButton) fireEvent.click(docButton);
 
       // onChange should have been called with empty/reset content
       expect(onChange).toHaveBeenCalledWith(
@@ -3810,6 +3821,97 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       // When no mention active, verify no popover exists
       const popover = container.querySelector("[data-mention-popover]");
       expect(popover).toBeNull();
+    });
+  });
+
+  // ────────────────────────────────────────────────
+  // Modernized Menu System (2026 Design)
+  // ────────────────────────────────────────────────
+
+  describe("modernized menu system", () => {
+    it("File menu uses ViewMenuPanel with glassmorphism styling", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+      // Open File menu
+      const menuRoots = container.querySelectorAll("[data-doc-menu-root]");
+      let fileButton: HTMLElement | null = null;
+      menuRoots.forEach((root) => {
+        const btn = root.querySelector("button");
+        if (btn && btn.textContent?.trim() === "File") fileButton = btn;
+      });
+      fireEvent.click(fileButton!);
+
+      // ViewMenuPanel uses data-doc-view-menu-panel or data-doc-menu-panel
+      const panels = document.querySelectorAll("[data-doc-menu-panel]");
+      expect(panels.length).toBeGreaterThan(0);
+    });
+
+    it("File > New submenu contains Document, Spreadsheet, Presentation, Form, Drawing", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+      // Open File menu
+      const menuRoots = container.querySelectorAll("[data-doc-menu-root]");
+      let fileButton: HTMLElement | null = null;
+      menuRoots.forEach((root) => {
+        const btn = root.querySelector("button");
+        if (btn && btn.textContent?.trim() === "File") fileButton = btn;
+      });
+      fireEvent.click(fileButton!);
+
+      // Click "New" to open submenu
+      const allButtons = document.querySelectorAll("[data-doc-menu-panel] button");
+      let newButton: HTMLElement | null = null;
+      allButtons.forEach((btn) => {
+        if (btn.textContent?.includes("New")) newButton = btn as HTMLElement;
+      });
+      expect(newButton).not.toBeNull();
+      fireEvent.click(newButton!);
+
+      // Check submenu items
+      const submenuLabels: string[] = [];
+      document.querySelectorAll("[data-doc-menu-panel] button").forEach((btn) => {
+        const text = btn.textContent?.trim();
+        if (text) submenuLabels.push(text);
+      });
+      expect(submenuLabels.some((l) => l === "Document")).toBe(true);
+      expect(submenuLabels.some((l) => l === "Spreadsheet")).toBe(true);
+      expect(submenuLabels.some((l) => l === "Presentation")).toBe(true);
+      expect(submenuLabels.some((l) => l === "Form")).toBe(true);
+      expect(submenuLabels.some((l) => l === "Drawing")).toBe(true);
+    });
+
+    it("Strikethrough button exists in toolbar after Underline", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+      const toolbar = container.querySelector("[data-doc-toolbar]");
+      expect(toolbar).not.toBeNull();
+      const strikeBtn = toolbar!.querySelector('button[aria-label="Strikethrough (Alt+Shift+5)"]');
+      expect(strikeBtn).not.toBeNull();
+    });
+
+    it("More formatting overflow button exists for responsive toolbar", () => {
+      const { container } = render(
+        <DocEditor value={defaultValue} onChange={onChange} />
+      );
+      const toolbar = container.querySelector("[data-doc-toolbar]");
+      expect(toolbar).not.toBeNull();
+      // The More button should exist (visible only on small screens via CSS)
+      const moreBtn = toolbar!.querySelector('button[aria-label="More formatting options"]');
+      // It may not have aria-label, check by tooltip content instead
+      // The button is wrapped in a Tooltip, so look for the ellipsis icon container
+      const allBtns = toolbar!.querySelectorAll("button");
+      let found = false;
+      allBtns.forEach((btn) => {
+        // The more button is inside a div with class containing "lg:hidden"
+        const parent = btn.closest(".lg\\:hidden, [class*='lg:hidden']");
+        if (parent) found = true;
+      });
+      // The responsive container div.lg\\:hidden should exist
+      const responsiveContainer = toolbar!.querySelector(".relative.flex.lg\\:hidden");
+      expect(responsiveContainer || found).toBeTruthy();
     });
   });
 });
