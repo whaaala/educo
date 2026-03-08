@@ -3091,7 +3091,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       }
     });
 
-    it("comments panel has Open/Resolved/All types filter buttons", () => {
+    it("comments panel has Open/Resolved/Rejected/All filter buttons", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
@@ -3101,7 +3101,8 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
         const text = panel.textContent || "";
         expect(text).toContain("Open");
         expect(text).toContain("Resolved");
-        expect(text).toContain("All types");
+        expect(text).toContain("Rejected");
+        expect(text).toContain("All");
       }
     });
 

@@ -6420,7 +6420,10 @@ export default function DocEditor({
                           className="flex-1 text-[12px] font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-blue-400 rounded px-1 py-0 outline-none min-w-0"
                         />
                       ) : (
-                        <span className="flex-1 text-[12px] font-medium text-gray-700 dark:text-gray-200 truncate">{tab.name}</span>
+                        <span
+                          className="flex-1 text-[12px] font-medium text-gray-700 dark:text-gray-200 truncate"
+                          onDoubleClick={(e) => { e.stopPropagation(); setRenamingTabId(tab.id); }}
+                        >{tab.name}</span>
                       )}
                       <Tooltip content="More options" delay={400}>
                         <button
@@ -6586,28 +6589,6 @@ export default function DocEditor({
                               ...(sInfo.pageSetup.pageColor !== "#ffffff" ? { backgroundColor: sInfo.pageSetup.pageColor } : {}),
                             }}
                           >
-                            {/* Template chips overlay — inside page when empty */}
-                            {globalIdx === 0 && hasTemplates && isDocEmpty && canEdit && (
-                              <div className="absolute inset-x-0 top-16 flex justify-center gap-2 z-10 pointer-events-none">
-                                {resolvedTemplates.slice(0, 2).map((tpl) => {
-                                  const TplIcon = tpl.icon ?? FileText;
-                                  return (
-                                    <button key={tpl.id} onClick={() => handleTemplateInsert(tpl)}
-                                      className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title={tpl.label}>
-                                      <TplIcon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                                      <span className="text-gray-700 dark:text-gray-200">{tpl.label}</span>
-                                    </button>
-                                  );
-                                })}
-                                {resolvedTemplates.length > 2 && (
-                                  <button onClick={() => setMoreOpen((v) => !v)}
-                                    className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title="More templates">
-                                    <Package className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                    <span className="text-gray-700 dark:text-gray-200">More</span>
-                                  </button>
-                                )}
-                              </div>
-                            )}
                             <div
                               contentEditable={canEdit}
                               suppressContentEditableWarning
@@ -6617,7 +6598,7 @@ export default function DocEditor({
                                 if (el && !el.querySelector("mark[data-doc-find-highlight]") && !el.querySelector("span[data-doc-comment-highlight]") && el.innerHTML !== html) el.innerHTML = html;
                               }}
                               className={[
-                                "outline-none overflow-hidden relative",
+                                "outline-none overflow-hidden relative z-0",
                                 "text-[14px] leading-6 text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50",
                                 "selection:bg-blue-200/60 dark:selection:bg-blue-500/25 midnight:selection:bg-cyan-500/20 purple:selection:bg-pink-500/20",
                                 "[&_h2]:text-[20px] [&_h2]:leading-7 [&_h2]:font-bold [&_h2]:mt-6 [&_h2]:mb-3",
@@ -6644,6 +6625,32 @@ export default function DocEditor({
                               onBlur={emitChange}
                               onFocus={() => setActiveSectionIdx(sIdx)}
                             />
+                            {/* Template chips overlay — inside page when empty, rendered after contentEditable so it paints on top */}
+                            {globalIdx === 0 && hasTemplates && isDocEmpty && canEdit && (
+                              <div className="absolute inset-x-0 top-16 flex justify-center gap-2 z-20 pointer-events-none">
+                                {resolvedTemplates.slice(0, 2).map((tpl) => {
+                                  const TplIcon = tpl.icon ?? FileText;
+                                  return (
+                                    <button key={tpl.id}
+                                      onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleTemplateInsert(tpl); }}
+                                      className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title={tpl.label}>
+                                      <TplIcon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                                      <span className="text-gray-700 dark:text-gray-200">{tpl.label}</span>
+                                    </button>
+                                  );
+                                })}
+                                {resolvedTemplates.length > 2 && (
+                                  <button
+                                    onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMoreOpen((v) => !v); }}
+                                    className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title="More templates">
+                                    <Package className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                    <span className="text-gray-700 dark:text-gray-200">More</span>
+                                  </button>
+                                )}
+                              </div>
+                            )}
                           </div>
                           <div data-doc-page-label className="mt-2 text-[11px] text-gray-400 dark:text-gray-500 select-none">
                             Page {globalIdx + 1}
@@ -6669,28 +6676,6 @@ export default function DocEditor({
                   ...(pageSetup.pageColor !== "#ffffff" ? { backgroundColor: pageSetup.pageColor } : {}),
                 }}
               >
-                {/* Template chips overlay — inside page when empty */}
-                {hasTemplates && isDocEmpty && canEdit && (
-                  <div className="absolute inset-x-0 top-16 flex justify-center gap-2 z-10 pointer-events-none">
-                    {resolvedTemplates.slice(0, 2).map((tpl) => {
-                      const TplIcon = tpl.icon ?? FileText;
-                      return (
-                        <button key={tpl.id} onClick={() => handleTemplateInsert(tpl)}
-                          className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title={tpl.label}>
-                          <TplIcon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                          <span className="text-gray-700 dark:text-gray-200">{tpl.label}</span>
-                        </button>
-                      );
-                    })}
-                    {resolvedTemplates.length > 2 && (
-                      <button onClick={() => setMoreOpen((v) => !v)}
-                        className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title="More templates">
-                        <Package className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                        <span className="text-gray-700 dark:text-gray-200">More</span>
-                      </button>
-                    )}
-                  </div>
-                )}
                 <div
                   contentEditable={canEdit}
                   suppressContentEditableWarning
@@ -6700,7 +6685,7 @@ export default function DocEditor({
                     if (el && !el.querySelector("mark[data-doc-find-highlight]") && !el.querySelector("span[data-doc-comment-highlight]") && el.innerHTML !== (pages[0] || "")) el.innerHTML = pages[0] || "";
                   }}
                   className={[
-                    "min-h-[520px] outline-none overflow-hidden relative",
+                    "min-h-[520px] outline-none overflow-hidden relative z-0",
                     "text-[14px] leading-6 text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50",
                     "selection:bg-blue-200/60 dark:selection:bg-blue-500/25 midnight:selection:bg-cyan-500/20 purple:selection:bg-pink-500/20",
                     "[&_h2]:text-[20px] [&_h2]:leading-7 [&_h2]:font-bold [&_h2]:mt-6 [&_h2]:mb-3",
@@ -6725,6 +6710,32 @@ export default function DocEditor({
                     }
                   }}
                 />
+                {/* Template chips overlay — inside page when empty, rendered after contentEditable so it paints on top */}
+                {hasTemplates && isDocEmpty && canEdit && (
+                  <div className="absolute inset-x-0 top-16 flex justify-center gap-2 z-20 pointer-events-none">
+                    {resolvedTemplates.slice(0, 2).map((tpl) => {
+                      const TplIcon = tpl.icon ?? FileText;
+                      return (
+                        <button key={tpl.id}
+                          onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleTemplateInsert(tpl); }}
+                          className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title={tpl.label}>
+                          <TplIcon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                          <span className="text-gray-700 dark:text-gray-200">{tpl.label}</span>
+                        </button>
+                      );
+                    })}
+                    {resolvedTemplates.length > 2 && (
+                      <button
+                        onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMoreOpen((v) => !v); }}
+                        className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title="More templates">
+                        <Package className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                        <span className="text-gray-700 dark:text-gray-200">More</span>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
