@@ -19,7 +19,14 @@ type NotificationType =
   | "alert"
   | "success"
   | "warning"
-  | "info";
+  | "info"
+  | "document_shared"
+  | "document_published"
+  | "document_comment"
+  | "document_comment_reply"
+  | "document_comment_resolved"
+  | "document_comment_rejected"
+  | "document_comment_mention";
 
 interface NotificationCardProps {
   id: string;

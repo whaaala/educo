@@ -1037,3 +1037,809 @@ Feature: DocEditor comprehensive look and feel verification
   Scenario: Page content margins reduce on small screens
     Given a DocEditor on a mobile viewport (< 640px)
     Then the contentEditable padding should be reduced to 16px via CSS media query
+
+  # ──────────────────────────────────────────────────
+  # View Menu — Complete Structure & Modernization
+  # ──────────────────────────────────────────────────
+
+  Scenario: View menu contains Mode submenu with Editing, Suggesting, Viewing
+    Given a rendered DocEditor
+    When the user opens the View menu
+    Then a "Mode" item with submenu should be visible
+    And the submenu should contain "Editing", "Suggesting", "Viewing" options
+    And the current mode should be shown as a badge on the Mode item
+
+  Scenario: Mode submenu descriptions explain each mode
+    Given the View menu is open with Mode submenu expanded
+    Then "Editing" should show description "Edit the document directly"
+    And "Suggesting" should show description "Edits become suggestions"
+    And "Viewing" should show description "Read or print the final document"
+
+  Scenario: Print layout toggle exists in View menu
+    Given a rendered DocEditor
+    When the user opens the View menu
+    Then a "Print layout" toggle with description "Page breaks, margins, headers/footers" should exist
+
+  Scenario: Pageless toggle exists in View menu
+    Given a rendered DocEditor
+    When the user opens the View menu
+    Then a "Pageless" toggle with description "Continuous scroll, wide content" should exist
+
+  Scenario: Print layout and Pageless are mutually exclusive
+    Given the View menu is open
+    When the user toggles "Print layout" on
+    Then the "Pageless" toggle should be off
+    And vice versa
+
+  Scenario Outline: Show toggle exists in View menu
+    Given a rendered DocEditor
+    When the user opens the View menu
+    Then a "<toggle>" toggle should exist with an iOS-style pill switch
+
+    Examples:
+      | toggle                       |
+      | Show ruler                   |
+      | Show equation toolbar        |
+      | Show non-printing characters |
+      | Show outline                 |
+      | Show comments                |
+      | Show spelling suggestions    |
+      | Show grammar suggestions     |
+
+  Scenario: Show ruler toggle slides the ruler in with spring animation
+    Given a rendered DocEditor with ruler hidden
+    When the user toggles "Show ruler" on
+    Then the ruler should appear with a 200ms spring slide-in animation
+    And the ruler container should have data-doc-ruler-container attribute
+
+  Scenario: Show outline opens sidebar outline with animation
+    Given a rendered DocEditor with headings in the document
+    When the user toggles "Show outline" on
+    Then the outline panel should appear with data-doc-outline-panel attribute
+    And the panel should slide in from the left with spring animation
+
+  Scenario: Full screen item exists in View menu
+    Given a rendered DocEditor
+    When the user opens the View menu
+    Then a "Full screen" item should exist with F11 shortcut
+    And it should use the Maximize2 icon when not in fullscreen
+
+  Scenario: Zoom submenu exists with all preset levels
+    Given a rendered DocEditor
+    When the user opens the View menu and expands the Zoom submenu
+    Then the submenu should contain "Fit", "50%", "75%", "100%", "125%", "150%", "200%"
+
+  @visual
+  Scenario: View menu uses glassmorphism surface
+    Given a rendered DocEditor
+    When the user opens the View menu
+    Then the menu panel should have the data-doc-view-menu-panel attribute
+    And it should use backdrop-blur and backdrop-saturate for frosted glass
+    And it should have ambient occlusion multi-layered shadows
+
+  @visual
+  Scenario: View menu toggles use iOS-style pill switches
+    Given a rendered DocEditor
+    When the user opens the View menu
+    Then all toggle items should have role="switch" and aria-checked attribute
+    And each toggle should render a pill switch with 38px width and 22px height
+    And the switch knob should animate with 200ms transition
+
+  @visual
+  Scenario: View menu items use variable typography on hover
+    Given the View menu is open
+    Then menu items should have font-weight 420 by default
+    And font-weight should increase to 520 on hover
+
+  @visual
+  Scenario: Active mode has context-aware visual feedback
+    Given a rendered DocEditor in "Suggesting" mode
+    When the user opens the View menu
+    Then the Mode item should show an "Suggesting" badge
+    And the badge should have an amber glow color
+
+  Scenario: Full screen shows floating haptic pill menu at top
+    Given a DocEditor in full screen mode
+    When the user moves the cursor near the top of the screen (< 48px)
+    Then a floating pill menu should appear with slide-down animation
+    And it should show the current zoom level and an exit button
+    And the pill should use glassmorphism surface styling
+
+  Scenario: Full screen floating pill hides when cursor moves away
+    Given the floating pill menu is visible in full screen
+    When the user moves the cursor below 120px from the top
+    Then the pill should hide after 600ms delay
+
+  Scenario: Full screen exits via Escape key
+    Given a DocEditor in full screen mode
+    When the user presses the Escape key
+    Then the editor should exit full screen mode
+
+  Scenario: Full screen toggles via F11 key
+    Given a rendered DocEditor
+    When the user presses F11
+    Then the editor should enter full screen mode
+    When the user presses F11 again
+    Then the editor should exit full screen mode
+
+  @responsive
+  Scenario: View menu shows as bottom sheet on mobile
+    Given a DocEditor on a mobile viewport (< 768px)
+    When the user opens the View menu
+    Then the menu should render as a bottom sheet overlay
+    And it should have a drag handle at the top
+    And it should have the data-doc-view-bottom-sheet attribute
+
+  @responsive
+  Scenario: Desktop View menu renders as dropdown
+    Given a DocEditor on a desktop viewport (> 1024px)
+    When the user opens the View menu
+    Then the menu should render as a dropdown below the menu bar
+
+  Scenario: View menu WCAG compliance
+    Given a rendered DocEditor
+    When the user opens the View menu
+    Then all toggle items should have min-height of 44px for touch targets
+    And all toggles should have aria-label attributes
+    And all toggles should have aria-checked reflecting their state
+
+  Scenario: Spelling suggestions toggle controls contentEditable spellCheck
+    Given a rendered DocEditor
+    When the user toggles "Show spelling suggestions" off
+    Then the contentEditable element should have spellCheck=false
+
+  Scenario: Grammar suggestions toggle stores state
+    Given a rendered DocEditor
+    When the user toggles "Show grammar suggestions" off
+    Then the grammar suggestions state should be false
+
+  # ──────────────────────────────────────────────────
+  # Document Commenting / Review System
+  # ──────────────────────────────────────────────────
+
+  Scenario: Comments panel shows empty state when no comments exist
+    Given a rendered DocEditor with showComments toggled on
+    Then the comments panel should be visible
+    And it should display "No comments yet" empty state
+    And the empty state should show a MessageCircle icon
+
+  Scenario: Add comment toolbar button prompts text selection
+    Given a rendered DocEditor with no text selected
+    When the user clicks the "Add comment" toolbar button
+    Then a toast message "Select text to add a comment" should appear
+
+  Scenario: Add comment from text selection opens popover
+    Given a rendered DocEditor with text content
+    When the user selects text "Hello World" in the document
+    And clicks the "Add comment" toolbar button
+    Then a comment creation popover should appear near the selection
+    And the popover should show the selected text excerpt
+    And the popover should have a textarea for entering the comment
+    And the popover should have Cancel and Comment buttons
+
+  Scenario: Submitting a comment adds it to the comments panel
+    Given a comment creation popover is open with selected text
+    When the user types "This needs revision" in the comment textarea
+    And presses Ctrl+Enter to submit
+    Then the comment should appear in the comments panel
+    And the comment card should show the author name and avatar
+    And the comment card should show the selected text excerpt
+    And the comment card should show the comment body
+
+  Scenario: Comment card displays author avatar with initials fallback
+    Given a comment exists from a user without an avatar
+    Then the comment card should show initials in a colored circle
+    And the initials should be derived from the author's first and last name
+
+  Scenario: Click comment card scrolls to highlighted text
+    Given a comment exists on text in the document
+    When the user clicks on the comment card in the sidebar
+    Then the document should scroll to the highlighted text area
+    And a brief blue flash highlight should appear on the text
+
+  Scenario: Comment highlights appear in document for open comments
+    Given comments exist on the document
+    And the comments panel is visible
+    Then yellow highlight marks should appear on commented text
+    And the active comment's highlight should be blue
+    And hovering over a highlight should change its color
+
+  Scenario: Owner can resolve a comment
+    Given a comment exists on the document
+    And the current user is the document owner
+    When the user hovers over the comment card
+    And clicks the more actions button
+    Then a dropdown should show "Resolve" and "Reject" options
+    When the user clicks "Resolve"
+    Then the comment status should change to "resolved"
+    And a "Resolved" badge should appear on the comment card
+    And the comment should move to the "Resolved" section
+
+  Scenario: Owner can reject a comment
+    Given a comment exists on the document
+    And the current user is the document owner
+    When the user clicks "Reject" from the comment actions
+    Then the comment status should change to "rejected"
+    And a "Rejected" badge should appear on the comment card
+
+  Scenario: Resolved/rejected comments can be reopened
+    Given a resolved comment exists on the document
+    When the user opens the actions menu on the resolved comment
+    And clicks "Reopen"
+    Then the comment should return to "open" status
+    And it should move back to the open comments section
+
+  Scenario: Reply to a comment creates a thread
+    Given an open comment exists
+    When the user clicks the "Reply" button on the comment card
+    Then a reply textarea should appear
+    When the user types "I agree, will fix" and clicks Reply
+    Then the reply should appear in the comment thread
+    And the reply should show the replier's name and avatar
+
+  Scenario: @mention autocomplete in comment input
+    Given a comment creation popover is open
+    When the user types "@" in the comment textarea
+    Then a mention autocomplete dropdown should appear
+    And it should list available users with avatars
+    When the user selects a user from the dropdown
+    Then the @mention should be inserted into the textarea
+
+  Scenario: @mention autocomplete in reply input
+    Given a reply textarea is open on a comment
+    When the user types "@Syl" in the reply textarea
+    Then the mention dropdown should filter to matching users
+    When the user clicks a user
+    Then the full @mention should be inserted
+
+  Scenario: @mentions are highlighted in comment text
+    Given a comment contains "@Sylvia Thompson" in its text
+    Then the mention should be rendered in blue text with font-semibold
+
+  Scenario: Notifications sent when comment is added
+    Given the user adds a comment on selected text
+    Then a "document_comment" notification should be dispatched
+    And the notification should include the commenter name and document title
+
+  Scenario: Notifications sent for @mentions
+    Given the user adds a comment mentioning "@James Brown"
+    Then a "document_comment_mention" notification should be dispatched
+    And the notification should have high priority
+    And the targetUserId should match James Brown's user ID
+
+  Scenario: Notification sent when comment is resolved
+    Given the owner resolves a comment by another user
+    Then a "document_comment_resolved" notification should be dispatched to the comment author
+
+  Scenario: Notification sent when comment is rejected
+    Given the owner rejects a comment by another user
+    Then a "document_comment_rejected" notification should be dispatched to the comment author
+
+  Scenario: Notification sent when reply is added
+    Given a user replies to another user's comment
+    Then a "document_comment_reply" notification should be dispatched to the original comment author
+
+  Scenario: Keyboard shortcut Ctrl+Alt+M opens comment creation
+    Given a rendered DocEditor with text selected
+    When the user presses Ctrl+Alt+M
+    Then the comment creation popover should open
+
+  Scenario: Escape key closes comment popover
+    Given the comment creation popover is open
+    When the user presses Escape
+    Then the popover should close without creating a comment
+
+  Scenario: Comments panel can be closed
+    Given the comments panel is visible
+    When the user clicks the X close button on the panel
+    Then the comments panel should close
+
+  Scenario: Comments panel header shows open comment count
+    Given 3 open comments and 2 resolved comments exist
+    Then the comments panel header should show a badge with "3"
+
+  @visual
+  Scenario: Comment card visual styling
+    Given a comment card is rendered
+    Then it should have rounded-xl border and p-2.5 classes
+    And the active card should have border-blue-300 and bg-blue-50/60
+    And the inactive card should have border-gray-100
+
+  @visual
+  Scenario: Comment popover glassmorphism styling
+    Given the comment creation popover is open
+    Then it should have rounded-2xl, backdrop-blur-xl, and shadow-2xl classes
+    And it should have the data-doc-comment-popover attribute for animations
+
+  @visual
+  Scenario: Comments panel slide-in animation
+    Given the comments panel becomes visible
+    Then it should have the data-doc-comments-panel attribute
+    And the CSS should apply doc-comment-slide-in animation
+
+  @visual
+  Scenario: Resolved comment visual dimming
+    Given a resolved comment is displayed
+    Then the comment card should have opacity-70 class
+
+  Scenario: Comments persist to localStorage
+    Given comments have been added to the document
+    Then they should be saved to localStorage under "educo_doc_comments"
+    And reloading the editor should restore the comments
+
+  Scenario: Comment deletion removes from list and localStorage
+    Given a comment exists
+    When the user deletes the comment
+    Then it should be removed from the comments panel
+    And it should be removed from localStorage
+
+  Scenario: Show Comments toggle in View menu controls panel visibility
+    Given a rendered DocEditor
+    When the user opens the View menu
+    And toggles "Show comments" on
+    Then the comments panel should appear
+    When the user toggles "Show comments" off
+    Then the comments panel should disappear
+    And comment highlights should be removed from the document
+
+  # ──────────────────────────────────────────────────
+  # Extension Layer: Comments Panel Enhancements
+  # ──────────────────────────────────────────────────
+
+  Scenario: Top-right comment icon opens/closes comments panel
+    Given a rendered DocEditor
+    Then a comment icon button should be visible near the Share button
+    When the user clicks the comment icon
+    Then the comments panel should open
+    When the user clicks the comment icon again
+    Then the comments panel should close
+
+  Scenario: Comment icon shows unread badge
+    Given 3 open comments exist on the document
+    Then the comment icon should show a badge with "3"
+
+  Scenario: Floating margin bubble appears on text selection
+    Given a rendered DocEditor with text content
+    When the user selects text in the document
+    Then a floating blue bubble should appear in the right margin
+    And clicking the bubble should open the comment creation popover
+
+  Scenario: Comments panel has "For you" and "All comments" tabs
+    Given the comments panel is open
+    Then two tabs should be visible: "For you" and "All comments"
+    And the "All comments" tab should be selected by default
+
+  Scenario: "For you" tab filters to user-relevant comments
+    Given comments exist mentioning the current user
+    When the user clicks the "For you" tab
+    Then only comments where the user is mentioned or is the author should be shown
+
+  Scenario: "For you" tab shows badge for actionable items
+    Given 2 open comments mention the current user
+    Then the "For you" tab should show a badge with "2"
+
+  Scenario: Filter controls for Open/Resolved/All types
+    Given the comments panel is open
+    Then filter buttons should show "Open", "Resolved", and "All types"
+    And "Open" should be selected by default
+
+  Scenario: Switching to Resolved filter shows only resolved comments
+    Given open and resolved comments exist
+    When the user clicks the "Resolved" filter
+    Then only resolved/rejected comments should be shown
+
+  Scenario: Reset filter button appears for non-default filters
+    Given the comments panel is open
+    When the user selects the "Resolved" filter
+    Then a "Reset filter" link should appear
+    When the user clicks "Reset filter"
+    Then the filter should return to "Open"
+
+  Scenario: Empty state for "For you" tab
+    Given no comments mention the current user
+    When the user selects the "For you" tab
+    Then the panel should show "For you will list comments that need your attention"
+
+  Scenario: Empty state for filtered results
+    Given all comments are open
+    When the user selects the "Resolved" filter
+    Then the panel should show "No matching results"
+    And a "Reset filter" button should be visible
+
+  Scenario: "Add comment" button at bottom of panel
+    Given the comments panel is open
+    Then an "Add comment" button should be visible at the bottom
+    When the user clicks "Add comment" with text selected
+    Then the comment creation popover should open
+
+  @visual
+  Scenario: Comment panel tab styling
+    Given the comments panel is open
+    Then the active tab should have border-blue-500 and text-blue-600
+    And the inactive tab should have border-transparent and text-gray-500
+
+  @visual
+  Scenario: Filter button styling with segmented control
+    Given the comments panel is open
+    Then the active filter should have bg-white shadow-sm
+    And the inactive filter should have text-gray-500
+
+  @visual
+  Scenario: Floating margin bubble animation
+    Given text is selected in the document
+    Then the margin bubble should appear with a pop animation
+    And the bubble should be a blue circle with shadow-lg
+
+  @visual
+  Scenario: Comment card glassmorphism hover effect
+    Given comments are visible in the panel
+    When the user hovers over a comment card
+    Then the card border should glow with rgba(59, 130, 246, 0.2)
+
+  # ──────────────────────────────────────────────────
+  # Extension Layer: View Menu Mode Checkmarks
+  # ──────────────────────────────────────────────────
+
+  Scenario: Mode submenu shows check icon for active mode
+    Given the View menu is open
+    When the user opens the Mode submenu
+    Then the active mode should show a Check icon (not just a dot)
+    And inactive modes should show no icon
+
+  # ──────────────────────────────────────────────────
+  # Extension Layer: Micro-animations
+  # ──────────────────────────────────────────────────
+
+  @visual
+  Scenario: Equation toolbar slides in with animation
+    Given the equation toolbar is hidden
+    When the user toggles "Show equation toolbar" on
+    Then the equation toolbar should slide down with a 200ms animation
+    And it should have the data-doc-equation-toolbar attribute
+
+  # ──────────────────────────────────────────────────
+  # Comment Positioning & Spatial Logic
+  # ──────────────────────────────────────────────────
+
+  Scenario: Document canvas shifts left when comments sidebar opens
+    Given a DocEditor with comments
+    When the comments sidebar is open
+    Then the page surface should have margin-right "mr-[356px]" class
+    And the sidebar should be docked to the right edge with border-l
+
+  Scenario: Document canvas re-centers when comments sidebar closes
+    Given a DocEditor with comments sidebar open
+    When the user closes the comments sidebar
+    Then the page surface should not have the "mr-[356px]" class
+    And the transition should be smooth with "transition-[margin]" class
+
+  @responsive
+  Scenario: Mobile bottom sheet replaces sidebar on small screens
+    Given a DocEditor with comments on a mobile viewport
+    When the comments panel is open
+    Then on desktop (md+) a docked sidebar should appear
+    And on mobile (<md) a bottom sheet should appear with rounded-t-2xl and drag handle
+
+  Scenario: Auto-open sidebar when document has unresolved comments
+    Given a DocEditor loaded with existing unresolved comments
+    Then the comments sidebar should be open by default
+    And the first comment should be highlighted and scrolled into view
+
+  Scenario: Sidebar stays closed after manual dismissal
+    Given a DocEditor with comments sidebar auto-opened
+    When the user clicks the close button on the sidebar
+    Then the sidebar should close
+    And it should not re-open automatically until the user clicks a comment anchor or icon
+
+  Scenario: Sidebar re-opens when user clicks comment icon after dismissal
+    Given a DocEditor with comments sidebar manually dismissed
+    When the user clicks the comments icon in the header
+    Then the sidebar should open again
+    And the manual dismissal state should be reset
+
+  Scenario: Tab-specific comments filtering
+    Given a DocEditor with multiple tabs containing comments
+    When the user switches to a different tab
+    Then only comments belonging to the current tab should be shown
+    And comments without a tabId should appear on all tabs
+
+  Scenario: Tab indicator badge on comment cards
+    Given a comment that belongs to "Tab 2"
+    When the comment is displayed in the sidebar
+    Then it should show a tab indicator badge reading "Tab 2"
+    And the badge should have rounded bg-gray-100 styling
+
+  # ──────────────────────────────────────────────────
+  # Bi-directional Focus Sync
+  # ──────────────────────────────────────────────────
+
+  Scenario: Click highlighted text to scroll sidebar to matching comment (Mode B)
+    Given a DocEditor with highlighted comments and sidebar open
+    When the user clicks on a comment highlight mark
+    Then the sidebar should auto-scroll to the matching comment card
+    And the comment card should show a temporary blue ring highlight
+    And the comment card should have data-active="true"
+
+  Scenario: Click highlighted text to scroll floating card into view (Mode A)
+    Given a DocEditor with highlighted comments and floating cards visible
+    When the user clicks on a comment highlight mark
+    Then the floating card for that comment should scroll into view
+    And the floating card should show a temporary blue ring highlight
+
+  Scenario: Click highlighted text when no comments panel is open
+    Given a DocEditor with highlighted comments but no comment panel visible
+    When the user clicks on a comment highlight mark
+    Then floating comments mode should activate
+    And the matching floating card should scroll into view with a blue ring highlight
+
+  Scenario: Click comment card to scroll document to highlighted text
+    Given a DocEditor with comments in the sidebar
+    When the user clicks on a comment card
+    Then the document should scroll to the highlighted text
+    And the text should flash with a blue highlight effect
+
+  # ──────────────────────────────────────────────────
+  # Resolved Comment Animation
+  # ──────────────────────────────────────────────────
+
+  @visual
+  Scenario: Resolved comment fades out with animation
+    Given a comment card with status "open"
+    When the owner resolves the comment
+    Then the card should show data-resolved="true"
+    And a CSS fade-out animation should play
+
+  # ──────────────────────────────────────────────────
+  # Global Close & Layout Reversion
+  # ──────────────────────────────────────────────────
+
+  Scenario: Close button shows collapse icon with tooltip
+    Given a DocEditor with comments sidebar open
+    Then the close button should show the PanelRightClose icon
+    And it should have a tooltip "Close comments"
+
+  Scenario: Empty document shows centered layout with no sidebar
+    Given a DocEditor with no comments
+    Then the document should be centered with no margin-right offset
+    And the comments sidebar should not be visible
+
+  # ──────────────────────────────────────────────────
+  # Dual-State Comment System (Mode A/B)
+  # ──────────────────────────────────────────────────
+
+  Scenario: Mode A — Floating comment pills appear when sidebar is closed
+    Given a DocEditor with comments and sidebar closed
+    Then individual floating comment pills should appear in the right margin
+    And each pill should show the author avatar and reply count
+    And the pills should have data-doc-floating-pill attribute
+
+  Scenario: Mode B — Sidebar open hides floating pills
+    Given a DocEditor with floating comment pills visible
+    When the user opens the comments sidebar
+    Then the floating pills should disappear
+    And the full comment sidebar should be visible
+
+  Scenario: Closing sidebar restores floating pills
+    Given a DocEditor with comments sidebar open
+    When the user closes the sidebar
+    Then floating comment pills should reappear in the margin
+    And each pill should be positioned at its highlighted text
+
+  Scenario: Floating pill expands on click to show full interaction
+    Given a floating comment pill in the margin
+    When the user clicks on the pill
+    Then the pill should expand to show the full comment card
+    And the expanded card should have reply input, resolve, and reject buttons
+
+  Scenario: Reply within floating pill
+    Given an expanded floating comment pill
+    When the user types a reply and hits Enter
+    Then the reply should be added to the comment thread
+    And the pill reply count should update
+
+  Scenario: Resolve within floating pill
+    Given an expanded floating comment pill
+    And the current user is the document owner
+    When the user clicks Resolve in the pill's actions menu
+    Then the comment should be resolved
+    And the pill should be removed from the margin
+
+  Scenario: Open in sidebar from floating pill
+    Given an expanded floating comment pill
+    When the user clicks the "Open in sidebar" button
+    Then the sidebar should open with that comment highlighted
+    And the floating pills should hide (Mode B)
+
+  Scenario: Dismiss All floating comments
+    Given floating comment pills are visible
+    When the user clicks the "Dismiss all" button
+    Then all floating pills should disappear
+    And the document should re-center to full width
+    And floating pills should not reappear until user clicks a comment anchor
+
+  Scenario: Default state shows floating pills on load
+    Given a DocEditor loaded with existing unresolved comments
+    Then floating comment pills should be visible by default (Mode A)
+    And the sidebar should not be open
+
+  @visual
+  Scenario: Floating pills have pill shape with glow border
+    Given a floating comment pill is rendered
+    Then it should have rounded-full border styling
+    And on hover it should show a subtle blue glow shadow
+    And it should use backdrop-blur for glassmorphism
+
+  @visual
+  Scenario: Cross-fade animation between Mode A and Mode B
+    Given floating pills are visible (Mode A)
+    When the user opens the sidebar (Mode B)
+    Then the pills should fade out with a smooth animation
+    And the sidebar should slide in from the right
+
+  # ──────────────────────────────────────────────────
+  # Comment Highlight Accuracy
+  # ──────────────────────────────────────────────────
+
+  Scenario: Comment highlight wraps only selected text, not the entire page
+    Given a DocEditor with text "hello world" and a comment on "world"
+    When comment highlights are applied
+    Then only the text "world" should be wrapped in a highlight span
+    And the span should have data-doc-comment-highlight attribute with the comment ID
+    And the rest of the page content should not be inside the highlight span
+    And the parent container (contentEditable div) should NOT have any highlight styles
+
+  Scenario: getNodePath never returns empty string for text nodes
+    Given a text node that is a direct child of the page element
+    When getNodePath is called for that text node
+    Then the returned path should not be an empty string
+
+  Scenario: resolveNodePath returns null for empty path
+    Given an empty string path
+    When resolveNodePath is called
+    Then it should return null, not the root element
+
+  Scenario: Highlight resolves element nodes to text nodes
+    Given a comment whose anchorPath resolves to an element node
+    When applyCommentHighlights runs
+    Then the highlight should drill into the first text node child
+    And the span should only wrap the relevant text
+
+  Scenario: Highlight uses span elements, not mark elements (new system)
+    Given a DocEditor with comments
+    When highlights are applied
+    Then all highlights should be span[data-doc-comment-highlight] elements
+    And no mark[data-doc-comment-highlight] elements should exist
+
+  @visual
+  Scenario: Active comment highlight uses soft indigo color
+    Given a comment is active (selected by user)
+    When highlights are rendered
+    Then the active highlight span should have background rgba(99, 102, 241, 0.18)
+    And the active highlight span should have border-bottom rgba(99, 102, 241, 0.5)
+
+  @visual
+  Scenario: Inactive comment highlight uses soft amber color
+    Given a comment exists but is not active
+    When highlights are rendered
+    Then the inactive highlight span should have background rgba(251, 191, 36, 0.15)
+    And the inactive highlight span should have border-bottom rgba(251, 191, 36, 0.4)
+
+  Scenario: Highlight spans have transition for smooth color changes
+    Given a highlight span exists
+    Then it should have transition: background-color 0.2s, border-color 0.2s
+    And cursor should be pointer
+
+  Scenario: Clicking highlighted text when sidebar is closed opens floating cards
+    Given the sidebar is closed and floating cards are dismissed
+    When the user clicks on highlighted text
+    Then floating comments should activate (showFloatingComments = true)
+    And the matching floating card should receive a focus shadow effect
+
+  Scenario: Clicking highlighted text when sidebar is open scrolls to sidebar card
+    Given the sidebar is open with multiple comments
+    When the user clicks on highlighted text for a specific comment
+    Then the matching sidebar card should scroll into view
+    And the card should show an indigo box-shadow focus indicator for 2 seconds
+
+  @visual
+  Scenario: Focus shadow on comment card uses indigo glow
+    Given a comment card receives focus from text click
+    Then the card should have boxShadow "0 0 0 2px rgba(99,102,241,0.5), 0 4px 12px rgba(99,102,241,0.15)"
+    And the shadow should fade after 2 seconds
+
+  # ──────────────────────────────────────────────────
+  # @Mention Tagging System
+  # ──────────────────────────────────────────────────
+
+  Scenario: Typing @ in comment creation popover shows mention popover
+    Given a comment creation popover is open with a textarea
+    When the user types "@"
+    Then a mention popover should appear above the textarea
+    And it should show a list of mentionable users
+    And the popover should have glassmorphism styling (backdrop-blur-xl, bg-white/80)
+
+  Scenario: Mention popover filters users as user types
+    Given the mention popover is open
+    When the user types "@Syl"
+    Then only users matching "Syl" should be displayed
+    And "Sylvia Thompson" should be visible
+    And "John Smith" should not be visible
+
+  Scenario: Keyboard navigation in mention popover
+    Given the mention popover is open showing multiple users
+    When the user presses ArrowDown
+    Then the next user should be highlighted
+    When the user presses ArrowUp
+    Then the previous user should be highlighted
+    When the user presses Enter
+    Then the highlighted user should be inserted as a mention
+
+  Scenario: Selecting a mention inserts the user name with @ prefix
+    Given the mention popover is open and the user selects "John Smith"
+    Then the textarea should contain "@John Smith "
+    And the mention popover should close
+    And the cursor should be positioned after the inserted mention
+
+  Scenario: Escape closes the mention popover without inserting
+    Given the mention popover is open
+    When the user presses Escape
+    Then the mention popover should close
+    And the textarea text should remain unchanged
+
+  @visual
+  Scenario: Mention popover has glassmorphism design
+    Given the mention popover is displayed
+    Then it should have backdrop-blur-xl class for glass effect
+    And it should have bg-white/80 dark:bg-gray-900/80 for translucent background
+    And it should have rounded-xl border with shadow-2xl
+    And it should have role="listbox" for accessibility
+
+  @visual
+  Scenario: Highlighted user row in mention popover
+    Given the mention popover is showing users
+    Then the highlighted row should have bg-blue-50/80 background
+    And the highlighted user name should be text-blue-700
+    And an "Enter" hint label should appear on the highlighted row
+
+  Scenario: @mention works in sidebar reply textarea (Mode B)
+    Given the sidebar is open with a comment and the reply input is visible
+    When the user types "@" in the reply textarea
+    Then the mention popover should appear
+    And selecting a user should insert the mention into the reply text
+
+  Scenario: @mention works in floating pill reply textarea (Mode A)
+    Given a floating pill is expanded with the reply input visible
+    When the user types "@" in the floating pill reply textarea
+    Then the mention popover should appear
+    And selecting a user should insert the mention into the reply text
+
+  @visual
+  Scenario: Mentioned users display as blue pills in comment body
+    Given a comment with text containing "@John Smith"
+    Then the mention should render as a blue pill token
+    And the pill should have rounded-full, bg-blue-100/80, text-blue-600 classes
+    And the pill should contain an AtSign icon and the user name without @
+
+  @visual
+  Scenario: Mentioned users display as blue pills in reply text
+    Given a reply with text containing "@Sylvia Thompson"
+    Then the mention in the reply should render as a blue pill token
+    And the pill should have data-mention-pill attribute
+
+  Scenario: Mention popover does not block Enter for submitting comment
+    Given the mention popover is NOT active
+    When the user presses Ctrl+Enter in the textarea
+    Then the comment should be submitted normally
+
+  Scenario: Mention popover intercepts Enter when active
+    Given the mention popover IS active with a highlighted user
+    When the user presses Enter
+    Then the highlighted user should be inserted as a mention
+    And the comment should NOT be submitted
+
+  @responsive
+  Scenario: Mention popover positions correctly above textarea
+    Given a textarea near the bottom of the screen
+    When the mention popover opens
+    Then it should appear above the textarea (bottom-full positioning)
+    And it should not overflow outside the visible viewport

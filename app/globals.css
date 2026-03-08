@@ -683,3 +683,165 @@ tbody tr.sorting-animate-desc {
     overflow: visible !important;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+ *  DocEditor View Menu — 2026 Micro-Interactions & Animations
+ * ════════════════════════════════════════════════════════════════════════════ */
+
+/* Spring slide-in for ruler / outline when toggled visible */
+@keyframes doc-slide-in-down {
+  from { opacity: 0; transform: translateY(-8px) scaleY(0.95); }
+  to   { opacity: 1; transform: translateY(0) scaleY(1); }
+}
+@keyframes doc-slide-in-left {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes doc-fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+[data-doc-ruler-container] {
+  animation: doc-slide-in-down 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+[data-doc-outline-panel] {
+  animation: doc-slide-in-left 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* View menu panel entrance */
+[data-doc-view-menu-panel] {
+  animation: doc-fade-in-up 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Fullscreen floating pill menu */
+@keyframes doc-pill-slide-down {
+  from { opacity: 0; transform: translateX(-50%) translateY(-100%); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes doc-pill-slide-up {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to   { opacity: 0; transform: translateX(-50%) translateY(-100%); }
+}
+[data-doc-floating-pill] {
+  animation: doc-pill-slide-down 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+[data-doc-floating-pill].hiding {
+  animation: doc-pill-slide-up 200ms ease-in forwards;
+}
+
+/* Mobile bottom sheet entrance */
+@keyframes doc-sheet-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+[data-doc-view-bottom-sheet] {
+  animation: doc-sheet-up 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Mobile bottom sheet backdrop */
+@keyframes doc-sheet-backdrop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+[data-doc-view-sheet-backdrop] {
+  animation: doc-sheet-backdrop 200ms ease;
+}
+
+/* Comment system animations */
+@keyframes doc-comment-slide-in {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes doc-comment-popover-in {
+  from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+[data-doc-comments-panel] {
+  animation: doc-comment-slide-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-doc-comment-popover] {
+  animation: doc-comment-popover-in 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+[data-doc-comment-card] {
+  animation: doc-fade-in-up 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+mark[data-doc-comment-highlight] {
+  transition: background-color 0.2s ease;
+}
+mark[data-doc-comment-highlight]:hover {
+  background-color: rgba(59, 130, 246, 0.35) !important;
+}
+
+/* Equation toolbar slide-down animation */
+@keyframes doc-equation-slide-down {
+  from { opacity: 0; transform: translateY(-8px); max-height: 0; }
+  to { opacity: 1; transform: translateY(0); max-height: 100px; }
+}
+[data-doc-equation-toolbar] {
+  animation: doc-equation-slide-down 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Floating margin bubble pop-in */
+@keyframes doc-bubble-pop {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+[data-doc-margin-bubble] {
+  animation: doc-bubble-pop 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Comment card glass-morphism hover glow */
+[data-doc-comment-card]:hover {
+  border-color: rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.05), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Mobile comments bottom sheet slide-up */
+@keyframes doc-comments-sheet-up {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+[data-doc-comments-mobile-sheet] {
+  animation: doc-comments-sheet-up 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Resolved comment fade-out animation — only in open filter (collapses card after resolve) */
+@keyframes doc-comment-resolve-fade {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.98); }
+  100% { opacity: 0.4; transform: scale(0.96); max-height: 0; padding: 0; margin: 0; overflow: hidden; }
+}
+[data-doc-comment-card][data-resolved="true"][data-filter-fade="true"] {
+  animation: doc-comment-resolve-fade 400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Comment card active/focused state glow */
+[data-doc-comment-card][data-active="true"] {
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1), 0 4px 12px rgba(59, 130, 246, 0.08);
+}
+
+/* Floating comment cards — Mode A animations */
+@keyframes doc-floating-card-in {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+[data-doc-floating-pill] {
+  animation: doc-floating-card-in 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Floating comments panel slide-in */
+@keyframes doc-floating-panel-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+[data-doc-floating-comments] {
+  animation: doc-floating-panel-in 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  border-left: 1px solid rgba(229, 231, 235, 0.6);
+  background: linear-gradient(180deg, rgba(249, 250, 251, 0.5) 0%, rgba(255, 255, 255, 0.3) 100%);
+}
+:is(.dark) [data-doc-floating-comments] {
+  border-left-color: rgba(55, 65, 81, 0.4);
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.3) 0%, rgba(17, 24, 39, 0.1) 100%);
+}

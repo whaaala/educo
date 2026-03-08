@@ -80,7 +80,7 @@ export default function SharedDocumentsPage() {
   };
 
   if (!isMounted) {
-    return <DashboardPage title="Shared Documents" loadingText="Loading shared documents..." />;
+    return <DashboardPage title="Shared Documents" loadingText="Loading shared documents..." breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Shared Documents", isActive: true }]} />;
   }
 
   return (

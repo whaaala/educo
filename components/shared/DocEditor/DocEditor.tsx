@@ -79,6 +79,20 @@ import {
   Maximize2,
   Palette,
   X,
+  Minimize2,
+  PanelLeftClose,
+  Pilcrow,
+  SpellCheck as SpellCheckIcon,
+  BookOpen,
+  ZoomIn,
+  MessageCircle,
+  Reply,
+  CheckCircle2,
+  XCircle,
+  AtSign,
+  Send,
+  CornerDownRight,
+  PanelRightClose,
 } from "lucide-react";
 import { DOC_LANGUAGES } from "./languages";
 import Tooltip from "@/components/shared/Tooltip";
@@ -298,6 +312,71 @@ export interface DocEditorProps {
   templates?: DocTemplate[];
   /** Optional tenant identifier for tenant-aware features (e.g., translation) */
   tenantId?: string;
+  /** External comments (if not provided, uses internal localStorage-based state) */
+  comments?: DocComment[];
+  /** Called when comments change */
+  onCommentsChange?: (comments: DocComment[]) => void;
+}
+
+// ── Comment / Review System Types ──
+
+export type CommentStatus = "open" | "resolved" | "rejected";
+
+export interface CommentAuthor {
+  id: string;
+  name: string;
+  avatar?: string;
+  role?: string;
+}
+
+export interface CommentMention {
+  userId: string;
+  name: string;
+  offset: number;
+  length: number;
+}
+
+export interface CommentReply {
+  id: string;
+  author: CommentAuthor;
+  text: string;
+  mentions: CommentMention[];
+  createdAt: string;
+}
+
+export interface DocComment {
+  id: string;
+  documentId: string;
+  author: CommentAuthor;
+  /** The text the user highlighted when creating the comment */
+  selectedText: string;
+  /** Serialised range info so we can re-highlight and scroll-to */
+  highlightRange: {
+    pageIndex: number;
+    startOffset: number;
+    endOffset: number;
+    /** XPath-like path from page root to the text node (legacy, kept for compat) */
+    anchorPath: string;
+    focusPath: string;
+    /** Character offset of selected text within page's textContent (new approach) */
+    textOffset?: number;
+  };
+  /** Which tab this comment belongs to */
+  tabId?: string;
+  /** The comment body */
+  text: string;
+  mentions: CommentMention[];
+  status: CommentStatus;
+  /** Who resolved/rejected + optional message */
+  resolution?: {
+    by: CommentAuthor;
+    action: "resolved" | "rejected";
+    message?: string;
+    at: string;
+  };
+  replies: CommentReply[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface TableCellTextFormat {
@@ -841,6 +920,8 @@ export default function DocEditor({
   className = "",
   templates,
   tenantId,
+  comments,
+  onCommentsChange,
 }: DocEditorProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const latestValueRef = useRef<DocEditorValue>(value);
@@ -860,6 +941,9 @@ export default function DocEditor({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showRuler, setShowRuler] = useState(true);
   const [showNonPrinting, setShowNonPrinting] = useState(false);
+  const [showOutline, setShowOutline] = useState(false);
+  const [showSpellingSuggestions, setShowSpellingSuggestions] = useState(true);
+  const [showGrammarSuggestions, setShowGrammarSuggestions] = useState(true);
 
   // ── Section-aware page setup ──
   // sectionInfos tracks per-section page setup + page count.
@@ -920,6 +1004,9 @@ export default function DocEditor({
   const { pageWidthPx, pageHeightPx, marginTopPx, marginBottomPx, marginLeftPx, marginRightPx } = pageDimensions;
   const showPrintLayout = !pageSetup.pageless;
   const [showComments, setShowComments] = useState(false);
+  const [showFloatingComments, setShowFloatingComments] = useState(false);
+  const [floatingCommentsDismissed, setFloatingCommentsDismissed] = useState(false);
+  const [sidebarManuallyDismissed, setSidebarManuallyDismissed] = useState(false);
   const [showEquationToolbar, setShowEquationToolbar] = useState(false);
   const [docMode, setDocMode] = useState<"editing" | "suggesting" | "viewing">("editing");
   const [isChromeCollapsed, setIsChromeCollapsed] = useState(false);
@@ -1138,6 +1225,806 @@ export default function DocEditor({
     });
     setDialog(null);
   }, [currentUser, value.title, value.html, value.language, getShareLinkId, saveVersion, addNotification]);
+
+  // ── Comment / Review System State ──
+  const COMMENTS_STORAGE_KEY = "educo_doc_comments";
+  const docId = useMemo(() => getShareLinkId(), [getShareLinkId]);
+
+  const [docComments, setDocComments] = useState<DocComment[]>(() => {
+    // Use external comments if provided, otherwise load from localStorage
+    if (comments) return comments;
+    try {
+      const stored = localStorage.getItem(COMMENTS_STORAGE_KEY);
+      if (stored) {
+        const all: DocComment[] = JSON.parse(stored);
+        return all.filter((c) => c.documentId === docId).filter((c) => {
+          // Skip comments without valid highlight data
+          const hr = c.highlightRange;
+          if (!hr) return false;
+          // New format: has textOffset + selectedText
+          if (hr.textOffset != null && c.selectedText) return true;
+          // Legacy format: has anchorPath/focusPath
+          return !!(hr.anchorPath && hr.focusPath);
+        });
+      }
+    } catch { /* ignore */ }
+    return [];
+  });
+  const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
+  const [commentTab, setCommentTab] = useState<"for-you" | "all">("all");
+  const [commentFilter, setCommentFilter] = useState<"open" | "resolved" | "rejected" | "all">("open");
+  const [commentPopover, setCommentPopover] = useState<{
+    show: boolean;
+    x: number;
+    y: number;
+    selectedText: string;
+    range: DocComment["highlightRange"] | null;
+  }>({ show: false, x: 0, y: 0, selectedText: "", range: null });
+  const [commentText, setCommentText] = useState("");
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
+  const replyInputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Persist comments to localStorage when they change
+  useEffect(() => {
+    if (onCommentsChange) {
+      onCommentsChange(docComments);
+    } else {
+      try {
+        const stored = localStorage.getItem(COMMENTS_STORAGE_KEY);
+        const all: DocComment[] = stored ? JSON.parse(stored) : [];
+        const others = all.filter((c) => c.documentId !== docId);
+        localStorage.setItem(COMMENTS_STORAGE_KEY, JSON.stringify([...others, ...docComments]));
+      } catch { /* localStorage full */ }
+    }
+  }, [docComments, docId, onCommentsChange]);
+
+  // Build author object from current user
+  const commentAuthor = useMemo<CommentAuthor>(() => {
+    if (!currentUser) return { id: "anonymous", name: "Anonymous" };
+    return {
+      id: currentUser.id || currentUser.email || "user",
+      name: `${currentUser.firstName} ${currentUser.lastName}`.trim() || "User",
+      avatar: currentUser.avatar,
+      role: currentUser.role,
+    };
+  }, [currentUser]);
+
+  // Get XPath-like path from page root to a node
+  const getNodePath = useCallback((root: Node, target: Node): string => {
+    if (target === root) return "";
+    const parts: string[] = [];
+    let node: Node | null = target;
+    while (node && node !== root) {
+      const parent: Node | null = node.parentNode;
+      if (!parent) break;
+      let idx = 0;
+      for (let i = 0; i < parent.childNodes.length; i++) {
+        if (parent.childNodes[i] === node) { idx = i; break; }
+      }
+      parts.unshift(String(idx));
+      node = parent;
+    }
+    return parts.join("/");
+  }, []);
+
+  // Resolve a path back to a node
+  const resolveNodePath = useCallback((root: Node, path: string): Node | null => {
+    if (!path) return null;
+    const parts = path.split("/");
+    let node: Node = root;
+    for (const p of parts) {
+      const idx = parseInt(p, 10);
+      if (isNaN(idx) || !node.childNodes[idx]) return null;
+      node = node.childNodes[idx];
+    }
+    return node;
+  }, []);
+
+  // Add a new comment from the current selection
+  const addComment = useCallback((text: string, mentions: CommentMention[] = []) => {
+    if (!commentPopover.range || !commentPopover.selectedText) return;
+    const id = `comment-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const now = new Date().toISOString();
+    const newComment: DocComment = {
+      id,
+      documentId: docId,
+      author: commentAuthor,
+      selectedText: commentPopover.selectedText,
+      highlightRange: commentPopover.range,
+      tabId: activeTabId,
+      text,
+      mentions,
+      status: "open",
+      replies: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    setDocComments((prev) => [newComment, ...prev]);
+    setCommentPopover({ show: false, x: 0, y: 0, selectedText: "", range: null });
+    setActiveCommentId(id);
+    if (!showComments) setShowComments(true);
+
+    // Send notification to document owner (if commenter is not the owner)
+    addNotification({
+      type: "document_comment",
+      title: "New Comment",
+      message: `${commentAuthor.name} commented on "${value.title?.trim() || "Untitled document"}"`,
+      priority: "normal",
+      avatar: commentAuthor.avatar,
+      userName: commentAuthor.name,
+    });
+
+    // Send mention notifications
+    mentions.forEach((m) => {
+      addNotification({
+        type: "document_comment_mention",
+        title: "You were mentioned",
+        message: `${commentAuthor.name} mentioned you in a comment on "${value.title?.trim() || "Untitled document"}"`,
+        priority: "high",
+        avatar: commentAuthor.avatar,
+        userName: commentAuthor.name,
+        targetUserId: m.userId,
+      });
+    });
+
+    return id;
+  }, [commentPopover, docId, commentAuthor, showComments, addNotification, value.title]);
+
+  // Reply to an existing comment
+  const addReply = useCallback((commentId: string, text: string, mentions: CommentMention[] = []) => {
+    const replyId = `reply-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const reply: CommentReply = {
+      id: replyId,
+      author: commentAuthor,
+      text,
+      mentions,
+      createdAt: new Date().toISOString(),
+    };
+    setDocComments((prev) =>
+      prev.map((c) =>
+        c.id === commentId
+          ? { ...c, replies: [...c.replies, reply], updatedAt: new Date().toISOString() }
+          : c
+      )
+    );
+
+    // Find the comment to get original author
+    const comment = docComments.find((c) => c.id === commentId);
+    if (comment && comment.author.id !== commentAuthor.id) {
+      addNotification({
+        type: "document_comment_reply",
+        title: "Reply to your comment",
+        message: `${commentAuthor.name} replied to your comment on "${value.title?.trim() || "Untitled document"}"`,
+        priority: "normal",
+        avatar: commentAuthor.avatar,
+        userName: commentAuthor.name,
+        targetUserId: comment.author.id,
+      });
+    }
+
+    mentions.forEach((m) => {
+      addNotification({
+        type: "document_comment_mention",
+        title: "You were mentioned",
+        message: `${commentAuthor.name} mentioned you in a reply on "${value.title?.trim() || "Untitled document"}"`,
+        priority: "high",
+        avatar: commentAuthor.avatar,
+        userName: commentAuthor.name,
+        targetUserId: m.userId,
+      });
+    });
+  }, [commentAuthor, docComments, addNotification, value.title]);
+
+  // Resolve a comment
+  const resolveComment = useCallback((commentId: string, message?: string) => {
+    setDocComments((prev) =>
+      prev.map((c) =>
+        c.id === commentId
+          ? {
+              ...c,
+              status: "resolved" as CommentStatus,
+              resolution: { by: commentAuthor, action: "resolved", message, at: new Date().toISOString() },
+              updatedAt: new Date().toISOString(),
+            }
+          : c
+      )
+    );
+    const comment = docComments.find((c) => c.id === commentId);
+    if (comment && comment.author.id !== commentAuthor.id) {
+      addNotification({
+        type: "document_comment_resolved",
+        title: "Comment Resolved",
+        message: `${commentAuthor.name} resolved your comment on "${value.title?.trim() || "Untitled document"}"`,
+        priority: "normal",
+        avatar: commentAuthor.avatar,
+        userName: commentAuthor.name,
+        targetUserId: comment.author.id,
+      });
+    }
+  }, [commentAuthor, docComments, addNotification, value.title]);
+
+  // Reject a comment
+  const rejectComment = useCallback((commentId: string, message?: string) => {
+    setDocComments((prev) =>
+      prev.map((c) =>
+        c.id === commentId
+          ? {
+              ...c,
+              status: "rejected" as CommentStatus,
+              resolution: { by: commentAuthor, action: "rejected", message, at: new Date().toISOString() },
+              updatedAt: new Date().toISOString(),
+            }
+          : c
+      )
+    );
+    const comment = docComments.find((c) => c.id === commentId);
+    if (comment && comment.author.id !== commentAuthor.id) {
+      addNotification({
+        type: "document_comment_rejected",
+        title: "Comment Rejected",
+        message: `${commentAuthor.name} rejected your comment on "${value.title?.trim() || "Untitled document"}"`,
+        priority: "normal",
+        avatar: commentAuthor.avatar,
+        userName: commentAuthor.name,
+        targetUserId: comment.author.id,
+      });
+    }
+  }, [commentAuthor, docComments, addNotification, value.title]);
+
+  // Reopen a resolved/rejected comment
+  const reopenComment = useCallback((commentId: string) => {
+    setDocComments((prev) =>
+      prev.map((c) =>
+        c.id === commentId
+          ? { ...c, status: "open" as CommentStatus, resolution: undefined, updatedAt: new Date().toISOString() }
+          : c
+      )
+    );
+  }, []);
+
+  // Delete a comment
+  const deleteComment = useCallback((commentId: string) => {
+    setDocComments((prev) => prev.filter((c) => c.id !== commentId));
+    if (activeCommentId === commentId) setActiveCommentId(null);
+  }, [activeCommentId]);
+
+  // Handle text selection for adding comments — triggered from toolbar button
+  const handleAddCommentFromSelection = useCallback(() => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.rangeCount) {
+      setToast("Select text to add a comment");
+      return;
+    }
+    const range = sel.getRangeAt(0);
+    const selectedText = sel.toString().trim();
+    if (!selectedText) {
+      setToast("Select text to add a comment");
+      return;
+    }
+
+    // Find which page contains the selection
+    let pageIndex = -1;
+    for (let i = 0; i < pageRefs.current.length; i++) {
+      const pageEl = pageRefs.current[i];
+      if (pageEl && pageEl.contains(range.startContainer)) {
+        pageIndex = i;
+        break;
+      }
+    }
+    if (pageIndex < 0) {
+      setToast("Select text inside the document to comment");
+      return;
+    }
+
+    const pageEl = pageRefs.current[pageIndex]!;
+
+    // Compute character offset of selection start within the page's textContent
+    // Walk all text nodes in document order, sum their lengths until we reach the start container
+    const computeTextOffset = (container: Node, offset: number): number => {
+      const walker = document.createTreeWalker(pageEl, NodeFilter.SHOW_TEXT);
+      let charCount = 0;
+      let current = walker.nextNode();
+      while (current) {
+        if (current === container) {
+          // For text nodes, add the offset within the node
+          return charCount + (container.nodeType === Node.TEXT_NODE ? offset : 0);
+        }
+        charCount += current.textContent?.length || 0;
+        current = walker.nextNode();
+      }
+      // If container is an element, find the text node at the child offset
+      if (container.nodeType !== Node.TEXT_NODE && container.childNodes.length > 0) {
+        const child = container.childNodes[Math.min(offset, container.childNodes.length - 1)];
+        const walker2 = document.createTreeWalker(pageEl, NodeFilter.SHOW_TEXT);
+        let count = 0;
+        let node = walker2.nextNode();
+        while (node) {
+          if (child.contains(node) || child === node) return count;
+          count += node.textContent?.length || 0;
+          node = walker2.nextNode();
+        }
+      }
+      return charCount;
+    };
+
+    const textOffset = computeTextOffset(range.startContainer, range.startOffset);
+
+    // Position popover to the right of the page (in the margin), aligned with the selection vertically
+    const rect = range.getBoundingClientRect();
+    const rootRect = rootRef.current?.getBoundingClientRect() || { left: 0, top: 0 };
+    const pageRect = pageEl.getBoundingClientRect();
+    // Place popover just past the right edge of the page
+    const popoverX = pageRect.right - rootRect.left + 16;
+
+    setCommentPopover({
+      show: true,
+      x: popoverX,
+      y: rect.top - rootRect.top,
+      selectedText,
+      range: {
+        pageIndex,
+        startOffset: range.startOffset,
+        endOffset: range.endOffset,
+        anchorPath: "",
+        focusPath: "",
+        textOffset,
+      },
+    });
+
+  }, []);
+
+  // Navigate to a comment's highlighted text in the document
+  const scrollToComment = useCallback((comment: DocComment) => {
+    const { pageIndex } = comment.highlightRange;
+    const pageEl = pageRefs.current[pageIndex];
+    if (!pageEl) return;
+
+    const selectedText = comment.selectedText || "";
+
+    // Find the highlight span for this comment (if already applied)
+    const highlightSpan = pageEl.querySelector(`span[data-doc-comment-highlight="${comment.id}"]`);
+    if (highlightSpan) {
+      highlightSpan.scrollIntoView({ behavior: "smooth", block: "center" });
+      (highlightSpan as HTMLElement).style.transition = "background-color 0.3s";
+      (highlightSpan as HTMLElement).style.backgroundColor = "rgba(99, 102, 241, 0.3)";
+      setTimeout(() => {
+        (highlightSpan as HTMLElement).style.backgroundColor = "";
+        (highlightSpan as HTMLElement).style.transition = "";
+      }, 1500);
+      return;
+    }
+
+    // Fallback: find the text by offset and scroll to it
+    if (!selectedText) {
+      pageEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
+    // Find the text node containing the selected text using text offset
+    let targetOffset = comment.highlightRange.textOffset;
+    if (targetOffset == null) {
+      const pageText = pageEl.textContent || "";
+      targetOffset = pageText.indexOf(selectedText);
+    }
+    if (targetOffset < 0) {
+      pageEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
+    // Walk text nodes to find the one at this offset
+    const walker = document.createTreeWalker(pageEl, NodeFilter.SHOW_TEXT);
+    let cumulative = 0;
+    let current = walker.nextNode();
+    while (current) {
+      const len = current.textContent?.length || 0;
+      if (cumulative + len > targetOffset) {
+        // This text node contains our target
+        try {
+          const range = document.createRange();
+          range.setStart(current, targetOffset - cumulative);
+          range.collapse(true);
+          const tempSpan = document.createElement("span");
+          tempSpan.setAttribute("data-comment-scroll-target", "true");
+          range.insertNode(tempSpan);
+          tempSpan.scrollIntoView({ behavior: "smooth", block: "center" });
+          tempSpan.parentNode?.removeChild(tempSpan);
+          pageEl.normalize();
+        } catch {
+          pageEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+        return;
+      }
+      cumulative += len;
+      current = walker.nextNode();
+    }
+
+    pageEl.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, []);
+
+  // Comment highlight spans — text-offset based approach
+  // Instead of DOM paths, uses character offset within page textContent to find and wrap text
+  // Resolve the character range for a comment within its page element
+  const resolveCommentRange = useCallback((comment: DocComment): { pageEl: HTMLElement; hlStart: number; hlEnd: number } | null => {
+    const { pageIndex } = comment.highlightRange;
+    const pageEl = pageRefs.current[pageIndex];
+    if (!pageEl) return null;
+
+    const selectedText = comment.selectedText || "";
+    if (!selectedText.trim()) return null;
+
+    let hlStart: number;
+    let hlEnd: number;
+
+    if (comment.highlightRange.textOffset != null) {
+      hlStart = comment.highlightRange.textOffset;
+      hlEnd = hlStart + selectedText.length;
+    } else {
+      const pageText = pageEl.textContent || "";
+      const idx = pageText.indexOf(selectedText);
+      if (idx < 0) return null;
+      hlStart = idx;
+      hlEnd = idx + selectedText.length;
+    }
+
+    // Validate text at offset matches
+    const pageText = pageEl.textContent || "";
+    const actualText = pageText.slice(hlStart, hlEnd);
+    if (actualText !== selectedText) {
+      const searchStart = Math.max(0, hlStart - 50);
+      const searchEnd = Math.min(pageText.length, hlEnd + 50);
+      const searchRegion = pageText.slice(searchStart, searchEnd);
+      const foundIdx = searchRegion.indexOf(selectedText);
+      if (foundIdx < 0) return null;
+      hlStart = searchStart + foundIdx;
+      hlEnd = hlStart + selectedText.length;
+    }
+
+    return { pageEl, hlStart, hlEnd };
+  }, []);
+
+  const applyCommentHighlights = useCallback(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
+    // 1. Remove all existing highlight spans (restore original text nodes)
+    const existingSpans = root.querySelectorAll("span[data-doc-comment-highlight]");
+    existingSpans.forEach((span) => {
+      const parent = span.parentNode;
+      if (!parent) return;
+      while (span.firstChild) parent.insertBefore(span.firstChild, span);
+      parent.removeChild(span);
+      parent.normalize();
+    });
+
+    // Only highlight the active comment — no active comment means no highlights
+    if (!activeCommentId) return;
+
+    const comment = docComments.find((c) => c.id === activeCommentId && c.status === "open");
+    if (!comment) return;
+
+    const resolved = resolveCommentRange(comment);
+    if (!resolved) return;
+    const { pageEl, hlStart, hlEnd } = resolved;
+
+    const ACTIVE_BG = "rgba(99, 102, 241, 0.18)";
+    const ACTIVE_BORDER = "2px solid rgba(99, 102, 241, 0.5)";
+
+    try {
+      // Walk text nodes, track cumulative position, wrap the matching portions
+      const walker = document.createTreeWalker(pageEl, NodeFilter.SHOW_TEXT);
+      const textNodes: { node: Text; nodeStart: number; nodeEnd: number }[] = [];
+      let cumulative = 0;
+      let current = walker.nextNode();
+      while (current) {
+        const len = current.textContent?.length || 0;
+        const nodeStart = cumulative;
+        const nodeEnd = cumulative + len;
+        if (nodeEnd > hlStart && nodeStart < hlEnd) {
+          textNodes.push({ node: current as Text, nodeStart, nodeEnd });
+        }
+        cumulative += len;
+        current = walker.nextNode();
+        if (nodeStart > hlEnd) break;
+      }
+
+      if (textNodes.length === 0) return;
+
+      // Wrap each overlapping text node portion (in reverse to keep offsets valid)
+      for (let i = textNodes.length - 1; i >= 0; i--) {
+        const { node, nodeStart, nodeEnd } = textNodes[i];
+        const parentEl = node.parentNode;
+        if (!parentEl) continue;
+        if ((parentEl as Element).getAttribute?.("data-doc-comment-highlight") === comment.id) continue;
+
+        const sliceStart = Math.max(0, hlStart - nodeStart);
+        const sliceEnd = Math.min(nodeEnd - nodeStart, hlEnd - nodeStart);
+
+        const beforeText = node.textContent?.slice(0, sliceStart) || "";
+        const highlightText = node.textContent?.slice(sliceStart, sliceEnd) || "";
+        const afterText = node.textContent?.slice(sliceEnd) || "";
+
+        if (!highlightText) continue;
+
+        const span = document.createElement("span");
+        span.setAttribute("data-doc-comment-highlight", comment.id);
+        span.style.backgroundColor = ACTIVE_BG;
+        span.style.borderBottom = ACTIVE_BORDER;
+        span.style.borderRadius = "2px";
+        span.style.cursor = "pointer";
+        span.style.transition = "background-color 0.2s, border-color 0.2s";
+        span.title = `Comment by ${comment.author.name}`;
+        span.textContent = highlightText;
+
+        // Click on highlight keeps it active (stopPropagation prevents click-away dismiss)
+        span.addEventListener("click", (e) => {
+          e.stopPropagation();
+        });
+
+        const frag = document.createDocumentFragment();
+        if (beforeText) frag.appendChild(document.createTextNode(beforeText));
+        frag.appendChild(span);
+        if (afterText) frag.appendChild(document.createTextNode(afterText));
+        parentEl.replaceChild(frag, node);
+      }
+    } catch {
+      // Range may not be valid if document content changed
+    }
+  }, [docComments, activeCommentId, resolveCommentRange]);
+
+  // Apply comment highlights when active comment changes
+  useEffect(() => {
+    const timer = setTimeout(applyCommentHighlights, 100);
+    return () => clearTimeout(timer);
+  }, [applyCommentHighlights]);
+
+  // Click-away dismiss: clicking anywhere except highlighted text or its comment card clears the active comment
+  useEffect(() => {
+    if (!activeCommentId) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target) return;
+      // Keep active if clicking on the highlighted text itself
+      if (target.closest("[data-doc-comment-highlight]")) return;
+      // Keep active if clicking anywhere in the comments sidebar panel
+      if (target.closest("[data-doc-comments-panel]")) return;
+      // Keep active if clicking on the comment card in the sidebar
+      if (target.closest("[data-doc-comment-card]")) return;
+      // Keep active if clicking on the floating comment pill
+      if (target.closest("[data-doc-floating-pill]")) return;
+      // Keep active if clicking on the comment popover (creation form)
+      if (target.closest("[data-doc-comment-popover]")) return;
+      // Dismiss
+      setActiveCommentId(null);
+    };
+    // Use capture phase so we detect clicks before stopPropagation in children
+    document.addEventListener("click", handler, true);
+    return () => document.removeEventListener("click", handler, true);
+  }, [activeCommentId]);
+
+  // Detect cursor inside commented text — activate that comment automatically
+  useEffect(() => {
+    const tabOpenComments = docComments.filter((c) => c.status === "open" && (!c.tabId || c.tabId === activeTabId));
+    if (tabOpenComments.length === 0) return;
+
+    const handler = () => {
+      const sel = window.getSelection();
+      if (!sel || !sel.isCollapsed || !sel.rangeCount) return; // Only for caret, not text selection
+      if (commentPopover.show) return; // Don't interfere with comment creation
+
+      const caretNode = sel.anchorNode;
+      if (!caretNode) return;
+
+      // Check if caret is inside the editor
+      const root = rootRef.current;
+      if (!root || !root.contains(caretNode)) return;
+
+      // Find which page the caret is in and compute its character offset
+      let caretPageEl: HTMLElement | null = null;
+      let caretPageIdx = -1;
+      for (let i = 0; i < pageRefs.current.length; i++) {
+        const p = pageRefs.current[i];
+        if (p && p.contains(caretNode)) {
+          caretPageEl = p;
+          caretPageIdx = i;
+          break;
+        }
+      }
+      if (!caretPageEl || caretPageIdx < 0) return;
+
+      // Compute caret's character offset within the page's textContent
+      const walker = document.createTreeWalker(caretPageEl, NodeFilter.SHOW_TEXT);
+      let caretOffset = 0;
+      let current = walker.nextNode();
+      while (current) {
+        if (current === caretNode) {
+          caretOffset += sel.anchorOffset;
+          break;
+        }
+        caretOffset += current.textContent?.length || 0;
+        current = walker.nextNode();
+      }
+
+      // Check if the caret falls inside any comment's text range
+      for (const comment of tabOpenComments) {
+        if (comment.highlightRange.pageIndex !== caretPageIdx) continue;
+        const resolved = resolveCommentRange(comment);
+        if (!resolved) continue;
+        if (caretOffset >= resolved.hlStart && caretOffset <= resolved.hlEnd) {
+          // Caret is inside this comment's text
+          if (activeCommentId !== comment.id) {
+            setActiveCommentId(comment.id);
+          }
+          return;
+        }
+      }
+    };
+
+    document.addEventListener("selectionchange", handler);
+    return () => document.removeEventListener("selectionchange", handler);
+  }, [docComments, activeTabId, commentPopover.show, activeCommentId, resolveCommentRange]);
+
+  // Mock users for @mention autocomplete (reuse share dialog's people list pattern)
+  const mentionableUsers = useMemo(() => [
+    { id: "user-1", name: "Sylvia Thompson", avatar: "https://i.pravatar.cc/300?img=1" },
+    { id: "user-2", name: "Shawn Williams", avatar: "https://i.pravatar.cc/300?img=12" },
+    { id: "user-3", name: "John Smith", avatar: "https://i.pravatar.cc/300?img=15" },
+    { id: "user-4", name: "George Wilson", avatar: "https://i.pravatar.cc/300?img=33" },
+    { id: "user-5", name: "James Brown", avatar: "https://i.pravatar.cc/300?img=17" },
+    { id: "user-6", name: "Teressa Johnson", avatar: "https://i.pravatar.cc/300?img=5" },
+  ], []);
+
+  // Mention hook for the comment creation popover
+  const popoverMention = useMention({
+    users: mentionableUsers,
+    inputRef: commentInputRef,
+    value: commentText,
+    onChange: setCommentText,
+  });
+
+  // Parse @mentions from text
+  const parseMentions = useCallback((text: string): CommentMention[] => {
+    const mentions: CommentMention[] = [];
+    const regex = /@(\w+(?:\s+\w+)?)/g;
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      const name = match[1];
+      const user = mentionableUsers.find((u) => u.name.toLowerCase().includes(name.toLowerCase()));
+      if (user) {
+        mentions.push({ userId: user.id, name: user.name, offset: match.index, length: match[0].length });
+      }
+    }
+    return mentions;
+  }, [mentionableUsers]);
+
+  // Keyboard shortcut: Ctrl+Alt+M to add comment
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.altKey && e.key === "m") {
+        e.preventDefault();
+        handleAddCommentFromSelection();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [handleAddCommentFromSelection]);
+
+  // Floating margin bubble — appears when text is selected inside the editor
+  const [marginBubble, setMarginBubble] = useState<{ show: boolean; x: number; y: number }>({ show: false, x: 0, y: 0 });
+  useEffect(() => {
+    const handler = () => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || !sel.rangeCount || commentPopover.show) {
+        setMarginBubble({ show: false, x: 0, y: 0 });
+        return;
+      }
+      // Check if selection is inside the editor
+      const range = sel.getRangeAt(0);
+      const root = rootRef.current;
+      if (!root || !root.contains(range.startContainer)) {
+        setMarginBubble({ show: false, x: 0, y: 0 });
+        return;
+      }
+      const rect = range.getBoundingClientRect();
+      const rootRect = root.getBoundingClientRect();
+      // Position bubble in the right margin
+      setMarginBubble({
+        show: true,
+        x: Math.min(rootRect.right - rootRect.left - 40, rootRect.width - 48),
+        y: rect.top - rootRect.top + rect.height / 2 - 16,
+      });
+    };
+    document.addEventListener("selectionchange", handler);
+    return () => document.removeEventListener("selectionchange", handler);
+  }, [commentPopover.show]);
+
+  // Filter comments for display
+  const openComments = useMemo(() => docComments.filter((c) => c.status === "open" && (!c.tabId || c.tabId === activeTabId)), [docComments, activeTabId]);
+  // Open comments sorted by text position (top of document first)
+  const sortedOpenComments = useMemo(() => {
+    return [...openComments].sort((a, b) => {
+      if (a.highlightRange.pageIndex !== b.highlightRange.pageIndex) return a.highlightRange.pageIndex - b.highlightRange.pageIndex;
+      return (a.highlightRange.textOffset ?? Infinity) - (b.highlightRange.textOffset ?? Infinity);
+    });
+  }, [openComments]);
+  const resolvedComments = useMemo(() => docComments.filter((c) => (c.status === "resolved" || c.status === "rejected") && (!c.tabId || c.tabId === activeTabId)), [docComments, activeTabId]);
+
+  // Default: show floating comments if unresolved comments exist (Mode A)
+  const hasAutoOpened = useRef(false);
+  useEffect(() => {
+    if (hasAutoOpened.current || floatingCommentsDismissed) return;
+    if (openComments.length > 0) {
+      setShowFloatingComments(true);
+      hasAutoOpened.current = true;
+    }
+  }, [openComments, floatingCommentsDismissed]);
+
+  // Mutual exclusivity: sidebar open → hide floating; sidebar close → show floating (if comments exist)
+  useEffect(() => {
+    if (showComments) {
+      setShowFloatingComments(false);
+    } else if (openComments.length > 0 && !floatingCommentsDismissed) {
+      setShowFloatingComments(true);
+    }
+  }, [showComments, openComments.length, floatingCommentsDismissed]);
+
+  // Compute floating pill positions — vertical offset relative to the editor root
+  const [floatingPillPositions, setFloatingPillPositions] = useState<Record<string, number>>({});
+  useEffect(() => {
+    if (!showFloatingComments || showComments) { setFloatingPillPositions({}); return; }
+    const timer = setTimeout(() => {
+      const root = rootRef.current;
+      if (!root) return;
+      const rootRect = root.getBoundingClientRect();
+      const positions: Record<string, number> = {};
+      for (const comment of openComments) {
+        const highlightSpan = root.querySelector(`span[data-doc-comment-highlight="${comment.id}"]`);
+        if (highlightSpan) {
+          const markRect = highlightSpan.getBoundingClientRect();
+          positions[comment.id] = markRect.top - rootRect.top + markRect.height / 2 - 16;
+        }
+      }
+      setFloatingPillPositions(positions);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [showFloatingComments, showComments, openComments, applyCommentHighlights]);
+
+  const sidebarFeedRef = useRef<HTMLDivElement>(null);
+
+  // "For you" filter: comments where current user is mentioned or authored
+  const forYouComments = useMemo(() => {
+    const userId = commentAuthor.id;
+    return docComments.filter((c) => {
+      if (c.tabId && c.tabId !== activeTabId) return false;
+      if (c.author.id === userId) return true;
+      if (c.mentions.some((m) => m.userId === userId)) return true;
+      if (c.replies.some((r) => r.mentions.some((m) => m.userId === userId))) return true;
+      return false;
+    });
+  }, [docComments, commentAuthor.id, activeTabId]);
+
+  // Final filtered list based on tab + filter + active tab
+  const filteredComments = useMemo(() => {
+    let base = commentTab === "for-you" ? forYouComments : docComments;
+    // Filter to current tab (comments without tabId show everywhere for backwards compat)
+    base = base.filter((c) => !c.tabId || c.tabId === activeTabId);
+    if (commentFilter === "open") base = base.filter((c) => c.status === "open");
+    else if (commentFilter === "resolved") base = base.filter((c) => c.status === "resolved");
+    else if (commentFilter === "rejected") base = base.filter((c) => c.status === "rejected");
+    return base;
+  }, [commentTab, commentFilter, docComments, forYouComments, activeTabId]);
+
+  // Sort comments by their text position in the document (top to bottom)
+  const sortedFilteredComments = useMemo(() => {
+    return [...filteredComments].sort((a, b) => {
+      const aOffset = a.highlightRange.textOffset ?? Infinity;
+      const bOffset = b.highlightRange.textOffset ?? Infinity;
+      // First sort by page, then by text offset within the page
+      if (a.highlightRange.pageIndex !== b.highlightRange.pageIndex) {
+        return a.highlightRange.pageIndex - b.highlightRange.pageIndex;
+      }
+      return aOffset - bOffset;
+    });
+  }, [filteredComments]);
 
   const canEdit = !readOnly && docMode !== "viewing";
 
@@ -1373,6 +2260,20 @@ export default function DocEditor({
     setOpenSubmenu(null);
     setLanguageQuery("");
   }, [openMenu]);
+
+  // F11 → toggle fullscreen, Escape → exit fullscreen
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "F11") {
+        e.preventDefault();
+        setIsFullscreen((v) => !v);
+      } else if (e.key === "Escape" && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isFullscreen]);
 
   useEffect(() => {
     return () => {
@@ -1664,6 +2565,7 @@ export default function DocEditor({
       return updated;
     });
     setActiveTabId(tabId);
+    setActiveCommentId(null);
   }, [activeTabId, loadTabContent]);
 
   const handleDeleteTab = useCallback((tabId: string) => {
@@ -3195,20 +4097,8 @@ export default function DocEditor({
           className,
         ].join(" ")}
       >
-      {isFullscreen && (
-        <div className="absolute top-3 right-3 z-[220]">
-          <Tooltip content="Exit full screen (Esc)" delay={400}>
-          <button
-            type="button"
-            onClick={() => setIsFullscreen(false)}
-            className="px-3 py-2 rounded-xl text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-900/90 backdrop-blur hover:bg-white dark:hover:bg-gray-900 transition-colors cursor-pointer"
-            aria-label="Exit full screen"
-          >
-            Exit full screen <span className="text-gray-400 dark:text-gray-500">(Esc)</span>
-          </button>
-          </Tooltip>
-        </div>
-      )}
+      {/* Fullscreen floating haptic-style pill menu — appears when cursor nears top */}
+      {isFullscreen && <FullscreenFloatingPill onExitFullscreen={() => setIsFullscreen(false)} zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} />}
 
       {/* ── Table Editor Panel (React-controlled, renders outside contentEditable) ── */}
       {tableWidgetEditor && tablePanelPos && (
@@ -4210,13 +5100,36 @@ export default function DocEditor({
               </Tooltip>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setDialog("share")}
-            className="ml-auto px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-[12px] sm:text-[13px] font-semibold text-white bg-[#1a73e8] hover:bg-[#1765cc] shadow-sm transition-colors cursor-pointer"
-          >
-            Share
-          </button>
+          {/* Top-right comment icon — opens/closes comments panel */}
+          <div className="ml-auto flex items-center gap-2">
+            <Tooltip content={showComments ? "Close comments" : "Open comments"} delay={400}>
+              <button
+                type="button"
+                onClick={() => { setShowComments((v) => !v); setSidebarManuallyDismissed(false); }}
+                className={[
+                  "relative p-1.5 sm:p-2 rounded-full transition-all duration-200 cursor-pointer",
+                  showComments
+                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                    : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800",
+                ].join(" ")}
+                aria-label="Toggle comments panel"
+              >
+                <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                {openComments.length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-blue-500 text-white text-[9px] font-bold px-1 shadow-sm">
+                    {openComments.length}
+                  </span>
+                )}
+              </button>
+            </Tooltip>
+            <button
+              type="button"
+              onClick={() => setDialog("share")}
+              className="px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-[12px] sm:text-[13px] font-semibold text-white bg-[#1a73e8] hover:bg-[#1765cc] shadow-sm transition-colors cursor-pointer"
+            >
+              Share
+            </button>
+          </div>
         </div>
 
         {/* Menubar */}
@@ -4423,34 +5336,39 @@ export default function DocEditor({
             onOpen={(id) => setOpenMenu(id)}
             onClose={() => setOpenMenu(null)}
           >
-            <MenuPanel>
-            <MenuItem
+            <ViewMenuPanel>
+            {/* ── Mode submenu ── */}
+            <ViewMenuItem
               label="Mode"
               hasSubmenu
               onHover={() => setOpenSubmenu("view-mode")}
               onClick={() => setOpenSubmenu((prev) => (prev === "view-mode" ? null : "view-mode"))}
               onLeave={() => setOpenSubmenu(null)}
               isSubmenuOpen={openSubmenu === "view-mode"}
+              activeMode={docMode}
               submenu={
                 <SubmenuPanel className="w-[220px]">
-                  <MenuItem
+                  <ViewMenuItem
                     label="Editing"
+                    description="Edit the document directly"
                     isChecked={docMode === "editing"}
                     onClick={() => {
                       setDocMode("editing");
                       showToast("Mode: Editing");
                     }}
                   />
-                  <MenuItem
+                  <ViewMenuItem
                     label="Suggesting"
+                    description="Edits become suggestions"
                     isChecked={docMode === "suggesting"}
                     onClick={() => {
                       setDocMode("suggesting");
                       showToast("Mode: Suggesting");
                     }}
                   />
-                  <MenuItem
+                  <ViewMenuItem
                     label="Viewing"
+                    description="Read or print the final document"
                     isChecked={docMode === "viewing"}
                     onClick={() => {
                       setDocMode("viewing");
@@ -4460,45 +5378,91 @@ export default function DocEditor({
                 </SubmenuPanel>
               }
             />
-            <MenuItem label="Comments" icon={MessageSquare} isChecked={showComments} onClick={() => setShowComments((v) => !v)} />
-            <MenuItem
-              label="Collapse tabs and outlines sidebar"
-              shortcut="Ctrl+Alt+A Ctrl+Alt+H"
-              isChecked={isSidebarCollapsed}
-              onClick={() => {
-                setIsSidebarCollapsed((v) => {
-                  const next = !v;
-                  showToast(next ? "Sidebar collapsed" : "Sidebar expanded");
-                  return next;
-                });
-              }}
+            <ViewMenuDivider />
+            {/* ── Layout toggles ── */}
+            <ViewMenuToggle
+              label="Print layout"
+              description="Page breaks, margins, headers/footers"
+              isOn={showPrintLayout}
+              onToggle={() => setSectionInfos((prev) => prev.map(s => ({ ...s, pageSetup: { ...s.pageSetup, pageless: !s.pageSetup.pageless } })))}
             />
-            <MenuDivider />
-            <MenuItem
-              label="Show print layout"
-              isChecked={showPrintLayout}
-              onClick={() => setSectionInfos((prev) => prev.map(s => ({ ...s, pageSetup: { ...s.pageSetup, pageless: !s.pageSetup.pageless } })))}
+            <ViewMenuToggle
+              label="Pageless"
+              description="Continuous scroll, wide content"
+              isOn={!showPrintLayout}
+              onToggle={() => setSectionInfos((prev) => prev.map(s => ({ ...s, pageSetup: { ...s.pageSetup, pageless: !s.pageSetup.pageless } })))}
             />
-            <MenuItem
+            <ViewMenuDivider />
+            {/* ── Show toggles ── */}
+            <ViewMenuToggle
               label="Show ruler"
-              isChecked={showRuler}
-              onClick={() => setShowRuler((v) => !v)}
+              isOn={showRuler}
+              onToggle={() => setShowRuler((v) => !v)}
             />
-            <MenuItem label="Show equation toolbar" isChecked={showEquationToolbar} onClick={() => setShowEquationToolbar((v) => !v)} />
-            <MenuItem
+            <ViewMenuToggle
+              label="Show equation toolbar"
+              isOn={showEquationToolbar}
+              onToggle={() => setShowEquationToolbar((v) => !v)}
+            />
+            <ViewMenuToggle
               label="Show non-printing characters"
               shortcut="Ctrl+Shift+P"
-              isChecked={showNonPrinting}
-              onClick={() => setShowNonPrinting((v) => !v)}
+              isOn={showNonPrinting}
+              onToggle={() => setShowNonPrinting((v) => !v)}
             />
-            <MenuDivider />
-            <MenuItem
+            <ViewMenuToggle
+              label="Show outline"
+              isOn={showOutline}
+              onToggle={() => {
+                setShowOutline((v) => !v);
+                if (isSidebarCollapsed) setIsSidebarCollapsed(false);
+              }}
+            />
+            <ViewMenuToggle
+              label="Show comments"
+              isOn={showComments}
+              onToggle={() => { setShowComments((v) => !v); setSidebarManuallyDismissed(false); }}
+            />
+            <ViewMenuDivider />
+            {/* ── Proofing toggles ── */}
+            <ViewMenuToggle
+              label="Show spelling suggestions"
+              isOn={showSpellingSuggestions}
+              onToggle={() => setShowSpellingSuggestions((v) => !v)}
+            />
+            <ViewMenuToggle
+              label="Show grammar suggestions"
+              isOn={showGrammarSuggestions}
+              onToggle={() => setShowGrammarSuggestions((v) => !v)}
+            />
+            <ViewMenuDivider />
+            {/* ── Full screen ── */}
+            <ViewMenuItem
               label="Full screen"
-              icon={Eye}
-              isChecked={isFullscreen}
+              icon={isFullscreen ? Minimize2 : Maximize2}
+              shortcut="F11"
               onClick={() => setIsFullscreen((v) => !v)}
             />
-            </MenuPanel>
+            {/* ── Zoom submenu ── */}
+            <ViewMenuItem
+              label="Zoom"
+              icon={ZoomIn}
+              hasSubmenu
+              onHover={() => setOpenSubmenu("view-zoom")}
+              onClick={() => setOpenSubmenu((prev) => (prev === "view-zoom" ? null : "view-zoom"))}
+              onLeave={() => setOpenSubmenu(null)}
+              isSubmenuOpen={openSubmenu === "view-zoom"}
+              submenu={
+                <SubmenuPanel className="w-[180px]">
+                  <ViewMenuItem label="Fit" isChecked={zoomLevel === 100} onClick={() => { setZoomLevel(100); showToast("Zoom: Fit"); }} />
+                  <ViewMenuDivider />
+                  {[50, 75, 100, 125, 150, 200].map((z) => (
+                    <ViewMenuItem key={z} label={`${z}%`} isChecked={z === zoomLevel} onClick={() => { setZoomLevel(z); showToast(`Zoom: ${z}%`); }} />
+                  ))}
+                </SubmenuPanel>
+              }
+            />
+            </ViewMenuPanel>
           </MenuRoot>
 
         {/* Insert menu */}
@@ -5198,7 +6162,7 @@ export default function DocEditor({
           <ToolbarButton disabled={!canEdit} onClick={() => { const url = window.prompt("Enter URL"); if (!url) return; handleCommand("createLink", url); }} title="Insert link (Ctrl+K)" Icon={Link2} />
 
           {/* Add comment */}
-          <ToolbarButton disabled={false} onClick={() => showToast("Select text to add a comment")} title="Add comment (Ctrl+Alt+M)" Icon={MessageSquarePlus} />
+          <ToolbarButton disabled={false} onClick={handleAddCommentFromSelection} title="Add comment (Ctrl+Alt+M)" Icon={MessageSquarePlus} />
 
           {/* Insert image */}
           <ToolbarButton disabled={!canEdit} onClick={() => imageInputRef.current?.click()} title="Insert image" Icon={ImageIcon} />
@@ -5485,9 +6449,9 @@ export default function DocEditor({
                   </div>
                 ))}
               </div>
-              {/* Outline: only shown when document has headings */}
-              {sidebarHeadings.length > 0 && (
-                <div className="border-t border-gray-100 dark:border-gray-700 pt-3 mt-1">
+              {/* Outline: shown when document has headings AND showOutline is enabled */}
+              {showOutline && sidebarHeadings.length > 0 && (
+                <div data-doc-outline-panel className="border-t border-gray-100 dark:border-gray-700 pt-3 mt-1">
                   <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1">Outline</span>
                   <div className="mt-2 space-y-0.5">
                     {sidebarHeadings.map((h, i) => (
@@ -5513,11 +6477,15 @@ export default function DocEditor({
           </>
         )}
 
-        {/* Page surface */}
-        <div className={`flex-1 min-h-0 overflow-auto ${isFullscreen ? "px-0 pb-0" : "px-1 sm:px-2 md:px-4 pb-2 sm:pb-4"}`}>
+        {/* Page surface — shifts left when comments sidebar is open */}
+        <div className={[
+          "flex-1 min-h-0 overflow-auto transition-[margin] duration-300 ease-in-out",
+          isFullscreen ? "px-0 pb-0" : "px-1 sm:px-2 md:px-4 pb-2 sm:pb-4",
+          !isFullscreen && showComments ? "mr-[356px] max-md:mr-0" : "",
+        ].join(" ")}>
           {!isFullscreen && showEquationToolbar && (
-            <div className="mx-auto w-full max-w-[860px] mb-2 px-2">
-              <div className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-gray-900/60 midnight:bg-[#0b1220] purple:bg-[#170a27]">
+            <div data-doc-equation-toolbar className="mx-auto w-full max-w-[860px] mb-2 px-2">
+              <div className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-gray-900/60 midnight:bg-[#0b1220] purple:bg-[#170a27] backdrop-blur-sm">
                 <Sigma className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <input
                   placeholder="Insert equation (LaTeX/plain)…"
@@ -5537,7 +6505,7 @@ export default function DocEditor({
             </div>
           )}
           {!isFullscreen && showRuler && (
-            <div className="mx-auto w-full mb-1 mt-1" style={{ maxWidth: pageWidthPx }}>
+            <div data-doc-ruler-container className="mx-auto w-full mb-1 mt-1" style={{ maxWidth: pageWidthPx }}>
               <div className="h-7 rounded-sm border border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white dark:bg-gray-900/60 midnight:bg-[#0b1220] purple:bg-[#170a27] relative overflow-hidden select-none">
                 {/* Ruler tick marks */}
                 <svg className="w-full h-full" preserveAspectRatio="none" viewBox={`0 0 ${pageWidthPx} 28`}>
@@ -5645,8 +6613,8 @@ export default function DocEditor({
                               suppressContentEditableWarning
                               ref={(el) => {
                                 pageRefs.current[globalIdx] = el;
-                                // Skip innerHTML reset if find/replace highlights are active (they modify the DOM temporarily)
-                                if (el && !el.querySelector("mark[data-doc-find-highlight]") && el.innerHTML !== html) el.innerHTML = html;
+                                // Skip innerHTML reset if find/replace or comment highlights are active (they modify the DOM temporarily)
+                                if (el && !el.querySelector("mark[data-doc-find-highlight]") && !el.querySelector("span[data-doc-comment-highlight]") && el.innerHTML !== html) el.innerHTML = html;
                               }}
                               className={[
                                 "outline-none overflow-hidden relative",
@@ -5671,7 +6639,7 @@ export default function DocEditor({
                               data-placeholder={placeholder}
                               lang={language}
                               dir={getTextDirectionForLanguage(language)}
-                              spellCheck
+                              spellCheck={showSpellingSuggestions}
                               onInput={emitChange}
                               onBlur={emitChange}
                               onFocus={() => setActiveSectionIdx(sIdx)}
@@ -5729,7 +6697,7 @@ export default function DocEditor({
                   ref={(el) => {
                     pageRefs.current[0] = el;
                     // Skip innerHTML reset if find/replace highlights are active (they modify the DOM temporarily)
-                    if (el && !el.querySelector("mark[data-doc-find-highlight]") && el.innerHTML !== (pages[0] || "")) el.innerHTML = pages[0] || "";
+                    if (el && !el.querySelector("mark[data-doc-find-highlight]") && !el.querySelector("span[data-doc-comment-highlight]") && el.innerHTML !== (pages[0] || "")) el.innerHTML = pages[0] || "";
                   }}
                   className={[
                     "min-h-[520px] outline-none overflow-hidden relative",
@@ -5747,9 +6715,15 @@ export default function DocEditor({
                   data-placeholder={placeholder}
                   lang={language}
                   dir={getTextDirectionForLanguage(language)}
-                  spellCheck
+                  spellCheck={showSpellingSuggestions}
                   onInput={emitChange}
                   onBlur={emitChange}
+                  onClick={(e) => {
+                    const target = e.target as HTMLElement;
+                    if (!target.closest("[data-doc-comment-highlight]")) {
+                      setActiveCommentId(null);
+                    }
+                  }}
                 />
               </div>
             )}
@@ -5819,16 +6793,400 @@ export default function DocEditor({
             `}</style>
           </div>
         </div>
+
+      {/* ── Mode A: Floating individual comment cards in the right margin ── */}
+      {!isFullscreen && showFloatingComments && !showComments && openComments.length > 0 && (
+        <div
+          data-doc-floating-comments
+          className="flex-shrink-0 w-[280px] max-md:hidden overflow-y-auto"
+        >
+          <div className="p-3 space-y-3">
+            {/* Header with dismiss */}
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Comments ({openComments.length})
+              </span>
+              <Tooltip content="Dismiss all" delay={300}>
+                <button
+                  type="button"
+                  onClick={() => { setShowFloatingComments(false); setFloatingCommentsDismissed(true); }}
+                  className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                  aria-label="Dismiss all floating comments"
+                >
+                  <X className="w-3.5 h-3.5 text-gray-400" />
+                </button>
+              </Tooltip>
+            </div>
+            {/* Comment cards — sorted by text position */}
+            {sortedOpenComments.map((comment) => (
+              <FloatingCommentPill
+                key={comment.id}
+                comment={comment}
+                isActive={activeCommentId === comment.id}
+                onSelect={() => setActiveCommentId((prev) => prev === comment.id ? null : comment.id)}
+                onScrollTo={() => setTimeout(() => scrollToComment(comment), 200)}
+                onReply={(text) => addReply(comment.id, text, parseMentions(text))}
+                onResolve={(msg) => resolveComment(comment.id, msg)}
+                onReject={(msg) => rejectComment(comment.id, msg)}
+                onReopen={() => reopenComment(comment.id)}
+                onDelete={() => deleteComment(comment.id)}
+                onOpenSidebar={() => { setShowComments(true); setSidebarManuallyDismissed(false); setActiveCommentId(comment.id); }}
+                isOwner={commentAuthor.id === comment.author.id || commentAuthor.role === "admin"}
+                mentionableUsers={mentionableUsers}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Collapsed floating comments pill — appears after user dismisses floating view ── */}
+      {!isFullscreen && !showFloatingComments && !showComments && floatingCommentsDismissed && openComments.length > 0 && (
+        <div className="flex-shrink-0 max-md:hidden flex items-start pt-4 pr-3">
+          <Tooltip content="Show comments" delay={300}>
+            <button
+              type="button"
+              onClick={() => { setFloatingCommentsDismissed(false); setShowFloatingComments(true); }}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-800/40 transition-colors cursor-pointer shadow-sm border border-blue-200/50 dark:border-blue-700/50"
+              aria-label="Show floating comments"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-semibold">{openComments.length}</span>
+            </button>
+          </Tooltip>
+        </div>
+      )}
+
+      {/* Comments sidebar panel — docked right, aligned with page surface */}
+      {!isFullscreen && showComments && (
+        <div
+          data-doc-comments-panel
+          className="absolute right-0 top-0 bottom-0 z-[150] w-[340px] max-md:hidden border-l border-gray-200/80 dark:border-gray-700/80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-[-4px_0_24px_-4px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden"
+        >
+          {/* Header with tabs */}
+          <div className="border-b border-gray-100 dark:border-gray-800">
+            <div className="flex items-center justify-between px-3 pt-2.5 pb-0">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="w-4 h-4 text-blue-500" />
+                <span className="text-[13px] font-bold text-gray-700 dark:text-gray-200">Comments</span>
+                {openComments.length > 0 && (
+                  <span className="text-[10px] font-semibold bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 px-1.5 py-0.5 rounded-full">
+                    {openComments.length}
+                  </span>
+                )}
+              </div>
+              <Tooltip content="Close comments" delay={200}>
+                <button
+                  type="button"
+                  onClick={() => { setShowComments(false); setSidebarManuallyDismissed(true); }}
+                  className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                  aria-label="Close comments panel"
+                >
+                  <PanelRightClose className="w-3.5 h-3.5 text-gray-500" />
+                </button>
+              </Tooltip>
+            </div>
+            {/* "For you" / "All comments" tabs */}
+            <div className="flex px-3 mt-2" role="tablist">
+              {(["for-you", "all"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  role="tab"
+                  aria-selected={commentTab === tab}
+                  onClick={() => setCommentTab(tab)}
+                  className={[
+                    "flex-1 text-center text-[12px] font-medium pb-2 border-b-2 transition-all duration-200 cursor-pointer",
+                    commentTab === tab
+                      ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                      : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300",
+                  ].join(" ")}
+                >
+                  {tab === "for-you" ? "For you" : "All comments"}
+                  {tab === "for-you" && forYouComments.filter((c) => c.status === "open").length > 0 && (
+                    <span className="ml-1 text-[9px] bg-blue-500 text-white px-1 py-0.5 rounded-full">
+                      {forYouComments.filter((c) => c.status === "open").length}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Filter controls */}
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-50 dark:border-gray-800/50">
+            <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800/60 rounded-lg p-0.5">
+              {(["open", "resolved", "rejected", "all"] as const).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setCommentFilter(f)}
+                  className={[
+                    "px-2 py-1 text-[10px] font-medium rounded-md transition-all duration-150 cursor-pointer",
+                    commentFilter === f
+                      ? "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300",
+                  ].join(" ")}
+                >
+                  {f === "open" ? "Open" : f === "resolved" ? "Resolved" : f === "rejected" ? "Rejected" : "All"}
+                </button>
+              ))}
+            </div>
+            {commentFilter !== "open" && (
+              <button
+                type="button"
+                onClick={() => setCommentFilter("open")}
+                className="text-[10px] text-blue-500 hover:text-blue-600 cursor-pointer"
+              >
+                Reset filter
+              </button>
+            )}
+          </div>
+
+          {/* Comment feed — cards sorted by text position in the document */}
+          <div ref={sidebarFeedRef} className="flex-1 overflow-y-auto p-2 space-y-2">
+            {filteredComments.length === 0 ? (
+              <div className="text-center py-8 px-4">
+                <MessageCircle className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+                {commentTab === "for-you" ? (
+                  <>
+                    <p className="text-[12px] text-gray-500 dark:text-gray-400 font-medium">&ldquo;For you&rdquo; will list comments that need your attention.</p>
+                    <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">Start a discussion by selecting text and adding a comment.</p>
+                  </>
+                ) : commentFilter !== "open" ? (
+                  <>
+                    <p className="text-[12px] text-gray-500 dark:text-gray-400 font-medium">No matching results</p>
+                    <button
+                      type="button"
+                      onClick={() => setCommentFilter("open")}
+                      className="mt-2 text-[11px] text-blue-500 hover:text-blue-600 cursor-pointer"
+                    >
+                      Reset filter
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-[12px] text-gray-500 dark:text-gray-400 font-medium">No comments yet</p>
+                    <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">Select text and click the comment button to add one</p>
+                  </>
+                )}
+              </div>
+            ) : (
+              sortedFilteredComments.map((comment) => (
+                <CommentCard
+                  key={comment.id}
+                  comment={comment}
+                  isActive={activeCommentId === comment.id}
+                  onSelect={() => { setActiveCommentId(comment.id); setTimeout(() => scrollToComment(comment), 200); }}
+                  onReply={(text) => addReply(comment.id, text, parseMentions(text))}
+                  onResolve={(msg) => resolveComment(comment.id, msg)}
+                  onReject={(msg) => rejectComment(comment.id, msg)}
+                  onReopen={() => reopenComment(comment.id)}
+                  onDelete={() => deleteComment(comment.id)}
+                  isOwner={commentAuthor.id === comment.author.id || commentAuthor.role === "admin"}
+                  currentAuthor={commentAuthor}
+                  mentionableUsers={mentionableUsers}
+                  filterFade={commentFilter === "open"}
+                />
+              ))
+            )}
+          </div>
+
+          {/* Add comment button at bottom of panel */}
+          <div className="border-t border-gray-100 dark:border-gray-800 px-3 py-2.5">
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={handleAddCommentFromSelection}
+              className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[12px] font-semibold text-white bg-blue-500 hover:bg-blue-600 shadow-sm transition-all duration-200 cursor-pointer hover:shadow-md active:scale-[0.98]"
+            >
+              <MessageSquarePlus className="w-3.5 h-3.5" />
+              Add comment
+            </button>
+          </div>
+        </div>
+      )}
+
       </div>
 
-      {/* Comments panel (simple) */}
-      {!isFullscreen && showComments && (
-        <div className="absolute right-3 top-[92px] z-[150] w-[260px] rounded-2xl border border-gray-200/80 dark:border-gray-700/80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-xl p-3">
-          <div className="text-[12px] font-bold text-gray-700 dark:text-gray-200 mb-1">
-            Comments
+      {/* Floating margin bubble — chat icon that appears when text is selected */}
+      {marginBubble.show && !commentPopover.show && (
+        <div
+          data-doc-margin-bubble
+          className="absolute z-[180] transition-all duration-200"
+          style={{ left: marginBubble.x, top: marginBubble.y }}
+        >
+          <Tooltip content="Add comment" delay={200}>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={handleAddCommentFromSelection}
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95"
+              aria-label="Add comment to selection"
+            >
+              <MessageSquarePlus className="w-4 h-4" />
+            </button>
+          </Tooltip>
+        </div>
+      )}
+
+      {/* Comment creation popover — appears near selected text */}
+      {commentPopover.show && (() => {
+        const rootRect = rootRef.current?.getBoundingClientRect() || { left: 0, top: 0, right: 800 };
+        const popoverHeight = 220;
+        const viewportH = typeof window !== "undefined" ? window.innerHeight : 900;
+        const absTop = commentPopover.y;
+        const screenTop = rootRect.top + absTop;
+        // If popover would overflow viewport bottom, flip it upward
+        const clampedTop = screenTop + popoverHeight > viewportH - 16
+          ? Math.max(0, absTop - popoverHeight)
+          : absTop;
+        const clampedLeft = Math.min(commentPopover.x, (rootRef.current?.clientWidth || 800) - 320);
+        return (
+        <div
+          data-doc-comment-popover
+          className="absolute z-[200] w-[300px] rounded-2xl border border-gray-200/80 dark:border-gray-700/80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl"
+          style={{ left: clampedLeft, top: clampedTop }}
+        >
+          <div className="p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <CommentAvatar author={commentAuthor} size={28} />
+              <span className="text-[12px] font-semibold text-gray-700 dark:text-gray-200">{commentAuthor.name}</span>
+            </div>
+            <div className="text-[11px] text-gray-400 dark:text-gray-500 mb-2 px-1 py-0.5 bg-yellow-50/60 dark:bg-yellow-900/20 rounded border-l-2 border-yellow-400 dark:border-yellow-600 line-clamp-2">
+              &ldquo;{commentPopover.selectedText}&rdquo;
+            </div>
+            <div className="relative">
+              <textarea
+                ref={commentInputRef}
+                autoFocus
+                value={commentText}
+                placeholder="Add a comment... (use @ to mention)"
+                className="w-full text-[12px] text-gray-700 dark:text-gray-200 bg-gray-50/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 resize-none outline-none focus:ring-2 focus:ring-blue-400/40 placeholder-gray-400 dark:placeholder-gray-500"
+                rows={3}
+                onKeyDown={(e) => {
+                  popoverMention.handleKeyDown(e);
+                  if (!popoverMention.active && e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    const text = commentText.trim();
+                    if (text) {
+                      addComment(text, parseMentions(text));
+                      setCommentText("");
+                    }
+                  }
+                  if (e.key === "Escape" && !popoverMention.active) {
+                    setCommentPopover({ show: false, x: 0, y: 0, selectedText: "", range: null });
+                    setCommentText("");
+                  }
+                }}
+                onChange={(e) => popoverMention.handleChange(e.target.value)}
+              />
+              {popoverMention.active && (
+                <MentionPopover
+                  users={popoverMention.filtered}
+                  highlightIdx={popoverMention.highlightIdx}
+                  onSelect={(u) => popoverMention.insertMention(u)}
+                />
+              )}
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <button
+                type="button"
+                onClick={() => { setCommentPopover({ show: false, x: 0, y: 0, selectedText: "", range: null }); setCommentText(""); }}
+                className="text-[11px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const text = commentText.trim();
+                  if (text) { addComment(text, parseMentions(text)); setCommentText(""); }
+                }}
+                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-white bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded-lg transition-colors cursor-pointer shadow-sm"
+              >
+                <Send className="w-3 h-3" />
+                Comment
+              </button>
+            </div>
           </div>
-          <div className="text-[12px] text-gray-500 dark:text-gray-400">
-            Comments UI is ready to wire to your backend (threads, mentions, permissions).
+        </div>
+        );
+      })()}
+
+      {/* Mobile comments bottom sheet — shown on <768px when comments or floating pills are active */}
+      {!isFullscreen && (showComments || (showFloatingComments && openComments.length > 0)) && (
+        <div
+          data-doc-comments-mobile-sheet
+          className="md:hidden fixed inset-x-0 bottom-0 z-[200] max-h-[70vh] rounded-t-2xl border-t border-gray-200/80 dark:border-gray-700/80 bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl shadow-[0_-8px_32px_-4px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden"
+        >
+          {/* Drag handle */}
+          <div className="flex justify-center pt-2 pb-1">
+            <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+          </div>
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 pb-2">
+            <div className="flex items-center gap-2">
+              <MessageCircle className="w-4 h-4 text-blue-500" />
+              <span className="text-[13px] font-bold text-gray-700 dark:text-gray-200">Comments</span>
+              {openComments.length > 0 && (
+                <span className="text-[10px] font-semibold bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 px-1.5 py-0.5 rounded-full">
+                  {openComments.length}
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => { setShowComments(false); setSidebarManuallyDismissed(true); }}
+              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              aria-label="Close comments"
+            >
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
+          </div>
+          {/* Filter pills */}
+          <div className="flex items-center gap-2 px-4 pb-2 overflow-x-auto">
+            {(["open", "resolved", "rejected", "all"] as const).map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setCommentFilter(f)}
+                className={[
+                  "px-3 py-1 text-[11px] font-medium rounded-full transition-all duration-150 cursor-pointer whitespace-nowrap",
+                  commentFilter === f
+                    ? "bg-blue-500 text-white shadow-sm"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400",
+                ].join(" ")}
+              >
+                {f === "open" ? "Open" : f === "resolved" ? "Resolved" : f === "rejected" ? "Rejected" : "All"}
+              </button>
+            ))}
+          </div>
+          {/* Comment feed */}
+          <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-2">
+            {filteredComments.length === 0 ? (
+              <div className="text-center py-6 px-4">
+                <MessageCircle className="w-7 h-7 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+                <p className="text-[12px] text-gray-500 dark:text-gray-400">No comments yet</p>
+              </div>
+            ) : (
+              filteredComments.map((comment) => (
+                <CommentCard
+                  key={comment.id}
+                  comment={comment}
+                  isActive={activeCommentId === comment.id}
+                  onSelect={() => { setActiveCommentId(comment.id); setTimeout(() => scrollToComment(comment), 200); }}
+                  onReply={(text) => addReply(comment.id, text, parseMentions(text))}
+                  onResolve={(msg) => resolveComment(comment.id, msg)}
+                  onReject={(msg) => rejectComment(comment.id, msg)}
+                  onReopen={() => reopenComment(comment.id)}
+                  onDelete={() => deleteComment(comment.id)}
+                  isOwner={commentAuthor.id === comment.author.id || commentAuthor.role === "admin"}
+                  currentAuthor={commentAuthor}
+                  mentionableUsers={mentionableUsers}
+                  filterFade={commentFilter === "open"}
+                />
+              ))
+            )}
           </div>
         </div>
       )}
@@ -6701,6 +8059,374 @@ function MenuItem({
   );
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  MODERNIZED VIEW MENU COMPONENTS — 2026 Design System
+ *  Glassmorphism surface · iOS pill toggles · Micro-interactions · WCAG 2.1
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+function ViewMenuPanel({ children }: { children: React.ReactNode }) {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  const glassClasses = [
+    "bg-white/80 dark:bg-[#121212]/80 midnight:bg-[#0b1220]/80 purple:bg-[#1a0d2e]/80",
+    "backdrop-blur-[20px] backdrop-saturate-[180%]",
+    "border border-gray-300/60 dark:border-gray-600/50 midnight:border-cyan-400/20 purple:border-pink-400/20",
+  ].join(" ");
+
+  // Mobile: full-screen overlay bottom sheet with large touch targets
+  if (isMobile) {
+    return createPortal(
+      <>
+        <div
+          data-doc-view-sheet-backdrop
+          className="fixed inset-0 z-[300] bg-black/30 backdrop-blur-sm"
+        />
+        <div
+          data-doc-menu-panel
+          data-doc-view-menu-panel
+          data-doc-view-bottom-sheet
+          className={[
+            "fixed bottom-0 left-0 right-0 z-[301]",
+            "rounded-t-3xl",
+            glassClasses,
+            "shadow-[0_-8px_32px_rgba(0,0,0,0.15)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.4)]",
+          ].join(" ")}
+        >
+          {/* Drag handle */}
+          <div className="flex justify-center pt-3 pb-1">
+            <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+          </div>
+          <div className="px-1 pb-6 max-h-[70vh] overflow-y-auto">{children}</div>
+        </div>
+      </>,
+      document.body,
+    );
+  }
+
+  // Desktop/Tablet: glassmorphism dropdown
+  return (
+    <div
+      data-doc-menu-panel
+      data-doc-view-menu-panel
+      className={[
+        "absolute z-[120] mt-2 left-0 w-[300px] rounded-2xl overflow-visible",
+        glassClasses,
+        // Ambient occlusion shadows (soft, multi-layered)
+        "shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06),0_12px_24px_-4px_rgba(0,0,0,0.08)]",
+        "dark:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.3),0_2px_4px_-1px_rgba(0,0,0,0.2),0_12px_24px_-4px_rgba(0,0,0,0.4)]",
+      ].join(" ")}
+    >
+      <div className="py-1.5 max-h-[calc(100vh-120px)] overflow-y-auto">{children}</div>
+    </div>
+  );
+}
+
+function ViewMenuDivider() {
+  return (
+    <div className="my-1.5 mx-3 h-px bg-gradient-to-r from-transparent via-gray-200/80 dark:via-gray-700/60 midnight:via-cyan-500/15 purple:via-pink-500/15 to-transparent" />
+  );
+}
+
+function ViewMenuItem({
+  label,
+  description,
+  shortcut,
+  onClick,
+  disabled,
+  hasSubmenu,
+  submenu,
+  onHover,
+  onLeave,
+  isSubmenuOpen,
+  icon: Icon,
+  isChecked,
+  activeMode,
+}: {
+  label: string;
+  description?: string;
+  shortcut?: string;
+  onClick?: () => void;
+  disabled?: boolean;
+  hasSubmenu?: boolean;
+  submenu?: React.ReactNode;
+  onHover?: () => void;
+  onLeave?: () => void;
+  isSubmenuOpen?: boolean;
+  icon?: React.ComponentType<{ className?: string }>;
+  isChecked?: boolean;
+  activeMode?: string;
+}) {
+  const requestCloseMenus = useContext(MenuCloseContext);
+  const closeSubmenus = useContext(SubmenuCloseContext);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSubmenuOpenRef = useRef(isSubmenuOpen);
+  isSubmenuOpenRef.current = isSubmenuOpen;
+  const onLeaveRef = useRef(onLeave);
+  onLeaveRef.current = onLeave;
+
+  useEffect(() => {
+    return () => { if (closeTimerRef.current) clearTimeout(closeTimerRef.current); };
+  }, []);
+
+  const timerCallbacks = useMemo(() => ({
+    cancelClose: () => { if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; } },
+    scheduleClose: () => { closeTimerRef.current = setTimeout(() => { if (!isSubmenuOpenRef.current) return; onLeaveRef.current?.(); }, 350); },
+  }), []);
+
+  const handleClick = () => {
+    if (disabled) return;
+    onClick?.();
+    if (!hasSubmenu) requestCloseMenus?.();
+  };
+
+  const content = (
+    <div
+      ref={containerRef}
+      className="relative"
+      onMouseEnter={() => {
+        timerCallbacks.cancelClose();
+        if (hasSubmenu) { onHover?.(); } else { closeSubmenus?.(); }
+      }}
+      onMouseLeave={() => {
+        if (!hasSubmenu || !isSubmenuOpen || !onLeave) return;
+        timerCallbacks.scheduleClose();
+      }}
+    >
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={handleClick}
+        className={[
+          "w-full flex items-center gap-2.5 px-3 text-left transition-all duration-150 min-h-[44px]",
+          // Variable typography: heavier weight on hover
+          "font-[420] hover:font-[520]",
+          disabled
+            ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+            : "text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 hover:bg-gray-100/60 dark:hover:bg-white/5 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8 cursor-pointer",
+          // Active mode glow for "Suggesting" style context-aware feedback
+          isChecked && !hasSubmenu
+            ? "bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
+            : "",
+        ].join(" ")}
+      >
+        <span className="w-5 flex-shrink-0 flex items-center justify-center">
+          {isChecked ? (
+            <Check className="w-4 h-4 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 drop-shadow-[0_0_4px_rgba(59,130,246,0.5)]" />
+          ) : Icon ? (
+            <Icon className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70" />
+          ) : null}
+        </span>
+        <div className="flex-1 min-w-0">
+          <span className="block text-[13px] leading-tight truncate">{label}</span>
+          {description && (
+            <span className="block text-[11px] leading-tight text-gray-400 dark:text-gray-500 midnight:text-cyan-300/40 purple:text-pink-300/40 mt-0.5 truncate">{description}</span>
+          )}
+        </div>
+        {/* Active mode badge for submenu items */}
+        {activeMode && hasSubmenu && (
+          <span className={[
+            "text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none",
+            activeMode === "suggesting"
+              ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.2)]"
+              : activeMode === "viewing"
+                ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                : "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300",
+          ].join(" ")}>
+            {activeMode.charAt(0).toUpperCase() + activeMode.slice(1)}
+          </span>
+        )}
+        {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 tabular-nums">{shortcut}</span>}
+        {hasSubmenu && <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />}
+      </button>
+      <SubmenuTimerContext.Provider value={hasSubmenu ? timerCallbacks : null}>
+        <SubmenuAnchorContext.Provider value={containerRef}>
+          {submenu && isSubmenuOpen && submenu}
+        </SubmenuAnchorContext.Provider>
+      </SubmenuTimerContext.Provider>
+    </div>
+  );
+
+  return content;
+}
+
+function ViewMenuToggle({
+  label,
+  description,
+  shortcut,
+  isOn,
+  onToggle,
+}: {
+  label: string;
+  description?: string;
+  shortcut?: string;
+  isOn: boolean;
+  onToggle: () => void;
+}) {
+  const requestCloseMenus = useContext(MenuCloseContext);
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        onToggle();
+        // Keep menu open so user can toggle multiple items without re-opening
+      }}
+      className={[
+        "w-full flex items-center gap-2.5 px-3 text-left transition-all duration-150 min-h-[44px] cursor-pointer",
+        "font-[420] hover:font-[520]",
+        "text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50",
+        "hover:bg-gray-100/60 dark:hover:bg-white/5 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8",
+      ].join(" ")}
+      role="switch"
+      aria-checked={isOn}
+      aria-label={label}
+    >
+      <div className="flex-1 min-w-0 flex items-center gap-2.5">
+        <div className="min-w-0">
+          <span className="block text-[13px] leading-tight truncate">{label}</span>
+          {description && (
+            <span className="block text-[11px] leading-tight text-gray-400 dark:text-gray-500 midnight:text-cyan-300/40 purple:text-pink-300/40 mt-0.5 truncate">{description}</span>
+          )}
+        </div>
+      </div>
+      {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 tabular-nums mr-2">{shortcut}</span>}
+      {/* iOS-style pill toggle switch */}
+      <div
+        className={[
+          "relative w-[38px] h-[22px] rounded-full flex-shrink-0 transition-colors duration-200",
+          isOn
+            ? "bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500"
+            : "bg-gray-300 dark:bg-gray-600 midnight:bg-gray-600 purple:bg-gray-600",
+        ].join(" ")}
+      >
+        <div
+          className={[
+            "absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white shadow-sm transition-transform duration-200",
+            isOn ? "translate-x-[18px]" : "translate-x-[2px]",
+          ].join(" ")}
+        />
+      </div>
+    </button>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  FULLSCREEN FLOATING PILL MENU
+ *  Appears when cursor nears the top of the screen in fullscreen mode.
+ *  Haptic-style pill with glassmorphism. Includes zoom and exit controls.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+function FullscreenFloatingPill({
+  onExitFullscreen,
+  zoomLevel,
+  setZoomLevel,
+}: {
+  onExitFullscreen: () => void;
+  zoomLevel: number;
+  setZoomLevel: (z: number) => void;
+}) {
+  const [visible, setVisible] = useState(false);
+  const [zoomExpanded, setZoomExpanded] = useState(false);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (e.clientY < 48) {
+        if (hideTimerRef.current) { clearTimeout(hideTimerRef.current); hideTimerRef.current = null; }
+        setVisible(true);
+      } else if (e.clientY > 120) {
+        if (!hideTimerRef.current) {
+          hideTimerRef.current = setTimeout(() => {
+            setVisible(false);
+            setZoomExpanded(false);
+            hideTimerRef.current = null;
+          }, 600);
+        }
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onExitFullscreen();
+    };
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("keydown", handleKeyDown);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    };
+  }, [onExitFullscreen]);
+
+  if (!visible) return null;
+
+  const pillBtnClass = "px-3 py-2 text-[12px] font-medium transition-colors hover:bg-white/20 dark:hover:bg-white/10 cursor-pointer min-h-[44px] flex items-center";
+
+  return (
+    <div
+      data-doc-floating-pill
+      className={[
+        "fixed top-3 left-1/2 -translate-x-1/2 z-[250]",
+        "flex items-center rounded-full",
+        // Glassmorphism pill
+        "bg-gray-900/70 dark:bg-gray-800/80 midnight:bg-[#0b1220]/80 purple:bg-[#1a0d2e]/80",
+        "backdrop-blur-[20px] backdrop-saturate-[180%]",
+        "border border-white/10",
+        "shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
+        "text-white",
+      ].join(" ")}
+    >
+      {/* Zoom controls */}
+      {zoomExpanded ? (
+        <div className="flex items-center">
+          {[50, 75, 100, 125, 150, 200].map((z) => (
+            <button
+              key={z}
+              type="button"
+              onClick={() => { setZoomLevel(z); setZoomExpanded(false); }}
+              className={[
+                pillBtnClass,
+                z === zoomLevel ? "bg-white/20 font-semibold" : "",
+                z === 50 ? "rounded-l-full pl-4" : "",
+              ].join(" ")}
+            >
+              {z}%
+            </button>
+          ))}
+          <div className="w-px h-5 bg-white/20" />
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setZoomExpanded(true)}
+          className={`${pillBtnClass} rounded-l-full pl-4 gap-1.5`}
+        >
+          <ZoomIn className="w-3.5 h-3.5" />
+          {zoomLevel}%
+        </button>
+      )}
+      <div className="w-px h-5 bg-white/20" />
+      {/* Exit button */}
+      <button
+        type="button"
+        onClick={onExitFullscreen}
+        className={`${pillBtnClass} rounded-r-full pr-4 gap-1.5`}
+        aria-label="Exit full screen"
+      >
+        <Minimize2 className="w-3.5 h-3.5" />
+        <span className="hidden sm:inline">Exit</span>
+        <kbd className="text-[10px] text-white/50 ml-1 hidden sm:inline">Esc</kbd>
+      </button>
+    </div>
+  );
+}
+
 function TableGridPicker({
   onPick,
   maxRows = 8,
@@ -6824,6 +8550,735 @@ function EditingModeButton({
               {mode.charAt(0).toUpperCase() + mode.slice(1)}
             </button>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  MENTION SYSTEM — Reusable hook + popover for @mention tagging
+ *  Used in: comment creation popover, sidebar reply, floating pill reply
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+type MentionUser = { id: string; name: string; avatar?: string };
+
+function useMention({
+  users,
+  inputRef,
+  value,
+  onChange,
+}: {
+  users: MentionUser[];
+  inputRef: React.RefObject<HTMLTextAreaElement | HTMLInputElement | null>;
+  value: string;
+  onChange: (val: string) => void;
+}) {
+  const [active, setActive] = useState(false);
+  const [query, setQuery] = useState("");
+  const [highlightIdx, setHighlightIdx] = useState(0);
+  const [triggerPos, setTriggerPos] = useState(-1);
+
+  const filtered = useMemo(() => {
+    if (!active) return [];
+    return users.filter((u) => !query || u.name.toLowerCase().includes(query.toLowerCase()));
+  }, [active, query, users]);
+
+  // Reset highlight when filtered results change
+  useEffect(() => {
+    setHighlightIdx(0);
+  }, [filtered.length]);
+
+  const insertMention = useCallback((user: MentionUser) => {
+    if (triggerPos < 0) return;
+    const before = value.slice(0, triggerPos);
+    const after = value.slice(triggerPos + 1 + query.length);
+    const newVal = `${before}@${user.name} ${after}`;
+    onChange(newVal);
+    setActive(false);
+    setQuery("");
+    setTriggerPos(-1);
+
+    // Move cursor to after the inserted mention
+    requestAnimationFrame(() => {
+      const el = inputRef.current;
+      if (el) {
+        const cursorPos = triggerPos + user.name.length + 2;
+        el.focus();
+        el.setSelectionRange(cursorPos, cursorPos);
+      }
+    });
+  }, [triggerPos, query, value, onChange, inputRef]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!active || filtered.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightIdx((prev) => (prev + 1) % filtered.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightIdx((prev) => (prev - 1 + filtered.length) % filtered.length);
+    } else if (e.key === "Enter" && active) {
+      e.preventDefault();
+      e.stopPropagation();
+      insertMention(filtered[highlightIdx]);
+    } else if (e.key === "Escape") {
+      setActive(false);
+    }
+  }, [active, filtered, highlightIdx, insertMention]);
+
+  const handleChange = useCallback((newVal: string) => {
+    onChange(newVal);
+    const el = inputRef.current;
+    if (!el) return;
+    const cursorPos = (el as HTMLTextAreaElement).selectionStart ?? newVal.length;
+
+    // Find the @ trigger before cursor
+    const textBeforeCursor = newVal.slice(0, cursorPos);
+    const lastAt = textBeforeCursor.lastIndexOf("@");
+
+    if (lastAt >= 0) {
+      // Check no space between @ and cursor (allow spaces in names like "John Smith")
+      const afterAt = textBeforeCursor.slice(lastAt + 1);
+      // Activate if we just typed @ or are typing a name query
+      if (afterAt.length === 0 || /^[\w\s]{0,30}$/.test(afterAt)) {
+        setActive(true);
+        setQuery(afterAt);
+        setTriggerPos(lastAt);
+        return;
+      }
+    }
+    setActive(false);
+    setQuery("");
+    setTriggerPos(-1);
+  }, [onChange, inputRef]);
+
+  return { active, filtered, highlightIdx, query, insertMention, handleKeyDown, handleChange, setActive };
+}
+
+function MentionPopover({
+  users,
+  highlightIdx,
+  onSelect,
+  position = "above",
+}: {
+  users: MentionUser[];
+  highlightIdx: number;
+  onSelect: (user: MentionUser) => void;
+  position?: "above" | "below";
+}) {
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll the highlighted item into view
+  useEffect(() => {
+    if (!listRef.current) return;
+    const highlighted = listRef.current.querySelector("[data-mention-highlighted='true']");
+    if (highlighted) highlighted.scrollIntoView({ block: "nearest" });
+  }, [highlightIdx]);
+
+  if (users.length === 0) return null;
+
+  return (
+    <div
+      ref={listRef}
+      data-mention-popover
+      className={[
+        "absolute left-0 w-full max-h-[180px] overflow-y-auto z-[250]",
+        "rounded-xl border border-white/20 dark:border-gray-600/40",
+        "bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl",
+        "shadow-2xl shadow-black/10 dark:shadow-black/30",
+        position === "above" ? "bottom-full mb-1.5" : "top-full mt-1.5",
+      ].join(" ")}
+      role="listbox"
+      aria-label="Mention suggestions"
+    >
+      <div className="py-1">
+        {users.map((user, i) => (
+          <button
+            key={user.id}
+            type="button"
+            role="option"
+            aria-selected={i === highlightIdx}
+            data-mention-highlighted={i === highlightIdx ? "true" : undefined}
+            data-mention-user-id={user.id}
+            className={[
+              "w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors cursor-pointer",
+              i === highlightIdx
+                ? "bg-blue-50/80 dark:bg-blue-900/30"
+                : "hover:bg-gray-50/80 dark:hover:bg-gray-800/50",
+            ].join(" ")}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => onSelect(user)}
+          >
+            <CommentAvatar author={{ id: user.id, name: user.name, avatar: user.avatar }} size={28} />
+            <div className="min-w-0 flex-1">
+              <div className={[
+                "text-[12px] font-medium truncate",
+                i === highlightIdx ? "text-blue-700 dark:text-blue-300" : "text-gray-700 dark:text-gray-200",
+              ].join(" ")}>
+                {user.name}
+              </div>
+            </div>
+            {i === highlightIdx && (
+              <span className="text-[9px] text-gray-400 dark:text-gray-500 flex-shrink-0">Enter</span>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Render text with @mentions as blue pill tokens */
+function renderMentionPills(text: string) {
+  const parts = text.split(/(@\w+(?:\s+\w+)?)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("@")) {
+      return (
+        <span
+          key={i}
+          data-mention-pill
+          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-blue-100/80 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-[10px] font-semibold leading-none whitespace-nowrap"
+        >
+          <AtSign className="w-2.5 h-2.5 opacity-70" />
+          {part.slice(1)}
+        </span>
+      );
+    }
+    return part;
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  FLOATING COMMENT PILL — Mode A (individual margin comments)
+ *  Compact pill that expands on hover/click to show full interaction
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+function FloatingCommentPill({
+  comment,
+  isActive,
+  onSelect,
+  onScrollTo,
+  onReply,
+  onResolve,
+  onReject,
+  onReopen,
+  onDelete,
+  onOpenSidebar,
+  isOwner,
+  mentionableUsers = [],
+}: {
+  comment: DocComment;
+  isActive: boolean;
+  onSelect: () => void;
+  onScrollTo: () => void;
+  onReply: (text: string) => void;
+  onResolve: (msg?: string) => void;
+  onReject: (msg?: string) => void;
+  onReopen?: () => void;
+  onDelete: () => void;
+  onOpenSidebar: () => void;
+  isOwner: boolean;
+  mentionableUsers?: MentionUser[];
+}) {
+  const [replyText, setReplyText] = useState("");
+  const [showActions, setShowActions] = useState(false);
+  const isResolved = comment.status === "resolved" || comment.status === "rejected";
+  const floatingReplyRef = useRef<HTMLTextAreaElement>(null);
+
+  const mention = useMention({
+    users: mentionableUsers,
+    inputRef: floatingReplyRef,
+    value: replyText,
+    onChange: setReplyText,
+  });
+
+  const handleSubmitReply = () => {
+    const text = replyText.trim();
+    if (!text) return;
+    onReply(text);
+    setReplyText("");
+    mention.setActive(false);
+  };
+
+  return (
+    <div
+      data-doc-floating-pill={comment.id}
+      className={[
+        "pointer-events-auto rounded-lg border transition-all duration-200 cursor-pointer",
+        isActive
+          ? "border-blue-300/80 dark:border-blue-600/60 bg-white dark:bg-gray-900 shadow-lg ring-1 ring-blue-200/40"
+          : "border-gray-200/80 dark:border-gray-700/60 bg-white/95 dark:bg-gray-900/95 hover:border-blue-200/60 hover:shadow-md",
+      ].join(" ")}
+      onClick={() => { onSelect(); onScrollTo(); }}
+    >
+      {/* Card content — always visible */}
+      <div className="p-3">
+        {/* Header: avatar + name + time + actions */}
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <CommentAvatar author={comment.author} size={24} />
+            <div className="min-w-0">
+              <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 truncate">{comment.author.name}</div>
+              <div className="text-[10px] text-gray-400 dark:text-gray-500">{formatTimeAgo(comment.createdAt)}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-0.5 flex-shrink-0">
+            <button type="button" onClick={(e) => { e.stopPropagation(); onOpenSidebar(); }}
+              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer" title="Open in sidebar">
+              <MessageCircle className="w-3 h-3 text-gray-400" />
+            </button>
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              <button type="button" onClick={() => setShowActions(!showActions)}
+                className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                <MoreHorizontal className="w-3.5 h-3.5 text-gray-400" />
+              </button>
+              {showActions && (
+                <div className="absolute right-0 top-full mt-1 w-[120px] rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl py-1 z-20">
+                  {isOwner && !isResolved && (
+                    <>
+                      <button type="button" onClick={() => { onResolve(); setShowActions(false); }}
+                        className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 cursor-pointer">
+                        <CheckCircle2 className="w-3 h-3" /> Resolve
+                      </button>
+                      <button type="button" onClick={() => { onReject(); setShowActions(false); }}
+                        className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer">
+                        <XCircle className="w-3 h-3" /> Reject
+                      </button>
+                    </>
+                  )}
+                  {isResolved && onReopen && (
+                    <button type="button" onClick={() => { onReopen(); setShowActions(false); }}
+                      className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer">
+                      <Reply className="w-3 h-3" /> Reopen
+                    </button>
+                  )}
+                  <button type="button" onClick={() => { onDelete(); setShowActions(false); }}
+                    className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer">
+                    <X className="w-3 h-3" /> Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Selected text excerpt */}
+        <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-2 px-2 py-1 bg-yellow-50/60 dark:bg-yellow-900/15 rounded border-l-2 border-yellow-400 dark:border-yellow-600 line-clamp-2">
+          &ldquo;{comment.selectedText}&rdquo;
+        </div>
+
+        {/* Comment body */}
+        <p className="text-[11px] text-gray-700 dark:text-gray-200 leading-relaxed">
+          {renderMentionPills(comment.text)}
+        </p>
+
+        {/* Reply count indicator (collapsed) */}
+        {!isActive && comment.replies.length > 0 && (
+          <div className="mt-2 flex items-center gap-1 text-[10px] text-blue-500 dark:text-blue-400">
+            <CornerDownRight className="w-3 h-3" />
+            <span>{comment.replies.length} {comment.replies.length === 1 ? "reply" : "replies"}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Expanded section — replies + reply input (only when active) */}
+      {isActive && (
+        <div className="border-t border-gray-100 dark:border-gray-800" onClick={(e) => e.stopPropagation()}>
+          {/* Replies */}
+          {comment.replies.length > 0 && (
+            <div className="px-3 pt-2 pb-1 space-y-2 max-h-[160px] overflow-y-auto">
+              {comment.replies.map((reply) => (
+                <div key={reply.id} className="flex gap-2">
+                  <CommentAvatar author={reply.author} size={20} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300">{reply.author.name}</span>
+                      <span className="text-[9px] text-gray-400">{formatTimeAgo(reply.createdAt)}</span>
+                    </div>
+                    <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">{renderMentionPills(reply.text)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Reply input with @mention support */}
+          <div className="px-3 py-2">
+            <div className="relative">
+              <textarea
+                ref={floatingReplyRef}
+                placeholder="Reply... (@ to mention)"
+                value={replyText}
+                onChange={(e) => mention.handleChange(e.target.value)}
+                onKeyDown={(e) => {
+                  mention.handleKeyDown(e);
+                  if (!mention.active && e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmitReply();
+                }}
+                className="w-full px-2.5 py-1.5 rounded-lg text-[11px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none focus:ring-1 focus:ring-blue-400 resize-none"
+                rows={2}
+              />
+              {mention.active && (
+                <MentionPopover
+                  users={mention.filtered}
+                  highlightIdx={mention.highlightIdx}
+                  onSelect={(u) => mention.insertMention(u)}
+                />
+              )}
+            </div>
+            <div className="flex items-center justify-end gap-1.5 mt-1.5">
+              <button
+                type="button"
+                onClick={handleSubmitReply}
+                disabled={!replyText.trim()}
+                className="inline-flex items-center gap-1 text-[10px] font-semibold text-white bg-blue-500 hover:bg-blue-600 disabled:opacity-40 px-2.5 py-1 rounded-lg transition-colors cursor-pointer shadow-sm"
+              >
+                <Send className="w-3 h-3" />
+                Reply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  COMMENT SYSTEM UI COMPONENTS
+ *  Avatar, Card, Thread, Reply input with @mention support
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+function CommentAvatar({ author, size = 28 }: { author: CommentAuthor; size?: number }) {
+  const bgColors = ["bg-blue-500", "bg-emerald-500", "bg-purple-500", "bg-amber-500", "bg-rose-500", "bg-cyan-500", "bg-indigo-500"];
+  const hash = author.name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const bgColor = bgColors[hash % bgColors.length];
+  const initials = author.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+
+  return (
+    <div
+      className={`relative flex-shrink-0 rounded-full overflow-hidden ${bgColor}`}
+      style={{ width: size, height: size }}
+    >
+      {author.avatar ? (
+        <img src={author.avatar} alt={author.name} className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-white font-bold" style={{ fontSize: size * 0.4 }}>
+          {initials}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CommentCard({
+  comment,
+  isActive,
+  onSelect,
+  onReply,
+  onResolve,
+  onReject,
+  onReopen,
+  onDelete,
+  isOwner,
+  currentAuthor,
+  mentionableUsers,
+  filterFade = false,
+}: {
+  comment: DocComment;
+  isActive: boolean;
+  onSelect: () => void;
+  onReply: (text: string) => void;
+  onResolve: (msg?: string) => void;
+  onReject: (msg?: string) => void;
+  onReopen?: () => void;
+  onDelete: () => void;
+  isOwner: boolean;
+  currentAuthor: CommentAuthor;
+  mentionableUsers: Array<{ id: string; name: string; avatar?: string }>;
+  filterFade?: boolean;
+}) {
+  const [showReplyInput, setShowReplyInput] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [showActions, setShowActions] = useState(false);
+  const replyRef = useRef<HTMLTextAreaElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
+  const isResolved = comment.status === "resolved" || comment.status === "rejected";
+
+  const mention = useMention({
+    users: mentionableUsers,
+    inputRef: replyRef,
+    value: replyText,
+    onChange: setReplyText,
+  });
+
+  useEffect(() => {
+    if (!showActions) return;
+    const handler = (e: MouseEvent) => {
+      if (actionsRef.current && !actionsRef.current.contains(e.target as Node)) setShowActions(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showActions]);
+
+  const handleSubmitReply = () => {
+    const text = replyText.trim();
+    if (!text) return;
+    onReply(text);
+    setReplyText("");
+    setShowReplyInput(false);
+    mention.setActive(false);
+  };
+
+  const timeAgo = formatTimeAgo(comment.createdAt);
+
+  return (
+    <div
+      data-doc-comment-card={comment.id}
+      data-active={isActive ? "true" : undefined}
+      data-resolved={isResolved ? "true" : undefined}
+      data-filter-fade={filterFade && isResolved ? "true" : undefined}
+      onClick={onSelect}
+      className={[
+        "rounded-xl border p-2.5 transition-all duration-200 cursor-pointer group",
+        isActive
+          ? "border-blue-300 dark:border-blue-600 bg-blue-50/60 dark:bg-blue-900/20 shadow-md ring-1 ring-blue-200/50 dark:ring-blue-700/30"
+          : "border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-sm",
+        isResolved ? "opacity-70" : "",
+      ].join(" ")}
+    >
+      {/* Header: author + time + actions */}
+      <div className="flex items-start justify-between gap-2 mb-1.5">
+        <div className="flex items-center gap-2 min-w-0">
+          <CommentAvatar author={comment.author} size={24} />
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 truncate">{comment.author.name}</div>
+            <div className="text-[10px] text-gray-400 dark:text-gray-500">{timeAgo}</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-0.5">
+          {/* Status badge for resolved/rejected */}
+          {comment.status === "resolved" && (
+            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 mr-1">
+              Resolved
+            </span>
+          )}
+          {comment.status === "rejected" && (
+            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 mr-1">
+              Rejected
+            </span>
+          )}
+          {/* Quick actions for open comments: resolve (check) and reject (x) */}
+          {!isResolved && isOwner && (
+            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+              <Tooltip content="Resolve" delay={300}>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onResolve(); }}
+                  className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors cursor-pointer"
+                >
+                  <Check className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
+                </button>
+              </Tooltip>
+              <Tooltip content="Reject" delay={300}>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onReject(); }}
+                  className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5 text-red-400 dark:text-red-400" />
+                </button>
+              </Tooltip>
+            </div>
+          )}
+          {/* Reopen button for resolved/rejected comments */}
+          {isResolved && onReopen && (
+            <Tooltip content="Reopen" delay={300}>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onReopen(); }}
+                className="w-6 h-6 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all cursor-pointer"
+              >
+                <RotateCw className="w-3 h-3 text-blue-500 dark:text-blue-400" />
+              </button>
+            </Tooltip>
+          )}
+          {/* Reply button for open comments */}
+          {!isResolved && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setShowReplyInput(true); }}
+              className="w-6 h-6 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all cursor-pointer"
+              title="Reply"
+            >
+              <MessageCircle className="w-3.5 h-3.5 text-gray-400" />
+            </button>
+          )}
+          {/* More actions menu */}
+          <div ref={actionsRef} className="relative">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setShowActions(!showActions); }}
+              className="w-6 h-6 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all cursor-pointer"
+            >
+              <MoreHorizontal className="w-3.5 h-3.5 text-gray-400" />
+            </button>
+            {showActions && (
+              <div className="absolute right-0 top-full mt-1 w-[140px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl py-1 z-10">
+                {isOwner && !isResolved && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); onResolve(); setShowActions(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Resolve
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); onReject(); setShowActions(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                    >
+                      <XCircle className="w-3.5 h-3.5" />
+                      Reject
+                    </button>
+                  </>
+                )}
+                {isResolved && onReopen && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onReopen(); setShowActions(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer"
+                  >
+                    <RotateCw className="w-3.5 h-3.5" />
+                    Reopen
+                  </button>
+                )}
+                {(isOwner || currentAuthor.id === comment.author.id) && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onDelete(); setShowActions(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Tab indicator */}
+      {comment.tabId && (
+        <div className="mb-1">
+          <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+            {comment.tabId.replace("tab-", "Tab ")}
+          </span>
+        </div>
+      )}
+
+      {/* Selected text excerpt */}
+      <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-1.5 px-1.5 py-1 bg-yellow-50/60 dark:bg-yellow-900/15 rounded border-l-2 border-yellow-400 dark:border-yellow-600 line-clamp-1">
+        &ldquo;{comment.selectedText}&rdquo;
+      </div>
+
+      {/* Comment body */}
+      <p className="text-[12px] text-gray-700 dark:text-gray-200 leading-relaxed mb-1.5">
+        {renderMentionPills(comment.text)}
+      </p>
+
+      {/* Resolution info */}
+      {comment.resolution && (
+        <div className="text-[10px] text-gray-400 dark:text-gray-500 italic mb-1.5 flex items-center gap-1">
+          {comment.resolution.action === "resolved" ? (
+            <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+          ) : (
+            <XCircle className="w-3 h-3 text-red-500" />
+          )}
+          {comment.resolution.action === "resolved" ? "Resolved" : "Rejected"} by {comment.resolution.by.name}
+          {comment.resolution.message && ` — "${comment.resolution.message}"`}
+        </div>
+      )}
+
+      {/* Replies thread */}
+      {comment.replies.length > 0 && (
+        <div className="mt-2 space-y-1.5 pl-3 border-l-2 border-gray-100 dark:border-gray-800">
+          {comment.replies.map((reply) => (
+            <div key={reply.id} className="flex gap-2">
+              <CommentAvatar author={reply.author} size={20} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300">{reply.author.name}</span>
+                  <span className="text-[9px] text-gray-400">{formatTimeAgo(reply.createdAt)}</span>
+                </div>
+                <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
+                  {renderMentionPills(reply.text)}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Reply input */}
+      {!isResolved && (
+        <div className="mt-2">
+          {showReplyInput ? (
+            <div className="space-y-1.5" onClick={(e) => e.stopPropagation()}>
+              <div className="relative">
+                <textarea
+                  ref={replyRef}
+                  autoFocus
+                  value={replyText}
+                  onChange={(e) => mention.handleChange(e.target.value)}
+                  onKeyDown={(e) => {
+                    mention.handleKeyDown(e);
+                    if (!mention.active && e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmitReply();
+                    if (e.key === "Escape" && !mention.active) { setShowReplyInput(false); setReplyText(""); }
+                  }}
+                  placeholder="Reply... (@ to mention)"
+                  className="w-full text-[11px] text-gray-700 dark:text-gray-200 bg-gray-50/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5 resize-none outline-none focus:ring-2 focus:ring-blue-400/40 placeholder-gray-400"
+                  rows={2}
+                />
+                {mention.active && (
+                  <MentionPopover
+                    users={mention.filtered}
+                    highlightIdx={mention.highlightIdx}
+                    onSelect={(u) => mention.insertMention(u)}
+                  />
+                )}
+              </div>
+              <div className="flex items-center justify-end gap-1.5">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setShowReplyInput(false); setReplyText(""); }}
+                  className="text-[10px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleSubmitReply(); }}
+                  className="inline-flex items-center gap-1 text-[10px] font-semibold text-white bg-blue-500 hover:bg-blue-600 px-2.5 py-1 rounded-lg transition-colors cursor-pointer shadow-sm"
+                >
+                  <Send className="w-3 h-3" />
+                  Reply
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setShowReplyInput(true); }}
+              className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors cursor-pointer"
+            >
+              <Reply className="w-3 h-3" />
+              Reply
+            </button>
+          )}
         </div>
       )}
     </div>

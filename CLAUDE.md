@@ -115,6 +115,14 @@ When adding inline comments to implementation code, prefer behavior-oriented lan
 - **Accessibility**: ARIA attributes, keyboard navigation, focus management
 - **Edge cases**: Empty states, error states, boundary conditions
 
+### Visual Verification (MANDATORY)
+**All functional implementations MUST be visually checked and tested to confirm they work for end users.** This applies to every feature, component, or behavior change — not just UI-specific work. After implementing any functionality:
+1. Run the dev server and manually verify the feature works visually in the browser
+2. Check all visual states: default, hover, active, disabled, loading, error, empty
+3. Verify across themes (light, dark, midnight, purple) when applicable
+4. Verify responsive behavior on mobile/tablet/desktop viewports
+5. Add visual regression tests (`*.visual.test.tsx`) for any new UI components or significant UI changes
+
 ### Gherkin `.feature` Files (MANDATORY — Single Source of Truth)
 
 Every feature, component, or test area MUST have a corresponding `.feature` file in `tests/features/`. When modifying existing code, update the relevant `.feature` file alongside tests.

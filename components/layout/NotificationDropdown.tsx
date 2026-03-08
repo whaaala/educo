@@ -107,6 +107,13 @@ export default function NotificationDropdown() {
       success: CheckCircle2,
       warning: AlertTriangle,
       info: Info,
+      document_shared: FileText,
+      document_published: CheckCircle2,
+      document_comment: MessageSquare,
+      document_comment_reply: MessageSquare,
+      document_comment_resolved: CheckCircle2,
+      document_comment_rejected: XCircle,
+      document_comment_mention: Bell,
     };
     return icons[type] || Bell;
   };
@@ -130,6 +137,11 @@ export default function NotificationDropdown() {
       info: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", gradient: "from-blue-500 to-indigo-500" },
       document_shared: { bg: "bg-sky-50 dark:bg-sky-500/10", text: "text-sky-600 dark:text-sky-400", gradient: "from-sky-500 to-blue-500" },
       document_published: { bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", gradient: "from-emerald-500 to-green-500" },
+      document_comment: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", gradient: "from-blue-500 to-indigo-500" },
+      document_comment_reply: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", gradient: "from-blue-500 to-cyan-500" },
+      document_comment_resolved: { bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", gradient: "from-emerald-500 to-green-500" },
+      document_comment_rejected: { bg: "bg-rose-50 dark:bg-rose-500/10", text: "text-rose-600 dark:text-rose-400", gradient: "from-rose-500 to-red-500" },
+      document_comment_mention: { bg: "bg-purple-50 dark:bg-purple-500/10", text: "text-purple-600 dark:text-purple-400", gradient: "from-purple-500 to-pink-500" },
     };
     return colors[type] || colors.general;
   };

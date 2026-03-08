@@ -23,7 +23,12 @@ export type NotificationType =
   | "warning"
   | "info"
   | "document_shared"
-  | "document_published";
+  | "document_published"
+  | "document_comment"
+  | "document_comment_reply"
+  | "document_comment_resolved"
+  | "document_comment_rejected"
+  | "document_comment_mention";
 
 export type NotificationPriority = "low" | "normal" | "high" | "urgent";
 
@@ -413,6 +418,48 @@ export function getNotificationTypeConfig(type: NotificationType) {
       color: "text-blue-600 dark:text-blue-400",
       bgColor: "bg-blue-50/80 dark:bg-blue-500/10",
       borderColor: "border-blue-100/50 dark:border-blue-500/20",
+    },
+    document_shared: {
+      label: "Document Shared",
+      color: "text-indigo-600 dark:text-indigo-400",
+      bgColor: "bg-indigo-50/80 dark:bg-indigo-500/10",
+      borderColor: "border-indigo-100/50 dark:border-indigo-500/20",
+    },
+    document_published: {
+      label: "Document Published",
+      color: "text-green-600 dark:text-green-400",
+      bgColor: "bg-green-50/80 dark:bg-green-500/10",
+      borderColor: "border-green-100/50 dark:border-green-500/20",
+    },
+    document_comment: {
+      label: "Comment",
+      color: "text-blue-600 dark:text-blue-400",
+      bgColor: "bg-blue-50/80 dark:bg-blue-500/10",
+      borderColor: "border-blue-100/50 dark:border-blue-500/20",
+    },
+    document_comment_reply: {
+      label: "Comment Reply",
+      color: "text-blue-600 dark:text-blue-400",
+      bgColor: "bg-blue-50/80 dark:bg-blue-500/10",
+      borderColor: "border-blue-100/50 dark:border-blue-500/20",
+    },
+    document_comment_resolved: {
+      label: "Comment Resolved",
+      color: "text-emerald-600 dark:text-emerald-400",
+      bgColor: "bg-emerald-50/80 dark:bg-emerald-500/10",
+      borderColor: "border-emerald-100/50 dark:border-emerald-500/20",
+    },
+    document_comment_rejected: {
+      label: "Comment Rejected",
+      color: "text-rose-600 dark:text-rose-400",
+      bgColor: "bg-rose-50/80 dark:bg-rose-500/10",
+      borderColor: "border-rose-100/50 dark:border-rose-500/20",
+    },
+    document_comment_mention: {
+      label: "Mentioned",
+      color: "text-purple-600 dark:text-purple-400",
+      bgColor: "bg-purple-50/80 dark:bg-purple-500/10",
+      borderColor: "border-purple-100/50 dark:border-purple-500/20",
     },
   };
 
