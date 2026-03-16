@@ -1228,6 +1228,22 @@ export default function DocEditor({
 
   const [pages, setPages] = useState<string[]>(() => parseHtmlPages(value.html));
 
+  // Sync all internal state when parent value.html changes (e.g. loading a saved document)
+  const lastValueHtmlRef = useRef(value.html);
+  useEffect(() => {
+    if (value.html !== lastValueHtmlRef.current) {
+      lastValueHtmlRef.current = value.html;
+      const parsed = parseHtmlSections(value.html, defaultPageSetup);
+      const newPages = parsed.flatMap(s => s.pages);
+      if (newPages.length === 0) newPages.push("");
+      pagesRef.current = newPages;
+      setPages([...newPages]);
+      setSectionInfos(parsed.map(s => ({ pageCount: s.pages.length, pageSetup: s.pageSetup })));
+      // Also sync sidebar tabs
+      setSidebarTabs(prev => prev.map((t, i) => i === 0 ? { ...t, html: value.html } : t));
+    }
+  }, [value.html, defaultPageSetup]);
+
   const [versions, setVersions] = useState<Array<{
     ts: number;
     title: string;
@@ -5962,17 +5978,31 @@ export default function DocEditor({
       {!isFullscreen && (
       <div data-doc-header className="relative z-[50] px-2 sm:px-4 pt-2 sm:pt-3 pb-1.5 sm:pb-2 border-b border-gray-100 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-gray-900/40 midnight:bg-[#0d1526]/60 purple:bg-[#1f1035]/60 backdrop-blur">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm">
-            <FileText className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
-          </div>
+          {/* Back to documents */}
+          <Tooltip content="Back to Documents" delay={400}>
+            <button
+              type="button"
+              onClick={() => { window.location.href = "/documents"; }}
+              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer flex-shrink-0"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          </Tooltip>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0">
               <input
                 ref={titleInputRef}
                 value={docTitle}
                 onChange={(e) => updateValue({ title: e.target.value })}
+                onFocus={(e) => {
+                  if (e.target.value === "Untitled document") e.target.select();
+                }}
+                onBlur={(e) => {
+                  if (!e.target.value.trim()) updateValue({ title: "Untitled document" });
+                }}
+                placeholder="Untitled document"
                 disabled={!canEdit}
-                className="min-w-0 w-full max-w-[180px] sm:max-w-[420px] bg-transparent text-[14px] sm:text-[18px] font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 outline-none rounded-md px-1 sm:px-2 py-1 hover:bg-gray-50/70 dark:hover:bg-gray-800/40 focus:bg-white/70 dark:focus:bg-gray-800/60 transition-colors"
+                className="min-w-0 w-full max-w-[240px] sm:max-w-[480px] bg-transparent text-[15px] sm:text-[18px] font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 outline-none rounded-lg px-2 sm:px-3 py-1.5 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus:border-blue-400 dark:focus:border-blue-500 focus:bg-white dark:focus:bg-gray-800 transition-all placeholder:text-gray-400 placeholder:font-normal"
                 aria-label="Document title"
               />
               <Tooltip content="Star" delay={400}>

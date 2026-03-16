@@ -34,7 +34,6 @@ export default function DocumentsHomePage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"lastOpened" | "lastModified" | "title">("lastOpened");
   const [sortOpen, setSortOpen] = useState(false);
-  const [showTemplateGallery, setShowTemplateGallery] = useState(false);
   const [storedDocs, setStoredDocs] = useState<StoredDocument[]>([]);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
 
@@ -91,16 +90,16 @@ export default function DocumentsHomePage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-[13px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Start a new document</h2>
             <button
-              onClick={() => setShowTemplateGallery(!showTemplateGallery)}
+              onClick={() => router.push("/documents/templates")}
               className="text-[12px] font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
             >
-              {showTemplateGallery ? "Show less" : "Template gallery"}
+              Template gallery
             </button>
           </div>
 
-          {/* Template cards — rich preview style */}
+          {/* Template cards — top 5 previews + blank */}
           <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
-            {/* Blank document — special card */}
+            {/* Blank document */}
             <button onClick={() => handleNewDoc()} className="flex-shrink-0 w-[150px] group cursor-pointer">
               <div className="aspect-[3/4] rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 flex flex-col items-center justify-center gap-2 transition-shadow duration-300 hover:border-blue-400 hover:shadow-lg">
                 <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
@@ -110,31 +109,11 @@ export default function DocumentsHomePage() {
               <p className="mt-2 text-[12px] font-medium text-gray-600 dark:text-gray-400 text-center">Blank</p>
             </button>
 
-            {/* Template preview cards */}
-            {(showTemplateGallery ? DOC_TEMPLATES : DOC_TEMPLATES.slice(0, 5)).map(tpl => (
+            {/* First 5 templates as preview cards */}
+            {DOC_TEMPLATES.slice(0, 5).map(tpl => (
               <TemplatePreviewCard key={tpl.id} template={tpl} onClick={() => handleNewDoc(tpl)} />
             ))}
           </div>
-
-          {/* ── Expanded Gallery by Category ── */}
-          {showTemplateGallery && (
-            <div className="mt-5 space-y-5">
-              {TEMPLATE_CATEGORIES.map(cat => {
-                const catTemplates = DOC_TEMPLATES.filter(t => t.category === cat);
-                if (!catTemplates.length) return null;
-                return (
-                  <div key={cat}>
-                    <h3 className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">{cat}</h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                      {catTemplates.map(tpl => (
-                        <TemplatePreviewCard key={tpl.id} template={tpl} onClick={() => handleNewDoc(tpl)} />
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </section>
 
         {/* ── Recent Documents ── */}

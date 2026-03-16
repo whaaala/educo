@@ -48,6 +48,7 @@ export default function DocEditorTestPage() {
   const [docId, setDocId] = useState<string | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initializedRef = useRef(false);
+  const loadedRef = useRef(false);
 
   // Load document on mount
   useEffect(() => {
@@ -70,7 +71,7 @@ export default function DocEditorTestPage() {
           const id = docStorage.create({ title, html, language });
           setDocId(id);
           setDoc({ title, html, language });
-          // Update URL to reflect the new doc ID
+          setTimeout(() => { loadedRef.current = true; }, 1500);
           window.history.replaceState({}, "", `/doc-editor-test?id=${id}`);
         } catch { /* ignore */ }
       }
@@ -84,6 +85,8 @@ export default function DocEditorTestPage() {
       if (saved) {
         setDocId(id);
         setDoc({ title: saved.title, html: saved.html, language: saved.language });
+        // Delay enabling auto-save so the editor doesn't overwrite with empty on initial render
+        setTimeout(() => { loadedRef.current = true; }, 1500);
         return;
       }
     }
@@ -109,13 +112,14 @@ export default function DocEditorTestPage() {
     // No ID — create a new blank document
     const newId = docStorage.create({ title: "Untitled document", html: "", language: "en" });
     setDocId(newId);
+    loadedRef.current = true;
     window.history.replaceState({}, "", `/doc-editor-test?id=${newId}`);
   }, []);
 
-  // Auto-save on changes (debounced 1s)
+  // Auto-save on changes (debounced 1s) — skip during initial load
   const handleChange = useCallback((value: DocEditorValue) => {
     setDoc(value);
-    if (!docId) return;
+    if (!docId || !loadedRef.current) return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       docStorage.update(docId, {
