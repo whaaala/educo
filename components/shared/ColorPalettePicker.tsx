@@ -228,8 +228,8 @@ function CustomHexRow({ color, onSelect }: { color: string; onSelect: (c: string
           value={nativeVal}
           onMouseDown={() => { _nativeColorPickerOpen = true; }}
           onFocus={() => { _nativeColorPickerOpen = true; }}
-          onChange={(e) => { onSelect(e.target.value); }}
-          onBlur={() => { _nativeColorPickerOpen = false; }}
+          onChange={(e) => { _nativeColorPickerOpen = true; onSelect(e.target.value); }}
+          onBlur={() => { setTimeout(() => { _nativeColorPickerOpen = false; }, 300); }}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
         <div className="w-7 h-7 rounded-lg border border-gray-200 dark:border-gray-600 shadow-inner" style={{ background: color.startsWith("gradient:") ? colorToCSS(color) : color }}>

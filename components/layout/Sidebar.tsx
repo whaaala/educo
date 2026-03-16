@@ -170,6 +170,12 @@ const menuItems: MenuItem[] = [
     ],
   },
   {
+    id: "documents",
+    label: "Documents",
+    icon: <FileText className="w-5 h-5" />,
+    href: "/documents",
+  },
+  {
     id: "attendance",
     label: "Attendance",
     icon: <Calendar className="w-5 h-5" />,

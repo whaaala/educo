@@ -116,6 +116,10 @@ import {
   WrapText,
   AlertTriangle,
   RefreshCw,
+  LogOut,
+  Settings,
+  LayoutGrid,
+  Home,
 } from "lucide-react";
 import { DOC_LANGUAGES } from "./languages";
 import DrawingCanvas from "./DrawingCanvas";
@@ -1158,7 +1162,15 @@ export default function DocEditor({
   // Ghost cursor for image drag-and-drop
   const [dragGhostPos, setDragGhostPos] = useState<{ x: number; y: number } | null>(null);
   const [showDrawingCanvas, setShowDrawingCanvas] = useState(false);
+  const [drawingMode, setDrawingMode] = useState<null | "pen" | "highlighter" | "eraser" | "arrow" | "rect" | "ellipse">(null);
+  const [drawingColor, setDrawingColor] = useState("#1a73e8");
+  const [drawingSize, setDrawingSize] = useState(3);
+  const drawCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const drawingRef = useRef<{ isDrawing: boolean; startX: number; startY: number; lastX: number; lastY: number; paths: ImageData | null }>({ isDrawing: false, startX: 0, startY: 0, lastX: 0, lastY: 0, paths: null });
   const [docMode, setDocMode] = useState<"editing" | "suggesting" | "viewing">("editing");
+  const suggestionIdRef = useRef(0);
+  const [activeSuggestionId, setActiveSuggestionId] = useState<string | null>(null);
+  const [suggestionPopupPos, setSuggestionPopupPos] = useState<{ top: number; left: number } | null>(null);
   const [isChromeCollapsed, setIsChromeCollapsed] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
     typeof window !== "undefined" && window.innerWidth < 768
@@ -1200,6 +1212,8 @@ export default function DocEditor({
   const [zoomLevel, setZoomLevel] = useState(100);
   const [currentFontFamily, setCurrentFontFamily] = useState("Arial");
   const [currentFontSize, setCurrentFontSize] = useState(11);
+  const [fontSizeInputVal, setFontSizeInputVal] = useState("11");
+  const fontSizeDropdownRef = useRef<HTMLDivElement | null>(null);
 
   const [toast, setToast] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -2716,6 +2730,166 @@ export default function DocEditor({
     setOpenSubmenu(null);
   }, []);
 
+  // ── Suggesting mode: intercept edits to create tracked suggestions ──
+  const handleSuggestionBeforeInput = useCallback((e: InputEvent) => {
+    if (docMode !== "suggesting") return;
+
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+
+    // Handle text insertions
+    if (e.inputType === "insertText" || e.inputType === "insertParagraph" || e.inputType === "insertLineBreak") {
+      e.preventDefault();
+      const id = `suggestion-${++suggestionIdRef.current}`;
+      const text = e.inputType === "insertText" ? (e.data || "") : "\n";
+      const span = document.createElement("span");
+      span.setAttribute("data-suggestion", id);
+      span.setAttribute("data-suggestion-type", "insert");
+      span.style.color = "#16a34a";
+      span.style.textDecoration = "underline";
+      span.style.textDecorationColor = "#16a34a";
+      span.style.backgroundColor = "rgba(22, 163, 74, 0.08)";
+      span.textContent = text;
+
+      // If there's a selection, wrap deleted content first
+      if (!range.collapsed) {
+        const delId = `suggestion-${++suggestionIdRef.current}`;
+        const contents = range.extractContents();
+        const delSpan = document.createElement("span");
+        delSpan.setAttribute("data-suggestion", delId);
+        delSpan.setAttribute("data-suggestion-type", "delete");
+        delSpan.style.color = "#dc2626";
+        delSpan.style.textDecoration = "line-through";
+        delSpan.style.textDecorationColor = "#dc2626";
+        delSpan.style.backgroundColor = "rgba(220, 38, 38, 0.08)";
+        delSpan.appendChild(contents);
+        range.insertNode(delSpan);
+        range.setStartAfter(delSpan);
+        range.collapse(true);
+      }
+
+      range.insertNode(span);
+      range.setStartAfter(span);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      emitChange();
+      return;
+    }
+
+    // Handle deletions (backspace/delete)
+    if (e.inputType === "deleteContentBackward" || e.inputType === "deleteContentForward") {
+      // If selection is inside a suggestion-insert span, allow normal delete
+      const anchor = sel.anchorNode;
+      if (anchor) {
+        const parent = anchor.parentElement;
+        if (parent?.getAttribute("data-suggestion-type") === "insert") {
+          return; // Allow normal delete inside own suggestion
+        }
+      }
+
+      e.preventDefault();
+      if (range.collapsed) {
+        // Expand range to cover one character
+        if (e.inputType === "deleteContentBackward") {
+          range.setStart(range.startContainer, Math.max(0, range.startOffset - 1));
+        } else {
+          range.setEnd(range.endContainer, range.endOffset + 1);
+        }
+      }
+      if (range.collapsed) return;
+
+      const id = `suggestion-${++suggestionIdRef.current}`;
+      const contents = range.extractContents();
+      const span = document.createElement("span");
+      span.setAttribute("data-suggestion", id);
+      span.setAttribute("data-suggestion-type", "delete");
+      span.style.color = "#dc2626";
+      span.style.textDecoration = "line-through";
+      span.style.textDecorationColor = "#dc2626";
+      span.style.backgroundColor = "rgba(220, 38, 38, 0.08)";
+      span.appendChild(contents);
+      range.insertNode(span);
+      range.setStartAfter(span);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      emitChange();
+      return;
+    }
+  }, [docMode, emitChange]);
+
+  // Accept a suggestion (keep insertions, remove deletions)
+  const acceptSuggestion = useCallback((id: string) => {
+    const root = editorRootRef.current;
+    if (!root) return;
+    const span = root.querySelector(`[data-suggestion="${id}"]`);
+    if (!span) return;
+    const type = span.getAttribute("data-suggestion-type");
+    if (type === "insert") {
+      // Replace span with its text content
+      const text = document.createTextNode(span.textContent || "");
+      span.replaceWith(text);
+    } else if (type === "delete") {
+      // Remove the deleted content
+      span.remove();
+    }
+    emitChange();
+  }, [emitChange]);
+
+  // Reject a suggestion (remove insertions, restore deletions)
+  const rejectSuggestion = useCallback((id: string) => {
+    const root = editorRootRef.current;
+    if (!root) return;
+    const span = root.querySelector(`[data-suggestion="${id}"]`);
+    if (!span) return;
+    const type = span.getAttribute("data-suggestion-type");
+    if (type === "insert") {
+      // Remove the inserted content
+      span.remove();
+    } else if (type === "delete") {
+      // Restore the deleted content
+      const frag = document.createDocumentFragment();
+      while (span.firstChild) frag.appendChild(span.firstChild);
+      span.replaceWith(frag);
+    }
+    emitChange();
+  }, [emitChange]);
+
+  // Attach beforeinput listener for suggesting mode
+  useEffect(() => {
+    if (docMode !== "suggesting") return;
+    const pages = pageRefs.current;
+    const handler = (e: Event) => handleSuggestionBeforeInput(e as InputEvent);
+    pages.forEach((p) => { if (p) p.addEventListener("beforeinput", handler); });
+    return () => { pages.forEach((p) => { if (p) p.removeEventListener("beforeinput", handler); }); };
+  }, [docMode, handleSuggestionBeforeInput]);
+
+  // Click handler for suggestion spans — show accept/reject popup
+  useEffect(() => {
+    const root = editorRootRef.current;
+    if (!root) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const suggSpan = target.closest("[data-suggestion]") as HTMLElement | null;
+      if (suggSpan) {
+        const id = suggSpan.getAttribute("data-suggestion") || "";
+        const rect = suggSpan.getBoundingClientRect();
+        const rootRect = rootRef.current?.getBoundingClientRect();
+        if (rootRect) {
+          setActiveSuggestionId(id);
+          setSuggestionPopupPos({ top: rect.bottom - rootRect.top + 4, left: rect.left - rootRect.left });
+        }
+      } else {
+        setActiveSuggestionId(null);
+        setSuggestionPopupPos(null);
+      }
+    };
+    root.addEventListener("click", handler);
+    return () => root.removeEventListener("click", handler);
+  }, []);
+
   // ── Enhanced toolbar helpers ──
   const closeAllToolbarDropdowns = useCallback(() => {
     setFontFamilyOpen(false);
@@ -2729,6 +2903,21 @@ export default function DocEditor({
     setListStyleOpen(false);
     setMoreToolbarOpen(false);
   }, []);
+
+  // Sync font size input with current font size
+  useEffect(() => { setFontSizeInputVal(`${currentFontSize}`); }, [currentFontSize]);
+
+  // Close font size dropdown on click outside
+  useEffect(() => {
+    if (!fontSizeOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (fontSizeDropdownRef.current && !fontSizeDropdownRef.current.contains(e.target as Node)) {
+        setFontSizeOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [fontSizeOpen]);
 
   // ── Sidebar tab management ──
   // Helper to load HTML into the editor without calling onChange during render.
@@ -2913,6 +3102,47 @@ export default function DocEditor({
     }
     emitChange();
   }, [emitChange]);
+
+  // Find the current block element at cursor position
+  const getBlockAtCursor = useCallback((): HTMLElement | null => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return null;
+    let node = sel.anchorNode as HTMLElement | null;
+    while (node && node !== editorRootRef.current) {
+      if (node.nodeType === 1 && ["P", "DIV", "H1", "H2", "H3", "H4", "H5", "H6", "LI"].includes(node.tagName)) {
+        return node;
+      }
+      node = node.parentElement;
+    }
+    return null;
+  }, []);
+
+  const handleAddSpaceBefore = useCallback(() => {
+    const block = getBlockAtCursor();
+    if (block) {
+      const current = parseFloat(block.style.marginTop || "0");
+      block.style.marginTop = current > 0 ? "0px" : "10px";
+    }
+    emitChange();
+  }, [getBlockAtCursor, emitChange]);
+
+  const handleAddSpaceAfter = useCallback(() => {
+    const block = getBlockAtCursor();
+    if (block) {
+      const current = parseFloat(block.style.marginBottom || "0");
+      block.style.marginBottom = current > 0 ? "0px" : "10px";
+    }
+    emitChange();
+  }, [getBlockAtCursor, emitChange]);
+
+  const handleCustomSpacing = useCallback(() => {
+    const input = window.prompt("Enter custom line spacing (e.g. 1.75):");
+    if (!input) return;
+    const v = parseFloat(input);
+    if (!isNaN(v) && v >= 0.5 && v <= 10) {
+      handleLineSpacingChange(v);
+    }
+  }, [handleLineSpacingChange]);
 
   const getOverlayForElement = useCallback((el: HTMLElement) => {
     const wrapper = rootRef.current;
@@ -5755,8 +5985,8 @@ export default function DocEditor({
               </Tooltip>
             </div>
           </div>
-          {/* Top-right comment icon — opens/closes comments panel */}
-          <div className="ml-auto flex items-center gap-2">
+          {/* Top-right: comments, share, user avatar */}
+          <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
             <Tooltip content={showComments ? "Close comments" : "Open comments"} delay={400}>
               <button
                 type="button"
@@ -6323,7 +6553,17 @@ export default function DocEditor({
             <ViewMenuItem
               label="Drawing"
               icon={Pencil}
-              onClick={() => setShowDrawingCanvas(true)}
+              hasSubmenu
+              onHover={() => setOpenSubmenu("insert-drawing")}
+              onClick={() => setOpenSubmenu((p) => (p === "insert-drawing" ? null : "insert-drawing"))}
+              onLeave={() => setOpenSubmenu(null)}
+              isSubmenuOpen={openSubmenu === "insert-drawing"}
+              submenu={
+                <SubmenuPanel className="w-[200px]">
+                  <ViewMenuItem label="New drawing" icon={Pencil} onClick={() => setShowDrawingCanvas(true)} />
+                  <ViewMenuItem label="Draw on page" icon={PenLine} onClick={() => setDrawingMode("pen")} />
+                </SubmenuPanel>
+              }
             />
             <ViewMenuItem
               label="Chart"
@@ -6453,6 +6693,10 @@ export default function DocEditor({
                     <ViewMenuItem label="Strikethrough" shortcut="Alt+Shift+5" icon={Strikethrough} onClick={() => handleCommand("strikeThrough")} />
                     <ViewMenuItem label="Superscript" shortcut="Ctrl+." icon={SuperscriptIcon} onClick={() => handleCommand("superscript")} />
                     <ViewMenuItem label="Subscript" shortcut="Ctrl+," icon={SubscriptIcon} onClick={() => handleCommand("subscript")} />
+                    <ViewMenuDivider />
+                    <ViewMenuItem label="UPPERCASE" onClick={() => { const sel = window.getSelection(); if (sel && sel.toString()) { const text = sel.toString().toUpperCase(); exec("insertText", text); emitChange(); } }} />
+                    <ViewMenuItem label="lowercase" onClick={() => { const sel = window.getSelection(); if (sel && sel.toString()) { const text = sel.toString().toLowerCase(); exec("insertText", text); emitChange(); } }} />
+                    <ViewMenuItem label="Title Case" onClick={() => { const sel = window.getSelection(); if (sel && sel.toString()) { const text = sel.toString().replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substring(1).toLowerCase()); exec("insertText", text); emitChange(); } }} />
                   </SubmenuPanel>
                 }
               />
@@ -6469,6 +6713,9 @@ export default function DocEditor({
                     <ViewMenuItem label="Heading 1" onClick={() => { handleCommand("formatBlock", "h1"); setCurrentParagraphStyle("Heading 1"); }} />
                     <ViewMenuItem label="Heading 2" onClick={() => { handleCommand("formatBlock", "h2"); setCurrentParagraphStyle("Heading 2"); }} />
                     <ViewMenuItem label="Heading 3" onClick={() => { handleCommand("formatBlock", "h3"); setCurrentParagraphStyle("Heading 3"); }} />
+                    <ViewMenuItem label="Heading 4" onClick={() => { handleCommand("formatBlock", "h4"); setCurrentParagraphStyle("Heading 4"); }} />
+                    <ViewMenuItem label="Heading 5" onClick={() => { handleCommand("formatBlock", "h5"); setCurrentParagraphStyle("Heading 5"); }} />
+                    <ViewMenuItem label="Heading 6" onClick={() => { handleCommand("formatBlock", "h6"); setCurrentParagraphStyle("Heading 6"); }} />
                   </SubmenuPanel>
                 }
               />
@@ -6501,10 +6748,15 @@ export default function DocEditor({
                 onLeave={() => setOpenSubmenu(null)}
                 isSubmenuOpen={openSubmenu === "format-spacing"}
                 submenu={
-                  <SubmenuPanel className="w-[200px]">
+                  <SubmenuPanel className="w-[240px]">
                     {[...LINE_SPACINGS, { value: 2.5, label: "2.5" }, { value: 3.0, label: "3.0" }].map((ls) => (
                       <ViewMenuItem key={ls.value} label={ls.label} onClick={() => handleLineSpacingChange(ls.value)} />
                     ))}
+                    <ViewMenuDivider />
+                    <ViewMenuItem label="Add space before paragraph" onClick={handleAddSpaceBefore} />
+                    <ViewMenuItem label="Add space after paragraph" onClick={handleAddSpaceAfter} />
+                    <ViewMenuDivider />
+                    <ViewMenuItem label="Custom spacing" onClick={handleCustomSpacing} />
                   </SubmenuPanel>
                 }
               />
@@ -6604,6 +6856,11 @@ export default function DocEditor({
             width="w-[120px]"
           >
             <div className="py-1">
+              <button type="button" onMouseDown={(e) => e.preventDefault()}
+                onClick={() => { setZoomLevel(100); setZoomOpen(false); }}
+                className={`w-full px-3 py-1.5 text-left text-[12px] transition-colors cursor-pointer font-medium ${zoomLevel === 100 ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
+              >Fit</button>
+              <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
               {[50, 75, 100, 125, 150, 200].map((z) => (
                 <button key={z} type="button" onMouseDown={(e) => e.preventDefault()}
                   onClick={() => { setZoomLevel(z); setZoomOpen(false); }}
@@ -6629,6 +6886,9 @@ export default function DocEditor({
                 { label: "Heading 1", tag: "h1", cls: "text-[22px] font-bold" },
                 { label: "Heading 2", tag: "h2", cls: "text-[18px] font-bold" },
                 { label: "Heading 3", tag: "h3", cls: "text-[15px] font-bold" },
+                { label: "Heading 4", tag: "h4", cls: "text-[13px] font-bold text-gray-700 dark:text-gray-300" },
+                { label: "Heading 5", tag: "h5", cls: "text-[12px] font-bold text-gray-600 dark:text-gray-400" },
+                { label: "Heading 6", tag: "h6", cls: "text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase" },
                 { label: "Title", tag: "h1", cls: "text-[26px] font-normal" },
                 { label: "Subtitle", tag: "h2", cls: "text-[14px] font-normal text-gray-500" },
               ].map((s) => (
@@ -6676,6 +6936,37 @@ export default function DocEditor({
                   ))}
                 </div>
               ))}
+              {/* Font weight section */}
+              <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">Weight</div>
+                <div className="grid grid-cols-3 gap-1">
+                  {([
+                    { label: "Thin", value: "100" },
+                    { label: "Light", value: "300" },
+                    { label: "Normal", value: "400" },
+                    { label: "Medium", value: "500" },
+                    { label: "Bold", value: "700" },
+                    { label: "Black", value: "900" },
+                  ]).map((w) => (
+                    <button key={w.value} type="button" onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        focusEditor();
+                        const sel = window.getSelection();
+                        if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+                          const range = sel.getRangeAt(0);
+                          const span = document.createElement("span");
+                          span.style.fontWeight = w.value;
+                          range.surroundContents(span);
+                          emitChange();
+                        }
+                        setFontFamilyOpen(false);
+                      }}
+                      style={{ fontWeight: w.value }}
+                      className="px-2 py-1.5 text-[11px] rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer text-center"
+                    >{w.label}</button>
+                  ))}
+                </div>
+              </div>
             </div>
           </ToolbarDropdown>
           <ToolbarDivider />
@@ -6690,35 +6981,57 @@ export default function DocEditor({
               <Minus className="w-3 h-3 text-gray-600 dark:text-gray-300" />
             </button>
           </Tooltip>
-          <ToolbarDropdown
-            label={`${currentFontSize}`}
-            title="Font size"
-            isOpen={fontSizeOpen}
-            onToggle={() => { closeAllToolbarDropdowns(); setFontSizeOpen(!fontSizeOpen); }}
-            disabled={!canEdit}
-            width="w-[100px]"
-          >
-            <div className="py-1">
-              {[8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 36, 48, 72].map((s) => (
-                <button key={s} type="button" onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => { handleFontSizeChange(s); setFontSizeOpen(false); }}
-                  className={`w-full px-3 py-1.5 text-left text-[12px] transition-colors cursor-pointer ${s === currentFontSize ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
-                >{s}</button>
-              ))}
-              <div className="mt-1 pt-1 border-t border-gray-100 dark:border-gray-700 px-2 pb-1">
-                <input type="number" min={6} max={120} placeholder="Custom…"
-                  className="w-full px-2 py-1 text-[11px] rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 outline-none"
-                  onMouseDown={(e) => e.stopPropagation()}
+          {/* Font size — editable input + dropdown */}
+          <div className="relative" ref={(el) => { (fontSizeDropdownRef as React.MutableRefObject<HTMLDivElement | null>).current = el; }}>
+            <Tooltip content="Font size" delay={400}>
+              <div className="flex items-center h-7 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  disabled={!canEdit}
+                  value={fontSizeInputVal}
+                  onChange={(e) => setFontSizeInputVal(e.target.value)}
+                  onFocus={(e) => { e.target.select(); setFontSizeOpen(true); }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      const v = parseInt(e.currentTarget.value);
-                      if (v >= 6 && v <= 120) { handleFontSizeChange(v); setFontSizeOpen(false); }
+                      e.preventDefault();
+                      const v = parseInt(fontSizeInputVal);
+                      if (v >= 1 && v <= 400) { handleFontSizeChange(v); }
+                      setFontSizeOpen(false);
+                      (e.target as HTMLInputElement).blur();
+                    } else if (e.key === "Escape") {
+                      setFontSizeInputVal(`${currentFontSize}`);
+                      setFontSizeOpen(false);
+                      (e.target as HTMLInputElement).blur();
                     }
                   }}
+                  onBlur={() => {
+                    const v = parseInt(fontSizeInputVal);
+                    if (v >= 1 && v <= 400) { handleFontSizeChange(v); }
+                    else { setFontSizeInputVal(`${currentFontSize}`); }
+                  }}
+                  className="w-8 h-7 text-center text-[12px] bg-transparent border border-transparent focus:border-blue-400 dark:focus:border-blue-500 rounded outline-none text-gray-700 dark:text-gray-200 cursor-pointer disabled:opacity-50"
                 />
+                <button type="button" disabled={!canEdit}
+                  onMouseDown={(e) => { e.preventDefault(); }}
+                  onClick={() => { closeAllToolbarDropdowns(); setFontSizeOpen(!fontSizeOpen); }}
+                  className="w-4 h-7 inline-flex items-center justify-center cursor-pointer disabled:opacity-50"
+                >
+                  <ChevronDown className="w-3 h-3 text-gray-500 dark:text-gray-400" />
+                </button>
               </div>
-            </div>
-          </ToolbarDropdown>
+            </Tooltip>
+            {fontSizeOpen && (
+              <div className="absolute top-full left-0 mt-1 w-[80px] bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[200] py-1 max-h-[280px] overflow-y-auto">
+                {[8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 36, 48, 72, 96].map((s) => (
+                  <button key={s} type="button" onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => { handleFontSizeChange(s); setFontSizeOpen(false); }}
+                    className={`w-full px-3 py-1.5 text-left text-[12px] transition-colors cursor-pointer ${s === currentFontSize ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
+                  >{s}</button>
+                ))}
+              </div>
+            )}
+          </div>
           <Tooltip content="Increase font size" delay={400}>
             <button type="button" disabled={!canEdit}
               onMouseDown={(e) => { if (!canEdit) return; e.preventDefault(); }}
@@ -6744,7 +7057,7 @@ export default function DocEditor({
             isOpen={textColorOpen}
             onToggle={() => { closeAllToolbarDropdowns(); setTextColorOpen(!textColorOpen); }}
             disabled={!canEdit}
-            width="w-[280px]"
+            width="w-auto min-w-[260px] max-w-[90vw]"
           >
             <div className="p-3">
               <TabbedColorPalette
@@ -6775,7 +7088,8 @@ export default function DocEditor({
             isOpen={highlightOpen}
             onToggle={() => { closeAllToolbarDropdowns(); setHighlightOpen(!highlightOpen); }}
             disabled={!canEdit}
-            width="w-[280px]"
+            width="w-auto min-w-[260px] max-w-[90vw]"
+            align="right"
           >
             <div className="p-3">
               <TabbedColorPalette
@@ -6847,7 +7161,8 @@ export default function DocEditor({
             isOpen={lineSpacingOpen}
             onToggle={() => { closeAllToolbarDropdowns(); setLineSpacingOpen(!lineSpacingOpen); }}
             disabled={!canEdit}
-            width="w-[160px]"
+            width="w-[250px]"
+            align="right"
           >
             <div className="py-1">
               {[...LINE_SPACINGS, { value: 2.5, label: "2.5" }, { value: 3.0, label: "3.0" }].map((ls) => (
@@ -6856,6 +7171,20 @@ export default function DocEditor({
                   className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
                 >{ls.label}</button>
               ))}
+              <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+              <button type="button" onMouseDown={(e) => e.preventDefault()}
+                onClick={() => { handleAddSpaceBefore(); setLineSpacingOpen(false); }}
+                className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              >Add space before paragraph</button>
+              <button type="button" onMouseDown={(e) => e.preventDefault()}
+                onClick={() => { handleAddSpaceAfter(); setLineSpacingOpen(false); }}
+                className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              >Add space after paragraph</button>
+              <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+              <button type="button" onMouseDown={(e) => e.preventDefault()}
+                onClick={() => { handleCustomSpacing(); setLineSpacingOpen(false); }}
+                className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              >Custom spacing</button>
             </div>
           </ToolbarDropdown>
           <ToolbarDivider />
@@ -7215,7 +7544,7 @@ export default function DocEditor({
         <div
           ref={scrollContainerRef}
           className={[
-            "flex-1 min-h-0 overflow-auto transition-[margin] duration-300 ease-in-out",
+            "flex-1 min-h-0 overflow-auto transition-[margin] duration-300 ease-in-out bg-gray-100/80 dark:bg-gray-950 midnight:bg-[#06101f] purple:bg-[#12061f]",
             isFullscreen ? "px-0 pb-0" : "px-1 sm:px-2 md:px-4 pb-2 sm:pb-4",
             !isFullscreen && showComments ? "mr-[356px] max-md:mr-0" : "",
             !isFullscreen && showImageSearchSidebar && !showComments ? "mr-[356px] max-md:mr-0" : "",
@@ -7225,6 +7554,19 @@ export default function DocEditor({
           onDragLeave={handleEditorDragLeave}
           onDrop={handleEditorDrop}
         >
+          {/* Mode indicators */}
+          {docMode === "viewing" && (
+            <div className="sticky top-0 z-[50] flex items-center justify-center gap-2 px-4 py-1.5 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 text-[11px] font-medium">
+              <Eye className="w-3.5 h-3.5" />
+              <span>You are viewing this document. To make edits, switch to Editing mode.</span>
+            </div>
+          )}
+          {docMode === "suggesting" && (
+            <div className="sticky top-0 z-[50] flex items-center justify-center gap-2 px-4 py-1.5 bg-green-50 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800/40 text-green-700 dark:text-green-400 text-[11px] font-medium">
+              <MessageSquarePlus className="w-3.5 h-3.5" />
+              <span>Suggesting mode — your edits will appear as suggestions that can be accepted or rejected.</span>
+            </div>
+          )}
           {!isFullscreen && showEquationToolbar && (
             <div data-doc-equation-toolbar className="mx-auto w-full max-w-[860px] mb-2 px-2">
               <div className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-gray-900/60 midnight:bg-[#0b1220] purple:bg-[#170a27] backdrop-blur-sm">
@@ -7246,54 +7588,79 @@ export default function DocEditor({
               </div>
             </div>
           )}
-          {!isFullscreen && showRuler && (
-            <div data-doc-ruler-container className="mx-auto w-full mb-1 mt-1" style={{ maxWidth: pageWidthPx }}>
-              <div className="h-7 rounded-sm border border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white dark:bg-gray-900/60 midnight:bg-[#0b1220] purple:bg-[#170a27] relative overflow-hidden select-none">
-                {/* Ruler tick marks */}
-                <svg className="w-full h-full" preserveAspectRatio="none" viewBox={`0 0 ${pageWidthPx} 28`}>
-                  {Array.from({ length: Math.ceil((pageWidthPx - marginLeftPx - marginRightPx) / 96) + 1 }, (_, i) => {
-                    const x = marginLeftPx + i * 96;
-                    return (
-                      <g key={i}>
-                        <line x1={x} y1="14" x2={x} y2="28" stroke="#9ca3af" strokeWidth="1" />
-                        <text x={x} y="11" textAnchor="middle" fontSize="9" fill="#9ca3af" fontWeight="500">{i}</text>
-                        {i < Math.ceil((pageWidthPx - marginLeftPx - marginRightPx) / 96) && (
-                          <line x1={x + 48} y1="20" x2={x + 48} y2="28" stroke="#d1d5db" strokeWidth="0.5" />
-                        )}
-                        {[24, 72].map((offset) => {
-                          const qx = x + offset;
-                          if (qx >= pageWidthPx) return null;
-                          return <line key={offset} x1={qx} y1="23" x2={qx} y2="28" stroke="#e5e7eb" strokeWidth="0.5" />;
-                        })}
-                      </g>
-                    );
-                  })}
-                </svg>
-                {/* Blue margin shading */}
-                <div className="absolute top-0 h-full bg-blue-100/30 dark:bg-blue-900/15" style={{ left: 0, width: marginLeftPx }} />
-                <div className="absolute top-0 h-full bg-blue-100/30 dark:bg-blue-900/15" style={{ right: 0, width: marginRightPx }} />
-                {/* Indent triangles */}
-                <Tooltip content="Left indent" delay={400}><div className="absolute bottom-0 w-0 h-0 border-l-[5px] border-r-[5px] border-b-[6px] border-l-transparent border-r-transparent border-b-blue-500 cursor-pointer" style={{ left: marginLeftPx - 5 }} /></Tooltip>
-                <Tooltip content="Right indent" delay={400}><div className="absolute bottom-0 w-0 h-0 border-l-[5px] border-r-[5px] border-b-[6px] border-l-transparent border-r-transparent border-b-blue-500 cursor-pointer" style={{ right: marginRightPx - 5 }} /></Tooltip>
+          {/* Drawing annotation overlay + toolbar */}
+          {drawingMode && (
+            <div className="sticky top-0 z-[60] flex items-center justify-center py-1.5 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-200/60 dark:border-gray-700/60 shadow-sm">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                {/* Tool buttons */}
+                {([
+                  { id: "pen" as const, label: "Pen", icon: <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 17l1.5-4L14 3.5a1.5 1.5 0 012 0l.5.5a1.5 1.5 0 010 2L7 15.5z"/><path d="M11 6l3 3"/></svg> },
+                  { id: "highlighter" as const, label: "Highlighter", icon: <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 15l2-5L15 2l3 3-8 8z"/><path d="M3 17h4l-2-2z" fill="currentColor" opacity="0.3"/></svg> },
+                  { id: "eraser" as const, label: "Eraser", icon: <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="8" width="12" height="6" rx="1" transform="rotate(-30 10 11)"/><path d="M4 17h12"/></svg> },
+                  { id: "arrow" as const, label: "Arrow", icon: <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 16L16 4M16 4l-5 1M16 4l-1 5"/></svg> },
+                  { id: "rect" as const, label: "Rectangle", icon: <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="5" width="14" height="10" rx="1.5"/></svg> },
+                  { id: "ellipse" as const, label: "Circle", icon: <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5"><ellipse cx="10" cy="10" rx="7" ry="6"/></svg> },
+                ]).map(tool => (
+                  <Tooltip key={tool.id} content={tool.label} delay={200}>
+                    <button type="button"
+                      onClick={() => setDrawingMode(tool.id)}
+                      className={`p-2 rounded-lg transition-all cursor-pointer ${drawingMode === tool.id ? "bg-blue-500 text-white shadow-sm" : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"}`}
+                    >{tool.icon}</button>
+                  </Tooltip>
+                ))}
+                <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1" />
+                {/* Size slider */}
+                <Tooltip content={`Size: ${drawingSize}px`} delay={200}>
+                  <input type="range" min={1} max={20} value={drawingSize}
+                    onChange={e => setDrawingSize(Number(e.target.value))}
+                    className="w-16 h-1 accent-blue-500 cursor-pointer" />
+                </Tooltip>
+                <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1" />
+                {/* Color swatches */}
+                {["#1a73e8", "#e53935", "#43a047", "#fb8c00", "#8e24aa", "#000000"].map(c => (
+                  <button key={c} type="button" onClick={() => setDrawingColor(c)}
+                    className={`w-5 h-5 rounded-full cursor-pointer transition-transform ${drawingColor === c ? "ring-2 ring-offset-1 ring-blue-500 scale-110" : "hover:scale-110"}`}
+                    style={{ backgroundColor: c }} />
+                ))}
+                <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1" />
+                {/* Clear & close */}
+                <Tooltip content="Clear all drawings" delay={200}>
+                  <button type="button" onClick={() => {
+                    const canvas = drawCanvasRef.current;
+                    if (canvas) { const ctx = canvas.getContext("2d"); if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height); }
+                    drawingRef.current.paths = null;
+                  }} className="p-2 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 transition-colors cursor-pointer">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </Tooltip>
+                <Tooltip content="Exit drawing mode" delay={200}>
+                  <button type="button" onClick={() => setDrawingMode(null)}
+                    className="p-2 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </Tooltip>
               </div>
             </div>
           )}
+          {/* Ruler is now rendered inside the page container for perfect alignment */}
           <div
             ref={editorRootRef}
             className={[
               "w-full",
               showPrintLayout
-                ? "min-h-full py-3 sm:py-6 bg-gray-50 dark:bg-gray-950 midnight:bg-[#06101f] purple:bg-[#12061f]"
+                ? "min-h-full pt-1 sm:pt-2 pb-3 sm:pb-6"
                 : "min-h-full",
             ].join(" ")}
             style={zoomLevel !== 100 ? {
               transform: `scale(${zoomLevel / 100})`,
               transformOrigin: "top center",
               width: `${10000 / zoomLevel}%`,
+              left: `${(100 - 10000 / zoomLevel) / 2}%`,
+              position: "relative" as const,
             } : undefined}
           >
             {showPrintLayout ? (
-              <div className="flex flex-col items-center gap-3 sm:gap-6">
+              <div className="flex flex-col items-center gap-2 sm:gap-4">
                 {(() => {
                   let flatIdx = 0;
                   return sectionInfos.map((sInfo, sIdx) => {
@@ -7315,13 +7682,78 @@ export default function DocEditor({
                               </div>
                             </div>
                           )}
+                          {/* Ruler — Google Docs style, above the first page with spacing */}
+                          {showRuler && pIdx === 0 && (
+                            <div
+                              data-doc-ruler
+                              className="w-full relative select-none mb-1"
+                              style={{
+                                maxWidth: isFullscreen ? "min(1200px, calc(100vw - 64px))" : dims.pageWidthPx,
+                              }}
+                            >
+                              {/* Ruler bar */}
+                              <div className="h-[22px] relative rounded-sm bg-white dark:bg-gray-900 border border-gray-200/60 dark:border-gray-700/40 overflow-hidden">
+                                {/* Margin zone shading — gray areas for margins */}
+                                <div className="absolute top-0 bottom-0 bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-850" style={{ left: 0, width: dims.marginLeftPx }} />
+                                <div className="absolute top-0 bottom-0 bg-gradient-to-l from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-850" style={{ right: 0, width: dims.marginRightPx }} />
+                                {/* Margin boundary lines */}
+                                <div className="absolute top-0 bottom-0 w-px bg-gray-300/60 dark:bg-gray-600/40" style={{ left: dims.marginLeftPx }} />
+                                <div className="absolute top-0 bottom-0 w-px bg-gray-300/60 dark:bg-gray-600/40" style={{ right: dims.marginRightPx }} />
+                                {/* Tick marks */}
+                                <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox={`0 0 ${dims.pageWidthPx} 22`}>
+                                  {Array.from({ length: Math.ceil((dims.pageWidthPx - dims.marginLeftPx - dims.marginRightPx) / 96) + 1 }, (_, i) => {
+                                    const x = dims.marginLeftPx + i * 96;
+                                    return (
+                                      <g key={i}>
+                                        <line x1={x} y1="10" x2={x} y2="22" stroke="#b0b5bd" strokeWidth="0.75" />
+                                        <text x={x} y="9" textAnchor="middle" fontSize="8" fill="#8b919a" fontFamily="system-ui, sans-serif" fontWeight="500">{i}</text>
+                                        {i < Math.ceil((dims.pageWidthPx - dims.marginLeftPx - dims.marginRightPx) / 96) && (
+                                          <line x1={x + 48} y1="15" x2={x + 48} y2="22" stroke="#c8ccd2" strokeWidth="0.5" />
+                                        )}
+                                        {[24, 72].map((offset) => {
+                                          const qx = x + offset;
+                                          if (qx >= dims.pageWidthPx - dims.marginRightPx) return null;
+                                          return <line key={offset} x1={qx} y1="18" x2={qx} y2="22" stroke="#d8dbe0" strokeWidth="0.5" />;
+                                        })}
+                                      </g>
+                                    );
+                                  })}
+                                </svg>
+                                {/* Left margin drag handle */}
+                                <Tooltip content="Left margin — drag to adjust" delay={400}>
+                                  <div className="absolute top-0 bottom-0 w-[6px] cursor-ew-resize z-10 group hover:bg-blue-400/20" style={{ left: dims.marginLeftPx - 3 }}>
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[3px] h-[10px] rounded-full bg-gray-400 group-hover:bg-blue-500 transition-colors" />
+                                  </div>
+                                </Tooltip>
+                                {/* Right margin drag handle */}
+                                <Tooltip content="Right margin — drag to adjust" delay={400}>
+                                  <div className="absolute top-0 bottom-0 w-[6px] cursor-ew-resize z-10 group hover:bg-blue-400/20" style={{ right: dims.marginRightPx - 3 }}>
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[3px] h-[10px] rounded-full bg-gray-400 group-hover:bg-blue-500 transition-colors" />
+                                  </div>
+                                </Tooltip>
+                                {/* First-line indent handle (top triangle) */}
+                                <Tooltip content="First line indent" delay={400}>
+                                  <div className="absolute top-0 z-10 cursor-ew-resize" style={{ left: dims.marginLeftPx - 4 }}>
+                                    <svg width="8" height="6" viewBox="0 0 8 6"><polygon points="0,0 8,0 4,6" fill="#4285f4" opacity="0.8" /></svg>
+                                  </div>
+                                </Tooltip>
+                                {/* Left indent handle (bottom triangle) */}
+                                <Tooltip content="Left indent" delay={400}>
+                                  <div className="absolute bottom-0 z-10 cursor-ew-resize" style={{ left: dims.marginLeftPx - 4 }}>
+                                    <svg width="8" height="6" viewBox="0 0 8 6"><polygon points="4,0 8,6 0,6" fill="#4285f4" opacity="0.8" /></svg>
+                                  </div>
+                                </Tooltip>
+                              </div>
+                            </div>
+                          )}
                           <div
                             className={[
-                              "w-full rounded-sm shadow-md relative",
+                              "w-full rounded relative",
                               sInfo.pageSetup.pageColor === "#ffffff"
                                 ? "bg-white dark:bg-gray-950 midnight:bg-[#0b1220] purple:bg-[#170a27]"
                                 : "",
-                              "border border-gray-200/80 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10",
+                              "shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.06)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)]",
+                              "border border-gray-200/50 dark:border-gray-800/50 midnight:border-cyan-500/10 purple:border-pink-500/10",
                             ].join(" ")}
                             style={{
                               maxWidth: isFullscreen ? "min(1200px, calc(100vw - 64px))" : dims.pageWidthPx,
@@ -9410,6 +9842,162 @@ export default function DocEditor({
         />
       )}
 
+      {/* Drawing annotation canvas overlay */}
+      {drawingMode && (
+        <canvas
+          ref={(el) => {
+            drawCanvasRef.current = el;
+            if (el && (el.width !== el.offsetWidth || el.height !== el.offsetHeight)) {
+              // Save existing drawing before resize
+              const ctx = el.getContext("2d");
+              if (ctx && drawingRef.current.paths) {
+                const saved = drawingRef.current.paths;
+                el.width = el.offsetWidth;
+                el.height = el.offsetHeight;
+                ctx.putImageData(saved, 0, 0);
+              } else {
+                el.width = el.offsetWidth;
+                el.height = el.offsetHeight;
+              }
+            }
+          }}
+          className="absolute inset-0 z-[55] cursor-crosshair"
+          style={{ pointerEvents: drawingMode ? "auto" : "none" }}
+          onMouseDown={(e) => {
+            const canvas = drawCanvasRef.current;
+            if (!canvas) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            drawingRef.current.isDrawing = true;
+            drawingRef.current.startX = x;
+            drawingRef.current.startY = y;
+            drawingRef.current.lastX = x;
+            drawingRef.current.lastY = y;
+
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return;
+
+            if (drawingMode === "eraser") {
+              ctx.globalCompositeOperation = "destination-out";
+              ctx.lineWidth = drawingSize * 4;
+            } else {
+              ctx.globalCompositeOperation = "source-over";
+              ctx.strokeStyle = drawingColor;
+              ctx.lineWidth = drawingMode === "highlighter" ? drawingSize * 4 : drawingSize;
+              ctx.lineCap = "round";
+              ctx.lineJoin = "round";
+              if (drawingMode === "highlighter") {
+                ctx.globalAlpha = 0.3;
+              } else {
+                ctx.globalAlpha = 1;
+              }
+            }
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+          }}
+          onMouseMove={(e) => {
+            if (!drawingRef.current.isDrawing) return;
+            const canvas = drawCanvasRef.current;
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (drawingMode === "pen" || drawingMode === "highlighter" || drawingMode === "eraser") {
+              ctx.lineTo(x, y);
+              ctx.stroke();
+            }
+            drawingRef.current.lastX = x;
+            drawingRef.current.lastY = y;
+          }}
+          onMouseUp={(e) => {
+            if (!drawingRef.current.isDrawing) return;
+            drawingRef.current.isDrawing = false;
+            const canvas = drawCanvasRef.current;
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const { lastX, lastY } = drawingRef.current;
+
+            // Draw shapes on mouse up using start point
+            const sx = drawingRef.current.startX;
+            const sy = drawingRef.current.startY;
+            if (drawingMode === "rect") {
+              ctx.globalAlpha = 1;
+              ctx.strokeStyle = drawingColor;
+              ctx.lineWidth = drawingSize;
+              ctx.strokeRect(Math.min(sx, x), Math.min(sy, y), Math.abs(x - sx), Math.abs(y - sy));
+            } else if (drawingMode === "ellipse") {
+              ctx.globalAlpha = 1;
+              ctx.strokeStyle = drawingColor;
+              ctx.lineWidth = drawingSize;
+              ctx.beginPath();
+              ctx.ellipse((sx + x) / 2, (sy + y) / 2, Math.abs(x - sx) / 2, Math.abs(y - sy) / 2, 0, 0, Math.PI * 2);
+              ctx.stroke();
+            } else if (drawingMode === "arrow") {
+              ctx.globalAlpha = 1;
+              ctx.strokeStyle = drawingColor;
+              ctx.lineWidth = drawingSize;
+              ctx.beginPath();
+              ctx.moveTo(sx, sy);
+              ctx.lineTo(x, y);
+              ctx.stroke();
+              const angle = Math.atan2(y - sy, x - sx);
+              const headLen = Math.max(10, drawingSize * 4);
+              ctx.beginPath();
+              ctx.moveTo(x, y);
+              ctx.lineTo(x - headLen * Math.cos(angle - 0.4), y - headLen * Math.sin(angle - 0.4));
+              ctx.moveTo(x, y);
+              ctx.lineTo(x - headLen * Math.cos(angle + 0.4), y - headLen * Math.sin(angle + 0.4));
+              ctx.stroke();
+            }
+
+            // Reset alpha
+            ctx.globalAlpha = 1;
+            ctx.globalCompositeOperation = "source-over";
+            // Save current state
+            drawingRef.current.paths = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          }}
+          onMouseLeave={() => {
+            if (drawingRef.current.isDrawing) {
+              drawingRef.current.isDrawing = false;
+              const canvas = drawCanvasRef.current;
+              if (canvas) {
+                const ctx = canvas.getContext("2d");
+                if (ctx) {
+                  ctx.globalAlpha = 1;
+                  ctx.globalCompositeOperation = "source-over";
+                  drawingRef.current.paths = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                }
+              }
+            }
+          }}
+        />
+      )}
+
+      {/* Suggestion accept/reject popup */}
+      {activeSuggestionId && suggestionPopupPos && (
+        <div
+          className="absolute z-[200] flex items-center gap-1 px-1.5 py-1 rounded-lg bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-700"
+          style={{ top: suggestionPopupPos.top, left: suggestionPopupPos.left }}
+        >
+          <button type="button"
+            onClick={() => { acceptSuggestion(activeSuggestionId); setActiveSuggestionId(null); setSuggestionPopupPos(null); }}
+            className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 transition-colors cursor-pointer"
+          >Accept</button>
+          <button type="button"
+            onClick={() => { rejectSuggestion(activeSuggestionId); setActiveSuggestionId(null); setSuggestionPopupPos(null); }}
+            className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors cursor-pointer"
+          >Reject</button>
+        </div>
+      )}
+
       {/* Toast */}
       {toast && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[220] px-3 py-2 rounded-xl bg-gray-900 text-white text-[12px] shadow-xl">
@@ -9435,6 +10023,7 @@ function ToolbarDropdown({
   disabled,
   children,
   width = "w-[200px]",
+  align = "left",
 }: {
   label?: string;
   title: string;
@@ -9444,6 +10033,7 @@ function ToolbarDropdown({
   disabled?: boolean;
   children: React.ReactNode;
   width?: string;
+  align?: "left" | "right";
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -9451,7 +10041,8 @@ function ToolbarDropdown({
     if (!isOpen) return;
     const handler = (e: MouseEvent) => {
       if (isNativeColorPickerOpen()) return;
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      const target = e.target as HTMLElement;
+      if (ref.current && !ref.current.contains(target)) {
         onToggle();
       }
     };
@@ -9476,7 +10067,7 @@ function ToolbarDropdown({
         </button>
       </Tooltip>
       {isOpen && (
-        <div className={`absolute z-[120] top-full mt-1 left-0 ${width} rounded-xl border border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] shadow-xl max-h-[400px] overflow-y-auto`}>
+        <div className={`absolute z-[120] top-full mt-1 ${align === "right" ? "right-0" : "left-0"} ${width} rounded-xl border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 max-h-[80vh] overflow-y-auto overflow-x-hidden`}>
           {children}
         </div>
       )}
@@ -9821,7 +10412,7 @@ function MenuPanel({ children }: { children: React.ReactNode }) {
   return (
     <div
       data-doc-menu-panel
-      className="absolute z-[120] mt-2 left-0 w-[260px] rounded-2xl border border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] shadow-xl shadow-black/10 dark:shadow-black/40 overflow-visible"
+      className="absolute z-[120] mt-2 left-0 w-[260px] rounded-2xl border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible"
     >
       <div className="py-1 max-h-[calc(100vh-120px)] overflow-y-auto">{children}</div>
     </div>
@@ -9887,7 +10478,7 @@ function SubmenuPanel({
       <div
         ref={panelRef}
         data-doc-menu-panel
-        className={`fixed z-[10000] rounded-2xl border border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] shadow-xl shadow-black/10 dark:shadow-black/40 overflow-visible ${className}`}
+        className={`fixed z-[10000] rounded-2xl border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible ${className}`}
         onMouseEnter={() => timerCtx?.cancelClose()}
         onMouseLeave={() => timerCtx?.scheduleClose()}
       >
@@ -10503,18 +11094,27 @@ function EditingModeButton({
       </Tooltip>
       {open && (
         <div className="absolute z-[120] top-full mt-1 right-0 w-[180px] rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-900 shadow-xl py-1">
-          {(["editing", "suggesting", "viewing"] as const).map((mode) => (
+          {([
+            { mode: "editing" as const, icon: PenLine, desc: "Edit directly" },
+            { mode: "suggesting" as const, icon: MessageSquarePlus, desc: "Edits become suggestions" },
+            { mode: "viewing" as const, icon: Eye, desc: "Read only" },
+          ]).map(({ mode, icon: MIcon, desc }) => (
             <button
               key={mode}
               type="button"
               onClick={() => { onModeChange(mode); setOpen(false); }}
-              className={`w-full px-3 py-1.5 text-left text-[12px] transition-colors cursor-pointer ${
+              className={`w-full px-3 py-2 text-left transition-colors cursor-pointer flex items-center gap-2.5 ${
                 mode === docMode
-                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 font-semibold"
+                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
                   : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
             >
-              {mode.charAt(0).toUpperCase() + mode.slice(1)}
+              <MIcon className="w-4 h-4 flex-shrink-0" />
+              <div>
+                <div className={`text-[12px] ${mode === docMode ? "font-semibold" : ""}`}>{mode.charAt(0).toUpperCase() + mode.slice(1)}</div>
+                <div className="text-[10px] text-gray-400 dark:text-gray-500">{desc}</div>
+              </div>
+              {mode === docMode && <Check className="w-3.5 h-3.5 ml-auto flex-shrink-0" />}
             </button>
           ))}
         </div>
@@ -11246,6 +11846,88 @@ function CommentCard({
               Reply
             </button>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Doc User Menu (compact avatar + dropdown for doc editor header) ────
+
+function DocUserMenu({ user }: { user: { firstName?: string; lastName?: string; avatar?: string; role?: string } | null }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const name = user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "User";
+  const initials = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "U";
+  const roleLabel = user?.role === "super_admin" ? "Admin" : user?.role === "teacher" ? "Teacher" : user?.role === "student" ? "Student" : user?.role === "parent" ? "Parent" : user?.role || "User";
+
+  return (
+    <div ref={ref} className="relative">
+      <Tooltip content={name} delay={400}>
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className="w-8 h-8 rounded-full overflow-hidden cursor-pointer ring-2 ring-transparent hover:ring-blue-500/30 transition-all"
+        >
+          {user?.avatar ? (
+            <img src={user.avatar} alt={name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-[11px] font-bold">
+              {initials}
+            </div>
+          )}
+        </button>
+      </Tooltip>
+      {open && (
+        <div className="absolute z-[200] top-full mt-2 right-0 w-[220px] rounded-xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200/80 dark:border-gray-700/60 overflow-hidden">
+          {/* Profile card */}
+          <div className="px-3 py-3 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/40 dark:to-gray-900">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                {user?.avatar ? (
+                  <img src={user.avatar} alt={name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm font-bold">
+                    {initials}
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0">
+                <div className="text-[13px] font-semibold text-gray-900 dark:text-white truncate">{name}</div>
+                <div className="text-[11px] text-gray-500 dark:text-gray-400">{roleLabel}</div>
+              </div>
+            </div>
+          </div>
+          {/* Menu items */}
+          <div className="py-1">
+            <button type="button" onClick={() => { setOpen(false); window.location.href = "/"; }}
+              className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer flex items-center gap-2.5">
+              <Home className="w-3.5 h-3.5 text-gray-400" /> Home
+            </button>
+            <button type="button" onClick={() => { setOpen(false); window.location.href = "/dashboard"; }}
+              className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer flex items-center gap-2.5">
+              <LayoutGrid className="w-3.5 h-3.5 text-gray-400" /> Dashboard
+            </button>
+            <button type="button" onClick={() => setOpen(false)}
+              className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer flex items-center gap-2.5">
+              <Settings className="w-3.5 h-3.5 text-gray-400" /> Settings
+            </button>
+            <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
+            <button type="button" onClick={() => setOpen(false)}
+              className="w-full px-3 py-2 text-left text-[12px] text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer flex items-center gap-2.5">
+              <LogOut className="w-3.5 h-3.5" /> Sign out
+            </button>
+          </div>
         </div>
       )}
     </div>
