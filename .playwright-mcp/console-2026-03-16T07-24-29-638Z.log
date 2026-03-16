@@ -1,0 +1,990 @@
+[  118410ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  118556ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  118675ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  118800ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  118921ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  119033ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  119125ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  119236ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  119330ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  119423ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  119536ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  119644ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  119734ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  119833ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  119941ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  120053ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  120172ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  120284ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  120392ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  120504ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  120615ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  120723ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  120829ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  120921ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  121034ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  121140ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  121251ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  121363ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  121473ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  121567ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  121690ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  121798ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  121906ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  122015ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  122121ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  122217ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  122326ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  122434ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  122526ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  122642ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  122761ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  122873ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  122995ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  123110ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  123230ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  123324ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  123432ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  123541ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  123651ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  123771ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  123879ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  123987ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  124095ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  124204ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  124313ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  124423ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  124531ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  124626ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  124735ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  124846ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  124957ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  125068ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  125163ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  125273ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  125379ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  125477ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  125571ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  125668ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  125773ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  125886ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  125980ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  126074ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  126186ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  126312ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  126432ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  126546ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  126637ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  126751ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  126855ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  126954ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  127060ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  127170ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  127283ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  127391ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  127498ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  127610ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  127727ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  127846ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  127955ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989
+[  128068ms] [ERROR] ./components/shared/DocEditor/DocEditor.tsx:4636:6
+Parsing ecmascript source code failed
+  4634 |
+  4635 |   return (
+> 4636 |     <MenuCloseContext.Provider value={closeMenus}>
+       |      ^^^^^^^^^^^^^^^^
+  4637 |     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
+  4638 |       <div
+  4639 |         ref={rootRef}
+
+Unexpected token `MenuCloseContext`. Expected jsx identifier @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989

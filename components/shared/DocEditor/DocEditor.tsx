@@ -118,6 +118,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { DOC_LANGUAGES } from "./languages";
+import DrawingCanvas from "./DrawingCanvas";
 import Tooltip from "@/components/shared/Tooltip";
 import ShareDialog from "@/components/shared/ShareDialog";
 import type { ShareTarget } from "@/components/shared/ShareDialog";
@@ -1137,12 +1138,26 @@ export default function DocEditor({
   const [showImageOptions, setShowImageOptions] = useState(false);
   const [imageOptions, setImageOptions] = useState({ opacity: 100, brightness: 100, contrast: 100 });
   const [imageRotation, setImageRotation] = useState(0);
+  const [imageWrapMode, setImageWrapMode] = useState<"inline" | "wrapLeft" | "wrapRight" | "breakText">("inline");
   const [showCropOverlay, setShowCropOverlay] = useState(false);
   const [cropRect, setCropRect] = useState({ top: 0, left: 0, width: 100, height: 100 });
   const [resizeDimensions, setResizeDimensions] = useState<{ w: number; h: number; x: number; y: number } | null>(null);
   const isImageDraggingRef = useRef(false);
   const [isDragActive, setIsDragActive] = useState(false);
   const dragCounterRef = useRef(0);
+  // Paint Format state
+  const [paintFormatActive, setPaintFormatActive] = useState(false);
+  const paintFormatStyleRef = useRef<Record<string, string> | null>(null);
+  // Recently used fonts
+  const [recentFonts, setRecentFonts] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      try { return JSON.parse(localStorage.getItem("doc-editor-recent-fonts") || "[]"); } catch { return []; }
+    }
+    return [];
+  });
+  // Ghost cursor for image drag-and-drop
+  const [dragGhostPos, setDragGhostPos] = useState<{ x: number; y: number } | null>(null);
+  const [showDrawingCanvas, setShowDrawingCanvas] = useState(false);
   const [docMode, setDocMode] = useState<"editing" | "suggesting" | "viewing">("editing");
   const [isChromeCollapsed, setIsChromeCollapsed] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
@@ -2802,8 +2817,68 @@ export default function DocEditor({
     focusEditor();
     exec("fontName", family);
     setCurrentFontFamily(family);
+    // Track recently used fonts
+    setRecentFonts(prev => {
+      const updated = [family, ...prev.filter(f => f !== family)].slice(0, 5);
+      try { localStorage.setItem("doc-editor-recent-fonts", JSON.stringify(updated)); } catch {}
+      return updated;
+    });
     emitChange();
   }, [emitChange]);
+
+  // Paint Format: capture formatting from current selection
+  const capturePaintFormat = useCallback(() => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) { showToast("Select text first to copy formatting"); return; }
+    let node = sel.anchorNode as HTMLElement | null;
+    if (node?.nodeType === Node.TEXT_NODE) node = node.parentElement;
+    if (!node) return;
+    const cs = window.getComputedStyle(node);
+    paintFormatStyleRef.current = {
+      fontFamily: cs.fontFamily, fontSize: cs.fontSize, fontWeight: cs.fontWeight,
+      fontStyle: cs.fontStyle, textDecoration: cs.textDecoration, color: cs.color,
+      backgroundColor: cs.backgroundColor,
+    };
+    setPaintFormatActive(true);
+    showToast("Format copied — click on text to apply");
+  }, []);
+
+  // Paint Format: apply captured formatting to selection
+  const applyPaintFormat = useCallback(() => {
+    const style = paintFormatStyleRef.current;
+    if (!style) return;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+      setPaintFormatActive(false);
+      paintFormatStyleRef.current = null;
+      return;
+    }
+    const range = sel.getRangeAt(0);
+    const span = document.createElement("span");
+    span.style.fontFamily = style.fontFamily;
+    span.style.fontSize = style.fontSize;
+    span.style.fontWeight = style.fontWeight;
+    span.style.fontStyle = style.fontStyle;
+    span.style.textDecoration = style.textDecoration;
+    span.style.color = style.color;
+    if (style.backgroundColor && style.backgroundColor !== "rgba(0, 0, 0, 0)" && style.backgroundColor !== "transparent") {
+      span.style.backgroundColor = style.backgroundColor;
+    }
+    try { range.surroundContents(span); } catch { /* multi-element selection fallback */ }
+    setPaintFormatActive(false);
+    paintFormatStyleRef.current = null;
+    emitChange();
+  }, [emitChange]);
+
+  // Paint Format: listen for mouseup on editor to apply captured formatting
+  useEffect(() => {
+    if (!paintFormatActive) return;
+    const root = editorRootRef.current;
+    if (!root) return;
+    const onMouseUp = () => { setTimeout(applyPaintFormat, 0); };
+    root.addEventListener("mouseup", onMouseUp);
+    return () => root.removeEventListener("mouseup", onMouseUp);
+  }, [paintFormatActive, applyPaintFormat]);
 
   const handleFontSizeChange = useCallback((sizePx: number) => {
     focusEditor();
@@ -4393,6 +4468,103 @@ export default function DocEditor({
     };
   }, []);
 
+  // Helper: apply text wrapping mode to an image
+  const applyImageWrapMode = useCallback((img: HTMLImageElement, mode: "inline" | "wrapLeft" | "wrapRight" | "breakText") => {
+    // Clear previous wrapping styles from both image and its container
+    img.style.float = "";
+    img.style.clear = "";
+    img.style.margin = "";
+    img.style.marginLeft = "";
+    img.style.marginRight = "";
+    img.style.marginTop = "";
+    img.style.marginBottom = "";
+
+    const parentP = img.parentElement;
+    const isAloneInP = parentP?.tagName === "P" && parentP.childNodes.length === 1 && parentP.firstChild === img;
+
+    // Clear previous float styles from container if it was previously floated
+    if (parentP && parentP.style) {
+      parentP.style.float = "";
+      parentP.style.clear = "";
+      parentP.style.margin = "";
+      parentP.style.marginLeft = "";
+      parentP.style.marginRight = "";
+      parentP.style.marginTop = "";
+      parentP.style.marginBottom = "";
+      parentP.style.width = "";
+    }
+
+    // If image was previously merged into a text paragraph for wrapping, separate it out
+    if (!isAloneInP && parentP && img.dataset.docImage) {
+      const imgFloat = img.style.float || (img.style as unknown as Record<string, string>).cssFloat || "";
+      const parentFloat = parentP.style.float || "";
+      // Only separate if the image is currently in a wrapping configuration
+      if (imgFloat || parentFloat) {
+        const newP = document.createElement("p");
+        parentP.insertBefore(newP, img);
+        newP.appendChild(img);
+        // Update parentP reference and isAloneInP for subsequent logic
+      }
+    }
+
+    // Re-evaluate after potential separation
+    const currentParent = img.parentElement;
+    const isNowAloneInP = currentParent?.tagName === "P" && currentParent.childNodes.length === 1 && currentParent.firstChild === img;
+
+    if (mode === "wrapLeft" || mode === "wrapRight") {
+      // Float the image's container <p> so ALL subsequent paragraphs wrap around it
+      img.style.display = "block";
+      img.style.maxWidth = "100%";
+
+      // Ensure image is in its own <p> for floating
+      let containerP = currentParent;
+      if (!isNowAloneInP && currentParent) {
+        const newP = document.createElement("p");
+        currentParent.insertBefore(newP, img);
+        newP.appendChild(img);
+        containerP = newP;
+      }
+
+      // Float the container paragraph — subsequent sibling <p> elements wrap around it
+      if (containerP && containerP.style) {
+        containerP.style.float = mode === "wrapLeft" ? "left" : "right";
+        containerP.style.marginRight = mode === "wrapLeft" ? "12px" : "0";
+        containerP.style.marginLeft = mode === "wrapRight" ? "12px" : "0";
+        containerP.style.marginBottom = "8px";
+        containerP.style.marginTop = "4px";
+        containerP.style.width = "auto";
+      }
+    } else if (mode === "breakText") {
+      img.style.display = "block";
+      img.style.margin = "12px auto";
+      // For break text, ensure image is in its own paragraph
+      if (!isNowAloneInP && currentParent) {
+        const newP = document.createElement("p");
+        currentParent.insertBefore(newP, img);
+        newP.appendChild(img);
+      }
+    } else {
+      // Inline mode
+      img.style.display = "";
+      img.style.verticalAlign = "bottom";
+      // For inline, ensure image is in its own paragraph
+      if (!isNowAloneInP && currentParent) {
+        const newP = document.createElement("p");
+        currentParent.insertBefore(newP, img);
+        newP.appendChild(img);
+      }
+    }
+
+    // Prevent innerHTML reset from undoing our DOM changes
+    isImageDraggingRef.current = true;
+    setImageWrapMode(mode);
+    emitChange();
+    setTimeout(() => {
+      isImageDraggingRef.current = false;
+      setSelectedImageRect(img.getBoundingClientRect());
+    }, 0);
+  }, [emitChange]);
+
   // Helper: remove crop from an image, restoring original src and dimensions
   const removeCrop = useCallback((img: HTMLImageElement) => {
     // Canvas-based crop stores original src in data-original-src
@@ -4451,6 +4623,13 @@ export default function DocEditor({
       const contrastMatch = filterStr.match(/contrast\(([\d.]+)\)/);
       if (contrastMatch) parsedContrast = Math.round(parseFloat(contrastMatch[1]) * 100);
       setImageOptions({ opacity: parsedOpacity, brightness: parsedBrightness, contrast: parsedContrast });
+      // Read current text wrapping mode from element styles (float may be on image or its parent <p>)
+      const imgFloat = img.style.float || img.style.cssFloat || "";
+      const parentFloat = img.parentElement?.style?.float || "";
+      if (imgFloat === "left" || parentFloat === "left") setImageWrapMode("wrapLeft");
+      else if (imgFloat === "right" || parentFloat === "right") setImageWrapMode("wrapRight");
+      else if (img.style.display === "block" && img.style.margin?.includes("auto")) setImageWrapMode("breakText");
+      else setImageWrapMode("inline");
       setShowCropOverlay(false);
     } else {
       setSelectedImage(null);
@@ -4496,6 +4675,8 @@ export default function DocEditor({
     if (e.dataTransfer.types.includes("Files")) {
       e.preventDefault();
       e.dataTransfer.dropEffect = "copy";
+      // Show ghost cursor at the drop position
+      setDragGhostPos({ x: e.clientX, y: e.clientY });
     }
   }, []);
 
@@ -4512,6 +4693,7 @@ export default function DocEditor({
     dragCounterRef.current--;
     if (dragCounterRef.current === 0) {
       setIsDragActive(false);
+      setDragGhostPos(null);
     }
   }, []);
 
@@ -4520,6 +4702,7 @@ export default function DocEditor({
     e.stopPropagation();
     dragCounterRef.current = 0;
     setIsDragActive(false);
+    setDragGhostPos(null);
     const allFiles = Array.from(e.dataTransfer.files);
     if (allFiles.length === 0) return;
 
@@ -5631,7 +5814,7 @@ export default function DocEditor({
                   <ViewMenuItem label="Spreadsheet" icon={FileSpreadsheet} onClick={() => showToast("Spreadsheet: coming soon")} />
                   <ViewMenuItem label="Presentation" icon={Presentation} onClick={() => showToast("Presentation: coming soon")} />
                   <ViewMenuItem label="Form" icon={FormInputIcon} onClick={() => showToast("Form: coming soon")} />
-                  <ViewMenuItem label="Drawing" icon={Pencil} onClick={() => showToast("Drawing: coming soon")} />
+                  <ViewMenuItem label="Drawing" icon={Pencil} onClick={() => setShowDrawingCanvas(true)} />
                 </SubmenuPanel>
               }
             />
@@ -6140,9 +6323,7 @@ export default function DocEditor({
             <ViewMenuItem
               label="Drawing"
               icon={Pencil}
-              onClick={() => {
-                insertSvg(`<svg width="520" height="180" viewBox="0 0 520 180" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="518" height="178" rx="14" fill="#f3f4f6" stroke="#e5e7eb"/><text x="260" y="92" text-anchor="middle" font-family="Inter, Arial" font-size="14" fill="#6b7280">Drawing placeholder</text></svg>`);
-              }}
+              onClick={() => setShowDrawingCanvas(true)}
             />
             <ViewMenuItem
               label="Chart"
@@ -6411,7 +6592,7 @@ export default function DocEditor({
           <ToolbarDivider />
 
           {/* Paint format */}
-          <ToolbarButton disabled={!canEdit} onClick={() => showToast("Format painter: select text, then click destination")} title="Paint format" Icon={Paintbrush} />
+          <ToolbarButton disabled={!canEdit} onClick={paintFormatActive ? () => { setPaintFormatActive(false); paintFormatStyleRef.current = null; } : capturePaintFormat} title={paintFormatActive ? "Cancel paint format" : "Paint format"} Icon={Paintbrush} active={paintFormatActive} />
           <ToolbarDivider />
 
           {/* Zoom */}
@@ -6470,6 +6651,19 @@ export default function DocEditor({
             width="w-[240px]"
           >
             <div className="p-2 max-h-[320px] overflow-y-auto space-y-2">
+              {recentFonts.length > 0 && (
+                <div>
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1 sticky top-0 bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] py-0.5 z-10">Recently used</div>
+                  {recentFonts.map((f) => (
+                    <button key={`recent-${f}`} type="button" onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => { handleFontFamilyChange(f); setFontFamilyOpen(false); }}
+                      style={{ fontFamily: `${f}, system-ui, sans-serif` }}
+                      className={`w-full px-2 py-1.5 text-left text-[12px] rounded-lg truncate transition-colors cursor-pointer ${f === currentFontFamily ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
+                    >{f}</button>
+                  ))}
+                  <div className="mx-1 mt-1 mb-2 border-t border-gray-100 dark:border-gray-700" />
+                </div>
+              )}
               {FONT_FAMILY_CATEGORIES.map((cat) => (
                 <div key={cat.label}>
                   <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1 sticky top-0 bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] py-0.5 z-10">{cat.label}</div>
@@ -6682,6 +6876,9 @@ export default function DocEditor({
                   { type: "disc", icon: <Circle className="w-2 h-2 fill-current" />, label: "Disc" },
                   { type: "circle", icon: <Circle className="w-2 h-2" />, label: "Circle" },
                   { type: "square", icon: <Square className="w-2 h-2 fill-current" />, label: "Square" },
+                  { type: "'– '", icon: <span className="text-[7px] font-bold leading-none">—</span>, label: "Dash" },
+                  { type: "'→ '", icon: <span className="text-[7px] font-bold leading-none">→</span>, label: "Arrow" },
+                  { type: "'★ '", icon: <span className="text-[7px] leading-none">★</span>, label: "Star" },
                 ]).map((style) => (
                   <button key={style.type} type="button" onMouseDown={(e) => e.preventDefault()}
                     onClick={() => {
@@ -6715,6 +6912,9 @@ export default function DocEditor({
                   { type: "decimal", display: ["1.", "2.", "3."], label: "Numbers" },
                   { type: "lower-alpha", display: ["a.", "b.", "c."], label: "Lowercase" },
                   { type: "upper-alpha", display: ["A.", "B.", "C."], label: "Uppercase" },
+                  { type: "lower-roman", display: ["i.", "ii.", "iii."], label: "Roman" },
+                  { type: "upper-roman", display: ["I.", "II.", "III."], label: "Roman UC" },
+                  { type: "lower-greek", display: ["α.", "β.", "γ."], label: "Greek" },
                 ]).map((style) => (
                   <button key={style.type} type="button" onMouseDown={(e) => e.preventDefault()}
                     onClick={() => {
@@ -6742,19 +6942,31 @@ export default function DocEditor({
                 ))}
               </div>
               <div className="mx-2 border-t border-gray-100 dark:border-gray-700" />
-              <div className="px-3 py-1 mt-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Other</div>
-              <button type="button" onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  focusEditor();
-                  exec("insertHTML", '<div style="display:flex;align-items:flex-start;gap:8px;margin:4px 0;"><input type="checkbox" style="margin-top:3px;cursor:pointer;" /><span>Item</span></div>');
-                  emitChange();
-                  setListStyleOpen(false);
-                }}
-                className="w-full px-3 py-1.5 text-left text-[12px] flex items-center gap-2 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
-              >
-                <ListChecks className="w-4 h-4" />
-                <span>Checklist</span>
-              </button>
+              <div className="px-3 py-1 mt-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Checklist</div>
+              <div className="grid grid-cols-4 gap-0.5 px-2 pb-1">
+                {([
+                  { symbol: "☐", filled: "☑", label: "Standard", style: "checkbox" },
+                  { symbol: "■", filled: "✅", label: "Filled", style: "filled" },
+                  { symbol: "○", filled: "●", label: "Circle", style: "circle" },
+                  { symbol: "◇", filled: "◆", label: "Diamond", style: "diamond" },
+                ]).map((ck) => (
+                  <button key={ck.style} type="button" onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      focusEditor();
+                      const marker = ck.symbol;
+                      const filled = ck.filled;
+                      exec("insertHTML", `<div data-checklist="${ck.style}" style="display:flex;align-items:flex-start;gap:8px;margin:4px 0;cursor:pointer;" onclick="const s=this.querySelector('[data-ck-marker]');if(s){const c=this.dataset.checked==='true';this.dataset.checked=String(!c);s.textContent=c?'${marker}':'${filled}';}"><span data-ck-marker style="user-select:none;font-size:16px;line-height:1.4;">${marker}</span><span contenteditable="true">Item</span></div>`);
+                      emitChange();
+                      setListStyleOpen(false);
+                    }}
+                    title={ck.label}
+                    className="flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"
+                  >
+                    <div className="w-7 h-7 flex items-center justify-center border border-gray-200 dark:border-gray-600 rounded-md text-[14px]">{ck.symbol}</div>
+                    <span className="text-[9px]">{ck.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </ToolbarDropdown>
           <ToolbarDivider />
@@ -7589,11 +7801,34 @@ export default function DocEditor({
             </svg>
             <span className="text-sm font-semibold text-indigo-600">Drop image here</span>
           </div>
+          {/* Ghost cursor — blue vertical line showing drop position */}
+          {dragGhostPos && (
+            <div
+              className="fixed z-[201] pointer-events-none"
+              style={{
+                top: dragGhostPos.y - 12,
+                left: dragGhostPos.x,
+                width: 2,
+                height: 24,
+                background: "#4f46e5",
+                borderRadius: 1,
+                boxShadow: "0 0 6px 1px rgba(79,70,229,0.5)",
+                animation: "image-select-pulse 1s ease-in-out infinite",
+              }}
+            />
+          )}
         </div>
       )}
 
-      {/* ── Squircle Resize Handles — fixed to viewport so they scroll with the image ── */}
+      {/* ── Squircle Resize Handles — fixed to viewport, clipped to scroll container ── */}
       {selectedImage && selectedImageRect && canEdit && !showCropOverlay && (() => {
+        // Compute scroll container visible bounds to clip selection UI
+        const scrollRect = scrollContainerRef.current?.getBoundingClientRect();
+        const clipTop = scrollRect?.top ?? 0;
+        const clipLeft = scrollRect?.left ?? 0;
+        const clipBottom = scrollRect ? scrollRect.bottom : window.innerHeight;
+        const clipRight = scrollRect ? scrollRect.right : window.innerWidth;
+
         const imgTop = selectedImageRect.top;
         const imgLeft = selectedImageRect.left;
         const imgW = selectedImageRect.width;
@@ -7613,12 +7848,24 @@ export default function DocEditor({
         ];
         return (
           <>
+            {/* Clip wrapper — constrains selection UI to scroll container visible area */}
+            <div
+              className="fixed z-[158] pointer-events-none"
+              style={{
+                top: clipTop,
+                left: clipLeft,
+                width: clipRight - clipLeft,
+                height: clipBottom - clipTop,
+                overflow: "hidden",
+              }}
+            >
             {/* Selection outline — Electric Indigo pulsating glow */}
             <div
-              className="fixed z-[158] pointer-events-none rounded-xl"
+              className="pointer-events-none rounded-xl"
               style={{
-                top: imgTop,
-                left: imgLeft,
+                position: "absolute",
+                top: imgTop - clipTop,
+                left: imgLeft - clipLeft,
                 width: imgW,
                 height: imgH,
                 border: "2px solid #6366f1",
@@ -7626,19 +7873,33 @@ export default function DocEditor({
                 animation: "image-select-pulse 2s ease-in-out infinite",
               }}
             />
-            {/* Squircle resize handles */}
+            </div>
+            {/* Squircle resize handles — clipped to scroll container */}
+            <div
+              className="fixed z-[159]"
+              style={{
+                top: clipTop,
+                left: clipLeft,
+                width: clipRight - clipLeft,
+                height: clipBottom - clipTop,
+                overflow: "hidden",
+                pointerEvents: "none",
+              }}
+            >
             {handles.map(([t, l, cursor, hpos]) => (
               <div
                 key={hpos}
                 data-doc-resize-handle={hpos}
-                className="fixed z-[159] bg-white dark:bg-gray-200 border-2 border-indigo-500 shadow-md hover:bg-indigo-100 hover:scale-125 transition-all duration-150"
+                className="bg-white dark:bg-gray-200 border-2 border-indigo-500 shadow-md hover:bg-indigo-100 hover:scale-125 transition-all duration-150"
                 style={{
-                  top: t,
-                  left: l,
+                  position: "absolute",
+                  top: t - clipTop,
+                  left: l - clipLeft,
                   width: handleSize,
                   height: handleSize,
                   cursor,
                   borderRadius: 5,
+                  pointerEvents: "auto",
                 }}
                 onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
                 onMouseDown={(e) => {
@@ -7705,6 +7966,7 @@ export default function DocEditor({
                 }}
               />
             ))}
+            </div>
             {/* Resize dimension tooltip — shows current size near cursor */}
             {resizeDimensions && (() => {
               return (
@@ -7726,8 +7988,16 @@ export default function DocEditor({
       {/* ── Image Contextual Toolbar — glassmorphism pill floating 10px above selected image ── */}
       {selectedImage && selectedImageRect && canEdit && (() => {
         const toolbarHeight = 44;
-        const top = selectedImageRect.top - toolbarHeight - 10;
+        const scrollRect = scrollContainerRef.current?.getBoundingClientRect();
+        const scrollTop = scrollRect?.top ?? 0;
+        const scrollBottom = scrollRect ? scrollRect.bottom : window.innerHeight;
+        const rawTop = selectedImageRect.top - toolbarHeight - 10;
+        // Clamp toolbar: stay within scroll container, pin to top of visible image area if scrolled up
+        const top = Math.min(scrollBottom - toolbarHeight - 4, Math.max(scrollTop + 4, rawTop));
         const left = selectedImageRect.left + (selectedImageRect.width / 2) - 140;
+        // Hide toolbar entirely if the image is fully scrolled out of view
+        const imgBottom = selectedImageRect.top + selectedImageRect.height;
+        if (selectedImageRect.top > scrollBottom || imgBottom < scrollTop) return null;
         return (
           <div
             data-doc-image-toolbar
@@ -7786,6 +8056,49 @@ export default function DocEditor({
                 <Replace className="w-4 h-4 text-gray-600 dark:text-gray-300" />
               </button>
             </Tooltip>
+            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
+            {/* Text wrapping & position quick buttons */}
+            <Tooltip content="In line with text" delay={200}>
+              <button
+                type="button"
+                onClick={() => selectedImage && applyImageWrapMode(selectedImage, "inline")}
+                className={`p-2 rounded-xl transition-colors cursor-pointer ${imageWrapMode === "inline" ? "bg-indigo-100 dark:bg-indigo-900/30" : "hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                aria-label="In line with text"
+              >
+                <Minus className={`w-4 h-4 ${imageWrapMode === "inline" ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300"}`} />
+              </button>
+            </Tooltip>
+            <Tooltip content="Wrap text left" delay={200}>
+              <button
+                type="button"
+                onClick={() => selectedImage && applyImageWrapMode(selectedImage, "wrapLeft")}
+                className={`p-2 rounded-xl transition-colors cursor-pointer ${imageWrapMode === "wrapLeft" ? "bg-indigo-100 dark:bg-indigo-900/30" : "hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                aria-label="Wrap text left"
+              >
+                <AlignLeft className={`w-4 h-4 ${imageWrapMode === "wrapLeft" ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300"}`} />
+              </button>
+            </Tooltip>
+            <Tooltip content="Wrap text right" delay={200}>
+              <button
+                type="button"
+                onClick={() => selectedImage && applyImageWrapMode(selectedImage, "wrapRight")}
+                className={`p-2 rounded-xl transition-colors cursor-pointer ${imageWrapMode === "wrapRight" ? "bg-indigo-100 dark:bg-indigo-900/30" : "hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                aria-label="Wrap text right"
+              >
+                <AlignRight className={`w-4 h-4 ${imageWrapMode === "wrapRight" ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300"}`} />
+              </button>
+            </Tooltip>
+            <Tooltip content="Break text (centered)" delay={200}>
+              <button
+                type="button"
+                onClick={() => selectedImage && applyImageWrapMode(selectedImage, "breakText")}
+                className={`p-2 rounded-xl transition-colors cursor-pointer ${imageWrapMode === "breakText" ? "bg-indigo-100 dark:bg-indigo-900/30" : "hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                aria-label="Break text"
+              >
+                <AlignCenter className={`w-4 h-4 ${imageWrapMode === "breakText" ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300"}`} />
+              </button>
+            </Tooltip>
+            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
             <Tooltip content={showCropOverlay ? "Exit crop" : "Crop image"} delay={200}>
               <button
                 type="button"
@@ -7865,17 +8178,40 @@ export default function DocEditor({
                 type="button"
                 onClick={() => {
                   if (selectedImage) {
-                    // Remove crop wrapper first if it exists
+                    // Remove crop first if it exists
                     removeCrop(selectedImage);
+                    // Clear all image styles
                     selectedImage.style.filter = "";
                     selectedImage.style.opacity = "";
                     selectedImage.style.width = "";
                     selectedImage.style.height = "";
                     selectedImage.style.transform = "";
                     selectedImage.style.clipPath = "";
+                    selectedImage.style.float = "";
+                    selectedImage.style.clear = "";
+                    selectedImage.style.margin = "";
+                    selectedImage.style.marginLeft = "";
+                    selectedImage.style.marginRight = "";
+                    selectedImage.style.marginTop = "";
+                    selectedImage.style.marginBottom = "";
+                    selectedImage.style.verticalAlign = "";
                     selectedImage.style.maxWidth = "100%";
+                    selectedImage.style.display = "block";
+                    // Clear float from parent container if it was floated for wrapping
+                    const imgParent = selectedImage.parentElement;
+                    if (imgParent && imgParent.style) {
+                      imgParent.style.float = "";
+                      imgParent.style.clear = "";
+                      imgParent.style.margin = "";
+                      imgParent.style.marginLeft = "";
+                      imgParent.style.marginRight = "";
+                      imgParent.style.marginTop = "";
+                      imgParent.style.marginBottom = "";
+                      imgParent.style.width = "";
+                    }
                     setImageOptions({ opacity: 100, brightness: 100, contrast: 100 });
                     setImageRotation(0);
+                    setImageWrapMode("inline");
                     setShowCropOverlay(false);
                     emitChange();
                     setSelectedImageRect(selectedImage.getBoundingClientRect());
@@ -8349,22 +8685,27 @@ export default function DocEditor({
             <div>
               <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">Text wrapping</h4>
               <div className="flex gap-1">
-                {(["inline", "left", "right", "break"] as const).map((wrap) => (
-                  <button
-                    key={wrap}
-                    type="button"
-                    onClick={() => {
-                      if (!selectedImage) return;
-                      selectedImage.style.float = wrap === "left" ? "left" : wrap === "right" ? "right" : "none";
-                      if (wrap === "left" || wrap === "right") selectedImage.style.margin = "8px 12px";
-                      else selectedImage.style.margin = "12px 0";
-                      if (wrap === "break") { selectedImage.style.display = "block"; selectedImage.style.float = "none"; }
-                      emitChange();
-                    }}
-                    className="flex-1 px-2 py-1.5 rounded-lg text-[11px] font-medium text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer capitalize"
-                  >
-                    {wrap === "break" ? "Break" : wrap === "inline" ? "Inline" : wrap === "left" ? "Left" : "Right"}
-                  </button>
+                {([
+                  { mode: "inline" as const, label: "Inline", icon: Minus, desc: "In line with text" },
+                  { mode: "wrapLeft" as const, label: "Wrap L", icon: AlignLeft, desc: "Wrap text left" },
+                  { mode: "wrapRight" as const, label: "Wrap R", icon: AlignRight, desc: "Wrap text right" },
+                  { mode: "breakText" as const, label: "Break", icon: Pilcrow, desc: "Break text" },
+                ]).map(({ mode, label, icon: Icon, desc }) => (
+                  <Tooltip key={mode} content={desc} delay={200}>
+                    <button
+                      type="button"
+                      onClick={() => selectedImage && applyImageWrapMode(selectedImage, mode)}
+                      className={`flex-1 flex flex-col items-center gap-1 px-2 py-2 rounded-lg text-[10px] font-medium transition-colors cursor-pointer ${
+                        imageWrapMode === mode
+                          ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 ring-1 ring-indigo-300 dark:ring-indigo-600"
+                          : "text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      }`}
+                      aria-label={desc}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{label}</span>
+                    </button>
+                  </Tooltip>
                 ))}
               </div>
             </div>
@@ -9054,6 +9395,19 @@ export default function DocEditor({
             </div>
           )}
         </DocDialog>
+      )}
+
+      {/* Drawing Canvas */}
+      {showDrawingCanvas && (
+        <DrawingCanvas
+          onSave={(dataUrl) => {
+            setShowDrawingCanvas(false);
+            focusEditor();
+            exec("insertHTML", `<div style="margin:12px 0;"><img src="${dataUrl}" data-doc-image="true" style="max-width:100%;border-radius:8px;" /></div>`);
+            emitChange();
+          }}
+          onCancel={() => setShowDrawingCanvas(false)}
+        />
       )}
 
       {/* Toast */}
@@ -10087,11 +10441,13 @@ function ToolbarButton({
   title,
   onClick,
   disabled,
+  active,
 }: {
   Icon: React.ComponentType<{ className?: string }>;
   title: string;
   onClick: () => void;
   disabled?: boolean;
+  active?: boolean;
 }) {
   return (
     <Tooltip content={title} delay={400}>
@@ -10103,9 +10459,9 @@ function ToolbarButton({
         onClick={onClick}
         disabled={disabled}
         aria-label={title}
-        className="w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        className={`w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${active ? "bg-blue-100 dark:bg-blue-900/40 ring-1 ring-blue-400" : ""}`}
       >
-        <Icon className="w-4 h-4 text-gray-600 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100" />
+        <Icon className={`w-4 h-4 ${active ? "text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"}`} />
       </button>
     </Tooltip>
   );

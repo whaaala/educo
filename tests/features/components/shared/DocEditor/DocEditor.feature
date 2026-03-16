@@ -2374,12 +2374,13 @@ Feature: DocEditor comprehensive look and feel verification
     And imageOptions should reset to { opacity: 100, brightness: 100, contrast: 100 }
     And imageRotation should reset to 0
 
-  Scenario: Selection border follows image on scroll
+  Scenario: Selection UI clips to scroll container on scroll
     Given an image is selected in the editor
     When the user scrolls the editor content area
-    Then the selection border and resize handles use fixed positioning to track viewport coordinates
-    And the image toolbar uses fixed positioning to stay above the image
-    And the crop overlay uses fixed positioning when crop mode is active
+    Then the selection border and resize handles are clipped to the scroll container bounds
+    And the image toolbar is clamped to remain within the visible scroll area
+    And the toolbar hides entirely when the image is fully scrolled out of view
+    And no selection UI elements overflow into the editor toolbar or menu bar area
 
   @visual
   Scenario: Drag-and-drop shows glassmorphism drop zone overlay
@@ -2495,3 +2496,107 @@ Feature: DocEditor comprehensive look and feel verification
     When they insert an image
     Then the image should appear at the cursor position
     And the cursor should move after the inserted image
+
+  # ──────────────────────────────────────────────────
+  # Paint Format Tool
+  # ──────────────────────────────────────────────────
+
+  Scenario: Paint Format captures and applies text formatting
+    Given the user has selected bold, red text in the editor
+    When they click the Paint Format button
+    Then the paint format mode should activate with blue highlight
+    When they select a different text range
+    Then the captured formatting (bold, red) should be applied to the new selection
+    And paint format mode should deactivate automatically
+
+  Scenario: Paint Format can be toggled off before applying
+    Given the paint format mode is active
+    When the user clicks the Paint Format button again
+    Then paint format mode should deactivate
+    And no formatting should be applied
+
+  # ──────────────────────────────────────────────────
+  # Recently Used Fonts
+  # ──────────────────────────────────────────────────
+
+  Scenario: Recently Used Fonts section appears in font dropdown
+    Given the user has previously selected fonts "Georgia" and "Courier New"
+    When they open the Font Family dropdown
+    Then a "Recently used" section should appear at the top
+    And it should list "Georgia" and "Courier New"
+
+  Scenario: Recently Used Fonts persist across sessions
+    Given the user has selected font "Georgia"
+    When the editor is reloaded
+    Then the Recently Used section should still contain "Georgia"
+    And the data should be read from localStorage key "doc-editor-recent-fonts"
+
+  # ──────────────────────────────────────────────────
+  # Expanded List Styles
+  # ──────────────────────────────────────────────────
+
+  Scenario: Bullet list offers 6 style options
+    Given the user clicks the bullet list dropdown
+    Then 6 bullet styles should be displayed in a grid
+    And the styles should include disc, circle, square, dash, arrow, and star
+
+  Scenario: Numbered list offers 6 style options
+    Given the user clicks the numbered list dropdown
+    Then 6 numbered styles should be displayed in a grid
+    And the styles should include decimal, lower-alpha, upper-alpha, lower-roman, upper-roman, and lower-greek
+
+  Scenario: Checklist offers 4 checkbox style options
+    Given the user clicks the checklist dropdown
+    Then 4 checklist styles should be displayed in a grid
+    And the styles should include Standard, Filled, Circle, and Diamond
+
+  # ──────────────────────────────────────────────────
+  # Ghost Cursor for Image Drag-and-Drop
+  # ──────────────────────────────────────────────────
+
+  Scenario: Ghost cursor appears during image drag over editor
+    Given the editor contains text content
+    When the user drags an image over the editor area
+    Then a blue vertical ghost cursor line should appear at the drag position
+    And the ghost cursor should be 2px wide and 24px tall with an indigo glow
+
+  Scenario: Ghost cursor disappears on drag leave or drop
+    Given a ghost cursor is visible during drag
+    When the user drops the image or drags out of the editor
+    Then the ghost cursor should disappear immediately
+
+  # ──────────────────────────────────────────────────
+  # Canvas Drawing Module
+  # ──────────────────────────────────────────────────
+
+  Scenario: Drawing canvas opens from Insert > Drawing menu
+    Given the user is in the document editor
+    When they click Insert > Drawing
+    Then a fullscreen Drawing canvas modal should appear
+    And the toolbar should show Select, Line, Arrow, Rectangle, Ellipse, Polygon, Text Box, and Image tools
+
+  Scenario: Drawing canvas opens from File > New > Drawing menu
+    Given the user is in the document editor
+    When they click File > New > Drawing
+    Then the same Drawing canvas modal should appear
+
+  Scenario: User draws shapes on the canvas
+    Given the Drawing canvas modal is open
+    When the user selects the Rectangle tool and drags on the canvas
+    Then a rectangle shape should appear with fill and stroke colors
+    And 8 resize handles and a rotation handle should be visible
+    And the status bar should show "1 shape"
+
+  Scenario: Save and Close inserts drawing as high-res image
+    Given the Drawing canvas has one or more shapes
+    When the user clicks "Save and Close"
+    Then the canvas content should be exported as a 2x resolution PNG
+    And the image should be inserted into the document at the cursor position
+    And the modal should close
+    And the inserted image should have data-doc-image attribute for selection
+
+  Scenario: Cancel closes drawing canvas without inserting
+    Given the Drawing canvas modal is open with shapes drawn
+    When the user clicks "Cancel"
+    Then the modal should close
+    And no image should be inserted into the document

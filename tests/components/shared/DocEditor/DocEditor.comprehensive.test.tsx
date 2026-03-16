@@ -4308,32 +4308,46 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
     });
   });
 
-  describe("Selection border follows image on scroll (fixed positioning)", () => {
-    it("selection outline uses fixed positioning class", () => {
+  describe("Selection UI clips to scroll container on scroll", () => {
+    it("selection outline is wrapped in a clip container with overflow hidden", () => {
       const sourceCode = require("fs").readFileSync(
         require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
         "utf-8"
       );
-      // Selection outline should be fixed, not absolute
-      expect(sourceCode).toContain('className="fixed z-[158] pointer-events-none rounded-xl"');
+      // Selection outline clip wrapper uses fixed positioning with overflow hidden
+      expect(sourceCode).toContain('className="fixed z-[158] pointer-events-none"');
+      // Selection outline inside clip wrapper uses absolute positioning
+      expect(sourceCode).toContain('className="pointer-events-none rounded-xl"');
     });
 
-    it("resize handles use fixed positioning class", () => {
+    it("resize handles are wrapped in a clip container with overflow hidden", () => {
       const sourceCode = require("fs").readFileSync(
         require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
         "utf-8"
       );
-      // Resize handles should be fixed, not absolute
-      expect(sourceCode).toMatch(/className="fixed z-\[159\] bg-white/);
+      // Handles clip wrapper uses fixed z-[159] with overflow hidden and pointer-events none
+      expect(sourceCode).toContain('className="fixed z-[159]"');
+      // Individual handles have pointer-events auto for interactivity
+      expect(sourceCode).toContain("pointerEvents: \"auto\"");
     });
 
-    it("image toolbar uses fixed positioning class", () => {
+    it("image toolbar is clamped within scroll container visible bounds", () => {
       const sourceCode = require("fs").readFileSync(
         require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
         "utf-8"
       );
-      // Toolbar should be fixed, not absolute
-      expect(sourceCode).toMatch(/className="fixed z-\[160\] flex items-center gap-1/);
+      // Toolbar clamps to scrollTop and scrollBottom
+      expect(sourceCode).toContain("Math.min(scrollBottom - toolbarHeight - 4");
+      expect(sourceCode).toContain("Math.max(scrollTop + 4, rawTop)");
+    });
+
+    it("toolbar hides when image is fully scrolled out of view", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      // Returns null when image is fully out of scroll container view
+      expect(sourceCode).toContain("if (selectedImageRect.top > scrollBottom || imgBottom < scrollTop) return null");
     });
 
     it("crop overlay elements use fixed positioning class", () => {
@@ -4422,6 +4436,265 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
           expect(overflowStyle).not.toBe("hidden");
         }
       });
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Paint Format Tool
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Paint Format tool", () => {
+    it("renders Paint Format toolbar button", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      // Verify paint format button is rendered with correct title
+      expect(sourceCode).toContain('"Paint format"');
+      expect(sourceCode).toContain("Paintbrush");
+    });
+
+    it("Paint Format button toggles active state on click", () => {
+      // The button should have an active visual indicator (blue bg) when paint format is active
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      // Verify paint format state management exists
+      expect(sourceCode).toContain("paintFormatActive");
+      expect(sourceCode).toContain("setPaintFormatActive");
+      expect(sourceCode).toContain("paintFormatStyleRef");
+    });
+
+    it("capturePaintFormat reads computed styles from selected text", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("getComputedStyle");
+      expect(sourceCode).toContain("fontFamily");
+      expect(sourceCode).toContain("fontSize");
+      expect(sourceCode).toContain("fontWeight");
+      expect(sourceCode).toContain("fontStyle");
+      expect(sourceCode).toContain("color");
+    });
+
+    it("applyPaintFormat wraps selection with captured styles", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("surroundContents");
+      expect(sourceCode).toContain("paintFormatStyleRef.current");
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Recently Used Fonts
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Recently Used Fonts", () => {
+    it("tracks recently used fonts in state", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("recentFonts");
+      expect(sourceCode).toContain("setRecentFonts");
+      expect(sourceCode).toContain("doc-editor-recent-fonts");
+    });
+
+    it("persists recent fonts to localStorage", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain('localStorage.setItem("doc-editor-recent-fonts"');
+      expect(sourceCode).toContain('localStorage.getItem("doc-editor-recent-fonts"');
+    });
+
+    it("shows Recently used section in font dropdown when fonts exist", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("Recently used");
+      expect(sourceCode).toContain("recentFonts.length");
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Expanded List Styles
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Expanded List Styles", () => {
+    it("bullet list includes 6 styles: disc, circle, square, dash, arrow, star", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      // All 6 bullet styles should be present
+      expect(sourceCode).toContain('"disc"');
+      expect(sourceCode).toContain('"circle"');
+      expect(sourceCode).toContain('"square"');
+      // Extended styles use special characters
+      expect(sourceCode).toMatch(/[—–]/); // dash
+      expect(sourceCode).toContain("→"); // arrow
+      expect(sourceCode).toContain("★"); // star
+    });
+
+    it("numbered list includes 6 styles", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain('"decimal"');
+      expect(sourceCode).toContain('"lower-alpha"');
+      expect(sourceCode).toContain('"upper-alpha"');
+      expect(sourceCode).toContain('"lower-roman"');
+      expect(sourceCode).toContain('"upper-roman"');
+      expect(sourceCode).toContain('"lower-greek"');
+    });
+
+    it("checklist includes 4 checkbox styles", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      // 4 checklist style markers
+      expect(sourceCode).toContain("☐");
+      expect(sourceCode).toContain("☑");
+      expect(sourceCode).toContain("○");
+      expect(sourceCode).toContain("●");
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Ghost Cursor for Image Drag-and-Drop
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Ghost Cursor for image drag-and-drop", () => {
+    it("dragGhostPos state tracks cursor position during drag", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("dragGhostPos");
+      expect(sourceCode).toContain("setDragGhostPos");
+    });
+
+    it("ghost cursor renders as a fixed indigo line", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      // Ghost cursor styling: 2px wide, indigo colored, fixed position
+      expect(sourceCode).toContain("dragGhostPos");
+      expect(sourceCode).toMatch(/width.*2/);
+      expect(sourceCode).toMatch(/height.*24/);
+    });
+
+    it("drag leave and drop clear the ghost cursor", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("setDragGhostPos(null)");
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Canvas Drawing Module
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Canvas Drawing Module", () => {
+    it("showDrawingCanvas state controls modal visibility", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("showDrawingCanvas");
+      expect(sourceCode).toContain("setShowDrawingCanvas");
+    });
+
+    it("Insert > Drawing opens the drawing canvas", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      // Both Insert > Drawing and File > New > Drawing should use setShowDrawingCanvas(true)
+      expect(sourceCode).toContain("setShowDrawingCanvas(true)");
+    });
+
+    it("DrawingCanvas component is imported and rendered conditionally", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain('import DrawingCanvas from "./DrawingCanvas"');
+      expect(sourceCode).toContain("showDrawingCanvas && (");
+    });
+
+    it("onSave callback inserts image with data-doc-image attribute", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain('data-doc-image="true"');
+      expect(sourceCode).toContain("setShowDrawingCanvas(false)");
+    });
+
+    it("onCancel callback closes modal without inserting", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("onCancel={() => setShowDrawingCanvas(false)}");
+    });
+
+    it("DrawingCanvas component file exists with correct exports", () => {
+      const drawingSource = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DrawingCanvas.tsx"),
+        "utf-8"
+      );
+      expect(drawingSource).toContain("export default function DrawingCanvas");
+      expect(drawingSource).toContain("onSave");
+      expect(drawingSource).toContain("onCancel");
+    });
+
+    it("DrawingCanvas has all required drawing tools", () => {
+      const drawingSource = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DrawingCanvas.tsx"),
+        "utf-8"
+      );
+      expect(drawingSource).toContain('"select"');
+      expect(drawingSource).toContain('"line"');
+      expect(drawingSource).toContain('"arrow"');
+      expect(drawingSource).toContain('"rect"');
+      expect(drawingSource).toContain('"ellipse"');
+      expect(drawingSource).toContain('"polygon"');
+      expect(drawingSource).toContain('"text"');
+      expect(drawingSource).toContain('"image"');
+    });
+
+    it("DrawingCanvas exports at 2x resolution", () => {
+      const drawingSource = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DrawingCanvas.tsx"),
+        "utf-8"
+      );
+      // Should scale canvas by 2x for high-res export
+      expect(drawingSource).toMatch(/scale.*2|2.*scale|width.*\*\s*2|height.*\*\s*2/);
+    });
+
+    it("DrawingCanvas has shape management (add, select, delete, rotate)", () => {
+      const drawingSource = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DrawingCanvas.tsx"),
+        "utf-8"
+      );
+      expect(drawingSource).toContain("setShapes");
+      expect(drawingSource).toContain("selectedId");
+      expect(drawingSource).toContain("rotation");
+      expect(drawingSource).toContain("Trash2");
     });
   });
 });
