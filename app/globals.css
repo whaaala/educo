@@ -540,12 +540,26 @@ tbody tr.sorting-animate-desc {
     overflow: visible !important;
   }
 
-  /* Remove background from page surface area */
+  /* Force white background on ALL editor containers for print */
+  [data-doc-editor-root],
+  [data-doc-editor-root] > div,
+  [data-doc-editor-root] > div > div,
   [data-doc-editor-root] .bg-gray-50,
   [data-doc-editor-root] .bg-gray-950,
+  [data-doc-editor-root] .bg-white,
   [data-doc-editor-root] [class*="bg-[#06101f]"],
-  [data-doc-editor-root] [class*="bg-[#12061f]"] {
-    background: transparent !important;
+  [data-doc-editor-root] [class*="bg-[#12061f]"],
+  [data-doc-editor-root] [class*="bg-[#0b1220]"],
+  [data-doc-editor-root] [class*="bg-[#170a27]"],
+  [data-doc-editor-root] [class*="bg-[#0d1526]"],
+  [data-doc-editor-root] [class*="bg-[#1f1035]"] {
+    background: white !important;
+    background-color: white !important;
+  }
+
+  /* Remove all borders on page wrappers for clean print */
+  [data-doc-editor-root] .border {
+    border-color: transparent !important;
   }
 
   /* Remove page shadows, borders, and rounding */
@@ -844,4 +858,50 @@ mark[data-doc-comment-highlight]:hover {
 :is(.dark) [data-doc-floating-comments] {
   border-left-color: rgba(55, 65, 81, 0.4);
   background: linear-gradient(180deg, rgba(17, 24, 39, 0.3) 0%, rgba(17, 24, 39, 0.1) 100%);
+}
+
+/* ── Doc editor images: always fit within page bounds ── */
+[data-doc-editor-root] [contenteditable] img {
+  max-width: 100% !important;
+  height: auto !important;
+  object-fit: contain;
+  display: block;
+}
+
+/* ── Ensure image wrapper paragraphs don't clip their content ── */
+[data-doc-editor-root] [contenteditable] p:has(> img) {
+  max-width: 100%;
+  overflow: visible;
+}
+
+/* ── Image upload spinner keyframe (used by inline SVG in ghost placeholder) ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Electric Indigo pulsating glow for selected images ── */
+@keyframes image-select-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(99,102,241,0.25), 0 0 12px 2px rgba(99,102,241,0.15); }
+  50% { box-shadow: 0 0 0 3px rgba(99,102,241,0.35), 0 0 20px 4px rgba(99,102,241,0.2); }
+}
+
+/* ── Spring entrance for image contextual toolbar ── */
+@keyframes image-toolbar-spring {
+  from { opacity: 0; transform: translateY(8px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Smooth fade-in for newly inserted images ── */
+@keyframes image-fade-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+img[data-doc-image] {
+  animation: image-fade-in 0.3s ease-out both;
+}
+
+/* ── Neon-pulse border for drag-and-drop zone ── */
+@keyframes drop-zone-pulse {
+  0%, 100% { border-color: rgba(99,102,241,0.6); box-shadow: 0 0 16px 2px rgba(99,102,241,0.15); }
+  50% { border-color: rgba(99,102,241,1); box-shadow: 0 0 24px 4px rgba(99,102,241,0.3); }
 }

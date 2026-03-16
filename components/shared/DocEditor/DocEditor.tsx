@@ -101,6 +101,21 @@ import {
   FormInput as FormInputIcon,
   Pencil,
   Ellipsis,
+  Upload,
+  Camera,
+  HardDrive,
+  ImagePlus,
+  Link,
+  Loader2,
+  RotateCcw,
+  Crop,
+  Replace,
+  SlidersHorizontal,
+  GripHorizontal,
+  Move as MoveIcon,
+  WrapText,
+  AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 import { DOC_LANGUAGES } from "./languages";
 import Tooltip from "@/components/shared/Tooltip";
@@ -134,6 +149,95 @@ const activeSubmenuPanelEl: { current: HTMLElement | null } = { current: null };
 
 const DOC_PAGE_BREAK_MARKER = `<div data-doc-page-break="true"></div>`;
 const DOC_PAGE_BREAK_REGEX = /<div[^>]*data-doc-page-break=(?:"true"|'true')[^>]*>\s*<\/div>/gi;
+
+// ── Supported Image Formats ──
+const IMAGE_ACCEPT_EXTENSIONS = ".jpg,.jpeg,.jpe,.jfif,.pjpeg,.pjp,.png,.gif,.webp,.svg,.svgz,.heic,.heif,.tiff,.tif,.bmp,.dib,.avif,.ico,.cur,.apng,.jxl,.raw,.dng,.nef,.cr2,.orf,.arw,.rw2,.sr2";
+const IMAGE_ACCEPT_ATTR = `${IMAGE_ACCEPT_EXTENSIONS},image/*`;
+const IMAGE_VALID_MIME_TYPES = new Set([
+  "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml",
+  "image/heic", "image/heif", "image/tiff", "image/bmp", "image/avif",
+  "image/x-icon", "image/vnd.microsoft.icon", "image/apng",
+  "image/jxl", "image/x-jxl",
+  // Camera RAW formats
+  "image/x-adobe-dng", "image/x-nikon-nef", "image/x-canon-cr2",
+  "image/x-olympus-orf", "image/x-sony-arw", "image/x-panasonic-rw2",
+  "image/x-sony-sr2", "image/x-dcraw",
+]);
+const IMAGE_VALID_EXTENSIONS = new Set([
+  "jpg", "jpeg", "jpe", "jfif", "pjpeg", "pjp", "png", "gif", "webp",
+  "svg", "svgz", "heic", "heif", "tiff", "tif", "bmp", "dib", "avif",
+  "ico", "cur", "apng", "jxl",
+  // Camera RAW formats
+  "raw", "dng", "nef", "cr2", "orf", "arw", "rw2", "sr2",
+]);
+const IMAGE_FORMAT_LIST = "JPG, PNG, GIF, WebP, SVG, HEIC, TIFF, BMP, AVIF, ICO, APNG, JXL, RAW, DNG";
+// Formats that should be converted client-side for fast document loading
+const IMAGE_CONVERT_FORMATS = new Set([
+  "image/tiff", "image/bmp", "image/heic", "image/heif",
+  "image/x-icon", "image/vnd.microsoft.icon",
+]);
+
+function getFileExtension(name: string): string {
+  return (name.split(".").pop() || "").toLowerCase();
+}
+
+function isValidImageFile(file: File): { valid: boolean; reason?: string } {
+  // Check MIME type first (security: prevents disguised files)
+  const mime = file.type.toLowerCase();
+  const ext = getFileExtension(file.name);
+  if (mime && !IMAGE_VALID_MIME_TYPES.has(mime) && !mime.startsWith("image/")) {
+    return { valid: false, reason: `Unsupported file type: ${mime}. Accepted formats: ${IMAGE_FORMAT_LIST}` };
+  }
+  // Fallback: check extension if MIME is empty (some OS don't set MIME for HEIC/AVIF)
+  if (!mime && !IMAGE_VALID_EXTENSIONS.has(ext)) {
+    return { valid: false, reason: `Unsupported file extension: .${ext}. Accepted formats: ${IMAGE_FORMAT_LIST}` };
+  }
+  // Size limit: 25MB
+  if (file.size > 25 * 1024 * 1024) {
+    return { valid: false, reason: "File is too large (max 25 MB)" };
+  }
+  return { valid: true };
+}
+
+/** Convert image to a web-safe format, verifying the browser can actually render it */
+async function convertImageToWebSafe(file: File): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+  // SVGs stay as-is (vector, sharp at any zoom)
+  if (file.type === "image/svg+xml") return dataUrl;
+  const mime = file.type.toLowerCase();
+  // For formats that need conversion (TIFF, BMP, HEIC, ICO), or any format,
+  // verify the browser can decode the image by loading it first
+  const img = new Image();
+  const canDecode = await new Promise<boolean>((resolve) => {
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = dataUrl;
+  });
+  if (!canDecode) {
+    throw new Error(`Your browser cannot display this image format (${mime || file.name.split(".").pop()}). Try converting it to PNG or JPEG first.`);
+  }
+  // If the format needs conversion, draw to canvas and re-export as PNG
+  if (IMAGE_CONVERT_FORMATS.has(mime)) {
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        return canvas.toDataURL("image/png");
+      }
+    } catch {
+      // Canvas conversion failed but browser can still display the original
+    }
+  }
+  return dataUrl;
+}
 
 // ── Section Break ──
 const DOC_SECTION_BREAK_REGEX = /<div[^>]*data-doc-section-break="true"[^>]*data-section-setup='([^']*)'[^>]*><\/div>/gi;
@@ -934,6 +1038,8 @@ export default function DocEditor({
   const rootRef = useRef<HTMLDivElement>(null);
   const latestValueRef = useRef<DocEditorValue>(value);
   const editorRootRef = useRef<HTMLDivElement>(null);
+  const contentAreaRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pageRefs = useRef<Array<HTMLDivElement | null>>([]);
   const pagesRef = useRef<string[]>(parseHtmlPages(value.html));
   const lastSerializedHtmlRef = useRef<string>("");
@@ -941,6 +1047,7 @@ export default function DocEditor({
   const paginationInProgressRef = useRef(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const savedEditorRangeRef = useRef<Range | null>(null);
   const openFileInputRef = useRef<HTMLInputElement>(null);
   const [moreOpen, setMoreOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState<"file" | "edit" | "view" | "insert" | "format" | "tools" | "extensions" | "help" | null>(null);
@@ -1016,6 +1123,26 @@ export default function DocEditor({
   const [floatingCommentsDismissed, setFloatingCommentsDismissed] = useState(false);
   const [sidebarManuallyDismissed, setSidebarManuallyDismissed] = useState(false);
   const [showEquationToolbar, setShowEquationToolbar] = useState(false);
+  // ── Insert Image state ──
+  const [showImageUrlModal, setShowImageUrlModal] = useState(false);
+  const [imageUrlInput, setImageUrlInput] = useState("");
+  const [imageUrlError, setImageUrlError] = useState("");
+  const [showImageSearchSidebar, setShowImageSearchSidebar] = useState(false);
+  const [imageSearchQuery, setImageSearchQuery] = useState("");
+  const [imageLoading, setImageLoading] = useState(false);
+  // Selected image state (for contextual toolbar)
+  const [selectedImage, setSelectedImage] = useState<HTMLImageElement | null>(null);
+  const [selectedImageRect, setSelectedImageRect] = useState<DOMRect | null>(null);
+  // Image Options sidebar
+  const [showImageOptions, setShowImageOptions] = useState(false);
+  const [imageOptions, setImageOptions] = useState({ opacity: 100, brightness: 100, contrast: 100 });
+  const [imageRotation, setImageRotation] = useState(0);
+  const [showCropOverlay, setShowCropOverlay] = useState(false);
+  const [cropRect, setCropRect] = useState({ top: 0, left: 0, width: 100, height: 100 });
+  const [resizeDimensions, setResizeDimensions] = useState<{ w: number; h: number; x: number; y: number } | null>(null);
+  const isImageDraggingRef = useRef(false);
+  const [isDragActive, setIsDragActive] = useState(false);
+  const dragCounterRef = useRef(0);
   const [docMode, setDocMode] = useState<"editing" | "suggesting" | "viewing">("editing");
   const [isChromeCollapsed, setIsChromeCollapsed] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
@@ -2038,8 +2165,13 @@ export default function DocEditor({
   const canEdit = !readOnly && docMode !== "viewing";
 
   const isDocEmpty = useMemo(() => {
-    const text = (pages[0] || "").replace(/<[^>]*>/g, "").trim();
-    return text.length === 0;
+    const html = pages[0] || "";
+    // Check for text content
+    const text = html.replace(/<[^>]*>/g, "").trim();
+    if (text.length > 0) return false;
+    // Also check for images — a page with just an image is not empty
+    if (html.includes("<img")) return false;
+    return true;
   }, [pages]);
 
   // ── Extract headings from document for sidebar outline ──
@@ -2315,6 +2447,61 @@ export default function DocEditor({
     const active = document.activeElement as HTMLElement | null;
     if (active && editorRootRef.current?.contains(active)) return;
     pageRefs.current[0]?.focus();
+  }, []);
+
+  // Save the current editor selection/cursor so we can restore it after
+  // the file picker dialog (which clears the browser selection).
+  const saveEditorSelection = useCallback(() => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      const range = sel.getRangeAt(0);
+      // Only save if the selection is inside the editor
+      if (editorRootRef.current?.contains(range.commonAncestorContainer)) {
+        savedEditorRangeRef.current = range.cloneRange();
+        return;
+      }
+    }
+    savedEditorRangeRef.current = null;
+  }, []);
+
+  // Restore the saved selection, or place cursor at end of first page as fallback.
+  // For drag-and-drop, the browser places the cursor at the drop point — if the
+  // editor already has a valid selection and no range was saved, we leave it alone.
+  const restoreEditorSelection = useCallback(() => {
+    const page = pageRefs.current[0];
+    if (!page) return;
+
+    const sel = window.getSelection();
+    if (!sel) return;
+
+    // Try restoring the saved range
+    if (savedEditorRangeRef.current) {
+      page.focus();
+      try {
+        sel.removeAllRanges();
+        sel.addRange(savedEditorRangeRef.current);
+        savedEditorRangeRef.current = null;
+        return;
+      } catch {
+        // Range may be invalid if DOM changed — fall through to fallback
+      }
+    }
+
+    // If editor already has focus and a valid selection, leave it (e.g. drag-and-drop)
+    if (
+      sel.rangeCount > 0 &&
+      editorRootRef.current?.contains(sel.getRangeAt(0).commonAncestorContainer)
+    ) {
+      return;
+    }
+
+    // Fallback: place cursor at the end of the first page
+    page.focus();
+    const range = document.createRange();
+    range.selectNodeContents(page);
+    range.collapse(false); // collapse to end
+    sel.removeAllRanges();
+    sel.addRange(range);
   }, []);
 
   const getDocumentText = useCallback(() => {
@@ -4074,21 +4261,296 @@ export default function DocEditor({
     });
   };
 
+  // Insert an image into the editor via direct DOM insertion + state sync.
+  const insertImageElement = useCallback((src: string, alt: string) => {
+    // Restore cursor position so we can insert at the right place
+    restoreEditorSelection();
+
+    // Determine the target page: prefer the page containing the cursor, else page 0
+    const sel = window.getSelection();
+    let targetPage: HTMLElement | null = null;
+    let insertRange: Range | null = null;
+    if (sel && sel.rangeCount > 0) {
+      const range = sel.getRangeAt(0);
+      // Walk up to find the contentEditable page element
+      let node: Node | null = range.commonAncestorContainer;
+      while (node && node !== editorRootRef.current) {
+        if (node instanceof HTMLElement && node.contentEditable === "true" && node.hasAttribute("data-placeholder")) {
+          targetPage = node;
+          insertRange = range;
+          break;
+        }
+        node = node.parentNode;
+      }
+    }
+    if (!targetPage) targetPage = pageRefs.current[0];
+    if (!targetPage) return;
+
+    // Create image element via DOM API so src is set properly
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = alt || "";
+    img.dataset.docImage = "true";
+    // Constrain to page width, maintain aspect ratio
+    img.style.maxWidth = "100%";
+    img.style.width = "auto";
+    img.style.height = "auto";
+    img.style.borderRadius = "12px";
+    img.style.margin = "12px auto";
+    img.style.display = "block";
+    img.style.objectFit = "contain";
+
+    // Wrap in a <p> so it's a proper block-level child
+    const wrapper = document.createElement("p");
+    wrapper.style.maxWidth = "100%";
+    wrapper.appendChild(img);
+
+    // Insert at cursor position if available, otherwise append to page
+    if (insertRange) {
+      insertRange.collapse(false);
+      insertRange.insertNode(wrapper);
+      // Move cursor after the inserted image
+      insertRange.setStartAfter(wrapper);
+      insertRange.collapse(true);
+      sel?.removeAllRanges();
+      sel?.addRange(insertRange);
+    } else {
+      targetPage.appendChild(wrapper);
+    }
+
+    // Sync DOM → state after the image loads (ensures correct layout)
+    img.onload = () => emitChange();
+    // Remove the image if the browser can't render it
+    img.onerror = () => {
+      wrapper.remove();
+      emitChange();
+    };
+    // Also sync immediately for instant feedback
+    emitChange();
+  }, [emitChange, restoreEditorSelection]);
+
   const handleInsertImageFromFile = async (file: File) => {
     if (!canEdit) return;
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(new Error("Failed to read file"));
-      reader.readAsDataURL(file);
-    });
-    focusEditor();
-    exec(
-      "insertHTML",
-      `<img src="${dataUrl}" alt="" style="max-width:100%;border-radius:12px;margin:12px 0;" />`
-    );
-    emitChange();
+    // MIME type + extension validation (security)
+    const validation = isValidImageFile(file);
+    if (!validation.valid) {
+      showToast(validation.reason || "Unsupported image format");
+      return;
+    }
+
+    setImageLoading(true);
+    try {
+      const dataUrl = await convertImageToWebSafe(file);
+      insertImageElement(dataUrl, file.name);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : `Failed to upload ${file.name}`;
+      showToast(msg);
+    } finally {
+      setImageLoading(false);
+    }
   };
+
+  const handleInsertImageFromUrl = (url: string) => {
+    if (!canEdit || !url.trim()) return;
+    setImageLoading(true);
+    // Validate URL format
+    try { new URL(url); } catch {
+      setImageUrlError("Please enter a valid URL");
+      setImageLoading(false);
+      return;
+    }
+    // Pre-validate the URL by loading it in an Image object
+    const probe = new Image();
+    probe.onload = () => {
+      // URL is valid — insert via direct DOM insertion
+      insertImageElement(url.trim(), "");
+      setImageLoading(false);
+      setShowImageUrlModal(false);
+      setImageUrlInput("");
+      setImageUrlError("");
+    };
+    probe.onerror = () => {
+      setImageLoading(false);
+      setImageUrlError("Failed to load image from this URL");
+    };
+    probe.src = url.trim();
+  };
+
+  // Helper: get image overlay position relative to the content area container,
+  // accounting for scroll offset within the page surface.
+  const getImageOverlayPos = useCallback((imgRect: DOMRect) => {
+    const container = contentAreaRef.current;
+    if (!container) return { top: 0, left: 0, width: imgRect.width, height: imgRect.height };
+    const containerRect = container.getBoundingClientRect();
+    const scrollEl = scrollContainerRef.current;
+    const scrollTop = scrollEl ? scrollEl.scrollTop : 0;
+    const scrollLeft = scrollEl ? scrollEl.scrollLeft : 0;
+    return {
+      top: imgRect.top - containerRect.top + scrollTop,
+      left: imgRect.left - containerRect.left + scrollLeft,
+      width: imgRect.width,
+      height: imgRect.height,
+    };
+  }, []);
+
+  // Helper: remove crop from an image, restoring original src and dimensions
+  const removeCrop = useCallback((img: HTMLImageElement) => {
+    // Canvas-based crop stores original src in data-original-src
+    if (img.dataset.originalSrc) {
+      img.src = img.dataset.originalSrc;
+      delete img.dataset.originalSrc;
+    }
+    // Restore pre-crop dimensions
+    img.style.width = img.dataset.preCropWidth || "auto";
+    img.style.height = img.dataset.preCropHeight || "auto";
+    img.style.maxWidth = "100%";
+    img.style.display = "block";
+    delete img.dataset.preCropWidth;
+    delete img.dataset.preCropHeight;
+    delete img.dataset.cropTop;
+    delete img.dataset.cropLeft;
+    delete img.dataset.cropWidth;
+    delete img.dataset.cropHeight;
+    // Also remove legacy crop wrapper if present (from old approach)
+    const wrapper = img.closest("[data-doc-image-crop]") as HTMLElement | null;
+    if (wrapper) {
+      wrapper.parentNode?.insertBefore(img, wrapper);
+      wrapper.remove();
+      img.style.marginTop = "";
+      img.style.marginLeft = "";
+    }
+  }, []);
+
+  // Click handler to detect image selection in contentEditable
+  const handleEditorImageClick = useCallback((e: MouseEvent) => {
+    // Skip deselection if a resize or crop drag just finished
+    if (isImageDraggingRef.current) {
+      isImageDraggingRef.current = false;
+      return;
+    }
+    const target = e.target as HTMLElement;
+    // Don't deselect when clicking on any image editing UI element
+    if (target.closest("[data-doc-image-toolbar]") || target.closest("[data-doc-resize-handle]") || target.closest("[data-doc-image-options-panel]") || target.closest("[data-doc-crop-handle]") || target.closest("[data-doc-crop-overlay]") || target.closest("[data-doc-crop-mask]") || target.closest("[data-doc-crop-grid]") || target.closest("[data-doc-crop-marker]") || target.closest("[data-doc-crop-buttons]")) {
+      return;
+    }
+    if (target.tagName === "IMG" && (target as HTMLImageElement).dataset.docImage) {
+      e.preventDefault();
+      const img = target as HTMLImageElement;
+      setSelectedImage(img);
+      setSelectedImageRect(img.getBoundingClientRect());
+      // Read current rotation from the element's transform style
+      const rotMatch = img.style.transform?.match(/rotate\((\d+)deg\)/);
+      setImageRotation(rotMatch ? Number(rotMatch[1]) : 0);
+      // Read current opacity/brightness/contrast from element styles
+      const parsedOpacity = img.style.opacity ? Math.round(parseFloat(img.style.opacity) * 100) : 100;
+      let parsedBrightness = 100;
+      let parsedContrast = 100;
+      const filterStr = img.style.filter || "";
+      const brightMatch = filterStr.match(/brightness\(([\d.]+)\)/);
+      if (brightMatch) parsedBrightness = Math.round(parseFloat(brightMatch[1]) * 100);
+      const contrastMatch = filterStr.match(/contrast\(([\d.]+)\)/);
+      if (contrastMatch) parsedContrast = Math.round(parseFloat(contrastMatch[1]) * 100);
+      setImageOptions({ opacity: parsedOpacity, brightness: parsedBrightness, contrast: parsedContrast });
+      setShowCropOverlay(false);
+    } else {
+      setSelectedImage(null);
+      setSelectedImageRect(null);
+      setShowImageOptions(false);
+      setShowCropOverlay(false);
+    }
+  }, []);
+
+  // Attach image click listener to root element (delegates to all pages)
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    root.addEventListener("click", handleEditorImageClick);
+    return () => root.removeEventListener("click", handleEditorImageClick);
+  }, [handleEditorImageClick]);
+
+
+  // Update selected image rect on scroll/resize so selection border follows the image
+  useEffect(() => {
+    if (!selectedImage) return;
+    const update = () => {
+      setSelectedImageRect(selectedImage.getBoundingClientRect());
+    };
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    // Also listen on the scroll container directly for inner scrolling
+    const scrollEl = scrollContainerRef.current;
+    if (scrollEl) {
+      scrollEl.addEventListener("scroll", update);
+    }
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+      if (scrollEl) {
+        scrollEl.removeEventListener("scroll", update);
+      }
+    };
+  }, [selectedImage]);
+
+  // Drag and drop images onto editor
+  const handleEditorDragOver = useCallback((e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes("Files")) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+    }
+  }, []);
+
+  const handleEditorDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounterRef.current++;
+    if (e.dataTransfer.types.includes("Files")) {
+      setIsDragActive(true);
+    }
+  }, []);
+
+  const handleEditorDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounterRef.current--;
+    if (dragCounterRef.current === 0) {
+      setIsDragActive(false);
+    }
+  }, []);
+
+  const handleEditorDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current = 0;
+    setIsDragActive(false);
+    const allFiles = Array.from(e.dataTransfer.files);
+    if (allFiles.length === 0) return;
+
+    // Separate valid images from unsupported files
+    const imageFiles: File[] = [];
+    const rejected: string[] = [];
+    for (const file of allFiles) {
+      const ext = getFileExtension(file.name);
+      const mime = file.type.toLowerCase();
+      if (mime.startsWith("image/") || IMAGE_VALID_EXTENSIONS.has(ext)) {
+        const check = isValidImageFile(file);
+        if (check.valid) {
+          imageFiles.push(file);
+        } else {
+          rejected.push(check.reason || file.name);
+        }
+      } else {
+        rejected.push(`"${file.name}" is not a supported image. Accepted: ${IMAGE_FORMAT_LIST}`);
+      }
+    }
+
+    // Show toast for unsupported files
+    if (rejected.length > 0) {
+      showToast(rejected[0]);
+    }
+
+    // Insert valid images using the full upload flow (ghost preview + validation + conversion)
+    for (const file of imageFiles) {
+      await handleInsertImageFromFile(file);
+    }
+  }, [handleInsertImageFromFile, showToast]);
 
   return (
     <MenuCloseContext.Provider value={closeMenus}>
@@ -5054,11 +5516,11 @@ export default function DocEditor({
         </div>
       )}
 
-      {/* Hidden image picker */}
+      {/* Hidden image picker — accepts all modern image formats */}
       <input
         ref={imageInputRef}
         type="file"
-        accept="image/*"
+        accept={IMAGE_ACCEPT_ATTR}
         className="hidden"
         onChange={async (e) => {
           const inputEl = e.currentTarget;
@@ -5523,24 +5985,28 @@ export default function DocEditor({
               onLeave={() => setOpenSubmenu(null)}
               isSubmenuOpen={openSubmenu === "insert-image"}
               submenu={
-                <SubmenuPanel className="w-[240px]">
-                  <ViewMenuItem label="Upload from computer" onClick={() => imageInputRef.current?.click()} />
+                <SubmenuPanel className="w-[260px]">
+                  <ViewMenuItem label="Upload from computer" icon={Upload} onClick={() => { saveEditorSelection(); closeMenus(); imageInputRef.current?.click(); }} />
                   <ViewMenuItem
                     label="Search the web"
+                    icon={Search}
                     onClick={() => {
-                      const q = window.prompt("Search images for…");
-                      if (!q) return;
-                      window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q)}`, "_blank");
+                      saveEditorSelection();
+                      closeMenus();
+                      setShowImageSearchSidebar(true);
                     }}
                   />
-                  <ViewMenuItem label="Drive" onClick={() => { showToast("Pick an image (Drive integration optional)"); imageInputRef.current?.click(); }} />
-                  <ViewMenuItem label="Photos" onClick={() => { showToast("Pick an image (Photos integration optional)"); imageInputRef.current?.click(); }} />
+                  <ViewMenuItem label="Drive" icon={HardDrive} onClick={() => { saveEditorSelection(); closeMenus(); showToast("Google Drive integration — opening file picker"); imageInputRef.current?.click(); }} />
+                  <ViewMenuItem label="Photos" icon={ImagePlus} onClick={() => { saveEditorSelection(); closeMenus(); showToast("Google Photos integration — opening file picker"); imageInputRef.current?.click(); }} />
                   <ViewMenuItem
                     label="Camera"
+                    icon={Camera}
                     onClick={() => {
+                      saveEditorSelection();
+                      closeMenus();
                       const input = document.createElement("input");
                       input.type = "file";
-                      input.accept = "image/*";
+                      input.accept = IMAGE_ACCEPT_ATTR;
                       (input as any).capture = "environment";
                       input.onchange = async () => {
                         const file = input.files?.[0];
@@ -5550,14 +6016,16 @@ export default function DocEditor({
                       input.click();
                     }}
                   />
+                  <ViewMenuDivider />
                   <ViewMenuItem
                     label="By URL"
+                    icon={Link}
                     onClick={() => {
-                      const url = window.prompt("Image URL");
-                      if (!url) return;
-                      focusEditor();
-                      exec("insertHTML", `<img src="${url}" alt="" style="max-width:100%;border-radius:12px;margin:12px 0;" />`);
-                      emitChange();
+                      saveEditorSelection();
+                      closeMenus();
+                      setShowImageUrlModal(true);
+                      setImageUrlInput("");
+                      setImageUrlError("");
                     }}
                   />
                 </SubmenuPanel>
@@ -6144,7 +6612,7 @@ export default function DocEditor({
           <ToolbarButton disabled={false} onClick={handleAddCommentFromSelection} title="Add comment (Ctrl+Alt+M)" Icon={MessageSquarePlus} />
 
           {/* Insert image */}
-          <ToolbarButton disabled={!canEdit} onClick={() => imageInputRef.current?.click()} title="Insert image" Icon={ImageIcon} />
+          <ToolbarButton disabled={!canEdit} onClick={() => { saveEditorSelection(); imageInputRef.current?.click(); }} title="Insert image" Icon={ImageIcon} />
           <ToolbarDivider />
 
           {/* ── Desktop: show alignment/spacing/lists/indent/clear inline ── */}
@@ -6401,7 +6869,7 @@ export default function DocEditor({
       )}
 
       {/* Main content: sidebar + page surface */}
-      <div className="flex flex-1 min-h-0 relative">
+      <div ref={contentAreaRef} className="flex flex-1 min-h-0 relative">
         {/* Sidebar expand button — shown when sidebar is collapsed */}
         {!isFullscreen && isSidebarCollapsed && (
           <div className="flex-shrink-0 flex flex-col items-center pt-3 px-1">
@@ -6531,12 +6999,20 @@ export default function DocEditor({
           </>
         )}
 
-        {/* Page surface — shifts left when comments sidebar is open */}
-        <div className={[
-          "flex-1 min-h-0 overflow-auto transition-[margin] duration-300 ease-in-out",
-          isFullscreen ? "px-0 pb-0" : "px-1 sm:px-2 md:px-4 pb-2 sm:pb-4",
-          !isFullscreen && showComments ? "mr-[356px] max-md:mr-0" : "",
-        ].join(" ")}>
+        {/* Page surface — shifts left when comments/image-search sidebar is open */}
+        <div
+          ref={scrollContainerRef}
+          className={[
+            "flex-1 min-h-0 overflow-auto transition-[margin] duration-300 ease-in-out",
+            isFullscreen ? "px-0 pb-0" : "px-1 sm:px-2 md:px-4 pb-2 sm:pb-4",
+            !isFullscreen && showComments ? "mr-[356px] max-md:mr-0" : "",
+            !isFullscreen && showImageSearchSidebar && !showComments ? "mr-[356px] max-md:mr-0" : "",
+          ].join(" ")}
+          onDragOver={handleEditorDragOver}
+          onDragEnter={handleEditorDragEnter}
+          onDragLeave={handleEditorDragLeave}
+          onDrop={handleEditorDrop}
+        >
           {!isFullscreen && showEquationToolbar && (
             <div data-doc-equation-toolbar className="mx-auto w-full max-w-[860px] mb-2 px-2">
               <div className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-gray-900/60 midnight:bg-[#0b1220] purple:bg-[#170a27] backdrop-blur-sm">
@@ -6645,6 +7121,8 @@ export default function DocEditor({
                               suppressContentEditableWarning
                               ref={(el) => {
                                 pageRefs.current[globalIdx] = el;
+                                // Skip innerHTML reset during active image resize/crop drag (DOM is being modified directly)
+                                if (isImageDraggingRef.current) return;
                                 // Skip innerHTML reset if find/replace or comment highlights are active (they modify the DOM temporarily)
                                 if (el && !el.querySelector("mark[data-doc-find-highlight]") && !el.querySelector("span[data-doc-comment-highlight]") && el.innerHTML !== html) el.innerHTML = html;
                               }}
@@ -6732,6 +7210,8 @@ export default function DocEditor({
                   suppressContentEditableWarning
                   ref={(el) => {
                     pageRefs.current[0] = el;
+                    // Skip innerHTML reset during active image resize/crop drag (DOM is being modified directly)
+                    if (isImageDraggingRef.current) return;
                     // Skip innerHTML reset if find/replace highlights are active (they modify the DOM temporarily)
                     if (el && !el.querySelector("mark[data-doc-find-highlight]") && !el.querySelector("span[data-doc-comment-highlight]") && el.innerHTML !== (pages[0] || "")) el.innerHTML = pages[0] || "";
                   }}
@@ -6915,6 +7395,1075 @@ export default function DocEditor({
               <span className="text-[11px] font-semibold">{openComments.length}</span>
             </button>
           </Tooltip>
+        </div>
+      )}
+
+      {/* ── Image Loading Overlay ── */}
+      {imageLoading && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/20 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white/90 dark:bg-gray-900/90 midnight:bg-[#0d1526]/90 purple:bg-[#1f1035]/90 backdrop-blur-xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50">
+            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+            <span className="text-[13px] font-medium text-gray-700 dark:text-gray-200">Inserting image…</span>
+          </div>
+        </div>
+      )}
+
+      {/* ── Insert Image by URL Modal ── */}
+      {showImageUrlModal && (
+        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => { setShowImageUrlModal(false); setImageUrlInput(""); setImageUrlError(""); }}>
+          <div
+            data-doc-image-url-modal
+            className="w-full max-w-[480px] mx-4 rounded-2xl bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[15px] font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Insert image by URL</h3>
+              <button
+                type="button"
+                onClick={() => { setShowImageUrlModal(false); setImageUrlInput(""); setImageUrlError(""); }}
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
+            <div className="flex flex-col gap-3">
+              <div>
+                <label htmlFor="image-url-input" className="text-[12px] font-medium text-gray-500 dark:text-gray-400 mb-1 block">Paste an image URL</label>
+                <input
+                  id="image-url-input"
+                  type="url"
+                  value={imageUrlInput}
+                  onChange={(e) => { setImageUrlInput(e.target.value); setImageUrlError(""); }}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleInsertImageFromUrl(imageUrlInput); }}
+                  placeholder="https://example.com/image.png"
+                  className={[
+                    "w-full px-3 py-2.5 rounded-xl text-[13px] outline-none transition-all",
+                    "bg-gray-50 dark:bg-gray-800 midnight:bg-[#0b1220] purple:bg-[#170a27]",
+                    "border",
+                    imageUrlError
+                      ? "border-red-400 dark:border-red-500 focus:ring-2 focus:ring-red-200 dark:focus:ring-red-500/20"
+                      : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/20",
+                    "text-gray-800 dark:text-gray-100 placeholder:text-gray-400",
+                  ].join(" ")}
+                  autoFocus
+                />
+                {imageUrlError && <p className="text-[11px] text-red-500 mt-1">{imageUrlError}</p>}
+              </div>
+              {/* URL preview */}
+              {imageUrlInput.trim() && !imageUrlError && (() => { try { new URL(imageUrlInput); return true; } catch { return false; } })() && (
+                <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 flex items-center justify-center min-h-[120px] max-h-[200px] overflow-hidden">
+                  <img
+                    src={imageUrlInput.trim()}
+                    alt="Preview"
+                    className="max-w-full max-h-[180px] rounded-lg object-contain"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    onLoad={(e) => { (e.target as HTMLImageElement).style.display = "block"; }}
+                  />
+                </div>
+              )}
+              <div className="flex justify-end gap-2 mt-1">
+                <button
+                  type="button"
+                  onClick={() => { setShowImageUrlModal(false); setImageUrlInput(""); setImageUrlError(""); }}
+                  className="px-4 py-2 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInsertImageFromUrl(imageUrlInput)}
+                  disabled={!imageUrlInput.trim()}
+                  className="px-4 py-2 rounded-xl text-[13px] font-medium bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-sm"
+                >
+                  Insert
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Image Search Sidebar — pushes doc left like Comment Sidebar ── */}
+      {!isFullscreen && showImageSearchSidebar && (
+        <div
+          data-doc-image-search-panel
+          className="absolute right-0 top-0 bottom-0 z-[150] w-[340px] max-md:hidden border-l border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-xl shadow-[-4px_0_24px_-4px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden"
+        >
+          <div className="flex items-center justify-between px-3 py-3 border-b border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-2">
+              <Search className="w-4 h-4 text-blue-500" />
+              <span className="text-[13px] font-bold text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50">Search the web</span>
+            </div>
+            <Tooltip content="Close image search" delay={200}>
+              <button
+                type="button"
+                onClick={() => setShowImageSearchSidebar(false)}
+                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                aria-label="Close image search panel"
+              >
+                <PanelRightClose className="w-3.5 h-3.5 text-gray-500" />
+              </button>
+            </Tooltip>
+          </div>
+          <div className="px-3 py-2">
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={imageSearchQuery}
+                onChange={(e) => setImageSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && imageSearchQuery.trim()) {
+                    window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(imageSearchQuery.trim())}`, "_blank");
+                  }
+                }}
+                placeholder="Search Google Images…"
+                className="flex-1 px-3 py-2 rounded-xl text-[13px] bg-gray-50 dark:bg-gray-800 midnight:bg-[#0b1220] purple:bg-[#170a27] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-800 dark:text-gray-100 placeholder:text-gray-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/20"
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (imageSearchQuery.trim()) {
+                    window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(imageSearchQuery.trim())}`, "_blank");
+                  }
+                }}
+                className="p-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white transition-colors cursor-pointer shadow-sm"
+                aria-label="Search"
+              >
+                <Search className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          <div className="flex-1 px-3 py-2 overflow-y-auto">
+            <p className="text-[12px] text-gray-500 dark:text-gray-400 mb-3">Search for images, then paste the URL using &quot;By URL&quot; to insert.</p>
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => {
+                  saveEditorSelection();
+                  setShowImageSearchSidebar(false);
+                  setShowImageUrlModal(true);
+                  setImageUrlInput("");
+                  setImageUrlError("");
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-[12px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
+              >
+                <Link className="w-3.5 h-3.5" />
+                Paste image URL
+              </button>
+              <button
+                type="button"
+                onClick={() => { saveEditorSelection(); setShowImageSearchSidebar(false); imageInputRef.current?.click(); }}
+                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-[12px] font-medium text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                Upload from computer instead
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Glassmorphism Drop Zone Overlay — visible when dragging files over editor ── */}
+      {isDragActive && (
+        <div
+          className="absolute inset-0 z-[200] flex items-center justify-center pointer-events-none"
+          style={{
+            background: "rgba(255,255,255,0.55)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+          }}
+        >
+          <div
+            className="flex flex-col items-center gap-3 px-10 py-8 rounded-2xl"
+            style={{
+              border: "2.5px dashed rgba(99,102,241,0.7)",
+              animation: "drop-zone-pulse 1.5s ease-in-out infinite",
+              background: "rgba(255,255,255,0.6)",
+              backdropFilter: "blur(12px)",
+            }}
+          >
+            <svg className="w-10 h-10 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+            <span className="text-sm font-semibold text-indigo-600">Drop image here</span>
+          </div>
+        </div>
+      )}
+
+      {/* ── Squircle Resize Handles — fixed to viewport so they scroll with the image ── */}
+      {selectedImage && selectedImageRect && canEdit && !showCropOverlay && (() => {
+        const imgTop = selectedImageRect.top;
+        const imgLeft = selectedImageRect.left;
+        const imgW = selectedImageRect.width;
+        const imgH = selectedImageRect.height;
+        const handleSize = 12;
+        const half = handleSize / 2;
+        // Corner + edge handle positions: [top, left, cursor]
+        const handles: Array<[number, number, string, string]> = [
+          [imgTop - half, imgLeft - half, "nw-resize", "nw"],
+          [imgTop - half, imgLeft + imgW / 2 - half, "n-resize", "n"],
+          [imgTop - half, imgLeft + imgW - half, "ne-resize", "ne"],
+          [imgTop + imgH / 2 - half, imgLeft + imgW - half, "e-resize", "e"],
+          [imgTop + imgH - half, imgLeft + imgW - half, "se-resize", "se"],
+          [imgTop + imgH - half, imgLeft + imgW / 2 - half, "s-resize", "s"],
+          [imgTop + imgH - half, imgLeft - half, "sw-resize", "sw"],
+          [imgTop + imgH / 2 - half, imgLeft - half, "w-resize", "w"],
+        ];
+        return (
+          <>
+            {/* Selection outline — Electric Indigo pulsating glow */}
+            <div
+              className="fixed z-[158] pointer-events-none rounded-xl"
+              style={{
+                top: imgTop,
+                left: imgLeft,
+                width: imgW,
+                height: imgH,
+                border: "2px solid #6366f1",
+                boxShadow: "0 0 0 2px rgba(99,102,241,0.25), 0 0 12px 2px rgba(99,102,241,0.15)",
+                animation: "image-select-pulse 2s ease-in-out infinite",
+              }}
+            />
+            {/* Squircle resize handles */}
+            {handles.map(([t, l, cursor, hpos]) => (
+              <div
+                key={hpos}
+                data-doc-resize-handle={hpos}
+                className="fixed z-[159] bg-white dark:bg-gray-200 border-2 border-indigo-500 shadow-md hover:bg-indigo-100 hover:scale-125 transition-all duration-150"
+                style={{
+                  top: t,
+                  left: l,
+                  width: handleSize,
+                  height: handleSize,
+                  cursor,
+                  borderRadius: 5,
+                }}
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  isImageDraggingRef.current = true;
+                  if (!selectedImage) return;
+                  const startX = e.clientX;
+                  const startY = e.clientY;
+
+                  const startW = selectedImage.offsetWidth || selectedImage.naturalWidth;
+                  const startH = selectedImage.offsetHeight || selectedImage.naturalHeight;
+                  const aspectRatio = startW / startH;
+                  const lockAspect = !e.shiftKey;
+
+                  // Get page container width for snap-to-margin
+                  const pageEl = selectedImage.closest("[data-placeholder]") as HTMLElement | null;
+                  const pageWidth = pageEl ? pageEl.clientWidth : 0;
+
+                  const onMouseMove = (ev: MouseEvent) => {
+                    const dx = ev.clientX - startX;
+                    const dy = ev.clientY - startY;
+                    let newW = startW;
+                    let newH = startH;
+
+                    if (hpos.includes("e")) newW = startW + dx;
+                    if (hpos.includes("w")) newW = startW - dx;
+                    if (hpos.includes("s")) newH = startH + dy;
+                    if (hpos.includes("n")) newH = startH - dy;
+
+                    newW = Math.max(20, newW);
+                    newH = Math.max(20, newH);
+
+                    // Snap to page width when within 12px
+                    if (pageWidth > 0 && Math.abs(newW - pageWidth) < 12) {
+                      newW = pageWidth;
+                    }
+                    // Snap to 50% page width
+                    if (pageWidth > 0 && Math.abs(newW - pageWidth / 2) < 12) {
+                      newW = pageWidth / 2;
+                    }
+
+                    if (lockAspect && !ev.shiftKey) {
+                      if (hpos === "n" || hpos === "s") newW = newH * aspectRatio;
+                      else newH = newW / aspectRatio;
+                    }
+
+                    selectedImage.style.width = `${Math.round(newW)}px`;
+                    selectedImage.style.height = `${Math.round(newH)}px`;
+                    setSelectedImageRect(selectedImage.getBoundingClientRect());
+                    // Show dimension tooltip near cursor
+                    setResizeDimensions({ w: Math.round(newW), h: Math.round(newH), x: ev.clientX, y: ev.clientY });
+                  };
+                  const onMouseUp = () => {
+                    document.removeEventListener("mousemove", onMouseMove);
+                    document.removeEventListener("mouseup", onMouseUp);
+                    setResizeDimensions(null);
+                    // Keep the flag set so the subsequent click event doesn't deselect
+                    // It gets cleared in handleEditorImageClick
+                    emitChange();
+                  };
+                  document.addEventListener("mousemove", onMouseMove);
+                  document.addEventListener("mouseup", onMouseUp);
+                }}
+              />
+            ))}
+            {/* Resize dimension tooltip — shows current size near cursor */}
+            {resizeDimensions && (() => {
+              return (
+                <div
+                  className="fixed z-[170] px-2.5 py-1 rounded-lg bg-gray-900/90 text-white text-[11px] font-mono font-medium pointer-events-none backdrop-blur-sm shadow-lg"
+                  style={{
+                    top: resizeDimensions.y + 18,
+                    left: resizeDimensions.x + 12,
+                  }}
+                >
+                  {resizeDimensions.w} × {resizeDimensions.h} px
+                </div>
+              );
+            })()}
+          </>
+        );
+      })()}
+
+      {/* ── Image Contextual Toolbar — glassmorphism pill floating 10px above selected image ── */}
+      {selectedImage && selectedImageRect && canEdit && (() => {
+        const toolbarHeight = 44;
+        const top = selectedImageRect.top - toolbarHeight - 10;
+        const left = selectedImageRect.left + (selectedImageRect.width / 2) - 140;
+        return (
+          <div
+            data-doc-image-toolbar
+            className="fixed z-[160] flex items-center gap-1 px-2 py-1.5 rounded-full bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-2xl shadow-2xl border border-indigo-200/60 dark:border-indigo-500/30 midnight:border-cyan-500/20 purple:border-pink-500/20"
+            style={{
+              top: Math.max(4, top),
+              left: Math.max(8, left),
+              animation: "image-toolbar-spring 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both",
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <Tooltip content="Image options" delay={200}>
+              <button
+                type="button"
+                onClick={() => setShowImageOptions(true)}
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                aria-label="Image options"
+              >
+                <SlidersHorizontal className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              </button>
+            </Tooltip>
+            <Tooltip content="Replace image" delay={200}>
+              <button
+                type="button"
+                onClick={() => {
+                  const input = document.createElement("input");
+                  input.type = "file";
+                  input.accept = IMAGE_ACCEPT_ATTR;
+                  input.onchange = async () => {
+                    const file = input.files?.[0];
+                    if (!file) return;
+                    // Use full validation + conversion pipeline (same as insert)
+                    const validation = isValidImageFile(file);
+                    if (!validation.valid) {
+                      showToast(validation.reason || "Unsupported image format");
+                      return;
+                    }
+                    try {
+                      const dataUrl = await convertImageToWebSafe(file);
+                      if (selectedImage) {
+                        selectedImage.src = dataUrl;
+                        selectedImage.alt = file.name;
+                        emitChange();
+                      }
+                    } catch (err: unknown) {
+                      const msg = err instanceof Error ? err.message : `Failed to load ${file.name}`;
+                      showToast(msg);
+                    }
+                  };
+                  input.click();
+                }}
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                aria-label="Replace image"
+              >
+                <Replace className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              </button>
+            </Tooltip>
+            <Tooltip content={showCropOverlay ? "Exit crop" : "Crop image"} delay={200}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (showCropOverlay) {
+                    setShowCropOverlay(false);
+                    return;
+                  }
+                  if (selectedImage) {
+                    // If image is already cropped, restore original for re-cropping
+                    if (selectedImage.dataset.originalSrc) {
+                      const prevCrop = {
+                        top: parseFloat(selectedImage.dataset.cropTop || "0"),
+                        left: parseFloat(selectedImage.dataset.cropLeft || "0"),
+                        width: parseFloat(selectedImage.dataset.cropWidth || "100"),
+                        height: parseFloat(selectedImage.dataset.cropHeight || "100"),
+                      };
+                      // Restore original image so user sees full image for re-cropping
+                      removeCrop(selectedImage);
+                      emitChange();
+                      setTimeout(() => {
+                        setSelectedImageRect(selectedImage.getBoundingClientRect());
+                      }, 0);
+                      setCropRect(prevCrop);
+                    } else {
+                      setCropRect({ top: 0, left: 0, width: 100, height: 100 });
+                    }
+                    setShowCropOverlay(true);
+                  }
+                }}
+                className={`p-2 rounded-xl transition-colors cursor-pointer ${showCropOverlay ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600" : "hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                aria-label="Crop image"
+              >
+                <Crop className={`w-4 h-4 ${showCropOverlay ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300"}`} />
+              </button>
+            </Tooltip>
+            {/* Undo crop button — only visible when image has an active crop wrapper */}
+            {selectedImage?.dataset.originalSrc && !showCropOverlay && (
+              <Tooltip content="Remove crop" delay={200}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedImage) {
+                      removeCrop(selectedImage);
+                      emitChange();
+                      setSelectedImageRect(selectedImage.getBoundingClientRect());
+                      showToast("Crop removed — image restored");
+                    }
+                  }}
+                  className="p-2 rounded-xl transition-colors cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20"
+                  aria-label="Remove crop"
+                >
+                  <Undo2 className="w-4 h-4 text-orange-500 dark:text-orange-400" />
+                </button>
+              </Tooltip>
+            )}
+            <Tooltip content="Rotate 90°" delay={200}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (selectedImage) {
+                    const newRotation = (imageRotation + 90) % 360;
+                    setImageRotation(newRotation);
+                    selectedImage.style.transform = newRotation === 0 ? "" : `rotate(${newRotation}deg)`;
+                    emitChange();
+                    setSelectedImageRect(selectedImage.getBoundingClientRect());
+                  }
+                }}
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                aria-label="Rotate 90 degrees"
+              >
+                <RotateCcw className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              </button>
+            </Tooltip>
+            <Tooltip content="Reset image" delay={200}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (selectedImage) {
+                    // Remove crop wrapper first if it exists
+                    removeCrop(selectedImage);
+                    selectedImage.style.filter = "";
+                    selectedImage.style.opacity = "";
+                    selectedImage.style.width = "";
+                    selectedImage.style.height = "";
+                    selectedImage.style.transform = "";
+                    selectedImage.style.clipPath = "";
+                    selectedImage.style.maxWidth = "100%";
+                    setImageOptions({ opacity: 100, brightness: 100, contrast: 100 });
+                    setImageRotation(0);
+                    setShowCropOverlay(false);
+                    emitChange();
+                    setSelectedImageRect(selectedImage.getBoundingClientRect());
+                    showToast("Image reset to original");
+                  }
+                }}
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                aria-label="Reset image"
+              >
+                <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              </button>
+            </Tooltip>
+            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
+            <Tooltip content="Delete image" delay={200}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (selectedImage) {
+                    // Find the block-level parent (<p>) that wraps the image
+                    const blockParent = selectedImage.parentElement;
+                    selectedImage.remove();
+                    // Clean up empty parent <p> wrapper left behind
+                    if (blockParent && blockParent.tagName === "P" && blockParent.childNodes.length === 0) {
+                      blockParent.remove();
+                    }
+                    setSelectedImage(null);
+                    setSelectedImageRect(null);
+                    setShowImageOptions(false);
+                    setShowCropOverlay(false);
+                    emitChange();
+                  }
+                }}
+                className="p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                aria-label="Delete image"
+              >
+                <Trash2 className="w-4 h-4 text-red-500" />
+              </button>
+            </Tooltip>
+          </div>
+        );
+      })()}
+
+      {/* ── Crop Overlay — Google Docs style crop with 8 handles, grid, dark mask ── */}
+      {showCropOverlay && selectedImage && selectedImageRect && canEdit && (() => {
+        const imgTop = selectedImageRect.top;
+        const imgLeft = selectedImageRect.left;
+        const imgW = selectedImageRect.width;
+        const imgH = selectedImageRect.height;
+        // cropRect values are percentages (0-100) relative to the image
+        const cTop = imgTop + (cropRect.top / 100) * imgH;
+        const cLeft = imgLeft + (cropRect.left / 100) * imgW;
+        const cW = (cropRect.width / 100) * imgW;
+        const cH = (cropRect.height / 100) * imgH;
+        const minCropPct = 8; // minimum crop size in percent
+
+        // Handle drag for all 8 handles (4 corners + 4 edges)
+        const onCropHandleMouseDown = (handle: string) => (e: React.MouseEvent) => {
+          e.preventDefault();
+          e.stopPropagation();
+          isImageDraggingRef.current = true;
+          const startX = e.clientX;
+          const startY = e.clientY;
+          const startCrop = { ...cropRect };
+
+          const onMouseMove = (ev: MouseEvent) => {
+            const dxPct = ((ev.clientX - startX) / imgW) * 100;
+            const dyPct = ((ev.clientY - startY) / imgH) * 100;
+            const next = { ...startCrop };
+
+            if (handle.includes("n")) {
+              const newTop = Math.max(0, Math.min(startCrop.top + startCrop.height - minCropPct, startCrop.top + dyPct));
+              next.height = startCrop.height - (newTop - startCrop.top);
+              next.top = newTop;
+            }
+            if (handle.includes("s")) {
+              next.height = Math.max(minCropPct, Math.min(100 - startCrop.top, startCrop.height + dyPct));
+            }
+            if (handle.includes("w")) {
+              const newLeft = Math.max(0, Math.min(startCrop.left + startCrop.width - minCropPct, startCrop.left + dxPct));
+              next.width = startCrop.width - (newLeft - startCrop.left);
+              next.left = newLeft;
+            }
+            if (handle.includes("e")) {
+              next.width = Math.max(minCropPct, Math.min(100 - startCrop.left, startCrop.width + dxPct));
+            }
+            setCropRect(next);
+          };
+          const onMouseUp = () => {
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+          };
+          document.addEventListener("mousemove", onMouseMove);
+          document.addEventListener("mouseup", onMouseUp);
+        };
+
+        // Handle drag to move the entire crop area
+        const onCropAreaMouseDown = (e: React.MouseEvent) => {
+          e.preventDefault();
+          e.stopPropagation();
+          isImageDraggingRef.current = true;
+          const startX = e.clientX;
+          const startY = e.clientY;
+          const startCrop = { ...cropRect };
+
+          const onMouseMove = (ev: MouseEvent) => {
+            const dxPct = ((ev.clientX - startX) / imgW) * 100;
+            const dyPct = ((ev.clientY - startY) / imgH) * 100;
+            const newLeft = Math.max(0, Math.min(100 - startCrop.width, startCrop.left + dxPct));
+            const newTop = Math.max(0, Math.min(100 - startCrop.height, startCrop.top + dyPct));
+            setCropRect({ ...startCrop, left: newLeft, top: newTop });
+          };
+          const onMouseUp = () => {
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+          };
+          document.addEventListener("mousemove", onMouseMove);
+          document.addEventListener("mouseup", onMouseUp);
+        };
+
+        // Apply crop using canvas — draws the cropped region to a canvas, exports as dataURL
+        const applyCrop = () => {
+          if (!selectedImage) {
+            setShowCropOverlay(false);
+            return;
+          }
+
+          const isFullCrop = cropRect.top < 0.5 && cropRect.left < 0.5 && cropRect.width > 99.5 && cropRect.height > 99.5;
+          if (isFullCrop) {
+            // No actual crop — restore original if previously cropped
+            if (selectedImage.dataset.originalSrc) {
+              removeCrop(selectedImage);
+              emitChange();
+              setTimeout(() => setSelectedImageRect(selectedImage.getBoundingClientRect()), 0);
+            }
+            setShowCropOverlay(false);
+            return;
+          }
+
+          // Use natural dimensions for pixel-accurate cropping
+          const natW = selectedImage.naturalWidth;
+          const natH = selectedImage.naturalHeight;
+          if (!natW || !natH) {
+            setShowCropOverlay(false);
+            return;
+          }
+
+          // Calculate source region in natural pixels from percentage cropRect
+          const sx = (cropRect.left / 100) * natW;
+          const sy = (cropRect.top / 100) * natH;
+          const sw = (cropRect.width / 100) * natW;
+          const sh = (cropRect.height / 100) * natH;
+
+          // Store original src for undo (only on first crop)
+          if (!selectedImage.dataset.originalSrc) {
+            selectedImage.dataset.originalSrc = selectedImage.src;
+          }
+          // Store pre-crop display dimensions (only on first crop)
+          if (!selectedImage.dataset.preCropWidth) {
+            selectedImage.dataset.preCropWidth = selectedImage.style.width || `${selectedImage.offsetWidth}px`;
+            selectedImage.dataset.preCropHeight = selectedImage.style.height || `${selectedImage.offsetHeight}px`;
+          }
+          // Store crop percentages for re-crop UI
+          selectedImage.dataset.cropTop = cropRect.top.toFixed(1);
+          selectedImage.dataset.cropLeft = cropRect.left.toFixed(1);
+          selectedImage.dataset.cropWidth = cropRect.width.toFixed(1);
+          selectedImage.dataset.cropHeight = cropRect.height.toFixed(1);
+
+          // Prevent innerHTML resets during async canvas work
+          isImageDraggingRef.current = true;
+
+          // Draw cropped region to canvas
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(sw);
+          canvas.height = Math.round(sh);
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            isImageDraggingRef.current = false;
+            setShowCropOverlay(false);
+            return;
+          }
+
+          // Helper to finish the crop once the source image is drawn
+          const finishCrop = () => {
+            const dataUrl = canvas.toDataURL("image/png");
+            selectedImage.src = dataUrl;
+
+            // Calculate display size: maintain the visual width, adjust height for new aspect ratio
+            const preCropDisplayW = parseFloat(selectedImage.dataset.preCropWidth || "0") || selectedImage.offsetWidth;
+            const cropAspect = sw / sh;
+            const displayCropW = preCropDisplayW * (cropRect.width / 100);
+            const displayCropH = displayCropW / cropAspect;
+
+            selectedImage.style.width = `${Math.round(displayCropW)}px`;
+            selectedImage.style.height = `${Math.round(displayCropH)}px`;
+            selectedImage.style.maxWidth = "100%";
+            selectedImage.style.display = "block";
+
+            setShowCropOverlay(false);
+            emitChange();
+            isImageDraggingRef.current = false;
+            setTimeout(() => setSelectedImageRect(selectedImage.getBoundingClientRect()), 0);
+          };
+
+          // If the source is a data URL, we can draw directly from the DOM image
+          // (it's already loaded). Otherwise, load from original src.
+          const originalSrc = selectedImage.dataset.originalSrc;
+          if (originalSrc.startsWith("data:")) {
+            // Data URLs: draw directly from the already-loaded DOM element
+            // Use a temp image with the original src to avoid drawing from an already-cropped version
+            const tmpImg = new Image();
+            tmpImg.onload = () => {
+              ctx.drawImage(tmpImg, Math.round(sx), Math.round(sy), Math.round(sw), Math.round(sh), 0, 0, Math.round(sw), Math.round(sh));
+              finishCrop();
+            };
+            tmpImg.src = originalSrc;
+          } else {
+            const srcImg = new Image();
+            srcImg.crossOrigin = "anonymous";
+            srcImg.onload = () => {
+              ctx.drawImage(srcImg, Math.round(sx), Math.round(sy), Math.round(sw), Math.round(sh), 0, 0, Math.round(sw), Math.round(sh));
+              finishCrop();
+            };
+            srcImg.src = originalSrc;
+          }
+        };
+
+        // Corner L-bracket marker (thick black lines at corners like Google Docs)
+        const cornerMarkerLen = Math.min(20, cW * 0.25, cH * 0.25);
+        const cornerMarkerThick = 3;
+
+        // Edge handle bars (short thick bars at midpoints of edges)
+        const edgeBarLen = Math.min(24, cW * 0.2, cH * 0.2);
+        const edgeBarThick = 3;
+
+        // Handles: corners + edges
+        const handles: { key: string; cursor: string; top: number; left: number; w: number; h: number }[] = [
+          // Corner handles (invisible hitbox over corner markers)
+          { key: "nw", cursor: "nw-resize", top: cTop - 4, left: cLeft - 4, w: cornerMarkerLen + 8, h: cornerMarkerLen + 8 },
+          { key: "ne", cursor: "ne-resize", top: cTop - 4, left: cLeft + cW - cornerMarkerLen - 4, w: cornerMarkerLen + 8, h: cornerMarkerLen + 8 },
+          { key: "sw", cursor: "sw-resize", top: cTop + cH - cornerMarkerLen - 4, left: cLeft - 4, w: cornerMarkerLen + 8, h: cornerMarkerLen + 8 },
+          { key: "se", cursor: "se-resize", top: cTop + cH - cornerMarkerLen - 4, left: cLeft + cW - cornerMarkerLen - 4, w: cornerMarkerLen + 8, h: cornerMarkerLen + 8 },
+          // Edge handles (hitbox over midpoint bars)
+          { key: "n", cursor: "n-resize", top: cTop - 6, left: cLeft + cW / 2 - edgeBarLen / 2, w: edgeBarLen, h: 12 },
+          { key: "s", cursor: "s-resize", top: cTop + cH - 6, left: cLeft + cW / 2 - edgeBarLen / 2, w: edgeBarLen, h: 12 },
+          { key: "w", cursor: "w-resize", top: cTop + cH / 2 - edgeBarLen / 2, left: cLeft - 6, w: 12, h: edgeBarLen },
+          { key: "e", cursor: "e-resize", top: cTop + cH / 2 - edgeBarLen / 2, left: cLeft + cW - 6, w: 12, h: edgeBarLen },
+        ];
+
+        return (
+          <>
+            {/* Darkened overlay outside crop area (4 rectangles approach for reliability) */}
+            {/* Top bar */}
+            <div data-doc-crop-mask className="fixed z-[161] pointer-events-none" style={{ top: imgTop, left: imgLeft, width: imgW, height: cTop - imgTop, background: "rgba(0,0,0,0.55)" }} />
+            {/* Bottom bar */}
+            <div data-doc-crop-mask className="fixed z-[161] pointer-events-none" style={{ top: cTop + cH, left: imgLeft, width: imgW, height: (imgTop + imgH) - (cTop + cH), background: "rgba(0,0,0,0.55)" }} />
+            {/* Left bar */}
+            <div data-doc-crop-mask className="fixed z-[161] pointer-events-none" style={{ top: cTop, left: imgLeft, width: cLeft - imgLeft, height: cH, background: "rgba(0,0,0,0.55)" }} />
+            {/* Right bar */}
+            <div data-doc-crop-mask className="fixed z-[161] pointer-events-none" style={{ top: cTop, left: cLeft + cW, width: (imgLeft + imgW) - (cLeft + cW), height: cH, background: "rgba(0,0,0,0.55)" }} />
+
+            {/* Crop area border — thin white line */}
+            <div
+              data-doc-crop-overlay
+              className="fixed z-[162]"
+              style={{ top: cTop, left: cLeft, width: cW, height: cH, border: "1.5px solid rgba(255,255,255,0.85)", cursor: "move" }}
+              onMouseDown={onCropAreaMouseDown}
+            />
+
+            {/* Rule-of-thirds grid lines inside crop area */}
+            {cW > 40 && cH > 40 && (
+              <>
+                {/* Vertical lines at 1/3 and 2/3 */}
+                <div data-doc-crop-grid className="fixed z-[162] pointer-events-none" style={{ top: cTop, left: cLeft + cW / 3, width: 1, height: cH, background: "rgba(255,255,255,0.4)" }} />
+                <div data-doc-crop-grid className="fixed z-[162] pointer-events-none" style={{ top: cTop, left: cLeft + (cW * 2) / 3, width: 1, height: cH, background: "rgba(255,255,255,0.4)" }} />
+                {/* Horizontal lines at 1/3 and 2/3 */}
+                <div data-doc-crop-grid className="fixed z-[162] pointer-events-none" style={{ top: cTop + cH / 3, left: cLeft, width: cW, height: 1, background: "rgba(255,255,255,0.4)" }} />
+                <div data-doc-crop-grid className="fixed z-[162] pointer-events-none" style={{ top: cTop + (cH * 2) / 3, left: cLeft, width: cW, height: 1, background: "rgba(255,255,255,0.4)" }} />
+              </>
+            )}
+
+            {/* Corner L-bracket markers (thick black lines like Google Docs) */}
+            {(["nw", "ne", "sw", "se"] as const).map((corner) => {
+              const isTop = corner.includes("n");
+              const isLeft = corner.includes("w");
+              const cx = isLeft ? cLeft : cLeft + cW;
+              const cy = isTop ? cTop : cTop + cH;
+              return (
+                <div key={`corner-mark-${corner}`} className="contents">
+                  {/* Horizontal arm */}
+                  <div data-doc-crop-marker className="fixed z-[163] pointer-events-none" style={{
+                    top: isTop ? cy - cornerMarkerThick / 2 : cy - cornerMarkerThick / 2,
+                    left: isLeft ? cx - cornerMarkerThick / 2 : cx - cornerMarkerLen + cornerMarkerThick / 2,
+                    width: cornerMarkerLen, height: cornerMarkerThick,
+                    background: "#fff", borderRadius: 1,
+                  }} />
+                  {/* Vertical arm */}
+                  <div data-doc-crop-marker className="fixed z-[163] pointer-events-none" style={{
+                    top: isTop ? cy - cornerMarkerThick / 2 : cy - cornerMarkerLen + cornerMarkerThick / 2,
+                    left: isLeft ? cx - cornerMarkerThick / 2 : cx - cornerMarkerThick / 2,
+                    width: cornerMarkerThick, height: cornerMarkerLen,
+                    background: "#fff", borderRadius: 1,
+                  }} />
+                </div>
+              );
+            })}
+
+            {/* Edge midpoint bars (short thick white bars) */}
+            {/* Top edge */}
+            <div data-doc-crop-marker className="fixed z-[163] pointer-events-none" style={{ top: cTop - edgeBarThick / 2, left: cLeft + cW / 2 - edgeBarLen / 2, width: edgeBarLen, height: edgeBarThick, background: "#fff", borderRadius: 1 }} />
+            {/* Bottom edge */}
+            <div data-doc-crop-marker className="fixed z-[163] pointer-events-none" style={{ top: cTop + cH - edgeBarThick / 2, left: cLeft + cW / 2 - edgeBarLen / 2, width: edgeBarLen, height: edgeBarThick, background: "#fff", borderRadius: 1 }} />
+            {/* Left edge */}
+            <div data-doc-crop-marker className="fixed z-[163] pointer-events-none" style={{ top: cTop + cH / 2 - edgeBarLen / 2, left: cLeft - edgeBarThick / 2, width: edgeBarThick, height: edgeBarLen, background: "#fff", borderRadius: 1 }} />
+            {/* Right edge */}
+            <div data-doc-crop-marker className="fixed z-[163] pointer-events-none" style={{ top: cTop + cH / 2 - edgeBarLen / 2, left: cLeft + cW - edgeBarThick / 2, width: edgeBarThick, height: edgeBarLen, background: "#fff", borderRadius: 1 }} />
+
+            {/* Invisible hitbox handles for all 8 directions */}
+            {handles.map((h) => (
+              <div
+                key={`crop-handle-${h.key}`}
+                data-doc-crop-handle
+                className="fixed z-[164]"
+                style={{ top: h.top, left: h.left, width: h.w, height: h.h, cursor: h.cursor }}
+                onMouseDown={onCropHandleMouseDown(h.key)}
+              />
+            ))}
+
+            {/* Apply / Cancel / Remove crop buttons — positioned below crop area */}
+            <div
+              data-doc-crop-buttons
+              className="fixed z-[164] flex items-center gap-2"
+              style={{ top: cTop + cH + 12, left: cLeft + cW / 2 - (selectedImage?.dataset.originalSrc ? 105 : 65) }}
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={applyCrop}
+                className="px-4 py-1.5 rounded-lg text-[11px] font-semibold bg-indigo-500 text-white hover:bg-indigo-600 transition-colors cursor-pointer shadow-lg"
+              >
+                Apply
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCropOverlay(false)}
+                className="px-4 py-1.5 rounded-lg text-[11px] font-semibold bg-white/95 dark:bg-gray-800/95 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer shadow-lg border border-gray-200 dark:border-gray-700 backdrop-blur-md"
+              >
+                Cancel
+              </button>
+              {selectedImage?.dataset.originalSrc && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedImage) {
+                      removeCrop(selectedImage);
+                      emitChange();
+                      setSelectedImageRect(selectedImage.getBoundingClientRect());
+                      showToast("Crop removed — image restored");
+                    }
+                    setShowCropOverlay(false);
+                  }}
+                  className="px-4 py-1.5 rounded-lg text-[11px] font-semibold bg-orange-500 text-white hover:bg-orange-600 transition-colors cursor-pointer shadow-lg"
+                >
+                  Remove crop
+                </button>
+              )}
+            </div>
+          </>
+        );
+      })()}
+
+      {/* ── Image Options Sidebar — glassmorphism panel ── */}
+      {showImageOptions && selectedImage && (
+        <div
+          data-doc-image-options-panel
+          className="absolute right-0 top-0 bottom-0 z-[155] w-[300px] max-md:hidden border-l border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-xl shadow-[-4px_0_24px_-4px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-3 py-3 border-b border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-blue-500" />
+              <span className="text-[13px] font-bold text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50">Image options</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowImageOptions(false)}
+              className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              aria-label="Close image options"
+            >
+              <X className="w-3.5 h-3.5 text-gray-500" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto px-3 py-3 space-y-5">
+            {/* Thumbnail preview — shows live CSS filter feedback */}
+            <div className="relative rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <img
+                src={selectedImage.src}
+                alt="Preview"
+                className="w-full h-32 object-contain"
+                style={{
+                  opacity: imageOptions.opacity / 100,
+                  filter: `brightness(${imageOptions.brightness / 100}) contrast(${imageOptions.contrast / 100})`,
+                  transform: imageRotation ? `rotate(${imageRotation}deg)` : undefined,
+                }}
+              />
+            </div>
+            {/* Size & Rotation */}
+            <div>
+              <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">Size &amp; Rotation</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[11px] text-gray-500 dark:text-gray-400">Width</label>
+                  <input
+                    type="number"
+                    defaultValue={selectedImage.offsetWidth || selectedImage.naturalWidth}
+                    onChange={(e) => {
+                      if (selectedImage) {
+                        selectedImage.style.width = `${e.target.value}px`;
+                        setSelectedImageRect(selectedImage.getBoundingClientRect());
+                        emitChange();
+                      }
+                    }}
+                    className="w-full mt-0.5 px-2 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] text-gray-500 dark:text-gray-400">Height</label>
+                  <input
+                    type="number"
+                    defaultValue={selectedImage.offsetHeight || selectedImage.naturalHeight}
+                    onChange={(e) => {
+                      if (selectedImage) {
+                        selectedImage.style.height = `${e.target.value}px`;
+                        setSelectedImageRect(selectedImage.getBoundingClientRect());
+                        emitChange();
+                      }
+                    }}
+                    className="w-full mt-0.5 px-2 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none"
+                  />
+                </div>
+              </div>
+              {/* Rotation input */}
+              <div className="mt-2">
+                <label className="text-[11px] text-gray-500 dark:text-gray-400">Rotation</label>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <input
+                    type="number"
+                    min="0"
+                    max="359"
+                    step="90"
+                    value={imageRotation}
+                    onChange={(e) => {
+                      const val = Number(e.target.value) % 360;
+                      setImageRotation(val);
+                      if (selectedImage) {
+                        selectedImage.style.transform = val === 0 ? "" : `rotate(${val}deg)`;
+                        emitChange();
+                        setSelectedImageRect(selectedImage.getBoundingClientRect());
+                      }
+                    }}
+                    className="flex-1 px-2 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none"
+                  />
+                  <span className="text-[11px] text-gray-400">deg</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Text Wrapping */}
+            <div>
+              <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">Text wrapping</h4>
+              <div className="flex gap-1">
+                {(["inline", "left", "right", "break"] as const).map((wrap) => (
+                  <button
+                    key={wrap}
+                    type="button"
+                    onClick={() => {
+                      if (!selectedImage) return;
+                      selectedImage.style.float = wrap === "left" ? "left" : wrap === "right" ? "right" : "none";
+                      if (wrap === "left" || wrap === "right") selectedImage.style.margin = "8px 12px";
+                      else selectedImage.style.margin = "12px 0";
+                      if (wrap === "break") { selectedImage.style.display = "block"; selectedImage.style.float = "none"; }
+                      emitChange();
+                    }}
+                    className="flex-1 px-2 py-1.5 rounded-lg text-[11px] font-medium text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer capitalize"
+                  >
+                    {wrap === "break" ? "Break" : wrap === "inline" ? "Inline" : wrap === "left" ? "Left" : "Right"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Adjustments */}
+            <div>
+              <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Adjustments</h4>
+              <div className="space-y-3">
+                {/* Opacity */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] text-gray-500 dark:text-gray-400">Opacity</label>
+                    <span className="text-[11px] text-gray-400 tabular-nums">{imageOptions.opacity}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={imageOptions.opacity}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setImageOptions((prev) => ({ ...prev, opacity: val }));
+                      if (selectedImage) {
+                        selectedImage.style.opacity = String(val / 100);
+                        emitChange();
+                      }
+                    }}
+                    className="w-full h-1.5 rounded-full appearance-none bg-gray-200 dark:bg-gray-700 accent-blue-500 cursor-pointer"
+                  />
+                </div>
+                {/* Brightness */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] text-gray-500 dark:text-gray-400">Brightness</label>
+                    <span className="text-[11px] text-gray-400 tabular-nums">{imageOptions.brightness}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="200"
+                    value={imageOptions.brightness}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      const prevContrast = imageOptions.contrast;
+                      setImageOptions((prev) => ({ ...prev, brightness: val }));
+                      if (selectedImage) {
+                        selectedImage.style.filter = `brightness(${val / 100}) contrast(${prevContrast / 100})`;
+                        emitChange();
+                      }
+                    }}
+                    className="w-full h-1.5 rounded-full appearance-none bg-gray-200 dark:bg-gray-700 accent-blue-500 cursor-pointer"
+                  />
+                </div>
+                {/* Contrast */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] text-gray-500 dark:text-gray-400">Contrast</label>
+                    <span className="text-[11px] text-gray-400 tabular-nums">{imageOptions.contrast}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="200"
+                    value={imageOptions.contrast}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      const prevBrightness = imageOptions.brightness;
+                      setImageOptions((prev) => ({ ...prev, contrast: val }));
+                      if (selectedImage) {
+                        selectedImage.style.filter = `brightness(${prevBrightness / 100}) contrast(${val / 100})`;
+                        emitChange();
+                      }
+                    }}
+                    className="w-full h-1.5 rounded-full appearance-none bg-gray-200 dark:bg-gray-700 accent-blue-500 cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Reset all adjustments */}
+            <button
+              type="button"
+              onClick={() => {
+                if (selectedImage) {
+                  selectedImage.style.filter = "";
+                  selectedImage.style.opacity = "";
+                  selectedImage.style.transform = "";
+                  selectedImage.style.clipPath = "";
+                  setImageOptions({ opacity: 100, brightness: 100, contrast: 100 });
+                  setImageRotation(0);
+                  emitChange();
+                }
+              }}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[12px] font-medium text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Reset all adjustments
+            </button>
+          </div>
         </div>
       )}
 

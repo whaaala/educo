@@ -1963,3 +1963,535 @@ Feature: DocEditor comprehensive look and feel verification
     And the Line spacing dropdown should be visible
     And the Lists dropdown should be visible
     And the More button should not be visible
+
+  # ── Insert Image System ──
+
+  Scenario: Insert Image submenu has all 6 paths
+    Given the user opens the Insert menu
+    When the user hovers over the "Image" submenu
+    Then the submenu should contain "Upload from computer"
+    And the submenu should contain "Search the web"
+    And the submenu should contain "Drive"
+    And the submenu should contain "Photos"
+    And the submenu should contain "Camera"
+    And the submenu should contain "By URL"
+
+  Scenario: Insert Image submenu items have icons
+    Given the user opens the Insert menu > Image submenu
+    Then "Upload from computer" should have an Upload icon
+    And "Search the web" should have a Search icon
+    And "Drive" should have a HardDrive icon
+    And "Photos" should have an ImagePlus icon
+    And "Camera" should have a Camera icon
+    And "By URL" should have a Link icon
+
+  Scenario: By URL opens a glassmorphism modal instead of window.prompt
+    Given the user opens Insert > Image > By URL
+    Then a modal with a URL input field should appear
+    And the modal should have "Insert" and "Cancel" buttons
+    And window.prompt should not have been called
+
+  Scenario: By URL modal shows image preview for valid URLs
+    Given the user opens the By URL modal
+    When the user types a valid image URL
+    Then a preview of the image should appear below the input
+
+  Scenario: By URL modal shows error for invalid URLs
+    Given the user opens the By URL modal
+    When the user types an invalid URL and clicks Insert
+    Then an error message "Please enter a valid URL" should appear
+
+  Scenario: By URL modal inserts image on Enter key
+    Given the user opens the By URL modal
+    When the user types a valid URL and presses Enter
+    Then the image should be inserted into the editor
+    And the modal should close
+
+  Scenario: Search the web opens a sidebar panel
+    Given the user opens Insert > Image > Search the web
+    Then an image search sidebar should appear on the right
+    And the sidebar should have a search input and search button
+    And the sidebar should have a close button
+    And the document should shift left to make room
+
+  Scenario: Image search sidebar has quick action buttons
+    Given the image search sidebar is open
+    Then it should contain a "Paste image URL" button
+    And it should contain an "Upload from computer instead" button
+
+  Scenario: Upload from computer triggers file picker
+    Given the user opens Insert > Image > Upload from computer
+    Then the hidden file input should be clicked
+    And the file picker should open for image selection
+
+  Scenario: Camera triggers file capture input
+    Given the user opens Insert > Image > Camera
+    Then a file input with capture="environment" should be created
+    And the file picker should open for camera capture
+
+  Scenario: Drive shows toast and opens file picker as fallback
+    Given the user opens Insert > Image > Drive
+    Then a toast "Google Drive integration — opening file picker" should appear
+    And the file picker should open as fallback
+
+  Scenario: Photos shows toast and opens file picker as fallback
+    Given the user opens Insert > Image > Photos
+    Then a toast "Google Photos integration — opening file picker" should appear
+    And the file picker should open as fallback
+
+  Scenario: Drag and drop image onto editor canvas
+    Given the user drags an image file from their desktop
+    When the image is dropped onto the editor surface
+    Then a loading spinner should appear
+    And the image should be inserted as a base64 data URL
+    And the loading spinner should disappear
+
+  Scenario: Loading spinner appears during image insertion
+    Given the user initiates an image upload
+    Then a glassmorphism loading overlay should appear
+    And it should contain a spinner and "Inserting image…" text
+    And it should disappear when insertion completes
+
+  Scenario: Clicking an image in the editor shows contextual toolbar
+    Given an image is inserted in the editor
+    When the user clicks on the image
+    Then a contextual toolbar should float 10px above the image as a glassmorphism pill
+    And the toolbar should have Image options, Replace, Crop, Rotate 90°, Reset, and Delete buttons
+
+  Scenario: Image contextual toolbar — Image options button opens sidebar
+    Given the user has selected an image
+    When the user clicks "Image options" in the contextual toolbar
+    Then an Image Options sidebar should appear on the right
+    And it should have Size & Rotation, Text Wrapping, and Adjustments sections
+
+  Scenario: Image contextual toolbar — Replace image
+    Given the user has selected an image
+    When the user clicks "Replace image" in the contextual toolbar
+    Then a file picker should open
+    And selecting a new file should replace the selected image's src
+
+  Scenario: Image contextual toolbar — Reset image
+    Given the user has selected an image with adjusted opacity and filters
+    When the user clicks "Reset image" in the contextual toolbar
+    Then the image's filter and opacity styles should be cleared
+    And a toast "Image reset to original" should appear
+
+  Scenario: Image contextual toolbar — Delete image
+    Given the user has selected an image
+    When the user clicks "Delete image" in the contextual toolbar
+    Then the image should be removed from the editor
+    And the contextual toolbar should disappear
+
+  Scenario: Squircle resize handles appear on selected image
+    Given an image is inserted in the editor
+    When the user clicks on the image
+    Then 8 squircle resize handles (12px, borderRadius 5px) should appear at corners and midpoints
+    And a blue selection outline should surround the image
+
+  Scenario: Resize handles maintain aspect ratio by default
+    Given the user has selected an image with resize handles
+    When the user drags a corner handle
+    Then the image should resize while maintaining its aspect ratio
+
+  Scenario: Shift key unlocks aspect ratio during resize
+    Given the user has selected an image with resize handles
+    When the user holds Shift and drags a corner handle
+    Then the image should resize freely without aspect ratio lock
+
+  Scenario: Snap-to-margins during resize
+    Given the user has selected an image with resize handles
+    When the user drags a corner handle and the image width is within 12px of the page width
+    Then the image should snap to the full page width
+    When the image width is within 12px of 50% of page width
+    Then the image should snap to 50% of the page width
+
+  @visual
+  Scenario: Dimension tooltip appears during resize
+    Given the user has selected an image with resize handles
+    When the user starts dragging a resize handle
+    Then a tooltip showing the current dimensions (e.g., "545 × 363 px") should appear near the cursor
+    And the tooltip should update in real-time as the user drags
+    When the user releases the mouse button
+    Then the dimension tooltip should disappear
+
+  @visual
+  Scenario: Squircle resize handles have correct styling
+    Given the user has selected an image
+    Then the resize handles should be 12px squares with borderRadius 5px (squircle shape)
+    And handles should have white fill with indigo border
+    And handles should be positioned at all 8 points (4 corners + 4 midpoints)
+
+  @visual
+  Scenario: Image Options sidebar — Opacity slider
+    Given the Image Options sidebar is open for a selected image
+    When the user drags the Opacity slider to 50%
+    Then the image's opacity should be 0.5
+    And the slider label should show "50%"
+
+  @visual
+  Scenario: Image Options sidebar — Brightness slider
+    Given the Image Options sidebar is open for a selected image
+    When the user drags the Brightness slider to 150%
+    Then the image should have a CSS filter with brightness(1.5)
+
+  @visual
+  Scenario: Image Options sidebar — Contrast slider
+    Given the Image Options sidebar is open for a selected image
+    When the user drags the Contrast slider to 75%
+    Then the image should have a CSS filter with contrast(0.75)
+
+  @visual
+  Scenario: Image Options sidebar — Text wrapping buttons
+    Given the Image Options sidebar is open for a selected image
+    When the user clicks the "Left" text wrapping button
+    Then the image should have float: left
+    And appropriate margins should be applied
+
+  @visual
+  Scenario: Image Options sidebar — Size inputs
+    Given the Image Options sidebar is open for a selected image
+    When the user changes the Width input to 300
+    Then the image width should be 300px
+
+  @visual
+  Scenario: Image Options sidebar — Reset all adjustments
+    Given the Image Options sidebar is open with modified adjustments
+    When the user clicks "Reset all adjustments"
+    Then Opacity, Brightness, and Contrast should return to 100%
+    And the image's filter and opacity styles should be cleared
+
+  @visual
+  Scenario: Image URL modal glassmorphism styling
+    Given the By URL modal is open
+    Then the modal should have backdrop-blur styling
+    And it should have rounded-2xl corners
+    And it should match the 2026 glassmorphism design language
+
+  @visual
+  Scenario: Image search sidebar glassmorphism styling
+    Given the image search sidebar is open
+    Then the sidebar should have backdrop-blur-xl styling
+    And it should match the Comments sidebar visual style
+
+  @visual
+  Scenario: Image contextual toolbar glassmorphism styling
+    Given an image is selected in the editor
+    Then the contextual toolbar should have backdrop-blur-2xl styling
+    And it should have rounded-full pill shape and shadow-2xl
+    And the toolbar should be positioned 10px above the image
+
+  @visual
+  Scenario: Loading overlay glassmorphism styling
+    Given an image is being inserted
+    Then the loading overlay should have a frosted glass background
+    And the spinner container should have rounded-2xl and shadow-2xl
+
+  # ── Image Upload Format Support ──
+
+  Scenario: File input accepts all modern image formats
+    Given the DocEditor is rendered
+    Then the hidden file input should have accept attribute containing:
+      | extension |
+      | .jpg      |
+      | .jpeg     |
+      | .png      |
+      | .gif      |
+      | .webp     |
+      | .svg      |
+      | .heic     |
+      | .heif     |
+      | .tiff     |
+      | .bmp      |
+      | .avif     |
+
+  Scenario: Uploading a .webp file inserts an image tag
+    Given the user selects a .webp file via the file picker
+    Then a ghost placeholder with a loading spinner should appear
+    And the placeholder should be replaced with an <img> tag
+    And the img src should contain the base64 data URL of the .webp
+
+  Scenario: Uploading an .svg file preserves vector quality
+    Given the user selects an .svg file via the file picker
+    Then the SVG should be inserted as a data URL without canvas conversion
+    And the image should remain sharp at any zoom level
+
+  Scenario: Uploading a .heic file triggers client-side conversion
+    Given the user selects a .heic file via the file picker
+    Then the system should attempt to convert it to PNG via canvas
+    And if conversion fails, the error card should appear
+    And the document should not crash
+
+  Scenario: MIME type validation rejects disguised non-image files
+    Given the user drops a file named "malicious.jpg" with MIME type "application/x-msdownload"
+    Then the file should be rejected
+    And a toast should show "Unsupported file type"
+
+  Scenario: Files exceeding 25MB are rejected
+    Given the user selects an image file larger than 25MB
+    Then the file should be rejected
+    And a toast should show "File is too large (max 25 MB)"
+
+  Scenario: Ghost placeholder appears during image upload
+    Given the user initiates an image file upload
+    Then a dashed-border placeholder should appear at the cursor position
+    And the placeholder should contain a spinning loader and filename text
+
+  Scenario: Ghost placeholder replaced by image with smooth animation
+    Given a ghost placeholder is showing during upload
+    When the image finishes loading
+    Then the placeholder should be replaced with the final <img> tag
+    And the image should fade in with opacity 0→1
+    And the image should scale up from 0.95→1.0
+
+  Scenario: Error card appears when upload fails
+    Given a ghost placeholder is showing during upload
+    When the file read or conversion fails
+    Then the placeholder should be replaced with a red error card
+    And the error card should show "Failed to upload <filename>"
+    And the error card should have a "Retry" button
+
+  Scenario: Retry button re-attempts the upload
+    Given an error card with a Retry button is showing
+    When the user clicks "Retry"
+    Then the error card should be replaced with a loading placeholder
+    And the upload should be re-attempted
+
+  Scenario: URL insertion shows ghost placeholder then final image
+    Given the user inserts an image by URL
+    Then a ghost placeholder should appear while the image loads
+    And when the image loads successfully, it should fade in smoothly
+
+  Scenario: URL insertion shows error when image fails to load
+    Given the user inserts an invalid image URL
+    Then a ghost placeholder should appear
+    And when the image fails to load, an error card should replace it
+
+  Scenario: Drag-and-drop rejects unsupported file types with toast
+    Given the user drags a .txt file onto the editor
+    When the file is dropped
+    Then a glassmorphism toast should appear
+    And the toast should explain which formats are accepted
+
+  Scenario: Drag-and-drop accepts all supported image formats
+    Given the user drags a .webp file onto the editor
+    When the file is dropped
+    Then the ghost placeholder upload flow should begin
+    And the image should be inserted successfully
+
+  Scenario: TIFF files are auto-converted to PNG for fast loading
+    Given the user uploads a .tiff file
+    Then the system should convert it to PNG via canvas
+    And the inserted img src should be a PNG data URL
+
+  Scenario: BMP files are auto-converted to PNG for fast loading
+    Given the user uploads a .bmp file
+    Then the system should convert it to PNG via canvas
+    And the inserted img src should be a PNG data URL
+
+  Scenario: Camera input accepts all modern image formats
+    Given the user opens Insert > Image > Camera
+    Then the temporary file input should have the expanded accept attribute
+    And it should include .heic and .heif for iPhone captures
+
+  # ──────────────────────────────────────────────────
+  # Image Toolbar and Tools
+  # ──────────────────────────────────────────────────
+
+  @visual
+  Scenario: Selected image has Electric Indigo pulsating border
+    Given the user clicks on an inserted image
+    Then the selection outline should use border color #6366f1 (Electric Indigo)
+    And it should have a pulsating box-shadow animation (image-select-pulse)
+
+  @visual
+  Scenario: Resize handles use indigo color scheme
+    Given the user clicks on an inserted image
+    Then the resize handles should have border-indigo-500 class
+    And they should have hover:bg-indigo-50 class
+
+  @visual
+  Scenario: Image contextual toolbar has spring entrance animation
+    Given the user clicks on an inserted image
+    Then the toolbar should animate in with image-toolbar-spring keyframe
+    And it should use cubic-bezier(0.34, 1.56, 0.64, 1) for overshoot bounce
+
+  Scenario: Image contextual toolbar has Rotate 90° button
+    Given the user clicks on an inserted image
+    Then the toolbar should include a "Rotate 90°" button with aria-label "Rotate 90 degrees"
+    When the user clicks Rotate 90°
+    Then the image should have style transform: rotate(90deg)
+
+  Scenario: Rotate tool cycles through 0/90/180/270 degrees
+    Given the user has clicked Rotate 90° three times
+    Then the image transform should be rotate(270deg)
+    When the user clicks Rotate 90° again
+    Then the image transform should be cleared (0°/360°)
+
+  Scenario: Crop tool opens overlay with dark mask, grid, and 8 handles
+    Given the user clicks the Crop button on the image toolbar
+    Then a darkened overlay (rgba(0,0,0,0.55)) should appear outside the crop area
+    And eight handles should be visible (4 corners: nw, ne, sw, se + 4 edges: n, s, w, e)
+    And a rule-of-thirds grid should appear inside the crop area
+    And corner L-bracket markers and edge midpoint bars should be visible
+    And Apply and Cancel buttons should appear below the crop area
+
+  Scenario: Crop applies canvas-based cropping to the image
+    Given the user has opened the crop overlay
+    When the user drags a corner handle to adjust the crop area
+    And clicks "Apply"
+    Then the image src should be replaced with a canvas-rendered cropped dataURL
+    And the original src should be stored in data-original-src for undo
+    And crop percentages should be stored as data-crop-top/left/width/height
+    And the image display dimensions should match the cropped area proportions
+    And the crop overlay should close
+
+  Scenario: Crop cancel discards changes
+    Given the user has opened the crop overlay
+    When the user clicks "Cancel"
+    Then the crop overlay should close
+    And the image src should remain unchanged
+
+  Scenario: Remove crop restores original image
+    Given an image that has been cropped (has data-original-src attribute)
+    When the user clicks "Remove crop" on the image toolbar
+    Then the image src should be restored from data-original-src
+    And the data-original-src attribute should be removed
+    And the image should be restored to its original dimensions
+    And a toast "Crop removed — image restored" should appear
+
+  Scenario: Re-entering crop restores previous crop rect
+    Given an image that has been cropped with specific dimensions
+    When the user clicks the Crop button again
+    Then the original image should be restored for re-cropping
+    And the crop overlay should show with the previous crop area preserved
+    And the user can adjust and re-apply the crop
+
+  Scenario: Reset image clears all adjustments including rotation and crop
+    Given an image with rotation, filters, and crop applied
+    When the user clicks "Reset image" on the toolbar
+    Then the original image src should be restored if cropped
+    And the image style.transform, style.filter, style.opacity should all be cleared
+    And imageOptions should reset to { opacity: 100, brightness: 100, contrast: 100 }
+    And imageRotation should reset to 0
+
+  Scenario: Selection border follows image on scroll
+    Given an image is selected in the editor
+    When the user scrolls the editor content area
+    Then the selection border and resize handles use fixed positioning to track viewport coordinates
+    And the image toolbar uses fixed positioning to stay above the image
+    And the crop overlay uses fixed positioning when crop mode is active
+
+  @visual
+  Scenario: Drag-and-drop shows glassmorphism drop zone overlay
+    Given the editor is in editing mode
+    When the user drags a file over the editor
+    Then a blurred glassmorphism overlay appears with a dashed indigo border
+    And the border has a neon-pulse animation to guide the user
+    And the overlay shows "Drop image here" text
+    When the user drops the file or drags away
+    Then the overlay disappears
+
+  @visual
+  Scenario: Newly inserted images have smooth fade-in animation
+    Given the editor is in editing mode
+    When an image is inserted via upload or drag-and-drop
+    Then the image fades in with a 300ms ease-out animation
+    And the image scales from 97% to 100% during the transition
+
+  Scenario: Resize drag does not deselect image
+    Given an image is selected with resize handles visible
+    When the user drags a resize handle to change the image size
+    Then the selection border and handles remain visible after the drag ends
+    And the image dimensions update in real-time during the drag
+
+  # ──────────────────────────────────────────────────
+  # Image Options Panel with Thumbnail
+  # ──────────────────────────────────────────────────
+
+  Scenario: Image Options panel shows live thumbnail preview
+    Given the user opens Image Options for a selected image
+    Then the panel should contain a thumbnail <img> with the selected image's src
+    And the thumbnail should have real-time CSS filters matching the Adjustments sliders
+
+  Scenario: Thumbnail reflects opacity changes in real time
+    Given the Image Options panel is open
+    When the user moves the Opacity slider to 50%
+    Then the thumbnail img should have style opacity: 0.5
+    And the selected image in the editor should also have opacity: 0.5
+
+  Scenario: Thumbnail reflects brightness and contrast in real time
+    Given the Image Options panel is open
+    When the user adjusts Brightness to 150% and Contrast to 80%
+    Then the thumbnail should have filter: brightness(1.5) contrast(0.8)
+
+  Scenario: Image Options panel has Rotation input
+    Given the Image Options panel is open
+    Then there should be a numeric input field labeled "Rotation"
+    And it should accept values 0-359 in steps of 90
+    When the user sets it to 180
+    Then the image should have transform: rotate(180deg)
+
+  Scenario: Reset all adjustments clears rotation and clip-path
+    Given the Image Options panel is open with modified adjustments
+    When the user clicks "Reset all adjustments"
+    Then opacity, filter, transform, and clipPath should all be cleared
+    And the rotation input should show 0
+
+  # ──────────────────────────────────────────────────
+  # Selection Save/Restore for Image Insertion
+  # ──────────────────────────────────────────────────
+
+  Scenario: Editor selection is saved before file picker opens
+    Given the user has typed text and placed their cursor in the middle
+    When they click Insert > Image > Upload from computer
+    Then the current selection range should be saved to savedEditorRangeRef
+    And the file picker should open
+
+  Scenario: Editor selection is restored after file picker returns
+    Given the user selected "Upload from computer" which saved the selection
+    When the file picker dialog closes with a selected file
+    Then restoreEditorSelection() should restore the saved range
+    And exec("insertHTML") should insert the image at the original cursor position
+
+  Scenario: Fallback cursor placement when no saved range exists
+    Given no selection was saved (e.g. editor was not focused before upload)
+    When an image is inserted
+    Then the cursor should be placed at the end of the first page as fallback
+    And the image should still be inserted successfully
+
+  Scenario: Drag-and-drop preserves browser's drop cursor position
+    Given the user drags an image file over the editor
+    When they drop it at a specific location
+    Then the browser's native drop cursor position should be used
+    And restoreEditorSelection should NOT override it with a saved range
+
+  # ──────────────────────────────────────────────────
+  # Image Brightness/Contrast Closure Safety
+  # ──────────────────────────────────────────────────
+
+  Scenario: Brightness slider uses prev.contrast to avoid stale closure
+    Given an image is selected and Image Options panel is open
+    When the user adjusts the brightness slider
+    Then the filter string should use the current contrast value from prev state
+    And not a stale closure value
+
+  Scenario: Contrast slider uses prev.brightness to avoid stale closure
+    Given an image is selected and Image Options panel is open
+    When the user adjusts the contrast slider
+    Then the filter string should use the current brightness value from prev state
+    And not a stale closure value
+
+  # ──────────────────────────────────────────────────
+  # Image Wrapper Containment
+  # ──────────────────────────────────────────────────
+
+  Scenario: Image wrapper paragraph does not clip content
+    Given an image has been inserted into the editor
+    Then the wrapper <p> element should not have overflow:hidden
+    And the image should be fully visible within the page bounds
+
+  Scenario: Image is inserted at cursor position
+    Given the user has placed their cursor in the middle of a paragraph
+    When they insert an image
+    Then the image should appear at the cursor position
+    And the cursor should move after the inserted image
