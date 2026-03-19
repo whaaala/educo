@@ -2600,3 +2600,183 @@ Feature: DocEditor comprehensive look and feel verification
     When the user clicks "Cancel"
     Then the modal should close
     And no image should be inserted into the document
+
+  # ──────────────────────────────────────────────────
+  # Editing Modes (Editing / Suggesting / Viewing)
+  # ──────────────────────────────────────────────────
+
+  Scenario: Editing mode is the default
+    Given the document editor is loaded
+    Then the mode button should display "Editing"
+    And all toolbar buttons should be enabled
+    And the editor should be contentEditable
+
+  Scenario: Mode dropdown shows all three options with descriptions
+    When the user clicks the Editing mode button
+    Then a dropdown should appear with three options
+    And "Editing" should show "Edit directly" with a pencil icon
+    And "Suggesting" should show "Edits become suggestions" with a comment icon
+    And "Viewing" should show "Read only" with an eye icon
+    And the active mode should have a checkmark
+
+  Scenario: Suggesting mode shows green banner and tracks changes
+    When the user switches to Suggesting mode
+    Then a green banner should appear saying "Suggesting mode"
+    And typed text should appear in green with underline
+    And deleted text should appear in red with strikethrough
+    And clicking a suggestion should show Accept/Reject buttons
+
+  Scenario: Viewing mode disables editing
+    When the user switches to Viewing mode
+    Then an amber banner should appear saying "You are viewing this document"
+    And all toolbar buttons should be disabled
+    And the editor should not be contentEditable
+
+  # ──────────────────────────────────────────────────
+  # Styles Dropdown (Headings 1-6)
+  # ──────────────────────────────────────────────────
+
+  Scenario: Styles dropdown shows all heading levels
+    When the user opens the Styles dropdown
+    Then it should display: Normal text, Heading 1-6, Title, Subtitle
+    And each option should have distinct font sizing
+
+  # ──────────────────────────────────────────────────
+  # Font Size Editable Input
+  # ──────────────────────────────────────────────────
+
+  Scenario: Font size input is directly editable
+    When the user clicks on the font size display
+    Then the input should become focused and editable
+    And a dropdown of preset sizes should appear
+    When the user types "36" and presses Enter
+    Then the font size should be applied to the selection
+
+  # ──────────────────────────────────────────────────
+  # Line & Paragraph Spacing
+  # ──────────────────────────────────────────────────
+
+  Scenario: Line spacing dropdown includes paragraph spacing options
+    When the user opens the Line & paragraph spacing dropdown
+    Then it should show: Single, 1.15, 1.5, Double, 2.5, 3.0
+    And "Add space before paragraph" and "Add space after paragraph"
+    And "Custom spacing"
+
+  # ──────────────────────────────────────────────────
+  # Change Case
+  # ──────────────────────────────────────────────────
+
+  Scenario: Change Case options in Format > Text menu
+    When the user opens Format > Text
+    Then it should include UPPERCASE, lowercase, and Title Case options
+    When the user selects text and clicks "UPPERCASE"
+    Then the selected text should be converted to uppercase
+
+  # ──────────────────────────────────────────────────
+  # Font Weight Sub-menu
+  # ──────────────────────────────────────────────────
+
+  Scenario: Font weight options in Font Family dropdown
+    When the user opens the Font Family dropdown
+    Then a "Weight" section should appear at the bottom
+    And it should include: Thin, Light, Normal, Medium, Bold, Black
+
+  # ──────────────────────────────────────────────────
+  # Color Picker
+  # ──────────────────────────────────────────────────
+
+  Scenario: Color picker dropdown fits without scrollbars
+    When the user opens the Highlight color dropdown
+    Then all color swatches should be visible without horizontal scrolling
+    And the Custom hex input and Remove highlight button should be visible
+
+  Scenario: Native color picker does not close the dropdown
+    When the user clicks the Custom color circle to open the native picker
+    Then the dropdown should remain open while the native picker is active
+
+  # ──────────────────────────────────────────────────
+  # Zoom
+  # ──────────────────────────────────────────────────
+
+  Scenario: Zoom dropdown includes Fit option
+    When the user opens the Zoom dropdown
+    Then "Fit" should appear at the top
+    And clicking Fit should set zoom to 100%
+
+  # ──────────────────────────────────────────────────
+  # Inline Drawing Tools
+  # ──────────────────────────────────────────────────
+
+  Scenario: Draw on page activates drawing mode
+    When the user clicks Insert > Drawing > Draw on page
+    Then a drawing toolbar should appear at the top
+    And tools should include: Pen, Highlighter, Eraser, Arrow, Rectangle, Ellipse
+    And a size slider, color swatches, clear, and close buttons should be visible
+
+  Scenario: Drawing with pen tool creates freehand strokes
+    Given drawing mode is active with the Pen tool
+    When the user clicks and drags on the document
+    Then a freehand stroke should appear in the selected color
+
+  Scenario: Exiting drawing mode returns to normal editing
+    Given drawing mode is active
+    When the user clicks the X (close) button
+    Then the drawing toolbar should disappear
+    And the editor should return to normal text editing mode
+
+  # ──────────────────────────────────────────────────
+  # Document Title
+  # ──────────────────────────────────────────────────
+
+  Scenario: Document title is editable
+    Given the doc editor is loaded
+    When the user clicks on the title input
+    Then the input should become focused with a blue border
+    And if the title is "Untitled document" the text should be auto-selected
+
+  Scenario: Empty title resets to "Untitled document"
+    Given the user clears the title input
+    When the input loses focus
+    Then the title should reset to "Untitled document"
+
+  # ──────────────────────────────────────────────────
+  # Back Navigation
+  # ──────────────────────────────────────────────────
+
+  Scenario: Back button navigates to Documents home
+    Given the doc editor is loaded
+    Then a back arrow button should be visible in the header
+    When the user clicks the back button
+    Then they should be navigated to /documents
+
+  # ──────────────────────────────────────────────────
+  # Document Persistence
+  # ──────────────────────────────────────────────────
+
+  Scenario: Document auto-saves to localStorage
+    Given the user has a document open in the editor
+    When the user types content and waits 1 second
+    Then the document should be saved to docStorage with the updated HTML
+
+  Scenario: Saved document loads correctly when reopened
+    Given a document was previously saved with title "My Report" and HTML content
+    When the user navigates to the editor with that document's ID
+    Then the title should display "My Report"
+    And the editor should display the saved HTML content
+
+  Scenario: Template content loads in editor
+    Given the user clicked a template on the Documents home page
+    When the editor page loads
+    Then the document title should match the template's title
+    And the page content should match the template's HTML
+
+  # ──────────────────────────────────────────────────
+  # Glassmorphism UI
+  # ──────────────────────────────────────────────────
+
+  @visual
+  Scenario: Toolbar dropdowns use glassmorphism
+    When any toolbar dropdown is open
+    Then the dropdown panel should have backdrop-blur-xl
+    And a translucent background (bg-white/95)
+    And a subtle border and shadow

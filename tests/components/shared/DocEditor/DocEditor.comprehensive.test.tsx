@@ -4697,4 +4697,254 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       expect(drawingSource).toContain("Trash2");
     });
   });
+
+  // ─────────────────────────────────────────────────────────────
+  // Editing Modes (Editing / Suggesting / Viewing)
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Editing Modes", () => {
+    it("has three modes: editing, suggesting, viewing", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain('"editing" | "suggesting" | "viewing"');
+      expect(sourceCode).toContain("setDocMode");
+    });
+
+    it("suggesting mode intercepts beforeinput events", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("handleSuggestionBeforeInput");
+      expect(sourceCode).toContain("data-suggestion-type");
+      expect(sourceCode).toContain("acceptSuggestion");
+      expect(sourceCode).toContain("rejectSuggestion");
+    });
+
+    it("viewing mode shows amber banner", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("You are viewing this document");
+      expect(sourceCode).toContain("bg-amber-50");
+    });
+
+    it("mode dropdown shows descriptions and icons", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("Edit directly");
+      expect(sourceCode).toContain("Edits become suggestions");
+      expect(sourceCode).toContain("Read only");
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Styles Dropdown — Headings 1-6
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Styles dropdown includes all heading levels", () => {
+    it("has Heading 4, 5, 6 in addition to 1-3", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain('"Heading 4"');
+      expect(sourceCode).toContain('"Heading 5"');
+      expect(sourceCode).toContain('"Heading 6"');
+      expect(sourceCode).toContain('"h4"');
+      expect(sourceCode).toContain('"h5"');
+      expect(sourceCode).toContain('"h6"');
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Font Size Editable Input
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Font size editable input", () => {
+    it("renders an editable text input for font size", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("fontSizeInputVal");
+      expect(sourceCode).toContain("setFontSizeInputVal");
+      expect(sourceCode).toContain('inputMode="numeric"');
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Line & Paragraph Spacing
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Line & Paragraph Spacing extended options", () => {
+    it("includes paragraph spacing options", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("Add space before paragraph");
+      expect(sourceCode).toContain("Add space after paragraph");
+      expect(sourceCode).toContain("Custom spacing");
+      expect(sourceCode).toContain("handleAddSpaceBefore");
+      expect(sourceCode).toContain("handleAddSpaceAfter");
+      expect(sourceCode).toContain("handleCustomSpacing");
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Change Case
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Change Case in Format > Text", () => {
+    it("has UPPERCASE, lowercase, and Title Case options", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain('"UPPERCASE"');
+      expect(sourceCode).toContain('"lowercase"');
+      expect(sourceCode).toContain('"Title Case"');
+      expect(sourceCode).toContain("toUpperCase()");
+      expect(sourceCode).toContain("toLowerCase()");
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Font Weight Sub-menu
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Font Weight sub-menu", () => {
+    it("has weight options from Thin to Black", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain('"Thin"');
+      expect(sourceCode).toContain('"Light"');
+      expect(sourceCode).toContain('"Medium"');
+      expect(sourceCode).toContain('"Black"');
+      expect(sourceCode).toContain('fontWeight');
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Glassmorphism UI
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Glassmorphism on dropdowns", () => {
+    it("ToolbarDropdown uses backdrop-blur", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("backdrop-blur-xl");
+      expect(sourceCode).toContain("bg-white/95");
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Inline Drawing Tools
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Inline Drawing Annotation Tools", () => {
+    it("has drawing mode state with tool types", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("drawingMode");
+      expect(sourceCode).toContain('"pen"');
+      expect(sourceCode).toContain('"highlighter"');
+      expect(sourceCode).toContain('"eraser"');
+      expect(sourceCode).toContain('"arrow"');
+      expect(sourceCode).toContain('"rect"');
+      expect(sourceCode).toContain('"ellipse"');
+    });
+
+    it("has a drawing canvas overlay", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("drawCanvasRef");
+      expect(sourceCode).toContain("cursor-crosshair");
+    });
+
+    it("Draw on page option exists in Insert menu", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("Draw on page");
+      expect(sourceCode).toContain('setDrawingMode("pen")');
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Document Title & Back Navigation
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Document title and navigation", () => {
+    it("title input auto-selects on focus when Untitled", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain('if (e.target.value === "Untitled document") e.target.select()');
+    });
+
+    it("empty title resets to Untitled document on blur", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain('updateValue({ title: "Untitled document" })');
+    });
+
+    it("back button navigates to /documents", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain('Back to Documents');
+      expect(sourceCode).toContain('/documents');
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Value.html Sync Effect
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Value.html sync for document loading", () => {
+    it("syncs pages when value.html changes externally", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain("lastValueHtmlRef");
+      expect(sourceCode).toContain("value.html !== lastValueHtmlRef.current");
+      expect(sourceCode).toContain("setSidebarTabs");
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Zoom Fit Option
+  // ─────────────────────────────────────────────────────────────
+
+  describe("Zoom Fit option", () => {
+    it("Fit option exists and resets to 100%", () => {
+      const sourceCode = require("fs").readFileSync(
+        require("path").resolve(__dirname, "../../../../components/shared/DocEditor/DocEditor.tsx"),
+        "utf-8"
+      );
+      expect(sourceCode).toContain(">Fit<");
+      expect(sourceCode).toContain("setZoomLevel(100)");
+    });
+  });
 });

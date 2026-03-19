@@ -35,6 +35,7 @@ import {
   Video,
   LifeBuoy,
   ExternalLink,
+  Presentation,
 } from "lucide-react";
 import TenantSwitcher from "@/components/admin/TenantSwitcher";
 import { useUser } from "@/contexts/UserContext";
@@ -170,10 +171,13 @@ const menuItems: MenuItem[] = [
     ],
   },
   {
-    id: "documents",
-    label: "Documents",
+    id: "workspace",
+    label: "Workspace",
     icon: <FileText className="w-5 h-5" />,
-    href: "/documents",
+    children: [
+      { id: "documents", label: "Documents", icon: <FileText className="w-4 h-4" />, href: "/documents" },
+      { id: "presentations", label: "Presentations", icon: <Presentation className="w-4 h-4" />, href: "/presentations" },
+    ],
   },
   {
     id: "attendance",

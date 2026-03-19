@@ -505,12 +505,23 @@ tbody tr.sorting-animate-desc {
 /* When the user prints via the toolbar print button (window.print()),
    hide all UI chrome and show only the document pages. */
 @media print {
-  /* Hide everything outside the editor root */
-  body > *:not(:has([data-doc-editor-root])) {
+  /* ═══ HIDE ALL NON-DOCUMENT UI ═══ */
+
+  /* Hide the entire app sidebar and header */
+  nav, aside, header, banner,
+  [role="complementary"],
+  [role="banner"],
+  [role="status"],
+  [role="alert"] {
     display: none !important;
   }
 
-  /* Hide UI chrome within the editor */
+  /* Remove sidebar margin offset from MainLayout */
+  .lg\:ml-72, .lg\:ml-20 {
+    margin-left: 0 !important;
+  }
+
+  /* Hide doc editor chrome: header, menus, toolbars, sidebar, ruler, tabs */
   [data-doc-header],
   [data-doc-menubar],
   [data-doc-toolbar],
@@ -521,12 +532,26 @@ tbody tr.sorting-animate-desc {
   [data-doc-menu-root],
   [data-doc-menu-panel],
   [data-doc-page-label],
-  [data-doc-section-indicator] {
+  [data-doc-section-indicator],
+  [data-doc-ruler],
+  [data-doc-ruler-container],
+  [data-doc-equation-toolbar],
+  [data-doc-floating-pill],
+  [data-doc-comments-panel],
+  [data-editing-mode] {
     display: none !important;
   }
 
-  /* Hide sidebar expand button */
-  [data-doc-editor-root] > .flex > .flex-shrink-0:has(button[aria-label]) {
+  /* Hide Document tabs sidebar and expand button */
+  [data-doc-editor-root] > .flex > .flex-shrink-0 {
+    display: none !important;
+  }
+
+  /* Hide all fixed/sticky positioned elements (toasts, floating pills) */
+  .fixed, .sticky {
+    position: static !important;
+  }
+  .fixed.bottom-4, .fixed.top-4, .fixed.top-3 {
     display: none !important;
   }
 
@@ -595,30 +620,30 @@ tbody tr.sorting-animate-desc {
     width: 100% !important;
   }
 
-  /* Each page in print layout becomes a printed page */
-  [data-doc-editor-root] .flex.flex-col.items-center.gap-6 > div {
+  /* Remove gap between pages in print mode */
+  [data-doc-editor-root] .flex.flex-col.items-center {
+    gap: 0 !important;
+  }
+
+  /* Each page wrapper becomes a printed page */
+  [data-doc-editor-root] .flex.flex-col.items-center > div {
     page-break-after: always;
     break-after: page;
     margin: 0 !important;
     padding: 0 !important;
   }
 
-  /* Don't break after the last page */
-  [data-doc-editor-root] .flex.flex-col.items-center.gap-6 > div:last-child {
+  [data-doc-editor-root] .flex.flex-col.items-center > div:last-child {
     page-break-after: avoid;
     break-after: avoid;
   }
 
-  /* Remove gap between pages in print mode */
-  [data-doc-editor-root] .flex.flex-col.items-center.gap-6 {
-    gap: 0 !important;
-  }
-
-  /* Pages fill the printed page width */
-  [data-doc-editor-root] .flex.flex-col.items-center.gap-6 > div > div {
+  /* Pages fill the printed page width, no border/shadow */
+  [data-doc-editor-root] .flex.flex-col.items-center > div > div {
     max-width: 100% !important;
     width: 100% !important;
     border: none !important;
+    box-shadow: none !important;
   }
 
   /* Ensure content is visible and black on white */
@@ -693,7 +718,29 @@ tbody tr.sorting-animate-desc {
 
   /* The page surface (scroll container) should not scroll in print */
   [data-doc-editor-root] .overflow-auto,
-  [data-doc-editor-root] .overflow-y-auto {
+  [data-doc-editor-root] .overflow-y-auto,
+  [data-doc-editor-root] .overflow-hidden {
+    overflow: visible !important;
+  }
+
+  /* Main content area: remove all padding for clean print */
+  main, [role="main"] {
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Remove negative margin hacks from the doc editor wrapper */
+  main > div {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Ensure h-screen containers don't constrain print */
+  .h-screen, .h-\[calc\(100vh-64px\)\] {
+    height: auto !important;
     overflow: visible !important;
   }
 }

@@ -11,50 +11,24 @@ const defaultTemplates: DocTemplate[] = [
     id: "meeting-notes",
     label: "Meeting notes",
     icon: FileText,
-    html: [
-      "<h2>Meeting notes</h2>",
-      "<p><strong>Date:</strong> </p>",
-      "<p><strong>Attendees:</strong> </p>",
-      "<h3>Agenda</h3>",
-      "<ul><li></li></ul>",
-      "<h3>Notes</h3>",
-      "<ul><li></li></ul>",
-      "<h3>Action items</h3>",
-      '<ul><li><strong>Owner</strong> — </li></ul>',
-    ].join(""),
+    html: '<h2>Meeting notes</h2><p><strong>Date:</strong> </p><p><strong>Attendees:</strong> </p><h3>Agenda</h3><ul><li></li></ul><h3>Notes</h3><ul><li></li></ul><h3>Action items</h3><ul><li><strong>Owner</strong> — </li></ul>',
   },
   {
     id: "email-draft",
     label: "Email draft",
     icon: Mail,
-    html: [
-      "<h2>Email draft</h2>",
-      "<p><strong>To:</strong> </p>",
-      "<p><strong>Subject:</strong> </p>",
-      "<p>Hello,</p>",
-      "<p></p>",
-      "<p>Best regards,</p>",
-    ].join(""),
+    html: '<h2>Email draft</h2><p><strong>To:</strong> </p><p><strong>Subject:</strong> </p><p>Hello,</p><p></p><p>Best regards,</p>',
   },
 ];
 
 export default function DocEditorTestPage() {
-  const [doc, setDoc] = useState<DocEditorValue>({
-    title: "Untitled document",
-    html: "",
-    language: "en",
-  });
+  const [doc, setDoc] = useState<DocEditorValue | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [docId, setDocId] = useState<string | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const initializedRef = useRef(false);
-  const loadedRef = useRef(false);
 
-  // Load document on mount
+  // Load document on mount — doc stays null until loaded
   useEffect(() => {
-    if (initializedRef.current) return;
-    initializedRef.current = true;
-
     const params = new URLSearchParams(window.location.search);
 
     // Handle "Make a copy" or template injection
@@ -67,11 +41,9 @@ export default function DocEditorTestPage() {
           const title = parsed.title || "Untitled document";
           const html = parsed.html || "";
           const language = parsed.language || "en";
-          // Create a new saved document
           const id = docStorage.create({ title, html, language });
           setDocId(id);
           setDoc({ title, html, language });
-          setTimeout(() => { loadedRef.current = true; }, 1500);
           window.history.replaceState({}, "", `/doc-editor-test?id=${id}`);
         } catch { /* ignore */ }
       }
@@ -85,8 +57,6 @@ export default function DocEditorTestPage() {
       if (saved) {
         setDocId(id);
         setDoc({ title: saved.title, html: saved.html, language: saved.language });
-        // Delay enabling auto-save so the editor doesn't overwrite with empty on initial render
-        setTimeout(() => { loadedRef.current = true; }, 1500);
         return;
       }
     }
@@ -112,14 +82,14 @@ export default function DocEditorTestPage() {
     // No ID — create a new blank document
     const newId = docStorage.create({ title: "Untitled document", html: "", language: "en" });
     setDocId(newId);
-    loadedRef.current = true;
+    setDoc({ title: "Untitled document", html: "", language: "en" });
     window.history.replaceState({}, "", `/doc-editor-test?id=${newId}`);
   }, []);
 
-  // Auto-save on changes (debounced 1s) — skip during initial load
+  // Auto-save on changes (debounced 1s)
   const handleChange = useCallback((value: DocEditorValue) => {
     setDoc(value);
-    if (!docId || !loadedRef.current) return;
+    if (!docId) return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       docStorage.update(docId, {
@@ -130,9 +100,21 @@ export default function DocEditorTestPage() {
     }, 1000);
   }, [docId]);
 
+  // Don't render the editor until the doc is loaded — this prevents the editor
+  // from initializing with empty content and overwriting the saved document
+  if (!doc) {
+    return (
+      <MainLayout>
+        <div className="-mt-4 -mx-4 lg:-mt-6 lg:-mx-8 -mb-4 lg:-mb-6 h-[calc(100vh-64px)] flex items-center justify-center">
+          <div className="text-gray-400 text-[13px]">Loading document...</div>
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
-      <div className="-mt-4 -mx-4 lg:-mt-6 lg:-mx-8 -mb-4 lg:-mb-6 h-[calc(100vh-64px)] overflow-hidden">
+      <div className="-mt-4 -mx-4 lg:-mt-6 lg:-mx-8 -mb-4 lg:-mb-6 h-[calc(100vh-64px)] overflow-hidden print:!m-0 print:!h-auto print:!overflow-visible">
         <DocEditor
           value={doc}
           onChange={handleChange}

@@ -6866,7 +6866,7 @@ export default function DocEditor({
           <ToolbarDivider />
 
           {/* Print */}
-          <ToolbarButton disabled={false} onClick={() => window.print()} title="Print (Ctrl+P)" Icon={Printer} />
+          <ToolbarButton disabled={false} onClick={() => { setTimeout(() => window.print(), 300); }} title="Print (Ctrl+P)" Icon={Printer} />
           <ToolbarDivider />
 
           {/* Spell check */}

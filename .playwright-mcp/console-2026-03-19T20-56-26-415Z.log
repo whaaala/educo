@@ -1,0 +1,95 @@
+[  328906ms] [ERROR] ./components/shared/SlideEditor/SlideEditor.tsx
+Error:   x Unexpected token `div`. Expected jsx identifier
+     ,-[C:\Users\eyite\educo\components\shared\SlideEditor\SlideEditor.tsx:343:1]
+ 340 |   }
+ 341 | 
+ 342 |   return (
+ 343 |     <div className="flex flex-col h-full bg-[#f8f9fa] dark:bg-gray-950">
+     :      ^^^
+ 344 |       {/* ── Top Header — always visible ── */}
+ 345 |       <div className="flex items-center gap-3 px-4 py-2 bg-white dark:bg-gray-900 border-b border-gray-200/80 dark:border-gray-800 flex-shrink-0">
+ 345 |         <button onClick={() => window.location.href = "/presentations"}
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/shared/SlideEditor/SlideEditor.tsx
+./app/presentations/editor/page.tsx @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/globals/intercept-console-error.js:50
+[  329095ms] [ERROR] ./components/shared/SlideEditor/SlideEditor.tsx
+Error:   x Unexpected token `div`. Expected jsx identifier
+     ,-[C:\Users\eyite\educo\components\shared\SlideEditor\SlideEditor.tsx:343:1]
+ 340 |   }
+ 341 | 
+ 342 |   return (
+ 343 |     <div className="flex flex-col h-full bg-[#f8f9fa] dark:bg-gray-950">
+     :      ^^^
+ 344 |       {/* ── Top Header — always visible ── */}
+ 345 |       <div className="flex items-center gap-3 px-4 py-2 bg-white dark:bg-gray-900 border-b border-gray-200/80 dark:border-gray-800 flex-shrink-0">
+ 345 |         <button onClick={() => window.location.href = "/presentations"}
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/shared/SlideEditor/SlideEditor.tsx
+./app/presentations/editor/page.tsx @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/globals/intercept-console-error.js:50
+[  387168ms] [ERROR] ./components/shared/SlideEditor/SlideEditor.tsx
+Error:   x Unexpected token `div`. Expected jsx identifier
+     ,-[C:\Users\eyite\educo\components\shared\SlideEditor\SlideEditor.tsx:343:1]
+ 340 |   }
+ 341 | 
+ 342 |   return (
+ 343 |     <div className="flex flex-col h-full bg-[#f8f9fa] dark:bg-gray-950">
+     :      ^^^
+ 344 |       {/* ── Top Header — always visible ── */}
+ 345 |       <div className="flex items-center gap-3 px-4 py-2 bg-white dark:bg-gray-900 border-b border-gray-200/80 dark:border-gray-800 flex-shrink-0">
+ 345 |         <button onClick={() => window.location.href = "/presentations"}
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/shared/SlideEditor/SlideEditor.tsx
+./app/presentations/editor/page.tsx @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/globals/intercept-console-error.js:50
+[  387359ms] [ERROR] ./components/shared/SlideEditor/SlideEditor.tsx
+Error:   x Unexpected token `div`. Expected jsx identifier
+     ,-[C:\Users\eyite\educo\components\shared\SlideEditor\SlideEditor.tsx:343:1]
+ 340 |   }
+ 341 | 
+ 342 |   return (
+ 343 |     <div className="flex flex-col h-full bg-[#f8f9fa] dark:bg-gray-950">
+     :      ^^^
+ 344 |       {/* ── Top Header — always visible ── */}
+ 345 |       <div className="flex items-center gap-3 px-4 py-2 bg-white dark:bg-gray-900 border-b border-gray-200/80 dark:border-gray-800 flex-shrink-0">
+ 345 |         <button onClick={() => window.location.href = "/presentations"}
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/shared/SlideEditor/SlideEditor.tsx
+./app/presentations/editor/page.tsx @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/globals/intercept-console-error.js:50
+[  445723ms] [ERROR] ./components/shared/SlideEditor/SlideEditor.tsx
+Error:   x Unexpected token `div`. Expected jsx identifier
+     ,-[C:\Users\eyite\educo\components\shared\SlideEditor\SlideEditor.tsx:343:1]
+ 340 |   }
+ 341 | 
+ 342 |   return (
+ 343 |     <div className="flex flex-col h-full bg-[#f8f9fa] dark:bg-gray-950">
+     :      ^^^
+ 344 |       {/* ── Top Header — always visible ── */}
+ 345 |       <div className="flex items-center gap-3 px-4 py-2 bg-white dark:bg-gray-900 border-b border-gray-200/80 dark:border-gray-800 flex-shrink-0">
+ 345 |         <button onClick={() => window.location.href = "/presentations"}
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/shared/SlideEditor/SlideEditor.tsx
+./app/presentations/editor/page.tsx @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/globals/intercept-console-error.js:50
