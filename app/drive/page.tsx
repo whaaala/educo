@@ -7,6 +7,7 @@ import FileBrowser, { type FileBrowserItem } from "@/components/shared/FileBrows
 import MoveDialog from "@/components/shared/MoveDialog";
 import NewFolderDialog from "@/components/shared/NewFolderDialog";
 import UploadProgress, { type UploadFileItem } from "@/components/shared/UploadProgress";
+import MediaViewerModal, { type MediaType } from "@/components/shared/MediaViewerModal";
 import { driveStorage, type DriveItem } from "@/lib/drive-storage";
 import { docStorage } from "@/lib/doc-storage";
 import { slideStorage } from "@/lib/slide-storage";
@@ -15,6 +16,8 @@ import ActionMenuDropdown, { type ActionMenuEntry } from "@/components/shared/Ac
 import { getAllTeachers } from "@/lib/mockTeachers";
 import { useUser } from "@/contexts/UserContext";
 import type { PersonItem } from "@/components/shared/PeopleFilterDropdown";
+import DownloadDialog from "@/components/shared/DownloadDialog";
+import ShareDialog from "@/components/shared/ShareDialog";
 import {
   HardDrive, FolderPlus, Plus, Home, Users, Clock, Star, Trash2, Cloud,
   Upload, FileText, Presentation, FolderUp,
@@ -27,8 +30,13 @@ export default function DrivePage() {
   const [currentFolderId, setCurrentFolderId] = useState("folder-my-drive");
   const [activeSection, setActiveSection] = useState("my-drive");
   const [peopleFilter, setPeopleFilter] = useState<PersonItem | null>(null);
+  const [mediaViewer, setMediaViewer] = useState<{ type: MediaType; src: string; fileName: string; fileSize?: string } | null>(null);
+  const [downloadItem, setDownloadItem] = useState<FileBrowserItem | null>(null);
+  const [shareItem, setShareItem] = useState<FileBrowserItem | null>(null);
   const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
   const [moveItem, setMoveItem] = useState<DriveItem | null>(null);
+  // Counter to force recomputation of content previews when tab regains focus
+  const [contentRefreshKey, setContentRefreshKey] = useState(0);
   const [items, setItems] = useState<DriveItem[]>([]);
 
   // Upload state
@@ -38,6 +46,8 @@ export default function DrivePage() {
   const folderInputRef = useRef<HTMLInputElement>(null);
   const uploadPausedRef = useRef(false);
   const uploadTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Store blob URLs for uploaded files so they can be previewed
+  const uploadedFileUrls = useRef<Map<string, string>>(new Map());
 
   const refreshItems = useCallback(() => {
     setItems(driveStorage.getChildren(currentFolderId));
@@ -53,7 +63,15 @@ export default function DrivePage() {
   useEffect(() => {
     const handler = () => refreshItems();
     window.addEventListener("driveChanged", handler);
-    return () => window.removeEventListener("driveChanged", handler);
+    // Refresh when tab regains focus (user may have edited docs/presentations in other tabs)
+    const visHandler = () => {
+      if (document.visibilityState === "visible") {
+        refreshItems();
+        setContentRefreshKey(k => k + 1);
+      }
+    };
+    document.addEventListener("visibilitychange", visHandler);
+    return () => { window.removeEventListener("driveChanged", handler); document.removeEventListener("visibilitychange", visHandler); };
   }, [refreshItems]);
 
   const breadcrumbs = useMemo(() => {
@@ -67,15 +85,32 @@ export default function DrivePage() {
     return owner;
   };
 
+  // Helper: fetch preview content for any file from docStorage/slideStorage
+  const getFileContent = (item: DriveItem): string | undefined => {
+    const ext = item.name.split(".").pop()?.toLowerCase() || "";
+    const isDoc = item.sourceType === "document" || ["doc", "docx", "odt", "txt", "rtf", "pdf", "md"].includes(ext);
+    const isPres = item.sourceType === "presentation" || ["ppt", "pptx", "odp", "key"].includes(ext);
+    if (item.sourceId) {
+      if (isDoc) { const doc = docStorage.get(item.sourceId); if (doc?.html) return doc.html; }
+      if (isPres) { const pres = slideStorage.get(item.sourceId); if (pres?.slides?.[0]?.content) return pres.slides[0].content; }
+    }
+    if (isDoc) { const doc = docStorage.list().find(d => d.title === item.name || d.id === item.sourceId); if (doc?.html) return doc.html; }
+    if (isPres) { const pres = slideStorage.list().find(p => p.title === item.name || p.id === item.sourceId); if (pres?.slides?.[0]?.content) return pres.slides[0].content; }
+    return undefined;
+  };
+
   const browserItems: FileBrowserItem[] = useMemo(() => {
     return items.map(item => ({
       id: item.id, name: item.name, type: item.type, sourceType: item.sourceType,
       size: item.size, updatedAt: item.updatedAt, readOnly: item.readOnly,
       childCount: item.type === "folder" ? driveStorage.getChildren(item.id).length : undefined,
       owner: mapOwner(item.owner),
+      ownerAvatar: user?.avatar,
+      content: item.type === "file" ? getFileContent(item) : undefined,
     }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, user]);
+  }, [items, user, contentRefreshKey]);
+
 
   const recentFiles: FileBrowserItem[] = useMemo(() => {
     if (currentFolderId !== "folder-my-drive") return [];
@@ -87,8 +122,11 @@ export default function DrivePage() {
         id: item.id, name: item.name, type: item.type as "file", sourceType: item.sourceType,
         size: item.size, updatedAt: item.updatedAt,
         folderName: driveStorage.getFolderName(item.parentId), owner: mapOwner(item.owner),
+        ownerAvatar: user?.avatar,
+        content: getFileContent(item),
       }));
-  }, [currentFolderId, items]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentFolderId, items, mounted, contentRefreshKey]);
 
   const allBrowserItems: FileBrowserItem[] = useMemo(() => {
     return driveStorage.list().filter(i => !i.readOnly).map(item => ({
@@ -152,11 +190,38 @@ export default function DrivePage() {
             ));
 
             if (step === steps) {
+              // Detect source type from file extension for all file types
+              const ext = item.name.split(".").pop()?.toLowerCase() || "";
+              let detectedSourceType: "document" | "presentation" | "spreadsheet" | "upload" = "upload";
+              let sourceId: string | undefined;
+
+              // Documents
+              if (["doc", "docx", "odt", "txt", "rtf", "pdf", "md"].includes(ext)) {
+                detectedSourceType = "document";
+                sourceId = docStorage.create({ title: item.name });
+              }
+              // Presentations
+              else if (["ppt", "pptx", "odp", "key"].includes(ext)) {
+                detectedSourceType = "presentation";
+                sourceId = slideStorage.create({ title: item.name });
+              }
+              // Spreadsheets
+              else if (["xls", "xlsx", "csv", "ods", "tsv"].includes(ext)) {
+                detectedSourceType = "spreadsheet";
+              }
+              // Images
+              else if (["jpg", "jpeg", "png", "gif", "svg", "webp", "bmp", "ico"].includes(ext)) {
+                detectedSourceType = "upload";
+              }
+              // Videos / audio / archives — all "upload"
+              // ext: mp4, mp3, wav, zip, rar, etc. — default "upload" is fine
+
               driveStorage.create({
                 parentId: currentFolderId,
                 name: item.name,
                 type: item.type === "folder" ? "folder" : "file",
-                sourceType: "upload",
+                sourceType: detectedSourceType,
+                sourceId,
                 size: Math.round(Math.random() * 5000000),
               });
               refreshItems();
@@ -191,7 +256,12 @@ export default function DrivePage() {
   const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    const fileList = Array.from(files).map(f => ({ name: f.name, type: "file" as const }));
+    // Create blob URLs for media files so they can be previewed
+    const fileList = Array.from(files).map(f => {
+      const url = URL.createObjectURL(f);
+      uploadedFileUrls.current.set(f.name, url);
+      return { name: f.name, type: "file" as const };
+    });
     simulateUpload(fileList);
     e.target.value = "";
   };
@@ -281,9 +351,42 @@ export default function DrivePage() {
   // Open files in new tab
   const handleFileOpen = (item: FileBrowserItem) => {
     const driveItem = driveStorage.list().find(i => i.id === item.id);
+    const ext = (driveItem?.name || item.name).split(".").pop()?.toLowerCase() || "";
+
+    // Check if it's a media file — open in media viewer
+    const videoExts = ["mp4", "mov", "avi", "mkv", "webm", "flv", "wmv", "m4v"];
+    const audioExts = ["mp3", "wav", "ogg", "flac", "aac", "wma", "m4a"];
+    const imageExts = ["jpg", "jpeg", "png", "gif", "svg", "webp", "bmp", "ico", "tiff"];
+
+    // Look up the stored blob URL for this file
+    const blobUrl = uploadedFileUrls.current.get(item.name) || "";
+    const sizeStr = item.size ? (item.size > 1024 * 1024 ? `${(item.size / (1024 * 1024)).toFixed(1)} MB` : `${(item.size / 1024).toFixed(0)} KB`) : undefined;
+
+    if (videoExts.includes(ext)) {
+      setMediaViewer({ type: "video", src: blobUrl, fileName: item.name, fileSize: sizeStr });
+      return;
+    }
+    if (audioExts.includes(ext)) {
+      setMediaViewer({ type: "audio", src: blobUrl, fileName: item.name, fileSize: sizeStr });
+      return;
+    }
+    if (imageExts.includes(ext)) {
+      setMediaViewer({ type: "image", src: blobUrl || `https://picsum.photos/800/600?random=${item.id}`, fileName: item.name, fileSize: sizeStr });
+      return;
+    }
+
+    // Documents and presentations — open in editor
     if (driveItem?.sourceId) {
       if (driveItem.sourceType === "document") window.open(`/doc-editor-test?id=${driveItem.sourceId}`, "_blank");
       else if (driveItem.sourceType === "presentation") window.open(`/presentations/editor?id=${driveItem.sourceId}`, "_blank");
+    } else if (driveItem) {
+      if (["odp", "pptx", "ppt", "key"].includes(ext)) {
+        const id = slideStorage.create({ title: driveItem.name });
+        window.open(`/presentations/editor?id=${id}`, "_blank");
+      } else if (["doc", "docx", "odt", "txt", "rtf", "pdf", "md"].includes(ext)) {
+        const id = docStorage.create({ title: driveItem.name });
+        window.open(`/doc-editor-test?id=${id}`, "_blank");
+      }
     }
   };
 
@@ -291,6 +394,36 @@ export default function DrivePage() {
   const handleMove = (item: FileBrowserItem) => { const d = items.find(i => i.id === item.id) || driveStorage.get(item.id); if (d) setMoveItem(d); };
   const handleDelete = (item: FileBrowserItem) => { if (window.confirm(`Delete "${item.name}"?`)) { driveStorage.remove(item.id); refreshItems(); } };
   const handleCreateFolder = (name: string) => { driveStorage.createFolder(currentFolderId, name); refreshItems(); };
+
+  const handleDownload = (item: FileBrowserItem) => {
+    setDownloadItem(item);
+  };
+
+  const handleCopy = (item: FileBrowserItem) => {
+    const driveItem = driveStorage.list().find(i => i.id === item.id);
+    if (driveItem) {
+      const copyName = `${item.name.replace(/(\.[^.]+)$/, "")} (Copy)${item.name.match(/\.[^.]+$/)?.[0] || ""}`;
+      driveStorage.create({
+        parentId: driveItem.parentId,
+        name: copyName,
+        type: driveItem.type,
+        sourceType: driveItem.sourceType,
+        sourceId: driveItem.sourceId,
+        size: driveItem.size,
+      });
+      refreshItems();
+    }
+  };
+
+  const handleShare = (item: FileBrowserItem) => {
+    setShareItem(item);
+  };
+
+  const handleInfo = (item: FileBrowserItem) => {
+    const driveItem = driveStorage.list().find(i => i.id === item.id);
+    const size = item.size ? (item.size > 1024 * 1024 ? `${(item.size / (1024 * 1024)).toFixed(1)} MB` : `${(item.size / 1024).toFixed(0)} KB`) : "Unknown";
+    alert(`File Information\n\nName: ${item.name}\nType: ${item.type === "folder" ? "Folder" : (item.sourceType || "File")}\nSize: ${size}\nOwner: ${item.owner || "Me"}\nModified: ${new Date(item.updatedAt).toLocaleString()}\nLocation: ${driveItem ? driveStorage.getFolderName(driveItem.parentId) : "My Drive"}`);
+  };
 
   if (!mounted) {
     return (
@@ -334,6 +467,10 @@ export default function DrivePage() {
           onRename={handleRename}
           onMove={handleMove}
           onDelete={handleDelete}
+          onDownload={handleDownload}
+          onCopy={handleCopy}
+          onShare={handleShare}
+          onInfo={handleInfo}
           onCreateFolder={handleCreateFolder}
           emptyAction={
             <button onClick={() => setShowNewFolderDialog(true)}
@@ -366,6 +503,38 @@ export default function DrivePage() {
           fileId={moveItem.id}
           sourceType={moveItem.sourceType}
           onMoveComplete={() => { setMoveItem(null); refreshItems(); }}
+        />
+      )}
+
+      {/* Share Dialog */}
+      {shareItem && (
+        <ShareDialog
+          isOpen={true}
+          onClose={() => setShareItem(null)}
+          title={shareItem.name}
+          onShare={(data) => { console.log("Shared:", shareItem.name, data); }}
+        />
+      )}
+
+      {/* Download Dialog — only for documents and presentations */}
+      {downloadItem && (
+        <DownloadDialog
+          isOpen={true}
+          onClose={() => setDownloadItem(null)}
+          title={downloadItem.name}
+          content={downloadItem.content ? [downloadItem.content] : [""]}
+        />
+      )}
+
+      {/* Media Viewer Modal */}
+      {mediaViewer && (
+        <MediaViewerModal
+          isOpen={true}
+          onClose={() => setMediaViewer(null)}
+          type={mediaViewer.type}
+          src={mediaViewer.src}
+          fileName={mediaViewer.fileName}
+          fileSize={mediaViewer.fileSize}
         />
       )}
 

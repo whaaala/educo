@@ -13,6 +13,11 @@ import CustomDropdown from "@/components/shared/CustomDropdown";
 import ViewToggle from "@/components/shared/ViewToggle";
 import ActionMenuDropdown, { type ActionMenuEntry } from "@/components/shared/ActionMenuDropdown";
 import PeopleFilterDropdown, { type PersonItem } from "@/components/shared/PeopleFilterDropdown";
+import SuggestedFiles, { type SuggestedFileItem } from "@/components/shared/SuggestedFiles";
+import Tooltip from "@/components/shared/Tooltip";
+import AvatarHover from "@/components/shared/AvatarHover";
+import FileCardGrid, { type FileCardItem } from "@/components/shared/FileCardGrid";
+import DataTable, { type ColumnConfig } from "@/components/shared/DataTable";
 
 // ── Types ──
 
@@ -27,6 +32,9 @@ export interface FileBrowserItem {
   childCount?: number;
   folderName?: string;
   owner?: string;
+  ownerAvatar?: string;
+  /** HTML content for preview rendering */
+  content?: string;
 }
 
 export interface BreadcrumbSegment { id: string; name: string; }
@@ -64,6 +72,10 @@ export interface FileBrowserProps {
   onRename?: (itemId: string, newName: string) => void;
   onMove?: (item: FileBrowserItem) => void;
   onDelete?: (item: FileBrowserItem) => void;
+  onDownload?: (item: FileBrowserItem) => void;
+  onCopy?: (item: FileBrowserItem) => void;
+  onShare?: (item: FileBrowserItem) => void;
+  onInfo?: (item: FileBrowserItem) => void;
   onCreateFolder?: (name: string) => void;
   onSidebarNavigate?: (id: string) => void;
   newFolderMode?: boolean;
@@ -122,8 +134,9 @@ function formatSize(bytes?: number): string {
 
 // ── Context Menu ──
 
-function ItemContextMenu({ item, onRename, onMove, onDelete, onClose }: {
+function ItemContextMenu({ item, onRename, onMove, onDelete, onDownload, onCopy, onShare, onInfo, onClose }: {
   item: FileBrowserItem; onRename: () => void; onMove: () => void; onDelete: () => void; onClose: () => void;
+  onDownload?: () => void; onCopy?: () => void; onShare?: () => void; onInfo?: () => void;
 }) {
   useEffect(() => {
     const handler = () => onClose();
@@ -139,17 +152,17 @@ function ItemContextMenu({ item, onRename, onMove, onDelete, onClose }: {
       <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={onMove}>
         <FolderInput className="w-3.5 h-3.5 text-gray-400" /> Move to
       </button>
-      <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={onClose}>
+      <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={() => { onDownload?.(); onClose(); }}>
         <Download className="w-3.5 h-3.5 text-gray-400" /> Download
       </button>
-      <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={onClose}>
+      <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={() => { onCopy?.(); onClose(); }}>
         <Copy className="w-3.5 h-3.5 text-gray-400" /> Make a copy
       </button>
       <div className="my-1 h-px bg-gray-100 dark:bg-gray-800" />
-      <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={onClose}>
+      <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={() => { onShare?.(); onClose(); }}>
         <Share2 className="w-3.5 h-3.5 text-gray-400" /> Share
       </button>
-      <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={onClose}>
+      <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={() => { onInfo?.(); onClose(); }}>
         <Info className="w-3.5 h-3.5 text-gray-400" /> File information
       </button>
       {!item.readOnly && (
@@ -171,7 +184,7 @@ function ItemContextMenu({ item, onRename, onMove, onDelete, onClose }: {
 export default function FileBrowser({
   title, subtitle, icon: Icon, iconGradient = "from-blue-500 to-blue-600",
   breadcrumbs, items, allItems, recentFiles, sidebarItems, storageUsed, storageTotal, storagePercent,
-  headerActions, titleMenuItems, people, onPeopleFilter, onNavigate, onFileOpen, onRename, onMove, onDelete, onCreateFolder,
+  headerActions, titleMenuItems, people, onPeopleFilter, onNavigate, onFileOpen, onRename, onMove, onDelete, onDownload, onCopy, onShare, onInfo, onCreateFolder,
   onSidebarNavigate, newFolderMode = false, onNewFolderModeChange,
   emptyTitle, emptySubtitle, emptyAction, searchPlaceholder = "Search in Drive...", className = "",
 }: FileBrowserProps) {
@@ -405,141 +418,180 @@ export default function FileBrowser({
           </div>
         )}
 
-        {/* ── SUGGESTED (recent files) ── */}
+        {/* ── SUGGESTED (recent files) — uses reusable SuggestedFiles component ── */}
         {recentFiles && recentFiles.length > 0 && !isSearching && !isPersonFiltering && !typeFilter && !modifiedFilter && (
-          <section className="mb-6">
-            <h3 className="text-[13px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-3">Suggested</h3>
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-              {recentFiles.slice(0, 5).map(file => (
-                <div key={file.id} onClick={() => onFileOpen?.(file)}
-                  className="flex-shrink-0 w-[180px] group cursor-pointer">
-                  <div className="aspect-[4/3] rounded-xl bg-white dark:bg-gray-900 border border-gray-200/60 dark:border-gray-700/50 shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-shadow duration-300 group-hover:shadow-[0_8px_25px_rgba(0,0,0,0.1)] relative overflow-hidden"
-                    style={{ borderTop: `3px solid ${getTypeColor(file)}` }}>
-                    <div className="w-full h-full flex items-center justify-center">
-                      {getItemIcon(file, "w-10 h-10 opacity-20")}
-                    </div>
-                    <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-blue-400/50 transition-colors duration-300 pointer-events-none" />
-                  </div>
-                  <div className="mt-2 px-0.5">
-                    <p className="text-[13px] font-medium text-gray-800 dark:text-gray-200 truncate">{file.name}</p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      {getItemIcon(file, "w-3 h-3")}
-                      <span className="text-[11px] text-gray-400">{timeAgo(file.updatedAt)}</span>
-                    </div>
-                  </div>
+          <>
+            <SuggestedFiles
+              files={recentFiles as SuggestedFileItem[]}
+              title="Suggested"
+              onFileOpen={(file) => onFileOpen?.(file as FileBrowserItem)}
+              maxItems={5}
+            />
+            {/* Divider between Suggested and Files — only in grid view */}
+            {sortedItems.length > 0 && viewMode === "grid" && (
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200/60 dark:border-gray-700/40" /></div>
+                <div className="relative flex justify-center">
+                  <span className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#1e1030] px-4 text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                    <Folder className="w-3 h-3" />
+                    All files
+                    <span className="text-[10px] font-normal text-gray-300 dark:text-gray-600">({sortedItems.length})</span>
+                  </span>
                 </div>
-              ))}
-            </div>
-          </section>
+              </div>
+            )}
+          </>
         )}
 
-        {/* ── LIST VIEW (matches Documents page pattern) ── */}
+        {/* ── LIST VIEW — uses existing DataTable component ── */}
         {viewMode === "list" && sortedItems.length > 0 && (
-          <div className={`rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden transition-all duration-300 ${isSearching ? "animate-in fade-in slide-in-from-bottom-2 duration-300" : ""}`}>
-            {/* Header */}
-            <div className="grid grid-cols-[1fr_120px_130px_80px_40px] px-4 py-2.5 border-b border-gray-100 dark:border-gray-800 text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-              <button className="flex items-center gap-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 transition-colors text-left" onClick={() => toggleSort("name")}>
-                Name {sortField === "name" && <ArrowUp className={`w-3 h-3 transition-transform ${sortAsc ? "" : "rotate-180"}`} />}
-              </button>
-              <span className="hidden lg:block">Owner</span>
-              <button className="hidden sm:flex items-center gap-1 cursor-pointer hover:text-gray-700 transition-colors" onClick={() => toggleSort("modified")}>
-                Last modified {sortField === "modified" && <ArrowUp className={`w-3 h-3 transition-transform ${sortAsc ? "" : "rotate-180"}`} />}
-              </button>
-              <button className="hidden md:flex items-center gap-1 cursor-pointer hover:text-gray-700 transition-colors" onClick={() => toggleSort("size")}>
-                File size
-              </button>
-              <span />
-            </div>
-            {sortedItems.map(item => (
-              <div key={item.id} onClick={() => handleItemClick(item)}
-                className="grid grid-cols-[1fr_120px_130px_80px_40px] items-center px-4 h-[52px] border-b border-gray-50 dark:border-gray-800/50 last:border-b-0 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors cursor-pointer group">
-                <div className="flex items-center gap-3 min-w-0">
-                  {getItemIcon(item, "w-5 h-5 flex-shrink-0")}
-                  {renamingId === item.id ? (
-                    <input type="text" value={renameValue} onChange={e => setRenameValue(e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter") submitRename(); if (e.key === "Escape") setRenamingId(null); }}
-                      onBlur={submitRename} autoFocus onClick={e => e.stopPropagation()}
-                      className="flex-1 px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 text-[13px] outline-none" />
-                  ) : (
-                    <span className="text-[13px] text-gray-800 dark:text-gray-200 truncate">{item.name}</span>
-                  )}
-                </div>
-                <div className="hidden lg:flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">
-                    {(item.owner || "me")[0].toUpperCase()}
-                  </div>
-                  <span className="text-[12px] text-gray-500 truncate">{item.owner || "me"}</span>
-                </div>
-                <span className="hidden sm:block text-[12px] text-gray-500">{timeAgo(item.updatedAt)}</span>
-                <span className="hidden md:block text-[12px] text-gray-500">{item.type === "folder" ? "—" : formatSize(item.size)}</span>
-                <div className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity relative">
-                  <button onClick={e => { e.stopPropagation(); setMenuOpenId(menuOpenId === item.id ? null : item.id); }}
-                    className="p-1 rounded text-gray-400 hover:text-gray-600 cursor-pointer">
-                    <MoreVertical className="w-3.5 h-3.5" />
-                  </button>
-                  {menuOpenId === item.id && (
-                    <ItemContextMenu item={item} onRename={() => startRename(item)}
-                      onMove={() => { onMove?.(item); setMenuOpenId(null); }}
-                      onDelete={() => { onDelete?.(item); setMenuOpenId(null); }}
-                      onClose={() => setMenuOpenId(null)} />
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className={`transition-all duration-300 ${isSearching || isPersonFiltering ? "animate-in fade-in slide-in-from-bottom-2 duration-300" : ""}`}>
+            <DataTable<FileBrowserItem>
+              data={sortedItems}
+              columns={[
+                {
+                  key: "name",
+                  label: "Name",
+                  sortable: true,
+                  className: "w-[45%]",
+                  sortValue: (item) => `${item.type === "folder" ? "0" : "1"}_${item.name}`,
+                  render: (item) => (
+                    <div className="flex items-center gap-3 min-w-0 py-1">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                        item.type === "folder" ? "bg-gray-100 dark:bg-gray-800" :
+                        item.sourceType === "document" ? "bg-blue-50 dark:bg-blue-500/10" :
+                        item.sourceType === "presentation" ? "bg-amber-50 dark:bg-amber-500/10" :
+                        item.sourceType === "spreadsheet" ? "bg-green-50 dark:bg-green-500/10" :
+                        "bg-red-50 dark:bg-red-500/10"
+                      }`}>
+                        {getItemIcon(item, "w-4 h-4")}
+                      </div>
+                      {renamingId === item.id ? (
+                        <input type="text" value={renameValue} onChange={e => setRenameValue(e.target.value)}
+                          onKeyDown={e => { if (e.key === "Enter") submitRename(); if (e.key === "Escape") setRenamingId(null); }}
+                          onBlur={submitRename} autoFocus onClick={e => e.stopPropagation()}
+                          className="flex-1 px-3 py-1 rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 text-[13px] outline-none focus:ring-2 focus:ring-blue-500/20" />
+                      ) : (
+                        <div className="min-w-0 overflow-hidden flex-1">
+                          <Tooltip content={item.name} block>
+                            <span className="text-[13px] font-medium text-gray-800 dark:text-gray-200 truncate block">{item.name}</span>
+                          </Tooltip>
+                          {item.type === "folder" && item.childCount !== undefined && (
+                            <span className="text-[10px] text-gray-400 dark:text-gray-500">{item.childCount} items</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ),
+                },
+                {
+                  key: "owner",
+                  label: "Owner",
+                  sortable: true,
+                  sortValue: (item) => `${item.type === "folder" ? "0" : "1"}_${item.owner || "me"}`,
+                  hidden: { mobile: true, tablet: true },
+                  render: (item) => (
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <AvatarHover
+                        src={item.ownerAvatar}
+                        name={item.owner || "me"}
+                      />
+                      <div className="min-w-0 overflow-hidden flex-1">
+                        <Tooltip content={item.owner || "me"} block>
+                          <span className="text-[12px] font-medium text-gray-600 dark:text-gray-400 truncate block">{item.owner || "me"}</span>
+                        </Tooltip>
+                      </div>
+                    </div>
+                  ),
+                },
+                {
+                  key: "updatedAt",
+                  label: "Last modified",
+                  sortable: true,
+                  sortValue: (item) => (item.type === "folder" ? 0 : 1e15) + new Date(item.updatedAt).getTime(),
+                  hidden: { mobile: true },
+                  render: (item) => (
+                    <span className="text-[12px] text-gray-500 dark:text-gray-400">{timeAgo(item.updatedAt)}</span>
+                  ),
+                },
+                {
+                  key: "size",
+                  label: "File size",
+                  sortable: true,
+                  sortValue: (item) => (item.type === "folder" ? -1 : (item.size || 0)),
+                  hidden: { mobile: true, tablet: true },
+                  render: (item) => (
+                    <span className="text-[12px] font-medium text-gray-500 dark:text-gray-400">
+                      {item.type === "folder" ? "—" : formatSize(item.size)}
+                    </span>
+                  ),
+                },
+                {
+                  key: "actions",
+                  label: "",
+                  sortable: false,
+                  className: "w-12",
+                  render: (item) => (
+                    <div className="flex items-center justify-end relative">
+                      <button onClick={e => { e.stopPropagation(); setMenuOpenId(menuOpenId === item.id ? null : item.id); }}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-all">
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                      {menuOpenId === item.id && (
+                        <ItemContextMenu item={item} onRename={() => startRename(item)}
+                          onMove={() => { onMove?.(item); setMenuOpenId(null); }}
+                          onDelete={() => { onDelete?.(item); setMenuOpenId(null); }}
+                          onDownload={() => onDownload?.(item)}
+                          onCopy={() => onCopy?.(item)}
+                          onShare={() => onShare?.(item)}
+                          onInfo={() => onInfo?.(item)}
+                          onClose={() => setMenuOpenId(null)} />
+                      )}
+                    </div>
+                  ),
+                },
+              ] as ColumnConfig<FileBrowserItem>[]}
+              getRowKey={(item) => item.id}
+              onRowClick={handleItemClick}
+              title=""
+              showSearch={false}
+              enablePagination={true}
+              enableItemsPerPage={true}
+              defaultItemsPerPage={10}
+              stickyColumnCount={0}
+              disableHorizontalScroll
+              emptyMessage="No files or folders"
+            />
           </div>
         )}
 
-        {/* ── GRID VIEW (matches Documents page pattern) ── */}
+        {/* ── GRID VIEW — uses reusable FileCardGrid component ── */}
         {viewMode === "grid" && sortedItems.length > 0 && (
-          <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 transition-all duration-300 ${isSearching ? "animate-in fade-in slide-in-from-bottom-2 duration-300" : ""}`}>
-            {sortedItems.map(item => (
-              <div key={item.id} className="group relative cursor-pointer" onClick={() => handleItemClick(item)}>
-                <div className="aspect-[3/4] rounded-xl bg-white dark:bg-gray-900 border border-gray-200/60 dark:border-gray-700/50 shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-shadow duration-300 group-hover:shadow-[0_8px_25px_rgba(0,0,0,0.1)] relative"
-                  style={{ borderTop: `3px solid ${getTypeColor(item)}` }}>
-                  {/* Preview area */}
-                  <div className="absolute inset-0 rounded-b-xl overflow-hidden flex items-center justify-center">
-                    {item.type === "folder" ? (
-                      <Folder className="w-16 h-16 text-gray-200 dark:text-gray-700" />
-                    ) : (
-                      getItemIcon(item, "w-14 h-14 opacity-15")
-                    )}
-                  </div>
-                  {/* Hover border */}
-                  <div className="absolute inset-[-1px] rounded-xl border-2 border-transparent group-hover:border-blue-400/50 transition-colors duration-300 pointer-events-none z-[5]" />
-                  {/* Menu trigger */}
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                    <button onClick={e => { e.stopPropagation(); setMenuOpenId(menuOpenId === item.id ? null : item.id); }}
-                      className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm cursor-pointer shadow-sm transition-colors">
-                      <MoreVertical className="w-3 h-3" />
-                    </button>
-                  </div>
-                  {menuOpenId === item.id && (
-                    <div className="absolute top-10 right-2 z-50" onClick={e => e.stopPropagation()}>
-                      <ItemContextMenu item={item} onRename={() => startRename(item)}
-                        onMove={() => { onMove?.(item); setMenuOpenId(null); }}
-                        onDelete={() => { onDelete?.(item); setMenuOpenId(null); }}
-                        onClose={() => setMenuOpenId(null)} />
-                    </div>
-                  )}
-                </div>
-                {/* Metadata below card */}
-                <div className="mt-2.5 px-0.5">
-                  {renamingId === item.id ? (
-                    <input type="text" value={renameValue} onChange={e => setRenameValue(e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter") submitRename(); if (e.key === "Escape") setRenamingId(null); }}
-                      onBlur={submitRename} autoFocus onClick={e => e.stopPropagation()}
-                      className="w-full px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-500/10 border border-blue-200 text-[13px] outline-none" />
-                  ) : (
-                    <p className="text-[14px] font-semibold text-gray-800 dark:text-gray-200 truncate leading-tight">{item.name}</p>
-                  )}
-                  <div className="flex items-center gap-1.5 mt-1">
-                    {getItemIcon(item, "w-3 h-3 flex-shrink-0")}
-                    <span className="text-[11px] text-gray-400">{timeAgo(item.updatedAt)}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <FileCardGrid
+            items={sortedItems as FileCardItem[]}
+            initialCount={5}
+            loadMoreCount={10}
+            onItemClick={(item) => handleItemClick(item as FileBrowserItem)}
+            renamingId={renamingId}
+            renameValue={renameValue}
+            onRenameChange={setRenameValue}
+            onRenameSubmit={submitRename}
+            onRenameCancel={() => setRenamingId(null)}
+            animate={isSearching || isPersonFiltering}
+            renderMenu={(item, onClose) => (
+              <ItemContextMenu
+                item={item as FileBrowserItem}
+                onRename={() => startRename(item as FileBrowserItem)}
+                onMove={() => { onMove?.(item as FileBrowserItem); onClose(); }}
+                onDelete={() => { onDelete?.(item as FileBrowserItem); onClose(); }}
+                onDownload={() => onDownload?.(item as FileBrowserItem)}
+                onCopy={() => onCopy?.(item as FileBrowserItem)}
+                onShare={() => onShare?.(item as FileBrowserItem)}
+                onInfo={() => onInfo?.(item as FileBrowserItem)}
+                onClose={onClose}
+              />
+            )}
+          />
         )}
 
         {/* ── Empty state ── */}

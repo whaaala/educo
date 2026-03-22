@@ -71,7 +71,7 @@ export default function DataTable<T>({
   onClearFilters,
   hasActiveFilters = false,
   totalDataCount,
-  stickyColumnCount = 2,
+  stickyColumnCount = 0,
   disableHorizontalScroll = false,
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState("");

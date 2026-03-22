@@ -36,8 +36,8 @@ export interface DownloadDialogProps {
 
 // ── Default presentation formats ──
 const PRESENTATION_FORMATS: DownloadFormat[] = [
-  { id: "pptx", label: "Microsoft PowerPoint", extension: ".pptx", description: "Compatible with PowerPoint, Keynote, and Google Slides", icon: "pptx", category: "document" },
-  { id: "odp", label: "ODP Document", extension: ".odp", description: "Open Document Presentation format", icon: "odp", category: "document" },
+  { id: "pptx", label: "Presentation (PDF)", extension: ".pdf", description: "Slide-formatted PDF — compatible with all viewers", icon: "pptx", category: "document" },
+  { id: "odp", label: "Presentation (PDF)", extension: ".pdf", description: "Slide-formatted PDF — print or share", icon: "odp", category: "document" },
   { id: "pdf", label: "PDF Document", extension: ".pdf", description: "Best for sharing and printing", icon: "pdf", category: "document" },
   { id: "txt", label: "Plain Text", extension: ".txt", description: "Text content only, no formatting", icon: "txt", category: "document" },
   { id: "jpg", label: "JPEG Image", extension: ".jpg", description: "Current slide as image", icon: "jpg", category: "image", currentOnly: true },
@@ -80,19 +80,35 @@ function safeFilename(name: string): string {
 
 // ── Export functions ──
 function generateSlideHtml(content: string, bg: string, slideNum: number, total: number): string {
-  return `<div style="width:960px;height:540px;background:${bg};position:relative;page-break-after:always;display:flex;align-items:center;justify-content:center;font-family:Arial,Helvetica,sans-serif;overflow:hidden;">
-    <div style="width:100%;height:100%;padding:48px;">${content}</div>
-    <div style="position:absolute;bottom:12px;right:16px;font-size:10px;color:#9ca3af;">${slideNum}/${total}</div>
+  const bgStyle = bg.includes("gradient") ? `background:${bg};` : `background-color:${bg};`;
+  return `<div class="slide" style="${bgStyle}">
+    <div class="slide-content">${content}</div>
+    <div class="slide-number">${slideNum} / ${total}</div>
   </div>`;
 }
 
 function exportAsHtml(title: string, slides: string[], backgrounds: string[]): string {
-  const slidesHtml = slides.map((s, i) => generateSlideHtml(s, backgrounds[i] || "#fff", i + 1, slides.length)).join("\n");
+  const slidesHtml = slides.map((s, i) => generateSlideHtml(s, backgrounds[i] || "#ffffff", i + 1, slides.length)).join("\n");
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><title>${title}</title>
 <style>
-  @page { size: landscape; margin: 0; }
+  @page { size: 10in 5.625in; margin: 0; }
+  @media print {
+    body { margin: 0; padding: 0; }
+    .slide { width: 10in !important; height: 5.625in !important; page-break-after: always; box-shadow: none !important; margin: 0 !important; border-radius: 0 !important; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { margin: 0; padding: 20px; background: #e5e7eb; font-family: 'Segoe UI', Arial, Helvetica, sans-serif; }
+  .slide { width: 960px; height: 540px; position: relative; overflow: hidden; margin: 20px auto; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+  .slide-content { width: 100%; height: 100%; padding: 60px 80px; display: flex; flex-direction: column; justify-content: center; }
+  .slide-content h1 { font-size: 36px; font-weight: 700; margin-bottom: 16px; line-height: 1.2; }
+  .slide-content h2 { font-size: 24px; font-weight: 600; margin-bottom: 12px; line-height: 1.3; }
+  .slide-content h3 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .slide-content p { font-size: 18px; line-height: 1.6; margin-bottom: 8px; color: #4b5563; }
+  .slide-content ul, .slide-content ol { padding-left: 24px; margin-bottom: 8px; }
+  .slide-content li { font-size: 16px; line-height: 1.5; margin-bottom: 4px; color: #4b5563; }
+  .slide-number { position: absolute; bottom: 16px; right: 24px; font-size: 11px; color: rgba(156,163,175,0.6); }
   body { margin: 0; padding: 0; background: #f3f4f6; }
   @media print { body { background: white; } }
 </style>
@@ -168,13 +184,38 @@ export default function DownloadDialog({
 
     try {
       switch (format.id) {
-        case "pdf":
-        case "pptx":
+        case "pdf": {
+          // Open print dialog for PDF export
+          const pdfHtml = exportAsHtml(title, content, bgs);
+          const pdfWin = window.open("", "_blank");
+          if (pdfWin) {
+            pdfWin.document.write(pdfHtml);
+            pdfWin.document.close();
+            setTimeout(() => { pdfWin.print(); }, 500);
+          }
+          break;
+        }
+        case "pptx": {
+          // Export as presentation-style PDF via print dialog
+          // User can save as PDF and then convert to PPTX using online tools
+          const pptxHtml = exportAsHtml(title, content, bgs);
+          const pptxWin = window.open("", "_blank");
+          if (pptxWin) {
+            pptxWin.document.write(pptxHtml);
+            pptxWin.document.close();
+            setTimeout(() => { pptxWin.print(); }, 500);
+          }
+          break;
+        }
         case "odp": {
-          // Generate HTML presentation and trigger print/download
-          const html = exportAsHtml(title, content, bgs);
-          const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-          downloadBlob(blob, `${filename}${format.extension === ".pptx" ? ".html" : format.extension}`);
+          // ODP: open print dialog for presentation-style export
+          const odpHtml = exportAsHtml(title, content, bgs);
+          const odpWin = window.open("", "_blank");
+          if (odpWin) {
+            odpWin.document.write(odpHtml);
+            odpWin.document.close();
+            setTimeout(() => { odpWin.print(); }, 500);
+          }
           break;
         }
         case "txt": {
@@ -240,7 +281,7 @@ export default function DownloadDialog({
         </div>
 
         {/* Format list */}
-        <div className="overflow-y-auto max-h-[60vh]">
+        <div className="overflow-y-auto max-h-[80vh]">
           {/* Document formats */}
           <div className="px-5 pt-4 pb-2">
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Document formats</p>
