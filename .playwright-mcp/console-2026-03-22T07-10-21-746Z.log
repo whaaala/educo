@@ -1,0 +1,37 @@
+[    3733ms] [ERROR] In HTML, %s cannot be a descendant of <%s>.
+This will cause a hydration error.%s <button> button 
+
+  ...
+    <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+      <RedirectBoundary>
+        <RedirectErrorBoundary router={{...}}>
+          <InnerLayoutRouter parallelRouterKey="children" url="/drive" tree={[...]} childNodes={Map} segmentPath={[...]} ...>
+            <ClientPageRoot Component={function DrivePage} searchParams={{}} params={{}}>
+              <DrivePage params={Promise} searchParams={Promise}>
+                <MainLayout>
+                  <div className="flex h-scr..." style={{...}}>
+                    <div>
+                    <div className="flex-1 fle...">
+                      <div>
+                      <main className="flex-1 ove...">
+                        <div className="max-w-[120...">
+                          <div>
+                          <div>
+                          <div>
+                          <div className="mb-6">
+                            <h3>
+                            <div className="grid grid-...">
+>                             <button
+>                               onClick={function onClick}
+>                               className="group relative flex items-center gap-3 px-4 py-3.5 rounded-xl bg-white dark..."
+>                             >
+                                <div>
+                                <div>
+                                <div className="absolute t...">
+>                                 <button
+>                                   onClick={function onClick}
+>                                   className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-white/10 cursor-pointer"
+>                                 >
+                              ...
+            ...
+ @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/globals/intercept-console-error.js:50

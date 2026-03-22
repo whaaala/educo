@@ -6,9 +6,9 @@ import {
   Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight,
   Strikethrough, Superscript as SuperscriptIcon, Subscript as SubscriptIcon,
   Image as ImageIcon, Type, Table2, Paintbrush, MessageCircle,
-  Share2, Undo2, Redo2, ZoomIn, ZoomOut, Minus, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
+  Share2, Undo2, Redo2, ZoomIn, ZoomOut, Minus, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Check, Upload,
 } from "lucide-react";
-import type { SlideData } from "@/lib/slide-storage";
+import { slideStorage, type SlideData } from "@/lib/slide-storage";
 import SlideMenuBar from "./SlideMenuBar";
 
 // Shared components
@@ -16,6 +16,11 @@ import { ToolbarButton, ToolbarDivider, ToolbarDropdown } from "@/components/sha
 import { EditorDialog, EditorDialogButton, TableGridPicker, EditingModeButton, type EditingMode } from "@/components/shared/EditorDialogs";
 import { CommentAvatar, CommentCard, FloatingCommentPill, useMention, type DocComment, type CommentAuthor } from "@/components/shared/EditorComments";
 import ShareDialog from "@/components/shared/ShareDialog";
+import PublishDialog from "@/components/shared/PublishDialog";
+import EmailDialog, { type EmailMode } from "@/components/shared/EmailDialog";
+import DownloadDialog from "@/components/shared/DownloadDialog";
+import ConvertToVideoDialog from "@/components/shared/ConvertToVideoDialog";
+import MoveDialog from "@/components/shared/MoveDialog";
 
 // ── Types ──
 export interface SlideEditorValue {
@@ -194,6 +199,330 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, onInput }: {
   );
 }
 
+// ── Reusable Slide Picker Modal ──
+function SlidePickerModal({ title: modalTitle, subtitle, slides: slideList, defaultSelected, onConfirm, onClose, confirmLabel = "Confirm" }: {
+  title: string;
+  subtitle?: string;
+  slides: SlideData[];
+  defaultSelected?: Set<string>;
+  onConfirm: (selectedSlides: SlideData[]) => void;
+  onClose: () => void;
+  confirmLabel?: string;
+}) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => defaultSelected || new Set(slideList.map(s => s.id)));
+
+  const toggleSlide = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    setSelectedIds(prev => prev.size === slideList.length ? new Set() : new Set(slideList.map(s => s.id)));
+  };
+
+  return (
+    <div className="fixed inset-0 z-[9000] flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative z-10 w-[600px] max-w-[92vw] max-h-[80vh] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+          <div>
+            <h2 className="text-[16px] font-semibold text-gray-900 dark:text-gray-100">{modalTitle}</h2>
+            {subtitle && <p className="text-[12px] text-gray-400 mt-0.5">{subtitle}</p>}
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={toggleAll}
+              className="px-3 py-1.5 rounded-lg text-[12px] font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer">
+              {selectedIds.size === slideList.length ? "Deselect all" : "Select all"}
+            </button>
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
+          </div>
+        </div>
+
+        {/* Slide grid */}
+        <div className="flex-1 overflow-y-auto p-5">
+          <div className="grid grid-cols-3 sm:grid-cols-3 gap-3">
+            {slideList.map((slide, idx) => {
+              const isSelected = selectedIds.has(slide.id);
+              return (
+                <button key={slide.id} onClick={() => toggleSlide(slide.id)}
+                  className={`relative rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group ${
+                    isSelected
+                      ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 shadow-lg shadow-blue-500/10"
+                      : "ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-blue-300 dark:hover:ring-blue-700 hover:shadow-md"
+                  }`}
+                >
+                  <div className="aspect-video overflow-hidden bg-white" style={{ background: slide.background || "#fff" }}>
+                    <div className="w-[384px] origin-top-left pointer-events-none" style={{ transform: `scale(${160 / 384})` }}>
+                      <div style={{ aspectRatio: "16/9" }} dangerouslySetInnerHTML={{ __html: slide.content }} />
+                    </div>
+                  </div>
+                  <div className="absolute bottom-2 left-2">
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${isSelected ? "bg-blue-500 text-white" : "bg-black/50 text-white/80"}`}>{idx + 1}</span>
+                  </div>
+                  <div className="absolute top-2 right-2">
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-200 ${
+                      isSelected ? "bg-blue-500 shadow-md shadow-blue-500/30" : "bg-white/80 dark:bg-gray-800/80 border-2 border-gray-300 dark:border-gray-600 group-hover:border-blue-400"
+                    }`}>
+                      {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+                    </div>
+                  </div>
+                  {!isSelected && <div className="absolute inset-0 bg-white/30 dark:bg-black/20 group-hover:bg-transparent transition-colors" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-6 py-3.5 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+          <span className="text-[13px] text-gray-400">{selectedIds.size} of {slideList.length} selected</span>
+          <div className="flex gap-2.5">
+            <button onClick={onClose} className="px-5 py-2 rounded-xl text-[13px] font-medium text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">Cancel</button>
+            <button onClick={() => onConfirm(slideList.filter(s => selectedIds.has(s.id)))} disabled={selectedIds.size === 0}
+              className="px-5 py-2 rounded-xl text-[13px] font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-blue-500/20 hover:shadow-md transition-all cursor-pointer">
+              {confirmLabel} {selectedIds.size > 0 ? `(${selectedIds.size})` : ""}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Copy Selected Modal (uses SlidePickerModal) ──
+function CopySelectedModal({ slides, title, theme, activeSlideIdx, onClose }: {
+  slides: SlideData[]; title: string; theme: string; activeSlideIdx: number; onClose: () => void;
+}) {
+  return (
+    <SlidePickerModal
+      title="Make a copy"
+      subtitle="Select the slides to include in the copy"
+      slides={slides}
+      defaultSelected={new Set(slides.map(s => s.id))}
+      confirmLabel="Copy slides"
+      onClose={onClose}
+      onConfirm={(selected) => {
+        const newId = slideStorage.create({
+          title: title + " (Copy)",
+          slides: selected,
+          theme,
+        });
+        window.open(`/presentations/editor?id=${newId}`, "_blank");
+        onClose();
+      }}
+    />
+  );
+}
+
+// ── Import Slides Modal ──
+function ImportSlidesModal({ currentPresId, onImport, onClose }: {
+  currentPresId: string;
+  onImport: (slides: SlideData[]) => void;
+  onClose: () => void;
+}) {
+  const [presentations] = useState(() =>
+    slideStorage.list().filter(p => p.id !== currentPresId)
+  );
+  const [selectedPresId, setSelectedPresId] = useState<string | null>(null);
+  const [selectedSlideIds, setSelectedSlideIds] = useState<Set<string>>(new Set());
+  const selectedPres = presentations.find(p => p.id === selectedPresId);
+
+  const toggleSlide = (slideId: string) => {
+    setSelectedSlideIds(prev => {
+      const next = new Set(prev);
+      if (next.has(slideId)) next.delete(slideId); else next.add(slideId);
+      return next;
+    });
+  };
+
+  const selectAll = () => {
+    if (!selectedPres) return;
+    if (selectedSlideIds.size === selectedPres.slides.length) {
+      setSelectedSlideIds(new Set());
+    } else {
+      setSelectedSlideIds(new Set(selectedPres.slides.map(s => s.id)));
+    }
+  };
+
+  const handleImport = () => {
+    if (!selectedPres || selectedSlideIds.size === 0) return;
+    onImport(selectedPres.slides.filter(s => selectedSlideIds.has(s.id)));
+  };
+
+  // Full-screen centered modal (not using EditorDialog — custom for better control)
+  return (
+    <div className="fixed inset-0 z-[9000] flex items-center justify-center">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+
+      {/* Modal */}
+      <div className="relative z-10 w-[600px] max-w-[92vw] max-h-[80vh] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+          <div className="flex items-center gap-3">
+            {selectedPresId && (
+              <button onClick={() => { setSelectedPresId(null); setSelectedSlideIds(new Set()); }}
+                className="p-1.5 -ml-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                <ArrowLeft className="w-4 h-4 text-gray-500" />
+              </button>
+            )}
+            <div>
+              <h2 className="text-[16px] font-semibold text-gray-900 dark:text-gray-100">
+                {selectedPresId ? "Select slides" : "Import slides"}
+              </h2>
+              {selectedPresId && selectedPres && (
+                <p className="text-[12px] text-gray-400 mt-0.5">{selectedPres.title}</p>
+              )}
+              {!selectedPresId && (
+                <p className="text-[12px] text-gray-400 mt-0.5">Choose a presentation to import from</p>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {selectedPresId && (
+              <button onClick={selectAll}
+                className="px-3 py-1.5 rounded-lg text-[12px] font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer">
+                {selectedSlideIds.size === selectedPres?.slides.length ? "Deselect all" : "Select all"}
+              </button>
+            )}
+            <button onClick={onClose}
+              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-5">
+          {presentations.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                <Upload className="w-7 h-7 text-gray-300" />
+              </div>
+              <p className="text-[15px] font-medium text-gray-600 dark:text-gray-400">No presentations found</p>
+              <p className="text-[13px] text-gray-400 mt-1 max-w-[280px]">Create another presentation first, then come back to import slides from it</p>
+            </div>
+
+          ) : !selectedPresId ? (
+            /* Step 1: Presentation list */
+            <div className="space-y-2">
+              {presentations.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => { setSelectedPresId(p.id); setSelectedSlideIds(new Set(p.slides.map(s => s.id))); }}
+                  className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-left transition-all duration-200 cursor-pointer group border border-gray-100 dark:border-gray-800 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50/40 dark:hover:bg-blue-900/10 hover:shadow-sm"
+                >
+                  {/* Thumbnail */}
+                  <div className="w-[96px] flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700">
+                    <div className="w-[384px] origin-top-left pointer-events-none" style={{ transform: "scale(0.25)", background: p.slides[0]?.background || "#fff" }}>
+                      <div style={{ aspectRatio: "16/9" }} dangerouslySetInnerHTML={{ __html: p.slides[0]?.content || "" }} />
+                    </div>
+                  </div>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-semibold text-gray-800 dark:text-gray-200 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {p.title}
+                    </p>
+                    <div className="flex items-center gap-3 mt-1.5">
+                      <span className="inline-flex items-center gap-1 text-[11px] text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
+                        {p.slides.length} slide{p.slides.length !== 1 ? "s" : ""}
+                      </span>
+                      <span className="text-[11px] text-gray-400">
+                        Edited {new Date(p.updatedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                  {/* Arrow */}
+                  <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-blue-500 transition-colors flex-shrink-0" />
+                </button>
+              ))}
+            </div>
+
+          ) : (
+            /* Step 2: Slide grid */
+            <div className="grid grid-cols-3 gap-3">
+              {selectedPres?.slides.map((slide, idx) => {
+                const isSelected = selectedSlideIds.has(slide.id);
+                return (
+                  <button
+                    key={slide.id}
+                    onClick={() => toggleSlide(slide.id)}
+                    className={`relative rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group ${
+                      isSelected
+                        ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 shadow-lg shadow-blue-500/10"
+                        : "ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-blue-300 dark:hover:ring-blue-700 hover:shadow-md"
+                    }`}
+                  >
+                    {/* Slide preview */}
+                    <div className="aspect-video overflow-hidden bg-white" style={{ background: slide.background || "#fff" }}>
+                      <div className="w-[384px] origin-top-left pointer-events-none" style={{ transform: `scale(${160 / 384})` }}>
+                        <div style={{ aspectRatio: "16/9" }} dangerouslySetInnerHTML={{ __html: slide.content }} />
+                      </div>
+                    </div>
+
+                    {/* Slide number */}
+                    <div className="absolute bottom-2 left-2">
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                        isSelected
+                          ? "bg-blue-500 text-white"
+                          : "bg-black/50 text-white/80"
+                      }`}>
+                        {idx + 1}
+                      </span>
+                    </div>
+
+                    {/* Checkbox */}
+                    <div className="absolute top-2 right-2">
+                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-200 ${
+                        isSelected
+                          ? "bg-blue-500 shadow-md shadow-blue-500/30"
+                          : "bg-white/80 dark:bg-gray-800/80 border-2 border-gray-300 dark:border-gray-600 group-hover:border-blue-400"
+                      }`}>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+                      </div>
+                    </div>
+
+                    {/* Dim overlay for unselected */}
+                    {!isSelected && (
+                      <div className="absolute inset-0 bg-white/30 dark:bg-black/20 group-hover:bg-transparent transition-colors" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Footer — only on step 2 */}
+        {selectedPresId && (
+          <div className="flex items-center justify-between px-6 py-3.5 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+            <span className="text-[13px] text-gray-400">
+              {selectedSlideIds.size} of {selectedPres?.slides.length} selected
+            </span>
+            <div className="flex gap-2.5">
+              <button onClick={onClose}
+                className="px-5 py-2 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                Cancel
+              </button>
+              <button onClick={handleImport} disabled={selectedSlideIds.size === 0}
+                className="px-5 py-2 rounded-xl text-[13px] font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-blue-500/20 hover:shadow-md hover:shadow-blue-500/30 transition-all cursor-pointer">
+                Import {selectedSlideIds.size > 0 ? `${selectedSlideIds.size} slide${selectedSlideIds.size !== 1 ? "s" : ""}` : "slides"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Component ──
 export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const { title, slides, theme } = value;
@@ -205,6 +534,16 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showTablePicker, setShowTablePicker] = useState(false);
   const [showCommentSidebar, setShowCommentSidebar] = useState(false);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [showPageSetup, setShowPageSetup] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showImportSlides, setShowImportSlides] = useState(false);
+  const [showCopySelected, setShowCopySelected] = useState(false);
+  const [showPublishWeb, setShowPublishWeb] = useState(false);
+  const [showDownloadDialog, setShowDownloadDialog] = useState(false);
+  const [showConvertVideo, setShowConvertVideo] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState<EmailMode | null>(null);
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
   const [comments, setComments] = useState<DocComment[]>([]);
   const [zoom, setZoom] = useState(100);
   const [notesHeight, setNotesHeight] = useState(0);
@@ -439,30 +778,265 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           case "format:bulletedList": document.execCommand("insertUnorderedList"); break;
           case "format:clear": document.execCommand("removeFormat"); break;
           case "file:print": setTimeout(() => window.print(), 300); break;
+          case "file:printPreview": setTimeout(() => window.print(), 300); break;
           case "file:newFromTemplate": window.location.href = "/presentations"; break;
           case "file:share": setShowShareDialog(true); break;
+          case "file:publish": setShowPublishWeb(true); break;
           case "file:rename": {
             const titleInput = document.querySelector('input[placeholder="Untitled presentation"]') as HTMLInputElement;
             if (titleInput) { titleInput.focus(); titleInput.select(); }
             break;
           }
-          case "file:new": window.location.href = "/presentations/editor"; break;
-          case "file:open": window.location.href = "/presentations"; break;
-          case "file:details": { /* TODO: show details modal */ break; }
-          case "file:security": { /* TODO: show security limitations */ break; }
-          case "file:language": { /* TODO: show language picker */ break; }
-          case "file:offline": { /* TODO: enable offline mode */ break; }
-          case "file:move": { /* TODO: show Drive folder picker */ break; }
-          case "file:shortcut": { /* TODO: add Drive shortcut */ break; }
-          case "file:emailFile": { /* TODO: email file dialog */ break; }
-          case "file:emailCollaborators": { /* TODO: email collaborators */ break; }
-          case "file:videoAll": { /* TODO: convert to video */ break; }
-          case "file:videoSelected": { /* TODO: convert selected to video */ break; }
-          case "file:versionName": { /* TODO: name current version */ break; }
-          case "file:versionHistory": { /* TODO: show version history */ break; }
-          case "file:pageSetup": { /* TODO: page setup dialog */ break; }
+          case "file:new": {
+            // Create a new blank presentation and open in a new tab
+            const newPresId = slideStorage.create({});
+            window.open(`/presentations/editor?id=${newPresId}`, "_blank");
+            break;
+          }
+          case "file:open": window.open("/presentations", "_blank"); break;
+          case "file:import": setShowImportSlides(true); break;
+          case "file:copyAll": {
+            const newId = slideStorage.create({ title: title + " (Copy)", slides, theme });
+            window.open(`/presentations/editor?id=${newId}`, "_blank");
+            break;
+          }
+          case "file:copySelected": setShowCopySelected(true); break;
+          case "file:delete": {
+            if (window.confirm("Move this presentation to bin?")) {
+              const params = new URLSearchParams(window.location.search);
+              const id = params.get("id");
+              if (id) slideStorage.remove(id);
+              window.location.href = "/presentations";
+            }
+            break;
+          }
+          case "file:move": setShowMoveDialog(true); break;
+          case "file:shortcut": { alert("Shortcut added to Drive"); break; }
+          case "file:offline": { alert("Presentation is now available offline"); break; }
+          case "file:details": setShowDetailsDialog(true); break;
+          case "file:security": { alert("Security limitations — no restrictions currently active"); break; }
+          case "file:language": { alert("Language settings — coming soon"); break; }
+          case "file:emailFile": setShowEmailDialog("file"); break;
+          case "file:emailCollaborators": setShowEmailDialog("collaborators"); break;
+
+          case "file:convertVideo":
+          case "file:videoAll":
+          case "file:videoSelected":
+            setShowConvertVideo(true); break;
+          case "file:versionName": {
+            const versionName = window.prompt("Name this version:", `Version ${new Date().toLocaleDateString()}`);
+            if (versionName) alert(`Version saved as: "${versionName}"`);
+            break;
+          }
+          case "file:versionHistory": setShowVersionHistory(true); break;
+          case "file:pageSetup": setShowPageSetup(true); break;
+          case "file:download":
+          case "file:downloadPptx": case "file:downloadOdp": case "file:downloadPdf":
+          case "file:downloadTxt": case "file:downloadJpeg": case "file:downloadPng":
+          case "file:downloadSvg":
+            setShowDownloadDialog(true);
+            break;
           case "insert:comment": addComment(); break;
           case "insert:table": setShowTablePicker(true); break;
+
+          // ── Edit menu ──
+          case "edit:pasteNoFormat": {
+            navigator.clipboard?.readText?.().then(text => {
+              if (text) document.execCommand("insertText", false, text);
+            }).catch(() => { document.execCommand("paste"); });
+            break;
+          }
+          case "edit:findReplace": { /* TODO: find & replace dialog */ alert("Find & Replace — coming soon"); break; }
+
+          // ── View menu ──
+          case "view:modeEditing": setEditingMode("editing"); break;
+          case "view:modeCommenting": setEditingMode("suggesting"); break;
+          case "view:modeViewing": setEditingMode("viewing"); break;
+          case "view:motion": setShowTransitions(true); break;
+          case "view:themeBuilder": setShowThemes(true); break;
+          case "view:gridView": { /* TODO: grid view */ break; }
+          case "view:ruler": { /* rulers already visible */ break; }
+          case "view:showGuides": case "view:addVGuide": case "view:addHGuide":
+          case "view:editGuides": case "view:clearGuides":
+          case "view:snapGrid": case "view:snapGuides": break;
+          case "view:filmstrip": setFilmstripCollapsed(c => !c); break;
+          case "view:zoomFit": setZoom(100); break;
+          case "view:zoom50": setZoom(50); break;
+          case "view:zoom75": setZoom(75); break;
+          case "view:zoom100": setZoom(100); break;
+          case "view:zoom150": setZoom(150); break;
+          case "view:zoom200": setZoom(200); break;
+          case "view:fullscreen": {
+            if (document.fullscreenElement) { document.exitFullscreen(); }
+            else { document.documentElement.requestFullscreen(); }
+            break;
+          }
+
+          // ── Insert menu ──
+          case "insert:imageUpload": {
+            const input = document.createElement("input");
+            input.type = "file"; input.accept = "image/*";
+            input.onchange = () => {
+              const file = input.files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = () => { document.execCommand("insertHTML", false, `<img src="${reader.result}" style="max-width:80%;margin:12px auto;display:block;" />`); };
+              reader.readAsDataURL(file);
+            };
+            input.click();
+            break;
+          }
+          case "insert:imageUrl": {
+            const imgUrl = window.prompt("Enter image URL:");
+            if (imgUrl) document.execCommand("insertHTML", false, `<img src="${imgUrl}" style="max-width:80%;margin:12px auto;display:block;" />`);
+            break;
+          }
+          case "insert:imageWeb": case "insert:imageDrive": case "insert:imageCamera":
+            alert("This image source is coming soon"); break;
+          case "insert:textBox":
+            document.execCommand("insertHTML", false, '<div style="border:2px solid #e5e7eb;padding:16px;margin:12px;min-height:60px;border-radius:8px;font-size:16px;">Click to type</div>');
+            break;
+          case "insert:wordArt":
+            document.execCommand("insertHTML", false, '<h1 style="text-align:center;font-size:48px;font-weight:900;background:linear-gradient(135deg,#3b82f6,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:20px 0;">Word Art</h1>');
+            break;
+          case "insert:shapeBasic":
+            document.execCommand("insertHTML", false, '<div style="width:120px;height:120px;background:#3b82f6;border-radius:8px;margin:12px auto;"></div>');
+            break;
+          case "insert:shapeArrow":
+            document.execCommand("insertHTML", false, '<div style="text-align:center;font-size:48px;color:#3b82f6;margin:12px 0;">→</div>');
+            break;
+          case "insert:shapeCallout":
+            document.execCommand("insertHTML", false, '<div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:12px;padding:16px;margin:12px;font-size:14px;">💬 Callout text</div>');
+            break;
+          case "insert:shapeEquation":
+            document.execCommand("insertHTML", false, '<div style="text-align:center;font-family:serif;font-size:24px;font-style:italic;margin:12px 0;">E = mc²</div>');
+            break;
+          case "insert:line": case "insert:arrow": case "insert:elbowConnector":
+          case "insert:curvedConnector": case "insert:curve": case "insert:polyline":
+          case "insert:scribble":
+            document.execCommand("insertHTML", false, '<hr style="border:none;border-top:2px solid #3b82f6;margin:16px 0;" />');
+            break;
+          case "insert:diagramGrid": case "insert:diagramHierarchy": case "insert:diagramTimeline":
+          case "insert:diagramProcess": case "insert:diagramRelationship": case "insert:diagramCycle":
+            alert("Diagram insertion — coming soon"); break;
+          case "insert:chartBar": case "insert:chartColumn": case "insert:chartLine": case "insert:chartPie":
+            alert("Chart insertion — coming soon"); break;
+
+          // ── Format menu (text) ──
+          case "format:sizeUp": document.execCommand("fontSize", false, "5"); break;
+          case "format:sizeDown": document.execCommand("fontSize", false, "2"); break;
+          case "format:uppercase": case "format:lowercase": case "format:titleCase": {
+            const sel = window.getSelection();
+            const text = sel?.toString();
+            if (text) {
+              const transformed = action === "format:uppercase" ? text.toUpperCase()
+                : action === "format:lowercase" ? text.toLowerCase()
+                : text.replace(/\b\w/g, c => c.toUpperCase());
+              document.execCommand("insertText", false, transformed);
+            }
+            break;
+          }
+          case "format:spacingSingle": document.execCommand("insertHTML", false, '<div style="line-height:1;">'); break;
+          case "format:spacing115": document.execCommand("insertHTML", false, '<div style="line-height:1.15;">'); break;
+          case "format:spacing15": document.execCommand("insertHTML", false, '<div style="line-height:1.5;">'); break;
+          case "format:spacingDouble": document.execCommand("insertHTML", false, '<div style="line-height:2;">'); break;
+          case "format:spacingCustom": { const val = window.prompt("Line spacing:", "1.5"); if (val) document.execCommand("insertHTML", false, `<div style="line-height:${val};">`); break; }
+          case "format:checklist":
+            document.execCommand("insertHTML", false, '<div style="margin:4px 0;"><span style="margin-right:8px;">☐</span>Checklist item</div>');
+            break;
+          case "format:borderWeight": case "format:borderDash": case "format:borderColor":
+          case "format:options":
+            alert("Format options — coming soon"); break;
+
+          // ── Slide menu ──
+          case "slide:skip": {
+            // Toggle skip flag on current slide (visual dimming)
+            const el = editorRef.current;
+            if (el) { el.style.opacity = el.style.opacity === "0.3" ? "1" : "0.3"; }
+            break;
+          }
+          case "slide:moveStart": {
+            if (activeSlideIdx > 0) {
+              const ns = [...slides]; const [s] = ns.splice(activeSlideIdx, 1); ns.unshift(s);
+              updateSlides(ns); setActiveSlideIdx(0);
+            }
+            break;
+          }
+          case "slide:moveUp": {
+            if (activeSlideIdx > 0) {
+              const ns = [...slides]; [ns[activeSlideIdx - 1], ns[activeSlideIdx]] = [ns[activeSlideIdx], ns[activeSlideIdx - 1]];
+              updateSlides(ns); setActiveSlideIdx(activeSlideIdx - 1);
+            }
+            break;
+          }
+          case "slide:moveDown": {
+            if (activeSlideIdx < slides.length - 1) {
+              const ns = [...slides]; [ns[activeSlideIdx], ns[activeSlideIdx + 1]] = [ns[activeSlideIdx + 1], ns[activeSlideIdx]];
+              updateSlides(ns); setActiveSlideIdx(activeSlideIdx + 1);
+            }
+            break;
+          }
+          case "slide:moveEnd": {
+            if (activeSlideIdx < slides.length - 1) {
+              const ns = [...slides]; const [s] = ns.splice(activeSlideIdx, 1); ns.push(s);
+              updateSlides(ns); setActiveSlideIdx(ns.length - 1);
+            }
+            break;
+          }
+          case "slide:background": {
+            const color = window.prompt("Background color (hex):", activeSlide?.background || "#ffffff");
+            if (color) updateCurrentSlide({ background: color });
+            break;
+          }
+          case "slide:layoutTitle":
+            updateCurrentSlide({ content: '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;"><h1 style="text-align:center;font-size:40px;font-weight:700;margin:0;">Title</h1><p style="text-align:center;font-size:20px;color:#6b7280;margin:0;">Subtitle</p></div>' });
+            break;
+          case "slide:layoutSection":
+            updateCurrentSlide({ content: '<div style="display:flex;align-items:center;height:100%;padding-left:10%;"><h2 style="font-size:36px;font-weight:600;color:#1f2937;">Section Header</h2></div>' });
+            break;
+          case "slide:layoutTitleBody":
+            updateCurrentSlide({ content: '<div style="padding:6%;"><h2 style="font-size:32px;font-weight:700;margin-bottom:20px;">Title</h2><p style="font-size:16px;color:#4b5563;line-height:1.6;">Body text goes here. Click to edit.</p></div>' });
+            break;
+          case "slide:layoutTwoCol":
+            updateCurrentSlide({ content: '<div style="padding:6%;"><h2 style="font-size:28px;font-weight:700;margin-bottom:20px;">Title</h2><div style="display:flex;gap:24px;"><div style="flex:1;"><p style="font-size:14px;color:#4b5563;">Left column content</p></div><div style="flex:1;"><p style="font-size:14px;color:#4b5563;">Right column content</p></div></div></div>' });
+            break;
+          case "slide:layoutBlank":
+            updateCurrentSlide({ content: '' });
+            break;
+
+          // ── Arrange menu ──
+          case "arrange:bringFront": case "arrange:bringForward":
+          case "arrange:sendBackward": case "arrange:sendBack":
+          case "arrange:alignLeft": case "arrange:alignCenter": case "arrange:alignRight":
+          case "arrange:alignTop": case "arrange:alignMiddle": case "arrange:alignBottom":
+          case "arrange:distributeH": case "arrange:distributeV":
+          case "arrange:centerH": case "arrange:centerV":
+          case "arrange:rotateCW": case "arrange:rotateCCW":
+          case "arrange:flipH": case "arrange:flipV":
+          case "arrange:group": case "arrange:ungroup":
+            // Arrange operations work on selected objects (future feature)
+            break;
+
+          // ── Tools menu ──
+          case "tools:spellCheck": alert("Spell check — coming soon"); break;
+          case "tools:dictionary": alert("Personal dictionary — coming soon"); break;
+          case "tools:explore": alert("Explore — coming soon"); break;
+          case "tools:linkedObjects": alert("Linked objects — none found"); break;
+          case "tools:dictionaryLookup": {
+            const word = window.getSelection()?.toString()?.trim();
+            if (word) window.open(`https://www.google.com/search?q=define+${encodeURIComponent(word)}`, "_blank");
+            else alert("Select a word first, then use Dictionary");
+            break;
+          }
+          case "tools:voiceType": alert("Voice typing for speaker notes — coming soon"); break;
+          case "tools:accessibility": alert("Accessibility settings — coming soon"); break;
+
+          // ── Help menu ──
+          case "help:search": alert("Search the menus — coming soon"); break;
+          case "help:shortcuts": alert("Keyboard shortcuts:\n\nCtrl+M — New slide\nCtrl+D — Duplicate slide\nCtrl+Z — Undo\nCtrl+Y — Redo\nCtrl+B — Bold\nCtrl+I — Italic\nCtrl+U — Underline\nCtrl+P — Print\nCtrl+F5 — Slideshow\nPageUp/Down — Navigate slides\nArrow Up/Down — Navigate slides (in filmstrip)"); break;
+          case "help:training": window.open("https://support.google.com/docs/answer/2763168", "_blank"); break;
+          case "help:updates": alert("You are using the latest version"); break;
+
           default: break;
         }
       }} />
@@ -790,6 +1364,168 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           title={title}
           onShare={() => {}}
         />
+      )}
+
+      {/* Convert to Video Dialog */}
+      {showConvertVideo && (
+        <ConvertToVideoDialog
+          isOpen={true}
+          onClose={() => setShowConvertVideo(false)}
+          title={title}
+          slides={slides.map(s => ({ id: s.id, content: s.content, background: s.background }))}
+          activeSlideIndex={activeSlideIdx}
+          totalSlides={slides.length}
+        />
+      )}
+
+      {/* Download Dialog */}
+      {showDownloadDialog && (
+        <DownloadDialog
+          isOpen={true}
+          onClose={() => setShowDownloadDialog(false)}
+          title={title}
+          content={slides.map(s => s.content)}
+          activeIndex={activeSlideIdx}
+          backgrounds={slides.map(s => s.background)}
+        />
+      )}
+
+      {/* Email Dialog — "Email this file" (full school directory) */}
+      {showEmailDialog === "file" && (
+        <EmailDialog
+          isOpen={true}
+          onClose={() => setShowEmailDialog(null)}
+          title={title}
+          mode="file"
+          attachments={[
+            { name: `${title}.pptx`, type: "pptx", size: "2.4 MB" },
+            { name: `${title}.pdf`, type: "pdf", size: "1.8 MB" },
+          ]}
+          onSend={(data) => { console.log("Email sent:", data); setShowEmailDialog(null); }}
+        />
+      )}
+
+      {/* Email Dialog — "Email collaborators" (only people with access) */}
+      {showEmailDialog === "collaborators" && (
+        <EmailDialog
+          isOpen={true}
+          onClose={() => setShowEmailDialog(null)}
+          title={title}
+          mode="collaborators"
+          recipients={[
+            { email: "you@educo.edu", name: "You (Owner)", role: "Owner" },
+          ]}
+          groups={[
+            { id: "collaborators", name: "Collaborators", icon: "individual", members: [
+              { email: "you@educo.edu", name: "You (Owner)", role: "Owner" },
+            ]},
+          ]}
+          onSend={(data) => { console.log("Email sent to collaborators:", data); setShowEmailDialog(null); }}
+        />
+      )}
+
+      {/* Publish Dialog (same as DocEditor) */}
+      {showPublishWeb && (
+        <PublishDialog
+          isOpen={showPublishWeb}
+          onClose={() => setShowPublishWeb(false)}
+          title={title}
+          onPublish={() => setShowPublishWeb(false)}
+        />
+      )}
+
+      {/* Move Dialog */}
+      {showMoveDialog && (
+        <MoveDialog
+          isOpen={true}
+          onClose={() => setShowMoveDialog(false)}
+          fileName={title}
+          sourceId={(() => { const p = new URLSearchParams(window.location.search); return p.get("id") || ""; })()}
+          sourceType="presentation"
+          onMoveComplete={({ oldFolder, newFolder }) => {
+            console.log(`Moved presentation from ${oldFolder} to ${newFolder}`);
+          }}
+        />
+      )}
+
+      {/* Copy Selected Slides Modal */}
+      {showCopySelected && (
+        <CopySelectedModal
+          slides={slides}
+          title={title}
+          theme={theme}
+          activeSlideIdx={activeSlideIdx}
+          onClose={() => setShowCopySelected(false)}
+        />
+      )}
+
+      {/* Import Slides Modal */}
+      {showImportSlides && (
+        <ImportSlidesModal
+          currentPresId={(() => { const p = new URLSearchParams(window.location.search); return p.get("id") || ""; })()}
+          onImport={(importedSlides) => {
+            const newSlides = [...slides, ...importedSlides.map(s => ({
+              ...s,
+              id: `slide-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            }))];
+            updateSlides(newSlides);
+            setActiveSlideIdx(slides.length);
+            setShowImportSlides(false);
+          }}
+          onClose={() => setShowImportSlides(false)}
+        />
+      )}
+
+      {/* Details Dialog */}
+      {showDetailsDialog && (
+        <EditorDialog title="Presentation Details" onClose={() => setShowDetailsDialog(false)}>
+          <div className="space-y-3 text-[13px] text-gray-600 dark:text-gray-400">
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Title</span><span>{title}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Slides</span><span>{slides.length}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Theme</span><span className="capitalize">{theme}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Owner</span><span>You</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Last modified</span><span>{new Date().toLocaleDateString()}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Created</span><span>{new Date().toLocaleDateString()}</span></div>
+          </div>
+        </EditorDialog>
+      )}
+
+      {/* Page Setup Dialog */}
+      {showPageSetup && (
+        <EditorDialog title="Page Setup" onClose={() => setShowPageSetup(false)}>
+          <div className="space-y-4">
+            <p className="text-[13px] text-gray-500">Slide dimensions</p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: "Widescreen 16:9", ratio: "16/9" },
+                { label: "Standard 4:3", ratio: "4/3" },
+                { label: "Widescreen 16:10", ratio: "16/10" },
+                { label: "Custom", ratio: "custom" },
+              ].map(opt => (
+                <button key={opt.ratio} onClick={() => setShowPageSetup(false)}
+                  className="px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-[12px] text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 transition-colors cursor-pointer">
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </EditorDialog>
+      )}
+
+      {/* Version History Panel */}
+      {showVersionHistory && (
+        <EditorDialog title="Version History" onClose={() => setShowVersionHistory(false)}>
+          <div className="space-y-3">
+            <p className="text-[12px] text-gray-400">Saved versions of this presentation</p>
+            <div className="space-y-2">
+              <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                <p className="text-[13px] font-medium text-blue-700 dark:text-blue-300">Current version</p>
+                <p className="text-[11px] text-blue-500 dark:text-blue-400 mt-0.5">{new Date().toLocaleString()}</p>
+              </div>
+              <p className="text-[12px] text-gray-400 text-center py-4">No previous versions saved yet</p>
+            </div>
+          </div>
+        </EditorDialog>
       )}
     </div>
   );

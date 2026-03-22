@@ -36,6 +36,7 @@ import {
   LifeBuoy,
   ExternalLink,
   Presentation,
+  HardDrive,
 } from "lucide-react";
 import TenantSwitcher from "@/components/admin/TenantSwitcher";
 import { useUser } from "@/contexts/UserContext";
@@ -175,6 +176,7 @@ const menuItems: MenuItem[] = [
     label: "Workspace",
     icon: <FileText className="w-5 h-5" />,
     children: [
+      { id: "drive", label: "My Drive", icon: <HardDrive className="w-4 h-4" />, href: "/drive" },
       { id: "documents", label: "Documents", icon: <FileText className="w-4 h-4" />, href: "/documents" },
       { id: "presentations", label: "Presentations", icon: <Presentation className="w-4 h-4" />, href: "/presentations" },
     ],

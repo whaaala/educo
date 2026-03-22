@@ -67,12 +67,16 @@ export default function CustomDropdown({
         {selectedOption?.label || value}
       </button>
 
-      {/* Chevron Icon */}
-      <ChevronRight className={`absolute right-1.5 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 pointer-events-none ${dropup ? "-rotate-90" : "rotate-90"}`} />
+      {/* Chevron Icon — snaps with dropdown open/close */}
+      <ChevronRight className={`absolute right-1.5 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 pointer-events-none transition-transform duration-[120ms] ease-out ${
+        isOpen
+          ? `${dropup ? "rotate-90" : "-rotate-90"} text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400`
+          : `${dropup ? "-rotate-90" : "rotate-90"} text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400`
+      }`} />
 
       {/* Custom Dropdown Menu */}
       {isOpen && (
-        <div className={`absolute ${dropup ? "bottom-full mb-1" : "top-full mt-1"} left-0 right-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 max-h-48 sm:max-h-64 overflow-y-auto z-[10000] py-1`}>
+        <div className={`absolute ${dropup ? "bottom-full mb-1" : "top-full mt-1"} left-0 right-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 max-h-48 sm:max-h-64 overflow-y-auto z-[10000] py-1 animate-in fade-in ${dropup ? "slide-in-from-bottom-1" : "slide-in-from-top-1"} duration-[120ms]`}>
           {options.map((option) => (
             <button
               key={option.value}
