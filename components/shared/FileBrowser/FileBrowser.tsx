@@ -162,9 +162,6 @@ function ItemContextMenu({ item, onRename, onMove, onDelete, onDownload, onCopy,
       <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={() => { onShare?.(); onClose(); }}>
         <Share2 className="w-3.5 h-3.5 text-gray-400" /> Share
       </button>
-      <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={() => { onInfo?.(); onClose(); }}>
-        <Info className="w-3.5 h-3.5 text-gray-400" /> File information
-      </button>
       {!item.readOnly && (
         <>
           <div className="my-1 h-px bg-gray-100 dark:bg-gray-800" />
@@ -254,37 +251,50 @@ export default function FileBrowser({
   const toggleSort = (field: "name" | "modified" | "size") => { if (sortField === field) setSortAsc(!sortAsc); else { setSortField(field); setSortAsc(true); } };
 
   return (
-    <div className={`flex gap-0 min-h-[500px] ${className}`}>
-      {/* ══════ LEFT SIDEBAR ══════ */}
+    <div className={`flex gap-0 ${className}`}>
+      {/* ══════ LEFT SIDEBAR — absolutely fixed, never scrolls ══════ */}
       {sidebarItems && sidebarItems.length > 0 && (
-        <div className="hidden md:flex flex-col w-[220px] flex-shrink-0 border-r border-gray-100 dark:border-gray-800 pr-4 mr-4">
-          {headerActions && <div className="mb-5">{headerActions}</div>}
-          <nav className="flex flex-col gap-0.5">
-            {sidebarItems.map(nav => (
-              <button key={nav.id} onClick={() => onSidebarNavigate?.(nav.id)}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-full text-[14px] font-medium transition-all cursor-pointer ${
-                  nav.active
-                    ? "bg-blue-100/80 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 font-semibold"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                }`}>
-                <nav.icon className={`w-5 h-5 flex-shrink-0 ${nav.active ? "text-blue-600 dark:text-blue-400" : "text-gray-500"}`} />
-                {nav.label}
-              </button>
-            ))}
-          </nav>
-          {storageUsed && storageTotal && (
-            <div className="mt-auto pt-8 pb-2">
-              <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-2">
-                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${storagePercent ?? 0}%` }} />
-              </div>
-              <p className="text-[12px] text-gray-500 dark:text-gray-400">{storageUsed} of {storageTotal} used</p>
+        <>
+          {/* Spacer to reserve width for the fixed sidebar */}
+          <div className="hidden md:block w-[220px] flex-shrink-0" />
+          {/* Fixed sidebar panel */}
+          <div className="hidden md:flex flex-col fixed top-[4.5rem] bottom-0 w-[220px] bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] z-10" style={{ left: 'var(--sidebar-width)' }}>
+            <div className="flex-1 px-3 pt-1 overflow-y-auto">
+              {headerActions && <div className="mb-5">{headerActions}</div>}
+              <nav className="flex flex-col gap-0.5">
+                {sidebarItems.map(nav => (
+                  <button key={nav.id} onClick={() => onSidebarNavigate?.(nav.id)}
+                    className={`group flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-150 cursor-pointer ${
+                      nav.active
+                        ? "bg-blue-50 dark:bg-blue-500/10 midnight:bg-blue-500/10 text-blue-700 dark:text-blue-300 font-semibold shadow-sm shadow-blue-100/50 dark:shadow-none"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-white/5 midnight:hover:bg-white/5"
+                    }`}>
+                    <nav.icon className={`w-[18px] h-[18px] flex-shrink-0 transition-colors duration-150 ${
+                      nav.active
+                        ? "text-blue-600 dark:text-blue-400"
+                        : "text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300"
+                    }`} />
+                    {nav.label}
+                  </button>
+                ))}
+              </nav>
             </div>
-          )}
-        </div>
+            {storageUsed && storageTotal && (
+              <div className="flex-shrink-0 px-4 pb-4 pt-3 border-t border-gray-100 dark:border-gray-800">
+                <div className="h-1.5 bg-gray-100 dark:bg-gray-700/50 rounded-full overflow-hidden mb-2">
+                  <div className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all" style={{ width: `${storagePercent ?? 0}%` }} />
+                </div>
+                <p className="text-[11px] text-gray-400 dark:text-gray-500">{storageUsed} of {storageTotal} used</p>
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {/* ══════ MAIN CONTENT ══════ */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 flex flex-col h-[calc(100vh-6rem)] overflow-hidden">
+        {/* ── Fixed header area (title, search, filters, suggested) ── */}
+        <div className="flex-shrink-0">
         {/* Title + Search + View toggle */}
         <div className="flex items-center gap-4 mb-3">
           {/* Title — as dropdown trigger if titleMenuItems provided, else plain text */}
@@ -443,6 +453,10 @@ export default function FileBrowser({
           </>
         )}
 
+        </div>{/* end fixed header */}
+
+        {/* ── Scrollable file list area ── */}
+        <div className="flex-1 overflow-y-auto min-h-0">
         {/* ── LIST VIEW — uses existing DataTable component ── */}
         {viewMode === "list" && sortedItems.length > 0 && (
           <div className={`transition-all duration-300 ${isSearching || isPersonFiltering ? "animate-in fade-in slide-in-from-bottom-2 duration-300" : ""}`}>
@@ -603,6 +617,7 @@ export default function FileBrowser({
             {!searchQuery && !typeFilter && emptyAction}
           </div>
         )}
+        </div>{/* end scrollable file list */}
       </div>
     </div>
   );

@@ -18,6 +18,7 @@ import { useUser } from "@/contexts/UserContext";
 import type { PersonItem } from "@/components/shared/PeopleFilterDropdown";
 import DownloadDialog from "@/components/shared/DownloadDialog";
 import ShareDialog from "@/components/shared/ShareDialog";
+import ConfirmationModal from "@/components/shared/ConfirmationModal";
 import {
   HardDrive, FolderPlus, Plus, Home, Users, Clock, Star, Trash2, Cloud,
   Upload, FileText, Presentation, FolderUp,
@@ -33,6 +34,7 @@ export default function DrivePage() {
   const [mediaViewer, setMediaViewer] = useState<{ type: MediaType; src: string; fileName: string; fileSize?: string } | null>(null);
   const [downloadItem, setDownloadItem] = useState<FileBrowserItem | null>(null);
   const [shareItem, setShareItem] = useState<FileBrowserItem | null>(null);
+  const [deleteItem, setDeleteItem] = useState<FileBrowserItem | null>(null);
   const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
   const [moveItem, setMoveItem] = useState<DriveItem | null>(null);
   // Counter to force recomputation of content previews when tab regains focus
@@ -346,6 +348,7 @@ export default function DrivePage() {
   const handleSidebarNavigate = (id: string) => {
     setActiveSection(id);
     if (id === "my-drive" || id === "home") setCurrentFolderId("folder-my-drive");
+    else if (id === "bin") setCurrentFolderId("folder-bin");
   };
 
   // Open files in new tab
@@ -392,7 +395,7 @@ export default function DrivePage() {
 
   const handleRename = (itemId: string, newName: string) => { driveStorage.rename(itemId, newName); refreshItems(); };
   const handleMove = (item: FileBrowserItem) => { const d = items.find(i => i.id === item.id) || driveStorage.get(item.id); if (d) setMoveItem(d); };
-  const handleDelete = (item: FileBrowserItem) => { if (window.confirm(`Delete "${item.name}"?`)) { driveStorage.remove(item.id); refreshItems(); } };
+  const handleDelete = (item: FileBrowserItem) => { setDeleteItem(item); };
   const handleCreateFolder = (name: string) => { driveStorage.createFolder(currentFolderId, name); refreshItems(); };
 
   const handleDownload = (item: FileBrowserItem) => {
@@ -437,7 +440,7 @@ export default function DrivePage() {
 
   return (
     <MainLayout>
-      <div className="max-w-[1400px] mx-auto">
+      <div className="-ml-4 lg:-ml-8">
         <FileBrowser
           title="My Drive"
           subtitle="Manage your files and folders"
@@ -503,6 +506,28 @@ export default function DrivePage() {
           fileId={moveItem.id}
           sourceType={moveItem.sourceType}
           onMoveComplete={() => { setMoveItem(null); refreshItems(); }}
+        />
+      )}
+
+      {/* Delete Confirmation */}
+      {deleteItem && (
+        <ConfirmationModal
+          isOpen={true}
+          onClose={() => setDeleteItem(null)}
+          onConfirm={() => {
+            driveStorage.moveToBin(deleteItem.id);
+            driveStorage.notifyChange();
+            refreshItems();
+            setDeleteItem(null);
+          }}
+          title={`Move "${deleteItem.name}" to bin?`}
+          message={deleteItem.type === "folder"
+            ? "This folder and all its contents will be moved to the bin. You can restore it from the bin later."
+            : "This file will be moved to the bin. You can restore it from the bin later."
+          }
+          variant="danger"
+          confirmLabel="Move to bin"
+          cancelLabel="Cancel"
         />
       )}
 

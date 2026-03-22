@@ -26,6 +26,8 @@ export interface DriveItem {
   readOnly?: boolean;
   sourceId?: string;
   sourceType?: "document" | "presentation" | "spreadsheet" | "upload";
+  /** Original parentId before moving to bin — used for restore */
+  previousParentId?: string;
   createdAt: string;
   updatedAt: string;
   owner: string;
@@ -287,6 +289,67 @@ export const driveStorage = {
       sourceType,
     });
     return this.get(id)!;
+  },
+
+  /** Move an item to the bin (preserves original parentId for restore) */
+  moveToBin(itemId: string) {
+    const items = ensureDefaults();
+    const idx = items.findIndex(i => i.id === itemId);
+    if (idx === -1) return;
+    items[idx].previousParentId = items[idx].parentId;
+    items[idx].parentId = "folder-bin";
+    items[idx].updatedAt = new Date().toISOString();
+    // Also move descendants if it's a folder
+    if (items[idx].type === "folder") {
+      const descendants = getDescendantIds(items, itemId);
+      descendants.forEach(descId => {
+        const descIdx = items.findIndex(i => i.id === descId);
+        if (descIdx !== -1) {
+          items[descIdx].previousParentId = items[descIdx].parentId;
+          items[descIdx].parentId = "folder-bin";
+        }
+      });
+    }
+    saveAll(items);
+  },
+
+  /** Restore an item from the bin to its original location */
+  restoreFromBin(itemId: string) {
+    const items = ensureDefaults();
+    const idx = items.findIndex(i => i.id === itemId);
+    if (idx === -1) return;
+    const originalParent = items[idx].previousParentId || "folder-my-drive";
+    // Check if original parent still exists
+    const parentExists = items.some(i => i.id === originalParent);
+    items[idx].parentId = parentExists ? originalParent : "folder-my-drive";
+    items[idx].previousParentId = undefined;
+    items[idx].updatedAt = new Date().toISOString();
+    saveAll(items);
+  },
+
+  /** Get all items in the bin */
+  getBinItems(): DriveItem[] {
+    return ensureDefaults()
+      .filter(i => i.parentId === "folder-bin")
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  },
+
+  /** Permanently delete an item from the bin */
+  permanentlyDelete(itemId: string) {
+    const items = ensureDefaults();
+    const toRemove = new Set([itemId]);
+    const item = items.find(i => i.id === itemId);
+    if (item?.type === "folder") {
+      const descendants = getDescendantIds(items, itemId);
+      descendants.forEach(id => toRemove.add(id));
+    }
+    saveAll(items.filter(i => !toRemove.has(i.id)));
+  },
+
+  /** Empty the entire bin */
+  emptyBin() {
+    const items = ensureDefaults();
+    saveAll(items.filter(i => i.parentId !== "folder-bin"));
   },
 
   /** Dispatch a custom event so other components can react to drive changes */
