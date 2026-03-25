@@ -20,7 +20,7 @@ import DownloadDialog from "@/components/shared/DownloadDialog";
 import ShareDialog from "@/components/shared/ShareDialog";
 import ConfirmationModal from "@/components/shared/ConfirmationModal";
 import {
-  HardDrive, FolderPlus, Plus, Home, Users, Clock, Star, Trash2, Cloud,
+  HardDrive, FolderPlus, Plus, Home, Users, Clock, Star, Trash2,
   Upload, FileText, Presentation, FolderUp,
 } from "lucide-react";
 
@@ -29,7 +29,7 @@ export default function DrivePage() {
   const { user } = useUser();
   const [mounted, setMounted] = useState(false);
   const [currentFolderId, setCurrentFolderId] = useState("folder-my-drive");
-  const [activeSection, setActiveSection] = useState("my-drive");
+  const [activeSection, setActiveSection] = useState("home");
   const [peopleFilter, setPeopleFilter] = useState<PersonItem | null>(null);
   const [mediaViewer, setMediaViewer] = useState<{ type: MediaType; src: string; fileName: string; fileSize?: string } | null>(null);
   const [downloadItem, setDownloadItem] = useState<FileBrowserItem | null>(null);
@@ -52,8 +52,34 @@ export default function DrivePage() {
   const uploadedFileUrls = useRef<Map<string, string>>(new Map());
 
   const refreshItems = useCallback(() => {
-    setItems(driveStorage.getChildren(currentFolderId));
-  }, [currentFolderId]);
+    if (activeSection === "home") {
+      // Home: show all non-bin items (folders + files) from root drive
+      setItems(driveStorage.getChildren("folder-my-drive"));
+    } else if (activeSection === "recent") {
+      // Recent: show all files sorted by most recently modified
+      setItems(
+        driveStorage.list()
+          .filter(i => i.type === "file" && i.parentId !== "folder-bin")
+          .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+          .slice(0, 50)
+      );
+    } else if (activeSection === "starred") {
+      // Starred: show all starred items
+      setItems(
+        driveStorage.list()
+          .filter(i => i.starred && i.parentId !== "folder-bin")
+      );
+    } else if (activeSection === "shared") {
+      // Shared: show files not owned by current user
+      setItems(
+        driveStorage.list()
+          .filter(i => i.parentId !== "folder-bin" && i.owner !== "Me" && i.owner !== "me" && i.owner !== "System")
+      );
+    } else {
+      // My Drive + Bin: show current folder contents
+      setItems(driveStorage.getChildren(currentFolderId));
+    }
+  }, [currentFolderId, activeSection]);
 
   useEffect(() => {
     docStorage.list().forEach(doc => driveStorage.ensureFileEntry(doc.id, doc.title, "document"));
@@ -115,7 +141,7 @@ export default function DrivePage() {
 
 
   const recentFiles: FileBrowserItem[] = useMemo(() => {
-    if (currentFolderId !== "folder-my-drive") return [];
+    if (activeSection !== "home") return [];
     return driveStorage.list()
       .filter(i => i.type === "file")
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
@@ -148,7 +174,6 @@ export default function DrivePage() {
     { id: "recent", label: "Recent", icon: Clock, active: activeSection === "recent" },
     { id: "starred", label: "Starred", icon: Star, active: activeSection === "starred" },
     { id: "bin", label: "Bin", icon: Trash2, active: activeSection === "bin" },
-    { id: "storage", label: "Storage", icon: Cloud, active: activeSection === "storage" },
   ], [activeSection]);
 
   // ── Upload handlers ──
@@ -349,8 +374,9 @@ export default function DrivePage() {
 
   const handleSidebarNavigate = (id: string) => {
     setActiveSection(id);
-    if (id === "my-drive" || id === "home") setCurrentFolderId("folder-my-drive");
+    if (id === "my-drive") setCurrentFolderId("folder-my-drive");
     else if (id === "bin") setCurrentFolderId("folder-bin");
+    // "home", "recent", "starred", "shared" are virtual sections handled by refreshItems
   };
 
   // Open files in new tab
@@ -444,7 +470,7 @@ export default function DrivePage() {
     <MainLayout>
       <div className="-ml-4 lg:-ml-8 -mb-4 lg:-mb-6 overflow-hidden">
         <FileBrowser
-          title="My Drive"
+          title={activeSection === "shared" ? "Shared with me" : activeSection === "recent" ? "Recent" : activeSection === "starred" ? "Starred" : activeSection === "bin" ? "Bin" : activeSection === "home" ? "Home" : "My Drive"}
           subtitle="Manage your files and folders"
           icon={HardDrive}
           breadcrumbs={breadcrumbs}
