@@ -322,14 +322,17 @@ function QuickActionTile({ icon, label, subtitle, onPress, color }: {
   label: string;
   subtitle: string;
   onPress: () => void;
-  color: 'blue' | 'emerald' | 'violet' | 'rose';
+  color: 'blue' | 'emerald' | 'violet' | 'rose' | 'amber' | 'cyan' | 'slate';
 }) {
   const { colors, isDark } = useTheme();
-  const colorMap = {
+  const colorMap: Record<string, { bg: string; iconBg: string; icon: string; border: string; subtitleColor: string }> = {
     blue: { bg: '#fcfeff', iconBg: '#dbeafe', icon: '#2563eb', border: '#f0f5fa', subtitleColor: '#3b82f6' },
     emerald: { bg: '#fcfefd', iconBg: '#d1fae5', icon: '#059669', border: '#f0f7f4', subtitleColor: '#10b981' },
     violet: { bg: '#fcfcfe', iconBg: '#ede9fe', icon: '#7c3aed', border: '#f4f2f9', subtitleColor: '#8b5cf6' },
     rose: { bg: '#fefdfd', iconBg: '#ffe4e6', icon: '#e11d48', border: '#faf4f5', subtitleColor: '#f43f5e' },
+    amber: { bg: '#fffefb', iconBg: '#fef3c7', icon: '#d97706', border: '#faf6ee', subtitleColor: '#f59e0b' },
+    cyan: { bg: '#fbfefe', iconBg: '#cffafe', icon: '#0891b2', border: '#eff9fa', subtitleColor: '#06b6d4' },
+    slate: { bg: '#fafbfc', iconBg: '#e2e8f0', icon: '#475569', border: '#f1f3f5', subtitleColor: '#64748b' },
   };
   const c = colorMap[color];
   // For dark mode, use surface colors
@@ -355,14 +358,17 @@ function TabletQuickActionTile({ icon, label, subtitle, onPress, color }: {
   label: string;
   subtitle: string;
   onPress: () => void;
-  color: 'blue' | 'emerald' | 'violet' | 'rose';
+  color: 'blue' | 'emerald' | 'violet' | 'rose' | 'amber' | 'cyan' | 'slate';
 }) {
   const { colors, isDark } = useTheme();
-  const colorMap = {
+  const colorMap: Record<string, { bg: string; iconBg: string; icon: string; border: string; subtitleColor: string }> = {
     blue: { bg: '#fafcff', iconBg: '#dbeafe', icon: '#2563eb', border: '#e8f0fa', subtitleColor: '#3b82f6' },
     emerald: { bg: '#fafcfb', iconBg: '#d1fae5', icon: '#059669', border: '#e8f3ef', subtitleColor: '#10b981' },
     violet: { bg: '#fbfaff', iconBg: '#ede9fe', icon: '#7c3aed', border: '#eeebf6', subtitleColor: '#8b5cf6' },
     rose: { bg: '#fefafb', iconBg: '#ffe4e6', icon: '#e11d48', border: '#f6eced', subtitleColor: '#f43f5e' },
+    amber: { bg: '#fffefb', iconBg: '#fef3c7', icon: '#d97706', border: '#f8f3e6', subtitleColor: '#f59e0b' },
+    cyan: { bg: '#fbfefe', iconBg: '#cffafe', icon: '#0891b2', border: '#e6f5f7', subtitleColor: '#06b6d4' },
+    slate: { bg: '#fafbfc', iconBg: '#e2e8f0', icon: '#475569', border: '#edf0f3', subtitleColor: '#64748b' },
   };
   const c = colorMap[color];
   // For dark mode, use surface colors
@@ -702,6 +708,7 @@ export default function ParentHomeScreen() {
             <QuickActionTile icon="mail-outline" label="Messages" subtitle="Chat with school" onPress={() => setMessageModalVisible(true)} color="emerald" />
             <QuickActionTile icon="school-outline" label="Results" subtitle="View grades" onPress={() => setResultsModalVisible(true)} color="violet" />
             <QuickActionTile icon="document-text-outline" label="Leave" subtitle="Request absence" onPress={() => setLeaveModalVisible(true)} color="rose" />
+            <QuickActionTile icon="folder-outline" label="My Drive" subtitle="Files & docs" onPress={() => router.push('/drive')} color="cyan" />
           </View>
 
           {/* Stats - 2x2 Grid - Current Term In Progress */}
@@ -1215,6 +1222,7 @@ export default function ParentHomeScreen() {
             <TabletQuickActionTile icon="mail-outline" label="Messages" subtitle="Chat with school" onPress={() => setMessageModalVisible(true)} color="emerald" />
             <TabletQuickActionTile icon="school-outline" label="Results" subtitle="View grades" onPress={() => setResultsModalVisible(true)} color="violet" />
             <TabletQuickActionTile icon="document-text-outline" label="Leave" subtitle="Request absence" onPress={() => setLeaveModalVisible(true)} color="rose" />
+            <TabletQuickActionTile icon="folder-outline" label="My Drive" subtitle="Files & docs" onPress={() => router.push('/drive')} color="cyan" />
           </View>
         </LinearGradient>
 
@@ -2130,12 +2138,13 @@ const mobileStyles = StyleSheet.create({
   // Quick Actions Grid
   quickActionsGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
     paddingHorizontal: 12,
     marginTop: 16,
+    gap: 8,
   },
   quickActionTile: {
-    width: (SCREEN_WIDTH - 24 - 24) / 4,
+    width: (SCREEN_WIDTH - 24 - 8 * 3) / 4,
     paddingVertical: 10,
     borderRadius: 14,
     borderWidth: 1,
@@ -2749,12 +2758,12 @@ const tabletStyles = StyleSheet.create({
   // Quick Actions Grid - Tablet
   quickActionsGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
     marginTop: 20,
     gap: 16,
   },
   quickActionTile: {
-    flex: 1,
+    width: '18.5%',
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,

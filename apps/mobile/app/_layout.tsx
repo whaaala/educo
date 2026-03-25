@@ -84,6 +84,8 @@ function AppChrome() {
         <Stack.Screen name="report-details" options={{ presentation: 'card' }} />
         <Stack.Screen name="term-progress" options={{ presentation: 'card' }} />
         <Stack.Screen name="payment-history" options={{ presentation: 'card' }} />
+        <Stack.Screen name="drive" options={{ presentation: 'card' }} />
+        <Stack.Screen name="file-preview" options={{ presentation: 'card' }} />
       </Stack>
 
       <BottomTabBar />

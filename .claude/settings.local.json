@@ -37,7 +37,12 @@
       "WebFetch(domain:www.drawio.com)",
       "Bash(node -e:*)",
       "Bash(cmd.exe /c \"netstat -ano | findstr :3000\")",
-      "Bash(npx vitest run)"
+      "Bash(npx vitest run)",
+      "Bash(C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb -s emulator-5556 shell am force-stop host.exp.exponent)",
+      "Bash(C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb -s emulator-5556 shell am start -a android.intent.action.VIEW -d \"exp://127.0.0.1:8081\")",
+      "Bash(C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb -s emulator-5554 emu kill)",
+      "Bash(C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb -s emulator-5556 emu kill)",
+      "Bash(C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb -s emulator-5554 shell am force-stop host.exp.exponent)"
     ],
     "deny": [],
     "ask": []

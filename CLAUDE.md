@@ -77,6 +77,58 @@ The APK file should already be at `C:/Users/eyite/Downloads/expo-go-54.apk`. If 
 C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb
 ```
 
+## Mobile/Tablet Testing (MANDATORY)
+
+**Every time a mobile or tablet feature is implemented or a bug is fixed in `apps/mobile/`**, you MUST:
+
+1. **Start both Android emulators** (if not already running):
+```bash
+C:/Users/eyite/AppData/Local/Android/Sdk/emulator/emulator -avd Pixel_Tablet -no-snapshot-load &
+C:/Users/eyite/AppData/Local/Android/Sdk/emulator/emulator -avd Pixel -no-snapshot-load &
+```
+
+2. **Wait for both devices to come online**:
+```bash
+C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb devices
+```
+Expected: `emulator-5554 device` (Pixel Tablet) and `emulator-5556 device` (Pixel phone)
+
+3. **Start Expo dev server** (if not running):
+```bash
+cd /c/Users/eyite/educo/apps/mobile && npx expo start --clear
+```
+
+4. **Set up ADB port forwarding and launch on both**:
+```bash
+C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb -s emulator-5554 reverse tcp:8081 tcp:8081
+C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb -s emulator-5556 reverse tcp:8081 tcp:8081
+C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb -s emulator-5554 shell am start -a android.intent.action.VIEW -d "exp://localhost:8081"
+C:/Users/eyite/AppData/Local/Android/Sdk/platform-tools/adb -s emulator-5556 shell am start -a android.intent.action.VIEW -d "exp://localhost:8081"
+```
+
+5. **ALWAYS double-check the app is actually loaded** — verify Metro bundler output shows "Android Bundled" for both devices. If Expo Go shows its home screen instead of the app, re-run the launch commands. Never assume the app loaded just because the intent was sent.
+
+6. **Inform the user** so they can test on both devices themselves.
+
+### Mobile BDD & Testing (MANDATORY)
+**Every mobile/tablet feature or bug fix MUST include corresponding tests.** This follows the same BDD standard as the web app:
+
+1. **Before coding**: Check if tests exist for the area being modified
+2. **Feature files**: Create/update `.feature` files in `tests/features/` for mobile features
+3. **Unit tests**: Create component tests following the same vitest patterns
+4. **After coding**: Verify tests pass and the feature works on BOTH emulators (mobile + tablet)
+
+This is non-negotiable — no mobile code ships without tests and emulator verification.
+
+### Available Emulators
+- **Pixel Tablet** (`Pixel_Tablet` / `emulator-5554`) — Tablet view testing
+- **Pixel** (`Pixel` / `emulator-5556`) — Mobile view testing
+
+### Emulator Executable Path
+```
+C:/Users/eyite/AppData/Local/Android/Sdk/emulator/emulator
+```
+
 ## BDD Development Approach (MANDATORY)
 
 **All development MUST follow Behavior-Driven Development (BDD) principles.** This applies to both implementation and testing.

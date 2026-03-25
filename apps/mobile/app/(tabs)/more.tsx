@@ -1,4 +1,5 @@
 import { useState, ReactNode } from 'react';
+import { useRouter } from 'expo-router';
 import {
   View,
   Text,
@@ -48,6 +49,7 @@ const THEME_OPTIONS: ThemeOption[] = [
 
 export default function MoreScreen() {
   const { colors, theme, setTheme } = useTheme();
+  const router = useRouter();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
   const [showThemeSelector, setShowThemeSelector] = useState(false);
@@ -138,6 +140,15 @@ export default function MoreScreen() {
     {
       title: 'School',
       items: [
+        {
+          id: 'drive',
+          icon: 'folder-outline' as const,
+          label: 'My Drive',
+          subtitle: 'Files, documents and storage',
+          color: colors.primary,
+          onPress: () => router.push('/drive'),
+          showArrow: true,
+        },
         {
           id: 'calendar',
           icon: 'calendar-outline' as const,
