@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { DisciplinaryAction } from "@/types/discipline";
 import { Eye, Edit, Trash2 } from "lucide-react";
 import DisciplineStatusBadge from "./DisciplineStatusBadge";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import Tooltip from "@/components/shared/Tooltip";
 
 interface DisciplinaryActionsTableProps {
@@ -209,10 +209,9 @@ export default function DisciplinaryActionsTable({
 
   return (
     <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
-      <DataTable<DisciplinaryAction>
+      <ResponsiveListTable<DisciplinaryAction> variant="contained" showColumnHeaders={true}
         data={actions}
         columns={columns}
-        title="Disciplinary Actions"
         searchPlaceholder="Search by staff name, incident type, or action ID..."
         showSearch={true}
         defaultItemsPerPage={10}

@@ -1,0 +1,9 @@
+[    6956ms] [ERROR] Failed to fetch RSC payload for http://localhost:3000/drive. Falling back to browser navigation. TypeError: Failed to fetch
+    at createFetch (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:1816:12)
+    at fetchServerResponse (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:1736:27)
+    at hmrRefreshReducerImpl (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:16477:67)
+    at clientReducer (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:16948:65)
+    at Object.action (http://localhost:3000/_next/static/chunks/node_modules_next_dist_4bb10e._.js:949:55)
+    at runAction (http://localhost:3000/_next/static/chunks/node_modules_next_dist_4bb10e._.js:861:38)
+    at runRemainingActions (http://localhost:3000/_next/static/chunks/node_modules_next_dist_4bb10e._.js:839:13)
+    at handleResult (http://localhost:3000/_next/static/chunks/node_modules_next_dist_4bb10e._.js:868:9) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:989

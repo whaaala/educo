@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Student } from "./StudentCard";
 import { MoreVertical, MessageCircle, Phone, Video, Mail, Eye, Edit, Lock, TrendingUp, Trash2, Plus, ArrowRight } from "lucide-react";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import CollectFeesModal from "@/components/shared/CollectFeesModal";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import TransferRequestModal from "@/components/students/TransferRequestModal";
@@ -593,10 +593,9 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
 
   return (
     <>
-      <DataTable
+      <ResponsiveListTable variant="contained" showColumnHeaders={true}
         data={students}
         columns={columns}
-        title="Student Records"
         searchPlaceholder="Search students..."
         getRowKey={(student) => student.id}
         emptyMessage="No students found"

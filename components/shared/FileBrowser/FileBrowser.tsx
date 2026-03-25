@@ -6,7 +6,7 @@ import {
   Image as ImageIcon, File, MoreVertical, ChevronDown,
   LayoutGrid, List, Trash2, Pencil, X, FolderInput, Clock,
   Star, Users, HardDrive, Cloud, ArrowUp, LucideIcon,
-  Download, Copy, Share2, Info, ExternalLink, Home, Search,
+  Download, Copy, Share2, Info, ExternalLink, Home, Search, Menu,
 } from "lucide-react";
 import SearchBar from "@/components/shared/SearchBar";
 import CustomDropdown from "@/components/shared/CustomDropdown";
@@ -17,7 +17,7 @@ import SuggestedFiles, { type SuggestedFileItem } from "@/components/shared/Sugg
 import Tooltip from "@/components/shared/Tooltip";
 import AvatarHover from "@/components/shared/AvatarHover";
 import FileCardGrid, { type FileCardItem } from "@/components/shared/FileCardGrid";
-import DataTable, { type ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 
 // ── Types ──
 
@@ -138,14 +138,27 @@ function ItemContextMenu({ item, onRename, onMove, onDelete, onDownload, onCopy,
   item: FileBrowserItem; onRename: () => void; onMove: () => void; onDelete: () => void; onClose: () => void;
   onDownload?: () => void; onCopy?: () => void; onShare?: () => void; onInfo?: () => void;
 }) {
+  const menuRef = React.useRef<HTMLDivElement>(null);
+  const [openUpward, setOpenUpward] = React.useState(false);
+
   useEffect(() => {
     const handler = () => onClose();
     document.addEventListener("click", handler);
     return () => document.removeEventListener("click", handler);
   }, [onClose]);
 
+  // Check if menu would overflow below viewport — if so, open upward
+  useEffect(() => {
+    if (menuRef.current) {
+      const rect = menuRef.current.getBoundingClientRect();
+      if (rect.bottom > window.innerHeight - 20) {
+        setOpenUpward(true);
+      }
+    }
+  }, []);
+
   return (
-    <div className="absolute top-full right-0 mt-1 w-[180px] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-xl shadow-xl border border-gray-200/60 dark:border-gray-700/60 z-50 py-1" onClick={e => e.stopPropagation()}>
+    <div ref={menuRef} className={`absolute right-0 w-[180px] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-xl shadow-xl border border-gray-200/60 dark:border-gray-700/60 z-50 py-1 ${openUpward ? "bottom-full mb-1" : "top-full mt-1"}`} onClick={e => e.stopPropagation()}>
       <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={onRename}>
         <Pencil className="w-3.5 h-3.5 text-gray-400" /> Rename
       </button>
@@ -188,6 +201,7 @@ export default function FileBrowser({
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [newFolderName, setNewFolderName] = useState("");
@@ -252,15 +266,15 @@ export default function FileBrowser({
 
   return (
     <div className={`flex gap-0 ${className}`}>
-      {/* ══════ LEFT SIDEBAR — absolutely fixed, never scrolls ══════ */}
+      {/* ══════ LEFT SIDEBAR — desktop only (lg+), fixed position ══════ */}
       {sidebarItems && sidebarItems.length > 0 && (
         <>
-          {/* Spacer to reserve width for the fixed sidebar */}
-          <div className="hidden md:block w-[220px] flex-shrink-0" />
-          {/* Fixed sidebar panel */}
-          <div className="hidden md:flex flex-col fixed top-[4.5rem] bottom-0 w-[220px] bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] z-10" style={{ left: 'var(--sidebar-width)' }}>
-            <div className="flex-1 px-3 pt-1 overflow-y-auto">
-              {headerActions && <div className="mb-5">{headerActions}</div>}
+          {/* Spacer to reserve width — desktop only */}
+          <div className="hidden lg:block w-[220px] flex-shrink-0" />
+          {/* Fixed sidebar panel — desktop only */}
+          <div className="hidden lg:flex flex-col fixed top-[5.75rem] bottom-0 w-[220px] bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] z-20 transition-[left] duration-500 ease-in-out" style={{ left: 'var(--sidebar-width)' }}>
+            {headerActions && <div className="px-4 mb-4 relative z-30">{headerActions}</div>}
+            <div className="flex-1 px-4 overflow-y-auto">
               <nav className="flex flex-col gap-0.5">
                 {sidebarItems.map(nav => (
                   <button key={nav.id} onClick={() => onSidebarNavigate?.(nav.id)}
@@ -292,16 +306,16 @@ export default function FileBrowser({
       )}
 
       {/* ══════ MAIN CONTENT ══════ */}
-      <div className="flex-1 min-w-0 flex flex-col h-[calc(100vh-6rem)] overflow-hidden">
-        {/* ── Fixed header area (title, search, filters, suggested) ── */}
+      <div className="flex-1 min-w-0 flex flex-col h-[calc(100vh-5rem)] lg:h-[calc(100vh-6rem)] overflow-hidden px-1 sm:px-2 lg:pr-8 lg:pl-0">
+        {/* ── Fixed header area (title, search, filters) ── */}
         <div className="flex-shrink-0">
         {/* Title + Search + View toggle */}
-        <div className="flex items-center gap-4 mb-3">
+        <div className="flex items-center gap-2 sm:gap-4 mb-3">
           {/* Title — as dropdown trigger if titleMenuItems provided, else plain text */}
           {titleMenuItems && titleMenuItems.length > 0 ? (
             <ActionMenuDropdown
               trigger={(menuOpen) => (
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[18px] font-bold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer flex-shrink-0">
+                <button className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-[15px] sm:text-[18px] font-bold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer flex-shrink-0">
                   {breadcrumbs.length > 1 ? breadcrumbs[breadcrumbs.length - 1]?.name : title}
                   <ChevronDown className={`w-4 h-4 transition-all duration-[120ms] ease-out ${menuOpen ? "rotate-180 text-blue-600 dark:text-blue-400" : "rotate-0 text-gray-500"}`} />
                 </button>
@@ -327,8 +341,58 @@ export default function FileBrowser({
           <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
         </div>
 
-        {/* Filters — using existing CustomDropdown and PeopleFilterDropdown components */}
-        <div className="flex items-center gap-3 mb-5 flex-wrap">
+        {/* Filters — with mobile hamburger inline */}
+        <div className="flex items-center gap-2 sm:gap-2.5 md:gap-3 mb-3 sm:mb-5 flex-nowrap">
+          {/* ── Mobile-only hamburger menu (< md) — first in filter row ── */}
+          {sidebarItems && sidebarItems.length > 0 && (
+            <div className="relative md:hidden">
+              <button
+                onClick={() => setMobileNavOpen(!mobileNavOpen)}
+                className={`flex items-center gap-1.5 px-3 py-[7px] rounded-full text-[12px] font-medium transition-all cursor-pointer border ${
+                  mobileNavOpen
+                    ? "bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30 text-blue-700 dark:text-blue-300"
+                    : "border-gray-200/60 dark:border-gray-700/40 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                }`}
+              >
+                <Menu className="w-3.5 h-3.5" />
+                <span>{sidebarItems.find(n => n.active)?.label || "Menu"}</span>
+                <ChevronDown className={`w-3 h-3 transition-transform duration-150 ${mobileNavOpen ? "rotate-180" : ""}`} />
+              </button>
+              {mobileNavOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setMobileNavOpen(false)} />
+                  <div className="absolute left-0 top-full mt-1.5 z-50 w-[220px] bg-white dark:bg-[#1e2028] rounded-xl shadow-xl border border-gray-200/60 dark:border-gray-700/40 py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
+                    {headerActions && (
+                      <div className="px-3 pb-2 mb-1 border-b border-gray-100 dark:border-gray-800">
+                        {headerActions}
+                      </div>
+                    )}
+                    {sidebarItems.map(nav => (
+                      <button key={nav.id} onClick={() => { onSidebarNavigate?.(nav.id); setMobileNavOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-2 text-[13px] font-medium transition-all cursor-pointer ${
+                          nav.active
+                            ? "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 font-semibold"
+                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
+                        }`}>
+                        <nav.icon className={`w-4 h-4 flex-shrink-0 ${nav.active ? "text-blue-600 dark:text-blue-400" : "text-gray-400"}`} />
+                        {nav.label}
+                      </button>
+                    ))}
+                    {storageUsed && storageTotal && (
+                      <div className="mx-3 mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                        <div className="h-1.5 bg-gray-100 dark:bg-gray-700/50 rounded-full overflow-hidden mb-1.5">
+                          <div className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full" style={{ width: `${storagePercent ?? 0}%` }} />
+                        </div>
+                        <p className="text-[10px] text-gray-400 pb-1">{storageUsed} of {storageTotal} used</p>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          {/* Spacer to push filters right on mobile when hamburger is present */}
+          {sidebarItems && sidebarItems.length > 0 && <div className="flex-1 md:hidden" />}
           <CustomDropdown
             value={typeFilter || "all"}
             options={[
@@ -340,9 +404,10 @@ export default function FileBrowser({
               { label: "Photos & images", value: "upload" },
             ]}
             onChange={(v) => setTypeFilter(v === "all" ? "" : String(v))}
-            className="w-[150px]"
+            className="w-auto min-w-0 flex-shrink-0"
           />
           {people && people.length > 0 && (
+            <div className="flex-shrink-0">
             <PeopleFilterDropdown
               people={people}
               selectedPerson={selectedPerson}
@@ -351,6 +416,7 @@ export default function FileBrowser({
                 onPeopleFilter?.(person);
               }}
             />
+            </div>
           )}
           <CustomDropdown
             value={modifiedFilter || "anytime"}
@@ -361,9 +427,29 @@ export default function FileBrowser({
               { label: "Last 30 days", value: "30days" },
             ]}
             onChange={(v) => setModifiedFilter(v === "anytime" ? "" : String(v))}
-            className="w-[150px]"
+            className="w-auto min-w-0 flex-shrink-0"
           />
         </div>
+
+        {/* ── Tablet horizontal nav (md to lg) ── */}
+        {sidebarItems && sidebarItems.length > 0 && (
+          <div className="hidden md:flex lg:hidden items-center gap-2 mb-3 overflow-x-auto pb-1 flex-shrink-0">
+            {headerActions && <div className="flex-shrink-0">{headerActions}</div>}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {sidebarItems.map(nav => (
+                <button key={nav.id} onClick={() => onSidebarNavigate?.(nav.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-all cursor-pointer ${
+                    nav.active
+                      ? "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 font-semibold"
+                      : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5"
+                  }`}>
+                  <nav.icon className={`w-3.5 h-3.5 flex-shrink-0 ${nav.active ? "text-blue-600 dark:text-blue-400" : "text-gray-400"}`} />
+                  {nav.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* New folder inline */}
         {newFolderMode && (
@@ -377,6 +463,11 @@ export default function FileBrowser({
             <button onClick={() => { onNewFolderModeChange?.(false); setNewFolderName(""); }} className="p-1 rounded-lg hover:bg-gray-200/60 dark:hover:bg-gray-700 cursor-pointer"><X className="w-4 h-4 text-gray-400" /></button>
           </div>
         )}
+
+        </div>{/* end fixed header */}
+
+        {/* ── Scrollable content area (suggested + file list) ── */}
+        <div className="flex-1 min-h-0 drive-scroll-area pt-2 pb-4 px-2 sm:px-3">
 
         {/* ── SEARCH RESULTS HEADER ── */}
         {isSearching && (
@@ -453,89 +544,105 @@ export default function FileBrowser({
           </>
         )}
 
-        </div>{/* end fixed header */}
-
-        {/* ── Scrollable file list area ── */}
-        <div className="flex-1 overflow-y-auto min-h-0">
         {/* ── LIST VIEW — uses existing DataTable component ── */}
         {viewMode === "list" && sortedItems.length > 0 && (
-          <div className={`transition-all duration-300 ${isSearching || isPersonFiltering ? "animate-in fade-in slide-in-from-bottom-2 duration-300" : ""}`}>
-            <DataTable<FileBrowserItem>
+          <div className={`transition-all duration-300 mx-3 sm:mx-2 lg:mx-0 ${isSearching || isPersonFiltering ? "animate-in fade-in slide-in-from-bottom-2 duration-300" : ""}`}>
+            <ResponsiveListTable<FileBrowserItem>
               data={sortedItems}
               columns={[
                 {
                   key: "name",
                   label: "Name",
+                  className: "min-w-[120px] md:min-w-[160px]",
                   sortable: true,
-                  className: "w-[45%]",
                   sortValue: (item) => `${item.type === "folder" ? "0" : "1"}_${item.name}`,
                   render: (item) => (
-                    <div className="flex items-center gap-3 min-w-0 py-1">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                        item.type === "folder" ? "bg-gray-100 dark:bg-gray-800" :
-                        item.sourceType === "document" ? "bg-blue-50 dark:bg-blue-500/10" :
-                        item.sourceType === "presentation" ? "bg-amber-50 dark:bg-amber-500/10" :
-                        item.sourceType === "spreadsheet" ? "bg-green-50 dark:bg-green-500/10" :
-                        "bg-red-50 dark:bg-red-500/10"
-                      }`}>
-                        {getItemIcon(item, "w-4 h-4")}
-                      </div>
-                      {renamingId === item.id ? (
-                        <input type="text" value={renameValue} onChange={e => setRenameValue(e.target.value)}
-                          onKeyDown={e => { if (e.key === "Enter") submitRename(); if (e.key === "Escape") setRenamingId(null); }}
-                          onBlur={submitRename} autoFocus onClick={e => e.stopPropagation()}
-                          className="flex-1 px-3 py-1 rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 text-[13px] outline-none focus:ring-2 focus:ring-blue-500/20" />
-                      ) : (
-                        <div className="min-w-0 overflow-hidden flex-1">
-                          <Tooltip content={item.name} block>
-                            <span className="text-[13px] font-medium text-gray-800 dark:text-gray-200 truncate block">{item.name}</span>
-                          </Tooltip>
-                          {item.type === "folder" && item.childCount !== undefined && (
-                            <span className="text-[10px] text-gray-400 dark:text-gray-500">{item.childCount} items</span>
-                          )}
+                    <div className="flex items-center gap-2">
+                      <div className="relative cursor-pointer group/avatar flex-shrink-0">
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                          item.type === "folder" ? "bg-gray-100 dark:bg-gray-700/50" :
+                          item.sourceType === "document" ? "bg-blue-50 dark:bg-blue-500/10" :
+                          item.sourceType === "presentation" ? "bg-amber-50 dark:bg-amber-500/10" :
+                          item.sourceType === "spreadsheet" ? "bg-green-50 dark:bg-green-500/10" :
+                          "bg-red-50 dark:bg-red-500/10"
+                        }`}>
+                          {getItemIcon(item, "w-3.5 h-3.5")}
                         </div>
-                      )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        {renamingId === item.id ? (
+                          <input type="text" value={renameValue} onChange={e => setRenameValue(e.target.value)}
+                            onKeyDown={e => { if (e.key === "Enter") submitRename(); if (e.key === "Escape") setRenamingId(null); }}
+                            onBlur={submitRename} autoFocus onClick={e => e.stopPropagation()}
+                            className="w-full px-3 py-1 rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 text-[13px] outline-none focus:ring-2 focus:ring-blue-500/20" />
+                        ) : (
+                          <>
+                            <Tooltip content={item.name} block>
+                              <p className={`text-xs sm:text-sm truncate leading-tight ${
+                                item.type === "folder" ? "font-semibold text-gray-900 dark:text-white" : "font-medium text-gray-700 dark:text-gray-300"
+                              }`}>{item.name}</p>
+                            </Tooltip>
+                            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate leading-tight">
+                              {item.type === "folder"
+                                ? `${item.childCount ?? 0} items`
+                                : item.owner || "Me"
+                              }
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ),
+                },
+                {
+                  key: "details",
+                  label: "Details",
+                  className: "min-w-[150px] md:min-w-[200px]",
+                  sortable: true,
+                  sortValue: (item) => item.sourceType || "folder",
+                  render: (item) => (
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 truncate leading-tight">
+                        {item.type === "folder" ? "Folder" :
+                         item.sourceType === "document" ? "Document" :
+                         item.sourceType === "presentation" ? "Presentation" :
+                         item.sourceType === "spreadsheet" ? "Spreadsheet" :
+                         "File"}
+                      </p>
+                      <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5 leading-tight">
+                        {item.type === "folder" ? `${item.childCount ?? 0} items inside` : formatSize(item.size)}
+                      </p>
                     </div>
                   ),
                 },
                 {
                   key: "owner",
                   label: "Owner",
+                  className: "min-w-[80px] md:min-w-[90px]",
+                  hidden: { mobile: true, tablet: true },
                   sortable: true,
                   sortValue: (item) => `${item.type === "folder" ? "0" : "1"}_${item.owner || "me"}`,
-                  hidden: { mobile: true, tablet: true },
                   render: (item) => (
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
                       <AvatarHover
                         src={item.ownerAvatar}
                         name={item.owner || "me"}
                       />
-                      <div className="min-w-0 overflow-hidden flex-1">
-                        <Tooltip content={item.owner || "me"} block>
-                          <span className="text-[12px] font-medium text-gray-600 dark:text-gray-400 truncate block">{item.owner || "me"}</span>
-                        </Tooltip>
-                      </div>
+                      <span className="text-xs text-gray-700 dark:text-gray-300 truncate">
+                        {(item.owner || "me").split(" ")[0]}
+                      </span>
                     </div>
                   ),
                 },
                 {
-                  key: "updatedAt",
-                  label: "Last modified",
-                  sortable: true,
-                  sortValue: (item) => (item.type === "folder" ? 0 : 1e15) + new Date(item.updatedAt).getTime(),
-                  hidden: { mobile: true },
-                  render: (item) => (
-                    <span className="text-[12px] text-gray-500 dark:text-gray-400">{timeAgo(item.updatedAt)}</span>
-                  ),
-                },
-                {
                   key: "size",
-                  label: "File size",
+                  label: "Size",
+                  className: "min-w-[75px] md:min-w-[85px]",
+                  hidden: { mobile: true, tablet: true },
                   sortable: true,
                   sortValue: (item) => (item.type === "folder" ? -1 : (item.size || 0)),
-                  hidden: { mobile: true, tablet: true },
                   render: (item) => (
-                    <span className="text-[12px] font-medium text-gray-500 dark:text-gray-400">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
                       {item.type === "folder" ? "—" : formatSize(item.size)}
                     </span>
                   ),
@@ -543,14 +650,30 @@ export default function FileBrowser({
                 {
                   key: "actions",
                   label: "",
-                  sortable: false,
-                  className: "w-12",
+                  className: "min-w-[80px] md:min-w-[130px] text-right pr-2",
                   render: (item) => (
-                    <div className="flex items-center justify-end relative">
-                      <button onClick={e => { e.stopPropagation(); setMenuOpenId(menuOpenId === item.id ? null : item.id); }}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-all">
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                    <div className="flex items-center justify-end gap-0.5 relative">
+                      <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mr-1 sm:mr-1.5 whitespace-nowrap">
+                        {timeAgo(item.updatedAt)}
+                      </span>
+                      <div className="hidden sm:flex items-center gap-0.5">
+                        <Tooltip content="Open">
+                          <button onClick={e => { e.stopPropagation(); handleItemClick(item); }}
+                            className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+                            <ExternalLink className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                          </button>
+                        </Tooltip>
+                        <button onClick={e => { e.stopPropagation(); setMenuOpenId(menuOpenId === item.id ? null : item.id); }}
+                          className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                          <MoreVertical className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <div className="flex sm:hidden">
+                        <button onClick={e => { e.stopPropagation(); setMenuOpenId(menuOpenId === item.id ? null : item.id); }}
+                          className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+                          <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                        </button>
+                      </div>
                       {menuOpenId === item.id && (
                         <ItemContextMenu item={item} onRename={() => startRename(item)}
                           onMove={() => { onMove?.(item); setMenuOpenId(null); }}
@@ -567,13 +690,13 @@ export default function FileBrowser({
               ] as ColumnConfig<FileBrowserItem>[]}
               getRowKey={(item) => item.id}
               onRowClick={handleItemClick}
-              title=""
-              showSearch={false}
+              variant="contained"
+              showColumnHeaders={true}
               enablePagination={true}
               enableItemsPerPage={true}
-              defaultItemsPerPage={10}
-              stickyColumnCount={0}
-              disableHorizontalScroll
+              defaultItemsPerPage={15}
+              stickyColumnCount={1}
+              disableHorizontalScroll={false}
               emptyMessage="No files or folders"
             />
           </div>

@@ -26,7 +26,7 @@ import {
   Award,
   UtensilsCrossed,
 } from "lucide-react";
-import DataTable, { ColumnConfig as Column } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig as Column } from "@/components/shared/ResponsiveListTable";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import Tooltip from "@/components/shared/Tooltip";
 import StatCard from "@/components/shared/StatCard";
@@ -1024,7 +1024,7 @@ export default function FeesManagement({
         <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-gray-100/80 to-transparent dark:from-gray-800/80 pointer-events-none z-20 rounded-l-xl opacity-0 transition-opacity duration-300" id="scroll-left-indicator"></div>
         <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-100/80 to-transparent dark:from-gray-800/80 pointer-events-none z-20 rounded-r-xl opacity-100 transition-opacity duration-300 lg:opacity-0" id="scroll-right-indicator"></div>
 
-        <DataTable
+        <ResponsiveListTable variant="contained" showColumnHeaders={true}
           columns={columns}
           data={filteredRecords}
           getRowKey={(item) => item.id}

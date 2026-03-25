@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Teacher } from "@/lib/mockTeachers";
 import { MoreVertical, MessageCircle, Phone, Video, Mail, Eye, Edit, Lock, Trash2 } from "lucide-react";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import Tooltip from "@/components/shared/Tooltip";
 import { useSidebar } from "@/contexts/SidebarContext";
@@ -489,10 +489,9 @@ export default function StaffTable({
 
   return (
     <>
-      <DataTable
+      <ResponsiveListTable variant="contained" showColumnHeaders={true}
         data={staff}
         columns={columns}
-        title="Staff Records"
         searchPlaceholder="Search staff..."
         getRowKey={(staffMember) => staffMember.id}
         emptyMessage="No staff found"

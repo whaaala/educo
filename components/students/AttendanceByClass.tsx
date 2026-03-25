@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import RefreshButton from "@/components/shared/RefreshButton";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import WeekNavigator from "@/components/shared/WeekNavigator";
@@ -527,7 +527,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
       </div>
 
       {/* Data Table */}
-      <DataTable<ClassAttendanceData>
+      <ResponsiveListTable<ClassAttendanceData> variant="contained" showColumnHeaders={true}
         data={currentWeekData}
         columns={columns}
         getRowKey={(item) => item.date}

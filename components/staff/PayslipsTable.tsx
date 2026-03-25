@@ -1,6 +1,6 @@
 "use client";
 
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import { Download, Eye } from "lucide-react";
 
 export interface Payslip {
@@ -116,10 +116,9 @@ interface PayslipsTableProps {
 export default function PayslipsTable({ data }: PayslipsTableProps) {
   return (
     <div className="bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 p-4 sm:p-5 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20">
-      <DataTable<Payslip>
+      <ResponsiveListTable<Payslip> variant="contained" showColumnHeaders={true}
         data={data}
         columns={columns}
-        title="Payslip History"
         searchPlaceholder="Search payslips..."
         showSearch={true}
         defaultItemsPerPage={10}

@@ -55,7 +55,7 @@ import {
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getTenantById } from "@/lib/mockTenants";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import type { ParentChild, ChildAcademicSummary, ParentAttendanceRecord } from "@/types/parent";
 
 // Mock Data
@@ -2360,7 +2360,7 @@ export default function ChildDetailPage() {
                 </div>
 
                 {/* DataTable */}
-                <DataTable<PaymentRecord>
+                <ResponsiveListTable<PaymentRecord> variant="contained" showColumnHeaders={true}
                   data={paymentHistory}
                   columns={[
                     {

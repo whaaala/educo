@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { PerformanceReview } from "@/types/performance";
 import { Eye, Edit, Trash2 } from "lucide-react";
 import PerformanceStatusBadge from "./PerformanceStatusBadge";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import Tooltip from "@/components/shared/Tooltip";
 
 interface PerformanceReviewsTableProps {
@@ -241,10 +241,9 @@ export default function PerformanceReviewsTable({
 
   return (
     <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
-      <DataTable<PerformanceReview>
+      <ResponsiveListTable<PerformanceReview> variant="contained" showColumnHeaders={true}
         data={reviews}
         columns={columns}
-        title="Performance Reviews"
         searchPlaceholder="Search by staff name, position, or review ID..."
         showSearch={true}
         defaultItemsPerPage={10}

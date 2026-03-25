@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import DataTable from "./DataTable";
+import ResponsiveListTable from "./ResponsiveListTable";
 import { MoreVertical, type LucideIcon } from "lucide-react";
 import type { ColumnConfig, RowAction, FilterValues } from "@/types/components";
 
@@ -327,11 +327,12 @@ export default function EntityTable<T>({
 
   return (
     <div className={className}>
-      <DataTable
+      <ResponsiveListTable
+        variant="contained"
+        showColumnHeaders={true}
         data={data}
         columns={tableColumns}
         getRowKey={getRowKey}
-        title={title}
         showSearch={showSearch}
         searchPlaceholder={searchPlaceholder}
         enablePagination={enablePagination}

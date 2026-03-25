@@ -7,7 +7,7 @@ import { useGrading, GradeScheme } from "@/contexts/GradingContext";
 import Button from "@/components/shared/Button";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormInput from "@/components/shared/FormInput";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import Modal from "@/components/shared/Modal";
 import ActionModal from "@/components/shared/ActionModal";
 import {
@@ -710,7 +710,7 @@ export default function GradingPage() {
                     <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white/80 to-transparent dark:from-gray-800/80 midnight:from-gray-900/80 purple:from-gray-900/80 pointer-events-none z-20 rounded-l-xl opacity-0 transition-opacity duration-300" id={`scroll-left-indicator-${subjectName}`}></div>
                     <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white/80 to-transparent dark:from-gray-800/80 midnight:from-gray-900/80 purple:from-gray-900/80 pointer-events-none z-20 rounded-r-xl opacity-100 transition-opacity duration-300 lg:opacity-0" id={`scroll-right-indicator-${subjectName}`}></div>
 
-                    <DataTable<GradeScheme>
+                    <ResponsiveListTable<GradeScheme> variant="contained" showColumnHeaders={true}
                       data={schemes}
                       columns={columns}
                       getRowKey={(item) => item.id}

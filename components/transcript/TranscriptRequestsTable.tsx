@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Eye, Download, Edit2, Trash2 } from "lucide-react";
 import { TranscriptRequest, TranscriptStatus, PaymentStatus } from "@/types/transcript";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import Tooltip from "@/components/shared/Tooltip";
 
 interface TranscriptRequestsTableProps {
@@ -139,9 +139,11 @@ export default function TranscriptRequestsTable({
       sortable: true,
       className: "text-left",
       render: (request) => (
-        <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 capitalize truncate max-w-[150px]" style={{ fontSize: '11.8px' }}>
-          {request.purpose.replace(/-/g, " ")}
-        </div>
+        <Tooltip content={request.purpose.replace(/-/g, " ")} block>
+          <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 capitalize truncate max-w-[150px]" style={{ fontSize: '11.8px' }}>
+            {request.purpose.replace(/-/g, " ")}
+          </div>
+        </Tooltip>
       ),
     },
     {
@@ -278,10 +280,9 @@ export default function TranscriptRequestsTable({
       {/* Mobile Scroll Indicator */}
       <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none" />
 
-      <DataTable
+      <ResponsiveListTable variant="contained" showColumnHeaders={true}
         data={requests}
         columns={columns}
-        title=""
         showSearch={false}
         defaultItemsPerPage={10}
         itemsPerPageOptions={[5, 10, 15, 20, 25]}

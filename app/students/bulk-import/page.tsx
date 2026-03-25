@@ -6,7 +6,7 @@ import { Upload, Download, FileSpreadsheet, AlertCircle, CheckCircle2, X } from 
 import * as XLSX from "xlsx";
 import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import { Student } from "@/components/students/StudentCard";
 
 type ImportStep = "upload" | "mapping" | "preview" | "validation" | "progress" | "complete";
@@ -517,7 +517,7 @@ export default function BulkImportPage() {
             </Button>
           </div>
 
-          <DataTable
+          <ResponsiveListTable variant="contained" showColumnHeaders={true}
             data={importedData.slice(0, 100)}
             columns={previewColumns}
             getRowKey={(row) => row._rowNumber.toString()}

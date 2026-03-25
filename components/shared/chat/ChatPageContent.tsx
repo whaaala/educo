@@ -6,7 +6,7 @@ import Image from "next/image";
 import PageHeader from "@/components/shared/PageHeader";
 import PageActions from "@/components/shared/PageActions";
 import PageSpinner from "@/components/shared/PageSpinner";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import DateRangePicker from "@/components/shared/DateRangePicker";
 import FilterButton, { FilterValues } from "@/components/shared/FilterButton";
 import SortButton from "@/components/shared/SortButton";
@@ -348,18 +348,22 @@ export default function ChatPageContent({
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p
-              className={`text-xs sm:text-sm truncate ${
-                chat.unreadCount > 0
-                  ? "font-semibold text-gray-900 dark:text-white"
-                  : "font-medium text-gray-700 dark:text-gray-300"
-              }`}
-            >
-              {chat.recipientName}
-            </p>
-            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">
-              {chat.recipientEmail}
-            </p>
+            <Tooltip content={chat.recipientName}>
+              <p
+                className={`text-xs sm:text-sm truncate ${
+                  chat.unreadCount > 0
+                    ? "font-semibold text-gray-900 dark:text-white"
+                    : "font-medium text-gray-700 dark:text-gray-300"
+                }`}
+              >
+                {chat.recipientName}
+              </p>
+            </Tooltip>
+            <Tooltip content={chat.recipientEmail} block>
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">
+                {chat.recipientEmail}
+              </p>
+            </Tooltip>
           </div>
         </div>
       ),
@@ -379,15 +383,17 @@ export default function ChatPageContent({
               }`}
             />
           )}
-          <p
-            className={`text-xs sm:text-sm truncate ${
-              chat.unreadCount > 0
-                ? "font-medium text-gray-900 dark:text-white"
-                : "text-gray-600 dark:text-gray-400"
-            }`}
-          >
-            {chat.lastMessage}
-          </p>
+          <Tooltip content={chat.lastMessage}>
+            <p
+              className={`text-xs sm:text-sm truncate ${
+                chat.unreadCount > 0
+                  ? "font-medium text-gray-900 dark:text-white"
+                  : "text-gray-600 dark:text-gray-400"
+              }`}
+            >
+              {chat.lastMessage}
+            </p>
+          </Tooltip>
         </div>
       ),
     },
@@ -534,23 +540,17 @@ export default function ChatPageContent({
               )}
             </div>
           ) : viewMode === "list" ? (
-            <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
-              <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none rounded-r-xl" />
-              <DataTable
-                data={filteredConversations}
-                columns={chatTableColumns}
-                title=""
-                showSearch={false}
-                getRowKey={(chat) => chat.id}
-                onRowClick={handleViewChat}
-                emptyMessage="No chat conversations found"
-                enablePagination={true}
-                enableItemsPerPage={true}
-                defaultItemsPerPage={10}
-                stickyColumnCount={1}
-                disableHorizontalScroll={false}
-              />
-            </div>
+            <ResponsiveListTable
+              variant="contained"
+              data={filteredConversations}
+              columns={chatTableColumns}
+              getRowKey={(chat) => chat.id}
+              onRowClick={handleViewChat}
+              emptyMessage="No chat conversations found"
+              defaultItemsPerPage={10}
+              stickyColumnCount={1}
+              disableHorizontalScroll={false}
+            />
           ) : (
             <>
               <div

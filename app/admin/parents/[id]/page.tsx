@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import jsPDF from "jspdf";
 import DashboardPage from "@/components/shared/DashboardPage";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import ActionButton from "@/components/shared/ActionButton";
 import SecondaryButton from "@/components/shared/SecondaryButton";
 import ActionModal from "@/components/shared/ActionModal";
@@ -1685,7 +1685,7 @@ function FeesSection({
       </div>
 
       {/* Table */}
-      <DataTable<AdminFeeRecord>
+      <ResponsiveListTable<AdminFeeRecord> variant="contained" showColumnHeaders={true}
         data={filteredRecords}
         columns={[
           {

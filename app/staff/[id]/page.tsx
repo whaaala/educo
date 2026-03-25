@@ -30,7 +30,7 @@ import MobileDropdown from "@/components/shared/MobileDropdown";
 import TeacherTimeTable from "@/components/teacher/TeacherTimeTable";
 import StaffLeaveStatsCard from "@/components/staff/StaffLeaveStatsCard";
 import StaffAttendanceStatsCard from "@/components/staff/StaffAttendanceStatsCard";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import AddButton from "@/components/shared/AddButton";
 import AttendanceCalendar from "@/components/students/AttendanceCalendar";
 import PayrollSummaryCard from "@/components/staff/PayrollSummaryCard";
@@ -717,7 +717,7 @@ function AttendanceTab({ staffData }: { staffData: Teacher }) {
                 </div>
 
                 {/* DataTable */}
-                <DataTable<StaffLeaveApplication>
+                <ResponsiveListTable<StaffLeaveApplication> variant="contained" showColumnHeaders={true}
                   data={leaveApplications}
                   columns={leaveColumns}
                   title="Leave Applications"

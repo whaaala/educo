@@ -5,7 +5,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import InPageSpinner from "@/components/shared/InPageSpinner";
 import PageLoader from "@/components/shared/PageLoader";
 import PageActions from "@/components/shared/PageActions";
-import DataTable from "@/components/shared/DataTable";
+import ResponsiveListTable from "@/components/shared/ResponsiveListTable";
 import SearchBar from "@/components/shared/SearchBar";
 import { usePageLoad } from "@/hooks/usePageLoad";
 import { useDataManagement } from "@/components/hooks/useDataManagement";
@@ -613,7 +613,9 @@ export default function DataManagementPageBase<T>({
           ) : customListComponent ? (
             customListComponent
           ) : (
-            <DataTable
+            <ResponsiveListTable
+              variant="contained"
+              showColumnHeaders={true}
               data={dateRangeFilteredData}
               columns={tableColumns}
               getRowKey={getRowKey}

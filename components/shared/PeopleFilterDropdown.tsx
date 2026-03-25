@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ChevronRight, ChevronDown, X, Globe, Users } from "lucide-react";
 import SearchBar from "@/components/shared/SearchBar";
+import Tooltip from "@/components/shared/Tooltip";
 
 // ── Types ──
 
@@ -56,6 +57,15 @@ export default function PeopleFilterDropdown({
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Close when another dropdown opens
+  useEffect(() => {
+    const handler = (e: Event) => {
+      if ((e as CustomEvent).detail !== "people-filter") { setIsOpen(false); setSearchQuery(""); }
+    };
+    window.addEventListener("dropdown-open", handler);
+    return () => window.removeEventListener("dropdown-open", handler);
+  }, []);
+
   // Close on click outside
   useEffect(() => {
     if (!isOpen) return;
@@ -107,7 +117,11 @@ export default function PeopleFilterDropdown({
       {/* Trigger */}
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          const opening = !isOpen;
+          if (opening) window.dispatchEvent(new CustomEvent("dropdown-open", { detail: "people-filter" }));
+          setIsOpen(opening);
+        }}
         className={`appearance-none font-semibold rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2.5 cursor-pointer outline-none focus:ring-2 transition-all border flex items-center gap-2 ${
           isActive
             ? "bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-500/20 dark:to-blue-600/10 midnight:from-cyan-500/20 midnight:to-cyan-600/10 purple:from-pink-500/20 purple:to-pink-600/10 border-blue-300 dark:border-blue-500/30 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 focus:ring-blue-500/40"
@@ -145,7 +159,7 @@ export default function PeopleFilterDropdown({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute top-full mt-1 left-0 w-[300px] bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[10000] animate-in fade-in slide-in-from-top-1 duration-[120ms] overflow-hidden">
+        <div className="absolute top-full mt-1 right-0 sm:right-auto sm:left-0 w-[260px] sm:w-[300px] bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[10000] animate-in fade-in slide-in-from-top-1 duration-[120ms] overflow-hidden">
           {/* Search */}
           <div className="p-3 border-b border-gray-100 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10">
             <SearchBar
@@ -187,11 +201,15 @@ export default function PeopleFilterDropdown({
 
                 {/* Name + email */}
                 <div className="flex-1 min-w-0 text-left">
-                  <p className="text-[13px] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">
-                    {person.name}
-                    {person.isMe && <span className="text-gray-400 dark:text-gray-500 font-normal"> (me)</span>}
-                  </p>
-                  <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{person.email}</p>
+                  <Tooltip content={`${person.name}${person.isMe ? " (me)" : ""}`} block>
+                    <p className="text-[13px] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">
+                      {person.name}
+                      {person.isMe && <span className="text-gray-400 dark:text-gray-500 font-normal"> (me)</span>}
+                    </p>
+                  </Tooltip>
+                  <Tooltip content={person.email} block>
+                    <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{person.email}</p>
+                  </Tooltip>
                 </div>
 
                 {/* Chevron */}

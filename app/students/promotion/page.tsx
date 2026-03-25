@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, TrendingUp, CheckCircle2, AlertCircle, RotateCcw } from "lucide-react";
 import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import { Student } from "@/components/students/StudentCard";
 import { useStudentsByTenant } from "@/hooks/useStudentsByTenant";
 import NameLabel from "@/components/shared/NameLabel";
@@ -423,7 +423,7 @@ export default function PromotionPage() {
 
           {/* Student List */}
           <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
-            <DataTable
+            <ResponsiveListTable variant="contained" showColumnHeaders={true}
               data={filteredStudents}
               columns={studentColumns}
               getRowKey={(student) => student.id}
@@ -589,7 +589,7 @@ export default function PromotionPage() {
 
           {/* Preview Table */}
           <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
-            <DataTable
+            <ResponsiveListTable variant="contained" showColumnHeaders={true}
               data={promotionRecords}
               columns={previewColumns}
               getRowKey={(record) => record.student.id}

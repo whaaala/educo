@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MoreVertical, MessageCircle, Phone, Mail, Eye, Trash2, Video, CalendarPlus, FileText, Banknote, UserCog, UserMinus, AlertTriangle, GraduationCap } from "lucide-react";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import Modal from "@/components/shared/Modal";
 import FormButton from "@/components/shared/FormButton";
@@ -573,10 +573,9 @@ export default function ParentsTable({
       <div className="relative">
         {/* Mobile Scroll Indicator */}
         <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none rounded-r-xl" />
-        <DataTable
+        <ResponsiveListTable variant="contained" showColumnHeaders={true}
           data={parents}
           columns={columns}
-          title="Parent Records"
           searchPlaceholder="Search parents..."
           getRowKey={(parent) => parent.id}
           emptyMessage="No parents found"

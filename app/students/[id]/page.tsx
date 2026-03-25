@@ -44,7 +44,7 @@ import TimeTable from "@/components/students/TimeTable";
 import LoginDetailsModal from "@/components/students/LoginDetailsModal";
 import LeaveStatsCard from "@/components/students/LeaveStatsCard";
 import ApplyLeaveModal from "@/components/students/ApplyLeaveModal";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import AddButton from "@/components/shared/AddButton";
 import AttendanceStatsCard from "@/components/students/AttendanceStatsCard";
 import AttendanceCalendar from "@/components/students/AttendanceCalendar";
@@ -1097,7 +1097,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
                 </div>
 
                 {/* DataTable */}
-                <DataTable<LeaveApplication>
+                <ResponsiveListTable<LeaveApplication> variant="contained" showColumnHeaders={true}
                   data={MOCK_LEAVE_APPLICATIONS}
                   columns={leaveColumns}
                   title="Leave Applications"

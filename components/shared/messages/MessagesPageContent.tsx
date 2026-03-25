@@ -6,7 +6,7 @@ import Image from "next/image";
 import PageHeader from "@/components/shared/PageHeader";
 import PageActions from "@/components/shared/PageActions";
 import PageSpinner from "@/components/shared/PageSpinner";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import DateRangePicker from "@/components/shared/DateRangePicker";
 import FilterButton, { FilterValues } from "@/components/shared/FilterButton";
 import SortButton from "@/components/shared/SortButton";
@@ -521,18 +521,22 @@ export default function MessagesPageContent({
             </div>
           </div>
           <div className="min-w-0 flex-1">
-            <p
-              className={`text-xs sm:text-sm truncate leading-tight ${
-                !msg.isRead && msg.type === "received"
-                  ? "font-semibold text-gray-900 dark:text-white"
-                  : "font-medium text-gray-700 dark:text-gray-300"
-              }`}
-            >
-              {msg.senderName}
-            </p>
-            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate leading-tight">
-              <span className="text-gray-400 dark:text-gray-500">→</span> {msg.recipientName}
-            </p>
+            <Tooltip content={msg.senderName}>
+              <p
+                className={`text-xs sm:text-sm truncate leading-tight ${
+                  !msg.isRead && msg.type === "received"
+                    ? "font-semibold text-gray-900 dark:text-white"
+                    : "font-medium text-gray-700 dark:text-gray-300"
+                }`}
+              >
+                {msg.senderName}
+              </p>
+            </Tooltip>
+            <Tooltip content={msg.recipientName} block>
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate leading-tight">
+                <span className="text-gray-400 dark:text-gray-500">→</span> {msg.recipientName}
+              </p>
+            </Tooltip>
           </div>
         </div>
       ),
@@ -549,19 +553,23 @@ export default function MessagesPageContent({
             {!msg.isRead && msg.type === "received" && (
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
             )}
-            <p
-              className={`text-xs sm:text-sm truncate leading-tight ${
-                !msg.isRead && msg.type === "received"
-                  ? "font-semibold text-gray-900 dark:text-white"
-                  : "text-gray-700 dark:text-gray-300"
-              }`}
-            >
-              {msg.subject}
-            </p>
+            <Tooltip content={msg.subject}>
+              <p
+                className={`text-xs sm:text-sm truncate leading-tight ${
+                  !msg.isRead && msg.type === "received"
+                    ? "font-semibold text-gray-900 dark:text-white"
+                    : "text-gray-700 dark:text-gray-300"
+                }`}
+              >
+                {msg.subject}
+              </p>
+            </Tooltip>
           </div>
-          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5 leading-tight">
-            {msg.preview}
-          </p>
+          <Tooltip content={msg.preview} block>
+            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5 leading-tight">
+              {msg.preview}
+            </p>
+          </Tooltip>
         </div>
       ),
     },
@@ -579,14 +587,16 @@ export default function MessagesPageContent({
       hidden: { mobile: true, tablet: true },
       render: (msg) =>
         msg.childName ? (
-          <span className="text-xs text-gray-700 dark:text-gray-300 truncate block">
-            {msg.childName.split(" ")[0]}{" "}
-            {msg.childName
-              .split(" ")
-              .slice(1)
-              .map((n) => n[0])
-              .join("")}
-          </span>
+          <Tooltip content={msg.childName} block>
+            <span className="text-xs text-gray-700 dark:text-gray-300 truncate block">
+              {msg.childName.split(" ")[0]}{" "}
+              {msg.childName
+                .split(" ")
+                .slice(1)
+                .map((n) => n[0])
+                .join("")}
+            </span>
+          </Tooltip>
         ) : (
           <span className="text-xs text-gray-400">—</span>
         ),
@@ -810,27 +820,19 @@ export default function MessagesPageContent({
                   )}
                 </div>
               ) : (
-                <div
+                <ResponsiveListTable
                   ref={tableWrapRef}
                   key={`messages-table-${filterKey}`}
-                  className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm"
-                >
-                  <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none rounded-r-xl" />
-                  <DataTable
-                    data={filteredMessages}
-                    columns={columns}
-                    getRowKey={(msg) => msg.id}
-                    emptyMessage="No messages found"
-                    title=""
-                    showSearch={false}
-                    defaultItemsPerPage={15}
-                    itemsPerPageOptions={[10, 15, 25, 50]}
-                    enablePagination={true}
-                    enableItemsPerPage={true}
-                    stickyColumnCount={1}
-                    disableHorizontalScroll={false}
-                  />
-                </div>
+                  variant="contained"
+                  data={filteredMessages}
+                  columns={columns}
+                  getRowKey={(msg) => msg.id}
+                  emptyMessage="No messages found"
+                  defaultItemsPerPage={15}
+                  itemsPerPageOptions={[10, 15, 25, 50]}
+                  stickyColumnCount={1}
+                  disableHorizontalScroll={false}
+                />
               )}
             </div>
           ) : (

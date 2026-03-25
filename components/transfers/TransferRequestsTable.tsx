@@ -5,7 +5,7 @@ import { TransferRequest } from "@/types/transfer";
 import { Eye, CheckCircle, XCircle, Play } from "lucide-react";
 import TransferStatusBadge from "./TransferStatusBadge";
 import TransferTypeBadge from "./TransferTypeBadge";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import Tooltip from "@/components/shared/Tooltip";
 
 interface TransferRequestsTableProps {
@@ -318,10 +318,9 @@ export default function TransferRequestsTable({
       {/* Mobile Scroll Indicator */}
       <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none" />
 
-      <DataTable
+      <ResponsiveListTable variant="contained" showColumnHeaders={true}
         data={requests}
         columns={columns}
-        title=""
         showSearch={false}
         defaultItemsPerPage={10}
         itemsPerPageOptions={[5, 10, 15, 20, 25]}

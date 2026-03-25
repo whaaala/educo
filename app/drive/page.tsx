@@ -135,9 +135,11 @@ export default function DrivePage() {
       id: item.id, name: item.name, type: item.type, sourceType: item.sourceType,
       size: item.size, updatedAt: item.updatedAt, readOnly: item.readOnly,
       folderName: driveStorage.getFolderName(item.parentId), owner: mapOwner(item.owner),
+      ownerAvatar: user?.avatar,
+      content: item.type === "file" ? getFileContent(item) : undefined,
     }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, user]);
+  }, [items, user, contentRefreshKey]);
 
   const sidebarItems = useMemo(() => [
     { id: "home", label: "Home", icon: Home, active: activeSection === "home" },
@@ -440,7 +442,7 @@ export default function DrivePage() {
 
   return (
     <MainLayout>
-      <div className="-ml-4 lg:-ml-8">
+      <div className="-ml-4 lg:-ml-8 -mb-4 lg:-mb-6 overflow-hidden">
         <FileBrowser
           title="My Drive"
           subtitle="Manage your files and folders"

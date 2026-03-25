@@ -7,7 +7,7 @@ import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useCountry } from "@/contexts/CountryContext";
 import { formatCurrency } from "@/config/countries";
 import Button from "@/components/shared/Button";
-import DataTable from "@/components/shared/DataTable";
+import ResponsiveListTable from "@/components/shared/ResponsiveListTable";
 import Modal from "@/components/shared/Modal";
 import Tooltip from "@/components/shared/Tooltip";
 import FormInput from "@/components/shared/FormInput";
@@ -658,7 +658,7 @@ export default function LibraryFinesPage() {
       onExportPDF={handleExportPDF}
       onExportExcel={handleExportExcel}
       customListComponent={
-        <DataTable
+        <ResponsiveListTable variant="contained" showColumnHeaders={true}
           data={fines}
           columns={columns}
           getRowKey={(fine) => fine.id}

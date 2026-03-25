@@ -6,7 +6,7 @@ import { DataManagementPage } from "@/components/pages";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useCountry } from "@/contexts/CountryContext";
 import { formatCurrency } from "@/config/countries";
-import DataTable from "@/components/shared/DataTable";
+import ResponsiveListTable from "@/components/shared/ResponsiveListTable";
 import Tooltip from "@/components/shared/Tooltip";
 import DetailViewModal from "@/components/shared/DetailViewModal";
 import AddBookModal from "@/components/library/AddBookModal";
@@ -646,7 +646,7 @@ export default function LibraryPage() {
       onExportPDF={handleExportPDF}
       onExportExcel={handleExportExcel}
       customListComponent={
-        <DataTable
+        <ResponsiveListTable variant="contained" showColumnHeaders={true}
           columns={columns}
           data={books}
           getRowKey={(book) => book.id}

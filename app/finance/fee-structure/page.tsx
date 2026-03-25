@@ -6,7 +6,7 @@ import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useCountry } from "@/contexts/CountryContext";
 import { formatCurrency } from "@/config/countries";
 import { exportFeeStructureToExcel, exportFeeStructureToPDF } from "@/lib/export-utils";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import SearchFilterBar from "@/components/shared/SearchFilterBar";
 import StatCard from "@/components/shared/StatCard";
 import FeeStructureModal from "@/components/finance/FeeStructureModal";
@@ -763,7 +763,7 @@ export default function FeeStructurePage() {
                 key={`table-data-${searchQuery}-${selectedYear}-${selectedLevel}-${selectedClass}-${selectedCategory}`}
                 className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden"
               >
-                <DataTable
+                <ResponsiveListTable variant="contained" showColumnHeaders={true}
                   columns={columns}
                   data={filteredStructures}
                   getRowKey={(item) => item.id}

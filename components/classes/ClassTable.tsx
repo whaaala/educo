@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { MoreVertical, Eye, Edit, Trash2, Users, BookOpen, MapPin, TrendingUp, UserPlus } from "lucide-react";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import Tooltip from "@/components/shared/Tooltip";
 import NameLabel from "@/components/shared/NameLabel";
@@ -534,10 +534,9 @@ export default function ClassTable({
 
   return (
     <>
-      <DataTable
+      <ResponsiveListTable variant="contained" showColumnHeaders={true}
         data={classes}
         columns={allColumns}
-        title="Class Records"
         searchPlaceholder="Search classes..."
         getRowKey={(classData) => classData.id}
         emptyMessage="No classes found"

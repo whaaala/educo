@@ -6,7 +6,7 @@ import Image from "next/image";
 import PageHeader from "@/components/shared/PageHeader";
 import PageActions from "@/components/shared/PageActions";
 import PageSpinner from "@/components/shared/PageSpinner";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import DateRangePicker from "@/components/shared/DateRangePicker";
 import FilterButton, { FilterValues } from "@/components/shared/FilterButton";
 import SortButton from "@/components/shared/SortButton";
@@ -388,20 +388,24 @@ export default function CallLogsPageContent({
                     }`}
                   />
                 )}
-                <p
-                  className={`text-xs sm:text-sm truncate ${
-                    isMissed
-                      ? "font-semibold text-red-600 dark:text-red-400"
-                      : "font-medium text-gray-700 dark:text-gray-300"
-                  }`}
-                >
-                  {call.recipientName}
-                </p>
+                <Tooltip content={call.recipientName}>
+                  <p
+                    className={`text-xs sm:text-sm truncate ${
+                      isMissed
+                        ? "font-semibold text-red-600 dark:text-red-400"
+                        : "font-medium text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    {call.recipientName}
+                  </p>
+                </Tooltip>
               </div>
               {call.recipientEmail && (
-                <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">
-                  {call.recipientEmail}
-                </p>
+                <Tooltip content={call.recipientEmail} block>
+                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">
+                    {call.recipientEmail}
+                  </p>
+                </Tooltip>
               )}
             </div>
           </div>
@@ -579,23 +583,17 @@ export default function CallLogsPageContent({
               )}
             </div>
           ) : viewMode === "list" ? (
-            <div className="relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
-              <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none rounded-r-xl" />
-              <DataTable
-                data={filteredCalls}
-                columns={callTableColumns}
-                title=""
-                showSearch={false}
-                getRowKey={(call) => call.id}
-                onRowClick={handleViewCall}
-                emptyMessage="No call history found"
-                enablePagination={true}
-                enableItemsPerPage={true}
-                defaultItemsPerPage={10}
-                stickyColumnCount={1}
-                disableHorizontalScroll={false}
-              />
-            </div>
+            <ResponsiveListTable
+              variant="contained"
+              data={filteredCalls}
+              columns={callTableColumns}
+              getRowKey={(call) => call.id}
+              onRowClick={handleViewCall}
+              emptyMessage="No call history found"
+              defaultItemsPerPage={10}
+              stickyColumnCount={1}
+              disableHorizontalScroll={false}
+            />
           ) : (
             <>
               <div

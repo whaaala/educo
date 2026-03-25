@@ -22,6 +22,16 @@ export default function CustomDropdown({
 }: CustomDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const idRef = useRef(`dropdown-${Math.random().toString(36).slice(2)}`);
+
+  // Close when another dropdown opens
+  useEffect(() => {
+    const handleOtherOpen = (e: Event) => {
+      if ((e as CustomEvent).detail !== idRef.current) setIsOpen(false);
+    };
+    window.addEventListener("dropdown-open", handleOtherOpen);
+    return () => window.removeEventListener("dropdown-open", handleOtherOpen);
+  }, []);
 
   // Click outside handler
   useEffect(() => {
@@ -60,7 +70,11 @@ export default function CustomDropdown({
       {/* Dropdown Button */}
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          const opening = !isOpen;
+          if (opening) window.dispatchEvent(new CustomEvent("dropdown-open", { detail: idRef.current }));
+          setIsOpen(opening);
+        }}
         className={`appearance-none w-full font-semibold text-gray-700 dark:text-white midnight:text-cyan-50 purple:text-pink-50 ${styles.button} rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2.5 pr-7 sm:pr-9 cursor-pointer outline-none focus:ring-2 transition-all border`}
         style={{ fontSize: '11.8px' }}
       >
@@ -76,7 +90,7 @@ export default function CustomDropdown({
 
       {/* Custom Dropdown Menu */}
       {isOpen && (
-        <div className={`absolute ${dropup ? "bottom-full mb-1" : "top-full mt-1"} left-0 right-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 max-h-48 sm:max-h-64 overflow-y-auto z-[10000] py-1 animate-in fade-in ${dropup ? "slide-in-from-bottom-1" : "slide-in-from-top-1"} duration-[120ms]`}>
+        <div className={`absolute ${dropup ? "bottom-full mb-1" : "top-full mt-1"} left-0 min-w-full w-fit bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[10000] py-1 animate-in fade-in ${dropup ? "slide-in-from-bottom-1" : "slide-in-from-top-1"} duration-[120ms]`}>
           {options.map((option) => (
             <button
               key={option.value}
@@ -85,7 +99,7 @@ export default function CustomDropdown({
                 onChange(option.value);
                 setIsOpen(false);
               }}
-              className={`w-full text-left px-2.5 sm:px-4 py-1.5 sm:py-2.5 font-semibold transition-colors cursor-pointer ${
+              className={`w-full text-left px-2.5 sm:px-4 py-1.5 sm:py-2.5 font-semibold whitespace-nowrap transition-colors cursor-pointer ${
                 value === option.value
                   ? styles.selected
                   : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
