@@ -75,6 +75,19 @@ export let MOCK_DRIVE_ITEMS: DriveItem[] = [
   { id: "file-012", parentId: "folder-my-drive", name: "Shared Curriculum Plan.docx", type: "file", sourceType: "document", size: 340000, createdAt: daysAgo(12), updatedAt: daysAgo(4), owner: "Mrs. Nkechi Eze" },
   { id: "file-013", parentId: "folder-my-drive", name: "Budget Proposal 2026.xlsx", type: "file", sourceType: "spreadsheet", size: 780000, createdAt: daysAgo(7), updatedAt: daysAgo(3), owner: "Mr. Chidi Okafor" },
 
+  // ── More files in root My Drive ──
+  { id: "file-014", parentId: "folder-my-drive", name: "Parent Newsletter March.docx", type: "file", sourceType: "document", size: 230000, createdAt: daysAgo(1), updatedAt: hoursAgo(6), owner: "Me" },
+  { id: "file-015", parentId: "folder-my-drive", name: "Class Timetable.xlsx", type: "file", sourceType: "spreadsheet", size: 145000, createdAt: daysAgo(5), updatedAt: daysAgo(2), owner: "Me", starred: true },
+  { id: "file-016", parentId: "folder-my-drive", name: "Sports Day Photos.zip", type: "file", sourceType: "upload", size: 89000000, createdAt: daysAgo(3), updatedAt: daysAgo(1), owner: "Me" },
+  { id: "file-017", parentId: "folder-my-drive", name: "Science Fair Presentation.pptx", type: "file", sourceType: "presentation", size: 4200000, createdAt: daysAgo(4), updatedAt: daysAgo(2), owner: "Mrs. Nkechi Eze" },
+  { id: "file-018", parentId: "folder-my-drive", name: "Exam Schedule Term 3.pdf", type: "file", sourceType: "document", size: 320000, createdAt: daysAgo(1), updatedAt: hoursAgo(4), owner: "Mr. Chidi Okafor" },
+  { id: "file-019", parentId: "folder-my-drive", name: "Art Class Project.jpg", type: "file", sourceType: "upload", size: 5600000, createdAt: daysAgo(6), updatedAt: daysAgo(3), owner: "Me" },
+  { id: "file-020", parentId: "folder-my-drive", name: "Library Book List.xlsx", type: "file", sourceType: "spreadsheet", size: 98000, createdAt: daysAgo(8), updatedAt: daysAgo(5), owner: "Me" },
+
+  // ── More files in Documents ──
+  { id: "file-021", parentId: "folder-documents", name: "Homework Guidelines.pdf", type: "file", sourceType: "document", size: 178000, createdAt: daysAgo(9), updatedAt: daysAgo(4), owner: "Me" },
+  { id: "file-022", parentId: "folder-documents", name: "Field Trip Permission.docx", type: "file", sourceType: "document", size: 95000, createdAt: daysAgo(3), updatedAt: daysAgo(1), owner: "Me" },
+
   // ── Bin items ──
   { id: "file-bin-001", parentId: "folder-bin", name: "Old Timetable.pdf", type: "file", sourceType: "document", size: 560000, createdAt: daysAgo(30), updatedAt: daysAgo(5), owner: "Me", previousParentId: "folder-documents" },
   { id: "file-bin-002", parentId: "folder-bin", name: "Draft Letter.docx", type: "file", sourceType: "document", size: 45000, createdAt: daysAgo(20), updatedAt: daysAgo(8), owner: "Me", previousParentId: "folder-documents" },

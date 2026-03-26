@@ -9,8 +9,8 @@ import {
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import { ActivityIndicator, Platform, useColorScheme, useWindowDimensions, View } from 'react-native';
+import { useEffect, useMemo } from 'react';
+import { ActivityIndicator, useColorScheme, View } from 'react-native';
 import 'react-native-reanimated';
 
 import { TenantSettingsProvider } from '../contexts/TenantSettingsContext';
@@ -62,22 +62,24 @@ export default function RootLayout() {
 
 function AppChrome() {
   const { colors } = useTheme();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= 768;
 
-  // Keep screen content above the fixed bottom nav on all pages.
-  const tabBottomPadding = isTablet ? 20 : Platform.OS === 'ios' ? 24 : 16;
-  const tabBarHeight = 72;
-  const contentPaddingBottom = tabBarHeight + tabBottomPadding;
+  const rootStyle = useMemo(() => ({
+    flex: 1,
+    backgroundColor: colors.background,
+  }), [colors.background]);
+
+  const screenContentStyle = useMemo(() => ({
+    backgroundColor: colors.background,
+  }), [colors.background]);
+
+  const screenOptions = useMemo(() => ({
+    headerShown: false,
+    contentStyle: screenContentStyle,
+  }), [screenContentStyle]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background, paddingBottom: contentPaddingBottom }}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
-        }}
-      >
+    <View style={rootStyle}>
+      <Stack screenOptions={screenOptions}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         <Stack.Screen name="reports" options={{ presentation: 'card' }} />

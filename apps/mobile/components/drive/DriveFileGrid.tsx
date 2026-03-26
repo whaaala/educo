@@ -1,4 +1,5 @@
-import { FlatList, StyleSheet } from 'react-native';
+import { memo } from 'react';
+import { View, ScrollView, StyleSheet } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { type DriveItem } from './driveMockData';
 import { DriveFileItem } from './DriveFileItem';
@@ -10,32 +11,45 @@ interface DriveFileGridProps {
   isTablet: boolean;
 }
 
-export function DriveFileGrid({ items, onItemPress, onItemLongPress, isTablet }: DriveFileGridProps) {
+export const DriveFileGrid = memo(function DriveFileGrid({ items, onItemPress, onItemLongPress, isTablet }: DriveFileGridProps) {
   const { colors } = useTheme();
   const numColumns = isTablet ? 3 : 2;
 
+  // Split items into rows
+  const rows: DriveItem[][] = [];
+  for (let i = 0; i < items.length; i += numColumns) {
+    rows.push(items.slice(i, i + numColumns));
+  }
+
   return (
-    <FlatList
-      key={numColumns}
-      data={items}
-      keyExtractor={(item) => item.id}
-      numColumns={numColumns}
-      renderItem={({ item }) => (
-        <DriveFileItem
-          item={item}
-          onPress={onItemPress}
-          onLongPress={onItemLongPress}
-          layout="grid"
-          isTablet={isTablet}
-        />
-      )}
+    <ScrollView
       style={[styles.grid, { backgroundColor: colors.background }]}
       contentContainerStyle={isTablet ? styles.contentTablet : styles.content}
-      columnWrapperStyle={styles.columnWrapper}
       showsVerticalScrollIndicator={false}
-    />
+    >
+      {rows.map((row, rowIndex) => (
+        <View key={rowIndex} style={styles.row}>
+          {row.map((item) => (
+            <DriveFileItem
+              key={item.id}
+              item={item}
+              onPress={onItemPress}
+              onLongPress={onItemLongPress}
+              layout="grid"
+              isTablet={isTablet}
+            />
+          ))}
+          {/* Fill empty slots so cards don't stretch */}
+          {row.length < numColumns &&
+            Array.from({ length: numColumns - row.length }).map((_, i) => (
+              <View key={`empty-${i}`} style={styles.emptySlot} />
+            ))
+          }
+        </View>
+      ))}
+    </ScrollView>
   );
-}
+});
 
 const styles = StyleSheet.create({
   grid: {
@@ -43,14 +57,18 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 10,
-    paddingBottom: 100,
+    paddingBottom: 20,
   },
   contentTablet: {
     padding: 18,
-    paddingBottom: 100,
+    paddingBottom: 20,
   },
-  columnWrapper: {
-    justifyContent: 'flex-start',
+  row: {
+    flexDirection: 'row',
+  },
+  emptySlot: {
+    flex: 1,
+    margin: 6,
   },
 });
 

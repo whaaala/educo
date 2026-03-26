@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -28,7 +29,7 @@ interface DriveFileItemProps {
   isTablet: boolean;
 }
 
-export function DriveFileItem({ item, onPress, onLongPress, layout, isTablet }: DriveFileItemProps) {
+function DriveFileItemInner({ item, onPress, onLongPress, layout, isTablet }: DriveFileItemProps) {
   const { colors } = useTheme();
   const config = getFileTypeConfig(item);
   const isFolder = item.type === 'folder';
@@ -273,6 +274,8 @@ export function DriveFileItem({ item, onPress, onLongPress, layout, isTablet }: 
     </Pressable>
   );
 }
+
+export const DriveFileItem = memo(DriveFileItemInner);
 
 const styles = StyleSheet.create({
   // ── Shared List ──
