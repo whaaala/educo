@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ProfileAvatar } from './ProfileAvatar';
 import { ChildSwitcher, type ChildData } from './ChildSwitcher';
+import { BackButton } from './BackButton';
 
 const FONTS = {
   regular: 'Inter_400Regular',
@@ -74,12 +75,9 @@ export function PageHeader({
       {/* Top Row: Back Button + Title + Right Action */}
       <View style={[styles.topRow, isTablet && styles.topRowTablet]}>
         {showBackButton && (
-          <Pressable
-            onPress={handleBack}
-            style={[styles.backButton, { backgroundColor: colors.backgroundTertiary }]}
-          >
-            <Ionicons name="arrow-back" size={20} color={colors.text} />
-          </Pressable>
+          <View style={styles.backButtonWrap}>
+            <BackButton onPress={handleBack} size={isTablet ? 'lg' : 'md'} />
+          </View>
         )}
         <Text
           style={[
@@ -157,12 +155,12 @@ export function PageHeader({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: 38,
     paddingBottom: 12,
   },
   containerTablet: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingHorizontal: 24,
+    paddingTop: 58,
     paddingBottom: 16,
   },
   topRow: {
@@ -173,12 +171,7 @@ const styles = StyleSheet.create({
   topRowTablet: {
     marginBottom: 12,
   },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+  backButtonWrap: {
     marginRight: 12,
   },
   title: {

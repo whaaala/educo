@@ -18,59 +18,81 @@ interface DriveSidebarProps {
 const STORAGE_USED_MB = 58.4;
 const STORAGE_TOTAL_MB = 200;
 
+// Separate main nav sections from utility sections
+const MAIN_SECTIONS = SIDEBAR_SECTIONS.filter(s => ['myDrive', 'shared'].includes(s.id));
+const UTILITY_SECTIONS = SIDEBAR_SECTIONS.filter(s => ['recent', 'starred', 'bin'].includes(s.id));
+
 export function DriveSidebar({ activeSection, onSectionChange }: DriveSidebarProps) {
   const { colors } = useTheme();
   const storagePercent = (STORAGE_USED_MB / STORAGE_TOTAL_MB) * 100;
 
+  const renderSection = (section: typeof SIDEBAR_SECTIONS[0]) => {
+    const isActive = section.id === activeSection;
+    return (
+      <Pressable
+        key={section.id}
+        onPress={() => onSectionChange(section.id)}
+        style={[
+          styles.sectionButton,
+          isActive && { backgroundColor: colors.primaryLight },
+        ]}
+      >
+        <View style={[
+          styles.sectionIconBox,
+          { backgroundColor: isActive ? colors.primary + '18' : 'transparent' },
+        ]}>
+          <Ionicons
+            name={section.icon as any}
+            size={18}
+            color={isActive ? colors.primary : colors.textMuted}
+          />
+        </View>
+        <Text
+          style={[
+            styles.sectionLabel,
+            {
+              color: isActive ? colors.primary : colors.textSecondary,
+              fontFamily: isActive ? FONTS.semiBold : FONTS.medium,
+            },
+          ]}
+        >
+          {section.label}
+        </Text>
+        {isActive && <View style={[styles.activeIndicator, { backgroundColor: colors.primary }]} />}
+      </Pressable>
+    );
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.backgroundSecondary, borderRightColor: colors.border }]}>
-      {/* Drive title */}
-      <View style={styles.titleRow}>
-        <View style={[styles.titleIcon, { backgroundColor: colors.primaryLight }]}>
-          <Ionicons name="folder-open" size={18} color={colors.primary} />
+      <View>
+        {/* Drive title */}
+        <View style={styles.titleRow}>
+          <View style={[styles.titleIcon, { backgroundColor: colors.primaryLight }]}>
+            <Ionicons name="folder-open" size={20} color={colors.primary} />
+          </View>
+          <Text style={[styles.title, { color: colors.text }]}>Drive</Text>
         </View>
-        <Text style={[styles.title, { color: colors.text }]}>Drive</Text>
-      </View>
 
-      {/* Section buttons */}
-      <View style={styles.sections}>
-        {SIDEBAR_SECTIONS.map((section) => {
-          const isActive = section.id === activeSection;
-          return (
-            <Pressable
-              key={section.id}
-              onPress={() => onSectionChange(section.id)}
-              style={[
-                styles.sectionButton,
-                isActive && [styles.sectionButtonActive, { backgroundColor: colors.primaryLight }],
-              ]}
-            >
-              <Ionicons
-                name={section.icon as any}
-                size={20}
-                color={isActive ? colors.primary : colors.textMuted}
-              />
-              <Text
-                style={[
-                  styles.sectionLabel,
-                  {
-                    color: isActive ? colors.primary : colors.textSecondary,
-                    fontFamily: isActive ? FONTS.semiBold : FONTS.medium,
-                  },
-                ]}
-              >
-                {section.label}
-              </Text>
-            </Pressable>
-          );
-        })}
+        {/* Main sections */}
+        <View style={styles.sectionGroup}>
+          {MAIN_SECTIONS.map(renderSection)}
+        </View>
+
+        {/* Divider */}
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+        {/* Utility sections */}
+        <View style={styles.sectionGroup}>
+          {UTILITY_SECTIONS.map(renderSection)}
+        </View>
       </View>
 
       {/* Storage indicator */}
-      <View style={[styles.storageContainer, { borderTopColor: colors.border }]}>
+      <View style={[styles.storageCard, { backgroundColor: colors.background, borderColor: colors.border }]}>
         <View style={styles.storageHeader}>
-          <Ionicons name="cloud-outline" size={16} color={colors.textMuted} />
-          <Text style={[styles.storageTitle, { color: colors.textSecondary }]}>Storage</Text>
+          <Ionicons name="cloud-outline" size={16} color={colors.primary} />
+          <Text style={[styles.storageTitle, { color: colors.text }]}>Storage</Text>
         </View>
         <View style={[styles.storageBarBg, { backgroundColor: colors.backgroundTertiary }]}>
           <View
@@ -90,65 +112,89 @@ export function DriveSidebar({ activeSection, onSectionChange }: DriveSidebarPro
 
 const styles = StyleSheet.create({
   container: {
-    width: 240,
+    width: 250,
     borderRightWidth: 1,
     paddingTop: 48,
+    paddingBottom: 100,
     justifyContent: 'space-between',
   },
+  // Title
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 24,
-    gap: 10,
+    paddingHorizontal: 24,
+    marginBottom: 28,
+    gap: 12,
   },
   titleIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 20,
+    fontFamily: FONTS.bold,
+    letterSpacing: -0.4,
+  },
+  // Sections
+  sectionGroup: {
+    paddingHorizontal: 14,
+    gap: 4,
+  },
+  sectionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    borderRadius: 12,
+    gap: 12,
+    position: 'relative',
+  },
+  sectionIconBox: {
     width: 32,
     height: 32,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 18,
-    fontFamily: FONTS.bold,
-    letterSpacing: -0.3,
-  },
-  sections: {
-    paddingHorizontal: 12,
-    gap: 2,
-  },
-  sectionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 10,
-    gap: 12,
-  },
-  sectionButtonActive: {
-    borderRadius: 10,
-  },
   sectionLabel: {
     fontSize: 14,
     letterSpacing: -0.1,
+    flex: 1,
   },
-  storageContainer: {
-    padding: 20,
-    borderTopWidth: 1,
+  activeIndicator: {
+    width: 4,
+    height: 20,
+    borderRadius: 2,
+    position: 'absolute',
+    left: 0,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginHorizontal: 24,
+    marginVertical: 12,
+  },
+  // Storage
+  storageCard: {
+    marginHorizontal: 14,
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
   },
   storageHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 10,
+    gap: 8,
+    marginBottom: 12,
   },
   storageTitle: {
     fontSize: 13,
-    fontFamily: FONTS.medium,
+    fontFamily: FONTS.semiBold,
   },
   storageBarBg: {
-    height: 5,
+    height: 6,
     borderRadius: 3,
     marginBottom: 8,
     overflow: 'hidden',

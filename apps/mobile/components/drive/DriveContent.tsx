@@ -1,10 +1,11 @@
-import { memo, useRef, useCallback } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
-import type { LayoutChangeEvent } from 'react-native';
+import { memo } from 'react';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { type DriveItem } from './driveMockData';
 import { DriveFileItem } from './DriveFileItem';
 import { DriveEmptyState } from './DriveEmptyState';
+import { LoadMoreButton } from '../ui/LoadMoreButton';
+import { Spinner } from '../ui/Spinner';
 
 interface DriveContentProps {
   items: DriveItem[];
@@ -15,6 +16,12 @@ interface DriveContentProps {
   emptyIcon?: string;
   emptyTitle?: string;
   emptySubtitle?: string;
+  isLoading?: boolean;
+  loadingMessage?: string;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
+  isLoadingMore?: boolean;
+  totalItems?: number;
 }
 
 function GridItems({ items, onItemPress, onItemLongPress, isTablet }: {
@@ -90,9 +97,25 @@ export const DriveContent = memo(function DriveContent({
   emptyIcon,
   emptyTitle,
   emptySubtitle,
+  isLoading = false,
+  loadingMessage,
+  hasMore = false,
+  onLoadMore,
+  isLoadingMore = false,
+  totalItems,
 }: DriveContentProps) {
   const { colors } = useTheme();
 
+  // Full-page loading state
+  if (isLoading) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Spinner message={loadingMessage || 'Loading files...'} size="md" />
+      </View>
+    );
+  }
+
+  // Empty state
   if (items.length === 0) {
     return (
       <View style={styles.emptyContainer}>
@@ -134,6 +157,24 @@ export const DriveContent = memo(function DriveContent({
             borderColor={colors.border}
           />
         )}
+
+        {/* Load More button or item count */}
+        {hasMore && onLoadMore ? (
+          <LoadMoreButton
+            onPress={onLoadMore}
+            isLoading={isLoadingMore}
+            text="Load More"
+            loadingText="Loading..."
+            displayedItems={items.length}
+            totalItems={totalItems}
+          />
+        ) : totalItems !== undefined && totalItems > 0 ? (
+          <View style={styles.countContainer}>
+            <Text style={[styles.countText, { color: colors.textMuted }]}>
+              {totalItems} {totalItems === 1 ? 'item' : 'items'}
+            </Text>
+          </View>
+        ) : null}
       </ScrollView>
     </View>
   );
@@ -147,13 +188,15 @@ const styles = StyleSheet.create({
   emptyContainer: {
     flex: 1,
   },
-  gridContent: { padding: 10, paddingBottom: 80 },
-  gridContentTablet: { padding: 18, paddingBottom: 80 },
+  gridContent: { padding: 10, paddingBottom: 90 },
+  gridContentTablet: { padding: 18, paddingBottom: 90 },
   gridRow: { flexDirection: 'row' },
   gridEmptySlot: { flex: 1, margin: 6 },
-  listContent: { paddingBottom: 80 },
-  listContentTablet: { paddingTop: 8, paddingBottom: 80 },
+  listContent: { paddingBottom: 90 },
+  listContentTablet: { paddingTop: 8, paddingBottom: 90 },
   separator: { height: StyleSheet.hairlineWidth, marginLeft: 74, marginRight: 16 },
+  countContainer: { alignItems: 'center', paddingVertical: 16 },
+  countText: { fontSize: 12, fontFamily: 'Inter_500Medium' },
 });
 
 export default DriveContent;

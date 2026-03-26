@@ -46,7 +46,6 @@ function useIsTablet() {
 
 function getRootFolderForSection(section: DriveSection): string {
   switch (section) {
-    case 'home':
     case 'myDrive':
       return 'folder-my-drive';
     case 'bin':
@@ -83,8 +82,8 @@ export function DriveScreen() {
   const router = useRouter();
   const isTablet = useIsTablet();
 
-  const [activeSection, setActiveSection] = useState<DriveSection>('home');
-  const [folderStack, setFolderStack] = useState<string[]>([getRootFolderForSection('home')]);
+  const [activeSection, setActiveSection] = useState<DriveSection>('myDrive');
+  const [folderStack, setFolderStack] = useState<string[]>([getRootFolderForSection('myDrive')]);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>(isTablet ? 'grid' : 'list');
   const [selectedItem, setSelectedItem] = useState<DriveItem | null>(null);
@@ -93,6 +92,8 @@ export function DriveScreen() {
   const [renameVisible, setRenameVisible] = useState(false);
   const [moveVisible, setMoveVisible] = useState(false);
   const [dataVersion, setDataVersion] = useState(0);
+  const [displayCount, setDisplayCount] = useState(10);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const refresh = useCallback(() => setDataVersion(getChangeCounter()), []);
 
@@ -101,7 +102,6 @@ export function DriveScreen() {
 
   const items = useMemo(() => {
     switch (activeSection) {
-      case 'home':
       case 'myDrive':
         return getChildren(currentFolderId);
       case 'recent':
@@ -118,7 +118,7 @@ export function DriveScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSection, currentFolderId, dataVersion]);
 
-  const filteredItems = useMemo(() => {
+  const allFilteredItems = useMemo(() => {
     if (!searchQuery.trim()) return items;
     const q = searchQuery.toLowerCase();
     return items.filter(
@@ -127,6 +127,22 @@ export function DriveScreen() {
         item.owner.toLowerCase().includes(q)
     );
   }, [items, searchQuery]);
+
+  const filteredItems = useMemo(() =>
+    allFilteredItems.slice(0, displayCount),
+    [allFilteredItems, displayCount]
+  );
+
+  const hasMore = filteredItems.length < allFilteredItems.length;
+
+  const handleLoadMore = useCallback(() => {
+    setIsLoadingMore(true);
+    // Simulate loading delay for UX
+    setTimeout(() => {
+      setDisplayCount(prev => prev + 10);
+      setIsLoadingMore(false);
+    }, 500);
+  }, []);
 
   const breadcrumbPath = useMemo(() => {
     if (FLAT_SECTIONS.includes(activeSection) && !isInSubfolder) {
@@ -150,11 +166,13 @@ export function DriveScreen() {
     setActiveSection(section);
     setFolderStack([getRootFolderForSection(section)]);
     setSearchQuery('');
+    setDisplayCount(10);
   }, []);
 
   const handleFolderOpen = useCallback((folderId: string) => {
     setFolderStack((prev) => [...prev, folderId]);
     setSearchQuery('');
+    setDisplayCount(10);
   }, []);
 
   const handleItemPress = useCallback((item: DriveItem) => {
@@ -329,6 +347,10 @@ export function DriveScreen() {
               isTablet
               onItemPress={handleItemPress}
               onItemLongPress={handleItemLongPress}
+              hasMore={hasMore}
+              onLoadMore={handleLoadMore}
+              isLoadingMore={isLoadingMore}
+              totalItems={allFilteredItems.length}
               {...emptyProps}
             />
           </View>
@@ -380,6 +402,10 @@ export function DriveScreen() {
         isTablet={false}
         onItemPress={handleItemPress}
         onItemLongPress={handleItemLongPress}
+        hasMore={hasMore}
+        onLoadMore={handleLoadMore}
+        isLoadingMore={isLoadingMore}
+        totalItems={allFilteredItems.length}
         {...emptyProps}
       />
 

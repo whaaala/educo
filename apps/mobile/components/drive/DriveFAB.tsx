@@ -1,5 +1,5 @@
-import { memo } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { memo, useState } from 'react';
+import { Pressable, Dimensions, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -7,13 +7,23 @@ interface DriveFABProps {
   onPress: () => void;
 }
 
+function useIsTablet() {
+  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
+  return isTablet;
+}
+
 export const DriveFAB = memo(function DriveFAB({ onPress }: DriveFABProps) {
   const { colors } = useTheme();
+  const isTablet = useIsTablet();
 
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.fab, { backgroundColor: colors.primary }]}
+      style={[
+        styles.fab,
+        isTablet ? styles.fabTablet : styles.fabMobile,
+        { backgroundColor: colors.primary },
+      ]}
     >
       <Ionicons name="add" size={26} color={colors.primaryText} />
     </Pressable>
@@ -23,8 +33,6 @@ export const DriveFAB = memo(function DriveFAB({ onPress }: DriveFABProps) {
 const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
-    bottom: 28,
-    right: 28,
     width: 56,
     height: 56,
     borderRadius: 16,
@@ -35,6 +43,15 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
+    zIndex: 10,
+  },
+  fabMobile: {
+    bottom: 96,
+    right: 20,
+  },
+  fabTablet: {
+    bottom: 96,
+    right: 28,
   },
 });
 

@@ -26,7 +26,6 @@ export interface SidebarSection {
 }
 
 export const SIDEBAR_SECTIONS: SidebarSection[] = [
-  { id: "home", label: "Home", icon: "home-outline" },
   { id: "myDrive", label: "My Drive", icon: "folder-outline" },
   { id: "shared", label: "Shared with me", icon: "people-outline" },
   { id: "recent", label: "Recent", icon: "time-outline" },
