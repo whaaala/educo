@@ -38,6 +38,53 @@ Feature: Slide Editor Menu Bar
     When hovering over File > Download
     Then it should show: .pptx, .odp, .pdf, .txt, JPEG, PNG, SVG options
 
+  Scenario: File > Add shortcut to Drive opens folder picker dialog
+    When the user clicks "Add shortcut to Drive"
+    Then a dialog should appear with title "Add Shortcut to Drive"
+    And it should show the presentation name and slide count
+    And it should list Drive folders: My Drive, Documents, Presentations, Shared with me
+    And clicking a folder and "Add Shortcut" should close the dialog
+
+  Scenario: File > Make available offline shows toggle dialog
+    When the user clicks "Make available offline"
+    Then a dialog should appear with title "Offline Access"
+    And it should show the current offline status with an icon
+    And clicking the toggle button should switch offline availability
+    And the dialog should close after toggling
+
+  Scenario: File > Security limitations shows permissions dialog
+    When the user clicks "Security limitations"
+    Then a dialog should appear with title "Security & Permissions"
+    And it should show toggle switches for:
+      | Setting                              |
+      | Prevent editors from changing access |
+      | Disable copy, print, and download    |
+      | Require sign-in to view              |
+    And each setting should have a description
+    And clicking "Done" should close the dialog
+
+  Scenario: File > Language shows language selector
+    When the user clicks "Language"
+    Then a dialog should appear with title "Presentation Language"
+    And it should show a grid of available languages
+    And the currently selected language should be highlighted
+    And clicking a language should select it and close the dialog
+
+  Scenario: File > Version history > Name current version shows naming dialog
+    When the user clicks "Name current version"
+    Then a dialog should appear with title "Name This Version"
+    And it should have a text input pre-filled with a default version name
+    And clicking "Save Version" should save and close the dialog
+    And clicking "Cancel" should close without saving
+
+  Scenario: File > Move to bin shows confirmation dialog
+    When the user clicks "Move to bin"
+    Then a confirmation dialog should appear with title "Move to Bin"
+    And it should show a red warning with the presentation title and slide count
+    And it should explain the 30-day bin retention policy
+    And clicking "Move to Bin" should delete and navigate to /presentations
+    And clicking "Cancel" should close without deleting
+
   # ──────────────────────────────────────────────────
   # Edit Menu
   # ──────────────────────────────────────────────────

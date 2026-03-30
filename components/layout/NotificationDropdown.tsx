@@ -19,8 +19,10 @@ import {
   CreditCard,
   MessageSquare,
   Info,
+  ShieldCheck,
 } from "lucide-react";
 import { useNotifications, formatTimeAgo, Notification, NotificationType } from "@/contexts/NotificationContext";
+import { permissionRequests } from "@/lib/permission-requests";
 
 export default function NotificationDropdown() {
   const router = useRouter();
@@ -35,6 +37,7 @@ export default function NotificationDropdown() {
     unreadCount,
     markAsRead,
     markAllAsRead,
+    addNotification,
   } = useNotifications();
 
   // Show only the first 6 notifications in dropdown
@@ -114,6 +117,9 @@ export default function NotificationDropdown() {
       document_comment_resolved: CheckCircle2,
       document_comment_rejected: XCircle,
       document_comment_mention: Bell,
+      permission_request: ShieldCheck,
+      permission_granted: CheckCircle2,
+      permission_denied: XCircle,
     };
     return icons[type] || Bell;
   };
@@ -142,6 +148,9 @@ export default function NotificationDropdown() {
       document_comment_resolved: { bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", gradient: "from-emerald-500 to-green-500" },
       document_comment_rejected: { bg: "bg-rose-50 dark:bg-rose-500/10", text: "text-rose-600 dark:text-rose-400", gradient: "from-rose-500 to-red-500" },
       document_comment_mention: { bg: "bg-purple-50 dark:bg-purple-500/10", text: "text-purple-600 dark:text-purple-400", gradient: "from-purple-500 to-pink-500" },
+      permission_request: { bg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-600 dark:text-amber-400", gradient: "from-amber-500 to-orange-500" },
+      permission_granted: { bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", gradient: "from-emerald-500 to-green-500" },
+      permission_denied: { bg: "bg-rose-50 dark:bg-rose-500/10", text: "text-rose-600 dark:text-rose-400", gradient: "from-rose-500 to-red-500" },
     };
     return colors[type] || colors.general;
   };
@@ -159,8 +168,8 @@ export default function NotificationDropdown() {
         <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:scale-110 transition-transform" />
         {/* Notification Badge with Count */}
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-gradient-to-br from-red-500 to-rose-600 text-white text-[10px] font-bold rounded-full ring-2 ring-white dark:ring-gray-900 shadow-lg">
-            {unreadCount > 9 ? "9+" : unreadCount}
+          <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] px-1 flex items-center justify-center bg-gradient-to-br from-red-500 to-rose-600 text-white text-[9px] font-bold rounded-full ring-2 ring-white dark:ring-gray-900 shadow-lg">
+            {unreadCount}
           </span>
         )}
       </button>
@@ -249,11 +258,12 @@ export default function NotificationDropdown() {
                       const Icon = getNotificationIcon(notification.type);
                       const colors = getNotificationColors(notification.type);
 
+                      const isPermRequest = notification.type === "permission_request" && !notification.read && !!notification.metadata?.requestId;
                       return (
-                        <button
+                        <div
                           key={notification.id}
-                          onClick={() => handleNotificationClick(notification)}
-                          className={`w-full text-left p-4 transition-all duration-200 cursor-pointer group hover:bg-gray-50/50 dark:hover:bg-gray-800/30 ${
+                          onClick={isPermRequest ? undefined : () => handleNotificationClick(notification)}
+                          className={`w-full text-left p-4 transition-all duration-200 cursor-pointer group hover:bg-gray-50/50 dark:hover:bg-gray-800/30 relative ${
                             !notification.read
                               ? "bg-gradient-to-r from-blue-50/50 via-transparent to-transparent dark:from-blue-500/5 dark:via-transparent"
                               : ""
@@ -315,7 +325,51 @@ export default function NotificationDropdown() {
                               </div>
                             )}
                           </div>
-                        </button>
+
+                          {/* Permission request action buttons */}
+                          {isPermRequest && (
+                            <div className="flex items-center gap-2 mt-3 ml-[52px]" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const reqId = notification.metadata?.requestId as string;
+                                  if (reqId) {
+                                    permissionRequests.approve(reqId);
+                                    addNotification({
+                                      type: "permission_granted",
+                                      title: "Permission Granted",
+                                      message: `You approved ${notification.metadata?.permissionType} access for "${notification.metadata?.presentationTitle || "presentation"}".`,
+                                      priority: "normal",
+                                    });
+                                  }
+                                  markAsRead(notification.id);
+                                }}
+                                className="px-3 py-1.5 text-[11px] font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-lg transition-all cursor-pointer shadow-sm"
+                              >
+                                ✓ Approve
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const reqId = notification.metadata?.requestId as string;
+                                  if (reqId) {
+                                    permissionRequests.deny(reqId);
+                                    addNotification({
+                                      type: "permission_denied",
+                                      title: "Permission Denied",
+                                      message: `You denied ${notification.metadata?.permissionType} access for "${notification.metadata?.presentationTitle || "presentation"}".`,
+                                      priority: "normal",
+                                    });
+                                  }
+                                  markAsRead(notification.id);
+                                }}
+                                className="px-3 py-1.5 text-[11px] font-semibold text-gray-700 dark:text-gray-200 bg-gray-100/80 dark:bg-gray-700/50 hover:bg-gray-200/80 dark:hover:bg-gray-600/50 border border-gray-200/50 dark:border-gray-600/50 rounded-lg transition-all cursor-pointer"
+                              >
+                                ✗ Deny
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       );
                     })}
                   </div>

@@ -10,6 +10,18 @@ export interface SlideData {
   transition: "none" | "fade" | "dissolve" | "flip" | "cube";
 }
 
+export interface PresentationPermissions {
+  preventAccessChange: boolean;
+  disableCopyPrintDownload: boolean;
+  requireSignIn: boolean;
+}
+
+export const DEFAULT_PERMISSIONS: PresentationPermissions = {
+  preventAccessChange: false,
+  disableCopyPrintDownload: false,
+  requireSignIn: true,
+};
+
 export interface StoredPresentation {
   id: string;
   title: string;
@@ -19,6 +31,9 @@ export interface StoredPresentation {
   createdAt: string;
   updatedAt: string;
   starred: boolean;
+  folder?: string;
+  permissions?: PresentationPermissions;
+  language?: string;
 }
 
 const STORAGE_KEY = "educo_presentations";
@@ -80,6 +95,57 @@ export const slideStorage = {
     const idx = items.findIndex(d => d.id === id);
     if (idx === -1) return;
     items[idx].starred = !items[idx].starred;
+    saveAll(items);
+  },
+
+  moveToFolder(id: string, folder: string) {
+    const items = getAll();
+    const idx = items.findIndex(d => d.id === id);
+    if (idx === -1) return;
+    items[idx].folder = folder;
+    items[idx].updatedAt = new Date().toISOString();
+    saveAll(items);
+  },
+
+  getFolder(id: string): string {
+    const item = getAll().find(d => d.id === id);
+    return item?.folder || "Presentations";
+  },
+
+  getPermissions(id: string): PresentationPermissions {
+    const item = getAll().find(d => d.id === id);
+    return item?.permissions || { ...DEFAULT_PERMISSIONS };
+  },
+
+  setPermissions(id: string, permissions: PresentationPermissions) {
+    const items = getAll();
+    const idx = items.findIndex(d => d.id === id);
+    if (idx === -1) return;
+    items[idx].permissions = permissions;
+    items[idx].updatedAt = new Date().toISOString();
+    saveAll(items);
+  },
+
+  setLanguage(id: string, language: string) {
+    const items = getAll();
+    const idx = items.findIndex(d => d.id === id);
+    if (idx === -1) return;
+    items[idx].language = language;
+    items[idx].updatedAt = new Date().toISOString();
+    saveAll(items);
+  },
+
+  getLanguage(id: string): string {
+    const item = getAll().find(d => d.id === id);
+    return item?.language || "English";
+  },
+
+  moveToBin(id: string) {
+    const items = getAll();
+    const idx = items.findIndex(d => d.id === id);
+    if (idx === -1) return;
+    items[idx].folder = "Bin";
+    items[idx].updatedAt = new Date().toISOString();
     saveAll(items);
   },
 

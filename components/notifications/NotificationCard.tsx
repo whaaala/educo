@@ -36,7 +36,7 @@ interface NotificationCardProps {
   avatar?: string;
   userName?: string;
   unread: boolean;
-  actions?: { label: string; variant?: "primary" | "secondary" }[];
+  actions?: { label: string; variant?: "primary" | "secondary"; onClick?: () => void }[];
   onMarkAsRead?: (id: string) => void;
   onDelete?: (id: string) => void;
   isOdd?: boolean;
@@ -323,7 +323,7 @@ export default function NotificationCard({
               {actions.map((action, index) => (
                 <button
                   key={`${id}-${action.label}-${index}`}
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => { e.stopPropagation(); action.onClick?.(); }}
                   className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
                     action.variant === "primary"
                       ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-sm hover:shadow-md"

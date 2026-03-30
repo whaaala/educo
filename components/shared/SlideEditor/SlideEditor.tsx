@@ -7,8 +7,11 @@ import {
   Strikethrough, Superscript as SuperscriptIcon, Subscript as SubscriptIcon,
   Image as ImageIcon, Type, Table2, Paintbrush, MessageCircle,
   Share2, Undo2, Redo2, ZoomIn, ZoomOut, Minus, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Check, Upload,
+  Bookmark, ShieldCheck, Globe, Tag, FolderPlus, Lock, AlertTriangle, Send, Mail,
 } from "lucide-react";
-import { slideStorage, type SlideData } from "@/lib/slide-storage";
+import { slideStorage, type SlideData, type PresentationPermissions, DEFAULT_PERMISSIONS } from "@/lib/slide-storage";
+import { permissionRequests } from "@/lib/permission-requests";
+import { useNotifications } from "@/contexts/NotificationContext";
 import SlideMenuBar from "./SlideMenuBar";
 
 // Shared components
@@ -120,12 +123,13 @@ function SlideRuler({ direction, length, slideOffset }: { direction: "h" | "v"; 
 }
 
 // ── Slide Canvas with rulers and proper fit ──
-function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, onInput }: {
+function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, onInput, slideRatio = { w: 16, h: 9 } }: {
   zoom: number;
   activeSlide: SlideData | undefined;
   canEdit: boolean;
   editorRef: React.RefObject<HTMLDivElement | null>;
   onInput: (html: string) => void;
+  slideRatio?: { w: number; h: number };
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 800, h: 450 });
@@ -143,10 +147,10 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, onInput }: {
       const availW = cw - pad * 2 - rulerH;
       const availH = ch - pad * 2 - rulerH;
       let w = availW;
-      let h = w * 9 / 16;
+      let h = w * slideRatio.h / slideRatio.w;
       if (h > availH) {
         h = availH;
-        w = h * 16 / 9;
+        w = h * slideRatio.w / slideRatio.h;
       }
       setSize({ w: Math.max(200, Math.round(w)), h: Math.max(112, Math.round(h)) });
     };
@@ -154,7 +158,7 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, onInput }: {
     const ro = new ResizeObserver(calc);
     if (containerRef.current) ro.observe(containerRef.current);
     return () => ro.disconnect();
-  }, []);
+  }, [slideRatio]);
 
   const slideLeft = 18 + (containerSize.w - 18 - size.w) / 2;
   const slideTop = 18 + (containerSize.h - 18 - size.h) / 2;
@@ -526,6 +530,7 @@ function ImportSlidesModal({ currentPresId, onImport, onClose }: {
 // ── Component ──
 export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const { title, slides, theme } = value;
+  const { addNotification } = useNotifications();
   const [activeSlideIdx, setActiveSlideIdx] = useState(0);
   const [isPresenting, setIsPresenting] = useState(false);
   const [showThemes, setShowThemes] = useState(false);
@@ -544,8 +549,64 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [showConvertVideo, setShowConvertVideo] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState<EmailMode | null>(null);
   const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const [showAddToFolderDialog, setShowAddToFolderDialog] = useState(false);
+  const [currentFolder, setCurrentFolder] = useState(() => {
+    if (typeof window === "undefined") return "Presentations";
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    return id ? slideStorage.getFolder(id) : "Presentations";
+  });
+  const [isStarred, setIsStarred] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    if (!id) return false;
+    const pres = slideStorage.get(id);
+    return pres?.starred ?? false;
+  });
+  const [showSecurityDialog, setShowSecurityDialog] = useState(false);
+  const [permissionBlockedMsg, setPermissionBlockedMsg] = useState<{ message: string; permType?: "copy" | "print" | "download" } | null>(null);
+  const [permissionRequestSent, setPermissionRequestSent] = useState(false);
+  const [permissions, setPermissionsState] = useState<PresentationPermissions>(() => {
+    if (typeof window === "undefined") return { ...DEFAULT_PERMISSIONS };
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    return id ? slideStorage.getPermissions(id) : { ...DEFAULT_PERMISSIONS };
+  });
+  // Block keyboard shortcuts when copy/print/download is disabled
+  useEffect(() => {
+    if (!permissions.disableCopyPrintDownload) return;
+    const handler = (e: KeyboardEvent) => {
+      const ctrl = e.ctrlKey || e.metaKey;
+      if (ctrl && (e.key === "c" || e.key === "x")) {
+        e.preventDefault();
+        setPermissionBlockedMsg({ message: "Copy is disabled by the document owner.", permType: "copy" });
+      }
+      if (ctrl && e.key === "p") {
+        e.preventDefault();
+        setPermissionBlockedMsg({ message: "Printing is disabled by the document owner.", permType: "print" });
+      }
+      if (ctrl && e.key === "s") {
+        e.preventDefault();
+        setPermissionBlockedMsg({ message: "Downloading is disabled by the document owner.", permType: "download" });
+      }
+    };
+    window.addEventListener("keydown", handler, true);
+    return () => window.removeEventListener("keydown", handler, true);
+  }, [permissions.disableCopyPrintDownload]);
+
+  const [showLanguageDialog, setShowLanguageDialog] = useState(false);
+  const [showVersionNameDialog, setShowVersionNameDialog] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [presentationLanguage, setPresentationLanguage] = useState(() => {
+    if (typeof window === "undefined") return "English";
+    const p = new URLSearchParams(window.location.search);
+    const id = p.get("id");
+    return id ? slideStorage.getLanguage(id) : "English";
+  });
   const [comments, setComments] = useState<DocComment[]>([]);
   const [zoom, setZoom] = useState(100);
+  const [slideRatio, setSlideRatio] = useState<{ label: string; w: number; h: number }>({ label: "Widescreen 16:9", w: 16, h: 9 });
   const [notesHeight, setNotesHeight] = useState(0);
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
   const [filmstripCollapsed, setFilmstripCollapsed] = useState(false);
@@ -567,13 +628,35 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     updateSlides(newSlides);
   }, [slides, activeSlideIdx, updateSlides]);
 
+  const slideTranslations: Record<string, { title: string; subtitle: string }> = {
+    English: { title: "Click to add title", subtitle: "Click to add subtitle" },
+    Spanish: { title: "Haga clic para añadir título", subtitle: "Haga clic para añadir subtítulo" },
+    French: { title: "Cliquez pour ajouter un titre", subtitle: "Cliquez pour ajouter un sous-titre" },
+    German: { title: "Klicken Sie, um einen Titel hinzuzufügen", subtitle: "Klicken Sie, um einen Untertitel hinzuzufügen" },
+    Portuguese: { title: "Clique para adicionar título", subtitle: "Clique para adicionar subtítulo" },
+    Italian: { title: "Fai clic per aggiungere un titolo", subtitle: "Fai clic per aggiungere un sottotitolo" },
+    Dutch: { title: "Klik om een titel toe te voegen", subtitle: "Klik om een ondertitel toe te voegen" },
+    Russian: { title: "Нажмите, чтобы добавить заголовок", subtitle: "Нажмите, чтобы добавить подзаголовок" },
+    Chinese: { title: "点击添加标题", subtitle: "点击添加副标题" },
+    Japanese: { title: "タイトルを追加するにはクリック", subtitle: "サブタイトルを追加するにはクリック" },
+    Korean: { title: "제목을 추가하려면 클릭하세요", subtitle: "부제목을 추가하려면 클릭하세요" },
+    Arabic: { title: "انقر لإضافة عنوان", subtitle: "انقر لإضافة عنوان فرعي" },
+    Hindi: { title: "शीर्षक जोड़ने के लिए क्लिक करें", subtitle: "उपशीर्षक जोड़ने के लिए क्लिक करें" },
+    Yoruba: { title: "Tẹ lati fi àkọlé kún", subtitle: "Tẹ lati fi àkọlé-abẹ́ kún" },
+    Igbo: { title: "Pịa iji tinye aha", subtitle: "Pịa iji tinye aha nke abụọ" },
+    Hausa: { title: "Danna don ƙara taken", subtitle: "Danna don ƙara ƙaramin taken" },
+    Swahili: { title: "Bofya ili kuongeza kichwa", subtitle: "Bofya ili kuongeza kichwa kidogo" },
+    Zulu: { title: "Chofoza ukuze ungeze isihloko", subtitle: "Chofoza ukuze ungeze isihloko esincane" },
+  };
+
   const addSlide = useCallback(() => {
+    const t = slideTranslations[presentationLanguage] || slideTranslations.English;
     const newSlides = [...slides];
-    const newSlide = makeSlide('<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;"><h2 style="text-align:center;font-size:32px;font-weight:700;color:#1f2937;margin:0;">Click to add title</h2><p style="text-align:center;font-size:18px;color:#9ca3af;margin:0;">Click to add subtitle</p></div>');
+    const newSlide = makeSlide(`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;"><h2 style="text-align:center;font-size:32px;font-weight:700;color:#1f2937;margin:0;">${t.title}</h2><p style="text-align:center;font-size:18px;color:#9ca3af;margin:0;">${t.subtitle}</p></div>`);
     newSlides.splice(activeSlideIdx + 1, 0, newSlide);
     updateSlides(newSlides);
     setActiveSlideIdx(activeSlideIdx + 1);
-  }, [slides, activeSlideIdx, updateSlides]);
+  }, [slides, activeSlideIdx, updateSlides, presentationLanguage]);
 
   const duplicateSlide = useCallback(() => {
     const newSlides = [...slides];
@@ -673,7 +756,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     return (
       <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center select-none" onClick={() => setActiveSlideIdx(i => Math.min(i + 1, slides.length - 1))}>
         <div className="w-full h-full flex items-center justify-center relative">
-          <div className="w-full h-full max-w-[100vw] max-h-[100vh] relative" style={{ aspectRatio: "16/9" }}>
+          <div className="w-full h-full max-w-[100vw] max-h-[100vh] relative" style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}` }}>
             <div
               className={`w-full h-full ${TRANSITION_STYLES[activeSlide?.transition || "fade"]}`}
               style={{ background: activeSlide?.background || "#ffffff" }}
@@ -709,19 +792,80 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#f8f9fa] dark:bg-gray-950">
+    <div
+      className="flex flex-col h-full bg-[#f8f9fa] dark:bg-gray-950 slide-editor-root"
+      lang={(() => {
+        const langCodes: Record<string, string> = { English: "en", Spanish: "es", French: "fr", German: "de", Portuguese: "pt", Italian: "it", Dutch: "nl", Russian: "ru", Chinese: "zh", Japanese: "ja", Korean: "ko", Arabic: "ar", Hindi: "hi", Yoruba: "yo", Igbo: "ig", Hausa: "ha", Swahili: "sw", Zulu: "zu" };
+        return langCodes[presentationLanguage] || "en";
+      })()}
+      dir={["Arabic"].includes(presentationLanguage) ? "rtl" : "ltr"}
+      style={permissions.disableCopyPrintDownload ? { userSelect: "none", WebkitUserSelect: "none" } : undefined}
+      onCopy={permissions.disableCopyPrintDownload ? (e) => { e.preventDefault(); setPermissionBlockedMsg({ message: "Copy is disabled by the document owner.", permType: "copy" }); } : undefined}
+    >
+      {/* Print styles — landscape, hide UI, show only slides */}
+      <style>{`
+        @page { size: landscape; margin: 0; }
+        @media print {
+          /* Hide everything outside the editor */
+          html, body { margin: 0 !important; padding: 0 !important; }
+          body > * { visibility: hidden !important; }
+          .slide-editor-root { visibility: visible !important; position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: auto !important; background: white !important; }
+
+          /* Hide editor UI elements */
+          .slide-editor-root > *:not([data-print-slides]) { display: none !important; }
+
+          /* Show and style the print slides container */
+          [data-print-slides] { display: block !important; visibility: visible !important; }
+          [data-print-slide] {
+            page-break-after: always;
+            width: 100vw !important;
+            height: 100vh !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 4% !important;
+            box-sizing: border-box !important;
+          }
+          [data-print-slide]:last-child { page-break-after: avoid; }
+          [data-print-slide] * { color-adjust: exact !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+          /* Hide sidebar, header, nav */
+          nav, header, aside, [role="complementary"], [role="banner"] { display: none !important; }
+        }
+      `}</style>
+
+      {/* Print-only slides (hidden on screen, visible when printing) */}
+      <div data-print-slides="" className="hidden print:block">
+        {slides.map((slide, i) => (
+          <div key={slide.id} data-print-slide="" style={{ background: slide.background || "#fff" }}>
+            <div style={{ width: "100%", maxWidth: 900, aspectRatio: `${slideRatio.w}/${slideRatio.h}` }} dangerouslySetInnerHTML={{ __html: slide.content }} />
+          </div>
+        ))}
+      </div>
+
       {/* ── Top Header — always visible ── */}
       <div className="flex items-center gap-3 px-4 py-2 bg-white dark:bg-gray-900 border-b border-gray-200/80 dark:border-gray-800 flex-shrink-0">
         <button onClick={() => window.location.href = "/presentations"}
           className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer">
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <input
-          value={title}
-          onChange={e => onChange({ ...value, title: e.target.value })}
-          placeholder="Untitled presentation"
-          className="text-[17px] font-semibold text-gray-800 dark:text-gray-200 bg-transparent outline-none border-b-2 border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus:border-blue-500 px-1 py-0.5 max-w-[340px] transition-all duration-200"
-        />
+        <div className="flex items-center gap-1.5 min-w-0">
+          <input
+            value={title}
+            onChange={e => onChange({ ...value, title: e.target.value })}
+            placeholder="Untitled presentation"
+            className="text-[17px] font-semibold text-gray-800 dark:text-gray-200 bg-transparent outline-none border-b-2 border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus:border-blue-500 px-1 py-0.5 max-w-[340px] transition-all duration-200"
+          />
+          <button
+            onClick={() => setShowAddToFolderDialog(true)}
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-colors cursor-pointer shrink-0"
+            title={`Located in: ${currentFolder}`}
+          >
+            <FolderPlus className="w-3 h-3" />
+            <span>{currentFolder}</span>
+            <ChevronRight className="w-3 h-3 opacity-50" />
+          </button>
+        </div>
         <div className="flex-1" />
         {/* Collapse/expand toggle for menus+toolbar */}
         <button
@@ -732,7 +876,23 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           {headerCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
         </button>
         <ToolbarButton title="Comments" Icon={MessageCircle} onClick={() => setShowCommentSidebar(!showCommentSidebar)} active={showCommentSidebar} />
-        <button onClick={() => setShowShareDialog(true)}
+        {permissions.requireSignIn && (
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-[10px] font-medium" title="Sign-in required to view">
+            <Lock className="w-3 h-3" /> Sign-in required
+          </span>
+        )}
+        {permissions.disableCopyPrintDownload && (
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-[10px] font-medium" title="Copy, print, and download disabled">
+            <ShieldCheck className="w-3 h-3" /> Restricted
+          </span>
+        )}
+        <button onClick={() => {
+            if (permissions.preventAccessChange) {
+              setPermissionBlockedMsg({ message: "Sharing permissions are locked. Only the owner can manage access." });
+            } else {
+              setShowShareDialog(true);
+            }
+          }}
           className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gray-100 text-gray-700 text-[12px] font-medium hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer">
           <Share2 className="w-3.5 h-3.5" /> Share
         </button>
@@ -748,7 +908,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         style={{ maxHeight: headerCollapsed ? 0 : 300, opacity: headerCollapsed ? 0 : 1 }}
       >
       {/* ── Menu Bar (shared component) ── */}
-      <SlideMenuBar onAction={(action) => {
+      <SlideMenuBar isStarred={isStarred} currentFolder={currentFolder} onAction={(action) => {
         switch (action) {
           case "slide:new": case "insert:newSlide": addSlide(); break;
           case "slide:duplicate": case "edit:duplicate": duplicateSlide(); break;
@@ -758,8 +918,12 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           case "slide:editTheme": setShowThemes(true); break;
           case "edit:undo": document.execCommand("undo"); break;
           case "edit:redo": document.execCommand("redo"); break;
-          case "edit:cut": document.execCommand("cut"); break;
-          case "edit:copy": document.execCommand("copy"); break;
+          case "edit:cut":
+            if (permissions.disableCopyPrintDownload) { setPermissionBlockedMsg({ message: "Copy is disabled by the document owner.", permType: "copy" }); break; }
+            document.execCommand("cut"); break;
+          case "edit:copy":
+            if (permissions.disableCopyPrintDownload) { setPermissionBlockedMsg({ message: "Copy is disabled by the document owner.", permType: "copy" }); break; }
+            document.execCommand("copy"); break;
           case "edit:paste": document.execCommand("paste"); break;
           case "edit:selectAll": document.execCommand("selectAll"); break;
           case "format:bold": document.execCommand("bold"); break;
@@ -777,11 +941,31 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           case "format:numberedList": document.execCommand("insertOrderedList"); break;
           case "format:bulletedList": document.execCommand("insertUnorderedList"); break;
           case "format:clear": document.execCommand("removeFormat"); break;
-          case "file:print": setTimeout(() => window.print(), 300); break;
-          case "file:printPreview": setTimeout(() => window.print(), 300); break;
+          case "file:print":
+            if (permissions.disableCopyPrintDownload) { setPermissionBlockedMsg({ message: "Printing is disabled by the document owner.", permType: "print" }); break; }
+            setTimeout(() => window.print(), 300); break;
+          case "file:printPreview": {
+            if (permissions.disableCopyPrintDownload) { setPermissionBlockedMsg({ message: "Printing is disabled by the document owner.", permType: "print" }); break; }
+            const printParams = new URLSearchParams(window.location.search);
+            const printPresId = printParams.get("id");
+            if (printPresId) window.open(`/presentations/print-preview?id=${printPresId}`, "_blank");
+            break;
+          }
           case "file:newFromTemplate": window.location.href = "/presentations"; break;
-          case "file:share": setShowShareDialog(true); break;
-          case "file:publish": setShowPublishWeb(true); break;
+          case "file:share":
+            if (permissions.preventAccessChange) {
+              setPermissionBlockedMsg({ message: "Sharing permissions are locked. Only the owner can manage access." });
+            } else {
+              setShowShareDialog(true);
+            }
+            break;
+          case "file:publish":
+            if (permissions.preventAccessChange) {
+              setPermissionBlockedMsg({ message: "Sharing permissions are locked. Only the owner can publish." });
+            } else {
+              setShowPublishWeb(true);
+            }
+            break;
           case "file:rename": {
             const titleInput = document.querySelector('input[placeholder="Untitled presentation"]') as HTMLInputElement;
             if (titleInput) { titleInput.focus(); titleInput.select(); }
@@ -796,26 +980,27 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           case "file:open": window.open("/presentations", "_blank"); break;
           case "file:import": setShowImportSlides(true); break;
           case "file:copyAll": {
+            if (permissions.disableCopyPrintDownload) { setPermissionBlockedMsg({ message: "Copying is disabled by the document owner.", permType: "copy" }); break; }
             const newId = slideStorage.create({ title: title + " (Copy)", slides, theme });
             window.open(`/presentations/editor?id=${newId}`, "_blank");
             break;
           }
-          case "file:copySelected": setShowCopySelected(true); break;
-          case "file:delete": {
-            if (window.confirm("Move this presentation to bin?")) {
-              const params = new URLSearchParams(window.location.search);
-              const id = params.get("id");
-              if (id) slideStorage.remove(id);
-              window.location.href = "/presentations";
-            }
+          case "file:copySelected":
+            if (permissions.disableCopyPrintDownload) { setPermissionBlockedMsg({ message: "Copying is disabled by the document owner.", permType: "copy" }); break; }
+            setShowCopySelected(true); break;
+          case "file:delete": setShowDeleteConfirm(true); break;
+          case "file:move": setShowMoveDialog(true); break;
+          case "file:star": {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get("id");
+            if (id) slideStorage.toggleStar(id);
+            setIsStarred(!isStarred);
             break;
           }
-          case "file:move": setShowMoveDialog(true); break;
-          case "file:shortcut": { alert("Shortcut added to Drive"); break; }
-          case "file:offline": { alert("Presentation is now available offline"); break; }
+          case "file:addToFolder": setShowAddToFolderDialog(true); break;
           case "file:details": setShowDetailsDialog(true); break;
-          case "file:security": { alert("Security limitations — no restrictions currently active"); break; }
-          case "file:language": { alert("Language settings — coming soon"); break; }
+          case "file:security": setShowSecurityDialog(true); break;
+          case "file:language": setShowLanguageDialog(true); break;
           case "file:emailFile": setShowEmailDialog("file"); break;
           case "file:emailCollaborators": setShowEmailDialog("collaborators"); break;
 
@@ -823,17 +1008,14 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           case "file:videoAll":
           case "file:videoSelected":
             setShowConvertVideo(true); break;
-          case "file:versionName": {
-            const versionName = window.prompt("Name this version:", `Version ${new Date().toLocaleDateString()}`);
-            if (versionName) alert(`Version saved as: "${versionName}"`);
-            break;
-          }
+          case "file:versionName": setShowVersionNameDialog(true); break;
           case "file:versionHistory": setShowVersionHistory(true); break;
           case "file:pageSetup": setShowPageSetup(true); break;
           case "file:download":
           case "file:downloadPptx": case "file:downloadOdp": case "file:downloadPdf":
           case "file:downloadTxt": case "file:downloadJpeg": case "file:downloadPng":
           case "file:downloadSvg":
+            if (permissions.disableCopyPrintDownload) { setPermissionBlockedMsg({ message: "Downloading is disabled by the document owner.", permType: "download" }); break; }
             setShowDownloadDialog(true);
             break;
           case "insert:comment": addComment(); break;
@@ -1131,9 +1313,9 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                         : "ring-1 ring-gray-300/60 dark:ring-gray-700/60 hover:ring-gray-400 dark:hover:ring-gray-600 hover:shadow-md"
                     }`}
                   >
-                    <div className="aspect-video w-full overflow-hidden" style={{ background: slide.background || "#fff" }}>
+                    <div className="w-full overflow-hidden" style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}`, background: slide.background || "#fff" }}>
                       <div className="w-[640px] origin-top-left pointer-events-none" style={{ transform: "scale(0.24)" }}>
-                        <div className="w-full" style={{ aspectRatio: "16/9" }} dangerouslySetInnerHTML={{ __html: slide.content }} />
+                        <div className="w-full" style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}` }} dangerouslySetInnerHTML={{ __html: slide.content }} />
                       </div>
                     </div>
                   </button>
@@ -1168,6 +1350,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             activeSlide={activeSlide}
             canEdit={canEdit}
             editorRef={editorRef}
+            slideRatio={slideRatio}
             onInput={(html) => updateCurrentSlide({ content: html })}
           />
 
@@ -1235,7 +1418,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
               </button>
             </div>
             <span className="text-[10px] text-gray-400 font-medium">
-              Slide {activeSlideIdx + 1} of {slides.length}
+              Slide {activeSlideIdx + 1} of {slides.length} · {presentationLanguage}
             </span>
             <div className="flex items-center gap-1">
               <button onClick={() => setZoom(z => Math.max(50, z - 25))} className="p-0.5 rounded hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-colors cursor-pointer">
@@ -1442,8 +1625,11 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           fileName={title}
           sourceId={(() => { const p = new URLSearchParams(window.location.search); return p.get("id") || ""; })()}
           sourceType="presentation"
-          onMoveComplete={({ oldFolder, newFolder }) => {
-            console.log(`Moved presentation from ${oldFolder} to ${newFolder}`);
+          onMoveComplete={({ newFolder }) => {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get("id");
+            if (id) slideStorage.moveToFolder(id, newFolder);
+            setCurrentFolder(newFolder);
           }}
         />
       )}
@@ -1494,20 +1680,30 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       {showPageSetup && (
         <EditorDialog title="Page Setup" onClose={() => setShowPageSetup(false)}>
           <div className="space-y-4">
-            <p className="text-[13px] text-gray-500">Slide dimensions</p>
+            <p className="text-[13px] text-gray-500 dark:text-gray-400">Slide dimensions</p>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: "Widescreen 16:9", ratio: "16/9" },
-                { label: "Standard 4:3", ratio: "4/3" },
-                { label: "Widescreen 16:10", ratio: "16/10" },
-                { label: "Custom", ratio: "custom" },
-              ].map(opt => (
-                <button key={opt.ratio} onClick={() => setShowPageSetup(false)}
-                  className="px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-[12px] text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 transition-colors cursor-pointer">
-                  {opt.label}
-                </button>
-              ))}
+                { label: "Widescreen 16:9", w: 16, h: 9 },
+                { label: "Standard 4:3", w: 4, h: 3 },
+                { label: "Widescreen 16:10", w: 16, h: 10 },
+                { label: "Square 1:1", w: 1, h: 1 },
+              ].map(opt => {
+                const isSelected = slideRatio.w === opt.w && slideRatio.h === opt.h;
+                return (
+                  <button key={opt.label} onClick={() => { setSlideRatio(opt); setShowPageSetup(false); }}
+                    className={`flex flex-col items-center gap-2 px-3 py-3 rounded-xl border text-[12px] transition-colors cursor-pointer ${
+                      isSelected
+                        ? "border-blue-400 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-semibold"
+                        : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300"
+                    }`}>
+                    <div className="border border-current rounded" style={{ width: 48, aspectRatio: `${opt.w}/${opt.h}` }} />
+                    {opt.label}
+                    {isSelected && <Check className="w-3.5 h-3.5 text-blue-500" />}
+                  </button>
+                );
+              })}
             </div>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500">Current: {slideRatio.label} ({slideRatio.w}:{slideRatio.h})</p>
           </div>
         </EditorDialog>
       )}
@@ -1523,6 +1719,332 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                 <p className="text-[11px] text-blue-500 dark:text-blue-400 mt-0.5">{new Date().toLocaleString()}</p>
               </div>
               <p className="text-[12px] text-gray-400 text-center py-4">No previous versions saved yet</p>
+            </div>
+          </div>
+        </EditorDialog>
+      )}
+
+      {/* Add to Folder Dialog */}
+      {showAddToFolderDialog && (() => {
+        const FolderPicker = () => {
+          const [selected, setSelected] = React.useState(currentFolder);
+          const folders = ["My Drive", "Documents", "Presentations", "Spreadsheets", "Images"];
+          const handleSave = () => {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get("id");
+            if (id) slideStorage.moveToFolder(id, selected);
+            setCurrentFolder(selected);
+            setShowAddToFolderDialog(false);
+          };
+          return (
+            <EditorDialog title="Add to Folder" onClose={() => setShowAddToFolderDialog(false)}>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800">
+                  <FolderPlus className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <div>
+                    <p className="text-[13px] font-medium text-blue-800 dark:text-blue-200">{title}</p>
+                    <p className="text-[11px] text-blue-600 dark:text-blue-400">Currently in: <span className="font-semibold">{currentFolder}</span></p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[12px] font-medium text-gray-700 dark:text-gray-300 mb-2">Move to:</p>
+                  <div className="space-y-1.5">
+                    {folders.map(folder => (
+                      <button key={folder} onClick={() => setSelected(folder)}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left text-[13px] transition-colors cursor-pointer ${
+                          selected === folder
+                            ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold border border-blue-300 dark:border-blue-700"
+                            : folder === currentFolder
+                              ? "bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-transparent"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-transparent"
+                        }`}>
+                        <FolderPlus className={`w-4 h-4 ${selected === folder ? "text-blue-500" : "text-gray-400"}`} />
+                        {folder}
+                        {folder === currentFolder && selected !== folder && (
+                          <span className="ml-auto text-[11px] text-gray-400">(current)</span>
+                        )}
+                        {selected === folder && <Check className="w-4 h-4 ml-auto text-blue-500" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <EditorDialogButton variant="secondary" onClick={() => setShowAddToFolderDialog(false)}>Cancel</EditorDialogButton>
+                  <EditorDialogButton variant="primary" onClick={handleSave}>Move to Folder</EditorDialogButton>
+                </div>
+              </div>
+            </EditorDialog>
+          );
+        };
+        return <FolderPicker />;
+      })()}
+
+
+      {/* Sharing Permissions Dialog */}
+      {showSecurityDialog && (() => {
+        const SecurityContent = () => {
+          const [localPerms, setLocalPerms] = React.useState<PresentationPermissions>({ ...permissions });
+          const toggle = (key: keyof PresentationPermissions) => setLocalPerms(prev => ({ ...prev, [key]: !prev[key] }));
+          const handleSave = () => {
+            setPermissionsState(localPerms);
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get("id");
+            if (id) slideStorage.setPermissions(id, localPerms);
+            setShowSecurityDialog(false);
+          };
+          const items = [
+            { key: "preventAccessChange" as const, icon: Lock, label: "Prevent editors from changing access", desc: "Only you can manage sharing permissions. Editors cannot add or remove collaborators." },
+            { key: "disableCopyPrintDownload" as const, icon: Copy, label: "Disable copy, print, and download", desc: "Viewers and commenters cannot copy, print, or download this presentation." },
+            { key: "requireSignIn" as const, icon: ShieldCheck, label: "Require sign-in to view", desc: "Only signed-in users can access this file. Anonymous access is blocked." },
+          ];
+          return (
+            <div className="space-y-4">
+              <div className="space-y-3">
+                {items.map((item) => {
+                  const enabled = localPerms[item.key];
+                  return (
+                    <div key={item.key} className={`flex items-start gap-3 p-3 rounded-xl border transition-colors ${enabled ? "border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-900/10" : "border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700"}`}>
+                      <item.icon className={`w-4.5 h-4.5 mt-0.5 shrink-0 ${enabled ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"}`} />
+                      <div className="flex-1">
+                        <p className={`text-[13px] font-medium ${enabled ? "text-blue-800 dark:text-blue-200" : "text-gray-800 dark:text-gray-200"}`}>{item.label}</p>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{item.desc}</p>
+                      </div>
+                      <button className={`mt-0.5 w-9 h-5 rounded-full transition-colors cursor-pointer ${enabled ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"}`}
+                        onClick={() => toggle(item.key)}>
+                        <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${enabled ? "translate-x-4.5" : "translate-x-0.5"}`} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <EditorDialogButton variant="secondary" onClick={() => setShowSecurityDialog(false)}>Cancel</EditorDialogButton>
+                <EditorDialogButton variant="primary" onClick={handleSave}>Save Permissions</EditorDialogButton>
+              </div>
+            </div>
+          );
+        };
+        return (
+          <EditorDialog title="Sharing Permissions" onClose={() => setShowSecurityDialog(false)}>
+            <SecurityContent />
+          </EditorDialog>
+        );
+      })()}
+
+      {/* Language Dialog */}
+      {showLanguageDialog && (
+        <EditorDialog title="Slide Language" onClose={() => setShowLanguageDialog(false)}>
+          <div className="space-y-4">
+            <p className="text-[12px] text-gray-500 dark:text-gray-400">Set the language for slide content. Placeholder text on slides will be translated to the selected language.</p>
+            <div className="grid grid-cols-2 gap-1.5 max-h-[240px] overflow-y-auto">
+              {["English", "Spanish", "French", "German", "Portuguese", "Italian", "Dutch", "Russian", "Chinese", "Japanese", "Korean", "Arabic", "Hindi", "Yoruba", "Igbo", "Hausa", "Swahili", "Zulu"].map(lang => (
+                <button key={lang} onClick={() => {
+                    // Translate placeholder text on all existing slides
+                    const oldT = slideTranslations[presentationLanguage] || slideTranslations.English;
+                    const newT = slideTranslations[lang] || slideTranslations.English;
+                    const updatedSlides = slides.map(slide => {
+                      let content = slide.content;
+                      // Replace from current language to new language
+                      const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                      // Replace current language placeholders
+                      content = content.replace(new RegExp(esc(oldT.title), 'g'), newT.title);
+                      content = content.replace(new RegExp(esc(oldT.subtitle), 'g'), newT.subtitle);
+                      // Also replace English defaults (for first-time language change)
+                      if (presentationLanguage !== "English") {
+                        const enT = slideTranslations.English;
+                        content = content.replace(new RegExp(esc(enT.title), 'g'), newT.title);
+                        content = content.replace(new RegExp(esc(enT.subtitle), 'g'), newT.subtitle);
+                      }
+                      content = content.replace(/Untitled Presentation/g, newT.title);
+                      return { ...slide, content };
+                    });
+                    onChange({ ...value, slides: updatedSlides });
+
+                    // Also update the presentation title if it's still the default
+                    if (title === "Untitled presentation" || Object.values(slideTranslations).some(t => title === t.title)) {
+                      onChange({ ...value, title: newT.title, slides: updatedSlides });
+                    }
+
+                    setPresentationLanguage(lang);
+                    const p = new URLSearchParams(window.location.search);
+                    const id = p.get("id");
+                    if (id) slideStorage.setLanguage(id, lang);
+                    setShowLanguageDialog(false);
+                  }}
+                  className={`px-3 py-2 rounded-lg text-[12px] text-left transition-colors cursor-pointer ${
+                    presentationLanguage === lang
+                      ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold border border-blue-300 dark:border-blue-700"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent"
+                  }`}>
+                  {presentationLanguage === lang && <Check className="w-3 h-3 inline mr-1.5" />}
+                  {lang}
+                </button>
+              ))}
+            </div>
+          </div>
+        </EditorDialog>
+      )}
+
+      {/* Name Version Dialog */}
+      {showVersionNameDialog && (() => {
+        const VersionNameContent = () => {
+          const [versionName, setVersionNameLocal] = React.useState(`Version ${new Date().toLocaleDateString()}`);
+          return (
+            <div className="space-y-4">
+              <p className="text-[12px] text-gray-500 dark:text-gray-400">Give this version a name so you can find it later in version history.</p>
+              <input
+                type="text"
+                value={versionName}
+                onChange={e => setVersionNameLocal(e.target.value)}
+                autoFocus
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-[13px] text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                placeholder="e.g. Final draft, Before review..."
+              />
+              <div className="flex justify-end gap-2">
+                <EditorDialogButton variant="secondary" onClick={() => setShowVersionNameDialog(false)}>Cancel</EditorDialogButton>
+                <EditorDialogButton variant="primary" onClick={() => setShowVersionNameDialog(false)}>
+                  <Tag className="w-3.5 h-3.5 mr-1" /> Save Version
+                </EditorDialogButton>
+              </div>
+            </div>
+          );
+        };
+        return (
+          <EditorDialog title="Name This Version" onClose={() => setShowVersionNameDialog(false)}>
+            <VersionNameContent />
+          </EditorDialog>
+        );
+      })()}
+
+      {/* Permission Blocked Dialog */}
+      {permissionBlockedMsg && (() => {
+        // Check if current user is the document owner
+        const params = new URLSearchParams(window.location.search);
+        const presId = params.get("id") || "";
+        const pres = presId ? slideStorage.get(presId) : null;
+        const isOwner = !pres || pres.owner === "You" || pres.owner === "System Administrator";
+        const canRequest = !!permissionBlockedMsg.permType && !isOwner;
+
+        const handleRequestPermission = () => {
+          if (!permissionBlockedMsg.permType) return;
+
+          const permReq = permissionRequests.request({
+            presentationId: presId,
+            presentationTitle: title,
+            permission: permissionBlockedMsg.permType,
+            requesterUsername: "current.user",
+            requesterFullName: "System Administrator",
+            requesterEmail: "admin@educo.school",
+            ownerUsername: "doc.owner",
+            ownerFullName: "Document Owner",
+            message: `Requesting ${permissionBlockedMsg.permType} access`,
+          });
+
+          addNotification({
+            type: "permission_request",
+            title: "Permission Request",
+            message: `has requested ${permissionBlockedMsg.permType} access to "${title}".`,
+            priority: "high",
+            userName: "System Administrator",
+            actionUrl: `/presentations/editor?id=${presId}`,
+            metadata: {
+              requestId: permReq.id,
+              permissionType: permissionBlockedMsg.permType,
+              presentationId: presId,
+              presentationTitle: title,
+              requesterUsername: "current.user",
+              requesterFullName: "System Administrator",
+            },
+          });
+
+          setPermissionRequestSent(true);
+        };
+
+        return (
+          <EditorDialog title="Action Restricted" onClose={() => { setPermissionBlockedMsg(null); setPermissionRequestSent(false); }}>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800">
+                <ShieldCheck className="w-6 h-6 text-amber-500 shrink-0" />
+                <p className="text-[13px] text-amber-800 dark:text-amber-200">{permissionBlockedMsg.message}</p>
+              </div>
+
+              {!permissionRequestSent ? (
+                <>
+                  <p className="text-[12px] text-gray-500 dark:text-gray-400">
+                    {isOwner
+                      ? "You set this restriction in Sharing Permissions. You can edit your permissions to change this."
+                      : `This restriction was set by the document owner in Sharing Permissions.${canRequest ? " You can request permission from the owner." : ""}`
+                    }
+                  </p>
+                  <div className="flex justify-end gap-2">
+                    <EditorDialogButton variant="secondary" onClick={() => { setPermissionBlockedMsg(null); setPermissionRequestSent(false); }}>
+                      Close
+                    </EditorDialogButton>
+                    {isOwner ? (
+                      <button
+                        onClick={() => { setPermissionBlockedMsg(null); setPermissionRequestSent(false); setShowSecurityDialog(true); }}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-[13px] font-medium hover:bg-blue-700 transition-colors cursor-pointer"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        Edit Permissions
+                      </button>
+                    ) : canRequest ? (
+                      <button
+                        onClick={handleRequestPermission}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-[13px] font-medium hover:bg-blue-700 transition-colors cursor-pointer"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        Request Permission
+                      </button>
+                    ) : null}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800">
+                    <Mail className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0" />
+                    <div>
+                      <p className="text-[13px] font-medium text-green-800 dark:text-green-200">Permission request sent!</p>
+                      <p className="text-[11px] text-green-600 dark:text-green-400 mt-0.5">
+                        A notification and email have been sent to the document owner. You&apos;ll be notified when they respond.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <EditorDialogButton variant="primary" onClick={() => { setPermissionBlockedMsg(null); setPermissionRequestSent(false); }}>
+                      Done
+                    </EditorDialogButton>
+                  </div>
+                </>
+              )}
+            </div>
+          </EditorDialog>
+        );
+      })()}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <EditorDialog title="Move to Bin" onClose={() => setShowDeleteConfirm(false)}>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800">
+              <AlertTriangle className="w-6 h-6 text-red-500 shrink-0" />
+              <div>
+                <p className="text-[13px] font-medium text-red-800 dark:text-red-200">Are you sure you want to move this presentation to the bin?</p>
+                <p className="text-[11px] text-red-600 dark:text-red-400 mt-1">&ldquo;{title}&rdquo; · {slides.length} slides</p>
+              </div>
+            </div>
+            <p className="text-[12px] text-gray-500 dark:text-gray-400">You can restore it from the bin within 30 days. After that, it will be permanently deleted.</p>
+            <div className="flex justify-end gap-2">
+              <EditorDialogButton variant="secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</EditorDialogButton>
+              <button onClick={() => {
+                const params = new URLSearchParams(window.location.search);
+                const id = params.get("id");
+                if (id) slideStorage.moveToBin(id);
+                window.location.href = "/presentations";
+              }}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white text-[13px] font-medium hover:bg-red-700 transition-colors cursor-pointer">
+                Move to Bin
+              </button>
             </div>
           </div>
         </EditorDialog>

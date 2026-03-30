@@ -28,7 +28,10 @@ export type NotificationType =
   | "document_comment_reply"
   | "document_comment_resolved"
   | "document_comment_rejected"
-  | "document_comment_mention";
+  | "document_comment_mention"
+  | "permission_request"
+  | "permission_granted"
+  | "permission_denied";
 
 export type NotificationPriority = "low" | "normal" | "high" | "urgent";
 
@@ -460,6 +463,24 @@ export function getNotificationTypeConfig(type: NotificationType) {
       color: "text-purple-600 dark:text-purple-400",
       bgColor: "bg-purple-50/80 dark:bg-purple-500/10",
       borderColor: "border-purple-100/50 dark:border-purple-500/20",
+    },
+    permission_request: {
+      label: "Permission Request",
+      color: "text-amber-600 dark:text-amber-400",
+      bgColor: "bg-amber-50/80 dark:bg-amber-500/10",
+      borderColor: "border-amber-100/50 dark:border-amber-500/20",
+    },
+    permission_granted: {
+      label: "Permission Granted",
+      color: "text-emerald-600 dark:text-emerald-400",
+      bgColor: "bg-emerald-50/80 dark:bg-emerald-500/10",
+      borderColor: "border-emerald-100/50 dark:border-emerald-500/20",
+    },
+    permission_denied: {
+      label: "Permission Denied",
+      color: "text-rose-600 dark:text-rose-400",
+      bgColor: "bg-rose-50/80 dark:bg-rose-500/10",
+      borderColor: "border-rose-100/50 dark:border-rose-500/20",
     },
   };
 

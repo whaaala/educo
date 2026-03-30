@@ -36,7 +36,7 @@ export function EditorDialog({
             {title}
           </div>
           <button
-            className="px-2 py-1 rounded-lg text-[12px] text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="px-2 py-1 rounded-lg text-[12px] text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
             onClick={onClose}
           >
             Close

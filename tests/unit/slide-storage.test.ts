@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { slideStorage } from "@/lib/slide-storage";
+import { slideStorage, DEFAULT_PERMISSIONS } from "@/lib/slide-storage";
 
 const store: Record<string, string> = {};
 const localStorageMock = {
@@ -104,6 +104,95 @@ describe("slide-storage — Presentation Persistence Layer", () => {
       expect(slide.background).toBe("#f0f0f0");
       expect(slide.notes).toBe("");
       expect(slide.transition).toBe("fade");
+    });
+  });
+
+  describe("moveToFolder()", () => {
+    it("moves a presentation to a specified folder", () => {
+      const id = slideStorage.create({ title: "Test" });
+      slideStorage.moveToFolder(id, "Documents");
+      expect(slideStorage.getFolder(id)).toBe("Documents");
+    });
+
+    it("updates the updatedAt timestamp", () => {
+      const id = slideStorage.create({ title: "Test" });
+      const before = slideStorage.get(id)!.updatedAt;
+      slideStorage.moveToFolder(id, "Images");
+      const after = slideStorage.get(id)!.updatedAt;
+      expect(new Date(after).getTime()).toBeGreaterThanOrEqual(new Date(before).getTime());
+    });
+  });
+
+  describe("getFolder()", () => {
+    it("returns 'Presentations' as default folder", () => {
+      const id = slideStorage.create({});
+      expect(slideStorage.getFolder(id)).toBe("Presentations");
+    });
+
+    it("returns the assigned folder", () => {
+      const id = slideStorage.create({});
+      slideStorage.moveToFolder(id, "My Drive");
+      expect(slideStorage.getFolder(id)).toBe("My Drive");
+    });
+  });
+
+  describe("moveToBin()", () => {
+    it("moves a presentation to the Bin folder", () => {
+      const id = slideStorage.create({ title: "Delete Me" });
+      slideStorage.moveToBin(id);
+      expect(slideStorage.getFolder(id)).toBe("Bin");
+    });
+
+    it("does not permanently delete the presentation", () => {
+      const id = slideStorage.create({ title: "Still Here" });
+      slideStorage.moveToBin(id);
+      expect(slideStorage.get(id)).not.toBeNull();
+      expect(slideStorage.get(id)!.title).toBe("Still Here");
+    });
+  });
+
+  describe("permissions", () => {
+    it("returns default permissions for new presentations", () => {
+      const id = slideStorage.create({});
+      const perms = slideStorage.getPermissions(id);
+      expect(perms.preventAccessChange).toBe(false);
+      expect(perms.disableCopyPrintDownload).toBe(false);
+      expect(perms.requireSignIn).toBe(true);
+    });
+
+    it("saves and retrieves permissions", () => {
+      const id = slideStorage.create({});
+      slideStorage.setPermissions(id, {
+        preventAccessChange: true,
+        disableCopyPrintDownload: true,
+        requireSignIn: false,
+      });
+      const perms = slideStorage.getPermissions(id);
+      expect(perms.preventAccessChange).toBe(true);
+      expect(perms.disableCopyPrintDownload).toBe(true);
+      expect(perms.requireSignIn).toBe(false);
+    });
+
+    it("persists permissions across get calls", () => {
+      const id = slideStorage.create({});
+      slideStorage.setPermissions(id, { ...DEFAULT_PERMISSIONS, disableCopyPrintDownload: true });
+      const perms1 = slideStorage.getPermissions(id);
+      const perms2 = slideStorage.getPermissions(id);
+      expect(perms1.disableCopyPrintDownload).toBe(true);
+      expect(perms2.disableCopyPrintDownload).toBe(true);
+    });
+
+    it("returns default permissions for non-existent presentation", () => {
+      const perms = slideStorage.getPermissions("nonexistent");
+      expect(perms).toEqual(DEFAULT_PERMISSIONS);
+    });
+
+    it("updates the updatedAt timestamp when setting permissions", () => {
+      const id = slideStorage.create({});
+      const before = slideStorage.get(id)!.updatedAt;
+      slideStorage.setPermissions(id, { ...DEFAULT_PERMISSIONS, preventAccessChange: true });
+      const after = slideStorage.get(id)!.updatedAt;
+      expect(new Date(after).getTime()).toBeGreaterThanOrEqual(new Date(before).getTime());
     });
   });
 });

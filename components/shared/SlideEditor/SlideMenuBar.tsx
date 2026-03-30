@@ -19,14 +19,16 @@ import {
   Keyboard, GraduationCap, Bell, Presentation, CircleDot, ArrowRight,
   PenTool, Hexagon, SlidersHorizontal, X as XIcon, ExternalLink,
   Video, Mail, FolderSymlink, CloudOff, Info, ShieldCheck, Globe, History,
-  Clock, Tag, Move, Bookmark,
+  Clock, Tag, Move, Bookmark, Star,
 } from "lucide-react";
 
 interface SlideMenuBarProps {
   onAction: (action: string, payload?: unknown) => void;
+  isStarred?: boolean;
+  currentFolder?: string;
 }
 
-export default function SlideMenuBar({ onAction }: SlideMenuBarProps) {
+export default function SlideMenuBar({ onAction, isStarred = false, currentFolder = "Presentations" }: SlideMenuBarProps) {
   const act = (action: string) => () => onAction(action);
 
   const fileMenu: EditorMenuItem[] = [
@@ -55,18 +57,18 @@ export default function SlideMenuBar({ onAction }: SlideMenuBarProps) {
     D,
     { label: "Rename", icon: PencilLine, onClick: act("file:rename") },
     { label: "Move", icon: Move, onClick: act("file:move") },
-    { label: "Add shortcut to Drive", icon: Bookmark, onClick: act("file:shortcut") },
+    { label: isStarred ? "Remove from starred" : "Add to starred", icon: Star, onClick: act("file:star") },
+    { label: `Location: ${currentFolder}`, icon: FolderSymlink, onClick: act("file:addToFolder") },
     { label: "Move to bin", icon: Trash2, onClick: act("file:delete") },
     D,
     { label: "Version history", icon: History, submenu: [
       { label: "Name current version", icon: Tag, onClick: act("file:versionName") },
       { label: "See version history", icon: Clock, shortcut: "Ctrl+Alt+Shift+H", onClick: act("file:versionHistory") },
     ]},
-    { label: "Make available offline", icon: CloudOff, onClick: act("file:offline") },
     D,
     { label: "Details", icon: Info, onClick: act("file:details") },
-    { label: "Security limitations", icon: ShieldCheck, onClick: act("file:security") },
-    { label: "Language", icon: Globe, onClick: act("file:language") },
+    { label: "Sharing permissions", icon: ShieldCheck, onClick: act("file:security") },
+    { label: "Slide language", icon: Globe, onClick: act("file:language") },
     { label: "Page setup", icon: Settings, onClick: act("file:pageSetup") },
     D,
     { label: "Print preview", icon: Eye, onClick: act("file:printPreview") },
