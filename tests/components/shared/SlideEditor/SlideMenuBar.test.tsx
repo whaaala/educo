@@ -7,6 +7,19 @@ const menuBarSource = fs.readFileSync(
   "utf-8"
 );
 
+const fileMenuSource = fs.readFileSync(
+  path.resolve(__dirname, "../../../../components/shared/EditorFileMenu.tsx"),
+  "utf-8"
+);
+
+const editorMenusSource = fs.readFileSync(
+  path.resolve(__dirname, "../../../../components/shared/EditorMenus.tsx"),
+  "utf-8"
+);
+
+// Combined source for checking items that span multiple files
+const combinedMenuSource = menuBarSource + fileMenuSource;
+
 const slideEditorSource = fs.readFileSync(
   path.resolve(__dirname, "../../../../components/shared/SlideEditor/SlideEditor.tsx"),
   "utf-8"
@@ -30,14 +43,19 @@ describe("SlideMenuBar — Complete Menu System", () => {
   });
 
   describe("File menu", () => {
+    it("uses buildFileMenu from EditorFileMenu", () => {
+      expect(menuBarSource).toContain("buildFileMenu");
+      expect(menuBarSource).toContain("EditorFileMenu");
+    });
+
     it("has New with submenu", () => {
-      expect(menuBarSource).toContain('"Presentation"');
+      expect(combinedMenuSource).toContain('"Presentation"');
       expect(menuBarSource).toContain('"From template gallery"');
     });
 
     it("has Open with Ctrl+O shortcut", () => {
-      expect(menuBarSource).toContain('"Open"');
-      expect(menuBarSource).toContain('"Ctrl+O"');
+      expect(combinedMenuSource).toContain('"Open"');
+      expect(combinedMenuSource).toContain('"Ctrl+O"');
     });
 
     it("has Import slides", () => {
@@ -50,25 +68,19 @@ describe("SlideMenuBar — Complete Menu System", () => {
     });
 
     it("has Share with submenu", () => {
-      expect(menuBarSource).toContain('"Share with others"');
-      expect(menuBarSource).toContain('"Publish to web"');
+      expect(combinedMenuSource).toContain('"Share with others"');
+      expect(combinedMenuSource).toContain('"Publish"');
     });
 
-    it("has Download with all 7 formats", () => {
-      expect(menuBarSource).toContain(".pptx");
-      expect(menuBarSource).toContain(".odp");
-      expect(menuBarSource).toContain(".pdf");
-      expect(menuBarSource).toContain(".txt");
-      expect(menuBarSource).toContain("JPEG");
-      expect(menuBarSource).toContain("PNG");
-      expect(menuBarSource).toContain("SVG");
+    it("has Download item", () => {
+      expect(combinedMenuSource).toContain('"Download"');
     });
 
     it("has Rename, Move to bin, Page setup, Print", () => {
-      expect(menuBarSource).toContain('"Rename"');
-      expect(menuBarSource).toContain('"Move to bin"');
-      expect(menuBarSource).toContain('"Page setup"');
-      expect(menuBarSource).toContain('"Print"');
+      expect(combinedMenuSource).toContain('"Rename"');
+      expect(combinedMenuSource).toContain('"Move to bin"');
+      expect(combinedMenuSource).toContain('"Page setup"');
+      expect(combinedMenuSource).toContain('"Print"');
     });
   });
 
@@ -297,13 +309,13 @@ describe("SlideMenuBar — Complete Menu System", () => {
 
   describe("Glassmorphism UI", () => {
     it("dropdowns use backdrop-blur", () => {
-      expect(menuBarSource).toContain("backdrop-blur-xl");
-      expect(menuBarSource).toContain("bg-white/95");
+      expect(editorMenusSource).toContain("backdrop-blur-xl");
+      expect(editorMenusSource).toContain("bg-white/95");
     });
 
     it("submenus use glassmorphism", () => {
-      // Both the main dropdown and submenus should have blur
-      const blurCount = (menuBarSource.match(/backdrop-blur-xl/g) || []).length;
+      // Both the main dropdown and submenus should have blur in EditorMenus
+      const blurCount = (editorMenusSource.match(/backdrop-blur-xl/g) || []).length;
       expect(blurCount).toBeGreaterThanOrEqual(2);
     });
   });

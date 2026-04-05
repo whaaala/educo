@@ -276,7 +276,11 @@ export function EditorMenuRoot({
 }
 
 // ── Full Menu Bar Component ──
-export function EditorMenuBar({ menus }: { menus: { id: string; label: string; items: EditorMenuItem[] }[] }) {
+export function EditorMenuBar({ menus, fileMenuConfig }: {
+  menus: { id: string; label: string; items: EditorMenuItem[] }[];
+  /** When provided, the "file" menu renders using EditorFileMenuPanel instead of EditorMenuRoot */
+  fileMenuConfig?: import("@/components/shared/EditorFileMenu").FileMenuConfig;
+}) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const close = useCallback(() => setOpenMenu(null), []);
   const open = useCallback((id: string) => setOpenMenu(id), []);
@@ -287,22 +291,61 @@ export function EditorMenuBar({ menus }: { menus: { id: string; label: string; i
     if (!openMenu) return;
     const handler = (e: MouseEvent) => {
       if (menuBarRef.current?.contains(e.target as Node)) return;
-      // Check if click is inside a portalled submenu
-      if ((e.target as HTMLElement)?.closest?.("[data-editor-menu-panel]")) return;
+      // Check if click is inside a portalled submenu or doc menu panel
+      if ((e.target as HTMLElement)?.closest?.("[data-editor-menu-panel],[data-doc-menu-panel]")) return;
       close();
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [openMenu, close]);
 
+  // Lazy import to avoid circular dependency
+  const FileMenuPanel = fileMenuConfig ? require("@/components/shared/EditorFileMenu").EditorFileMenuPanel : null;
+
   return (
     <MenuCloseContext.Provider value={close}>
       <div ref={menuBarRef} className="flex items-center flex-wrap gap-0.5 px-2 py-0.5 text-[13px] text-gray-600 dark:text-gray-300 select-none border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
-        {menus.map(m => (
-          <EditorMenuRoot key={m.id} id={m.id} label={m.label} items={m.items} openMenu={openMenu} onOpen={open} onClose={close} />
-        ))}
+        {menus.map(m => {
+          // File menu uses EditorFileMenuPanel when config is provided
+          if (m.id === "file" && fileMenuConfig && FileMenuPanel) {
+            const isOpen = openMenu === "file";
+            return (
+              <FileMenuRoot key="file" isOpen={isOpen} onOpen={() => open("file")} onClose={close}
+                openMenu={openMenu} fileMenuConfig={fileMenuConfig} FileMenuPanel={FileMenuPanel} />
+            );
+          }
+          return (
+            <EditorMenuRoot key={m.id} id={m.id} label={m.label} items={m.items} openMenu={openMenu} onOpen={open} onClose={close} />
+          );
+        })}
       </div>
     </MenuCloseContext.Provider>
+  );
+}
+
+// ── FileMenuRoot (manages button ref for portal positioning) ──
+function FileMenuRoot({ isOpen, onOpen, onClose, openMenu, fileMenuConfig, FileMenuPanel }: {
+  isOpen: boolean; onOpen: () => void; onClose: () => void; openMenu: string | null;
+  fileMenuConfig: any; FileMenuPanel: any;
+}) {
+  const btnRef = useRef<HTMLButtonElement>(null);
+  return (
+    <div className="relative z-[100]" data-editor-menu-root>
+      <button
+        ref={btnRef}
+        type="button"
+        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
+          isOpen
+            ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-100"
+        }`}
+        onClick={() => (isOpen ? onClose() : onOpen())}
+        onMouseEnter={() => openMenu && !isOpen && onOpen()}
+      >
+        File
+      </button>
+      {isOpen && <FileMenuPanel config={fileMenuConfig} onClose={onClose} anchorRef={btnRef} />}
+    </div>
   );
 }
 

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { EditorMenuBar, type EditorMenuItem, MENU_DIVIDER as D } from "@/components/shared/EditorMenus";
+import { type FileMenuConfig, EditorFileMenuPanel } from "@/components/shared/EditorFileMenu";
 import {
   FilePlus, FolderOpen, Upload, Copy, Share2, Download, Printer,
   FileText, Trash2, Settings, Undo2, Redo2, Scissors, Clipboard, ClipboardPaste,
@@ -17,9 +18,7 @@ import {
   RotateCw, FlipHorizontal2, FlipVertical2, Group, Ungroup,
   SpellCheck, Book, Link2, Mic, Accessibility,
   Keyboard, GraduationCap, Bell, Presentation, CircleDot, ArrowRight,
-  PenTool, Hexagon, SlidersHorizontal, X as XIcon, ExternalLink,
-  Video, Mail, FolderSymlink, CloudOff, Info, ShieldCheck, Globe, History,
-  Clock, Tag, Move, Bookmark, Star,
+  PenTool, Hexagon, SlidersHorizontal, X as XIcon,
 } from "lucide-react";
 
 interface SlideMenuBarProps {
@@ -31,49 +30,27 @@ interface SlideMenuBarProps {
 export default function SlideMenuBar({ onAction, isStarred = false, currentFolder = "Presentations" }: SlideMenuBarProps) {
   const act = (action: string) => () => onAction(action);
 
-  const fileMenu: EditorMenuItem[] = [
-    { label: "New", icon: FilePlus, submenu: [
-      { label: "Presentation", icon: Presentation, onClick: act("file:new") },
-      { label: "From template gallery", icon: LayoutGrid, onClick: act("file:newFromTemplate") },
-    ]},
-    { label: "Open", icon: FolderOpen, shortcut: "Ctrl+O", onClick: act("file:open") },
-    { label: "Import slides", icon: Upload, onClick: act("file:import") },
-    D,
-    { label: "Make a copy", icon: Copy, submenu: [
-      { label: "Entire presentation", icon: Copy, onClick: act("file:copyAll") },
-      { label: "Selected slides", icon: CopyPlus, onClick: act("file:copySelected") },
-    ]},
-    { label: "Share", icon: Share2, submenu: [
-      { label: "Share with others", icon: Share2, onClick: act("file:share") },
-      { label: "Publish", icon: ExternalLink, onClick: act("file:publish") },
-    ]},
-    { label: "Email", icon: Mail, submenu: [
-      { label: "Email this file", icon: Mail, onClick: act("file:emailFile") },
-      { label: "Email collaborators", icon: Mail, onClick: act("file:emailCollaborators") },
-    ]},
-    D,
-    { label: "Download", icon: Download, onClick: act("file:download") },
-    { label: "Convert to video", icon: Video, onClick: act("file:convertVideo") },
-    D,
-    { label: "Rename", icon: PencilLine, onClick: act("file:rename") },
-    { label: "Move", icon: Move, onClick: act("file:move") },
-    { label: isStarred ? "Remove from starred" : "Add to starred", icon: Star, onClick: act("file:star") },
-    { label: `Location: ${currentFolder}`, icon: FolderSymlink, onClick: act("file:addToFolder") },
-    { label: "Move to bin", icon: Trash2, onClick: act("file:delete") },
-    D,
-    { label: "Version history", icon: History, submenu: [
-      { label: "Name current version", icon: Tag, onClick: act("file:versionName") },
-      { label: "See version history", icon: Clock, shortcut: "Ctrl+Alt+Shift+H", onClick: act("file:versionHistory") },
-    ]},
-    D,
-    { label: "Details", icon: Info, onClick: act("file:details") },
-    { label: "Sharing permissions", icon: ShieldCheck, onClick: act("file:security") },
-    { label: "Slide language", icon: Globe, onClick: act("file:language") },
-    { label: "Page setup", icon: Settings, onClick: act("file:pageSetup") },
-    D,
-    { label: "Print preview", icon: Eye, onClick: act("file:printPreview") },
-    { label: "Print", icon: Printer, shortcut: "Ctrl+P", onClick: act("file:print") },
-  ];
+  const fileMenuConfig = {
+    onAction,
+    isStarred,
+    currentFolder,
+    workspace: {
+      newMenu: {
+        items: [
+          { label: "Presentation", icon: Presentation, onClick: act("file:new") },
+          { label: "From template gallery", icon: LayoutGrid, onClick: act("file:newFromTemplate") },
+        ],
+      },
+      importItem: { label: "Import slides", icon: Upload, onClick: act("file:import") },
+      copyMenu: [
+        { label: "Entire presentation", icon: Copy, onClick: act("file:copyAll") },
+        { label: "Selected slides", icon: CopyPlus, onClick: act("file:copySelected") },
+      ],
+      showConvertToVideo: true,
+      languageLabel: "Slide language",
+      showPageSetup: true,
+    },
+  };
 
   const editMenu: EditorMenuItem[] = [
     { label: "Undo", icon: Undo2, shortcut: "Ctrl+Z", onClick: act("edit:undo") },
@@ -306,8 +283,9 @@ export default function SlideMenuBar({ onAction, isStarred = false, currentFolde
 
   return (
     <EditorMenuBar
+      fileMenuConfig={fileMenuConfig}
       menus={[
-        { id: "file", label: "File", items: fileMenu },
+        { id: "file", label: "File", items: [] },
         { id: "edit", label: "Edit", items: editMenu },
         { id: "view", label: "View", items: viewMenu },
         { id: "insert", label: "Insert", items: insertMenu },

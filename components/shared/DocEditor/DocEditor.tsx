@@ -123,11 +123,17 @@ import {
 } from "lucide-react";
 import { DOC_LANGUAGES } from "./languages";
 import DrawingCanvas from "./DrawingCanvas";
+import { EditorFileMenuPanel } from "@/components/shared/EditorFileMenu";
 import Tooltip from "@/components/shared/Tooltip";
 import ShareDialog from "@/components/shared/ShareDialog";
 import type { ShareTarget } from "@/components/shared/ShareDialog";
 import PublishDialog from "@/components/shared/PublishDialog";
 import type { PublishScope, PublishAttachment } from "@/components/shared/PublishDialog";
+import EmailDialog, { type EmailMode } from "@/components/shared/EmailDialog";
+import DownloadDialog, { type DownloadFormat } from "@/components/shared/DownloadDialog";
+import MoveDialog from "@/components/shared/MoveDialog";
+import { EditorDialog, EditorDialogButton } from "@/components/shared/EditorDialogs";
+import { driveStorage } from "@/lib/drive-storage";
 // Safe imports: these hooks throw if no Provider, so we use try-catch wrappers
 import { useUser as _useUser } from "@/contexts/UserContext";
 import { useNotifications as _useNotifications, formatTimeAgo } from "@/contexts/NotificationContext";
@@ -1054,6 +1060,7 @@ export default function DocEditor({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const savedEditorRangeRef = useRef<Range | null>(null);
   const openFileInputRef = useRef<HTMLInputElement>(null);
+  const fileMenuBtnRef = useRef<HTMLButtonElement>(null);
   const [moreOpen, setMoreOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState<"file" | "edit" | "view" | "insert" | "format" | "tools" | "extensions" | "help" | null>(null);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
@@ -1220,7 +1227,13 @@ export default function DocEditor({
   const translateRequestIdRef = useRef(0);
   const [tenantTranslationEnabled, setTenantTranslationEnabled] = useState(true);
 
-  const [dialog, setDialog] = useState<null | "share" | "publish" | "findReplace" | "pageSetup" | "details" | "security" | "versions">(null);
+  const [dialog, setDialog] = useState<null | "share" | "publish" | "findReplace" | "pageSetup" | "details" | "security" | "versions" | "language">(null);
+  const [showEmailDialog, setShowEmailDialog] = useState<EmailMode | null>(null);
+  const [showDownloadDialog, setShowDownloadDialog] = useState(false);
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showVersionNameDialog, setShowVersionNameDialog] = useState(false);
+  const [showAddToFolderDialog, setShowAddToFolderDialog] = useState(false);
   const [findQuery, setFindQuery] = useState("");
   const [replaceQuery, setReplaceQuery] = useState("");
   const lastFindIndexRef = useRef(0);
@@ -2415,7 +2428,7 @@ export default function DocEditor({
       // close the currently open menu/submenu.
       const isInsideMenu = Boolean(
         target.closest?.(
-          "[data-doc-menubar],[data-doc-menu-root],[data-doc-menu-panel],[data-doc-dialog]"
+          "[data-doc-menubar],[data-doc-menu-root],[data-doc-menu-panel],[data-editor-menu-panel],[data-doc-dialog]"
         )
       );
 
@@ -4163,6 +4176,61 @@ export default function DocEditor({
     downloadText(`${base}.${format}`, htmlDoc, "text/html;charset=utf-8");
     showToast(`${format.toUpperCase()} downloaded (HTML-based)`);
   };
+
+  // ── File menu action dispatcher (bridges buildFileMenu actions → existing handlers) ──
+  const handleFileAction = useCallback((action: string) => {
+    switch (action) {
+      case "file:new": handleNewDoc(); break;
+      case "file:open": handleOpenFile(); break;
+      case "file:share": setDialog("share"); break;
+      case "file:publish": setDialog("publish"); break;
+      case "file:emailFile": setShowEmailDialog("file"); break;
+      case "file:emailCollaborators": setShowEmailDialog("collaborators"); break;
+      case "file:download": setShowDownloadDialog(true); break;
+      case "file:rename": handleRename(); break;
+      case "file:move": setShowMoveDialog(true); break;
+      case "file:star": {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+        if (id) {
+          const entry = driveStorage.findBySourceId(id);
+          if (entry) {
+            driveStorage.ensureFileEntry(id, docTitle, "document");
+            const updated = driveStorage.findBySourceId(id);
+            if (updated) {
+              const items = driveStorage.list();
+              const idx = items.findIndex(i => i.id === updated.id);
+              if (idx !== -1) {
+                items[idx].starred = !items[idx].starred;
+                localStorage.setItem("educo_drive_items", JSON.stringify(items));
+              }
+            }
+          }
+        }
+        showToast("Starred toggled");
+        break;
+      }
+      case "file:addToFolder": setShowAddToFolderDialog(true); break;
+      case "file:delete": setShowDeleteConfirm(true); break;
+      case "file:versionName": setShowVersionNameDialog(true); break;
+      case "file:versionHistory": setDialog("versions"); break;
+      case "file:details": setDialog("details"); break;
+      case "file:security": setDialog("security"); break;
+      case "file:language": setDialog("language" as any); break;
+      case "file:pageSetup": setDialog("pageSetup"); break;
+      case "file:printPreview": {
+        // Open print preview page in new tab (same pattern as SlideEditor)
+        const params = new URLSearchParams(window.location.search);
+        const printDocId = params.get("id");
+        if (printDocId) window.open(`/documents/print-preview?id=${printDocId}`, "_blank");
+        break;
+      }
+      case "file:print": window.print(); break;
+      case "file:copyAll": handleMakeCopy(); break;
+    }
+    setOpenMenu(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handleEmail, handleRename, handleShareCopy, showToast, saveVersion]);
 
   /** Remove all find/replace highlight marks and merge adjacent text nodes */
   const clearFindHighlights = () => {
@@ -6058,183 +6126,38 @@ export default function DocEditor({
             openMenu={openMenu}
             onOpen={(id) => setOpenMenu(id)}
             onClose={() => setOpenMenu(null)}
+            buttonRef={fileMenuBtnRef}
           >
-            <ViewMenuPanel>
-            <ViewMenuItem
-              label="New"
-              icon={FilePlus2}
-              hasSubmenu
-              onHover={() => setOpenSubmenu("file-new")}
-              onClick={() => setOpenSubmenu((prev) => (prev === "file-new" ? null : "file-new"))}
-              onLeave={() => setOpenSubmenu(null)}
-              isSubmenuOpen={openSubmenu === "file-new"}
-              submenu={
-                <SubmenuPanel className="w-[220px]">
-                  <ViewMenuItem label="Document" icon={FileText} onClick={handleNewDoc} />
-                  <ViewMenuItem label="Spreadsheet" icon={FileSpreadsheet} onClick={() => showToast("Spreadsheet: coming soon")} />
-                  <ViewMenuItem label="Presentation" icon={Presentation} onClick={() => showToast("Presentation: coming soon")} />
-                  <ViewMenuItem label="Form" icon={FormInputIcon} onClick={() => showToast("Form: coming soon")} />
-                  <ViewMenuItem label="Drawing" icon={Pencil} onClick={() => setShowDrawingCanvas(true)} />
-                </SubmenuPanel>
-              }
-            />
-            <ViewMenuItem label="Open" icon={BookOpen} shortcut="Ctrl+O" onClick={handleOpenFile} />
-            <ViewMenuItem label="Make a copy" icon={Copy} onClick={handleMakeCopy} />
-            <ViewMenuDivider />
-            <ViewMenuItem
-              label="Share"
-              icon={UserPlus}
-              hasSubmenu
-              onHover={() => setOpenSubmenu("file-share")}
-              onClick={() => setOpenSubmenu((prev) => (prev === "file-share" ? null : "file-share"))}
-              onLeave={() => setOpenSubmenu(null)}
-              isSubmenuOpen={openSubmenu === "file-share"}
-              submenu={
-                <SubmenuPanel className="w-[240px]">
-                  <ViewMenuItem label="Share with others" icon={UserPlus} onClick={() => setDialog("share")} />
-                  <ViewMenuItem label="Publish" icon={Globe} onClick={() => setDialog("publish")} />
-                </SubmenuPanel>
-              }
-            />
-            <ViewMenuItem
-              label="Email"
-              icon={Mail}
-              hasSubmenu
-              onHover={() => setOpenSubmenu("file-email")}
-              onClick={() => setOpenSubmenu((prev) => (prev === "file-email" ? null : "file-email"))}
-              onLeave={() => setOpenSubmenu(null)}
-              isSubmenuOpen={openSubmenu === "file-email"}
-              submenu={
-                <SubmenuPanel className="w-[240px]">
-                  <ViewMenuItem label="Email this document" icon={Mail} onClick={handleEmail} />
-                  <ViewMenuItem label="Copy email-ready text" icon={Copy} onClick={() => handleShareCopy("text")} />
-                </SubmenuPanel>
-              }
-            />
-            <ViewMenuItem
-              label="Download"
-              icon={Download}
-              hasSubmenu
-              onHover={() => setOpenSubmenu("file-download")}
-              onClick={() => setOpenSubmenu((prev) => (prev === "file-download" ? null : "file-download"))}
-              onLeave={() => setOpenSubmenu(null)}
-              isSubmenuOpen={openSubmenu === "file-download"}
-              submenu={
-                <SubmenuPanel className="w-[280px]">
-                  <ViewMenuItem label="Microsoft Word (.doc)" icon={Download} onClick={() => handleDownload("docx")} />
-                  <ViewMenuItem label="PDF document (.pdf)" icon={Download} onClick={() => handleDownload("pdf")} />
-                  <ViewMenuItem label="OpenDocument format (.odt)" icon={Download} onClick={() => handleDownload("odt")} />
-                  <ViewMenuItem label="Plain text (.txt)" icon={Download} onClick={() => handleDownload("txt")} />
-                  <ViewMenuItem label="Rich Text Format (.rtf)" icon={Download} onClick={() => handleDownload("rtf")} />
-                  <ViewMenuItem label="Web page (.html)" icon={Download} onClick={() => handleDownload("html")} />
-                  <ViewMenuItem label="EPUB publication (.epub)" icon={Download} onClick={() => handleDownload("epub")} />
-                  <ViewMenuItem label="Markdown (.md)" icon={Download} onClick={() => handleDownload("md")} />
-                  <ViewMenuDivider />
-                  <ViewMenuItem label="JSON (.json)" icon={Download} onClick={() => handleDownload("json")} />
-                </SubmenuPanel>
-              }
-            />
-            <ViewMenuDivider />
-            <ViewMenuItem label="Rename" icon={PenLine} onClick={handleRename} />
-            <ViewMenuItem label="Move" icon={FolderInput} onClick={() => showToast("Move: coming soon")} />
-            <ViewMenuItem label="Add shortcut to Drive" icon={Star} onClick={() => showToast("Shortcut added to Drive")} />
-            <ViewMenuItem label="Move to trash" icon={Trash2} onClick={() => { showToast("Document moved to trash"); handleNewDoc(); }} />
-            <ViewMenuDivider />
-            <ViewMenuItem
-              label="Version history"
-              hasSubmenu
-              onHover={() => setOpenSubmenu("file-versions")}
-              onClick={() => setOpenSubmenu((prev) => (prev === "file-versions" ? null : "file-versions"))}
-              onLeave={() => setOpenSubmenu(null)}
-              isSubmenuOpen={openSubmenu === "file-versions"}
-              submenu={
-                <SubmenuPanel className="w-[280px]">
-                  <ViewMenuItem label="Name current version" icon={Tag} onClick={() => {
-                    const name = window.prompt("Name this version:");
-                    if (!name) return;
-                    saveVersion(name, "manual");
-                    showToast(`Version named: ${name}`);
-                  }} />
-                  <ViewMenuItem
-                    label="Save version"
-                    onClick={() => {
-                      saveVersion("Manual save", "manual");
-                      showToast("Version saved");
-                      setDialog("versions");
-                    }}
-                  />
-                  <ViewMenuItem label="View versions" onClick={() => setDialog("versions")} />
-                </SubmenuPanel>
-              }
-            />
-            <ViewMenuItem label="Details" onClick={() => setDialog("details")} />
-            <ViewMenuItem label="Security limitations" onClick={() => setDialog("security")} />
-            <ViewMenuDivider />
-            <ViewMenuItem
-              label="Language"
-              hasSubmenu
-              disabled={!tenantTranslationEnabled}
-              onHover={tenantTranslationEnabled ? () => setOpenSubmenu("file-language") : undefined}
-              onClick={tenantTranslationEnabled ? () => setOpenSubmenu("file-language") : undefined}
-              onLeave={tenantTranslationEnabled ? () => setOpenSubmenu(null) : undefined}
-              isSubmenuOpen={openSubmenu === "file-language"}
-              submenu={
-                <SubmenuPanel className="w-[280px] p-2">
-                  <div className="mb-2">
-                    <input
-                      value={languageQuery}
-                      onChange={(e) => setLanguageQuery(e.target.value)}
-                      placeholder="Search languages..."
-                      className="w-full px-2 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 midnight:bg-gray-800/50 purple:bg-gray-800/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-200 placeholder:text-gray-400 outline-none"
-                    />
-                  </div>
-                  <div
-                    className="py-1 max-h-[320px] overflow-y-auto overscroll-contain scrollbar-thin"
-                    onWheelCapture={(e) => e.stopPropagation()}
-                  >
-                    {filteredLanguages.map((l) => (
-                    <ViewMenuItem
-                      key={l.tag}
-                      label={l.label}
-                      onClick={() => {
-                        const prevLang = language;
-                        const nextLang = l.tag;
-
-                        htmlByLanguageRef.current.set(prevLang, latestValueRef.current.html);
-
-                        const existing = htmlByLanguageRef.current.get(nextLang);
-                        if (existing) {
-                          updateValue({ language: nextLang, html: existing });
-                          return;
-                        }
-
-                        updateValue({ language: nextLang });
-                        if (tenantTranslationEnabled) {
-                          void handleTranslateDocument(prevLang, nextLang);
-                        }
-                      }}
-                      isChecked={language === l.tag}
-                    />
-                  ))}
-                    {filteredLanguages.length === 0 && (
-                      <div className="px-3 py-2 text-[12px] text-gray-500 dark:text-gray-400">
-                        No languages found
-                      </div>
-                    )}
-                  </div>
-                </SubmenuPanel>
-              }
-            />
-            <ViewMenuItem label="Page setup" onClick={() => setDialog("pageSetup")} />
-            <ViewMenuItem
-              label="Print"
-              icon={Printer}
-              shortcut="Ctrl+P"
-              onClick={() => {
-                handleDownload("pdf");
+            <EditorFileMenuPanel
+              anchorRef={fileMenuBtnRef}
+              config={{
+                onAction: handleFileAction,
+                isStarred: false,
+                currentFolder: "Documents",
+                workspace: {
+                  newMenu: {
+                    items: [
+                      { label: "Document", icon: FileText, onClick: () => handleFileAction("file:new") },
+                      { label: "Spreadsheet", icon: FileSpreadsheet, onClick: () => showToast("Spreadsheet: coming soon") },
+                      { label: "Presentation", icon: Presentation, onClick: () => showToast("Presentation: coming soon") },
+                      { label: "Form", icon: FormInputIcon, onClick: () => showToast("Form: coming soon") },
+                      { label: "Drawing", icon: Pencil, onClick: () => setShowDrawingCanvas(true) },
+                    ],
+                  },
+                  makeCopyItem: { label: "Make a copy", icon: Copy, onClick: () => handleFileAction("file:copyAll") },
+                  showConvertToVideo: false,
+                  languageLabel: "Language",
+                  showPageSetup: true,
+                  permissionsLabel: "Security limitations",
+                  versionHistoryItems: [
+                    { label: "Name current version", icon: Tag, onClick: () => handleFileAction("file:versionName") },
+                    { label: "Save version", onClick: () => { saveVersion("Manual save", "manual"); showToast("Version saved"); setDialog("versions"); setOpenMenu(null); } },
+                    { label: "View versions", onClick: () => { setDialog("versions"); setOpenMenu(null); } },
+                  ],
+                },
               }}
+              onClose={() => setOpenMenu(null)}
             />
-            </ViewMenuPanel>
           </MenuRoot>
 
         {/* Edit menu */}
@@ -9621,6 +9544,235 @@ export default function DocEditor({
         onPublish={handlePublishDocument}
       />
 
+      {showEmailDialog === "file" && (
+        <EmailDialog
+          isOpen={true}
+          onClose={() => setShowEmailDialog(null)}
+          title={docTitle}
+          mode="file"
+          attachments={[
+            { name: `${docTitle}.docx`, type: "docx", size: "1.2 MB" },
+            { name: `${docTitle}.pdf`, type: "pdf", size: "0.8 MB" },
+          ]}
+          onSend={(data) => { console.log("Email sent:", data); setShowEmailDialog(null); }}
+        />
+      )}
+      {showEmailDialog === "collaborators" && (
+        <EmailDialog
+          isOpen={true}
+          onClose={() => setShowEmailDialog(null)}
+          title={docTitle}
+          mode="collaborators"
+          recipients={[
+            { email: "you@educo.edu", name: "You (Owner)", role: "Owner" },
+          ]}
+          groups={[
+            { id: "collaborators", name: "Collaborators", icon: "individual", members: [
+              { email: "you@educo.edu", name: "You (Owner)", role: "Owner" },
+            ]},
+          ]}
+          onSend={(data) => { console.log("Email sent to collaborators:", data); setShowEmailDialog(null); }}
+        />
+      )}
+
+      {showDownloadDialog && (
+        <DownloadDialog
+          isOpen={true}
+          onClose={() => setShowDownloadDialog(false)}
+          title={docTitle}
+          content={[value.html || ""]}
+          formats={[
+            { id: "docx", label: "Microsoft Word (.doc)", extension: ".doc", description: "Word-compatible HTML document", icon: "pdf", category: "document" as const },
+            { id: "pdf", label: "PDF Document (.pdf)", extension: ".pdf", description: "Print-ready PDF format", icon: "pdf", category: "document" as const },
+            { id: "odt", label: "OpenDocument (.odt)", extension: ".odt", description: "Open format document", icon: "pdf", category: "document" as const },
+            { id: "txt", label: "Plain Text (.txt)", extension: ".txt", description: "Unformatted text", icon: "txt", category: "document" as const },
+            { id: "rtf", label: "Rich Text (.rtf)", extension: ".rtf", description: "Rich text format", icon: "pdf", category: "document" as const },
+            { id: "html", label: "Web Page (.html)", extension: ".html", description: "HTML web page", icon: "pdf", category: "document" as const },
+            { id: "epub", label: "EPUB (.epub)", extension: ".epub", description: "E-book publication", icon: "pdf", category: "document" as const },
+            { id: "md", label: "Markdown (.md)", extension: ".md", description: "Markdown format", icon: "txt", category: "document" as const },
+            { id: "json", label: "JSON (.json)", extension: ".json", description: "Structured data format", icon: "txt", category: "document" as const },
+          ]}
+          onDownload={(formatId) => {
+            handleDownload(formatId as "docx" | "pdf" | "odt" | "txt" | "rtf" | "html" | "epub" | "md" | "json");
+            setShowDownloadDialog(false);
+          }}
+        />
+      )}
+
+      {showMoveDialog && (
+        <MoveDialog
+          isOpen={true}
+          onClose={() => setShowMoveDialog(false)}
+          fileName={docTitle}
+          sourceId={(() => { const p = new URLSearchParams(window.location.search); return p.get("id") || ""; })()}
+          sourceType="document"
+          onMoveComplete={({ newFolder }) => {
+            showToast(`Moved to ${newFolder}`);
+            setShowMoveDialog(false);
+          }}
+        />
+      )}
+
+      {/* Delete Confirm Dialog */}
+      {showDeleteConfirm && (
+        <EditorDialog title="Move to Bin" onClose={() => setShowDeleteConfirm(false)}>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800">
+              <AlertTriangle className="w-6 h-6 text-red-500 shrink-0" />
+              <div>
+                <p className="text-[13px] font-medium text-red-800 dark:text-red-200">Are you sure you want to move this document to the bin?</p>
+                <p className="text-[11px] text-red-600 dark:text-red-400 mt-1">&ldquo;{docTitle}&rdquo;</p>
+              </div>
+            </div>
+            <p className="text-[12px] text-gray-500 dark:text-gray-400">You can restore it from the bin within 30 days. After that, it will be permanently deleted.</p>
+            <div className="flex justify-end gap-2">
+              <EditorDialogButton variant="secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</EditorDialogButton>
+              <button onClick={() => {
+                const params = new URLSearchParams(window.location.search);
+                const id = params.get("id");
+                if (id) {
+                  const entry = driveStorage.findBySourceId(id);
+                  if (entry) driveStorage.moveToBin(entry.id);
+                }
+                setShowDeleteConfirm(false);
+                handleNewDoc();
+                showToast("Document moved to bin");
+              }}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white text-[13px] font-medium hover:bg-red-700 transition-colors cursor-pointer">
+                Move to Bin
+              </button>
+            </div>
+          </div>
+        </EditorDialog>
+      )}
+
+      {/* Version Name Dialog */}
+      {showVersionNameDialog && (() => {
+        const VersionNameContent = () => {
+          const [versionName, setVersionNameLocal] = useState(`Version ${new Date().toLocaleDateString()}`);
+          return (
+            <div className="space-y-4">
+              <p className="text-[12px] text-gray-500 dark:text-gray-400">Give this version a name so you can find it later in version history.</p>
+              <input
+                type="text"
+                value={versionName}
+                onChange={e => setVersionNameLocal(e.target.value)}
+                autoFocus
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-[13px] text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                placeholder="e.g. Final draft, Before review..."
+              />
+              <div className="flex justify-end gap-2">
+                <EditorDialogButton variant="secondary" onClick={() => setShowVersionNameDialog(false)}>Cancel</EditorDialogButton>
+                <EditorDialogButton variant="primary" onClick={() => {
+                  saveVersion(versionName, "manual");
+                  showToast(`Version named: ${versionName}`);
+                  setShowVersionNameDialog(false);
+                }}>
+                  Save Version
+                </EditorDialogButton>
+              </div>
+            </div>
+          );
+        };
+        return (
+          <EditorDialog title="Name This Version" onClose={() => setShowVersionNameDialog(false)}>
+            <VersionNameContent />
+          </EditorDialog>
+        );
+      })()}
+
+      {/* Add to Folder Dialog */}
+      {showAddToFolderDialog && (() => {
+        const FolderPicker = () => {
+          const [selected, setSelected] = useState("Documents");
+          const folders = ["My Drive", "Documents", "Presentations", "Spreadsheets", "Images"];
+          const handleSave = () => {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get("id");
+            if (id) {
+              const entry = driveStorage.findBySourceId(id);
+              if (entry) {
+                const targetFolder = driveStorage.list().find(f => f.name === selected && f.type === "folder");
+                if (targetFolder) driveStorage.move(entry.id, targetFolder.id);
+              }
+            }
+            showToast(`Moved to ${selected}`);
+            setShowAddToFolderDialog(false);
+          };
+          return (
+            <EditorDialog title="Add to Folder" onClose={() => setShowAddToFolderDialog(false)}>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800">
+                  <FolderInput className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <div>
+                    <p className="text-[13px] font-medium text-blue-800 dark:text-blue-200">{docTitle}</p>
+                    <p className="text-[11px] text-blue-600 dark:text-blue-400">Currently in: <span className="font-semibold">Documents</span></p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[12px] font-medium text-gray-700 dark:text-gray-300 mb-2">Move to:</p>
+                  <div className="space-y-1.5">
+                    {folders.map(folder => (
+                      <button key={folder} onClick={() => setSelected(folder)}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left text-[13px] transition-colors cursor-pointer ${
+                          selected === folder
+                            ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold border border-blue-300 dark:border-blue-700"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-transparent"
+                        }`}>
+                        <FolderInput className={`w-4 h-4 ${selected === folder ? "text-blue-500" : "text-gray-400"}`} />
+                        {folder}
+                        {selected === folder && <Check className="w-4 h-4 ml-auto text-blue-500" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <EditorDialogButton variant="secondary" onClick={() => setShowAddToFolderDialog(false)}>Cancel</EditorDialogButton>
+                  <EditorDialogButton variant="primary" onClick={handleSave}>Move to Folder</EditorDialogButton>
+                </div>
+              </div>
+            </EditorDialog>
+          );
+        };
+        return <FolderPicker />;
+      })()}
+
+      {/* Language Dialog */}
+      {dialog === "language" && (
+        <EditorDialog title="Document Language" onClose={() => setDialog(null)}>
+          <div className="space-y-4">
+            <p className="text-[12px] text-gray-500 dark:text-gray-400">Set the language for document content. The spellchecker and text tools will use the selected language.</p>
+            <div className="grid grid-cols-2 gap-1.5 max-h-[240px] overflow-y-auto">
+              {filteredLanguages.map(l => (
+                <button key={l.tag} onClick={() => {
+                    const prevLang = language;
+                    const nextLang = l.tag;
+                    htmlByLanguageRef.current.set(prevLang, latestValueRef.current.html);
+                    const existing = htmlByLanguageRef.current.get(nextLang);
+                    if (existing) {
+                      updateValue({ language: nextLang, html: existing });
+                    } else {
+                      updateValue({ language: nextLang });
+                      if (tenantTranslationEnabled) {
+                        void handleTranslateDocument(prevLang, nextLang);
+                      }
+                    }
+                    setDialog(null);
+                  }}
+                  className={`px-3 py-2 rounded-lg text-[12px] text-left transition-colors cursor-pointer ${
+                    language === l.tag
+                      ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold border border-blue-300 dark:border-blue-700"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent"
+                  }`}>
+                  {language === l.tag && <Check className="w-3 h-3 inline mr-1.5" />}
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </EditorDialog>
+      )}
+
       {/* Find & Replace — floating panel (non-blocking, allows document interaction) */}
       {dialog === "findReplace" && (
         <div
@@ -9775,88 +9927,126 @@ export default function DocEditor({
       )}
 
       {dialog === "details" && (
-        <DocDialog title="Details" onClose={() => setDialog(null)}>
-          <div className="text-[12px] text-gray-600 dark:text-gray-300 space-y-2">
-            <div><strong>Title:</strong> {docTitle}</div>
-            <div><strong>Language:</strong> {language}</div>
-            <div><strong>Characters:</strong> {getDocumentText().length}</div>
+        <EditorDialog title="Document Details" onClose={() => setDialog(null)}>
+          <div className="space-y-3 text-[13px] text-gray-600 dark:text-gray-400">
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Title</span><span>{docTitle}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Language</span><span>{language}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Characters</span><span>{getDocumentText().length.toLocaleString()}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Words</span><span>{getDocumentText().split(/\s+/).filter(Boolean).length.toLocaleString()}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Owner</span><span>You</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Last modified</span><span>{new Date().toLocaleDateString()}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Created</span><span>{new Date().toLocaleDateString()}</span></div>
           </div>
-        </DocDialog>
+        </EditorDialog>
       )}
 
-      {dialog === "security" && (
-        <DocDialog title="Security limitations" onClose={() => setDialog(null)}>
-          <div className="text-[12px] text-gray-600 dark:text-gray-300">
-            Browser security prevents full clipboard control and some exports without additional libraries.
-            This component keeps content local unless you wire it to your backend.
-          </div>
-        </DocDialog>
-      )}
+      {dialog === "security" && (() => {
+        const SecurityContent = () => {
+          const [localPerms, setLocalPerms] = useState({
+            preventAccessChange: false,
+            disableCopyPrintDownload: false,
+            requireSignIn: false,
+          });
+          const toggle = (key: string) => setLocalPerms(prev => ({ ...prev, [key]: !prev[key as keyof typeof prev] }));
+          const items = [
+            { key: "preventAccessChange", label: "Prevent editors from changing access", desc: "Only you can manage sharing permissions. Editors cannot add or remove collaborators." },
+            { key: "disableCopyPrintDownload", label: "Disable copy, print, and download", desc: "Viewers and commenters cannot copy, print, or download this document." },
+            { key: "requireSignIn", label: "Require sign-in to view", desc: "Only signed-in users can access this file. Anonymous access is blocked." },
+          ];
+          return (
+            <div className="space-y-4">
+              <div className="space-y-3">
+                {items.map((item) => {
+                  const enabled = localPerms[item.key as keyof typeof localPerms];
+                  return (
+                    <div key={item.key} className={`flex items-start gap-3 p-3 rounded-xl border transition-colors ${enabled ? "border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-900/10" : "border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700"}`}>
+                      <div className="flex-1">
+                        <p className={`text-[13px] font-medium ${enabled ? "text-blue-800 dark:text-blue-200" : "text-gray-800 dark:text-gray-200"}`}>{item.label}</p>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{item.desc}</p>
+                      </div>
+                      <button className={`mt-0.5 w-9 h-5 rounded-full transition-colors cursor-pointer ${enabled ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"}`}
+                        onClick={() => toggle(item.key)}>
+                        <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${enabled ? "translate-x-4.5" : "translate-x-0.5"}`} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <EditorDialogButton variant="secondary" onClick={() => setDialog(null)}>Cancel</EditorDialogButton>
+                <EditorDialogButton variant="primary" onClick={() => { showToast("Permissions saved"); setDialog(null); }}>Save Permissions</EditorDialogButton>
+              </div>
+            </div>
+          );
+        };
+        return (
+          <EditorDialog title="Security Limitations" onClose={() => setDialog(null)}>
+            <SecurityContent />
+          </EditorDialog>
+        );
+      })()}
 
       {dialog === "versions" && (
-        <DocDialog title="Version history" onClose={() => setDialog(null)}>
-          {versions.length === 0 ? (
-            <div className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 text-center py-4">
-              No saved versions yet. Versions are saved automatically when you share or publish,
-              or manually via File &rarr; Version history &rarr; Save version.
-            </div>
-          ) : (
-            <div className="max-h-[320px] overflow-auto scrollbar-thin space-y-1">
-              {versions.map((v) => (
-                <button
-                  key={v.ts}
-                  className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 transition-colors cursor-pointer group"
-                  onClick={() => {
-                    updateValue({ title: v.title, html: v.html, language: v.language });
-                    showToast("Version restored");
-                    setDialog(null);
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    {v.author?.avatar ? (
-                      <img src={v.author.avatar} alt="" className="w-5 h-5 rounded-full flex-shrink-0" />
-                    ) : v.author?.name ? (
-                      <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20 flex items-center justify-center text-[9px] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 flex-shrink-0">
-                        {v.author.name.charAt(0).toUpperCase()}
-                      </div>
-                    ) : null}
-
-                    <div className="flex-1 min-w-0">
+        <EditorDialog title="Version History" onClose={() => setDialog(null)}>
+          <div className="space-y-3">
+            <p className="text-[12px] text-gray-400">Saved versions of this document</p>
+            {versions.length === 0 ? (
+              <>
+                <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                  <p className="text-[13px] font-medium text-blue-700 dark:text-blue-300">Current version</p>
+                  <p className="text-[11px] text-blue-500 dark:text-blue-400 mt-0.5">{new Date().toLocaleString()}</p>
+                </div>
+                <p className="text-[12px] text-gray-400 text-center py-4">
+                  No previous versions saved yet. Versions are saved automatically when you share or publish,
+                  or manually via File &rarr; Version history &rarr; Save version.
+                </p>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                  <p className="text-[13px] font-medium text-blue-700 dark:text-blue-300">Current version</p>
+                  <p className="text-[11px] text-blue-500 dark:text-blue-400 mt-0.5">{new Date().toLocaleString()}</p>
+                </div>
+                <div className="max-h-[240px] overflow-auto scrollbar-thin space-y-1">
+                  {versions.map((v) => (
+                    <button
+                      key={v.ts}
+                      className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer group"
+                      onClick={() => {
+                        updateValue({ title: v.title, html: v.html, language: v.language });
+                        showToast("Version restored");
+                        setDialog(null);
+                      }}
+                    >
                       <div className="flex items-center gap-2">
-                        <span className="text-[12px] font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200">
-                          {formatTimeAgo(new Date(v.ts).toISOString())}
-                        </span>
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
-                          v.type === "auto"
-                            ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 midnight:bg-cyan-500/10 midnight:text-cyan-400 purple:bg-pink-500/10 purple:text-pink-400"
-                            : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 midnight:bg-gray-700 midnight:text-gray-400 purple:bg-gray-700 purple:text-gray-400"
-                        }`}>
-                          {v.type === "auto" ? "Auto" : "Manual"}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[12px] font-semibold text-gray-700 dark:text-gray-200">
+                              {formatTimeAgo(new Date(v.ts).toISOString())}
+                            </span>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
+                              v.type === "auto"
+                                ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
+                                : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+                            }`}>
+                              {v.type === "auto" ? "Auto" : "Manual"}
+                            </span>
+                          </div>
+                          {v.label && (
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{v.label}</div>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-blue-500 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                          Restore
                         </span>
                       </div>
-
-                      {v.label && (
-                        <div className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 truncate">
-                          {v.label}
-                        </div>
-                      )}
-
-                      {v.author?.name && (
-                        <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-gray-500 purple:text-gray-500">
-                          by {v.author.name}
-                        </div>
-                      )}
-                    </div>
-
-                    <span className="text-[10px] text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                      Restore
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </DocDialog>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </EditorDialog>
       )}
 
       {/* Drawing Canvas */}

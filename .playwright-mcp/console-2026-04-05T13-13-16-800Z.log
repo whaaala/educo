@@ -1,0 +1,22 @@
+[      17ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[      75ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[     767ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[     859ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:13948
+[     982ms] [LOG] MeetingsContext: Loaded meetings from localStorage 7 @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:6317
+[     983ms] [LOG] TranscriptContext: Loaded requests from localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:4358
+[     984ms] [LOG] Discipline Context: Loaded disciplinary actions from localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5729
+[     985ms] [LOG] Discipline Context: Loaded complaints from localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5734
+[     985ms] [LOG] Performance Context: Loaded reviews from localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5576
+[     987ms] [LOG] LeaveContext: Loaded requests from localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5100
+[     987ms] [LOG] TransferContext: Loaded requests from localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:4206
+[    1117ms] [LOG] MeetingsContext: Saved meetings to localStorage 7 @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:6337
+[    1118ms] [LOG] TranscriptContext: Saved requests to localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:4376
+[    1118ms] [LOG] Discipline Context: Saved disciplinary actions to localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5755
+[    1119ms] [LOG] Discipline Context: Saved complaints to localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5771
+[    1120ms] [LOG] Performance Context: Saved to localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5595
+[    1121ms] [LOG] LeaveContext: Saved requests to localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5118
+[    1121ms] [LOG] TransferContext: Saved requests to localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:4224
+[    1308ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[    1308ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[    1308ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[   20005ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661

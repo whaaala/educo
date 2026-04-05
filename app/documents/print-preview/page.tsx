@@ -4,27 +4,27 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
 import PrintPreview from "@/components/shared/PrintPreview";
-import { slideStorage } from "@/lib/slide-storage";
+import { docStorage } from "@/lib/doc-storage";
 
-export default function PresentationPrintPreviewPage() {
+export default function DocPrintPreviewPage() {
   const router = useRouter();
-  const [slides, setSlides] = useState<{ id: string; content: string; notes?: string; background?: string }[]>([]);
   const [title, setTitle] = useState("");
-  const [presId, setPresId] = useState("");
+  const [html, setHtml] = useState("");
+  const [docId, setDocId] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
     if (!id) return;
-    setPresId(id);
-    const pres = slideStorage.get(id);
-    if (pres) {
-      setSlides(pres.slides);
-      setTitle(pres.title);
+    setDocId(id);
+    const doc = docStorage.get(id);
+    if (doc) {
+      setTitle(doc.title);
+      setHtml(doc.html);
     }
   }, []);
 
-  if (slides.length === 0) {
+  if (!html && !docId) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center h-[80vh]">
@@ -37,12 +37,12 @@ export default function PresentationPrintPreviewPage() {
   return (
     <MainLayout>
       <PrintPreview
-        type="presentation"
+        type="document"
         title={title}
-        slides={slides}
+        html={html}
         onBack={() => {
-          if (presId) router.push(`/presentations/editor?id=${presId}`);
-          else router.push("/presentations");
+          if (docId) router.push(`/doc-editor-test?id=${docId}`);
+          else router.push("/documents");
         }}
       />
     </MainLayout>

@@ -1,0 +1,29 @@
+[      14ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[      57ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[     818ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:13948
+[     919ms] [LOG] MeetingsContext: Loaded meetings from localStorage 7 @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:6317
+[     919ms] [LOG] TranscriptContext: Loaded requests from localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:4358
+[     920ms] [LOG] Discipline Context: Loaded disciplinary actions from localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5729
+[     920ms] [LOG] Discipline Context: Loaded complaints from localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5734
+[     920ms] [LOG] Performance Context: Loaded reviews from localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5576
+[     920ms] [LOG] LeaveContext: Loaded requests from localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5100
+[     921ms] [LOG] TransferContext: Loaded requests from localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:4206
+[    1043ms] [LOG] MeetingsContext: Saved meetings to localStorage 7 @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:6337
+[    1043ms] [LOG] TranscriptContext: Saved requests to localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:4376
+[    1044ms] [LOG] Discipline Context: Saved disciplinary actions to localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5755
+[    1044ms] [LOG] Discipline Context: Saved complaints to localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5771
+[    1045ms] [LOG] Performance Context: Saved to localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5595
+[    1045ms] [LOG] LeaveContext: Saved requests to localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:5118
+[    1045ms] [LOG] TransferContext: Saved requests to localStorage [] @ http://localhost:3000/_next/static/chunks/_0b03d8._.js:4224
+[    1186ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[    1186ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[    1186ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[   13666ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[   30251ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[   30269ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[   30331ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[   74100ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[   74147ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[   75513ms] [LOG] [Fast Refresh] done in 1367ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13488
+[   75605ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661
+[   75626ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:13661

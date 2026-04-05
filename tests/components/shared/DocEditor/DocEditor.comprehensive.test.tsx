@@ -615,7 +615,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       expect(fileButton).not.toBeNull();
       fireEvent.click(fileButton!);
 
-      // And the "New" submenu is opened and "Document" is clicked
+      // And the "New" submenu is opened (hover to open) and "Document" is clicked
       const menuPanel = container.querySelector("[data-doc-menu-panel]");
       expect(menuPanel).not.toBeNull();
       const menuButtons = menuPanel!.querySelectorAll("button");
@@ -626,9 +626,12 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
         }
       });
       expect(newButton).not.toBeNull();
-      fireEvent.click(newButton!);
+      // EditorMenuItemRow opens submenus on hover of the .relative parent
+      const newParent = newButton!.closest(".relative");
+      if (newParent) fireEvent.mouseEnter(newParent);
+      else fireEvent.click(newButton!);
       // Click the "Document" submenu item from any open menu panel
-      const allPanels = document.querySelectorAll("[data-doc-menu-panel]");
+      const allPanels = document.querySelectorAll("[data-doc-menu-panel], [data-editor-menu-panel]");
       let docButton: HTMLElement | null = null;
       allPanels.forEach((panel) => {
         panel.querySelectorAll("button").forEach((btn) => {
@@ -840,8 +843,8 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       return labels;
     }
 
-    // Scenario: File menu contains expected core items including new additions
-    it("File menu contains expected core items including Move, Add shortcut to Drive, Move to trash", () => {
+    // Scenario: File menu contains expected core items (uses reusable buildFileMenu)
+    it("File menu contains expected core items including Move, Add to starred, Move to bin", () => {
       // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
@@ -850,7 +853,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const menuPanel = openFileMenu(container);
       // Then all expected core items should be present
       const labels = getMenuItemLabels(menuPanel);
-      const expectedItems = ["New", "Open", "Make a copy", "Rename", "Move", "Add shortcut to Drive", "Move to trash", "Details", "Print"];
+      const expectedItems = ["New", "Open", "Make a copy", "Rename", "Move", "Add to starred", "Move to bin", "Details", "Print"];
       for (const item of expectedItems) {
         expect(labels.some((l) => l.includes(item)), `File menu should contain "${item}"`).toBe(true);
       }
@@ -883,7 +886,8 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       fireEvent.mouseEnter(shareParent!);
 
       // Then the submenu should contain "Share with others" and "Publish"
-      const allButtons = container.querySelectorAll("button");
+      // (submenus portal to document.body via EditorMenuItemRow)
+      const allButtons = document.querySelectorAll("button");
       const allLabels: string[] = [];
       allButtons.forEach((btn) => {
         const text = btn.textContent?.trim();
@@ -1013,9 +1017,9 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const shareParent = shareButton!.closest(".relative");
       fireEvent.mouseEnter(shareParent!);
 
-      // Click Publish in submenu
+      // Click Publish in submenu (portalled to document.body)
       let publishButton: HTMLElement | null = null;
-      container.querySelectorAll("button").forEach((btn) => {
+      document.querySelectorAll("button").forEach((btn) => {
         if (btn.textContent?.trim() === "Publish") {
           publishButton = btn;
         }
@@ -1143,8 +1147,8 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       // When the Version history submenu is opened
       openVersionHistorySubmenu(container);
 
-      // Then all expected items should be present
-      const allButtons = container.querySelectorAll("button");
+      // Then all expected items should be present (submenus portal to document.body)
+      const allButtons = document.querySelectorAll("button");
       const allLabels: string[] = [];
       allButtons.forEach((btn) => {
         const text = btn.textContent?.trim();
@@ -1165,8 +1169,8 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       // When the Version history submenu is opened
       openVersionHistorySubmenu(container);
 
-      // And "View versions" is clicked
-      const allButtons = container.querySelectorAll("button");
+      // And "View versions" is clicked (portalled submenu items)
+      const allButtons = document.querySelectorAll("button");
       let viewVersionsBtn: HTMLElement | null = null;
       allButtons.forEach((btn) => {
         const text = btn.textContent?.trim();
@@ -1193,7 +1197,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
 
       // When a version is saved via File > Version history > Save version
       openVersionHistorySubmenu(container);
-      const allButtons = container.querySelectorAll("button");
+      const allButtons = document.querySelectorAll("button");
       let saveBtn: HTMLElement | null = null;
       allButtons.forEach((btn) => {
         const text = btn.textContent?.trim();
@@ -1206,7 +1210,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
 
       // And then View versions dialog is opened
       openVersionHistorySubmenu(container);
-      const allButtons2 = container.querySelectorAll("button");
+      const allButtons2 = document.querySelectorAll("button");
       let viewBtn: HTMLElement | null = null;
       allButtons2.forEach((btn) => {
         const text = btn.textContent?.trim();
@@ -1751,9 +1755,17 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
         <DocEditor value={defaultValue} onChange={onChange} />
       );
       const menuPanel = openFileMenu(container);
-      // Click "New" to open submenu, then "Document" to create new doc
-      clickMenuItem(container, menuPanel, "New");
-      const allPanels = document.querySelectorAll("[data-doc-menu-panel]");
+      // Hover "New" to open submenu (EditorMenuItemRow uses hover)
+      const menuButtons = menuPanel.querySelectorAll("button");
+      let newButton: HTMLElement | null = null;
+      menuButtons.forEach((btn) => {
+        if (btn.textContent?.includes("New")) newButton = btn;
+      });
+      expect(newButton).not.toBeNull();
+      const newParent = newButton!.closest(".relative");
+      if (newParent) fireEvent.mouseEnter(newParent);
+      // Click "Document" from portalled submenu
+      const allPanels = document.querySelectorAll("[data-doc-menu-panel], [data-editor-menu-panel]");
       let docButton: HTMLElement | null = null;
       allPanels.forEach((panel) => {
         panel.querySelectorAll("button").forEach((btn) => {
@@ -2519,8 +2531,8 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       expect(dlParent).not.toBeNull();
       fireEvent.mouseEnter(dlParent!);
 
-      // Collect all labels after submenu opens
-      const allButtons = container.querySelectorAll("button");
+      // Collect all labels after submenu opens (portalled to document.body)
+      const allButtons = document.querySelectorAll("button");
       const allLabels: string[] = [];
       allButtons.forEach((btn) => {
         const text = btn.textContent?.trim();
@@ -2582,8 +2594,8 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       expect(shareParent).not.toBeNull();
       fireEvent.mouseEnter(shareParent!);
 
-      // Collect all labels after submenu opens
-      const allButtons = container.querySelectorAll("button");
+      // Collect all labels after submenu opens (portalled to document.body)
+      const allButtons = document.querySelectorAll("button");
       const allLabels: string[] = [];
       allButtons.forEach((btn) => {
         const text = btn.textContent?.trim();
@@ -2594,7 +2606,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       expect(allLabels.some((l) => l.includes("Publish"))).toBe(true);
     });
 
-    it("Email submenu has 'Email this document' and 'Copy email-ready text'", () => {
+    it("Email submenu has 'Email this file' and 'Email collaborators'", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
@@ -2628,16 +2640,17 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       expect(emailParent).not.toBeNull();
       fireEvent.mouseEnter(emailParent!);
 
-      // Collect all labels after submenu opens
-      const allButtons = container.querySelectorAll("button");
+      // Collect all labels after submenu opens (portalled to document.body)
+      const allButtons = document.querySelectorAll("button");
       const allLabels: string[] = [];
       allButtons.forEach((btn) => {
         const text = btn.textContent?.trim();
         if (text) allLabels.push(text);
       });
 
-      expect(allLabels.some((l) => l.includes("Email this document"))).toBe(true);
-      expect(allLabels.some((l) => l.includes("Copy email-ready text"))).toBe(true);
+      // buildFileMenu uses "Email this file" and "Email collaborators"
+      expect(allLabels.some((l) => l.includes("Email this file"))).toBe(true);
+      expect(allLabels.some((l) => l.includes("Email collaborators"))).toBe(true);
     });
   });
 
@@ -3829,7 +3842,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
   // ────────────────────────────────────────────────
 
   describe("modernized menu system", () => {
-    it("File menu uses ViewMenuPanel with glassmorphism styling", () => {
+    it("File menu uses MenuPanel with glassmorphism styling", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
@@ -3860,18 +3873,20 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       });
       fireEvent.click(fileButton!);
 
-      // Click "New" to open submenu
-      const allButtons = document.querySelectorAll("[data-doc-menu-panel] button");
+      // Click "New" to open submenu (rendered via EditorMenuItemRow portals)
+      const allButtons = document.querySelectorAll("[data-doc-menu-panel] button, [data-editor-menu-panel] button");
       let newButton: HTMLElement | null = null;
       allButtons.forEach((btn) => {
         if (btn.textContent?.includes("New")) newButton = btn as HTMLElement;
       });
       expect(newButton).not.toBeNull();
-      fireEvent.click(newButton!);
+      // Hover to open submenu (EditorMenuItemRow uses hover, not click)
+      const newParent = newButton!.closest(".relative");
+      if (newParent) fireEvent.mouseEnter(newParent);
 
-      // Check submenu items
+      // Check submenu items (portalled to body via data-editor-menu-panel)
       const submenuLabels: string[] = [];
-      document.querySelectorAll("[data-doc-menu-panel] button").forEach((btn) => {
+      document.querySelectorAll("[data-doc-menu-panel] button, [data-editor-menu-panel] button").forEach((btn) => {
         const text = btn.textContent?.trim();
         if (text) submenuLabels.push(text);
       });
@@ -3930,7 +3945,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
 
     // Helper: click on "Image" item in the Insert menu to open its submenu
     function openImageSubmenu() {
-      const allButtons = document.querySelectorAll("[data-doc-menu-panel] button");
+      const allButtons = document.querySelectorAll("[data-doc-menu-panel] button, [data-editor-menu-panel] button");
       let imageButton: HTMLElement | null = null;
       allButtons.forEach((btn) => {
         if (btn.textContent?.includes("Image")) imageButton = btn as HTMLElement;
@@ -3946,7 +3961,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
 
       // Collect all submenu labels from portalled panels
       const allLabels: string[] = [];
-      document.querySelectorAll("[data-doc-menu-panel] button").forEach((btn) => {
+      document.querySelectorAll("[data-doc-menu-panel] button, [data-editor-menu-panel] button").forEach((btn) => {
         if (btn.textContent) allLabels.push(btn.textContent.trim());
       });
       const expected = ["Upload from computer", "Search the web", "Drive", "Photos", "Camera", "By URL"];
@@ -3963,7 +3978,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
 
       // Find "By URL" in portalled panels
       let byUrlBtn: HTMLElement | null = null;
-      document.querySelectorAll("[data-doc-menu-panel] button").forEach((btn) => {
+      document.querySelectorAll("[data-doc-menu-panel] button, [data-editor-menu-panel] button").forEach((btn) => {
         if (btn.textContent?.trim() === "By URL") byUrlBtn = btn as HTMLElement;
       });
       expect(byUrlBtn).not.toBeNull();
@@ -3990,7 +4005,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       openImageSubmenu();
 
       let byUrlBtn: HTMLElement | null = null;
-      document.querySelectorAll("[data-doc-menu-panel] button").forEach((btn) => {
+      document.querySelectorAll("[data-doc-menu-panel] button, [data-editor-menu-panel] button").forEach((btn) => {
         if (btn.textContent?.trim() === "By URL") byUrlBtn = btn as HTMLElement;
       });
       expect(byUrlBtn).not.toBeNull();
@@ -4013,7 +4028,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       openImageSubmenu();
 
       let searchBtn: HTMLElement | null = null;
-      document.querySelectorAll("[data-doc-menu-panel] button").forEach((btn) => {
+      document.querySelectorAll("[data-doc-menu-panel] button, [data-editor-menu-panel] button").forEach((btn) => {
         if (btn.textContent?.trim() === "Search the web") searchBtn = btn as HTMLElement;
       });
       expect(searchBtn).not.toBeNull();
@@ -4032,7 +4047,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       openImageSubmenu();
 
       let searchBtn: HTMLElement | null = null;
-      document.querySelectorAll("[data-doc-menu-panel] button").forEach((btn) => {
+      document.querySelectorAll("[data-doc-menu-panel] button, [data-editor-menu-panel] button").forEach((btn) => {
         if (btn.textContent?.trim() === "Search the web") searchBtn = btn as HTMLElement;
       });
       expect(searchBtn).not.toBeNull();
