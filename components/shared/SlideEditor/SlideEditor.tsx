@@ -7,13 +7,14 @@ import {
   Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight,
   Strikethrough, Superscript as SuperscriptIcon, Subscript as SubscriptIcon,
   Image as ImageIcon, Type, Table2, Paintbrush, MessageCircle,
-  Share2, Undo2, Redo2, ZoomIn, ZoomOut, Minimize2, Minus, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Check, Upload, Eye,
+  Share2, Undo2, Redo2, ZoomIn, ZoomOut, Minimize2, Minus, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Check, Upload, Eye, PenLine,
   Bookmark, ShieldCheck, Globe, Tag, FolderPlus, Lock, AlertTriangle, Send, Mail,
 } from "lucide-react";
-import { slideStorage, type SlideData, type PresentationPermissions, DEFAULT_PERMISSIONS } from "@/lib/slide-storage";
+import { slideStorage, type SlideData, type SlideObject, type PresentationPermissions, DEFAULT_PERMISSIONS, createTextBox, createImageObj, createShapeObj, createDrawingObj, makeDefaultTitleObjects, makeDefaultContentObjects, makeDefaultClosingObjects } from "@/lib/slide-storage";
 import { permissionRequests } from "@/lib/permission-requests";
 import { useNotifications } from "@/contexts/NotificationContext";
 import SlideMenuBar from "./SlideMenuBar";
+import SlideCanvasComponent from "./SlideCanvas";
 
 // Shared components
 import { ToolbarButton, ToolbarDivider, ToolbarDropdown } from "@/components/shared/EditorToolbar";
@@ -101,27 +102,17 @@ const THEMES: Record<string, ThemeDef> = {
 
 /** Generate a full themed slide deck from a theme definition */
 function buildThemedSlides(t: ThemeDef, title: string, existingSlides: SlideData[]): SlideData[] {
-  const { accent: a, text: tx, bg, layout } = t;
-  // Template slides for each position
-  const templates = [
-    slideHTML_Title(title || "Presentation Title", "Click to add subtitle", a, tx, layout),
-    slideHTML_Content(a, tx),
-    slideHTML_TwoColumn(a, tx),
-    slideHTML_SectionDivider("Part Two", a, tx),
-    slideHTML_Quote(a, tx),
-    slideHTML_Closing(a, tx),
-  ];
+  const { accent: a, text: tx, bg } = t;
 
   return existingSlides.map((slide, i) => {
-    const hasContent = slide.content?.trim() && slide.content !== "<br>" && !slide.content.includes("Click to add");
-    // First slide always gets title template
-    if (i === 0) return { ...slide, background: bg, content: templates[0] };
-    // Last slide always gets closing template
-    if (i === existingSlides.length - 1 && existingSlides.length > 1) return { ...slide, background: bg, content: hasContent ? slide.content : templates[5] };
-    // Middle slides: keep existing content or assign templates cyclically
-    if (hasContent) return { ...slide, background: bg };
-    const templateIdx = ((i - 1) % 4) + 1; // cycles through content, two-col, section, quote
-    return { ...slide, background: bg, content: templates[templateIdx] };
+    const hasObjects = slide.objects && slide.objects.length > 0;
+    // First slide always gets title objects
+    if (i === 0) return { ...slide, background: bg, objects: makeDefaultTitleObjects(title || "Presentation Title", a, tx), content: "" };
+    // Last slide gets closing
+    if (i === existingSlides.length - 1 && existingSlides.length > 1) return { ...slide, background: bg, objects: hasObjects ? slide.objects : makeDefaultClosingObjects(a, tx), content: "" };
+    // Middle slides: keep existing objects or assign content template
+    if (hasObjects) return { ...slide, background: bg };
+    return { ...slide, background: bg, objects: makeDefaultContentObjects(a, tx), content: "" };
   });
 }
 
@@ -197,8 +188,59 @@ function SlideRuler({ direction, length, slideOffset }: { direction: "h" | "v"; 
   );
 }
 
+/** Renders slide content — objects (new system) or HTML (legacy) */
+function SlideContentPreview({ slide, themeTextColor, scale = 1 }: { slide: SlideData; themeTextColor?: string; scale?: number }) {
+  if (slide.objects && slide.objects.length > 0) {
+    return (
+      <div className="w-full h-full relative" style={{ color: themeTextColor }}>
+        {slide.objects.map(obj => (
+          <div key={obj.id} className="absolute overflow-hidden" style={{ left: `${obj.x}%`, top: `${obj.y}%`, width: `${obj.width}%`, height: `${obj.height}%`, zIndex: obj.zIndex }}>
+            {obj.type === "textbox" && (
+              <div style={{ fontSize: obj.fontSize * scale, fontFamily: obj.fontFamily, color: obj.color, fontWeight: obj.bold ? 700 : 400, fontStyle: obj.italic ? "italic" : "normal", textAlign: obj.align, display: "flex", alignItems: obj.verticalAlign === "middle" ? "center" : obj.verticalAlign === "bottom" ? "flex-end" : "flex-start", width: "100%", height: "100%", padding: obj.padding ?? 4, backgroundColor: obj.backgroundColor || "transparent" }}>
+                <div className="w-full" dangerouslySetInnerHTML={{ __html: obj.content || `<span style="opacity:0.3">${obj.placeholder || ""}</span>` }} />
+              </div>
+            )}
+            {obj.type === "image" && <img src={obj.src} alt={obj.alt} className="w-full h-full" style={{ objectFit: obj.objectFit, borderRadius: obj.borderRadius ?? 0, opacity: obj.opacity ?? 1 }} />}
+            {obj.type === "shape" && (
+              <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+                {obj.shape === "rect" && <rect x="0" y="0" width="100" height="100" rx="4" fill={obj.fill} />}
+                {obj.shape === "circle" && <ellipse cx="50" cy="50" rx="50" ry="50" fill={obj.fill} />}
+                {obj.shape === "triangle" && <polygon points="50,5 95,95 5,95" fill={obj.fill} />}
+                {obj.shape === "star" && <polygon points="50,5 61,35 95,35 68,57 79,90 50,70 21,90 32,57 5,35 39,35" fill={obj.fill} />}
+                {obj.shape === "arrow-right" && <polygon points="10,30 65,30 65,10 90,50 65,90 65,70 10,70" fill={obj.fill} />}
+                {obj.shape === "line-h" && <line x1="0" y1="50" x2="100" y2="50" stroke={obj.fill} strokeWidth="3" />}
+                {obj.shape === "line-v" && <line x1="50" y1="0" x2="50" y2="100" stroke={obj.fill} strokeWidth="3" />}
+              </svg>
+            )}
+            {obj.type === "drawing" && (
+              <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+                <path d={obj.paths} fill="none" stroke={obj.stroke} strokeWidth={obj.strokeWidth} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+              </svg>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
+  // Legacy HTML fallback
+  return <div className="w-full h-full" style={{ color: themeTextColor }} dangerouslySetInnerHTML={{ __html: slide.content || "" }} />;
+}
+
+function ShapeSVGPreview({ shape }: { shape: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className="w-full h-full">
+      {shape === "rect" && <rect x="2" y="6" width="28" height="20" rx="2" fill="#3b82f6" opacity="0.7" />}
+      {shape === "circle" && <ellipse cx="16" cy="16" rx="14" ry="12" fill="#3b82f6" opacity="0.7" />}
+      {shape === "triangle" && <polygon points="16,4 30,28 2,28" fill="#3b82f6" opacity="0.7" />}
+      {shape === "arrow-right" && <polygon points="4,10 20,10 20,4 28,16 20,28 20,22 4,22" fill="#3b82f6" opacity="0.7" />}
+      {shape === "star" && <polygon points="16,2 19,12 30,12 21,18 25,28 16,22 7,28 11,18 2,12 13,12" fill="#3b82f6" opacity="0.7" />}
+      {shape === "line-h" && <line x1="2" y1="16" x2="30" y2="16" stroke="#3b82f6" strokeWidth="2" />}
+    </svg>
+  );
+}
+
 // ── Slide Canvas with rulers and proper fit ──
-function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, onInput, slideRatio = { w: 16, h: 9 }, showRuler = true, showGuides = false, guides = [], snapToGrid = false, onClick, isSuggesting = false, themeTextColor, onGuideMove, onGuideDelete }: {
+function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, onInput, slideRatio = { w: 16, h: 9 }, showRuler = true, showGuides = false, guides = [], snapToGrid = false, snapToGuides = false, onClick, isSuggesting = false, themeTextColor, themeAccent, onGuideMove, onGuideDelete, selectedObjectId, onSelectObject, onObjectsChange, drawingMode, drawingColor, drawingWidth, onDrawingComplete }: {
   zoom: number;
   activeSlide: SlideData | undefined;
   canEdit: boolean;
@@ -210,11 +252,20 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, on
   showGuides?: boolean;
   guides?: { id: string; orientation: "h" | "v"; position: number }[];
   snapToGrid?: boolean;
+  snapToGuides?: boolean;
   onClick?: (e: React.MouseEvent) => void;
   isSuggesting?: boolean;
   themeTextColor?: string;
+  themeAccent?: string;
   onGuideMove?: (id: string, position: number) => void;
   onGuideDelete?: (id: string) => void;
+  selectedObjectId?: string | null;
+  onSelectObject?: (id: string | null) => void;
+  onObjectsChange?: (objects: import("@/lib/slide-storage").SlideObject[]) => void;
+  drawingMode?: boolean;
+  drawingColor?: string;
+  drawingWidth?: number;
+  onDrawingComplete?: (paths: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 800, h: 450 });
@@ -273,19 +324,44 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, on
               className="absolute inset-0 shadow-[0_1px_3px_rgba(0,0,0,0.1),0_4px_16px_rgba(0,0,0,0.05)] overflow-hidden"
               style={{ background: activeSlide?.background || "#ffffff" }}
             >
-              <div
-                ref={contentRef}
-                contentEditable={canEdit}
-                suppressContentEditableWarning
-                className={[
-                  "absolute inset-0 outline-none px-[8%] py-[6%]",
-                  isSuggesting ? "caret-green-500" : "",
-                ].join(" ")}
-                style={themeTextColor ? { color: themeTextColor } : undefined}
-                dangerouslySetInnerHTML={{ __html: activeSlide?.content || "" }}
-                onInput={(e) => { if (!isSuggesting) onInput((e.target as HTMLDivElement).innerHTML); }}
-                onClick={onClick}
-              />
+              {/* Object-based canvas (new system) */}
+              {activeSlide?.objects && onObjectsChange ? (
+                <SlideCanvasComponent
+                  objects={activeSlide.objects}
+                  onChange={onObjectsChange}
+                  selectedId={selectedObjectId ?? null}
+                  onSelect={onSelectObject ?? (() => {})}
+                  background="transparent"
+                  themeTextColor={themeTextColor}
+                  themeAccent={themeAccent}
+                  canEdit={canEdit}
+                  showGuides={showGuides}
+                  guides={guides}
+                  snapToGrid={snapToGrid}
+                  snapToGuides={snapToGuides}
+                  onGuideMove={onGuideMove}
+                  onGuideDelete={onGuideDelete}
+                  drawingMode={drawingMode}
+                  drawingColor={drawingColor}
+                  drawingWidth={drawingWidth}
+                  onDrawingComplete={onDrawingComplete}
+                />
+              ) : (
+                /* Legacy: single contentEditable fallback */
+                <div
+                  ref={contentRef}
+                  contentEditable={canEdit}
+                  suppressContentEditableWarning
+                  className={[
+                    "absolute inset-0 outline-none px-[8%] py-[6%]",
+                    isSuggesting ? "caret-green-500" : "",
+                  ].join(" ")}
+                  style={themeTextColor ? { color: themeTextColor } : undefined}
+                  dangerouslySetInnerHTML={{ __html: activeSlide?.content || "" }}
+                  onInput={(e) => { if (!isSuggesting) onInput((e.target as HTMLDivElement).innerHTML); }}
+                  onClick={onClick}
+                />
+              )}
               {/* Guides overlay — draggable */}
               {showGuides && guides.map(g => (
                 <div
@@ -769,6 +845,10 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [snapToGuides, setSnapToGuides] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showGridView, setShowGridView] = useState(false);
+  const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
+  const [drawingMode, setDrawingMode] = useState(false);
+  const [drawingColor, setDrawingColor] = useState("#1a1a2e");
+  const [drawingWidth, setDrawingWidth] = useState(2);
   const [toast, setToastRaw] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const setToast = useCallback((msg: string) => {
@@ -800,6 +880,73 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     updateSlides(newSlides);
   }, [slides, activeSlideIdx, updateSlides]);
 
+  // Object management for current slide
+  const currentObjects = activeSlide?.objects || [];
+  const updateCurrentObjects = useCallback((objs: SlideObject[]) => {
+    updateCurrentSlide({ objects: objs });
+  }, [updateCurrentSlide]);
+
+  const addObjectToSlide = useCallback((obj: SlideObject) => {
+    // Auto-migrate legacy slide if needed
+    if (!activeSlide?.objects || activeSlide.objects.length === 0) {
+      const th = THEMES[theme] || THEMES.default;
+      const htmlContent = activeSlide?.content?.trim() || "";
+      const existingObjs: SlideObject[] = [];
+      if (htmlContent && htmlContent !== "<br>") {
+        existingObjs.push(createTextBox({ x: 5, y: 5, width: 90, height: 90, content: htmlContent, fontSize: 18, color: th.text, align: "left", verticalAlign: "top", zIndex: 1 }));
+      }
+      updateCurrentSlide({ objects: [...existingObjs, obj], content: "" });
+    } else {
+      updateCurrentSlide({ objects: [...currentObjects, obj] });
+    }
+    setSelectedObjectId(obj.id);
+  }, [activeSlide, currentObjects, updateCurrentSlide, theme]);
+
+  const handleDrawingComplete = useCallback((paths: string) => {
+    const obj = createDrawingObj(paths, { stroke: drawingColor, strokeWidth: drawingWidth, zIndex: currentObjects.length + 1 });
+    addObjectToSlide(obj);
+    setDrawingMode(false);
+  }, [drawingColor, drawingWidth, currentObjects.length, addObjectToSlide]);
+
+  // Auto-migrate legacy slide (HTML content) to objects
+  const migrateSlideToObjects = useCallback(() => {
+    if (activeSlide?.objects && activeSlide.objects.length > 0) return; // Already has objects
+    const th = THEMES[theme] || THEMES.default;
+    const htmlContent = activeSlide?.content?.trim() || "";
+    const objects: SlideObject[] = [];
+    if (htmlContent && htmlContent !== "<br>") {
+      // Convert existing HTML content into a text box
+      objects.push(createTextBox({
+        x: 5, y: 5, width: 90, height: 90,
+        content: htmlContent, fontSize: 18, color: th.text,
+        align: "left", verticalAlign: "top",
+        zIndex: 1,
+      }));
+    } else {
+      // Empty slide: add default content template
+      objects.push(...makeDefaultContentObjects(th.accent, th.text));
+    }
+    updateCurrentSlide({ objects, content: "" });
+    setToast("Slide upgraded to canvas mode");
+  }, [activeSlide, theme, updateCurrentSlide, setToast]);
+
+  const handleImageUpload = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const src = reader.result as string;
+        addObjectToSlide(createImageObj(src, { zIndex: currentObjects.length + 1 }));
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  }, [currentObjects.length, addObjectToSlide]);
+
   const slideTranslations: Record<string, { title: string; subtitle: string }> = {
     English: { title: "Click to add title", subtitle: "Click to add subtitle" },
     Spanish: { title: "Haga clic para añadir título", subtitle: "Haga clic para añadir subtítulo" },
@@ -823,10 +970,8 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
 
   const addSlide = useCallback(() => {
     const th = THEMES[theme] || THEMES.default;
-    const newSlide = makeSlide(
-      slideHTML_Content(th.accent, th.text),
-      th.bg,
-    );
+    const newSlide = makeSlide("", th.bg);
+    newSlide.objects = makeDefaultContentObjects(th.accent, th.text);
     const newSlides = [...slides];
     newSlides.splice(activeSlideIdx + 1, 0, newSlide);
     updateSlides(newSlides);
@@ -1513,8 +1658,16 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             setToast("All guides cleared");
             break;
           }
-          case "view:snapGrid": setSnapToGrid(v => { setToast(v ? "Snap to grid off" : "Snap to grid on"); return !v; }); break;
-          case "view:snapGuides": setSnapToGuides(v => { setToast(v ? "Snap to guides off" : "Snap to guides on"); return !v; }); break;
+          case "view:snapGrid": {
+            setSnapToGrid(v => { setToast(v ? "Snap to grid off" : "Snap to grid on — drag objects to snap"); return !v; });
+            migrateSlideToObjects();
+            break;
+          }
+          case "view:snapGuides": {
+            setSnapToGuides(v => { setToast(v ? "Snap to guides off" : "Snap to guides on — drag objects to snap"); return !v; });
+            migrateSlideToObjects();
+            break;
+          }
           case "view:filmstrip": setFilmstripCollapsed(c => !c); break;
           case "view:zoomFit": setZoom(100); break;
           case "view:zoom50": setZoom(50); break;
@@ -1723,10 +1876,25 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         <ToolbarDropdown title="Insert table" Icon={Table2} isOpen={showTablePicker} onToggle={() => setShowTablePicker(!showTablePicker)} disabled={!canDirectEdit}>
           <TableGridPicker onPick={(r, c) => insertTable(r, c)} />
         </ToolbarDropdown>
-        <ToolbarButton title="Insert image" Icon={ImageIcon} onClick={() => {/* image upload */}} disabled={!canDirectEdit} />
+        <ToolbarButton title="Insert image" Icon={ImageIcon} onClick={handleImageUpload} disabled={!canDirectEdit} />
         <ToolbarButton title="Insert text box" Icon={Type} onClick={() => {
-          document.execCommand("insertHTML", false, '<div style="border:1px solid #d1d5db;padding:16px;margin:12px;min-height:40px;">Text box</div>');
+          const th = THEMES[theme] || THEMES.default;
+          addObjectToSlide(createTextBox({ x: 15, y: 30, width: 70, height: 15, color: th.text, zIndex: currentObjects.length + 1 }));
         }} disabled={!canDirectEdit} />
+        <ToolbarDropdown title="Insert shape" Icon={Palette} isOpen={false} onToggle={() => {}} disabled={!canDirectEdit}>
+          <div className="p-2 grid grid-cols-3 gap-1.5">
+            {([["rect", "Rectangle"], ["circle", "Circle"], ["triangle", "Triangle"], ["arrow-right", "Arrow"], ["star", "Star"], ["line-h", "Line"]] as const).map(([shape, label]) => (
+              <button key={shape} onClick={() => {
+                const th = THEMES[theme] || THEMES.default;
+                addObjectToSlide(createShapeObj(shape, { fill: th.accent, zIndex: currentObjects.length + 1 }));
+              }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-center">
+                <div className="w-8 h-8 mx-auto"><ShapeSVGPreview shape={shape} /></div>
+                <span className="text-[9px] text-gray-500 mt-0.5 block">{label}</span>
+              </button>
+            ))}
+          </div>
+        </ToolbarDropdown>
+        <ToolbarButton title={drawingMode ? "Exit drawing" : "Draw"} Icon={drawingMode ? X : PenLine} onClick={() => setDrawingMode(v => !v)} active={drawingMode} disabled={!canDirectEdit} />
         <div className="flex-1" />
         {/* Zoom controls */}
         <ToolbarButton title="Zoom out" Icon={ZoomOut} onClick={() => setZoom(z => Math.max(50, z - 25))} />
@@ -1995,12 +2163,21 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             showGuides={showGuides}
             guides={guides}
             snapToGrid={snapToGrid}
+            snapToGuides={snapToGuides}
             isSuggesting={isSuggesting}
             themeTextColor={THEMES[theme]?.text}
+            themeAccent={THEMES[theme]?.accent}
             onInput={(html) => updateCurrentSlide({ content: html })}
             onClick={handleEditorClick}
             onGuideMove={(id, pos) => setGuides(prev => prev.map(g => g.id === id ? { ...g, position: pos } : g))}
             onGuideDelete={(id) => setGuides(prev => prev.filter(g => g.id !== id))}
+            selectedObjectId={selectedObjectId}
+            onSelectObject={setSelectedObjectId}
+            onObjectsChange={updateCurrentObjects}
+            drawingMode={drawingMode}
+            drawingColor={drawingColor}
+            drawingWidth={drawingWidth}
+            onDrawingComplete={handleDrawingComplete}
           />
 
           {/* Suggestion accept/reject popup */}

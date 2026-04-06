@@ -2,12 +2,154 @@
  * Slide presentation storage layer — persists presentations to localStorage.
  */
 
+// ── Slide Object System ──
+
+export type SlideObjectType = "textbox" | "image" | "shape" | "drawing";
+
+export interface SlideObjectBase {
+  id: string;
+  type: SlideObjectType;
+  x: number;      // % from left (0-100)
+  y: number;      // % from top (0-100)
+  width: number;  // % of slide width
+  height: number; // % of slide height
+  rotation: number; // degrees
+  zIndex: number;
+  locked?: boolean;
+}
+
+export interface TextBoxObject extends SlideObjectBase {
+  type: "textbox";
+  content: string;  // HTML content
+  fontSize: number; // px
+  fontFamily: string;
+  color: string;
+  bold: boolean;
+  italic: boolean;
+  align: "left" | "center" | "right";
+  verticalAlign: "top" | "middle" | "bottom";
+  backgroundColor?: string;
+  borderColor?: string;
+  borderWidth?: number;
+  borderRadius?: number;
+  padding?: number;
+  placeholder?: string;
+}
+
+export interface ImageObject extends SlideObjectBase {
+  type: "image";
+  src: string;       // data URL or URL
+  alt: string;
+  objectFit: "cover" | "contain" | "fill";
+  borderRadius?: number;
+  opacity?: number;
+  borderColor?: string;
+  borderWidth?: number;
+}
+
+export interface ShapeObject extends SlideObjectBase {
+  type: "shape";
+  shape: "rect" | "circle" | "triangle" | "arrow-right" | "arrow-down" | "line-h" | "line-v" | "line-diag" | "star";
+  fill: string;
+  stroke: string;
+  strokeWidth: number;
+  borderRadius?: number;
+  opacity?: number;
+  text?: string;
+  textColor?: string;
+  textSize?: number;
+}
+
+export interface DrawingObject extends SlideObjectBase {
+  type: "drawing";
+  paths: string; // SVG path data
+  stroke: string;
+  strokeWidth: number;
+  opacity?: number;
+}
+
+export type SlideObject = TextBoxObject | ImageObject | ShapeObject | DrawingObject;
+
+// ── Slide Object Factories ──
+
+let _objCounter = 0;
+function objId() { return `obj-${Date.now()}-${(++_objCounter).toString(36)}`; }
+
+export function createTextBox(overrides?: Partial<TextBoxObject>): TextBoxObject {
+  return {
+    id: objId(), type: "textbox",
+    x: 10, y: 10, width: 80, height: 15, rotation: 0, zIndex: 1,
+    content: "", fontSize: 18, fontFamily: "Inter, sans-serif", color: "#1a1a2e",
+    bold: false, italic: false, align: "left", verticalAlign: "top",
+    placeholder: "Click to add text",
+    ...overrides,
+  };
+}
+
+export function createImageObj(src: string, overrides?: Partial<ImageObject>): ImageObject {
+  return {
+    id: objId(), type: "image",
+    x: 25, y: 20, width: 50, height: 50, rotation: 0, zIndex: 1,
+    src, alt: "Image", objectFit: "contain",
+    ...overrides,
+  };
+}
+
+export function createShapeObj(shape: ShapeObject["shape"], overrides?: Partial<ShapeObject>): ShapeObject {
+  return {
+    id: objId(), type: "shape",
+    x: 30, y: 30, width: 20, height: 20, rotation: 0, zIndex: 1,
+    shape, fill: "#3b82f6", stroke: "transparent", strokeWidth: 0,
+    ...overrides,
+  };
+}
+
+export function createDrawingObj(paths: string, overrides?: Partial<DrawingObject>): DrawingObject {
+  return {
+    id: objId(), type: "drawing",
+    x: 0, y: 0, width: 100, height: 100, rotation: 0, zIndex: 1,
+    paths, stroke: "#1a1a2e", strokeWidth: 2,
+    ...overrides,
+  };
+}
+
+// ── Default slide templates with objects ──
+
+export function makeDefaultTitleObjects(title: string, accent: string, textColor: string): SlideObject[] {
+  return [
+    createTextBox({ x: 10, y: 8, width: 80, height: 6, content: "", fontSize: 14, color: accent, align: "center", placeholder: "" }),
+    createTextBox({ x: 10, y: 30, width: 80, height: 20, content: title || "Presentation Title", fontSize: 42, bold: true, color: textColor, align: "center", verticalAlign: "middle", placeholder: "Click to add title" }),
+    createTextBox({ x: 20, y: 52, width: 60, height: 10, content: "", fontSize: 18, color: textColor, align: "center", verticalAlign: "middle", placeholder: "Click to add subtitle" }),
+    createShapeObj("line-h", { x: 35, y: 50, width: 30, height: 0.5, fill: accent, zIndex: 0 }),
+  ];
+}
+
+export function makeDefaultContentObjects(accent: string, textColor: string): SlideObject[] {
+  return [
+    createTextBox({ x: 5, y: 5, width: 90, height: 12, content: "Section Title", fontSize: 28, bold: true, color: textColor, align: "left", verticalAlign: "middle", placeholder: "Click to add title" }),
+    createShapeObj("line-h", { x: 5, y: 17, width: 12, height: 0.4, fill: accent, zIndex: 0 }),
+    createTextBox({ x: 5, y: 22, width: 90, height: 70, content: "", fontSize: 16, color: textColor, align: "left", verticalAlign: "top", placeholder: "Click to add content" }),
+  ];
+}
+
+export function makeDefaultClosingObjects(accent: string, textColor: string): SlideObject[] {
+  return [
+    createShapeObj("line-h", { x: 35, y: 32, width: 30, height: 0.5, fill: accent, zIndex: 0 }),
+    createTextBox({ x: 10, y: 35, width: 80, height: 18, content: "Thank You", fontSize: 42, bold: true, color: textColor, align: "center", verticalAlign: "middle" }),
+    createTextBox({ x: 20, y: 55, width: 60, height: 8, content: "Questions & Discussion", fontSize: 16, color: textColor, align: "center", verticalAlign: "middle" }),
+    createTextBox({ x: 25, y: 66, width: 50, height: 6, content: "", fontSize: 14, color: accent, align: "center", verticalAlign: "middle", placeholder: "your.email@example.com" }),
+  ];
+}
+
+// ── Slide Data ──
+
 export interface SlideData {
   id: string;
-  content: string; // HTML content for the slide
+  content: string; // Legacy HTML content (kept for backward compat)
   notes: string;
   background: string; // CSS background value
   transition: "none" | "fade" | "dissolve" | "flip" | "cube";
+  objects?: SlideObject[]; // New: canvas objects
 }
 
 export interface PresentationPermissions {
