@@ -2,6 +2,7 @@
 
 import React from "react";
 import { EditorMenuBar, type EditorMenuItem, MENU_DIVIDER as D } from "@/components/shared/EditorMenus";
+import type { ViewMenuConfig } from "@/components/shared/EditorViewMenu";
 
 import {
   FilePlus, FolderOpen, Upload, Copy, Share2, Download, Printer,
@@ -25,9 +26,30 @@ interface SlideMenuBarProps {
   onAction: (action: string, payload?: unknown) => void;
   isStarred?: boolean;
   currentFolder?: string;
+  /** Current editing mode */
+  editingMode?: "editing" | "suggesting" | "viewing";
+  /** Current zoom level */
+  zoom?: number;
+  /** Whether filmstrip sidebar is visible */
+  showFilmstrip?: boolean;
+  /** Whether rulers are visible */
+  showRuler?: boolean;
+  /** Whether guides are visible */
+  showGuides?: boolean;
+  /** Whether snap-to-grid is on */
+  snapToGrid?: boolean;
+  /** Whether snap-to-guides is on */
+  snapToGuides?: boolean;
+  /** Whether fullscreen is active */
+  isFullscreen?: boolean;
 }
 
-export default function SlideMenuBar({ onAction, isStarred = false, currentFolder = "Presentations" }: SlideMenuBarProps) {
+export default function SlideMenuBar({
+  onAction, isStarred = false, currentFolder = "Presentations",
+  editingMode = "editing", zoom = 100, showFilmstrip = true,
+  showRuler = true, showGuides = false, snapToGrid = false,
+  snapToGuides = false, isFullscreen = false,
+}: SlideMenuBarProps) {
   const act = (action: string) => () => onAction(action);
 
   const fileMenuConfig = {
@@ -57,42 +79,56 @@ export default function SlideMenuBar({ onAction, isStarred = false, currentFolde
     showDuplicate: true,
   };
 
-  const viewMenu: EditorMenuItem[] = [
-    { label: "Mode", icon: PencilLine, submenu: [
-      { label: "Editing", icon: PencilLine, onClick: act("view:modeEditing") },
-      { label: "Commenting", icon: MessageSquare, onClick: act("view:modeCommenting") },
-      { label: "Viewing", icon: Eye, onClick: act("view:modeViewing") },
-    ]},
-    D,
-    { label: "Slideshow", icon: Play, shortcut: "Ctrl+F5", onClick: act("view:slideshow") },
-    { label: "Motion", icon: Wand2, onClick: act("view:motion") },
-    { label: "Theme builder", icon: Brush, onClick: act("view:themeBuilder") },
-    { label: "Grid view", icon: LayoutGrid, shortcut: "Ctrl+Alt+1", onClick: act("view:gridView") },
-    D,
-    { label: "Show ruler", icon: Ruler, onClick: act("view:ruler") },
-    { label: "Guides", icon: Compass, submenu: [
-      { label: "Show guides", icon: Compass, onClick: act("view:showGuides") },
-      { label: "Add vertical guide", icon: SlidersHorizontal, onClick: act("view:addVGuide") },
-      { label: "Add horizontal guide", icon: Minus, onClick: act("view:addHGuide") },
-      { label: "Edit guides", icon: PencilLine, onClick: act("view:editGuides") },
-      { label: "Clear guides", icon: XIcon, onClick: act("view:clearGuides") },
-    ]},
-    { label: "Snap to", icon: Magnet, submenu: [
-      { label: "Grid", icon: LayoutGrid, onClick: act("view:snapGrid") },
-      { label: "Guides", icon: Compass, onClick: act("view:snapGuides") },
-    ]},
-    D,
-    { label: "Show filmstrip", icon: Monitor, onClick: act("view:filmstrip") },
-    { label: "Zoom", icon: ZoomIn, submenu: [
-      { label: "Fit", icon: Maximize, onClick: act("view:zoomFit") },
-      { label: "50%", onClick: act("view:zoom50") },
-      { label: "75%", onClick: act("view:zoom75") },
-      { label: "100%", onClick: act("view:zoom100") },
-      { label: "150%", onClick: act("view:zoom150") },
-      { label: "200%", onClick: act("view:zoom200") },
-    ]},
-    { label: "Full screen", icon: Maximize, onClick: act("view:fullscreen") },
-  ];
+  const viewMenuConfig: ViewMenuConfig = {
+    mode: {
+      current: editingMode,
+      options: [
+        { label: "Editing", icon: PencilLine, value: "editing", description: "Edit the presentation directly" },
+        { label: "Suggesting", icon: MessageSquare, value: "suggesting", description: "Edits become suggestions" },
+        { label: "Viewing", icon: Eye, value: "viewing", description: "Read or present the final slides" },
+      ],
+      onSelect: (value) => onAction(`view:mode${value.charAt(0).toUpperCase() + value.slice(1)}`),
+    },
+    sections: [
+      // Section 1: Presentation actions
+      [
+        { type: "action", label: "Slideshow", icon: Play, shortcut: "Ctrl+F5", onClick: act("view:slideshow") },
+        { type: "action", label: "Motion", icon: Wand2, onClick: act("view:motion") },
+        { type: "action", label: "Theme builder", icon: Brush, onClick: act("view:themeBuilder") },
+        { type: "action", label: "Grid view", icon: LayoutGrid, shortcut: "Ctrl+Alt+1", onClick: act("view:gridView") },
+      ],
+      // Section 2: Ruler, Guides, Snap to
+      [
+        { type: "toggle", label: "Show ruler", isOn: showRuler, onToggle: act("view:ruler") },
+        { type: "submenu", label: "Guides", icon: Compass, items: [
+          { label: "Show guides", icon: Compass, onClick: act("view:showGuides"), isChecked: showGuides },
+          { label: "Add vertical guide", icon: SlidersHorizontal, onClick: act("view:addVGuide") },
+          { label: "Add horizontal guide", icon: Minus, onClick: act("view:addHGuide") },
+          { label: "Edit guides", icon: PencilLine, onClick: act("view:editGuides") },
+          { label: "Clear guides", icon: XIcon, onClick: act("view:clearGuides") },
+        ]},
+        { type: "submenu", label: "Snap to", icon: Magnet, items: [
+          { label: "Grid", icon: LayoutGrid, onClick: act("view:snapGrid"), isChecked: snapToGrid },
+          { label: "Guides", icon: Compass, onClick: act("view:snapGuides"), isChecked: snapToGuides },
+        ]},
+      ],
+      // Section 3: Filmstrip
+      [
+        { type: "toggle", label: "Show filmstrip", isOn: showFilmstrip, onToggle: act("view:filmstrip") },
+      ],
+    ],
+    zoom: {
+      current: zoom,
+      levels: [50, 75, 100, 150, 200],
+      showFit: true,
+      onFit: act("view:zoomFit"),
+      onChange: (level) => onAction(`view:zoom${level}`),
+    },
+    fullscreen: {
+      isActive: isFullscreen,
+      onToggle: act("view:fullscreen"),
+    },
+  };
 
   const insertMenu: EditorMenuItem[] = [
     { label: "Image", icon: Image, submenu: [
@@ -274,10 +310,11 @@ export default function SlideMenuBar({ onAction, isStarred = false, currentFolde
     <EditorMenuBar
       fileMenuConfig={fileMenuConfig}
       editMenuConfig={editMenuConfig}
+      viewMenuConfig={viewMenuConfig}
       menus={[
         { id: "file", label: "File", items: [] },
         { id: "edit", label: "Edit", items: [] },
-        { id: "view", label: "View", items: viewMenu },
+        { id: "view", label: "View", items: [] },
         { id: "insert", label: "Insert", items: insertMenu },
         { id: "format", label: "Format", items: formatMenu },
         { id: "slide", label: "Slide", items: slideMenu },

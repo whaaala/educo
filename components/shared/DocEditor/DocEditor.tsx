@@ -124,6 +124,7 @@ import {
 import { DOC_LANGUAGES } from "./languages";
 import DrawingCanvas from "./DrawingCanvas";
 import { EditorFileMenuPanel } from "@/components/shared/EditorFileMenu";
+import { EditorViewMenuPanel, type ViewMenuConfig } from "@/components/shared/EditorViewMenu";
 import Tooltip from "@/components/shared/Tooltip";
 import ShareDialog from "@/components/shared/ShareDialog";
 import type { ShareTarget } from "@/components/shared/ShareDialog";
@@ -5049,14 +5050,14 @@ export default function DocEditor({
     }
   }, [handleInsertImageFromFile, showToast]);
 
-  return (
+  const editorContent = (
     <MenuCloseContext.Provider value={closeMenus}>
     <SubmenuCloseContext.Provider value={() => setOpenSubmenu(null)}>
       <div
         ref={rootRef}
         data-doc-editor-root
         className={[
-          isFullscreen ? "fixed inset-0 z-[200] shadow-2xl" : "relative",
+          isFullscreen ? "fixed inset-0 z-[9999] shadow-2xl" : "relative",
           isFullscreen
             ? "flex flex-col w-full h-full rounded-none border-0"
             : "flex flex-col w-full h-full rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20",
@@ -6208,7 +6209,7 @@ export default function DocEditor({
             />
           </MenuRoot>
 
-        {/* View menu */}
+        {/* View menu — uses shared EditorViewMenuPanel */}
           <MenuRoot
             id="view"
             label="View"
@@ -6216,133 +6217,55 @@ export default function DocEditor({
             onOpen={(id) => setOpenMenu(id)}
             onClose={() => setOpenMenu(null)}
           >
-            <ViewMenuPanel>
-            {/* ── Mode submenu ── */}
-            <ViewMenuItem
-              label="Mode"
-              hasSubmenu
-              onHover={() => setOpenSubmenu("view-mode")}
-              onClick={() => setOpenSubmenu((prev) => (prev === "view-mode" ? null : "view-mode"))}
-              onLeave={() => setOpenSubmenu(null)}
-              isSubmenuOpen={openSubmenu === "view-mode"}
-              activeMode={docMode}
-              submenu={
-                <SubmenuPanel className="w-[220px]">
-                  <ViewMenuItem
-                    label="Editing"
-                    description="Edit the document directly"
-                    isChecked={docMode === "editing"}
-                    onClick={() => {
-                      setDocMode("editing");
-                      showToast("Mode: Editing");
-                    }}
-                  />
-                  <ViewMenuItem
-                    label="Suggesting"
-                    description="Edits become suggestions"
-                    isChecked={docMode === "suggesting"}
-                    onClick={() => {
-                      setDocMode("suggesting");
-                      showToast("Mode: Suggesting");
-                    }}
-                  />
-                  <ViewMenuItem
-                    label="Viewing"
-                    description="Read or print the final document"
-                    isChecked={docMode === "viewing"}
-                    onClick={() => {
-                      setDocMode("viewing");
-                      showToast("Mode: Viewing");
-                    }}
-                  />
-                </SubmenuPanel>
-              }
-            />
-            <ViewMenuDivider />
-            {/* ── Layout toggles ── */}
-            <ViewMenuToggle
-              label="Print layout"
-              description="Page breaks, margins, headers/footers"
-              isOn={showPrintLayout}
-              onToggle={() => setSectionInfos((prev) => prev.map(s => ({ ...s, pageSetup: { ...s.pageSetup, pageless: !s.pageSetup.pageless } })))}
-            />
-            <ViewMenuToggle
-              label="Pageless"
-              description="Continuous scroll, wide content"
-              isOn={!showPrintLayout}
-              onToggle={() => setSectionInfos((prev) => prev.map(s => ({ ...s, pageSetup: { ...s.pageSetup, pageless: !s.pageSetup.pageless } })))}
-            />
-            <ViewMenuDivider />
-            {/* ── Show toggles ── */}
-            <ViewMenuToggle
-              label="Show ruler"
-              isOn={showRuler}
-              onToggle={() => setShowRuler((v) => !v)}
-            />
-            <ViewMenuToggle
-              label="Show equation toolbar"
-              isOn={showEquationToolbar}
-              onToggle={() => setShowEquationToolbar((v) => !v)}
-            />
-            <ViewMenuToggle
-              label="Show non-printing characters"
-              shortcut="Ctrl+Shift+P"
-              isOn={showNonPrinting}
-              onToggle={() => setShowNonPrinting((v) => !v)}
-            />
-            <ViewMenuToggle
-              label="Show outline"
-              isOn={showOutline}
-              onToggle={() => {
-                setShowOutline((v) => !v);
-                if (isSidebarCollapsed) setIsSidebarCollapsed(false);
+            <EditorViewMenuPanel
+              config={{
+                mode: {
+                  current: docMode,
+                  options: [
+                    { label: "Editing", description: "Edit the document directly", value: "editing" },
+                    { label: "Suggesting", description: "Edits become suggestions", value: "suggesting" },
+                    { label: "Viewing", description: "Read or print the final document", value: "viewing" },
+                  ],
+                  onSelect: (value) => {
+                    setDocMode(value as "editing" | "suggesting" | "viewing");
+                    showToast(`Mode: ${value.charAt(0).toUpperCase() + value.slice(1)}`);
+                  },
+                },
+                sections: [
+                  // Layout toggles
+                  [
+                    { type: "toggle", label: "Print layout", description: "Page breaks, margins, headers/footers", isOn: showPrintLayout, onToggle: () => setSectionInfos((prev) => prev.map(s => ({ ...s, pageSetup: { ...s.pageSetup, pageless: !s.pageSetup.pageless } }))) },
+                    { type: "toggle", label: "Pageless", description: "Continuous scroll, wide content", isOn: !showPrintLayout, onToggle: () => setSectionInfos((prev) => prev.map(s => ({ ...s, pageSetup: { ...s.pageSetup, pageless: !s.pageSetup.pageless } }))) },
+                  ],
+                  // Show toggles
+                  [
+                    { type: "toggle", label: "Show ruler", isOn: showRuler, onToggle: () => setShowRuler((v) => !v) },
+                    { type: "toggle", label: "Show equation toolbar", isOn: showEquationToolbar, onToggle: () => setShowEquationToolbar((v) => !v) },
+                    { type: "toggle", label: "Show non-printing characters", shortcut: "Ctrl+Shift+P", isOn: showNonPrinting, onToggle: () => setShowNonPrinting((v) => !v) },
+                    { type: "toggle", label: "Show outline", isOn: showOutline, onToggle: () => { setShowOutline((v) => !v); if (isSidebarCollapsed) setIsSidebarCollapsed(false); } },
+                    { type: "toggle", label: "Show comments", isOn: showComments, onToggle: () => { setShowComments((v) => !v); setSidebarManuallyDismissed(false); } },
+                  ],
+                  // Proofing toggles
+                  [
+                    { type: "toggle", label: "Show spelling suggestions", isOn: showSpellingSuggestions, onToggle: () => setShowSpellingSuggestions((v) => !v) },
+                    { type: "toggle", label: "Show grammar suggestions", isOn: showGrammarSuggestions, onToggle: () => setShowGrammarSuggestions((v) => !v) },
+                  ],
+                ],
+                fullscreen: {
+                  isActive: isFullscreen,
+                  onToggle: () => setIsFullscreen((v) => !v),
+                  shortcut: "F11",
+                },
+                zoom: {
+                  current: zoomLevel,
+                  levels: [50, 75, 100, 125, 150, 200],
+                  showFit: true,
+                  onFit: () => { setZoomLevel(100); showToast("Zoom: Fit"); },
+                  onChange: (level) => { setZoomLevel(level); showToast(`Zoom: ${level}%`); },
+                },
               }}
+              onClose={() => setOpenMenu(null)}
             />
-            <ViewMenuToggle
-              label="Show comments"
-              isOn={showComments}
-              onToggle={() => { setShowComments((v) => !v); setSidebarManuallyDismissed(false); }}
-            />
-            <ViewMenuDivider />
-            {/* ── Proofing toggles ── */}
-            <ViewMenuToggle
-              label="Show spelling suggestions"
-              isOn={showSpellingSuggestions}
-              onToggle={() => setShowSpellingSuggestions((v) => !v)}
-            />
-            <ViewMenuToggle
-              label="Show grammar suggestions"
-              isOn={showGrammarSuggestions}
-              onToggle={() => setShowGrammarSuggestions((v) => !v)}
-            />
-            <ViewMenuDivider />
-            {/* ── Full screen ── */}
-            <ViewMenuItem
-              label="Full screen"
-              icon={isFullscreen ? Minimize2 : Maximize2}
-              shortcut="F11"
-              onClick={() => setIsFullscreen((v) => !v)}
-            />
-            {/* ── Zoom submenu ── */}
-            <ViewMenuItem
-              label="Zoom"
-              icon={ZoomIn}
-              hasSubmenu
-              onHover={() => setOpenSubmenu("view-zoom")}
-              onClick={() => setOpenSubmenu((prev) => (prev === "view-zoom" ? null : "view-zoom"))}
-              onLeave={() => setOpenSubmenu(null)}
-              isSubmenuOpen={openSubmenu === "view-zoom"}
-              submenu={
-                <SubmenuPanel className="w-[180px]">
-                  <ViewMenuItem label="Fit" isChecked={zoomLevel === 100} onClick={() => { setZoomLevel(100); showToast("Zoom: Fit"); }} />
-                  <ViewMenuDivider />
-                  {[50, 75, 100, 125, 150, 200].map((z) => (
-                    <ViewMenuItem key={z} label={`${z}%`} isChecked={z === zoomLevel} onClick={() => { setZoomLevel(z); showToast(`Zoom: ${z}%`); }} />
-                  ))}
-                </SubmenuPanel>
-              }
-            />
-            </ViewMenuPanel>
           </MenuRoot>
 
         {/* Insert menu */}
@@ -10246,6 +10169,12 @@ export default function DocEditor({
     </SubmenuCloseContext.Provider>
     </MenuCloseContext.Provider>
   );
+
+  // When fullscreen, portal to document.body to escape parent stacking contexts (sidebar z-40)
+  if (isFullscreen && typeof document !== "undefined") {
+    return createPortal(editorContent, document.body);
+  }
+  return editorContent;
 }
 
 function ToolbarDivider() {
@@ -11177,7 +11106,7 @@ function FullscreenFloatingPill({
     <div
       data-doc-floating-pill
       className={[
-        "fixed top-3 left-1/2 -translate-x-1/2 z-[250]",
+        "fixed top-3 left-1/2 -translate-x-1/2 z-[10000]",
         "flex items-center rounded-full",
         // Glassmorphism pill
         "bg-gray-900/70 dark:bg-gray-800/80 midnight:bg-[#0b1220]/80 purple:bg-[#1a0d2e]/80",

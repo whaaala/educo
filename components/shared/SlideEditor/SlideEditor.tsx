@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   Plus, Play, Trash2, Copy, Palette, LayoutGrid, X, ArrowLeft,
   Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight,
   Strikethrough, Superscript as SuperscriptIcon, Subscript as SubscriptIcon,
   Image as ImageIcon, Type, Table2, Paintbrush, MessageCircle,
-  Share2, Undo2, Redo2, ZoomIn, ZoomOut, Minus, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Check, Upload,
+  Share2, Undo2, Redo2, ZoomIn, ZoomOut, Minimize2, Minus, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Check, Upload, Eye,
   Bookmark, ShieldCheck, Globe, Tag, FolderPlus, Lock, AlertTriangle, Send, Mail,
 } from "lucide-react";
 import { slideStorage, type SlideData, type PresentationPermissions, DEFAULT_PERMISSIONS } from "@/lib/slide-storage";
@@ -38,17 +39,91 @@ interface SlideEditorProps {
 }
 
 // ── Themes ──
-const THEMES: Record<string, { bg: string; text: string; accent: string; label: string }> = {
-  default: { bg: "#ffffff", text: "#111827", accent: "#3b82f6", label: "Default" },
-  corporate: { bg: "#f8fafc", text: "#1e3a5f", accent: "#1e40af", label: "Corporate" },
-  modern: { bg: "#faf5ff", text: "#7c3aed", accent: "#8b5cf6", label: "Modern" },
-  vibrant: { bg: "linear-gradient(135deg, #1e40af, #7c3aed)", text: "#ffffff", accent: "#f59e0b", label: "Vibrant" },
-  bold: { bg: "#0f172a", text: "#ffffff", accent: "#3b82f6", label: "Bold Dark" },
-  elegant: { bg: "#ffffff", text: "#111827", accent: "#111827", label: "Elegant" },
-  clean: { bg: "#f1f5f9", text: "#0f172a", accent: "#0ea5e9", label: "Clean" },
-  academic: { bg: "#f0f9ff", text: "#1e3a5f", accent: "#2563eb", label: "Academic" },
-  bright: { bg: "linear-gradient(135deg, #2563eb, #7c3aed)", text: "#ffffff", accent: "#fbbf24", label: "Bright" },
+interface ThemeDef {
+  bg: string; text: string; accent: string; label: string;
+  category: "light" | "dark" | "gradient";
+  layout: "center" | "left" | "split";
+}
+
+// ── Slide template builders ──
+
+function slideHTML_Title(title: string, subtitle: string, a: string, t: string, layout: "center" | "left" | "split") {
+  const bar = `<div style="width:80px;height:4px;border-radius:4px;background:${a};margin:${layout === "center" ? "0 auto 24px" : "0 0 24px"}"></div>`;
+  const h1 = `<h1 style="font-size:2.4em;font-weight:800;letter-spacing:-0.02em;line-height:1.15;color:${t};margin:0 0 8px">${title}</h1>`;
+  const sub = `<p style="font-size:1em;font-weight:400;opacity:0.5;color:${t};margin:0">${subtitle}</p>`;
+  if (layout === "center") return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center">${bar}${h1}${sub}</div>`;
+  if (layout === "left") return `<div style="display:flex;flex-direction:column;justify-content:center;height:100%;padding-left:5%">${bar}${h1}${sub}</div>`;
+  return `<div style="display:flex;height:100%"><div style="width:8px;background:${a};flex-shrink:0;border-radius:0 4px 4px 0"></div><div style="display:flex;flex-direction:column;justify-content:center;padding-left:8%">${bar}${h1}${sub}</div></div>`;
+}
+
+function slideHTML_Content(a: string, t: string) {
+  return `<div style="display:flex;flex-direction:column;height:100%"><div style="width:60px;height:3px;border-radius:3px;background:${a};margin-bottom:16px"></div><h2 style="font-size:1.6em;font-weight:700;color:${t};margin:0 0 20px;letter-spacing:-0.01em">Section Title</h2><ul style="font-size:0.95em;color:${t};opacity:0.7;line-height:2;list-style:none;padding:0;margin:0"><li style="padding-left:20px;position:relative"><span style="position:absolute;left:0;color:${a}">&#x2022;</span>Key point one — describe your idea</li><li style="padding-left:20px;position:relative"><span style="position:absolute;left:0;color:${a}">&#x2022;</span>Key point two — provide evidence</li><li style="padding-left:20px;position:relative"><span style="position:absolute;left:0;color:${a}">&#x2022;</span>Key point three — explain the impact</li></ul></div>`;
+}
+
+function slideHTML_TwoColumn(a: string, t: string) {
+  const col = (title: string, items: string[]) => `<div style="flex:1;min-width:0"><h3 style="font-size:1.2em;font-weight:700;color:${t};margin:0 0 12px">${title}</h3><ul style="font-size:0.85em;color:${t};opacity:0.7;line-height:1.9;list-style:none;padding:0;margin:0">${items.map(i => `<li style="padding-left:16px;position:relative"><span style="position:absolute;left:0;color:${a}">&#x2013;</span>${i}</li>`).join("")}</ul></div>`;
+  return `<div style="display:flex;flex-direction:column;height:100%"><div style="width:60px;height:3px;border-radius:3px;background:${a};margin-bottom:16px"></div><h2 style="font-size:1.5em;font-weight:700;color:${t};margin:0 0 24px">Comparison</h2><div style="display:flex;gap:32px">${col("Option A", ["First advantage", "Second advantage", "Third advantage"])}${col("Option B", ["First advantage", "Second advantage", "Third advantage"])}</div></div>`;
+}
+
+function slideHTML_SectionDivider(title: string, a: string, t: string) {
+  return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center"><div style="width:48px;height:48px;border-radius:50%;background:${a};opacity:0.15;margin-bottom:20px"></div><div style="width:60px;height:3px;border-radius:3px;background:${a};margin:0 auto 20px"></div><h2 style="font-size:2em;font-weight:800;color:${t};margin:0;letter-spacing:-0.02em">${title}</h2></div>`;
+}
+
+function slideHTML_Quote(a: string, t: string) {
+  return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:0 10%"><div style="font-size:3em;color:${a};opacity:0.3;line-height:1;margin-bottom:8px">&ldquo;</div><p style="font-size:1.4em;font-weight:500;color:${t};line-height:1.6;margin:0 0 16px;font-style:italic">The best way to predict the future is to create it.</p><p style="font-size:0.85em;color:${t};opacity:0.5;margin:0">&mdash; Peter Drucker</p></div>`;
+}
+
+function slideHTML_Closing(a: string, t: string) {
+  return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center"><div style="width:80px;height:4px;border-radius:4px;background:${a};margin:0 auto 24px"></div><h1 style="font-size:2.6em;font-weight:800;color:${t};margin:0 0 12px;letter-spacing:-0.02em">Thank You</h1><p style="font-size:1em;color:${t};opacity:0.5;margin:0 0 24px">Questions &amp; Discussion</p><p style="font-size:0.85em;color:${a};margin:0">your.email@example.com</p></div>`;
+}
+
+const THEMES: Record<string, ThemeDef> = {
+  // Light
+  default:  { bg: "#ffffff", text: "#1a1a2e", accent: "#3b82f6", label: "Default", category: "light", layout: "center" },
+  minimal:  { bg: "#fafafa", text: "#18181b", accent: "#71717a", label: "Minimal", category: "light", layout: "left" },
+  clean:    { bg: "#f0f9ff", text: "#0c4a6e", accent: "#0ea5e9", label: "Clean", category: "light", layout: "center" },
+  warm:     { bg: "#fffbeb", text: "#78350f", accent: "#f59e0b", label: "Warm", category: "light", layout: "split" },
+  rose:     { bg: "#fff1f2", text: "#881337", accent: "#f43f5e", label: "Rose", category: "light", layout: "center" },
+  nature:   { bg: "#f0fdf4", text: "#14532d", accent: "#22c55e", label: "Nature", category: "light", layout: "left" },
+  // Dark
+  midnight: { bg: "#0f172a", text: "#e2e8f0", accent: "#38bdf8", label: "Midnight", category: "dark", layout: "center" },
+  charcoal: { bg: "#18181b", text: "#fafafa", accent: "#a78bfa", label: "Charcoal", category: "dark", layout: "split" },
+  forest:   { bg: "#052e16", text: "#bbf7d0", accent: "#4ade80", label: "Forest", category: "dark", layout: "left" },
+  navy:     { bg: "#1e1b4b", text: "#e0e7ff", accent: "#818cf8", label: "Navy", category: "dark", layout: "center" },
+  // Gradient
+  aurora:   { bg: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #3b82f6 100%)", text: "#ffffff", accent: "#38bdf8", label: "Aurora", category: "gradient", layout: "center" },
+  sunset:   { bg: "linear-gradient(135deg, #7c2d12 0%, #c2410c 50%, #f59e0b 100%)", text: "#ffffff", accent: "#fbbf24", label: "Sunset", category: "gradient", layout: "left" },
+  cosmic:   { bg: "linear-gradient(135deg, #1e1b4b 0%, #5b21b6 50%, #7c3aed 100%)", text: "#ffffff", accent: "#c4b5fd", label: "Cosmic", category: "gradient", layout: "center" },
+  ocean:    { bg: "linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0ea5e9 100%)", text: "#ffffff", accent: "#7dd3fc", label: "Ocean", category: "gradient", layout: "split" },
+  ember:    { bg: "linear-gradient(135deg, #450a0a 0%, #b91c1c 50%, #ef4444 100%)", text: "#ffffff", accent: "#fca5a5", label: "Ember", category: "gradient", layout: "center" },
+  neon:     { bg: "linear-gradient(135deg, #0f172a 0%, #581c87 50%, #c026d3 100%)", text: "#ffffff", accent: "#f0abfc", label: "Neon", category: "gradient", layout: "left" },
 };
+
+/** Generate a full themed slide deck from a theme definition */
+function buildThemedSlides(t: ThemeDef, title: string, existingSlides: SlideData[]): SlideData[] {
+  const { accent: a, text: tx, bg, layout } = t;
+  // Template slides for each position
+  const templates = [
+    slideHTML_Title(title || "Presentation Title", "Click to add subtitle", a, tx, layout),
+    slideHTML_Content(a, tx),
+    slideHTML_TwoColumn(a, tx),
+    slideHTML_SectionDivider("Part Two", a, tx),
+    slideHTML_Quote(a, tx),
+    slideHTML_Closing(a, tx),
+  ];
+
+  return existingSlides.map((slide, i) => {
+    const hasContent = slide.content?.trim() && slide.content !== "<br>" && !slide.content.includes("Click to add");
+    // First slide always gets title template
+    if (i === 0) return { ...slide, background: bg, content: templates[0] };
+    // Last slide always gets closing template
+    if (i === existingSlides.length - 1 && existingSlides.length > 1) return { ...slide, background: bg, content: hasContent ? slide.content : templates[5] };
+    // Middle slides: keep existing content or assign templates cyclically
+    if (hasContent) return { ...slide, background: bg };
+    const templateIdx = ((i - 1) % 4) + 1; // cycles through content, two-col, section, quote
+    return { ...slide, background: bg, content: templates[templateIdx] };
+  });
+}
 
 // ── Transitions ──
 const TRANSITION_STYLES: Record<string, string> = {
@@ -123,13 +198,23 @@ function SlideRuler({ direction, length, slideOffset }: { direction: "h" | "v"; 
 }
 
 // ── Slide Canvas with rulers and proper fit ──
-function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, onInput, slideRatio = { w: 16, h: 9 } }: {
+function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, onInput, slideRatio = { w: 16, h: 9 }, showRuler = true, showGuides = false, guides = [], snapToGrid = false, onClick, isSuggesting = false, themeTextColor, onGuideMove, onGuideDelete }: {
   zoom: number;
   activeSlide: SlideData | undefined;
   canEdit: boolean;
   editorRef: React.RefObject<HTMLDivElement | null>;
+  contentRef: React.RefObject<HTMLDivElement | null>;
   onInput: (html: string) => void;
   slideRatio?: { w: number; h: number };
+  showRuler?: boolean;
+  showGuides?: boolean;
+  guides?: { id: string; orientation: "h" | "v"; position: number }[];
+  snapToGrid?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
+  isSuggesting?: boolean;
+  themeTextColor?: string;
+  onGuideMove?: (id: string, position: number) => void;
+  onGuideDelete?: (id: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 800, h: 450 });
@@ -166,11 +251,11 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, onInput, slide
   return (
     <div ref={containerRef} className="flex-1 flex flex-col bg-[#e8eaed]/60 dark:bg-gray-950 overflow-hidden relative">
       {/* Horizontal ruler */}
-      <SlideRuler direction="h" length={size.w} slideOffset={slideLeft} />
+      {showRuler && <SlideRuler direction="h" length={size.w} slideOffset={slideLeft} />}
 
       <div className="flex flex-1 min-h-0">
         {/* Vertical ruler */}
-        <SlideRuler direction="v" length={size.h} slideOffset={slideTop - 18} />
+        {showRuler && <SlideRuler direction="v" length={size.h} slideOffset={slideTop - 18} />}
 
         {/* Canvas area */}
         <div className="flex-1 flex items-center justify-center overflow-hidden">
@@ -189,12 +274,76 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, onInput, slide
               style={{ background: activeSlide?.background || "#ffffff" }}
             >
               <div
+                ref={contentRef}
                 contentEditable={canEdit}
                 suppressContentEditableWarning
-                className="absolute inset-0 outline-none px-[8%] py-[6%]"
+                className={[
+                  "absolute inset-0 outline-none px-[8%] py-[6%]",
+                  isSuggesting ? "caret-green-500" : "",
+                ].join(" ")}
+                style={themeTextColor ? { color: themeTextColor } : undefined}
                 dangerouslySetInnerHTML={{ __html: activeSlide?.content || "" }}
-                onInput={(e) => onInput((e.target as HTMLDivElement).innerHTML)}
+                onInput={(e) => { if (!isSuggesting) onInput((e.target as HTMLDivElement).innerHTML); }}
+                onClick={onClick}
               />
+              {/* Guides overlay — draggable */}
+              {showGuides && guides.map(g => (
+                <div
+                  key={g.id}
+                  className={`absolute z-[5] group ${g.orientation === "v" ? "cursor-col-resize" : "cursor-row-resize"}`}
+                  style={g.orientation === "v"
+                    ? { left: `${g.position}%`, top: 0, bottom: 0, width: 8, marginLeft: -4 }
+                    : { top: `${g.position}%`, left: 0, right: 0, height: 8, marginTop: -4 }
+                  }
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const slideEl = e.currentTarget.parentElement;
+                    if (!slideEl) return;
+                    const rect = slideEl.getBoundingClientRect();
+                    const handleMove = (ev: MouseEvent) => {
+                      const pos = g.orientation === "v"
+                        ? ((ev.clientX - rect.left) / rect.width) * 100
+                        : ((ev.clientY - rect.top) / rect.height) * 100;
+                      onGuideMove?.(g.id, Math.max(0, Math.min(100, pos)));
+                    };
+                    const handleUp = () => {
+                      document.removeEventListener("mousemove", handleMove);
+                      document.removeEventListener("mouseup", handleUp);
+                    };
+                    document.addEventListener("mousemove", handleMove);
+                    document.addEventListener("mouseup", handleUp);
+                  }}
+                  onDoubleClick={(e) => { e.stopPropagation(); onGuideDelete?.(g.id); }}
+                  title="Drag to move, double-click to delete"
+                >
+                  {/* Visible guide line */}
+                  <div
+                    className="absolute bg-blue-500/70 group-hover:bg-blue-500"
+                    style={g.orientation === "v"
+                      ? { left: 3, top: 0, bottom: 0, width: 1 }
+                      : { top: 3, left: 0, right: 0, height: 1 }
+                    }
+                  />
+                  {/* Position label on hover */}
+                  <div className={`absolute opacity-0 group-hover:opacity-100 transition-opacity text-[9px] font-mono text-white bg-blue-600 rounded px-1 py-0.5 pointer-events-none ${
+                    g.orientation === "v" ? "top-1 left-2" : "left-1 top-2"
+                  }`}>
+                    {g.position.toFixed(0)}%
+                  </div>
+                </div>
+              ))}
+              {/* Snap grid overlay — dotted grid every 10% */}
+              {snapToGrid && (
+                <svg className="absolute inset-0 w-full h-full pointer-events-none z-[3]" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <pattern id="slide-grid-dots" width="10%" height="10%" patternUnits="objectBoundingBox">
+                      <circle cx="50%" cy="50%" r="1" fill="rgba(66,133,244,0.25)" />
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#slide-grid-dots)" />
+                </svg>
+              )}
             </div>
           </div>
         </div>
@@ -613,12 +762,31 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [notesHeight, setNotesHeight] = useState(0);
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
   const [filmstripCollapsed, setFilmstripCollapsed] = useState(false);
+  const [showRuler, setShowRuler] = useState(true);
+  const [showGuides, setShowGuides] = useState(false);
+  const [guides, setGuides] = useState<{ id: string; orientation: "h" | "v"; position: number }[]>([]);
+  const [snapToGrid, setSnapToGrid] = useState(false);
+  const [snapToGuides, setSnapToGuides] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showGridView, setShowGridView] = useState(false);
+  const [toast, setToastRaw] = useState<string | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const setToast = useCallback((msg: string) => {
+    setToastRaw(msg);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToastRaw(null), 2000);
+  }, []);
   const isDraggingNotes = useRef(false);
   const editorRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const savedSelectionRef = useRef<Range | null>(null);
   const filmstripRef = useRef<HTMLDivElement>(null);
   const activeSlide = slides[activeSlideIdx] || slides[0];
-  const canEdit = editingMode === "editing";
+  const canEdit = editingMode !== "viewing"; // contentEditable: true in editing + suggesting
+  const canDirectEdit = editingMode === "editing"; // toolbar/execCommand: only in editing mode
+  const isSuggesting = editingMode === "suggesting";
+  const [activeSuggestionId, setActiveSuggestionId] = useState<string | null>(null);
+  const [suggestionPopupPos, setSuggestionPopupPos] = useState<{ top: number; left: number } | null>(null);
 
   const currentAuthor: CommentAuthor = { id: "current-user", name: "You", avatar: undefined };
 
@@ -654,13 +822,16 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   };
 
   const addSlide = useCallback(() => {
-    const t = slideTranslations[presentationLanguage] || slideTranslations.English;
+    const th = THEMES[theme] || THEMES.default;
+    const newSlide = makeSlide(
+      slideHTML_Content(th.accent, th.text),
+      th.bg,
+    );
     const newSlides = [...slides];
-    const newSlide = makeSlide(`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;"><h2 style="text-align:center;font-size:32px;font-weight:700;color:#1f2937;margin:0;">${t.title}</h2><p style="text-align:center;font-size:18px;color:#9ca3af;margin:0;">${t.subtitle}</p></div>`);
     newSlides.splice(activeSlideIdx + 1, 0, newSlide);
     updateSlides(newSlides);
     setActiveSlideIdx(activeSlideIdx + 1);
-  }, [slides, activeSlideIdx, updateSlides, presentationLanguage]);
+  }, [slides, activeSlideIdx, updateSlides, theme]);
 
   const duplicateSlide = useCallback(() => {
     const newSlides = [...slides];
@@ -848,49 +1019,171 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     return () => document.removeEventListener("keydown", handler);
   }, [isPresenting, slides.length]);
 
-  // ── Slideshow Mode ──
+  // F11 → toggle fullscreen, Escape → exit fullscreen/gridview, Ctrl+F5 → start slideshow, Ctrl+Alt+1 → grid view
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "F11") { e.preventDefault(); setIsFullscreen(v => !v); }
+      else if (e.key === "Escape" && showGridView) { setShowGridView(false); }
+      else if (e.key === "Escape" && isFullscreen) { setIsFullscreen(false); }
+      else if (e.key === "F5" && e.ctrlKey) { e.preventDefault(); setActiveSlideIdx(0); setIsPresenting(true); }
+      else if (e.key === "F5") { e.preventDefault(); setIsPresenting(true); }
+      else if (e.key === "1" && e.ctrlKey && e.altKey) { e.preventDefault(); setShowGridView(v => !v); }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isFullscreen, showGridView]);
+
+  // ── Suggestion system (suggesting mode) — uses native addEventListener like DocEditor ──
+  const handleSuggestionBeforeInput = useCallback((e: InputEvent) => {
+    if (!e.inputType) return;
+
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+
+    // Handle text insertion
+    if (e.inputType === "insertText" || e.inputType === "insertParagraph") {
+      e.preventDefault();
+      const id = `sg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+      const text = e.inputType === "insertParagraph" ? "<br>" : (e.data || "");
+      const span = document.createElement("span");
+      span.dataset.suggestion = id;
+      span.dataset.suggestionType = "insert";
+      span.style.cssText = "color:#16a34a;text-decoration:underline;text-decoration-color:#16a34a;text-underline-offset:2px;cursor:pointer;";
+      span.innerHTML = text;
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(span);
+      // Move cursor after the inserted span
+      range.setStartAfter(span);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      // Sync content back
+      if (contentRef.current) {
+        updateCurrentSlide({ content: contentRef.current.innerHTML });
+      }
+      return;
+    }
+
+    // Handle deletion (backspace/delete)
+    if (e.inputType === "deleteContentBackward" || e.inputType === "deleteContentForward") {
+      e.preventDefault();
+      const range = sel.getRangeAt(0);
+      if (range.collapsed) {
+        // Select the character to delete
+        if (e.inputType === "deleteContentBackward") {
+          range.setStart(range.startContainer, Math.max(0, range.startOffset - 1));
+        } else {
+          range.setEnd(range.endContainer, range.endOffset + 1);
+        }
+      }
+      const text = range.toString();
+      if (!text) return;
+      const id = `sg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+      const span = document.createElement("span");
+      span.dataset.suggestion = id;
+      span.dataset.suggestionType = "delete";
+      span.style.cssText = "color:#dc2626;text-decoration:line-through;text-decoration-color:#dc2626;cursor:pointer;opacity:0.7;";
+      span.textContent = text;
+      range.deleteContents();
+      range.insertNode(span);
+      range.setStartAfter(span);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      if (contentRef.current) {
+        updateCurrentSlide({ content: contentRef.current.innerHTML });
+      }
+      return;
+    }
+
+    // Block all other input types in suggesting mode (formatting, paste, etc.)
+    e.preventDefault();
+  }, [updateCurrentSlide]);
+
+  // Attach native beforeinput listener when in suggesting mode (like DocEditor)
+  useEffect(() => {
+    if (editingMode !== "suggesting") return;
+    const el = contentRef.current;
+    if (!el) return;
+    const handler = (e: Event) => handleSuggestionBeforeInput(e as InputEvent);
+    el.addEventListener("beforeinput", handler);
+    return () => el.removeEventListener("beforeinput", handler);
+  }, [editingMode, handleSuggestionBeforeInput]);
+
+  const acceptSuggestion = useCallback((id: string) => {
+    if (!contentRef.current) return;
+    const spans = contentRef.current.querySelectorAll(`[data-suggestion="${id}"]`);
+    spans.forEach(span => {
+      const type = span.getAttribute("data-suggestion-type");
+      if (type === "insert") {
+        const parent = span.parentNode;
+        while (span.firstChild) parent?.insertBefore(span.firstChild, span);
+        parent?.removeChild(span);
+      } else if (type === "delete") {
+        span.parentNode?.removeChild(span);
+      }
+    });
+    updateCurrentSlide({ content: contentRef.current.innerHTML });
+    setActiveSuggestionId(null);
+    setSuggestionPopupPos(null);
+    setToast("Suggestion accepted");
+  }, [updateCurrentSlide, setToast]);
+
+  const rejectSuggestion = useCallback((id: string) => {
+    if (!contentRef.current) return;
+    const spans = contentRef.current.querySelectorAll(`[data-suggestion="${id}"]`);
+    spans.forEach(span => {
+      const type = span.getAttribute("data-suggestion-type");
+      if (type === "insert") {
+        span.parentNode?.removeChild(span);
+      } else if (type === "delete") {
+        const parent = span.parentNode;
+        while (span.firstChild) parent?.insertBefore(span.firstChild, span);
+        parent?.removeChild(span);
+      }
+    });
+    updateCurrentSlide({ content: contentRef.current.innerHTML });
+    setActiveSuggestionId(null);
+    setSuggestionPopupPos(null);
+    setToast("Suggestion rejected");
+  }, [updateCurrentSlide, setToast]);
+
+  // Handle clicking on suggestion spans to show accept/reject popup
+  const handleEditorClick = useCallback((e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const suggSpan = target.closest("[data-suggestion]") as HTMLElement | null;
+    if (suggSpan) {
+      const id = suggSpan.dataset.suggestion!;
+      const rect = suggSpan.getBoundingClientRect();
+      setActiveSuggestionId(id);
+      setSuggestionPopupPos({ top: rect.bottom + 4, left: rect.left });
+    } else {
+      setActiveSuggestionId(null);
+      setSuggestionPopupPos(null);
+    }
+  }, []);
+
+  // ── Slideshow Mode — portaled to body to escape sidebar stacking context ──
   if (isPresenting) {
-    return (
-      <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center select-none" onClick={() => setActiveSlideIdx(i => Math.min(i + 1, slides.length - 1))}>
-        <div className="w-full h-full flex items-center justify-center relative">
-          <div className="w-full h-full max-w-[100vw] max-h-[100vh] relative" style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}` }}>
-            <div
-              className={`w-full h-full ${TRANSITION_STYLES[activeSlide?.transition || "fade"]}`}
-              style={{ background: activeSlide?.background || "#ffffff" }}
-            >
-              <div className="w-full h-full p-8 lg:p-16" dangerouslySetInnerHTML={{ __html: activeSlide?.content || "" }} />
-            </div>
-          </div>
-          {/* Slide counter — bottom center pill */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-black/50 backdrop-blur-sm text-white/70 text-[12px] font-medium">
-            {activeSlideIdx + 1} / {slides.length}
-          </div>
-          {/* Exit button */}
-          <button onClick={(e) => { e.stopPropagation(); setIsPresenting(false); }}
-            className="absolute top-5 right-5 p-2.5 rounded-full bg-black/40 backdrop-blur-sm text-white/60 hover:bg-black/60 hover:text-white transition-all duration-200 cursor-pointer">
-            <X className="w-5 h-5" />
-          </button>
-          {/* Navigation arrows */}
-          {activeSlideIdx > 0 && (
-            <button onClick={(e) => { e.stopPropagation(); setActiveSlideIdx(i => Math.max(i - 1, 0)); }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 backdrop-blur-sm text-white/60 hover:bg-black/50 hover:text-white transition-all duration-200 cursor-pointer">
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-          )}
-          {activeSlideIdx < slides.length - 1 && (
-            <button onClick={(e) => { e.stopPropagation(); setActiveSlideIdx(i => Math.min(i + 1, slides.length - 1)); }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 backdrop-blur-sm text-white/60 hover:bg-black/50 hover:text-white transition-all duration-200 cursor-pointer">
-              <ChevronRight className="w-6 h-6" />
-            </button>
-          )}
-        </div>
-      </div>
+    return createPortal(
+      <SlideshowPresenter
+        slides={slides}
+        activeSlideIdx={activeSlideIdx}
+        setActiveSlideIdx={setActiveSlideIdx}
+        slideRatio={slideRatio}
+        onExit={() => setIsPresenting(false)}
+      />,
+      document.body,
     );
   }
 
-  return (
+  const editorContent = (
     <div
-      className="flex flex-col h-full bg-[#f8f9fa] dark:bg-gray-950 slide-editor-root relative"
+      className={[
+        "flex flex-col h-full bg-[#f8f9fa] dark:bg-gray-950 slide-editor-root",
+        isFullscreen ? "fixed inset-0 z-[9999]" : "relative",
+      ].join(" ")}
       lang={(() => {
         const langCodes: Record<string, string> = { English: "en", Spanish: "es", French: "fr", German: "de", Portuguese: "pt", Italian: "it", Dutch: "nl", Russian: "ru", Chinese: "zh", Japanese: "ja", Korean: "ko", Arabic: "ar", Hindi: "hi", Yoruba: "yo", Igbo: "ig", Hausa: "ha", Swahili: "sw", Zulu: "zu" };
         return langCodes[presentationLanguage] || "en";
@@ -899,6 +1192,15 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       style={permissions.disableCopyPrintDownload ? { userSelect: "none", WebkitUserSelect: "none" } : undefined}
       onCopy={permissions.disableCopyPrintDownload ? (e) => { e.preventDefault(); setPermissionBlockedMsg({ message: "Copy is disabled by the document owner.", permType: "copy" }); } : undefined}
     >
+      {/* Fullscreen floating pill — appears when cursor nears top */}
+      {isFullscreen && (
+        <SlideFullscreenPill
+          onExit={() => setIsFullscreen(false)}
+          zoom={zoom}
+          onZoomChange={setZoom}
+        />
+      )}
+
       {/* Print styles — landscape, hide UI, show only slides */}
       <style>{`
         @page { size: landscape; margin: 0; }
@@ -1005,7 +1307,29 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         style={{ maxHeight: headerCollapsed ? 0 : 300, opacity: headerCollapsed ? 0 : 1 }}
       >
       {/* ── Menu Bar (shared component) ── */}
-      <SlideMenuBar isStarred={isStarred} currentFolder={currentFolder} onAction={(action) => {
+      <SlideMenuBar
+        isStarred={isStarred}
+        currentFolder={currentFolder}
+        editingMode={editingMode}
+        zoom={zoom}
+        showFilmstrip={!filmstripCollapsed}
+        showRuler={showRuler}
+        showGuides={showGuides}
+        snapToGrid={snapToGrid}
+        snapToGuides={snapToGuides}
+        isFullscreen={isFullscreen}
+        onAction={(action) => {
+        // Block direct-edit actions in suggesting/viewing mode (only view:* and file:* allowed)
+        if (editingMode !== "editing") {
+          const directEditPrefixes = ["edit:", "format:", "slide:", "insert:", "arrange:"];
+          const isDirectEdit = directEditPrefixes.some(p => action.startsWith(p));
+          // Allow view:*, file:*, tools:*, help:* and comment insertion
+          if (isDirectEdit && action !== "insert:comment") {
+            if (editingMode === "viewing") setToast("Switch to Editing mode to make changes");
+            else if (editingMode === "suggesting") setToast("Formatting is not available in Suggesting mode");
+            return;
+          }
+        }
         // Restore editor focus and selection for edit/format actions
         if (action.startsWith("edit:") || action.startsWith("format:")) {
           restoreSlideSelection();
@@ -1152,16 +1476,45 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           case "edit:findReplace": setShowFindReplace(prev => !prev); break;
 
           // ── View menu ──
-          case "view:modeEditing": setEditingMode("editing"); break;
-          case "view:modeCommenting": setEditingMode("suggesting"); break;
-          case "view:modeViewing": setEditingMode("viewing"); break;
+          case "view:modeEditing": setEditingMode("editing"); setToast("Mode: Editing"); break;
+          case "view:modeSuggesting": case "view:modeCommenting": setEditingMode("suggesting"); setToast("Mode: Suggesting"); break;
+          case "view:modeViewing": setEditingMode("viewing"); setToast("Mode: Viewing"); break;
           case "view:motion": setShowTransitions(true); break;
           case "view:themeBuilder": setShowThemes(true); break;
-          case "view:gridView": { /* TODO: grid view */ break; }
-          case "view:ruler": { /* rulers already visible */ break; }
-          case "view:showGuides": case "view:addVGuide": case "view:addHGuide":
-          case "view:editGuides": case "view:clearGuides":
-          case "view:snapGrid": case "view:snapGuides": break;
+          case "view:gridView": {
+            setShowGridView(v => !v);
+            break;
+          }
+          case "view:ruler": setShowRuler(v => !v); break;
+          case "view:showGuides": setShowGuides(v => !v); break;
+          case "view:addVGuide": {
+            setShowGuides(true);
+            const vCount = guides.filter(g => g.orientation === "v").length;
+            const vPos = vCount === 0 ? 50 : vCount === 1 ? 25 : vCount === 2 ? 75 : 33 + (vCount * 11) % 34;
+            setGuides(prev => [...prev, { id: `g-${Date.now()}`, orientation: "v", position: vPos }]);
+            setToast("Vertical guide added — drag to reposition");
+            break;
+          }
+          case "view:addHGuide": {
+            setShowGuides(true);
+            const hCount = guides.filter(g => g.orientation === "h").length;
+            const hPos = hCount === 0 ? 50 : hCount === 1 ? 25 : hCount === 2 ? 75 : 33 + (hCount * 11) % 34;
+            setGuides(prev => [...prev, { id: `g-${Date.now()}`, orientation: "h", position: hPos }]);
+            setToast("Horizontal guide added — drag to reposition");
+            break;
+          }
+          case "view:editGuides": {
+            setShowGuides(true);
+            setToast("Drag guides to reposition, double-click to delete");
+            break;
+          }
+          case "view:clearGuides": {
+            setGuides([]);
+            setToast("All guides cleared");
+            break;
+          }
+          case "view:snapGrid": setSnapToGrid(v => { setToast(v ? "Snap to grid off" : "Snap to grid on"); return !v; }); break;
+          case "view:snapGuides": setSnapToGuides(v => { setToast(v ? "Snap to guides off" : "Snap to guides on"); return !v; }); break;
           case "view:filmstrip": setFilmstripCollapsed(c => !c); break;
           case "view:zoomFit": setZoom(100); break;
           case "view:zoom50": setZoom(50); break;
@@ -1170,8 +1523,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           case "view:zoom150": setZoom(150); break;
           case "view:zoom200": setZoom(200); break;
           case "view:fullscreen": {
-            if (document.fullscreenElement) { document.exitFullscreen(); }
-            else { document.documentElement.requestFullscreen(); }
+            setIsFullscreen(v => !v);
             break;
           }
 
@@ -1346,35 +1698,35 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
 
       {/* ── Slide Toolbar (using shared ToolbarButton & ToolbarDivider) ── */}
       <div className="flex items-center gap-0.5 px-3 py-1.5 bg-white dark:bg-gray-900 border-b border-gray-200/60 dark:border-gray-800 flex-shrink-0">
-        <ToolbarButton title="New slide (Ctrl+M)" Icon={Plus} onClick={addSlide} disabled={!canEdit} />
-        <ToolbarButton title="Duplicate slide" Icon={Copy} onClick={duplicateSlide} disabled={!canEdit} />
-        <ToolbarButton title="Delete slide" Icon={Trash2} onClick={deleteSlide} disabled={!canEdit || slides.length <= 1} />
+        <ToolbarButton title="New slide (Ctrl+M)" Icon={Plus} onClick={addSlide} disabled={!canDirectEdit} />
+        <ToolbarButton title="Duplicate slide" Icon={Copy} onClick={duplicateSlide} disabled={!canDirectEdit} />
+        <ToolbarButton title="Delete slide" Icon={Trash2} onClick={deleteSlide} disabled={!canDirectEdit || slides.length <= 1} />
         <ToolbarDivider />
-        <ToolbarButton title="Undo (Ctrl+Z)" Icon={Undo2} onClick={() => document.execCommand("undo")} disabled={!canEdit} />
-        <ToolbarButton title="Redo (Ctrl+Y)" Icon={Redo2} onClick={() => document.execCommand("redo")} disabled={!canEdit} />
+        <ToolbarButton title="Undo (Ctrl+Z)" Icon={Undo2} onClick={() => document.execCommand("undo")} disabled={!canDirectEdit} />
+        <ToolbarButton title="Redo (Ctrl+Y)" Icon={Redo2} onClick={() => document.execCommand("redo")} disabled={!canDirectEdit} />
         <ToolbarDivider />
         <ToolbarButton title="Themes" Icon={Palette} onClick={() => { setShowThemes(!showThemes); setShowTransitions(false); }} active={showThemes} />
         <ToolbarButton title="Transitions" Icon={LayoutGrid} onClick={() => { setShowTransitions(!showTransitions); setShowThemes(false); }} active={showTransitions} />
         <ToolbarDivider />
         {/* Text formatting */}
-        <ToolbarButton title="Bold (Ctrl+B)" Icon={Bold} onClick={() => document.execCommand("bold")} disabled={!canEdit} />
-        <ToolbarButton title="Italic (Ctrl+I)" Icon={Italic} onClick={() => document.execCommand("italic")} disabled={!canEdit} />
-        <ToolbarButton title="Underline (Ctrl+U)" Icon={Underline} onClick={() => document.execCommand("underline")} disabled={!canEdit} />
-        <ToolbarButton title="Strikethrough" Icon={Strikethrough} onClick={() => document.execCommand("strikeThrough")} disabled={!canEdit} />
+        <ToolbarButton title="Bold (Ctrl+B)" Icon={Bold} onClick={() => document.execCommand("bold")} disabled={!canDirectEdit} />
+        <ToolbarButton title="Italic (Ctrl+I)" Icon={Italic} onClick={() => document.execCommand("italic")} disabled={!canDirectEdit} />
+        <ToolbarButton title="Underline (Ctrl+U)" Icon={Underline} onClick={() => document.execCommand("underline")} disabled={!canDirectEdit} />
+        <ToolbarButton title="Strikethrough" Icon={Strikethrough} onClick={() => document.execCommand("strikeThrough")} disabled={!canDirectEdit} />
         <ToolbarDivider />
         {/* Alignment */}
-        <ToolbarButton title="Align left" Icon={AlignLeft} onClick={() => document.execCommand("justifyLeft")} disabled={!canEdit} />
-        <ToolbarButton title="Align center" Icon={AlignCenter} onClick={() => document.execCommand("justifyCenter")} disabled={!canEdit} />
-        <ToolbarButton title="Align right" Icon={AlignRight} onClick={() => document.execCommand("justifyRight")} disabled={!canEdit} />
+        <ToolbarButton title="Align left" Icon={AlignLeft} onClick={() => document.execCommand("justifyLeft")} disabled={!canDirectEdit} />
+        <ToolbarButton title="Align center" Icon={AlignCenter} onClick={() => document.execCommand("justifyCenter")} disabled={!canDirectEdit} />
+        <ToolbarButton title="Align right" Icon={AlignRight} onClick={() => document.execCommand("justifyRight")} disabled={!canDirectEdit} />
         <ToolbarDivider />
         {/* Insert */}
-        <ToolbarDropdown title="Insert table" Icon={Table2} isOpen={showTablePicker} onToggle={() => setShowTablePicker(!showTablePicker)} disabled={!canEdit}>
+        <ToolbarDropdown title="Insert table" Icon={Table2} isOpen={showTablePicker} onToggle={() => setShowTablePicker(!showTablePicker)} disabled={!canDirectEdit}>
           <TableGridPicker onPick={(r, c) => insertTable(r, c)} />
         </ToolbarDropdown>
-        <ToolbarButton title="Insert image" Icon={ImageIcon} onClick={() => {/* image upload */}} disabled={!canEdit} />
+        <ToolbarButton title="Insert image" Icon={ImageIcon} onClick={() => {/* image upload */}} disabled={!canDirectEdit} />
         <ToolbarButton title="Insert text box" Icon={Type} onClick={() => {
           document.execCommand("insertHTML", false, '<div style="border:1px solid #d1d5db;padding:16px;margin:12px;min-height:40px;">Text box</div>');
-        }} disabled={!canEdit} />
+        }} disabled={!canDirectEdit} />
         <div className="flex-1" />
         {/* Zoom controls */}
         <ToolbarButton title="Zoom out" Icon={ZoomOut} onClick={() => setZoom(z => Math.max(50, z - 25))} />
@@ -1425,8 +1777,87 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         </div>
       )}
 
+      {/* ── Mode Banners ── */}
+      {editingMode === "viewing" && (
+        <div className="flex items-center justify-center gap-2 px-4 py-1.5 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 text-[11px] font-medium select-none flex-shrink-0">
+          <Eye className="w-3.5 h-3.5" />
+          <span>You are viewing this presentation. To make edits, switch to Editing mode.</span>
+          <button onClick={() => setEditingMode("editing")} className="ml-2 px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-800/30 hover:bg-amber-200 dark:hover:bg-amber-700/40 transition-colors cursor-pointer font-semibold">
+            Switch to Editing
+          </button>
+        </div>
+      )}
+      {editingMode === "suggesting" && (
+        <div className="flex items-center justify-center gap-2 px-4 py-1.5 bg-green-50 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800/40 text-green-700 dark:text-green-400 text-[11px] font-medium select-none flex-shrink-0">
+          <MessageCircle className="w-3.5 h-3.5" />
+          <span>Suggesting mode — your edits will appear as suggestions that can be accepted or rejected.</span>
+        </div>
+      )}
+
+      {/* ── Grid View (replaces main area when active) ── */}
+      {showGridView && (
+        <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-950 p-6">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-[14px] font-semibold text-gray-700 dark:text-gray-300">All Slides ({slides.length})</h2>
+            <button onClick={() => setShowGridView(false)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+              <X className="w-3.5 h-3.5" /> Close grid
+            </button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {slides.map((slide, idx) => (
+              <button
+                key={slide.id}
+                onClick={() => { setActiveSlideIdx(idx); setShowGridView(false); }}
+                draggable
+                onDragStart={(e) => { e.dataTransfer.setData("text/plain", String(idx)); e.dataTransfer.effectAllowed = "move"; (e.currentTarget as HTMLElement).style.opacity = "0.4"; }}
+                onDragEnd={(e) => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+                onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; (e.currentTarget as HTMLElement).style.outline = "2px solid #3b82f6"; }}
+                onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.outline = ""; }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  (e.currentTarget as HTMLElement).style.outline = "";
+                  const fromIdx = parseInt(e.dataTransfer.getData("text/plain"), 10);
+                  if (isNaN(fromIdx) || fromIdx === idx) return;
+                  const newSlides = [...slides];
+                  const [moved] = newSlides.splice(fromIdx, 1);
+                  newSlides.splice(idx, 0, moved);
+                  updateSlides(newSlides);
+                  setActiveSlideIdx(idx);
+                }}
+                className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group ${
+                  idx === activeSlideIdx
+                    ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-gray-100 dark:ring-offset-gray-950 shadow-lg"
+                    : "ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-gray-400 hover:shadow-lg"
+                }`}
+              >
+                <div className="w-full overflow-hidden relative" style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}`, background: slide.background || "#fff" }}>
+                  <div className="w-[800px] origin-top-left pointer-events-none" style={{ transform: "scale(0.28)", transformOrigin: "top left" }}>
+                    <div className="w-full" style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}`, color: THEMES[theme]?.text }} dangerouslySetInnerHTML={{ __html: slide.content }} />
+                  </div>
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+                </div>
+                <div className="px-2.5 py-2 bg-white dark:bg-gray-900 flex items-center justify-between">
+                  <span className={`text-[11px] font-semibold ${idx === activeSlideIdx ? "text-blue-600" : "text-gray-500"}`}>Slide {idx + 1}</span>
+                  <span className="text-[10px] text-gray-400 capitalize">{slide.transition || "fade"}</span>
+                </div>
+              </button>
+            ))}
+            {/* Add slide in grid */}
+            <button
+              onClick={() => { addSlide(); setShowGridView(false); }}
+              className="rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all duration-200 cursor-pointer group"
+              style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}` }}
+            >
+              <Plus className="w-8 h-8 text-gray-300 group-hover:text-blue-500 transition-colors" />
+              <span className="text-[11px] text-gray-400 group-hover:text-blue-500 mt-1.5 font-medium">Add slide</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Main Area ── */}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      {!showGridView && <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Filmstrip — collapsible */}
         {filmstripCollapsed ? (
           /* Collapsed: thin strip with expand button */
@@ -1458,16 +1889,64 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
               }
             }}
           >
-            {/* Scrollable slide list */}
+            {/* Scrollable slide list — drag-and-drop reorder */}
             <div ref={filmstripRef} className="flex-1 overflow-y-auto pt-3 pb-4 px-3 space-y-1.5">
               {slides.map((slide, idx) => (
-                <div key={slide.id} data-slide-idx={idx} className="flex items-start gap-2">
+                <div
+                  key={slide.id}
+                  data-slide-idx={idx}
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData("text/plain", String(idx));
+                    e.dataTransfer.effectAllowed = "move";
+                    (e.currentTarget as HTMLElement).style.opacity = "0.4";
+                  }}
+                  onDragEnd={(e) => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const midY = rect.top + rect.height / 2;
+                    const el = e.currentTarget as HTMLElement;
+                    if (e.clientY < midY) {
+                      el.style.borderTop = "2px solid #3b82f6";
+                      el.style.borderBottom = "";
+                    } else {
+                      el.style.borderBottom = "2px solid #3b82f6";
+                      el.style.borderTop = "";
+                    }
+                  }}
+                  onDragLeave={(e) => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.borderTop = "";
+                    el.style.borderBottom = "";
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.borderTop = "";
+                    el.style.borderBottom = "";
+                    const fromIdx = parseInt(e.dataTransfer.getData("text/plain"), 10);
+                    if (isNaN(fromIdx) || fromIdx === idx) return;
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const midY = rect.top + rect.height / 2;
+                    let toIdx = e.clientY < midY ? idx : idx + 1;
+                    if (fromIdx < toIdx) toIdx--;
+                    if (fromIdx === toIdx) return;
+                    const newSlides = [...slides];
+                    const [moved] = newSlides.splice(fromIdx, 1);
+                    newSlides.splice(toIdx, 0, moved);
+                    updateSlides(newSlides);
+                    setActiveSlideIdx(toIdx);
+                  }}
+                  className="flex items-start gap-2"
+                >
                   <span className={`text-[11px] font-medium mt-3 w-5 text-right flex-shrink-0 ${
                     idx === activeSlideIdx ? "text-blue-600" : "text-gray-400"
                   }`}>{idx + 1}</span>
                   <button
                     onClick={() => { setActiveSlideIdx(idx); (filmstripRef.current?.closest('[tabindex]') as HTMLElement)?.focus(); }}
-                    className={`flex-1 rounded-lg overflow-hidden transition-all duration-200 cursor-pointer ${
+                    className={`flex-1 rounded-lg overflow-hidden transition-all duration-200 cursor-grab active:cursor-grabbing ${
                       idx === activeSlideIdx
                         ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-[#f1f3f4] dark:ring-offset-gray-900 shadow-lg shadow-blue-500/10"
                         : "ring-1 ring-gray-300/60 dark:ring-gray-700/60 hover:ring-gray-400 dark:hover:ring-gray-600 hover:shadow-md"
@@ -1510,9 +1989,40 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             activeSlide={activeSlide}
             canEdit={canEdit}
             editorRef={editorRef}
+            contentRef={contentRef}
             slideRatio={slideRatio}
+            showRuler={showRuler}
+            showGuides={showGuides}
+            guides={guides}
+            snapToGrid={snapToGrid}
+            isSuggesting={isSuggesting}
+            themeTextColor={THEMES[theme]?.text}
             onInput={(html) => updateCurrentSlide({ content: html })}
+            onClick={handleEditorClick}
+            onGuideMove={(id, pos) => setGuides(prev => prev.map(g => g.id === id ? { ...g, position: pos } : g))}
+            onGuideDelete={(id) => setGuides(prev => prev.filter(g => g.id !== id))}
           />
+
+          {/* Suggestion accept/reject popup */}
+          {activeSuggestionId && suggestionPopupPos && (
+            <div
+              className="fixed z-[300] flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-gray-800 shadow-xl border border-gray-200 dark:border-gray-700"
+              style={{ top: suggestionPopupPos.top, left: suggestionPopupPos.left }}
+            >
+              <button
+                onClick={() => acceptSuggestion(activeSuggestionId)}
+                className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-800/40 transition-colors cursor-pointer"
+              >
+                Accept
+              </button>
+              <button
+                onClick={() => rejectSuggestion(activeSuggestionId)}
+                className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800/40 transition-colors cursor-pointer"
+              >
+                Reject
+              </button>
+            </div>
+          )}
 
           {/* Speaker Notes + Status inside canvas column */}
           {notesHeight > 0 && (
@@ -1603,28 +2113,47 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                     <X className="w-3.5 h-3.5 text-gray-400" />
                   </button>
                 </div>
-                <div className="grid grid-cols-2 gap-2.5">
-                  {Object.entries(THEMES).map(([key, t]) => (
-                    <button
-                      key={key}
-                      onClick={() => onChange({ ...value, theme: key })}
-                      className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group ${
-                        theme === key
-                          ? "ring-2 ring-blue-500 ring-offset-2 shadow-md"
-                          : "ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-gray-300 hover:shadow-sm"
-                      }`}
-                    >
-                      <div className="aspect-video relative" style={{ background: t.bg }}>
-                        <div className="absolute inset-0 p-3 flex flex-col justify-center">
-                          <div className="h-1.5 w-10 rounded-full" style={{ backgroundColor: t.accent }} />
-                          <div className="h-1 w-14 rounded-full mt-1.5" style={{ backgroundColor: t.text, opacity: 0.2 }} />
-                          <div className="h-1 w-10 rounded-full mt-1" style={{ backgroundColor: t.text, opacity: 0.1 }} />
-                        </div>
+                {/* Theme categories */}
+                {(["light", "dark", "gradient"] as const).map(cat => {
+                  const catThemes = Object.entries(THEMES).filter(([, t]) => t.category === cat);
+                  return (
+                    <div key={cat} className="mb-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">
+                        {cat === "light" ? "Light" : cat === "dark" ? "Dark" : "Gradient"}
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {catThemes.map(([key, t]) => (
+                          <button
+                            key={key}
+                            onClick={() => {
+                              const updatedSlides = buildThemedSlides(t, value.title, slides);
+                              onChange({ ...value, theme: key, slides: updatedSlides });
+                              setToast(`Theme: ${t.label}`);
+                            }}
+                            className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group ${
+                              theme === key
+                                ? "ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900 shadow-lg scale-[1.02]"
+                                : "ring-1 ring-gray-200/80 dark:ring-gray-700/60 hover:ring-gray-300 hover:shadow-md hover:scale-[1.01]"
+                            }`}
+                          >
+                            <div className="aspect-video relative overflow-hidden" style={{ background: t.bg }}>
+                              {/* Realistic title slide preview */}
+                              <div className="absolute inset-0 p-2 flex flex-col items-center justify-center">
+                                <div className="h-[3px] w-[30%] rounded-full mb-1" style={{ backgroundColor: t.accent }} />
+                                <div className="h-[4px] w-[60%] rounded-full mb-0.5" style={{ backgroundColor: t.text, opacity: 0.8 }} />
+                                <div className="h-[2px] w-[40%] rounded-full" style={{ backgroundColor: t.text, opacity: 0.3 }} />
+                              </div>
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 dark:group-hover:bg-white/5 transition-colors" />
+                            </div>
+                            <p className={`text-[10px] text-center py-1.5 font-medium ${
+                              theme === key ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"
+                            }`}>{t.label}</p>
+                          </button>
+                        ))}
                       </div>
-                      <p className="text-[10px] text-gray-500 dark:text-gray-400 text-center py-1.5 font-medium">{t.label}</p>
-                    </button>
-                  ))}
-                </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
             {showTransitions && (
@@ -1695,7 +2224,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             )}
           </div>
         )}
-      </div>
+      </div>}
 
       {/* Notes and status bar are now inside the center column above */}
 
@@ -2209,6 +2738,314 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           </div>
         </EditorDialog>
       )}
+
+      {/* Toast notification */}
+      {toast && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[220] px-3 py-2 rounded-xl bg-gray-900 text-white text-[12px] shadow-xl pointer-events-none">
+          {toast}
+        </div>
+      )}
+    </div>
+  );
+
+  // When fullscreen, portal to document.body to escape parent stacking contexts (sidebar z-40)
+  if (isFullscreen && typeof document !== "undefined") {
+    return createPortal(editorContent, document.body);
+  }
+  return editorContent;
+}
+
+// ══════════════════════════════════════════════════
+// Fullscreen floating pill — appears when cursor nears top
+// ══════════════════════════════════════════════════
+
+function SlideFullscreenPill({ onExit, zoom, onZoomChange }: {
+  onExit: () => void;
+  zoom: number;
+  onZoomChange: (z: number) => void;
+}) {
+  const [visible, setVisible] = useState(false);
+  const [zoomExpanded, setZoomExpanded] = useState(false);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (e.clientY < 48) {
+        if (hideTimerRef.current) { clearTimeout(hideTimerRef.current); hideTimerRef.current = null; }
+        setVisible(true);
+      } else if (e.clientY > 120) {
+        if (!hideTimerRef.current) {
+          hideTimerRef.current = setTimeout(() => {
+            setVisible(false);
+            setZoomExpanded(false);
+            hideTimerRef.current = null;
+          }, 600);
+        }
+      }
+    };
+    document.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    };
+  }, []);
+
+  if (!visible) return null;
+
+  const btnClass = "px-3 py-2 text-[12px] font-medium transition-colors hover:bg-white/20 cursor-pointer min-h-[44px] flex items-center";
+
+  return (
+    <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[10000] flex items-center rounded-full bg-gray-900/70 dark:bg-gray-800/80 backdrop-blur-[20px] backdrop-saturate-[180%] border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] text-white">
+      {zoomExpanded ? (
+        <div className="flex items-center">
+          {[50, 75, 100, 150, 200].map((z) => (
+            <button key={z} type="button" onClick={() => { onZoomChange(z); setZoomExpanded(false); }}
+              className={`${btnClass} ${z === zoom ? "bg-white/20 font-semibold" : ""} ${z === 50 ? "rounded-l-full pl-4" : ""}`}>
+              {z}%
+            </button>
+          ))}
+          <div className="w-px h-5 bg-white/20" />
+        </div>
+      ) : (
+        <button type="button" onClick={() => setZoomExpanded(true)} className={`${btnClass} rounded-l-full pl-4 gap-1.5`}>
+          <ZoomIn className="w-3.5 h-3.5" />
+          {zoom}%
+        </button>
+      )}
+      <div className="w-px h-5 bg-white/20" />
+      <button type="button" onClick={onExit} className={`${btnClass} rounded-r-full pr-4 gap-1.5`} aria-label="Exit full screen">
+        <Minimize2 className="w-3.5 h-3.5" />
+        <span className="hidden sm:inline">Exit</span>
+        <kbd className="text-[10px] text-white/50 ml-1 hidden sm:inline">Esc</kbd>
+      </button>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════
+// SlideshowPresenter — Full-featured presentation mode
+// ══════════════════════════════════════════════════
+
+function SlideshowPresenter({ slides, activeSlideIdx, setActiveSlideIdx, slideRatio, onExit }: {
+  slides: SlideData[];
+  activeSlideIdx: number;
+  setActiveSlideIdx: React.Dispatch<React.SetStateAction<number>>;
+  slideRatio: { w: number; h: number };
+  onExit: () => void;
+}) {
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const [prevSlideIdx, setPrevSlideIdx] = useState<number | null>(null);
+  const [direction, setDirection] = useState<"next" | "prev">("next");
+  const [animating, setAnimating] = useState(false);
+  const animTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const progress = slides.length > 1 ? ((activeSlideIdx) / (slides.length - 1)) * 100 : 100;
+  const activeSlide = slides[activeSlideIdx] || slides[0];
+  const transitionType = activeSlide?.transition || "fade";
+
+  // Enter browser fullscreen to hide tabs/address bar, exit on unmount
+  useEffect(() => {
+    document.documentElement.requestFullscreen?.().catch(() => {});
+    return () => {
+      if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+      if (animTimerRef.current) clearTimeout(animTimerRef.current);
+    };
+  }, []);
+
+  const goTo = useCallback((idx: number) => {
+    const clamped = Math.max(0, Math.min(slides.length - 1, idx));
+    if (clamped === activeSlideIdx || animating) return;
+    setDirection(clamped > activeSlideIdx ? "next" : "prev");
+    setPrevSlideIdx(activeSlideIdx);
+    setActiveSlideIdx(clamped);
+    setAnimating(true);
+    if (animTimerRef.current) clearTimeout(animTimerRef.current);
+    animTimerRef.current = setTimeout(() => {
+      setPrevSlideIdx(null);
+      setAnimating(false);
+    }, 600);
+  }, [slides.length, setActiveSlideIdx, activeSlideIdx, animating]);
+
+  const goNext = useCallback(() => goTo(activeSlideIdx + 1), [goTo, activeSlideIdx]);
+  const goPrev = useCallback(() => goTo(activeSlideIdx - 1), [goTo, activeSlideIdx]);
+
+  // Auto-hide controls after 3s of inactivity
+  const resetHideTimer = useCallback(() => {
+    setControlsVisible(true);
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => setControlsVisible(false), 3000);
+  }, []);
+
+  useEffect(() => {
+    resetHideTimer();
+    return () => { if (hideTimerRef.current) clearTimeout(hideTimerRef.current); };
+  }, [resetHideTimer]);
+
+  // Exit slideshow when browser exits fullscreen
+  useEffect(() => {
+    const handler = () => { if (!document.fullscreenElement) onExit(); };
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, [onExit]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      resetHideTimer();
+      if (e.key === "Escape") { onExit(); return; }
+      if (e.key === "ArrowDown" || e.key === "ArrowRight" || e.key === " " || e.key === "Enter" || e.key === "PageDown") { e.preventDefault(); goNext(); }
+      if (e.key === "ArrowUp" || e.key === "ArrowLeft" || e.key === "Backspace" || e.key === "PageUp") { e.preventDefault(); goPrev(); }
+      if (e.key === "Home") { e.preventDefault(); goTo(0); }
+      if (e.key === "End") { e.preventDefault(); goTo(slides.length - 1); }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onExit, goNext, goPrev, goTo, resetHideTimer, slides.length]);
+
+  // Mouse wheel navigation
+  const wheelCooldown = useRef(false);
+  useEffect(() => {
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      if (wheelCooldown.current) return;
+      wheelCooldown.current = true;
+      setTimeout(() => { wheelCooldown.current = false; }, 600);
+      resetHideTimer();
+      if (e.deltaY > 0) goNext();
+      else if (e.deltaY < 0) goPrev();
+    };
+    document.addEventListener("wheel", handler, { passive: false });
+    return () => document.removeEventListener("wheel", handler);
+  }, [goNext, goPrev, resetHideTimer]);
+
+  // Click to advance — top 25% goes back, bottom 75% goes forward
+  const handleClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("button") || target.closest("a")) return;
+    resetHideTimer();
+    if (e.clientY < window.innerHeight * 0.25) goPrev();
+    else goNext();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[9999] bg-black select-none cursor-none overflow-hidden"
+      onClick={handleClick}
+      onMouseMove={resetHideTimer}
+    >
+      {/* Slide layers with per-slide transitions */}
+      <div className="absolute inset-0 overflow-hidden" style={{ perspective: "1200px" }}>
+        {/* Previous slide (behind, animating out) */}
+        {prevSlideIdx !== null && (() => {
+          const prevSlide = slides[prevSlideIdx];
+          const t = transitionType;
+          const isNext = direction === "next";
+          const outStyle: React.CSSProperties = { transition: "all 550ms cubic-bezier(0.4, 0, 0.2, 1)" };
+          if (t === "none") { outStyle.opacity = 0; outStyle.transition = "none"; }
+          else if (t === "fade") { outStyle.opacity = 0; }
+          else if (t === "dissolve") { outStyle.opacity = 0; outStyle.transform = `scale(${isNext ? 0.85 : 1.15})`; }
+          else if (t === "flip") { outStyle.transform = `rotateX(${isNext ? -90 : 90}deg)`; outStyle.opacity = 0; outStyle.transformOrigin = isNext ? "bottom center" : "top center"; }
+          else if (t === "cube") { outStyle.transform = `translateY(${isNext ? "-100" : "100"}%) rotateX(${isNext ? 90 : -90}deg)`; outStyle.transformOrigin = isNext ? "bottom center" : "top center"; outStyle.opacity = 0.5; }
+          return (
+            <div className="absolute inset-0 z-[1]" style={outStyle}>
+              <div className="w-full h-full" style={{ background: prevSlide?.background || "#fff" }}>
+                <div className="w-full h-full p-[5%] overflow-hidden" style={{ fontSize: "clamp(16px, 2.5vw, 40px)" }}
+                  dangerouslySetInnerHTML={{ __html: prevSlide?.content || "" }} />
+              </div>
+            </div>
+          );
+        })()}
+        {/* Current slide (front, animating in) */}
+        {(() => {
+          const t = transitionType;
+          const isNext = direction === "next";
+          const inStyle: React.CSSProperties = { transition: "all 550ms cubic-bezier(0.4, 0, 0.2, 1)" };
+          if (!animating || prevSlideIdx === null) { /* idle — no transform */ }
+          else if (t === "none") { inStyle.transition = "none"; }
+          // For animated transitions, start position is set and CSS transition animates to final
+          // The trick: we DON'T set a starting transform here because the component is already mounted.
+          // Instead, the outgoing slide animates away and this slide is just visible underneath.
+          return (
+            <div className="absolute inset-0 z-[2]" style={inStyle}>
+              <div className="w-full h-full" style={{ background: activeSlide?.background || "#fff" }}>
+                <div className="w-full h-full p-[5%] overflow-hidden" style={{ fontSize: "clamp(16px, 2.5vw, 40px)" }}
+                  dangerouslySetInnerHTML={{ __html: activeSlide?.content || "" }} />
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+
+      {/* Progress bar — thin vertical line on right side */}
+      <div className="absolute top-0 right-0 bottom-0 w-[3px] bg-white/10">
+        <div
+          className="w-full bg-blue-500/80 transition-all duration-300 ease-out"
+          style={{ height: `${progress}%` }}
+        />
+      </div>
+
+      {/* Controls overlay — auto-hide */}
+      <div className={`absolute inset-0 pointer-events-none transition-opacity duration-500 ${controlsVisible ? "opacity-100" : "opacity-0"}`}>
+        {/* Top bar: slide count + exit */}
+        <div className="absolute top-0 left-0 right-0 pointer-events-auto flex items-center justify-between px-6 py-4 bg-gradient-to-b from-black/40 to-transparent">
+          <div className="text-white/70 text-[13px] font-medium">
+            {activeSlideIdx + 1} <span className="text-white/40">/ {slides.length}</span>
+          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); onExit(); }}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white/70 hover:bg-white/20 hover:text-white transition-all duration-200 cursor-pointer text-[12px] font-medium"
+          >
+            <X className="w-4 h-4" />
+            Exit <kbd className="text-[10px] text-white/40 ml-0.5">Esc</kbd>
+          </button>
+        </div>
+
+        {/* Right side: vertical slide thumbnails */}
+        <div className="absolute top-0 right-[3px] bottom-0 pointer-events-auto">
+          <div className="flex flex-col items-center justify-center gap-1.5 py-4 px-3 h-full bg-gradient-to-l from-black/40 to-transparent overflow-y-auto">
+            {slides.map((slide, i) => (
+              <button
+                key={slide.id}
+                onClick={(e) => { e.stopPropagation(); setActiveSlideIdx(i); resetHideTimer(); }}
+                className={`flex-shrink-0 rounded-md overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
+                  i === activeSlideIdx
+                    ? "border-blue-500 shadow-[0_0_12px_rgba(59,130,244,0.5)] scale-110"
+                    : "border-white/20 hover:border-white/50 opacity-60 hover:opacity-100"
+                }`}
+                style={{
+                  width: 56,
+                  height: 56 * slideRatio.h / slideRatio.w,
+                  background: slide.background || "#fff",
+                }}
+              >
+                <div
+                  className="w-full h-full overflow-hidden text-[2px] p-0.5 pointer-events-none"
+                  style={{ transform: "scale(0.14)", transformOrigin: "top left", width: 400, height: 400 * slideRatio.h / slideRatio.w }}
+                  dangerouslySetInnerHTML={{ __html: slide.content }}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Vertical navigation arrows — top/bottom center */}
+        {activeSlideIdx > 0 && (
+          <button
+            onClick={(e) => { e.stopPropagation(); goPrev(); resetHideTimer(); }}
+            className="absolute top-4 left-1/2 -translate-x-1/2 p-3 rounded-full bg-white/10 backdrop-blur-sm text-white/60 hover:bg-white/20 hover:text-white transition-all duration-200 cursor-pointer pointer-events-auto"
+          >
+            <ChevronUp className="w-7 h-7" />
+          </button>
+        )}
+        {activeSlideIdx < slides.length - 1 && (
+          <button
+            onClick={(e) => { e.stopPropagation(); goNext(); resetHideTimer(); }}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 p-3 rounded-full bg-white/10 backdrop-blur-sm text-white/60 hover:bg-white/20 hover:text-white transition-all duration-200 cursor-pointer pointer-events-auto"
+          >
+            <ChevronDown className="w-7 h-7" />
+          </button>
+        )}
+      </div>
     </div>
   );
 }

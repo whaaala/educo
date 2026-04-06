@@ -17,8 +17,22 @@ const editorMenusSource = fs.readFileSync(
   "utf-8"
 );
 
+const editMenuSource = fs.readFileSync(
+  path.resolve(__dirname, "../../../../components/shared/EditorEditMenu.tsx"),
+  "utf-8"
+);
+
+const viewMenuSource = fs.readFileSync(
+  path.resolve(__dirname, "../../../../components/shared/EditorViewMenu.tsx"),
+  "utf-8"
+);
+
 // Combined source for checking items that span multiple files
 const combinedMenuSource = menuBarSource + fileMenuSource;
+// Combined source including edit menu for items in the shared component
+const combinedEditMenuSource = menuBarSource + editMenuSource;
+// Combined source including view menu for items that moved to the shared component
+const combinedViewMenuSource = menuBarSource + viewMenuSource;
 
 const slideEditorSource = fs.readFileSync(
   path.resolve(__dirname, "../../../../components/shared/SlideEditor/SlideEditor.tsx"),
@@ -43,9 +57,9 @@ describe("SlideMenuBar — Complete Menu System", () => {
   });
 
   describe("File menu", () => {
-    it("uses buildFileMenu from EditorFileMenu", () => {
-      expect(menuBarSource).toContain("buildFileMenu");
-      expect(menuBarSource).toContain("EditorFileMenu");
+    it("uses fileMenuConfig for shared File menu", () => {
+      expect(menuBarSource).toContain("fileMenuConfig");
+      expect(combinedMenuSource).toContain("EditorFileMenu");
     });
 
     it("has New with submenu", () => {
@@ -88,22 +102,22 @@ describe("SlideMenuBar — Complete Menu System", () => {
     it("has all standard editing commands", () => {
       const items = ["Undo", "Redo", "Cut", "Copy", "Paste", "Paste without formatting", "Select all", "Delete", "Duplicate", "Find and replace"];
       for (const item of items) {
-        expect(menuBarSource).toContain(`"${item}"`);
+        expect(combinedEditMenuSource).toContain(`"${item}"`);
       }
     });
 
     it("has correct keyboard shortcuts", () => {
-      expect(menuBarSource).toContain('"Ctrl+Z"');
-      expect(menuBarSource).toContain('"Ctrl+Y"');
-      expect(menuBarSource).toContain('"Ctrl+D"');
-      expect(menuBarSource).toContain('"Ctrl+H"');
+      expect(combinedEditMenuSource).toContain('"Ctrl+Z"');
+      expect(combinedEditMenuSource).toContain('"Ctrl+Y"');
+      expect(combinedEditMenuSource).toContain('"Ctrl+D"');
+      expect(combinedEditMenuSource).toContain('"Ctrl+H"');
     });
   });
 
   describe("View menu", () => {
-    it("has Mode submenu with Editing, Commenting, Viewing", () => {
+    it("has Mode submenu with Editing, Suggesting, Viewing", () => {
       expect(menuBarSource).toContain('"Editing"');
-      expect(menuBarSource).toContain('"Commenting"');
+      expect(menuBarSource).toContain('"Suggesting"');
       expect(menuBarSource).toContain('"Viewing"');
     });
 
@@ -119,9 +133,10 @@ describe("SlideMenuBar — Complete Menu System", () => {
     });
 
     it("has Zoom submenu with Fit and percentages", () => {
-      expect(menuBarSource).toContain('"Fit"');
-      expect(menuBarSource).toContain('"50%"');
-      expect(menuBarSource).toContain('"200%"');
+      // Zoom config is in the menu bar, rendering is in EditorViewMenu
+      expect(combinedViewMenuSource).toContain('"Fit"');
+      expect(menuBarSource).toContain("50,");
+      expect(menuBarSource).toContain("200");
     });
   });
 
