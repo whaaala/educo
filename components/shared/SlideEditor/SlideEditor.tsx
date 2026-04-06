@@ -849,6 +849,11 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [drawingMode, setDrawingMode] = useState(false);
   const [drawingColor, setDrawingColor] = useState("#1a1a2e");
   const [drawingWidth, setDrawingWidth] = useState(2);
+  const objectClipboardRef = useRef<SlideObject | null>(null);
+  const undoStackRef = useRef<string[]>([]); // JSON strings for deep clone
+  const redoStackRef = useRef<string[]>([]);
+  const slidesRef = useRef(slides); // Always current
+  slidesRef.current = slides;
   const [toast, setToastRaw] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const setToast = useCallback((msg: string) => {
@@ -871,6 +876,9 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const currentAuthor: CommentAuthor = { id: "current-user", name: "You", avatar: undefined };
 
   const updateSlides = useCallback((newSlides: SlideData[]) => {
+    undoStackRef.current.push(JSON.stringify(slidesRef.current));
+    if (undoStackRef.current.length > 50) undoStackRef.current.shift();
+    redoStackRef.current = [];
     onChange({ ...value, slides: newSlides });
   }, [value, onChange]);
 
@@ -1164,19 +1172,55 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     return () => document.removeEventListener("keydown", handler);
   }, [isPresenting, slides.length]);
 
-  // F11 → toggle fullscreen, Escape → exit fullscreen/gridview, Ctrl+F5 → start slideshow, Ctrl+Alt+1 → grid view
+  // Keyboard shortcuts: F11, F5, Ctrl+Alt+1, Ctrl+Z/Y/C/X/V/D for objects
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Don't intercept when editing text inside a text box
+      const active = document.activeElement;
+      const isEditingText = active?.getAttribute("contenteditable") === "true" || active?.tagName === "INPUT" || active?.tagName === "TEXTAREA";
+
       if (e.key === "F11") { e.preventDefault(); setIsFullscreen(v => !v); }
       else if (e.key === "Escape" && showGridView) { setShowGridView(false); }
       else if (e.key === "Escape" && isFullscreen) { setIsFullscreen(false); }
       else if (e.key === "F5" && e.ctrlKey) { e.preventDefault(); setActiveSlideIdx(0); setIsPresenting(true); }
       else if (e.key === "F5") { e.preventDefault(); setIsPresenting(true); }
       else if (e.key === "1" && e.ctrlKey && e.altKey) { e.preventDefault(); setShowGridView(v => !v); }
+      // Object operations (only when not editing text)
+      else if (!isEditingText && (e.ctrlKey || e.metaKey)) {
+        if (e.key === "z") { e.preventDefault(); const p = undoStackRef.current.pop(); if (p) { redoStackRef.current.push(JSON.stringify(slidesRef.current)); onChange({ ...value, slides: JSON.parse(p) }); } }
+        else if (e.key === "y") { e.preventDefault(); const n = redoStackRef.current.pop(); if (n) { undoStackRef.current.push(JSON.stringify(slidesRef.current)); onChange({ ...value, slides: JSON.parse(n) }); } }
+        else if (e.key === "c" && selectedObjectId && activeSlide?.objects) {
+          const obj = activeSlide.objects.find(o => o.id === selectedObjectId);
+          if (obj) objectClipboardRef.current = JSON.parse(JSON.stringify(obj));
+        }
+        else if (e.key === "x" && selectedObjectId && activeSlide?.objects) {
+          const obj = activeSlide.objects.find(o => o.id === selectedObjectId);
+          if (obj) { objectClipboardRef.current = JSON.parse(JSON.stringify(obj)); updateCurrentSlide({ objects: activeSlide.objects.filter(o => o.id !== selectedObjectId) }); setSelectedObjectId(null); }
+        }
+        else if (e.key === "v" && objectClipboardRef.current) {
+          e.preventDefault();
+          const clip = objectClipboardRef.current;
+          const newId = `obj-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
+          const pasted = { ...JSON.parse(JSON.stringify(clip)), id: newId, x: Math.min(90, clip.x + 3), y: Math.min(90, clip.y + 3) } as SlideObject;
+          objectClipboardRef.current = { ...clip, x: pasted.x, y: pasted.y };
+          const objs = activeSlide?.objects || [];
+          updateCurrentSlide({ objects: [...objs, pasted] });
+          setSelectedObjectId(newId);
+        }
+        else if (e.key === "d" && selectedObjectId && activeSlide?.objects) {
+          e.preventDefault();
+          const obj = activeSlide.objects.find(o => o.id === selectedObjectId);
+          if (obj) {
+            const dup = { ...JSON.parse(JSON.stringify(obj)), id: `obj-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, x: obj.x + 3, y: obj.y + 3 };
+            updateCurrentSlide({ objects: [...activeSlide.objects, dup] });
+            setSelectedObjectId(dup.id);
+          }
+        }
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isFullscreen, showGridView]);
+  }, [isFullscreen, showGridView, selectedObjectId, activeSlide, slides, value, onChange, updateCurrentSlide]);
 
   // ── Suggestion system (suggesting mode) — uses native addEventListener like DocEditor ──
   const handleSuggestionBeforeInput = useCallback((e: InputEvent) => {
@@ -1481,41 +1525,101 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         }
         switch (action) {
           case "slide:new": case "insert:newSlide": addSlide(); break;
-          case "slide:duplicate": case "edit:duplicate": duplicateSlide(); break;
-          case "slide:delete": case "edit:delete": deleteSlide(); break;
+          case "edit:duplicate": {
+            if (selectedObjectId && activeSlide?.objects) {
+              const obj = activeSlide.objects.find(o => o.id === selectedObjectId);
+              if (obj) {
+                const dup = { ...JSON.parse(JSON.stringify(obj)), id: `obj-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, x: obj.x + 3, y: obj.y + 3 };
+                updateCurrentSlide({ objects: [...activeSlide.objects, dup] });
+                setSelectedObjectId(dup.id);
+                setToast("Object duplicated");
+              }
+            } else {
+              duplicateSlide();
+            }
+            break;
+          }
+          case "slide:duplicate": duplicateSlide(); break;
+          case "edit:delete": {
+            // Delete selected object, or delete slide if no object selected
+            if (selectedObjectId && activeSlide?.objects) {
+              updateCurrentSlide({ objects: activeSlide.objects.filter(o => o.id !== selectedObjectId) });
+              setSelectedObjectId(null);
+              setToast("Object deleted");
+            } else {
+              deleteSlide();
+            }
+            break;
+          }
+          case "slide:delete": deleteSlide(); break;
           case "view:slideshow": setActiveSlideIdx(0); setIsPresenting(true); break;
           case "slide:transitions": setShowTransitions(true); break;
           case "slide:editTheme": setShowThemes(true); break;
-          case "edit:undo": document.execCommand("undo"); break;
-          case "edit:redo": document.execCommand("redo"); break;
-          case "edit:cut":
-            if (permissions.disableCopyPrintDownload) { setPermissionBlockedMsg({ message: "Copy is disabled by the document owner.", permType: "copy" }); break; }
-            document.execCommand("cut"); break;
-          case "edit:copy":
-            if (permissions.disableCopyPrintDownload) { setPermissionBlockedMsg({ message: "Copy is disabled by the document owner.", permType: "copy" }); break; }
-            document.execCommand("copy"); break;
-          case "edit:paste": {
-            navigator.clipboard?.read?.().then(async items => {
-              let pasted = false;
-              for (const item of items) {
-                if (item.types.includes("text/html")) {
-                  const blob = await item.getType("text/html");
-                  const html = await blob.text();
-                  if (html) { document.execCommand("insertHTML", false, html); pasted = true; break; }
-                }
-              }
-              if (!pasted) {
-                const text = await navigator.clipboard.readText();
-                if (text) document.execCommand("insertText", false, text);
-              }
-            }).catch(() => {
-              navigator.clipboard?.readText?.().then(text => {
-                if (text) document.execCommand("insertText", false, text);
-              }).catch(() => {});
-            });
+          case "edit:undo": {
+            const prevJson = undoStackRef.current.pop();
+            if (prevJson) {
+              redoStackRef.current.push(JSON.stringify(slidesRef.current));
+              onChange({ ...value, slides: JSON.parse(prevJson) });
+              setToast("Undo");
+            } else {
+              setToast("Nothing to undo");
+            }
             break;
           }
-          case "edit:selectAll": document.execCommand("selectAll"); break;
+          case "edit:redo": {
+            const nextJson = redoStackRef.current.pop();
+            if (nextJson) {
+              undoStackRef.current.push(JSON.stringify(slidesRef.current));
+              onChange({ ...value, slides: JSON.parse(nextJson) });
+              setToast("Redo");
+            } else {
+              setToast("Nothing to redo");
+            }
+            break;
+          }
+          case "edit:cut": {
+            if (permissions.disableCopyPrintDownload) { setPermissionBlockedMsg({ message: "Copy is disabled by the document owner.", permType: "copy" }); break; }
+            if (selectedObjectId && activeSlide?.objects) {
+              const obj = activeSlide.objects.find(o => o.id === selectedObjectId);
+              if (obj) {
+                objectClipboardRef.current = JSON.parse(JSON.stringify(obj));
+                updateCurrentSlide({ objects: activeSlide.objects.filter(o => o.id !== selectedObjectId) });
+                setSelectedObjectId(null);
+                setToast("Cut");
+              }
+            }
+            break;
+          }
+          case "edit:copy": {
+            if (permissions.disableCopyPrintDownload) { setPermissionBlockedMsg({ message: "Copy is disabled by the document owner.", permType: "copy" }); break; }
+            if (selectedObjectId && activeSlide?.objects) {
+              const obj = activeSlide.objects.find(o => o.id === selectedObjectId);
+              if (obj) {
+                objectClipboardRef.current = JSON.parse(JSON.stringify(obj));
+                setToast("Copied");
+              }
+            }
+            break;
+          }
+          case "edit:paste": case "edit:pasteNoFormat": {
+            if (objectClipboardRef.current) {
+              const clip = objectClipboardRef.current;
+              const newId = `obj-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
+              const pasted = { ...JSON.parse(JSON.stringify(clip)), id: newId, x: Math.min(90, clip.x + 3), y: Math.min(90, clip.y + 3) } as SlideObject;
+              // Update clipboard position so next paste offsets further
+              objectClipboardRef.current = { ...clip, x: pasted.x, y: pasted.y };
+              const objs = activeSlide?.objects || [];
+              updateCurrentSlide({ objects: [...objs, pasted] });
+              setSelectedObjectId(newId);
+              setToast("Pasted");
+            }
+            break;
+          }
+          case "edit:selectAll": {
+            // Select all doesn't apply to single object — toast instead
+            setToast("Use Ctrl+A to select text inside a text box");
+            break;
+          }
           case "format:bold": document.execCommand("bold"); break;
           case "format:italic": document.execCommand("italic"); break;
           case "format:underline": document.execCommand("underline"); break;

@@ -77,6 +77,7 @@ export default function SlideMenuBar({
   const editMenuConfig = {
     onAction,
     showDuplicate: true,
+    hasContent: true, // Canvas objects always count as "content"
   };
 
   const viewMenuConfig: ViewMenuConfig = {
