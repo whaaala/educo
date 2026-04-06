@@ -276,10 +276,12 @@ export function EditorMenuRoot({
 }
 
 // ── Full Menu Bar Component ──
-export function EditorMenuBar({ menus, fileMenuConfig }: {
+export function EditorMenuBar({ menus, fileMenuConfig, editMenuConfig }: {
   menus: { id: string; label: string; items: EditorMenuItem[] }[];
   /** When provided, the "file" menu renders using EditorFileMenuPanel instead of EditorMenuRoot */
   fileMenuConfig?: import("@/components/shared/EditorFileMenu").FileMenuConfig;
+  /** When provided, the "edit" menu renders using EditorEditMenuPanel instead of EditorMenuRoot */
+  editMenuConfig?: import("@/components/shared/EditorEditMenu").EditMenuConfig;
 }) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const close = useCallback(() => setOpenMenu(null), []);
@@ -299,8 +301,9 @@ export function EditorMenuBar({ menus, fileMenuConfig }: {
     return () => document.removeEventListener("mousedown", handler);
   }, [openMenu, close]);
 
-  // Lazy import to avoid circular dependency
+  // Lazy imports to avoid circular dependency
   const FileMenuPanel = fileMenuConfig ? require("@/components/shared/EditorFileMenu").EditorFileMenuPanel : null;
+  const EditMenuPanel = editMenuConfig ? require("@/components/shared/EditorEditMenu").EditorEditMenuPanel : null;
 
   return (
     <MenuCloseContext.Provider value={close}>
@@ -312,6 +315,14 @@ export function EditorMenuBar({ menus, fileMenuConfig }: {
             return (
               <FileMenuRoot key="file" isOpen={isOpen} onOpen={() => open("file")} onClose={close}
                 openMenu={openMenu} fileMenuConfig={fileMenuConfig} FileMenuPanel={FileMenuPanel} />
+            );
+          }
+          // Edit menu uses EditorEditMenuPanel when config is provided
+          if (m.id === "edit" && editMenuConfig && EditMenuPanel) {
+            const isOpen = openMenu === "edit";
+            return (
+              <EditMenuRoot key="edit" isOpen={isOpen} onOpen={() => open("edit")} onClose={close}
+                openMenu={openMenu} editMenuConfig={editMenuConfig} EditMenuPanel={EditMenuPanel} />
             );
           }
           return (
@@ -345,6 +356,32 @@ function FileMenuRoot({ isOpen, onOpen, onClose, openMenu, fileMenuConfig, FileM
         File
       </button>
       {isOpen && <FileMenuPanel config={fileMenuConfig} onClose={onClose} anchorRef={btnRef} />}
+    </div>
+  );
+}
+
+// ── EditMenuRoot (manages button ref for portal positioning) ──
+function EditMenuRoot({ isOpen, onOpen, onClose, openMenu, editMenuConfig, EditMenuPanel }: {
+  isOpen: boolean; onOpen: () => void; onClose: () => void; openMenu: string | null;
+  editMenuConfig: any; EditMenuPanel: any;
+}) {
+  const btnRef = useRef<HTMLButtonElement>(null);
+  return (
+    <div className="relative z-[100]" data-editor-menu-root>
+      <button
+        ref={btnRef}
+        type="button"
+        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
+          isOpen
+            ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-100"
+        }`}
+        onClick={() => (isOpen ? onClose() : onOpen())}
+        onMouseEnter={() => openMenu && !isOpen && onOpen()}
+      >
+        Edit
+      </button>
+      {isOpen && <EditMenuPanel config={editMenuConfig} onClose={onClose} anchorRef={btnRef} />}
     </div>
   );
 }

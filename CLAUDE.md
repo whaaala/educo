@@ -50,6 +50,8 @@ Run through this checklist BEFORE telling the user it's done:
 - Every interactive element MUST perform its intended action and persist state
 - Follow existing patterns: lucide-react icons on desktop, Ionicons on mobile, Inter fonts, ThemeContext colors
 - All features responsive: mobile (375px), tablet (768px), desktop (1280px+)
+- **Loading spinners are MANDATORY on ALL pages** — use `PageLoader` (`components/shared/PageLoader.tsx`) for full-page loading states and `InPageSpinner` (`components/shared/InPageSpinner.tsx`) for content-area loading. Every page must show a spinner while data/components load. This applies to all existing and newly implemented pages.
+- **Every UI element MUST have working functionality** — no placeholder UI. When implementing any component, menu, button, or interactive element, the actual functionality must be implemented alongside the UI. Never create a button/menu item without its working action. Test every item works in ALL places the component is used.
 
 ### 3. Testing (ALL types required for every change)
 - **Unit** — pure functions, helpers, data mutations, storage methods

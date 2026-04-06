@@ -1,0 +1,43 @@
+[     400ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:24650
+[     561ms] [LOG] MeetingsContext: Loaded meetings from localStorage 7 @ webpack-internal:///(app-pages-browser)/./contexts/MeetingsContext.tsx:234
+[     561ms] [LOG] TranscriptContext: Loaded requests from localStorage [] @ webpack-internal:///(app-pages-browser)/./contexts/TranscriptContext.tsx:35
+[     562ms] [LOG] Discipline Context: Loaded disciplinary actions from localStorage [] @ webpack-internal:///(app-pages-browser)/./contexts/DisciplineContext.tsx:33
+[     562ms] [LOG] Discipline Context: Loaded complaints from localStorage [] @ webpack-internal:///(app-pages-browser)/./contexts/DisciplineContext.tsx:38
+[     563ms] [LOG] Performance Context: Loaded reviews from localStorage [] @ webpack-internal:///(app-pages-browser)/./contexts/PerformanceContext.tsx:29
+[     563ms] [LOG] LeaveContext: Loaded requests from localStorage [] @ webpack-internal:///(app-pages-browser)/./contexts/LeaveContext.tsx:35
+[     564ms] [LOG] TransferContext: Loaded requests from localStorage [] @ webpack-internal:///(app-pages-browser)/./contexts/TransferContext.tsx:35
+[     719ms] [LOG] MeetingsContext: Saved meetings to localStorage 7 @ webpack-internal:///(app-pages-browser)/./contexts/MeetingsContext.tsx:254
+[     720ms] [LOG] TranscriptContext: Saved requests to localStorage [] @ webpack-internal:///(app-pages-browser)/./contexts/TranscriptContext.tsx:53
+[     720ms] [LOG] Discipline Context: Saved disciplinary actions to localStorage [] @ webpack-internal:///(app-pages-browser)/./contexts/DisciplineContext.tsx:59
+[     721ms] [LOG] Discipline Context: Saved complaints to localStorage [] @ webpack-internal:///(app-pages-browser)/./contexts/DisciplineContext.tsx:75
+[     721ms] [LOG] Performance Context: Saved to localStorage [] @ webpack-internal:///(app-pages-browser)/./contexts/PerformanceContext.tsx:48
+[     722ms] [LOG] LeaveContext: Saved requests to localStorage [] @ webpack-internal:///(app-pages-browser)/./contexts/LeaveContext.tsx:53
+[     722ms] [LOG] TransferContext: Saved requests to localStorage [] @ webpack-internal:///(app-pages-browser)/./contexts/TransferContext.tsx:53
+[    1933ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:240
+[    1971ms] [LOG] [Fast Refresh] done in 38ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:67
+[    3042ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:240
+[    3094ms] [LOG] [Fast Refresh] done in 52ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:67
+[    4080ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:240
+[    4115ms] [LOG] [Fast Refresh] done in 34ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:67
+[    5122ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:240
+[    5154ms] [LOG] [Fast Refresh] done in 32ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:67
+[    6375ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:240
+[    6408ms] [LOG] [Fast Refresh] done in 33ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:67
+[    7417ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:240
+[    7463ms] [LOG] [Fast Refresh] done in 47ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:67
+[    8428ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:240
+[    8460ms] [LOG] [Fast Refresh] done in 32ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:67
+[    9615ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:240
+[    9653ms] [LOG] [Fast Refresh] done in 38ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:67
+[   10800ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:240
+[   10842ms] [LOG] [Fast Refresh] done in 41ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:67
+[   11800ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:240
+[   11839ms] [LOG] [Fast Refresh] done in 40ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:67
+[   12781ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:240
+[   12820ms] [LOG] [Fast Refresh] done in 40ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:67
+[   13762ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:240
+[   13813ms] [LOG] [Fast Refresh] done in 50ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:67
+[   14802ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:240
+[   14852ms] [LOG] [Fast Refresh] done in 51ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:67
+[   15795ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:240
+[   15840ms] [LOG] [Fast Refresh] done in 44ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:67

@@ -6160,7 +6160,7 @@ export default function DocEditor({
             />
           </MenuRoot>
 
-        {/* Edit menu */}
+        {/* Edit menu — uses shared EditorEditMenuPanel */}
           <MenuRoot
             id="edit"
             label="Edit"
@@ -6170,24 +6170,42 @@ export default function DocEditor({
                 showToast("Viewing mode");
                 return;
               }
+              // Save editor selection before menu steals focus
+              saveEditorSelection();
               setOpenMenu(id);
             }}
             onClose={() => setOpenMenu(null)}
           >
-            <ViewMenuPanel>
-            <ViewMenuItem label="Undo" shortcut="Ctrl+Z" icon={Undo2} onClick={() => handleCommand("undo")} />
-            <ViewMenuItem label="Redo" shortcut="Ctrl+Y" icon={Redo2} onClick={() => handleCommand("redo")} />
-            <ViewMenuDivider />
-            <ViewMenuItem label="Cut" shortcut="Ctrl+X" icon={Scissors} onClick={() => handleCommand("cut")} />
-            <ViewMenuItem label="Copy" shortcut="Ctrl+C" icon={Copy} onClick={() => handleCommand("copy")} />
-            <ViewMenuItem label="Paste" shortcut="Ctrl+V" icon={ClipboardPaste} onClick={() => handlePaste(false)} />
-            <ViewMenuItem label="Paste without formatting" shortcut="Ctrl+Shift+V" icon={ClipboardPaste} onClick={() => handlePaste(true)} />
-            <ViewMenuDivider />
-            <ViewMenuItem label="Select all" shortcut="Ctrl+A" onClick={() => handleCommand("selectAll")} />
-            <ViewMenuItem label="Delete" icon={Trash2} onClick={() => handleCommand("delete")} />
-            <ViewMenuDivider />
-            <ViewMenuItem label="Find and replace" shortcut="Ctrl+H" icon={Search} onClick={() => setDialog("findReplace")} />
-            </ViewMenuPanel>
+            <DocEditMenuPanel
+              onAction={(action: string) => {
+                if (!canEdit) return;
+                // Restore editor focus and selection before executing the action
+                restoreEditorSelection();
+                switch (action) {
+                  case "edit:undo": handleCommand("undo"); break;
+                  case "edit:redo": handleCommand("redo"); break;
+                  case "edit:cut": handleCommand("cut"); break;
+                  case "edit:copy": handleCommand("copy"); break;
+                  case "edit:paste": handlePaste(false); break;
+                  case "edit:pasteNoFormat": handlePaste(true); break;
+                  case "edit:selectAll": handleCommand("selectAll"); break;
+                  case "edit:delete": handleCommand("delete"); break;
+                  case "edit:duplicate": {
+                    const sel = window.getSelection();
+                    if (sel && !sel.isCollapsed) {
+                      const text = sel.toString();
+                      sel.collapseToEnd();
+                      exec("insertText", text);
+                      emitChange();
+                      showToast("Duplicated");
+                    }
+                    break;
+                  }
+                  case "edit:findReplace": setDialog("findReplace"); break;
+                }
+              }}
+              onClose={() => setOpenMenu(null)}
+            />
           </MenuRoot>
 
         {/* View menu */}
@@ -10590,6 +10608,17 @@ function PageSetupDialog({
         </div>
       </div>
     </div>
+  );
+}
+
+/** Thin wrapper that renders EditorEditMenuPanel inside DocEditor's MenuRoot pattern */
+function DocEditMenuPanel({ onAction, onClose }: { onAction: (action: string) => void; onClose: () => void }) {
+  const { EditorEditMenuPanel } = require("@/components/shared/EditorEditMenu");
+  return (
+    <EditorEditMenuPanel
+      config={{ onAction, showDuplicate: true }}
+      onClose={onClose}
+    />
   );
 }
 

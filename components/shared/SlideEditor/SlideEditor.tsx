@@ -538,6 +538,9 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [editingMode, setEditingMode] = useState<EditingMode>("editing");
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showTablePicker, setShowTablePicker] = useState(false);
+  const [showFindReplace, setShowFindReplace] = useState(false);
+  const [findQuery, setFindQuery] = useState("");
+  const [replaceQuery, setReplaceQuery] = useState("");
   const [showCommentSidebar, setShowCommentSidebar] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showPageSetup, setShowPageSetup] = useState(false);
@@ -612,6 +615,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [filmstripCollapsed, setFilmstripCollapsed] = useState(false);
   const isDraggingNotes = useRef(false);
   const editorRef = useRef<HTMLDivElement>(null);
+  const savedSelectionRef = useRef<Range | null>(null);
   const filmstripRef = useRef<HTMLDivElement>(null);
   const activeSlide = slides[activeSlideIdx] || slides[0];
   const canEdit = editingMode === "editing";
@@ -672,6 +676,99 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     updateSlides(newSlides);
     setActiveSlideIdx(Math.min(activeSlideIdx, newSlides.length - 1));
   }, [slides, activeSlideIdx, updateSlides]);
+
+  // ── Find and Replace for slides ──
+  const slideFindNext = useCallback(() => {
+    if (!findQuery || !editorRef.current) return;
+    const content = editorRef.current;
+    const sel = window.getSelection();
+    // Start searching from current cursor position
+    const startNode = sel?.focusNode || content;
+    const startOffset = sel?.focusOffset || 0;
+
+    // Use window.find for browser-native search
+    const found = (window as any).find(findQuery, false, false, true, false, false, false);
+    if (!found) {
+      // Wrap around: move to beginning and try again
+      sel?.removeAllRanges();
+      const range = document.createRange();
+      range.setStart(content, 0);
+      range.collapse(true);
+      sel?.addRange(range);
+      const foundWrap = (window as any).find(findQuery, false, false, true, false, false, false);
+      if (!foundWrap) {
+        // Not found at all
+        return;
+      }
+    }
+  }, [findQuery]);
+
+  const slideReplace = useCallback(() => {
+    if (!findQuery || !editorRef.current) return;
+    const sel = window.getSelection();
+    if (sel && sel.toString() === findQuery) {
+      document.execCommand("insertText", false, replaceQuery);
+    }
+    // Find next occurrence
+    slideFindNext();
+  }, [findQuery, replaceQuery, slideFindNext]);
+
+  const slideReplaceAll = useCallback(() => {
+    if (!findQuery || !editorRef.current) return;
+    const content = editorRef.current;
+    let count = 0;
+    // Move to start
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    const range = document.createRange();
+    range.setStart(content, 0);
+    range.collapse(true);
+    sel?.addRange(range);
+    // Find and replace all
+    while ((window as any).find(findQuery, false, false, true, false, false, false)) {
+      document.execCommand("insertText", false, replaceQuery);
+      count++;
+      if (count > 1000) break; // safety limit
+    }
+  }, [findQuery, replaceQuery]);
+
+  // Continuously save editor selection so menu actions can restore it
+  useEffect(() => {
+    const handler = () => {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        if (editorRef.current?.contains(range.commonAncestorContainer)) {
+          savedSelectionRef.current = range.cloneRange();
+        }
+      }
+    };
+    document.addEventListener("selectionchange", handler);
+    return () => document.removeEventListener("selectionchange", handler);
+  }, []);
+
+  const restoreSlideSelection = useCallback(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const sel = window.getSelection();
+    if (!sel) return;
+    if (savedSelectionRef.current) {
+      editor.focus();
+      try {
+        sel.removeAllRanges();
+        sel.addRange(savedSelectionRef.current);
+        savedSelectionRef.current = null;
+        return;
+      } catch { /* range may be invalid */ }
+    }
+    // Fallback: focus editor with cursor at end
+    editor.focus();
+    const range = document.createRange();
+    range.selectNodeContents(editor);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }, []);
 
   const insertTable = useCallback((rows: number, cols: number) => {
     if (!editorRef.current) return;
@@ -793,7 +890,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
 
   return (
     <div
-      className="flex flex-col h-full bg-[#f8f9fa] dark:bg-gray-950 slide-editor-root"
+      className="flex flex-col h-full bg-[#f8f9fa] dark:bg-gray-950 slide-editor-root relative"
       lang={(() => {
         const langCodes: Record<string, string> = { English: "en", Spanish: "es", French: "fr", German: "de", Portuguese: "pt", Italian: "it", Dutch: "nl", Russian: "ru", Chinese: "zh", Japanese: "ja", Korean: "ko", Arabic: "ar", Hindi: "hi", Yoruba: "yo", Igbo: "ig", Hausa: "ha", Swahili: "sw", Zulu: "zu" };
         return langCodes[presentationLanguage] || "en";
@@ -909,6 +1006,10 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       >
       {/* ── Menu Bar (shared component) ── */}
       <SlideMenuBar isStarred={isStarred} currentFolder={currentFolder} onAction={(action) => {
+        // Restore editor focus and selection for edit/format actions
+        if (action.startsWith("edit:") || action.startsWith("format:")) {
+          restoreSlideSelection();
+        }
         switch (action) {
           case "slide:new": case "insert:newSlide": addSlide(); break;
           case "slide:duplicate": case "edit:duplicate": duplicateSlide(); break;
@@ -924,7 +1025,27 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           case "edit:copy":
             if (permissions.disableCopyPrintDownload) { setPermissionBlockedMsg({ message: "Copy is disabled by the document owner.", permType: "copy" }); break; }
             document.execCommand("copy"); break;
-          case "edit:paste": document.execCommand("paste"); break;
+          case "edit:paste": {
+            navigator.clipboard?.read?.().then(async items => {
+              let pasted = false;
+              for (const item of items) {
+                if (item.types.includes("text/html")) {
+                  const blob = await item.getType("text/html");
+                  const html = await blob.text();
+                  if (html) { document.execCommand("insertHTML", false, html); pasted = true; break; }
+                }
+              }
+              if (!pasted) {
+                const text = await navigator.clipboard.readText();
+                if (text) document.execCommand("insertText", false, text);
+              }
+            }).catch(() => {
+              navigator.clipboard?.readText?.().then(text => {
+                if (text) document.execCommand("insertText", false, text);
+              }).catch(() => {});
+            });
+            break;
+          }
           case "edit:selectAll": document.execCommand("selectAll"); break;
           case "format:bold": document.execCommand("bold"); break;
           case "format:italic": document.execCommand("italic"); break;
@@ -1028,7 +1149,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             }).catch(() => { document.execCommand("paste"); });
             break;
           }
-          case "edit:findReplace": { /* TODO: find & replace dialog */ alert("Find & Replace — coming soon"); break; }
+          case "edit:findReplace": setShowFindReplace(prev => !prev); break;
 
           // ── View menu ──
           case "view:modeEditing": setEditingMode("editing"); break;
@@ -1264,6 +1385,45 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         <EditingModeButton editingMode={editingMode} onModeChange={setEditingMode} />
       </div>
       </div>{/* end collapsible menu+toolbar wrapper */}
+
+      {/* Find and Replace panel */}
+      {showFindReplace && (
+        <div className="absolute right-3 top-[120px] z-[150] w-[280px] rounded-2xl border border-gray-200/80 dark:border-gray-700/80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-xl p-3">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[12px] font-bold text-gray-700 dark:text-gray-200">Find and replace</span>
+            <button onClick={() => setShowFindReplace(false)} className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition-colors cursor-pointer" aria-label="Close">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="space-y-1.5">
+            <input value={findQuery} onChange={(e) => setFindQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); slideFindNext(); } }}
+              placeholder="Find…" autoFocus
+              className="w-full px-3 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none focus:ring-1 focus:ring-blue-400" />
+            <button onClick={slideFindNext}
+              className="px-3 py-1.5 rounded-lg text-[12px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+              Find next
+            </button>
+          </div>
+          <div className="my-2.5 border-t border-gray-200/60 dark:border-gray-700/60" />
+          <div className="space-y-1.5">
+            <input value={replaceQuery} onChange={(e) => setReplaceQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); slideReplace(); } }}
+              placeholder="Replace with…"
+              className="w-full px-3 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none focus:ring-1 focus:ring-blue-400" />
+            <div className="flex items-center gap-1.5">
+              <button onClick={slideReplace}
+                className="px-3 py-1.5 rounded-lg text-[12px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+                Replace
+              </button>
+              <button onClick={slideReplaceAll}
+                className="px-3 py-1.5 rounded-lg text-[12px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+                Replace all
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Main Area ── */}
       <div className="flex flex-1 min-h-0 overflow-hidden">

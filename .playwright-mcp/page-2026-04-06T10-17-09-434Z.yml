@@ -1,0 +1,201 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e4]:
+      - link [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img [ref=e8]
+      - navigation [ref=e11]:
+        - generic [ref=e12]:
+          - link "Dashboard" [ref=e14] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e15]:
+              - img [ref=e17]
+              - generic:
+                - generic: Dashboard
+          - button "School Management" [ref=e23] [cursor=pointer]:
+            - generic [ref=e24]:
+              - img [ref=e26]
+              - generic:
+                - generic: School Management
+            - img [ref=e31]
+          - button "Peoples" [ref=e34] [cursor=pointer]:
+            - generic [ref=e35]:
+              - img [ref=e37]
+              - generic:
+                - generic: Peoples
+            - img [ref=e43]
+          - button "Academic" [ref=e46] [cursor=pointer]:
+            - generic [ref=e47]:
+              - img [ref=e49]
+              - generic:
+                - generic: Academic
+            - img [ref=e52]
+          - button "Management" [ref=e55] [cursor=pointer]:
+            - generic [ref=e56]:
+              - img [ref=e58]
+              - generic:
+                - generic: Management
+            - img [ref=e62]
+          - button "Workspace" [ref=e65] [cursor=pointer]:
+            - generic [ref=e66]:
+              - img [ref=e68]
+              - generic:
+                - generic: Workspace
+            - img [ref=e72]
+          - link "Attendance" [ref=e75] [cursor=pointer]:
+            - /url: /attendance
+            - generic [ref=e76]:
+              - img [ref=e78]
+              - generic:
+                - generic: Attendance
+          - button "Settings" [ref=e81] [cursor=pointer]:
+            - generic [ref=e82]:
+              - img [ref=e84]
+              - generic:
+                - generic: Settings
+            - img [ref=e88]
+  - generic [ref=e90]:
+    - banner [ref=e92]:
+      - generic [ref=e93]:
+        - generic [ref=e94]:
+          - generic [ref=e96]:
+            - img [ref=e97]
+            - searchbox "Search for anything..." [ref=e100]
+          - generic [ref=e102]: User
+        - generic [ref=e103]:
+          - 'button "Academic Year : 2024 / 2025" [ref=e105] [cursor=pointer]':
+            - img [ref=e106]
+            - generic [ref=e108]: "Academic Year : 2024 / 2025"
+            - img [ref=e109]
+          - button "🌍 English" [ref=e112] [cursor=pointer]:
+            - generic [ref=e113]: 🌍
+            - generic [ref=e114]: English
+            - img [ref=e115]
+          - button "Add New" [ref=e118] [cursor=pointer]:
+            - img [ref=e119]
+          - button "Cycle Theme" [ref=e121] [cursor=pointer]:
+            - img [ref=e122]
+          - button "Notifications" [ref=e125] [cursor=pointer]:
+            - img [ref=e126]
+          - button "Messages" [ref=e129] [cursor=pointer]:
+            - img [ref=e130]
+          - button "Reception Strength" [ref=e133] [cursor=pointer]:
+            - img [ref=e134]
+          - button "Toggle Fullscreen" [ref=e137] [cursor=pointer]:
+            - img [ref=e138]
+          - button "K" [ref=e144]:
+            - generic [ref=e146]: K
+    - main [ref=e147]:
+      - generic [ref=e153]:
+        - paragraph [ref=e154]: Loading
+        - paragraph [ref=e155]: Please wait a moment...
+      - generic [ref=e156]:
+        - generic [ref=e159]:
+          - heading "Dashboard" [level=1] [ref=e160]
+          - generic [ref=e163]: Dashboard
+        - generic [ref=e164]:
+          - generic [ref=e166]:
+            - img [ref=e169]
+            - generic [ref=e172]:
+              - paragraph [ref=e173]: Students
+              - paragraph [ref=e175]: "38"
+          - generic [ref=e177]:
+            - img [ref=e180]
+            - generic [ref=e192]:
+              - paragraph [ref=e193]: Staff
+              - paragraph [ref=e195]: "12"
+          - generic [ref=e197]:
+            - img [ref=e200]
+            - generic [ref=e205]:
+              - paragraph [ref=e206]: Parents
+              - paragraph [ref=e208]: "12"
+          - generic [ref=e210]:
+            - img [ref=e213]
+            - generic [ref=e216]:
+              - paragraph [ref=e217]: Finance
+              - paragraph [ref=e219]: View
+              - paragraph [ref=e220]: Receipts • Installments • Fee structure
+        - generic [ref=e221]:
+          - link "Students Admissions, profiles, transfers, transcripts" [ref=e222] [cursor=pointer]:
+            - /url: /students
+            - img [ref=e224]
+            - heading "Students" [level=4] [ref=e227]
+            - paragraph [ref=e228]: Admissions, profiles, transfers, transcripts
+            - img [ref=e229]
+          - link "Staff Personnel, attendance, leave, discipline" [ref=e231] [cursor=pointer]:
+            - /url: /staff
+            - img [ref=e233]
+            - heading "Staff" [level=4] [ref=e245]
+            - paragraph [ref=e246]: Personnel, attendance, leave, discipline
+            - img [ref=e247]
+          - link "Library Catalog, borrowing, members, fines" [ref=e249] [cursor=pointer]:
+            - /url: /library
+            - img [ref=e251]
+            - heading "Library" [level=4] [ref=e253]
+            - paragraph [ref=e254]: Catalog, borrowing, members, fines
+            - img [ref=e255]
+          - link "Finance Fee structure, receipts, installment plans" [ref=e257] [cursor=pointer]:
+            - /url: /finance/fee-structure
+            - img [ref=e259]
+            - heading "Finance" [level=4] [ref=e262]
+            - paragraph [ref=e263]: Fee structure, receipts, installment plans
+            - img [ref=e264]
+        - generic [ref=e266]:
+          - generic [ref=e268]:
+            - generic [ref=e269]:
+              - generic [ref=e270]:
+                - img [ref=e271]
+                - heading "Recent Activity" [level=3] [ref=e273]
+              - link "View All" [ref=e274] [cursor=pointer]:
+                - /url: /
+            - generic [ref=e276]:
+              - generic [ref=e277]:
+                - img [ref=e279]
+                - generic [ref=e282]:
+                  - paragraph [ref=e283]: New receipt generated
+                  - paragraph [ref=e284]: Finance • Receipt RCP-2024-0008
+                  - paragraph [ref=e285]: 2 min ago
+              - generic [ref=e286]:
+                - img [ref=e288]
+                - generic [ref=e291]:
+                  - paragraph [ref=e292]: Leave request pending
+                  - paragraph [ref=e293]: Staff • 1 request needs review
+                  - paragraph [ref=e294]: 35 min ago
+              - generic [ref=e295]:
+                - img [ref=e297]
+                - generic [ref=e299]:
+                  - paragraph [ref=e300]: Overdue library loan
+                  - paragraph [ref=e301]: Library • 2 loans overdue
+                  - paragraph [ref=e302]: Today
+          - generic [ref=e304]:
+            - generic [ref=e306]:
+              - img [ref=e307]
+              - heading "Next up" [level=3] [ref=e310]
+            - generic [ref=e312]:
+              - link "1 A Approve leave requests Staff module 1" [ref=e313] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e314]:
+                  - generic [ref=e315]: "1"
+                  - generic [ref=e316]: A
+                  - generic [ref=e317]:
+                    - paragraph [ref=e318]: Approve leave requests
+                    - paragraph [ref=e319]: Staff module
+                - generic [ref=e320]: "1"
+              - link "2 R Review discipline reports Students & Staff 3" [ref=e321] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e322]:
+                  - generic [ref=e323]: "2"
+                  - generic [ref=e324]: R
+                  - generic [ref=e325]:
+                    - paragraph [ref=e326]: Review discipline reports
+                    - paragraph [ref=e327]: Students & Staff
+                - generic [ref=e328]: "3"
+              - link "3 S Send fee reminders Finance 8" [ref=e329] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e330]:
+                  - generic [ref=e331]: "3"
+                  - generic [ref=e332]: S
+                  - generic [ref=e333]:
+                    - paragraph [ref=e334]: Send fee reminders
+                    - paragraph [ref=e335]: Finance
+                - generic [ref=e336]: "8"

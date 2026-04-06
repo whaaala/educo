@@ -2,11 +2,11 @@
 
 import React from "react";
 import { EditorMenuBar, type EditorMenuItem, MENU_DIVIDER as D } from "@/components/shared/EditorMenus";
-import { type FileMenuConfig, EditorFileMenuPanel } from "@/components/shared/EditorFileMenu";
+
 import {
   FilePlus, FolderOpen, Upload, Copy, Share2, Download, Printer,
-  FileText, Trash2, Settings, Undo2, Redo2, Scissors, Clipboard, ClipboardPaste,
-  MousePointer2, Search, PencilLine, MessageSquare, Eye, Play, Wand2, LayoutGrid,
+  FileText, Trash2, Settings,
+  Search, PencilLine, MessageSquare, Eye, Play, Wand2, LayoutGrid,
   Ruler, Compass, Magnet, Monitor, ZoomIn, Maximize, Image, Shapes, Table2,
   GitBranch, BarChart3, Minus, Type, Sparkles, MessageCircle, PlusSquare,
   Bold, Italic, Underline, Strikethrough, Superscript, Subscript, CaseSensitive,
@@ -52,21 +52,10 @@ export default function SlideMenuBar({ onAction, isStarred = false, currentFolde
     },
   };
 
-  const editMenu: EditorMenuItem[] = [
-    { label: "Undo", icon: Undo2, shortcut: "Ctrl+Z", onClick: act("edit:undo") },
-    { label: "Redo", icon: Redo2, shortcut: "Ctrl+Y", onClick: act("edit:redo") },
-    D,
-    { label: "Cut", icon: Scissors, shortcut: "Ctrl+X", onClick: act("edit:cut") },
-    { label: "Copy", icon: Copy, shortcut: "Ctrl+C", onClick: act("edit:copy") },
-    { label: "Paste", icon: Clipboard, shortcut: "Ctrl+V", onClick: act("edit:paste") },
-    { label: "Paste without formatting", icon: ClipboardPaste, shortcut: "Ctrl+Shift+V", onClick: act("edit:pasteNoFormat") },
-    D,
-    { label: "Select all", icon: MousePointer2, shortcut: "Ctrl+A", onClick: act("edit:selectAll") },
-    { label: "Delete", icon: Trash2, onClick: act("edit:delete") },
-    { label: "Duplicate", icon: CopyPlus, shortcut: "Ctrl+D", onClick: act("edit:duplicate") },
-    D,
-    { label: "Find and replace", icon: Search, shortcut: "Ctrl+H", onClick: act("edit:findReplace") },
-  ];
+  const editMenuConfig = {
+    onAction,
+    showDuplicate: true,
+  };
 
   const viewMenu: EditorMenuItem[] = [
     { label: "Mode", icon: PencilLine, submenu: [
@@ -284,9 +273,10 @@ export default function SlideMenuBar({ onAction, isStarred = false, currentFolde
   return (
     <EditorMenuBar
       fileMenuConfig={fileMenuConfig}
+      editMenuConfig={editMenuConfig}
       menus={[
         { id: "file", label: "File", items: [] },
-        { id: "edit", label: "Edit", items: editMenu },
+        { id: "edit", label: "Edit", items: [] },
         { id: "view", label: "View", items: viewMenu },
         { id: "insert", label: "Insert", items: insertMenu },
         { id: "format", label: "Format", items: formatMenu },

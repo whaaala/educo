@@ -831,7 +831,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
 
           {/* Navigation Menu */}
           <nav
-            className="flex-1 p-4"
+            className="flex-1 min-h-0 p-4"
             style={isCollapsed && isMobile === false ? { overflow: 'visible' } : { overflowY: 'auto', overflowX: 'hidden' }}
           >
             <div className="space-y-2">
@@ -841,7 +841,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
 
           {/* Footer - Show based on mobile/collapsed state */}
           {(isMobile === true || (isMobile === false && !isCollapsed)) && (
-            <div className="p-4 border-t border-gray-200/80 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-500/5 dark:to-indigo-500/5 midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5 space-y-3">
+            <div className="flex-shrink-0 p-4 border-t border-gray-200/80 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-500/5 dark:to-indigo-500/5 midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5 space-y-3">
               {/* Tenant Switcher */}
               {showTenantSwitcher && !isParent && <TenantSwitcher />}
 

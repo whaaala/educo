@@ -1,0 +1,77 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e4]:
+      - link [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img [ref=e8]
+      - navigation [ref=e11]:
+        - generic [ref=e12]:
+          - link "Dashboard" [ref=e14] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e15]:
+              - img [ref=e17]
+              - generic:
+                - generic: Dashboard
+          - button "School Management" [ref=e23] [cursor=pointer]:
+            - generic [ref=e24]:
+              - img [ref=e26]
+              - generic:
+                - generic: School Management
+            - img [ref=e31]
+          - button "Peoples" [ref=e34] [cursor=pointer]:
+            - generic [ref=e35]:
+              - img [ref=e37]
+              - generic:
+                - generic: Peoples
+            - img [ref=e43]
+          - button "Academic" [ref=e46] [cursor=pointer]:
+            - generic [ref=e47]:
+              - img [ref=e49]
+              - generic:
+                - generic: Academic
+            - img [ref=e52]
+          - button "Management" [ref=e55] [cursor=pointer]:
+            - generic [ref=e56]:
+              - img [ref=e58]
+              - generic:
+                - generic: Management
+            - img [ref=e62]
+          - button "Workspace" [ref=e65] [cursor=pointer]:
+            - generic [ref=e66]:
+              - img [ref=e68]
+              - generic:
+                - generic: Workspace
+            - img [ref=e72]
+          - link "Attendance" [ref=e75] [cursor=pointer]:
+            - /url: /attendance
+            - generic [ref=e76]:
+              - img [ref=e78]
+              - generic:
+                - generic: Attendance
+          - button "Settings" [ref=e81] [cursor=pointer]:
+            - generic [ref=e82]:
+              - img [ref=e84]
+              - generic:
+                - generic: Settings
+            - img [ref=e88]
+  - generic [ref=e90]:
+    - banner [ref=e92]:
+      - generic [ref=e93]:
+        - button "Menu" [ref=e95] [cursor=pointer]:
+          - img [ref=e96]
+        - generic [ref=e97]:
+          - 'button "AY: 2024 / 2025" [ref=e99] [cursor=pointer]':
+            - img [ref=e100]
+            - generic [ref=e102]: "AY: 2024 / 2025"
+            - img [ref=e103]
+          - button "🌍" [ref=e106] [cursor=pointer]:
+            - generic [ref=e107]: 🌍
+            - img [ref=e108]
+          - button "Cycle Theme" [ref=e110] [cursor=pointer]:
+            - img [ref=e111]
+          - button "Notifications" [ref=e114] [cursor=pointer]:
+            - img [ref=e115]
+          - button "K" [ref=e119]:
+            - generic [ref=e121]: K
+    - main [ref=e122]:
+      - generic [ref=e124]: Loading document...
