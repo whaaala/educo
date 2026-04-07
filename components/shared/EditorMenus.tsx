@@ -276,7 +276,7 @@ export function EditorMenuRoot({
 }
 
 // ── Full Menu Bar Component ──
-export function EditorMenuBar({ menus, fileMenuConfig, editMenuConfig, viewMenuConfig }: {
+export function EditorMenuBar({ menus, fileMenuConfig, editMenuConfig, viewMenuConfig, insertMenuConfig }: {
   menus: { id: string; label: string; items: EditorMenuItem[] }[];
   /** When provided, the "file" menu renders using EditorFileMenuPanel instead of EditorMenuRoot */
   fileMenuConfig?: import("@/components/shared/EditorFileMenu").FileMenuConfig;
@@ -284,6 +284,8 @@ export function EditorMenuBar({ menus, fileMenuConfig, editMenuConfig, viewMenuC
   editMenuConfig?: import("@/components/shared/EditorEditMenu").EditMenuConfig;
   /** When provided, the "view" menu renders using EditorViewMenuPanel instead of EditorMenuRoot */
   viewMenuConfig?: import("@/components/shared/EditorViewMenu").ViewMenuConfig;
+  /** When provided, the "insert" menu renders using EditorInsertMenuPanel instead of EditorMenuRoot */
+  insertMenuConfig?: import("@/components/shared/EditorInsertMenu").InsertMenuConfig;
 }) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const close = useCallback(() => setOpenMenu(null), []);
@@ -307,6 +309,7 @@ export function EditorMenuBar({ menus, fileMenuConfig, editMenuConfig, viewMenuC
   const FileMenuPanel = fileMenuConfig ? require("@/components/shared/EditorFileMenu").EditorFileMenuPanel : null;
   const EditMenuPanel = editMenuConfig ? require("@/components/shared/EditorEditMenu").EditorEditMenuPanel : null;
   const ViewMenuPanel_Shared = viewMenuConfig ? require("@/components/shared/EditorViewMenu").EditorViewMenuPanel : null;
+  const InsertMenuPanel = insertMenuConfig ? require("@/components/shared/EditorInsertMenu").EditorInsertMenuPanel : null;
 
   return (
     <MenuCloseContext.Provider value={close}>
@@ -334,6 +337,14 @@ export function EditorMenuBar({ menus, fileMenuConfig, editMenuConfig, viewMenuC
             return (
               <ViewMenuRoot key="view" isOpen={isOpen} onOpen={() => open("view")} onClose={close}
                 openMenu={openMenu} viewMenuConfig={viewMenuConfig} ViewMenuPanel={ViewMenuPanel_Shared} />
+            );
+          }
+          // Insert menu uses EditorInsertMenuPanel when config is provided
+          if (m.id === "insert" && insertMenuConfig && InsertMenuPanel) {
+            const isOpen = openMenu === "insert";
+            return (
+              <InsertMenuRoot key="insert" isOpen={isOpen} onOpen={() => open("insert")} onClose={close}
+                openMenu={openMenu} insertMenuConfig={insertMenuConfig} InsertMenuPanel={InsertMenuPanel} />
             );
           }
           return (
@@ -419,6 +430,32 @@ function ViewMenuRoot({ isOpen, onOpen, onClose, openMenu, viewMenuConfig, ViewM
         View
       </button>
       {isOpen && <ViewMenuPanel config={viewMenuConfig} onClose={onClose} anchorRef={btnRef} />}
+    </div>
+  );
+}
+
+// ── InsertMenuRoot ──
+function InsertMenuRoot({ isOpen, onOpen, onClose, openMenu, insertMenuConfig, InsertMenuPanel }: {
+  isOpen: boolean; onOpen: () => void; onClose: () => void; openMenu: string | null;
+  insertMenuConfig: any; InsertMenuPanel: any;
+}) {
+  const btnRef = useRef<HTMLButtonElement>(null);
+  return (
+    <div className="relative z-[100]" data-editor-menu-root>
+      <button
+        ref={btnRef}
+        type="button"
+        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
+          isOpen
+            ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-100"
+        }`}
+        onClick={() => (isOpen ? onClose() : onOpen())}
+        onMouseEnter={() => openMenu && !isOpen && onOpen()}
+      >
+        Insert
+      </button>
+      {isOpen && <InsertMenuPanel config={insertMenuConfig} onClose={onClose} anchorRef={btnRef} />}
     </div>
   );
 }

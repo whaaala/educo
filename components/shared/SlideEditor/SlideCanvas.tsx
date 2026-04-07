@@ -123,6 +123,7 @@ export default function SlideCanvas({
 }: SlideCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
+  const [croppingId, setCroppingId] = useState<string | null>(null);
   const [drawingPath, setDrawingPath] = useState<string>("");
   const isDrawing = useRef(false);
 
@@ -143,8 +144,9 @@ export default function SlideCanvas({
     if (!canEdit) return;
     const handler = (e: KeyboardEvent) => {
       if (editingTextId) return; // Don't handle keys while editing text
+      if (e.key === "Escape" && croppingId) { applyCrop(croppingId); setCroppingId(null); e.preventDefault(); return; }
       if ((e.key === "Delete" || e.key === "Backspace") && selectedId) { e.preventDefault(); deleteSelected(); }
-      if (e.key === "Escape") { onSelect(null); setEditingTextId(null); }
+      if (e.key === "Escape") { onSelect(null); setEditingTextId(null); setCroppingId(null); }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
@@ -221,6 +223,44 @@ export default function SlideCanvas({
     document.addEventListener("mouseup", handleUp);
   }, [canEdit, objects, updateObj]);
 
+  // ── Crop handler ──
+  const startCrop = useCallback((e: React.MouseEvent, objId: string, edge: "top" | "right" | "bottom" | "left") => {
+    e.preventDefault();
+    e.stopPropagation();
+    const obj = objects.find(o => o.id === objId) as ImageObject | undefined;
+    if (!obj) return;
+    const el = (e.currentTarget as HTMLElement).closest("[data-slide-obj]") as HTMLElement;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const origCrop = {
+      top: obj.cropTop || 0, right: obj.cropRight || 0,
+      bottom: obj.cropBottom || 0, left: obj.cropLeft || 0,
+    };
+
+    const handleMove = (ev: MouseEvent) => {
+      let dx = 0, dy = 0;
+      if (edge === "left") dx = ((ev.clientX - startX) / rect.width) * 100;
+      if (edge === "right") dx = ((startX - ev.clientX) / rect.width) * 100;
+      if (edge === "top") dy = ((ev.clientY - startY) / rect.height) * 100;
+      if (edge === "bottom") dy = ((startY - ev.clientY) / rect.height) * 100;
+
+      const updates: Partial<ImageObject> = {};
+      if (edge === "top") updates.cropTop = Math.max(0, Math.min(45, origCrop.top + dy));
+      if (edge === "right") updates.cropRight = Math.max(0, Math.min(45, origCrop.right + dx));
+      if (edge === "bottom") updates.cropBottom = Math.max(0, Math.min(45, origCrop.bottom + dy));
+      if (edge === "left") updates.cropLeft = Math.max(0, Math.min(45, origCrop.left + dx));
+      updateObj(objId, updates);
+    };
+    const handleUp = () => {
+      document.removeEventListener("mousemove", handleMove);
+      document.removeEventListener("mouseup", handleUp);
+    };
+    document.addEventListener("mousemove", handleMove);
+    document.addEventListener("mouseup", handleUp);
+  }, [objects, updateObj]);
+
   // ── Drawing handler ──
   const startDrawing = useCallback((e: React.MouseEvent) => {
     if (!drawingMode || !canvasRef.current) return;
@@ -247,33 +287,67 @@ export default function SlideCanvas({
   }, [drawingPath, onDrawingComplete]);
 
   // ── Click to deselect ──
+  // Apply crop: shrink container to visible area when exiting crop mode
+  // Apply crop: just exit crop mode — crop values stay on the object permanently as clip-path
+  const applyCrop = useCallback((_objId: string) => {
+    // Crop values (cropTop/Right/Bottom/Left) persist on the object
+    // They render as clip-path: inset() — no container resizing needed
+  }, []);
+
+  // Reset crop: clear all crop values
+  const resetCrop = useCallback((objId: string) => {
+    updateObj(objId, {
+      cropTop: 0, cropRight: 0, cropBottom: 0, cropLeft: 0,
+    } as Partial<ImageObject>);
+    setCroppingId(null);
+  }, [updateObj]);
+
   const handleCanvasClick = useCallback((e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest("[data-slide-obj]")) return;
-    onSelect(null);
-    setEditingTextId(null);
-  }, [onSelect]);
+    const clickedObj = (e.target as HTMLElement).closest("[data-slide-obj]");
+    // If clicked on the canvas background (not on any object) → deselect
+    if (!clickedObj) {
+      if (croppingId) { applyCrop(croppingId); setCroppingId(null); }
+      onSelect(null);
+      setEditingTextId(null);
+      return;
+    }
+    // If clicked on the already-selected object and NOT in crop/edit mode → deselect
+    const clickedId = clickedObj.getAttribute("data-slide-obj");
+    if (clickedId === selectedId && !croppingId && !editingTextId) {
+      // Only deselect on single click (not double-click which enters edit/crop)
+      // Use a small delay to differentiate single vs double click
+    }
+  }, [onSelect, croppingId, applyCrop, selectedId, editingTextId]);
 
   // ── Render single object ──
   const renderObject = (obj: SlideObject) => {
     const isSelected = selectedId === obj.id;
     const isEditing = editingTextId === obj.id;
 
+    // For images with crop, selection ring should wrap the visible area only
+    const imgCrop = obj.type === "image" ? { t: obj.cropTop || 0, r: obj.cropRight || 0, b: obj.cropBottom || 0, l: obj.cropLeft || 0 } : null;
+    const hasCropInset = imgCrop && (imgCrop.t > 0 || imgCrop.r > 0 || imgCrop.b > 0 || imgCrop.l > 0);
+    const showRingOnOuter = isSelected && !hasCropInset;
+
     return (
       <div
         key={obj.id}
         data-slide-obj={obj.id}
-        className={`absolute ${canEdit && !drawingMode ? "cursor-move" : ""} ${isSelected ? "ring-2 ring-blue-500 ring-offset-1" : ""}`}
+        className={`absolute ${canEdit && !drawingMode ? "cursor-move" : ""} ${showRingOnOuter ? "ring-2 ring-blue-500" : ""}`}
         style={{
           left: `${obj.x}%`, top: `${obj.y}%`, width: `${obj.width}%`, height: `${obj.height}%`,
           zIndex: obj.zIndex, transform: obj.rotation ? `rotate(${obj.rotation}deg)` : undefined,
         }}
         onMouseDown={(e) => {
           if (!canEdit || drawingMode) return;
+          // Apply and exit crop mode if clicking a different object
+          if (croppingId && croppingId !== obj.id) { applyCrop(croppingId); setCroppingId(null); }
           onSelect(obj.id);
-          if (!isEditing) startDrag(e, obj.id);
+          if (!isEditing && croppingId !== obj.id) startDrag(e, obj.id);
         }}
         onDoubleClick={() => {
           if (obj.type === "textbox" && canEdit) setEditingTextId(obj.id);
+          if (obj.type === "image" && canEdit) setCroppingId(croppingId === obj.id ? null : obj.id);
         }}
       >
         {/* Object content */}
@@ -315,17 +389,78 @@ export default function SlideCanvas({
           </div>
         )}
 
-        {obj.type === "image" && (
-          <img
-            src={obj.src} alt={obj.alt}
-            className="w-full h-full pointer-events-none"
-            style={{
-              objectFit: obj.objectFit, borderRadius: obj.borderRadius ?? 0,
-              opacity: obj.opacity ?? 1,
-              border: obj.borderColor ? `${obj.borderWidth || 1}px solid ${obj.borderColor}` : "none",
-            }}
-          />
-        )}
+        {obj.type === "image" && (() => {
+          const ct = obj.cropTop || 0, cr = obj.cropRight || 0, cb = obj.cropBottom || 0, cl = obj.cropLeft || 0;
+          const isCropping = croppingId === obj.id;
+          return (
+            <div className="w-full h-full relative" style={{ borderRadius: obj.borderRadius ?? 0 }}>
+              <img
+                src={obj.src} alt={obj.alt}
+                className="pointer-events-none block"
+                style={{
+                  width: "100%", height: "100%",
+                  // Use 'fill' when cropped so crop percentages are exact; 'cover' when uncropped for best appearance
+                  objectFit: (ct > 0 || cr > 0 || cb > 0 || cl > 0) ? "fill" : (obj.objectFit || "cover"),
+                  opacity: obj.opacity ?? 1,
+                  border: obj.borderColor ? `${obj.borderWidth || 1}px solid ${obj.borderColor}` : "none",
+                  clipPath: (ct > 0 || cr > 0 || cb > 0 || cl > 0) ? `inset(${ct}% ${cr}% ${cb}% ${cl}%)` : undefined,
+                }}
+                draggable={false}
+              />
+              {/* Selection border around visible (cropped) area */}
+              {isSelected && hasCropInset && !isCropping && (
+                <div className="absolute pointer-events-none border-2 border-blue-500 z-[4]" style={{
+                  top: `${ct}%`, right: `${cr}%`, bottom: `${cb}%`, left: `${cl}%`,
+                }} />
+              )}
+              {/* Crop mode UI */}
+              {isCropping && canEdit && (
+                <>
+                  {/* Darkened overlay on cropped-out areas */}
+                  <div className="absolute inset-0 pointer-events-none" style={{
+                    background: `linear-gradient(to bottom, rgba(0,0,0,0.5) ${ct}%, transparent ${ct}%, transparent ${100-cb}%, rgba(0,0,0,0.5) ${100-cb}%)`,
+                  }} />
+                  <div className="absolute inset-0 pointer-events-none" style={{
+                    background: `linear-gradient(to right, rgba(0,0,0,0.5) ${cl}%, transparent ${cl}%, transparent ${100-cr}%, rgba(0,0,0,0.5) ${100-cr}%)`,
+                    mixBlendMode: "darken",
+                  }} />
+                  {/* Crop border */}
+                  <div className="absolute pointer-events-none border-2 border-amber-500 border-dashed" style={{
+                    top: `${ct}%`, right: `${cr}%`, bottom: `${cb}%`, left: `${cl}%`,
+                  }} />
+                  {/* Edge handles */}
+                  {(["top", "right", "bottom", "left"] as const).map(edge => {
+                    const pos: React.CSSProperties = {};
+                    if (edge === "top") { pos.top = `${ct}%`; pos.left = "30%"; pos.right = "30%"; pos.height = 10; pos.marginTop = -5; pos.cursor = "ns-resize"; }
+                    if (edge === "bottom") { pos.bottom = `${cb}%`; pos.left = "30%"; pos.right = "30%"; pos.height = 10; pos.marginBottom = -5; pos.cursor = "ns-resize"; }
+                    if (edge === "left") { pos.left = `${cl}%`; pos.top = "30%"; pos.bottom = "30%"; pos.width = 10; pos.marginLeft = -5; pos.cursor = "ew-resize"; }
+                    if (edge === "right") { pos.right = `${cr}%`; pos.top = "30%"; pos.bottom = "30%"; pos.width = 10; pos.marginRight = -5; pos.cursor = "ew-resize"; }
+                    return (
+                      <div key={edge} className="absolute z-[25]" style={pos} onMouseDown={(e) => startCrop(e, obj.id, edge)}>
+                        <div className={`absolute bg-amber-500 rounded-full shadow-sm ${
+                          edge === "top" || edge === "bottom" ? "left-1/2 -translate-x-1/2 w-10 h-[5px] top-1/2 -translate-y-1/2" : "top-1/2 -translate-y-1/2 h-10 w-[5px] left-1/2 -translate-x-1/2"
+                        }`} />
+                      </div>
+                    );
+                  })}
+                  <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 flex items-center gap-2 whitespace-nowrap">
+                    <span className="text-[9px] font-medium text-amber-600 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded shadow-sm pointer-events-none">
+                      Drag edges to crop · Esc to finish
+                    </span>
+                    {obj.preCropBounds && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); resetCrop(obj.id); }}
+                        className="text-[9px] font-medium text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 px-2 py-0.5 rounded shadow-sm cursor-pointer hover:bg-red-100 dark:hover:bg-red-800/40 transition-colors"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })()}
 
         {obj.type === "shape" && (
           <ShapeSVG shape={obj.shape} fill={obj.fill} stroke={obj.stroke} strokeWidth={obj.strokeWidth}
@@ -340,10 +475,30 @@ export default function SlideCanvas({
           </svg>
         )}
 
-        {/* Resize handles */}
-        {isSelected && canEdit && !isEditing && HANDLES.map(dir => (
-          <div key={dir} style={getHandlePosition(dir)} onMouseDown={(e) => startResize(e, obj.id, dir)} />
-        ))}
+        {/* Resize handles — positioned at crop area edges for cropped images */}
+        {isSelected && canEdit && !isEditing && HANDLES.map(dir => {
+          // Offset handles to crop area for cropped images
+          const handleStyle = { ...getHandlePosition(dir), zIndex: 20, pointerEvents: "auto" as const };
+          if (hasCropInset && imgCrop) {
+            if (dir.includes("n") && handleStyle.top !== undefined) handleStyle.top = `${imgCrop.t}%`;
+            if (dir.includes("s") && handleStyle.bottom !== undefined) handleStyle.bottom = `${imgCrop.b}%`;
+            if (dir.includes("w") && handleStyle.left !== undefined) { if (typeof handleStyle.left === "number") handleStyle.left = `${imgCrop.l}%`; }
+            if (dir.includes("e") && handleStyle.right !== undefined) handleStyle.right = `${imgCrop.r}%`;
+            // Center handles for cropped images
+            if (dir === "n" || dir === "s") handleStyle.left = `${imgCrop.l + (100 - imgCrop.l - imgCrop.r) / 2}%`;
+            if (dir === "w" || dir === "e") handleStyle.top = `${imgCrop.t + (100 - imgCrop.t - imgCrop.b) / 2}%`;
+          }
+          return (
+          <div
+            key={dir}
+            style={handleStyle}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              startResize(e, obj.id, dir);
+            }}
+          />
+        ); })}
       </div>
     );
   };

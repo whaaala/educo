@@ -200,7 +200,14 @@ function SlideContentPreview({ slide, themeTextColor, scale = 1 }: { slide: Slid
                 <div className="w-full" dangerouslySetInnerHTML={{ __html: obj.content || `<span style="opacity:0.3">${obj.placeholder || ""}</span>` }} />
               </div>
             )}
-            {obj.type === "image" && <img src={obj.src} alt={obj.alt} className="w-full h-full" style={{ objectFit: obj.objectFit, borderRadius: obj.borderRadius ?? 0, opacity: obj.opacity ?? 1 }} />}
+            {obj.type === "image" && (() => {
+              const hasCr = obj.cropTop || obj.cropRight || obj.cropBottom || obj.cropLeft;
+              return <img src={obj.src} alt={obj.alt} className="block w-full h-full" style={{
+                objectFit: hasCr ? "fill" : (obj.objectFit || "cover"), opacity: obj.opacity ?? 1,
+                borderRadius: obj.borderRadius ?? 0,
+                clipPath: hasCr ? `inset(${obj.cropTop || 0}% ${obj.cropRight || 0}% ${obj.cropBottom || 0}% ${obj.cropLeft || 0}%)` : undefined,
+              }} />;
+            })()}
             {obj.type === "shape" && (
               <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
                 {obj.shape === "rect" && <rect x="0" y="0" width="100" height="100" rx="4" fill={obj.fill} />}
@@ -309,8 +316,9 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, on
         {showRuler && <SlideRuler direction="v" length={size.h} slideOffset={slideTop - 18} />}
 
         {/* Canvas area */}
-        <div className="flex-1 flex items-center justify-center overflow-hidden">
+        <div className="flex-1 flex items-center justify-center overflow-hidden" onClick={() => onSelectObject?.(null)}>
           <div
+            onClick={(e) => e.stopPropagation()}
             style={{
               width: size.w,
               height: size.h,
@@ -488,7 +496,7 @@ function SlidePickerModal({ title: modalTitle, subtitle, slides: slideList, defa
                 >
                   <div className="aspect-video overflow-hidden bg-white" style={{ background: slide.background || "#fff" }}>
                     <div className="w-[384px] origin-top-left pointer-events-none" style={{ transform: `scale(${160 / 384})` }}>
-                      <div style={{ aspectRatio: "16/9" }} dangerouslySetInnerHTML={{ __html: slide.content }} />
+                      <div style={{ aspectRatio: "16/9" }}><SlideContentPreview slide={slide} themeTextColor={THEMES[theme]?.text} /></div>
                     </div>
                   </div>
                   <div className="absolute bottom-2 left-2">
@@ -692,7 +700,7 @@ function ImportSlidesModal({ currentPresId, onImport, onClose }: {
                     {/* Slide preview */}
                     <div className="aspect-video overflow-hidden bg-white" style={{ background: slide.background || "#fff" }}>
                       <div className="w-[384px] origin-top-left pointer-events-none" style={{ transform: `scale(${160 / 384})` }}>
-                        <div style={{ aspectRatio: "16/9" }} dangerouslySetInnerHTML={{ __html: slide.content }} />
+                        <div style={{ aspectRatio: "16/9" }}><SlideContentPreview slide={slide} themeTextColor={THEMES[theme]?.text} /></div>
                       </div>
                     </div>
 
@@ -849,11 +857,22 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [drawingMode, setDrawingMode] = useState(false);
   const [drawingColor, setDrawingColor] = useState("#1a1a2e");
   const [drawingWidth, setDrawingWidth] = useState(2);
+  const [showImageUrlDialog, setShowImageUrlDialog] = useState(false);
+  const [imageUrlInput, setImageUrlInput] = useState("");
+  const [showImageSearchDialog, setShowImageSearchDialog] = useState(false);
+  const [imageSearchQuery, setImageSearchQuery] = useState("");
+  const [showCameraCapture, setShowCameraCapture] = useState(false);
+  const cameraVideoRef = useRef<HTMLVideoElement>(null);
+  const cameraStreamRef = useRef<MediaStream | null>(null);
   const objectClipboardRef = useRef<SlideObject | null>(null);
   const undoStackRef = useRef<string[]>([]); // JSON strings for deep clone
   const redoStackRef = useRef<string[]>([]);
-  const slidesRef = useRef(slides); // Always current
+  const slidesRef = useRef(slides);
   slidesRef.current = slides;
+  const valueRef = useRef(value);
+  valueRef.current = value;
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
   const [toast, setToastRaw] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const setToast = useCallback((msg: string) => {
@@ -893,6 +912,31 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const updateCurrentObjects = useCallback((objs: SlideObject[]) => {
     updateCurrentSlide({ objects: objs });
   }, [updateCurrentSlide]);
+
+  /** Find the content area bounds — below the title, avoiding existing objects */
+  const getContentArea = useCallback((): { x: number; y: number; w: number; h: number } => {
+    const objs = activeSlide?.objects || [];
+    if (objs.length === 0) return { x: 5, y: 5, w: 90, h: 90 };
+    // Find the title area (first large text box near top)
+    const titleObj = objs.find(o => o.type === "textbox" && o.y < 20 && o.height >= 8);
+    const titleBottom = titleObj ? titleObj.y + titleObj.height + 3 : 20;
+    // Content area starts below title
+    return { x: 5, y: titleBottom, w: 90, h: 95 - titleBottom };
+  }, [activeSlide]);
+
+  /** Get position for a new object — places in content area, avoids overlap */
+  const getInsertPosition = useCallback((objWidth: number, objHeight: number): { x: number; y: number } => {
+    const area = getContentArea();
+    const objs = currentObjects.filter(o => o.y >= area.y); // only objects in content area
+    // Find an open spot — offset down from last object
+    let y = area.y + 2;
+    if (objs.length > 0) {
+      const lastObj = objs.reduce((a, b) => (a.y + a.height > b.y + b.height) ? a : b);
+      y = Math.min(area.y + area.h - objHeight, lastObj.y + lastObj.height + 2);
+    }
+    const x = area.x + (area.w - objWidth) / 2; // centered horizontally
+    return { x: Math.max(2, x), y: Math.max(area.y, Math.min(95 - objHeight, y)) };
+  }, [getContentArea, currentObjects]);
 
   const addObjectToSlide = useCallback((obj: SlideObject) => {
     // Auto-migrate legacy slide if needed
@@ -948,12 +992,14 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       const reader = new FileReader();
       reader.onload = () => {
         const src = reader.result as string;
-        addObjectToSlide(createImageObj(src, { zIndex: currentObjects.length + 1 }));
+        migrateSlideToObjects();
+        const pos = getInsertPosition(50, 40);
+        addObjectToSlide(createImageObj(src, { ...pos, width: 50, height: 40, zIndex: currentObjects.length + 1 }));
       };
       reader.readAsDataURL(file);
     };
     input.click();
-  }, [currentObjects.length, addObjectToSlide]);
+  }, [currentObjects.length, addObjectToSlide, migrateSlideToObjects, getInsertPosition]);
 
   const slideTranslations: Record<string, { title: string; subtitle: string }> = {
     English: { title: "Click to add title", subtitle: "Click to add subtitle" },
@@ -1173,29 +1219,48 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   }, [isPresenting, slides.length]);
 
   // Keyboard shortcuts: F11, F5, Ctrl+Alt+1, Ctrl+Z/Y/C/X/V/D for objects
+  // Uses refs to avoid stale closures — effect only registers once
+  const selectedObjRef = useRef(selectedObjectId);
+  selectedObjRef.current = selectedObjectId;
+  const activeSlideRef = useRef(activeSlide);
+  activeSlideRef.current = activeSlide;
+  const updateCurrentSlideRef = useRef(updateCurrentSlide);
+  updateCurrentSlideRef.current = updateCurrentSlide;
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Don't intercept when editing text inside a text box
       const active = document.activeElement;
       const isEditingText = active?.getAttribute("contenteditable") === "true" || active?.tagName === "INPUT" || active?.tagName === "TEXTAREA";
 
       if (e.key === "F11") { e.preventDefault(); setIsFullscreen(v => !v); }
-      else if (e.key === "Escape" && showGridView) { setShowGridView(false); }
-      else if (e.key === "Escape" && isFullscreen) { setIsFullscreen(false); }
+      else if (e.key === "Escape") { setShowGridView(false); setIsFullscreen(false); }
       else if (e.key === "F5" && e.ctrlKey) { e.preventDefault(); setActiveSlideIdx(0); setIsPresenting(true); }
       else if (e.key === "F5") { e.preventDefault(); setIsPresenting(true); }
       else if (e.key === "1" && e.ctrlKey && e.altKey) { e.preventDefault(); setShowGridView(v => !v); }
-      // Object operations (only when not editing text)
       else if (!isEditingText && (e.ctrlKey || e.metaKey)) {
-        if (e.key === "z") { e.preventDefault(); const p = undoStackRef.current.pop(); if (p) { redoStackRef.current.push(JSON.stringify(slidesRef.current)); onChange({ ...value, slides: JSON.parse(p) }); } }
-        else if (e.key === "y") { e.preventDefault(); const n = redoStackRef.current.pop(); if (n) { undoStackRef.current.push(JSON.stringify(slidesRef.current)); onChange({ ...value, slides: JSON.parse(n) }); } }
-        else if (e.key === "c" && selectedObjectId && activeSlide?.objects) {
-          const obj = activeSlide.objects.find(o => o.id === selectedObjectId);
+        if (e.key === "z") {
+          e.preventDefault();
+          const p = undoStackRef.current.pop();
+          if (p) { redoStackRef.current.push(JSON.stringify(slidesRef.current)); onChangeRef.current({ ...valueRef.current, slides: JSON.parse(p) }); }
+        }
+        else if (e.key === "y") {
+          e.preventDefault();
+          const n = redoStackRef.current.pop();
+          if (n) { undoStackRef.current.push(JSON.stringify(slidesRef.current)); onChangeRef.current({ ...valueRef.current, slides: JSON.parse(n) }); }
+        }
+        else if (e.key === "c" && selectedObjRef.current) {
+          const objs = activeSlideRef.current?.objects;
+          const obj = objs?.find(o => o.id === selectedObjRef.current);
           if (obj) objectClipboardRef.current = JSON.parse(JSON.stringify(obj));
         }
-        else if (e.key === "x" && selectedObjectId && activeSlide?.objects) {
-          const obj = activeSlide.objects.find(o => o.id === selectedObjectId);
-          if (obj) { objectClipboardRef.current = JSON.parse(JSON.stringify(obj)); updateCurrentSlide({ objects: activeSlide.objects.filter(o => o.id !== selectedObjectId) }); setSelectedObjectId(null); }
+        else if (e.key === "x" && selectedObjRef.current) {
+          const objs = activeSlideRef.current?.objects;
+          const obj = objs?.find(o => o.id === selectedObjRef.current);
+          if (obj) {
+            objectClipboardRef.current = JSON.parse(JSON.stringify(obj));
+            updateCurrentSlideRef.current({ objects: objs!.filter(o => o.id !== selectedObjRef.current) });
+            setSelectedObjectId(null);
+          }
         }
         else if (e.key === "v" && objectClipboardRef.current) {
           e.preventDefault();
@@ -1203,16 +1268,17 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           const newId = `obj-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
           const pasted = { ...JSON.parse(JSON.stringify(clip)), id: newId, x: Math.min(90, clip.x + 3), y: Math.min(90, clip.y + 3) } as SlideObject;
           objectClipboardRef.current = { ...clip, x: pasted.x, y: pasted.y };
-          const objs = activeSlide?.objects || [];
-          updateCurrentSlide({ objects: [...objs, pasted] });
+          const objs = activeSlideRef.current?.objects || [];
+          updateCurrentSlideRef.current({ objects: [...objs, pasted] });
           setSelectedObjectId(newId);
         }
-        else if (e.key === "d" && selectedObjectId && activeSlide?.objects) {
+        else if (e.key === "d" && selectedObjRef.current) {
           e.preventDefault();
-          const obj = activeSlide.objects.find(o => o.id === selectedObjectId);
+          const objs = activeSlideRef.current?.objects;
+          const obj = objs?.find(o => o.id === selectedObjRef.current);
           if (obj) {
             const dup = { ...JSON.parse(JSON.stringify(obj)), id: `obj-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, x: obj.x + 3, y: obj.y + 3 };
-            updateCurrentSlide({ objects: [...activeSlide.objects, dup] });
+            updateCurrentSlideRef.current({ objects: [...objs!, dup] });
             setSelectedObjectId(dup.id);
           }
         }
@@ -1220,7 +1286,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isFullscreen, showGridView, selectedObjectId, activeSlide, slides, value, onChange, updateCurrentSlide]);
+  }, []); // Empty deps — all values accessed via refs
 
   // ── Suggestion system (suggesting mode) — uses native addEventListener like DocEditor ──
   const handleSuggestionBeforeInput = useCallback((e: InputEvent) => {
@@ -1362,6 +1428,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         setActiveSlideIdx={setActiveSlideIdx}
         slideRatio={slideRatio}
         onExit={() => setIsPresenting(false)}
+        theme={theme}
       />,
       document.body,
     );
@@ -1426,7 +1493,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       <div data-print-slides="" className="hidden print:block">
         {slides.map((slide, i) => (
           <div key={slide.id} data-print-slide="" style={{ background: slide.background || "#fff" }}>
-            <div style={{ width: "100%", maxWidth: 900, aspectRatio: `${slideRatio.w}/${slideRatio.h}` }} dangerouslySetInnerHTML={{ __html: slide.content }} />
+            <div style={{ width: "100%", maxWidth: 900, aspectRatio: `${slideRatio.w}/${slideRatio.h}` }}><SlideContentPreview slide={slide} themeTextColor={THEMES[theme]?.text} /></div>
           </div>
         ))}
       </div>
@@ -1785,54 +1852,67 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           }
 
           // ── Insert menu ──
-          case "insert:imageUpload": {
-            const input = document.createElement("input");
-            input.type = "file"; input.accept = "image/*";
-            input.onchange = () => {
-              const file = input.files?.[0];
-              if (!file) return;
-              const reader = new FileReader();
-              reader.onload = () => { document.execCommand("insertHTML", false, `<img src="${reader.result}" style="max-width:80%;margin:12px auto;display:block;" />`); };
-              reader.readAsDataURL(file);
-            };
-            input.click();
+          case "insert:imageUpload": case "insert:imageDrive": { handleImageUpload(); break; }
+          case "insert:imageUrl": { setShowImageUrlDialog(true); break; }
+          case "insert:imageWeb": { setShowImageSearchDialog(true); break; }
+          case "insert:imageCamera": { setShowCameraCapture(true); break; }
+          case "insert:textBox": {
+            const th = THEMES[theme] || THEMES.default;
+            migrateSlideToObjects();
+            const tbPos = getInsertPosition(70, 15);
+            addObjectToSlide(createTextBox({ ...tbPos, width: 70, height: 15, color: th.text, zIndex: currentObjects.length + 1 }));
             break;
           }
-          case "insert:imageUrl": {
-            const imgUrl = window.prompt("Enter image URL:");
-            if (imgUrl) document.execCommand("insertHTML", false, `<img src="${imgUrl}" style="max-width:80%;margin:12px auto;display:block;" />`);
+          case "insert:wordArt": {
+            const th = THEMES[theme] || THEMES.default;
+            migrateSlideToObjects();
+            const waPos = getInsertPosition(80, 18);
+            addObjectToSlide(createTextBox({ ...waPos, width: 80, height: 18, content: "Word Art", fontSize: 48, bold: true, color: th.accent, align: "center", verticalAlign: "middle", zIndex: currentObjects.length + 1 }));
             break;
           }
-          case "insert:imageWeb": case "insert:imageDrive": case "insert:imageCamera":
-            alert("This image source is coming soon"); break;
-          case "insert:textBox":
-            document.execCommand("insertHTML", false, '<div style="border:2px solid #e5e7eb;padding:16px;margin:12px;min-height:60px;border-radius:8px;font-size:16px;">Click to type</div>');
+          case "insert:shapeBasic": { migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default; const p = getInsertPosition(20, 20); addObjectToSlide(createShapeObj("rect", { ...p, width: 20, height: 20, fill: th.accent, zIndex: currentObjects.length + 1 })); break; }
+          case "insert:shapeArrow": { migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default; const p = getInsertPosition(25, 15); addObjectToSlide(createShapeObj("arrow-right", { ...p, width: 25, height: 15, fill: th.accent, zIndex: currentObjects.length + 1 })); break; }
+          case "insert:shapeCallout": { migrateSlideToObjects(); const p = getInsertPosition(30, 18); addObjectToSlide(createShapeObj("rect", { ...p, width: 30, height: 18, fill: "#fef3c7", stroke: "#f59e0b", strokeWidth: 2, borderRadius: 12, text: "Callout", textColor: "#78350f", zIndex: currentObjects.length + 1 })); break; }
+          case "insert:shapeEquation": { migrateSlideToObjects(); const p = getInsertPosition(50, 12); addObjectToSlide(createTextBox({ ...p, width: 50, height: 12, content: "E = mc²", fontSize: 28, italic: true, align: "center", verticalAlign: "middle", color: "#1a1a2e", zIndex: currentObjects.length + 1 })); break; }
+          case "insert:line": { migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default; const p = getInsertPosition(60, 0.5); addObjectToSlide(createShapeObj("line-h", { ...p, width: 60, height: 0.5, fill: th.accent, zIndex: currentObjects.length + 1 })); break; }
+          case "insert:arrow": { migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default; const p = getInsertPosition(30, 15); addObjectToSlide(createShapeObj("arrow-right", { ...p, width: 30, height: 15, fill: th.accent, zIndex: currentObjects.length + 1 })); break; }
+          case "insert:elbowConnector": case "insert:curvedConnector": case "insert:curve":
+          case "insert:polyline": case "insert:scribble":
+            setDrawingMode(true); setToast("Draw on the slide"); break;
+          case "insert:diagramGrid": {
+            migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default;
+            const ca = getContentArea();
+            [0,1,2,3].forEach((i) => addObjectToSlide(createShapeObj("rect", {
+              x: ca.x + (i % 2) * (ca.w / 2 + 1), y: ca.y + Math.floor(i / 2) * (ca.h / 2 + 1),
+              width: ca.w / 2 - 2, height: ca.h / 2 - 3,
+              fill: th.accent, text: `Item ${i + 1}`, textColor: "#fff", zIndex: currentObjects.length + i + 1,
+            })));
             break;
-          case "insert:wordArt":
-            document.execCommand("insertHTML", false, '<h1 style="text-align:center;font-size:48px;font-weight:900;background:linear-gradient(135deg,#3b82f6,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:20px 0;">Word Art</h1>');
+          }
+          case "insert:diagramHierarchy": case "insert:diagramTimeline":
+          case "insert:diagramProcess": case "insert:diagramRelationship": case "insert:diagramCycle": {
+            migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default;
+            const ca = getContentArea();
+            addObjectToSlide(createShapeObj("rect", { x: ca.x + ca.w * 0.25, y: ca.y, width: ca.w * 0.5, height: ca.h * 0.25, fill: th.accent, text: "Main", textColor: "#fff", zIndex: currentObjects.length + 1 }));
+            addObjectToSlide(createShapeObj("arrow-down", { x: ca.x + ca.w * 0.45, y: ca.y + ca.h * 0.27, width: ca.w * 0.1, height: ca.h * 0.12, fill: th.text, zIndex: currentObjects.length + 2 }));
+            addObjectToSlide(createShapeObj("rect", { x: ca.x, y: ca.y + ca.h * 0.42, width: ca.w * 0.45, height: ca.h * 0.25, fill: th.accent, text: "Branch A", textColor: "#fff", zIndex: currentObjects.length + 3 }));
+            addObjectToSlide(createShapeObj("rect", { x: ca.x + ca.w * 0.55, y: ca.y + ca.h * 0.42, width: ca.w * 0.45, height: ca.h * 0.25, fill: th.accent, text: "Branch B", textColor: "#fff", zIndex: currentObjects.length + 4 }));
             break;
-          case "insert:shapeBasic":
-            document.execCommand("insertHTML", false, '<div style="width:120px;height:120px;background:#3b82f6;border-radius:8px;margin:12px auto;"></div>');
+          }
+          case "insert:chartBar": case "insert:chartColumn": case "insert:chartLine": case "insert:chartPie": {
+            migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default;
+            const ca = getContentArea();
+            const barW = ca.w * 0.12;
+            const gap = ca.w * 0.03;
+            const barHeights = [0.5, 0.7, 0.4, 0.85, 0.55];
+            barHeights.forEach((h, i) => addObjectToSlide(createShapeObj("rect", {
+              x: ca.x + 5 + i * (barW + gap), y: ca.y + ca.h * (1 - h) * 0.85,
+              width: barW, height: ca.h * h * 0.8,
+              fill: i === 3 ? th.accent : `${th.accent}88`, zIndex: currentObjects.length + i + 1,
+            })));
+            addObjectToSlide(createShapeObj("line-h", { x: ca.x, y: ca.y + ca.h * 0.88, width: ca.w, height: 0.3, fill: th.text, zIndex: currentObjects.length + 6 }));
             break;
-          case "insert:shapeArrow":
-            document.execCommand("insertHTML", false, '<div style="text-align:center;font-size:48px;color:#3b82f6;margin:12px 0;">→</div>');
-            break;
-          case "insert:shapeCallout":
-            document.execCommand("insertHTML", false, '<div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:12px;padding:16px;margin:12px;font-size:14px;">💬 Callout text</div>');
-            break;
-          case "insert:shapeEquation":
-            document.execCommand("insertHTML", false, '<div style="text-align:center;font-family:serif;font-size:24px;font-style:italic;margin:12px 0;">E = mc²</div>');
-            break;
-          case "insert:line": case "insert:arrow": case "insert:elbowConnector":
-          case "insert:curvedConnector": case "insert:curve": case "insert:polyline":
-          case "insert:scribble":
-            document.execCommand("insertHTML", false, '<hr style="border:none;border-top:2px solid #3b82f6;margin:16px 0;" />');
-            break;
-          case "insert:diagramGrid": case "insert:diagramHierarchy": case "insert:diagramTimeline":
-          case "insert:diagramProcess": case "insert:diagramRelationship": case "insert:diagramCycle":
-            alert("Diagram insertion — coming soon"); break;
-          case "insert:chartBar": case "insert:chartColumn": case "insert:chartLine": case "insert:chartPie":
-            alert("Chart insertion — coming soon"); break;
+          }
 
           // ── Format menu (text) ──
           case "format:sizeUp": document.execCommand("fontSize", false, "5"); break;
@@ -2104,7 +2184,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
               >
                 <div className="w-full overflow-hidden relative" style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}`, background: slide.background || "#fff" }}>
                   <div className="w-[800px] origin-top-left pointer-events-none" style={{ transform: "scale(0.28)", transformOrigin: "top left" }}>
-                    <div className="w-full" style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}`, color: THEMES[theme]?.text }} dangerouslySetInnerHTML={{ __html: slide.content }} />
+                    <div className="w-full" style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}` }}><SlideContentPreview slide={slide} themeTextColor={THEMES[theme]?.text} /></div>
                   </div>
                   {/* Hover overlay */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
@@ -2226,7 +2306,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                   >
                     <div className="w-full overflow-hidden" style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}`, background: slide.background || "#fff" }}>
                       <div className="w-[640px] origin-top-left pointer-events-none" style={{ transform: "scale(0.24)" }}>
-                        <div className="w-full" style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}` }} dangerouslySetInnerHTML={{ __html: slide.content }} />
+                        <div className="w-full" style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}` }}><SlideContentPreview slide={slide} themeTextColor={THEMES[theme]?.text} /></div>
                       </div>
                     </div>
                   </button>
@@ -3020,6 +3100,132 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         </EditorDialog>
       )}
 
+      {/* ── Image URL Dialog ── */}
+      {showImageUrlDialog && (
+        <EditorDialog title="Insert image by URL" onClose={() => { setShowImageUrlDialog(false); setImageUrlInput(""); }}>
+          <div className="space-y-3">
+            <input
+              autoFocus
+              value={imageUrlInput}
+              onChange={(e) => setImageUrlInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && imageUrlInput.trim()) {
+                  migrateSlideToObjects();
+                  addObjectToSlide(createImageObj(imageUrlInput.trim(), { ...getInsertPosition(50, 40), width: 50, height: 40, zIndex: currentObjects.length + 1 }));
+                  setShowImageUrlDialog(false);
+                  setImageUrlInput("");
+                }
+              }}
+              placeholder="https://example.com/image.png"
+              className="w-full px-3 py-2 rounded-lg text-[13px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            {imageUrlInput && (
+              <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2">
+                <img src={imageUrlInput} alt="Preview" className="max-h-[200px] mx-auto object-contain"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  onLoad={(e) => { (e.target as HTMLImageElement).style.display = "block"; }}
+                />
+              </div>
+            )}
+            <div className="flex justify-end gap-2">
+              <EditorDialogButton onClick={() => { setShowImageUrlDialog(false); setImageUrlInput(""); }}>Cancel</EditorDialogButton>
+              <button
+                disabled={!imageUrlInput.trim()}
+                onClick={() => {
+                  migrateSlideToObjects();
+                  addObjectToSlide(createImageObj(imageUrlInput.trim(), { ...getInsertPosition(50, 40), width: 50, height: 40, zIndex: currentObjects.length + 1 }));
+                  setShowImageUrlDialog(false);
+                  setImageUrlInput("");
+                }}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white text-[13px] font-medium hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                Insert
+              </button>
+            </div>
+          </div>
+        </EditorDialog>
+      )}
+
+      {/* ── Image Search Dialog ── */}
+      {showImageSearchDialog && (
+        <EditorDialog title="Search for images" onClose={() => setShowImageSearchDialog(false)}>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <input
+                autoFocus
+                value={imageSearchQuery}
+                onChange={(e) => setImageSearchQuery(e.target.value)}
+                placeholder="Search images..."
+                className="flex-1 px-3 py-2 rounded-lg text-[13px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 outline-none focus:ring-2 focus:ring-blue-400"
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-2 max-h-[300px] overflow-y-auto">
+              {/* Sample placeholder images using picsum */}
+              {[101,102,103,104,106,107,108,109,110,111,112,113].map(id => (
+                <button key={id} onClick={() => {
+                  migrateSlideToObjects();
+                  addObjectToSlide(createImageObj(`https://picsum.photos/id/${id}/800/600`, { ...getInsertPosition(50, 40), width: 50, height: 40, zIndex: currentObjects.length + 1 }));
+                  setShowImageSearchDialog(false);
+                  setToast("Image inserted");
+                }} className="aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-blue-500 transition-all cursor-pointer">
+                  <img src={`https://picsum.photos/id/${id}/200/150`} alt={`Image ${id}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-gray-400 text-center">Click an image to insert it into your slide</p>
+          </div>
+        </EditorDialog>
+      )}
+
+      {/* ── Camera Capture Dialog ── */}
+      {showCameraCapture && (
+        <EditorDialog title="Take a photo" onClose={() => {
+          cameraStreamRef.current?.getTracks().forEach(t => t.stop());
+          cameraStreamRef.current = null;
+          setShowCameraCapture(false);
+        }}>
+          <div className="space-y-3">
+            <div className="rounded-lg overflow-hidden bg-black aspect-video">
+              <video ref={cameraVideoRef} autoPlay playsInline muted className="w-full h-full object-cover"
+                onLoadedMetadata={() => {}}
+              />
+            </div>
+            <div className="flex justify-center gap-3">
+              <button onClick={() => {
+                // Start camera if not started
+                if (!cameraStreamRef.current) {
+                  navigator.mediaDevices?.getUserMedia({ video: { facingMode: "environment" } })
+                    .then(stream => {
+                      cameraStreamRef.current = stream;
+                      if (cameraVideoRef.current) cameraVideoRef.current.srcObject = stream;
+                    })
+                    .catch(() => setToast("Camera access denied"));
+                }
+              }} className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-[13px] font-medium hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+                Start Camera
+              </button>
+              <button onClick={() => {
+                const video = cameraVideoRef.current;
+                if (!video) return;
+                const canvas = document.createElement("canvas");
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                canvas.getContext("2d")?.drawImage(video, 0, 0);
+                const src = canvas.toDataURL("image/jpeg", 0.9);
+                migrateSlideToObjects();
+                addObjectToSlide(createImageObj(src, { ...getInsertPosition(50, 40), width: 50, height: 40, zIndex: currentObjects.length + 1 }));
+                cameraStreamRef.current?.getTracks().forEach(t => t.stop());
+                cameraStreamRef.current = null;
+                setShowCameraCapture(false);
+                setToast("Photo captured and inserted");
+              }} className="px-4 py-2 rounded-lg bg-blue-600 text-white text-[13px] font-medium hover:bg-blue-700 cursor-pointer transition-colors">
+                Capture Photo
+              </button>
+            </div>
+          </div>
+        </EditorDialog>
+      )}
+
       {/* Toast notification */}
       {toast && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[220] px-3 py-2 rounded-xl bg-gray-900 text-white text-[12px] shadow-xl pointer-events-none">
@@ -3107,19 +3313,21 @@ function SlideFullscreenPill({ onExit, zoom, onZoomChange }: {
 // SlideshowPresenter — Full-featured presentation mode
 // ══════════════════════════════════════════════════
 
-function SlideshowPresenter({ slides, activeSlideIdx, setActiveSlideIdx, slideRatio, onExit }: {
+function SlideshowPresenter({ slides, activeSlideIdx, setActiveSlideIdx, slideRatio, onExit, theme = "default" }: {
   slides: SlideData[];
   activeSlideIdx: number;
   setActiveSlideIdx: React.Dispatch<React.SetStateAction<number>>;
   slideRatio: { w: number; h: number };
   onExit: () => void;
+  theme?: string;
 }) {
   const [controlsVisible, setControlsVisible] = useState(true);
   const [prevSlideIdx, setPrevSlideIdx] = useState<number | null>(null);
   const [direction, setDirection] = useState<"next" | "prev">("next");
-  const [animating, setAnimating] = useState(false);
   const animTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const idxRef = useRef(activeSlideIdx);
+  idxRef.current = activeSlideIdx;
   const progress = slides.length > 1 ? ((activeSlideIdx) / (slides.length - 1)) * 100 : 100;
   const activeSlide = slides[activeSlideIdx] || slides[0];
   const transitionType = activeSlide?.transition || "fade";
@@ -3134,21 +3342,18 @@ function SlideshowPresenter({ slides, activeSlideIdx, setActiveSlideIdx, slideRa
   }, []);
 
   const goTo = useCallback((idx: number) => {
+    const cur = idxRef.current;
     const clamped = Math.max(0, Math.min(slides.length - 1, idx));
-    if (clamped === activeSlideIdx || animating) return;
-    setDirection(clamped > activeSlideIdx ? "next" : "prev");
-    setPrevSlideIdx(activeSlideIdx);
+    if (clamped === cur) return;
+    setDirection(clamped > cur ? "next" : "prev");
+    setPrevSlideIdx(cur);
     setActiveSlideIdx(clamped);
-    setAnimating(true);
     if (animTimerRef.current) clearTimeout(animTimerRef.current);
-    animTimerRef.current = setTimeout(() => {
-      setPrevSlideIdx(null);
-      setAnimating(false);
-    }, 600);
-  }, [slides.length, setActiveSlideIdx, activeSlideIdx, animating]);
+    animTimerRef.current = setTimeout(() => setPrevSlideIdx(null), 500);
+  }, [slides.length, setActiveSlideIdx]);
 
-  const goNext = useCallback(() => goTo(activeSlideIdx + 1), [goTo, activeSlideIdx]);
-  const goPrev = useCallback(() => goTo(activeSlideIdx - 1), [goTo, activeSlideIdx]);
+  const goNext = useCallback(() => goTo(idxRef.current + 1), [goTo]);
+  const goPrev = useCallback(() => goTo(idxRef.current - 1), [goTo]);
 
   // Auto-hide controls after 3s of inactivity
   const resetHideTimer = useCallback(() => {
@@ -3230,8 +3435,9 @@ function SlideshowPresenter({ slides, activeSlideIdx, setActiveSlideIdx, slideRa
           return (
             <div className="absolute inset-0 z-[1]" style={outStyle}>
               <div className="w-full h-full" style={{ background: prevSlide?.background || "#fff" }}>
-                <div className="w-full h-full p-[5%] overflow-hidden" style={{ fontSize: "clamp(16px, 2.5vw, 40px)" }}
-                  dangerouslySetInnerHTML={{ __html: prevSlide?.content || "" }} />
+                <div className="w-full h-full p-[5%] overflow-hidden" style={{ fontSize: "clamp(16px, 2.5vw, 40px)" }}>
+                  <SlideContentPreview slide={prevSlide} themeTextColor={THEMES[theme]?.text} scale={2} />
+                </div>
               </div>
             </div>
           );
@@ -3241,16 +3447,14 @@ function SlideshowPresenter({ slides, activeSlideIdx, setActiveSlideIdx, slideRa
           const t = transitionType;
           const isNext = direction === "next";
           const inStyle: React.CSSProperties = { transition: "all 550ms cubic-bezier(0.4, 0, 0.2, 1)" };
-          if (!animating || prevSlideIdx === null) { /* idle — no transform */ }
+          if (prevSlideIdx === null) { /* idle — no transform */ }
           else if (t === "none") { inStyle.transition = "none"; }
-          // For animated transitions, start position is set and CSS transition animates to final
-          // The trick: we DON'T set a starting transform here because the component is already mounted.
-          // Instead, the outgoing slide animates away and this slide is just visible underneath.
           return (
             <div className="absolute inset-0 z-[2]" style={inStyle}>
               <div className="w-full h-full" style={{ background: activeSlide?.background || "#fff" }}>
-                <div className="w-full h-full p-[5%] overflow-hidden" style={{ fontSize: "clamp(16px, 2.5vw, 40px)" }}
-                  dangerouslySetInnerHTML={{ __html: activeSlide?.content || "" }} />
+                <div className="w-full h-full p-[5%] overflow-hidden" style={{ fontSize: "clamp(16px, 2.5vw, 40px)" }}>
+                  <SlideContentPreview slide={activeSlide} themeTextColor={THEMES[theme]?.text} scale={2} />
+                </div>
               </div>
             </div>
           );
@@ -3302,8 +3506,7 @@ function SlideshowPresenter({ slides, activeSlideIdx, setActiveSlideIdx, slideRa
                 <div
                   className="w-full h-full overflow-hidden text-[2px] p-0.5 pointer-events-none"
                   style={{ transform: "scale(0.14)", transformOrigin: "top left", width: 400, height: 400 * slideRatio.h / slideRatio.w }}
-                  dangerouslySetInnerHTML={{ __html: slide.content }}
-                />
+                ><SlideContentPreview slide={slide} themeTextColor={THEMES[theme]?.text} scale={0.3} /></div>
               </button>
             ))}
           </div>

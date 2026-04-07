@@ -45,7 +45,14 @@ Run through this checklist BEFORE telling the user it's done:
 - Screen components only compose children and manage state
 - Separate fixed (header/nav) from scrollable (content) — never nest ScrollViews
 
-### 2. UI Standards
+### 2. Keyboard Shortcuts (MANDATORY)
+- **Every feature MUST have keyboard shortcuts** — no feature should be mouse-only
+- Follow standard conventions: Ctrl+Z (undo), Ctrl+Y (redo), Ctrl+C/X/V (copy/cut/paste), Ctrl+D (duplicate), Delete/Backspace (delete), Escape (cancel/close), F11 (fullscreen)
+- Use refs (not closure values) in keyboard event handlers to avoid stale state
+- Register keyboard handlers with `[]` empty dependency array + refs for all accessed values
+- Show keyboard shortcut hints in menus and tooltips
+
+### 3. UI Standards
 - **No `alert()`, `window.confirm()`, `window.prompt()`** — use EditorDialog (desktop) or Modal (mobile)
 - Every interactive element MUST perform its intended action and persist state
 - Follow existing patterns: lucide-react icons on desktop, Ionicons on mobile, Inter fonts, ThemeContext colors
@@ -53,7 +60,7 @@ Run through this checklist BEFORE telling the user it's done:
 - **Loading spinners are MANDATORY on ALL pages** — use `PageLoader` (`components/shared/PageLoader.tsx`) for full-page loading states and `InPageSpinner` (`components/shared/InPageSpinner.tsx`) for content-area loading. Every page must show a spinner while data/components load. This applies to all existing and newly implemented pages.
 - **Every UI element MUST have working functionality** — no placeholder UI. When implementing any component, menu, button, or interactive element, the actual functionality must be implemented alongside the UI. Never create a button/menu item without its working action. Test every item works in ALL places the component is used.
 
-### 3. Testing (ALL types required for every change)
+### 4. Testing (ALL types required for every change)
 - **Unit** — pure functions, helpers, data mutations, storage methods
 - **Functional** — component renders, prop handling, state changes, event handlers (black box + white box)
 - **Integration** — components working together, parent↔child data flow, context providers
@@ -65,7 +72,7 @@ Run through this checklist BEFORE telling the user it's done:
 - Mobile tests cover BOTH `isTablet=true` and `isTablet=false`
 - Feature files in `tests/features/` — one per component/module
 
-### 4. Session Continuity (MANDATORY)
+### 5. Session Continuity (MANDATORY)
 - **When the conversation ends, context limit is reached, or the user stops work** — you MUST save a memory file recording:
   - The **current task/feature** being worked on
   - **Exactly where you stopped** (last file edited, last step completed, next step planned)
@@ -74,7 +81,7 @@ Run through this checklist BEFORE telling the user it's done:
 - Save to `memory/project_last_session.md` (overwrite each time) and keep `MEMORY.md` index updated
 - This is NON-NEGOTIABLE — never end a session without saving this state
 
-### 5. Verification
+### 6. Verification
 - After ANY code change, verify app loads without errors on ALL target devices
 - Check Metro/dev server logs for errors before reporting success
 - Never say "done" without personally verifying every interaction

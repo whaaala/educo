@@ -27,12 +27,19 @@ const viewMenuSource = fs.readFileSync(
   "utf-8"
 );
 
+const insertMenuSource = fs.readFileSync(
+  path.resolve(__dirname, "../../../../components/shared/EditorInsertMenu.tsx"),
+  "utf-8"
+);
+
 // Combined source for checking items that span multiple files
 const combinedMenuSource = menuBarSource + fileMenuSource;
 // Combined source including edit menu for items in the shared component
 const combinedEditMenuSource = menuBarSource + editMenuSource;
 // Combined source including view menu for items that moved to the shared component
 const combinedViewMenuSource = menuBarSource + viewMenuSource;
+// Combined source including insert menu
+const combinedInsertMenuSource = menuBarSource + insertMenuSource;
 
 const slideEditorSource = fs.readFileSync(
   path.resolve(__dirname, "../../../../components/shared/SlideEditor/SlideEditor.tsx"),
@@ -142,37 +149,37 @@ describe("SlideMenuBar — Complete Menu System", () => {
 
   describe("Insert menu", () => {
     it("has Image submenu with 5 sources", () => {
-      expect(menuBarSource).toContain('"Upload from computer"');
-      expect(menuBarSource).toContain('"Search the web"');
-      expect(menuBarSource).toContain('"By URL"');
+      expect(combinedInsertMenuSource).toContain('"Upload from computer"');
+      expect(combinedInsertMenuSource).toContain('"Search the web"');
+      expect(combinedInsertMenuSource).toContain('"By URL"');
     });
 
     it("has Shape submenu", () => {
-      expect(menuBarSource).toContain('"Shapes"');
-      expect(menuBarSource).toContain('"Arrows"');
-      expect(menuBarSource).toContain('"Callouts"');
-      expect(menuBarSource).toContain('"Equation"');
+      expect(combinedInsertMenuSource).toContain('"Shapes"');
+      expect(combinedInsertMenuSource).toContain('"Arrows"');
+      expect(combinedInsertMenuSource).toContain('"Callouts"');
+      expect(combinedInsertMenuSource).toContain('"Equation"');
     });
 
     it("has Diagram submenu with 6 types", () => {
       const types = ["Grid", "Hierarchy", "Timeline", "Process", "Relationship", "Cycle"];
       for (const t of types) {
-        expect(menuBarSource).toContain(`"${t}"`);
+        expect(combinedInsertMenuSource).toContain(`"${t}"`);
       }
     });
 
     it("has Line submenu with connector types", () => {
-      expect(menuBarSource).toContain('"Elbow connector"');
-      expect(menuBarSource).toContain('"Curved connector"');
-      expect(menuBarSource).toContain('"Polyline"');
-      expect(menuBarSource).toContain('"Scribble"');
+      expect(combinedInsertMenuSource).toContain('"Elbow connector"');
+      expect(combinedInsertMenuSource).toContain('"Curved connector"');
+      expect(combinedInsertMenuSource).toContain('"Polyline"');
+      expect(combinedInsertMenuSource).toContain('"Scribble"');
     });
 
     it("has Text box, Word art, Comment, New slide", () => {
-      expect(menuBarSource).toContain('"Text box"');
-      expect(menuBarSource).toContain('"Word art"');
-      expect(menuBarSource).toContain('"Comment"');
-      expect(menuBarSource).toContain('"New slide"');
+      expect(combinedInsertMenuSource).toContain('"Text box"');
+      expect(combinedInsertMenuSource).toContain('"Word art"');
+      expect(combinedInsertMenuSource).toContain('"Comment"');
+      expect(combinedInsertMenuSource).toContain('"New slide"');
     });
   });
 

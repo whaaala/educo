@@ -3,6 +3,8 @@
 import React from "react";
 import { EditorMenuBar, type EditorMenuItem, MENU_DIVIDER as D } from "@/components/shared/EditorMenus";
 import type { ViewMenuConfig } from "@/components/shared/EditorViewMenu";
+import type { InsertMenuConfig } from "@/components/shared/EditorInsertMenu";
+import { defaultImageItems, defaultShapeItems, defaultDiagramItems, defaultChartItems, defaultLineItems } from "@/components/shared/EditorInsertMenu";
 
 import {
   FilePlus, FolderOpen, Upload, Copy, Share2, Download, Printer,
@@ -131,51 +133,19 @@ export default function SlideMenuBar({
     },
   };
 
-  const insertMenu: EditorMenuItem[] = [
-    { label: "Image", icon: Image, submenu: [
-      { label: "Upload from computer", icon: Upload, onClick: act("insert:imageUpload") },
-      { label: "Search the web", icon: Search, onClick: act("insert:imageWeb") },
-      { label: "Drive", icon: FolderOpen, onClick: act("insert:imageDrive") },
-      { label: "Camera", icon: CircleDot, onClick: act("insert:imageCamera") },
-      { label: "By URL", icon: Link2, onClick: act("insert:imageUrl") },
-    ]},
-    { label: "Shape", icon: Shapes, submenu: [
-      { label: "Shapes", icon: Square, onClick: act("insert:shapeBasic") },
-      { label: "Arrows", icon: ArrowRight, onClick: act("insert:shapeArrow") },
-      { label: "Callouts", icon: MessageSquare, onClick: act("insert:shapeCallout") },
-      { label: "Equation", icon: Sparkles, onClick: act("insert:shapeEquation") },
-    ]},
-    { label: "Table", icon: Table2, onClick: act("insert:table") },
-    { label: "Diagram", icon: GitBranch, submenu: [
-      { label: "Grid", icon: LayoutGrid, onClick: act("insert:diagramGrid") },
-      { label: "Hierarchy", icon: GitBranch, onClick: act("insert:diagramHierarchy") },
-      { label: "Timeline", icon: Minus, onClick: act("insert:diagramTimeline") },
-      { label: "Process", icon: ArrowRight, onClick: act("insert:diagramProcess") },
-      { label: "Relationship", icon: Link2, onClick: act("insert:diagramRelationship") },
-      { label: "Cycle", icon: RotateCw, onClick: act("insert:diagramCycle") },
-    ]},
-    { label: "Chart", icon: BarChart3, submenu: [
-      { label: "Bar", icon: BarChart3, onClick: act("insert:chartBar") },
-      { label: "Column", icon: BarChart3, onClick: act("insert:chartColumn") },
-      { label: "Line", icon: Minus, onClick: act("insert:chartLine") },
-      { label: "Pie", icon: CircleDot, onClick: act("insert:chartPie") },
-    ]},
-    D,
-    { label: "Text box", icon: Type, onClick: act("insert:textBox") },
-    { label: "Word art", icon: Sparkles, onClick: act("insert:wordArt") },
-    { label: "Line", icon: Minus, submenu: [
-      { label: "Line", icon: Minus, onClick: act("insert:line") },
-      { label: "Arrow", icon: ArrowRight, onClick: act("insert:arrow") },
-      { label: "Elbow connector", icon: PenTool, onClick: act("insert:elbowConnector") },
-      { label: "Curved connector", icon: PenTool, onClick: act("insert:curvedConnector") },
-      { label: "Curve", icon: PenTool, onClick: act("insert:curve") },
-      { label: "Polyline", icon: Hexagon, onClick: act("insert:polyline") },
-      { label: "Scribble", icon: PencilLine, onClick: act("insert:scribble") },
-    ]},
-    D,
-    { label: "Comment", icon: MessageCircle, shortcut: "Ctrl+Alt+M", onClick: act("insert:comment") },
-    { label: "New slide", icon: PlusSquare, shortcut: "Ctrl+M", onClick: act("insert:newSlide") },
-  ];
+  const insertMenuConfig: InsertMenuConfig = {
+    onAction,
+    imageItems: defaultImageItems(act),
+    shapeItems: defaultShapeItems(act),
+    showTable: true,
+    diagramItems: defaultDiagramItems(act),
+    chartItems: defaultChartItems(act),
+    showTextBox: true,
+    showWordArt: true,
+    lineItems: defaultLineItems(act),
+    showComment: true,
+    showNewSlide: true,
+  };
 
   const formatMenu: EditorMenuItem[] = [
     { label: "Text", icon: Type, submenu: [
@@ -312,11 +282,12 @@ export default function SlideMenuBar({
       fileMenuConfig={fileMenuConfig}
       editMenuConfig={editMenuConfig}
       viewMenuConfig={viewMenuConfig}
+      insertMenuConfig={insertMenuConfig}
       menus={[
         { id: "file", label: "File", items: [] },
         { id: "edit", label: "Edit", items: [] },
         { id: "view", label: "View", items: [] },
-        { id: "insert", label: "Insert", items: insertMenu },
+        { id: "insert", label: "Insert", items: [] },
         { id: "format", label: "Format", items: formatMenu },
         { id: "slide", label: "Slide", items: slideMenu },
         { id: "arrange", label: "Arrange", items: arrangeMenu },

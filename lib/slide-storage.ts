@@ -45,6 +45,13 @@ export interface ImageObject extends SlideObjectBase {
   opacity?: number;
   borderColor?: string;
   borderWidth?: number;
+  /** Crop: percentage inset from each edge (0-50) */
+  cropTop?: number;
+  cropRight?: number;
+  cropBottom?: number;
+  cropLeft?: number;
+  /** Original bounds before crop — for reset */
+  preCropBounds?: { x: number; y: number; width: number; height: number };
 }
 
 export interface ShapeObject extends SlideObjectBase {
@@ -90,7 +97,7 @@ export function createImageObj(src: string, overrides?: Partial<ImageObject>): I
   return {
     id: objId(), type: "image",
     x: 25, y: 20, width: 50, height: 50, rotation: 0, zIndex: 1,
-    src, alt: "Image", objectFit: "contain",
+    src, alt: "Image", objectFit: "cover",
     ...overrides,
   };
 }
