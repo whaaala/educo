@@ -16,6 +16,8 @@ import { permissionRequests } from "@/lib/permission-requests";
 import { useNotifications } from "@/contexts/NotificationContext";
 import SlideMenuBar from "./SlideMenuBar";
 import SlideCanvasComponent from "./SlideCanvas";
+import ShapePickerDialogFull from "@/components/shared/ShapePickerDialog";
+import { SHAPE_DEFS } from "./shapes";
 
 // Shared components
 import { ToolbarButton, ToolbarDivider, ToolbarDropdown } from "@/components/shared/EditorToolbar";
@@ -195,7 +197,7 @@ function SlideContentPreview({ slide, themeTextColor, scale = 1 }: { slide: Slid
     return (
       <div className="w-full h-full relative" style={{ color: themeTextColor }}>
         {slide.objects.map(obj => (
-          <div key={obj.id} className="absolute overflow-hidden" style={{ left: `${obj.x}%`, top: `${obj.y}%`, width: `${obj.width}%`, height: `${obj.height}%`, zIndex: obj.zIndex }}>
+          <div key={obj.id} className="absolute overflow-hidden" style={{ left: `${obj.x}%`, top: `${obj.y}%`, width: `${obj.width}%`, height: `${obj.height}%`, zIndex: obj.zIndex, transform: obj.rotation ? `rotate(${obj.rotation}deg)` : undefined }}>
             {obj.type === "textbox" && (
               <div style={{ fontSize: obj.fontSize * scale, fontFamily: obj.fontFamily, color: obj.color, fontWeight: obj.bold ? 700 : 400, fontStyle: obj.italic ? "italic" : "normal", textAlign: obj.align, display: "flex", alignItems: obj.verticalAlign === "middle" ? "center" : obj.verticalAlign === "bottom" ? "flex-end" : "flex-start", width: "100%", height: "100%", padding: obj.padding ?? 4, backgroundColor: obj.backgroundColor || "transparent" }}>
                 <div className="w-full" dangerouslySetInnerHTML={{ __html: obj.content || `<span style="opacity:0.3">${obj.placeholder || ""}</span>` }} />
@@ -209,17 +211,29 @@ function SlideContentPreview({ slide, themeTextColor, scale = 1 }: { slide: Slid
                 clipPath: hasCr ? `inset(${obj.cropTop || 0}% ${obj.cropRight || 0}% ${obj.cropBottom || 0}% ${obj.cropLeft || 0}%)` : undefined,
               }} />;
             })()}
-            {obj.type === "shape" && (
-              <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
-                {obj.shape === "rect" && <rect x="0" y="0" width="100" height="100" rx="4" fill={obj.fill} />}
-                {obj.shape === "circle" && <ellipse cx="50" cy="50" rx="50" ry="50" fill={obj.fill} />}
-                {obj.shape === "triangle" && <polygon points="50,5 95,95 5,95" fill={obj.fill} />}
-                {obj.shape === "star" && <polygon points="50,5 61,35 95,35 68,57 79,90 50,70 21,90 32,57 5,35 39,35" fill={obj.fill} />}
-                {obj.shape === "arrow-right" && <polygon points="10,30 65,30 65,10 90,50 65,90 65,70 10,70" fill={obj.fill} />}
-                {obj.shape === "line-h" && <line x1="0" y1="50" x2="100" y2="50" stroke={obj.fill} strokeWidth="3" />}
-                {obj.shape === "line-v" && <line x1="50" y1="0" x2="50" y2="100" stroke={obj.fill} strokeWidth="3" />}
-              </svg>
-            )}
+            {obj.type === "shape" && (() => {
+              const def = SHAPE_DEFS[obj.shape];
+              if (!def) return <svg viewBox="0 0 100 100" className="w-full h-full"><rect x="5" y="5" width="90" height="90" rx="4" fill={obj.fill} /></svg>;
+              const hasStroke = obj.stroke && obj.stroke !== "transparent" && obj.strokeWidth > 0;
+              let svgHtml = def.svg
+                .replace(/fill="currentColor"/g, `fill="${obj.fill}"`)
+                .replace(/stroke="currentColor"/g, `stroke="${hasStroke ? obj.stroke : "none"}" stroke-width="${hasStroke ? obj.strokeWidth : 0}"`);
+              if (hasStroke) {
+                svgHtml = svgHtml.replace(/<(rect|circle|ellipse|polygon|path)([^>]*?)(?<!\bstroke=)(\s*\/?>)/g,
+                  (m: string, tag: string, attrs: string, close: string) => attrs.includes("stroke=") ? m : `<${tag}${attrs} stroke="${obj.stroke}" stroke-width="${obj.strokeWidth}"${close}`);
+              }
+              return (
+                <div className="w-full h-full relative" style={{ opacity: obj.opacity ?? 1 }}>
+                  <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none" dangerouslySetInnerHTML={{ __html: svgHtml }} />
+                  {obj.text && (
+                    <div className="absolute inset-0 flex items-center justify-center text-center pointer-events-none"
+                      style={{ color: obj.textColor || "#fff", fontSize: (obj.textSize || 14) * scale, fontWeight: 600, padding: "10%", wordBreak: "break-word" as const }}>
+                      {obj.text}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
             {obj.type === "drawing" && (
               <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
                 <path d={obj.paths} fill="none" stroke={obj.stroke} strokeWidth={obj.strokeWidth} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
@@ -863,6 +877,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [showImageSearchDialog, setShowImageSearchDialog] = useState(false);
   const [imageSearchQuery, setImageSearchQuery] = useState("");
   const [showDrivePickerDialog, setShowDrivePickerDialog] = useState(false);
+  const [showShapePickerDialog, setShowShapePickerDialog] = useState<string | null>(null); // category or null
   const [showCameraCapture, setShowCameraCapture] = useState(false);
   const cameraVideoRef = useRef<HTMLVideoElement>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
@@ -1873,10 +1888,10 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             addObjectToSlide(createTextBox({ ...waPos, width: 80, height: 18, content: "Word Art", fontSize: 48, bold: true, color: th.accent, align: "center", verticalAlign: "middle", zIndex: currentObjects.length + 1 }));
             break;
           }
-          case "insert:shapeBasic": { migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default; const p = getInsertPosition(20, 20); addObjectToSlide(createShapeObj("rect", { ...p, width: 20, height: 20, fill: th.accent, zIndex: currentObjects.length + 1 })); break; }
-          case "insert:shapeArrow": { migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default; const p = getInsertPosition(25, 15); addObjectToSlide(createShapeObj("arrow-right", { ...p, width: 25, height: 15, fill: th.accent, zIndex: currentObjects.length + 1 })); break; }
-          case "insert:shapeCallout": { migrateSlideToObjects(); const p = getInsertPosition(30, 18); addObjectToSlide(createShapeObj("rect", { ...p, width: 30, height: 18, fill: "#fef3c7", stroke: "#f59e0b", strokeWidth: 2, borderRadius: 12, text: "Callout", textColor: "#78350f", zIndex: currentObjects.length + 1 })); break; }
-          case "insert:shapeEquation": { migrateSlideToObjects(); const p = getInsertPosition(50, 12); addObjectToSlide(createTextBox({ ...p, width: 50, height: 12, content: "E = mc²", fontSize: 28, italic: true, align: "center", verticalAlign: "middle", color: "#1a1a2e", zIndex: currentObjects.length + 1 })); break; }
+          case "insert:shapeBasic": { setShowShapePickerDialog("shapes"); break; }
+          case "insert:shapeArrow": { setShowShapePickerDialog("arrows"); break; }
+          case "insert:shapeCallout": { setShowShapePickerDialog("callouts"); break; }
+          case "insert:shapeEquation": { setShowShapePickerDialog("equation"); break; }
           case "insert:line": { migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default; const p = getInsertPosition(60, 0.5); addObjectToSlide(createShapeObj("line-h", { ...p, width: 60, height: 0.5, fill: th.accent, zIndex: currentObjects.length + 1 })); break; }
           case "insert:arrow": { migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default; const p = getInsertPosition(30, 15); addObjectToSlide(createShapeObj("arrow-right", { ...p, width: 30, height: 15, fill: th.accent, zIndex: currentObjects.length + 1 })); break; }
           case "insert:elbowConnector": case "insert:curvedConnector": case "insert:curve":
@@ -3163,6 +3178,21 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       )}
 
       {/* ── Drive Picker Dialog ── */}
+      {/* ── Shape Picker Dialog ── */}
+      {showShapePickerDialog && (
+        <ShapePickerDialogFull
+          initialCategory={showShapePickerDialog}
+          onInsert={(shapeKey) => {
+            migrateSlideToObjects();
+            const th = THEMES[theme] || THEMES.default;
+            const p = getInsertPosition(20, 20);
+            addObjectToSlide(createShapeObj(shapeKey, { ...p, width: 20, height: 20, fill: th.accent, zIndex: currentObjects.length + 1 }));
+            setShowShapePickerDialog(null);
+          }}
+          onClose={() => setShowShapePickerDialog(null)}
+        />
+      )}
+
       {showDrivePickerDialog && (
         <DrivePickerDialog
           onInsert={(src) => {

@@ -6,8 +6,11 @@
  * Snap-to-grid and snap-to-guides when dragging.
  */
 
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import type { SlideObject, TextBoxObject, ImageObject, ShapeObject, DrawingObject } from "@/lib/slide-storage";
+import { SHAPE_DEFS } from "./shapes";
+import { ColorGrid, TabbedColorPalette, SOLID_COLORS, GRADIENT_COLORS, GLOSSY_COLORS, BORDER_COLORS, TEXT_COLORS, colorToCSS } from "@/components/shared/ColorPalettePicker";
 
 // ══════════════════════════════════════════════════
 // Types
@@ -64,21 +67,28 @@ function getSnapTargets(snapToGrid: boolean, snapToGuides: boolean, guides: { or
 // ══════════════════════════════════════════════════
 
 function ShapeSVG({ shape, fill, stroke, strokeWidth, text, textColor, textSize }: {
-  shape: ShapeObject["shape"]; fill: string; stroke: string; strokeWidth: number;
+  shape: string; fill: string; stroke: string; strokeWidth: number;
   text?: string; textColor?: string; textSize?: number;
 }) {
-  const common = { fill, stroke, strokeWidth: strokeWidth || 0 };
+  const def = SHAPE_DEFS[shape];
+  if (!def) {
+    return <svg viewBox="0 0 100 100" className="w-full h-full"><rect x="5" y="5" width="90" height="90" rx="4" fill={fill} stroke={stroke} strokeWidth={strokeWidth} /></svg>;
+  }
+  // Apply fill and stroke directly to shape elements
+  const hasStroke = stroke && stroke !== "transparent" && strokeWidth > 0;
+  let svgContent = def.svg
+    .replace(/fill="currentColor"/g, `fill="${fill}"`)
+    .replace(/stroke="currentColor"/g, `stroke="${hasStroke ? stroke : "none"}" stroke-width="${hasStroke ? strokeWidth : 0}"`);
+  // Also add stroke to elements that only have fill (no existing stroke attr)
+  if (hasStroke) {
+    svgContent = svgContent
+      .replace(/<(rect|circle|ellipse|polygon|path)([^>]*?)(?<!\bstroke=)(\s*\/?>)/g,
+        (m, tag, attrs, close) => attrs.includes("stroke=") ? m : `<${tag}${attrs} stroke="${stroke}" stroke-width="${strokeWidth}"${close}`);
+  }
+
   return (
     <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
-      {shape === "rect" && <rect x={strokeWidth/2} y={strokeWidth/2} width={100-strokeWidth} height={100-strokeWidth} rx="4" {...common} />}
-      {shape === "circle" && <ellipse cx="50" cy="50" rx={50-strokeWidth/2} ry={50-strokeWidth/2} {...common} />}
-      {shape === "triangle" && <polygon points="50,5 95,95 5,95" {...common} />}
-      {shape === "star" && <polygon points="50,5 61,35 95,35 68,57 79,90 50,70 21,90 32,57 5,35 39,35" {...common} />}
-      {shape === "arrow-right" && <polygon points="10,30 65,30 65,10 90,50 65,90 65,70 10,70" {...common} />}
-      {shape === "arrow-down" && <polygon points="30,10 70,10 70,65 90,65 50,90 10,65 30,65" {...common} />}
-      {shape === "line-h" && <line x1="0" y1="50" x2="100" y2="50" stroke={fill} strokeWidth={Math.max(strokeWidth, 2)} />}
-      {shape === "line-v" && <line x1="50" y1="0" x2="50" y2="100" stroke={fill} strokeWidth={Math.max(strokeWidth, 2)} />}
-      {shape === "line-diag" && <line x1="0" y1="0" x2="100" y2="100" stroke={fill} strokeWidth={Math.max(strokeWidth, 2)} />}
+      <g dangerouslySetInnerHTML={{ __html: svgContent }} />
       {text && <text x="50" y="55" textAnchor="middle" dominantBaseline="middle" fill={textColor || "#fff"} fontSize={textSize || 14} fontWeight="600">{text}</text>}
     </svg>
   );
@@ -99,7 +109,7 @@ const HANDLE_CURSORS: Record<HandleDir, string> = {
 function getHandlePosition(dir: HandleDir): React.CSSProperties {
   const m = -5;
   const s = 10;
-  const base: React.CSSProperties = { position: "absolute", width: s, height: s, background: "#fff", border: "2px solid #3b82f6", borderRadius: 2, zIndex: 10 };
+  const base: React.CSSProperties = { position: "absolute", width: s, height: s, background: "#fff", border: "2px solid #3b82f6", borderRadius: 2, zIndex: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.2)" };
   switch (dir) {
     case "nw": return { ...base, top: m, left: m, cursor: "nw-resize" };
     case "n":  return { ...base, top: m, left: "50%", marginLeft: -s/2, cursor: "n-resize" };
@@ -124,8 +134,11 @@ export default function SlideCanvas({
   const canvasRef = useRef<HTMLDivElement>(null);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [croppingId, setCroppingId] = useState<string | null>(null);
+  const [showColorPickerId, setShowColorPickerId] = useState<string | null>(null);
+  const isResizingRef = useRef(false);
   const [drawingPath, setDrawingPath] = useState<string>("");
   const isDrawing = useRef(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; objId: string } | null>(null);
 
   // Update a single object
   const updateObj = useCallback((id: string, updates: Partial<SlideObject>) => {
@@ -138,6 +151,33 @@ export default function SlideCanvas({
     onChange(objects.filter(o => o.id !== selectedId));
     onSelect(null);
   }, [selectedId, objects, onChange, onSelect]);
+
+  // Z-index helpers
+  const bringToFront = useCallback((id: string) => {
+    const maxZ = Math.max(...objects.map(o => o.zIndex), 0);
+    onChange(objects.map(o => o.id === id ? { ...o, zIndex: maxZ + 1 } as SlideObject : o));
+  }, [objects, onChange]);
+
+  const sendToBack = useCallback((id: string) => {
+    const minZ = Math.min(...objects.map(o => o.zIndex), 0);
+    onChange(objects.map(o => o.id === id ? { ...o, zIndex: minZ - 1 } as SlideObject : o));
+  }, [objects, onChange]);
+
+  const bringForward = useCallback((id: string) => {
+    onChange(objects.map(o => o.id === id ? { ...o, zIndex: o.zIndex + 1 } as SlideObject : o));
+  }, [objects, onChange]);
+
+  const sendBackward = useCallback((id: string) => {
+    onChange(objects.map(o => o.id === id ? { ...o, zIndex: o.zIndex - 1 } as SlideObject : o));
+  }, [objects, onChange]);
+
+  const duplicateObj = useCallback((id: string) => {
+    const obj = objects.find(o => o.id === id);
+    if (!obj) return;
+    const clone = { ...obj, id: `obj-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, x: obj.x + 3, y: obj.y + 3, zIndex: Math.max(...objects.map(o => o.zIndex), 0) + 1 };
+    onChange([...objects, clone as SlideObject]);
+    onSelect(clone.id);
+  }, [objects, onChange, onSelect]);
 
   // Keyboard handler
   useEffect(() => {
@@ -154,7 +194,7 @@ export default function SlideCanvas({
 
   // ── Drag handler ──
   const startDrag = useCallback((e: React.MouseEvent, objId: string) => {
-    if (!canEdit || drawingMode) return;
+    if (!canEdit || drawingMode || isResizingRef.current) return;
     e.preventDefault();
     e.stopPropagation();
     const canvas = canvasRef.current;
@@ -196,6 +236,7 @@ export default function SlideCanvas({
     if (!canEdit) return;
     e.preventDefault();
     e.stopPropagation();
+    isResizingRef.current = true;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const obj = objects.find(o => o.id === objId);
@@ -204,6 +245,7 @@ export default function SlideCanvas({
     const startX = e.clientX;
     const startY = e.clientY;
     const origX = obj.x, origY = obj.y, origW = obj.width, origH = obj.height;
+    const origRotation = obj.rotation || 0;
 
     const handleMove = (ev: MouseEvent) => {
       const dx = ((ev.clientX - startX) / rect.width) * 100;
@@ -213,9 +255,11 @@ export default function SlideCanvas({
       if (handle.includes("w")) { w = Math.max(5, origW - dx); x = origX + origW - w; }
       if (handle.includes("s")) h = Math.max(3, origH + dy);
       if (handle.includes("n")) { h = Math.max(3, origH - dy); y = origY + origH - h; }
-      updateObj(objId, { x, y, width: w, height: h });
+      // Preserve rotation during resize
+      updateObj(objId, { x, y, width: w, height: h, rotation: origRotation });
     };
     const handleUp = () => {
+      isResizingRef.current = false;
       document.removeEventListener("mousemove", handleMove);
       document.removeEventListener("mouseup", handleUp);
     };
@@ -309,6 +353,8 @@ export default function SlideCanvas({
       if (croppingId) { applyCrop(croppingId); setCroppingId(null); }
       onSelect(null);
       setEditingTextId(null);
+      setShowColorPickerId(null);
+      setContextMenu(null);
       return;
     }
     // If clicked on the already-selected object and NOT in crop/edit mode → deselect
@@ -329,6 +375,8 @@ export default function SlideCanvas({
     const hasCropInset = imgCrop && (imgCrop.t > 0 || imgCrop.r > 0 || imgCrop.b > 0 || imgCrop.l > 0);
     const showRingOnOuter = isSelected && !hasCropInset;
 
+    const rotation = obj.rotation || 0;
+
     return (
       <div
         key={obj.id}
@@ -336,18 +384,30 @@ export default function SlideCanvas({
         className={`absolute ${canEdit && !drawingMode ? "cursor-move" : ""} ${showRingOnOuter ? "ring-2 ring-blue-500" : ""}`}
         style={{
           left: `${obj.x}%`, top: `${obj.y}%`, width: `${obj.width}%`, height: `${obj.height}%`,
-          zIndex: obj.zIndex, transform: obj.rotation ? `rotate(${obj.rotation}deg)` : undefined,
+          zIndex: obj.zIndex,
+          // Rotation applied via CSS transform but handles stay in screen-aligned space
+          transform: rotation ? `rotate(${rotation}deg)` : undefined,
+        }}
+        onContextMenu={(e) => {
+          if (!canEdit) return;
+          e.preventDefault();
+          e.stopPropagation();
+          onSelect(obj.id);
+          setContextMenu({ x: e.clientX, y: e.clientY, objId: obj.id });
         }}
         onMouseDown={(e) => {
           if (!canEdit || drawingMode) return;
-          // Apply and exit crop mode if clicking a different object
+          if (contextMenu) setContextMenu(null);
+          // Apply and exit crop/color mode if clicking a different object
           if (croppingId && croppingId !== obj.id) { applyCrop(croppingId); setCroppingId(null); }
+          if (showColorPickerId && showColorPickerId !== obj.id) setShowColorPickerId(null);
           onSelect(obj.id);
           if (!isEditing && croppingId !== obj.id) startDrag(e, obj.id);
         }}
         onDoubleClick={() => {
           if (obj.type === "textbox" && canEdit) setEditingTextId(obj.id);
           if (obj.type === "image" && canEdit) setCroppingId(croppingId === obj.id ? null : obj.id);
+          if (obj.type === "shape" && canEdit) setEditingTextId(obj.id); // Edit text inside shape
         }}
       >
         {/* Object content */}
@@ -463,8 +523,36 @@ export default function SlideCanvas({
         })()}
 
         {obj.type === "shape" && (
-          <ShapeSVG shape={obj.shape} fill={obj.fill} stroke={obj.stroke} strokeWidth={obj.strokeWidth}
-            text={obj.text} textColor={obj.textColor} textSize={obj.textSize} />
+          <div className="w-full h-full relative" style={{ opacity: obj.opacity ?? 1 }}>
+            <ShapeSVG shape={obj.shape} fill={obj.fill} stroke={obj.stroke} strokeWidth={obj.strokeWidth} />
+            {/* Editable text overlay for shapes */}
+            {isEditing ? (
+              <div
+                contentEditable
+                suppressContentEditableWarning
+                className="absolute inset-0 flex items-center justify-center text-center outline-none cursor-text"
+                style={{ color: obj.textColor || "#fff", fontSize: obj.textSize || 14, fontWeight: 600, padding: "10%", wordBreak: "break-word" }}
+                onBlur={(e) => {
+                  updateObj(obj.id, { text: e.currentTarget.textContent || "" } as Partial<ShapeObject>);
+                  setEditingTextId(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") { e.currentTarget.blur(); }
+                  e.stopPropagation(); // Prevent global shortcuts while typing
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                dangerouslySetInnerHTML={{ __html: obj.text || "" }}
+                ref={(el) => { if (el && isEditing) setTimeout(() => el.focus(), 0); }}
+              />
+            ) : obj.text ? (
+              <div
+                className="absolute inset-0 flex items-center justify-center text-center pointer-events-none"
+                style={{ color: obj.textColor || "#fff", fontSize: obj.textSize || 14, fontWeight: 600, padding: "10%", wordBreak: "break-word" }}
+              >
+                {obj.text}
+              </div>
+            ) : null}
+          </div>
         )}
 
         {obj.type === "drawing" && (
@@ -475,30 +563,72 @@ export default function SlideCanvas({
           </svg>
         )}
 
-        {/* Resize handles — positioned at crop area edges for cropped images */}
-        {isSelected && canEdit && !isEditing && HANDLES.map(dir => {
-          // Offset handles to crop area for cropped images
-          const handleStyle = { ...getHandlePosition(dir), zIndex: 20, pointerEvents: "auto" as const };
-          if (hasCropInset && imgCrop) {
-            if (dir.includes("n") && handleStyle.top !== undefined) handleStyle.top = `${imgCrop.t}%`;
-            if (dir.includes("s") && handleStyle.bottom !== undefined) handleStyle.bottom = `${imgCrop.b}%`;
-            if (dir.includes("w") && handleStyle.left !== undefined) { if (typeof handleStyle.left === "number") handleStyle.left = `${imgCrop.l}%`; }
-            if (dir.includes("e") && handleStyle.right !== undefined) handleStyle.right = `${imgCrop.r}%`;
-            // Center handles for cropped images
-            if (dir === "n" || dir === "s") handleStyle.left = `${imgCrop.l + (100 - imgCrop.l - imgCrop.r) / 2}%`;
-            if (dir === "w" || dir === "e") handleStyle.top = `${imgCrop.t + (100 - imgCrop.t - imgCrop.b) / 2}%`;
-          }
-          return (
+        {/* Resize handles — always at container edges */}
+        {isSelected && canEdit && !isEditing && HANDLES.map(dir => (
           <div
             key={dir}
-            style={handleStyle}
+            style={{ ...getHandlePosition(dir), zIndex: 20, pointerEvents: "auto" as const }}
             onMouseDown={(e) => {
               e.stopPropagation();
               e.preventDefault();
               startResize(e, obj.id, dir);
             }}
           />
-        ); })}
+        ))}
+
+        {/* Rotation handle — above or below depending on position */}
+        {isSelected && canEdit && !isEditing && (obj.type === "shape" || obj.type === "image") && (
+          <div
+            className={`absolute left-1/2 -translate-x-1/2 z-[25] cursor-grab active:cursor-grabbing ${obj.y < 15 ? "top-full mt-1" : "-top-8"}`}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              const canvas = canvasRef.current;
+              if (!canvas) return;
+              const objEl = e.currentTarget.parentElement;
+              if (!objEl) return;
+              const rect = objEl.getBoundingClientRect();
+              const cx = rect.left + rect.width / 2;
+              const cy = rect.top + rect.height / 2;
+
+              const handleMove = (ev: MouseEvent) => {
+                const angle = Math.atan2(ev.clientY - cy, ev.clientX - cx) * (180 / Math.PI) + 90;
+                const snapped = ev.shiftKey ? Math.round(angle / 15) * 15 : Math.round(angle);
+                updateObj(obj.id, { rotation: snapped });
+              };
+              const handleUp = () => {
+                document.removeEventListener("mousemove", handleMove);
+                document.removeEventListener("mouseup", handleUp);
+              };
+              document.addEventListener("mousemove", handleMove);
+              document.addEventListener("mouseup", handleUp);
+            }}
+            title="Drag to rotate · Hold Shift for 15° snapping"
+          >
+            <div className="w-[2px] h-4 bg-blue-400 mx-auto" />
+            <div className="w-5 h-5 rounded-full bg-white border-2 border-blue-500 shadow-sm -mt-0.5 flex items-center justify-center">
+              <svg viewBox="0 0 16 16" className="w-3 h-3 text-blue-500"><path d="M8 1a7 7 0 015.75 3H11.5a.5.5 0 000 1h3.75a.25.25 0 00.25-.25V1a.5.5 0 00-1 0v1.535A8 8 0 100 8a.5.5 0 001 0 7 7 0 018 1z" fill="currentColor"/></svg>
+            </div>
+          </div>
+        )}
+
+        {/* Connection points removed — use Insert > Line for connectors */}
+
+        {/* Color button — small paint icon to open color picker */}
+        {isSelected && canEdit && !isEditing && obj.type === "shape" && (
+          <button
+            className={`absolute z-[25] w-6 h-6 rounded-full shadow-md border-2 cursor-pointer transition-all hover:scale-110 ${showColorPickerId === obj.id ? "border-blue-500 ring-2 ring-blue-300" : "border-white"}`}
+            style={{ top: -4, right: -4, backgroundColor: (obj as ShapeObject).fill || "#3b82f6" }}
+            onClick={(e) => { e.stopPropagation(); setShowColorPickerId(showColorPickerId === obj.id ? null : obj.id); }}
+            title="Change colors"
+          />
+        )}
+
+        {/* Color toolbar — only when user clicks the color button */}
+        {showColorPickerId === obj.id && canEdit && obj.type === "shape" && typeof document !== "undefined" && createPortal(
+          <ShapeColorToolbar obj={obj as ShapeObject} updateObj={updateObj} canvasRef={canvasRef} />,
+          document.body,
+        )}
       </div>
     );
   };
@@ -577,6 +707,281 @@ export default function SlideCanvas({
           <p className="text-gray-400 dark:text-gray-600 text-[14px]">Click toolbar to add text, images, or shapes</p>
         </div>
       )}
+
+      {/* Right-click context menu */}
+      {contextMenu && typeof document !== "undefined" && createPortal(
+        <>
+          <div className="fixed inset-0 z-[10000]" onClick={() => setContextMenu(null)} onContextMenu={(e) => { e.preventDefault(); setContextMenu(null); }} />
+          <div
+            className="fixed z-[10001] bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 py-1 min-w-[180px]"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+          >
+            {[
+              { label: "Cut", shortcut: "Ctrl+X", action: () => { /* handled by keyboard */ } },
+              { label: "Copy", shortcut: "Ctrl+C", action: () => { /* handled by keyboard */ } },
+              { label: "Paste", shortcut: "Ctrl+V", action: () => { /* handled by keyboard */ } },
+              { label: "---" },
+              { label: "Duplicate", shortcut: "Ctrl+D", action: () => duplicateObj(contextMenu.objId) },
+              { label: "Delete", shortcut: "Del", action: () => { onSelect(contextMenu.objId); setTimeout(deleteSelected, 0); } },
+              { label: "---" },
+              { label: "Bring to Front", action: () => bringToFront(contextMenu.objId) },
+              { label: "Bring Forward", action: () => bringForward(contextMenu.objId) },
+              { label: "Send Backward", action: () => sendBackward(contextMenu.objId) },
+              { label: "Send to Back", action: () => sendToBack(contextMenu.objId) },
+              { label: "---" },
+              ...(objects.find(o => o.id === contextMenu.objId)?.type === "shape" ? [
+                { label: "Edit Text", action: () => setEditingTextId(contextMenu.objId) },
+                { label: "Change Colors", action: () => setShowColorPickerId(contextMenu.objId) },
+              ] : []),
+              ...(objects.find(o => o.id === contextMenu.objId)?.type === "image" ? [
+                { label: "Crop Image", action: () => setCroppingId(contextMenu.objId) },
+              ] : []),
+            ].map((item, i) =>
+              item.label === "---" ? (
+                <div key={i} className="border-t border-gray-100 dark:border-gray-700 my-1" />
+              ) : (
+                <button
+                  key={i}
+                  onClick={() => { item.action?.(); setContextMenu(null); }}
+                  className="w-full text-left px-3 py-1.5 text-[12px] text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center justify-between cursor-pointer"
+                >
+                  <span>{item.label}</span>
+                  {item.shortcut && <span className="text-[10px] text-gray-400 ml-4">{item.shortcut}</span>}
+                </button>
+              )
+            )}
+          </div>
+        </>,
+        document.body,
+      )}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════
+// ShapeColorToolbar — Modern tabbed format panel
+// Uses shared ColorPalettePicker components
+// ══════════════════════════════════════════════════
+
+type ShapeToolbarTab = "fill" | "border" | "text";
+
+function ShapeColorToolbar({ obj, updateObj, canvasRef }: {
+  obj: ShapeObject;
+  updateObj: (id: string, updates: Partial<SlideObject>) => void;
+  canvasRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const [tab, setTab] = useState<ShapeToolbarTab>("fill");
+
+  useEffect(() => {
+    const el = canvasRef.current?.querySelector(`[data-slide-obj="${obj.id}"]`) as HTMLElement;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const toolbarW = 280;
+    const toolbarH = 340;
+    // Position to the right of the shape, or left if not enough space
+    let top = rect.top;
+    let left = rect.right + 12;
+    if (left + toolbarW > window.innerWidth - 8) left = rect.left - toolbarW - 12;
+    if (left < 8) left = 8;
+    if (top + toolbarH > window.innerHeight - 8) top = window.innerHeight - toolbarH - 8;
+    if (top < 8) top = 8;
+    setPos({ top, left });
+  }, [obj.id, obj.x, obj.y, obj.width, obj.height, canvasRef]);
+
+  const tabs: { key: ShapeToolbarTab; label: string; icon: string }[] = [
+    { key: "fill", label: "Fill", icon: "◼" },
+    { key: "border", label: "Border", icon: "◻" },
+    { key: "text", label: "Text", icon: "A" },
+  ];
+
+  return (
+    <div
+      ref={toolbarRef}
+      className="fixed z-[10001] rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200/80 dark:border-gray-700/80 overflow-hidden"
+      style={{ top: pos.top, left: pos.left, width: 280, backdropFilter: "blur(20px)" }}
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      {/* Header — shape preview + opacity */}
+      <div className="px-4 pt-3 pb-2 bg-gradient-to-b from-gray-50 dark:from-gray-800/50 to-transparent">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center overflow-hidden" style={{ backgroundColor: obj.fill || "#3b82f6" }}>
+            <svg viewBox="0 0 100 100" className="w-7 h-7" style={{ color: "#fff" }}>
+              <g dangerouslySetInnerHTML={{ __html: SHAPE_DEFS[obj.shape]?.svg.replace(/fill="currentColor"/g, 'fill="white"').replace(/stroke="currentColor"/g, 'stroke="white"') || "" }} />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 truncate">
+              {SHAPE_DEFS[obj.shape]?.label || "Shape"}
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-[10px] text-gray-400 dark:text-gray-500 shrink-0">Opacity</span>
+              <input
+                type="range" min={0} max={100} step={5}
+                value={Math.round((obj.opacity ?? 1) * 100)}
+                onChange={(e) => updateObj(obj.id, { opacity: Number(e.target.value) / 100 } as Partial<ShapeObject>)}
+                className="flex-1 h-1 accent-blue-500 cursor-pointer"
+              />
+              <span className="text-[10px] font-mono text-gray-500 dark:text-gray-400 w-8 text-right">{Math.round((obj.opacity ?? 1) * 100)}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab bar */}
+      <div className="flex px-3 gap-0.5 border-b border-gray-100 dark:border-gray-800">
+        {tabs.map(t => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`flex-1 py-2 text-[11px] font-medium transition-all cursor-pointer relative ${
+              tab === t.key
+                ? "text-blue-600 dark:text-blue-400"
+                : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+            }`}
+          >
+            <span className="mr-1">{t.icon}</span>{t.label}
+            {tab === t.key && <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-blue-500 rounded-full" />}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      <div className="px-3 py-3 max-h-[260px] overflow-y-auto">
+        {tab === "fill" && (
+          <div>
+            <TabbedColorPalette
+              selectedColor={obj.fill}
+              onSelect={(c) => updateObj(obj.id, { fill: c } as Partial<ShapeObject>)}
+              glossyColors={GLOSSY_COLORS}
+              columns={6}
+              swatchSize="sm"
+              showCustomHex
+            />
+            {/* No fill option */}
+            <button
+              onClick={() => updateObj(obj.id, { fill: "transparent" } as Partial<ShapeObject>)}
+              className={`mt-2 w-full py-1.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer ${
+                obj.fill === "transparent"
+                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 ring-1 ring-blue-200 dark:ring-blue-800"
+                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700"
+              }`}
+            >
+              No fill
+            </button>
+          </div>
+        )}
+
+        {tab === "border" && (
+          <div className="space-y-3">
+            {/* Border color */}
+            <div>
+              <div className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Color</div>
+              <ColorGrid
+                colors={BORDER_COLORS.slice(0, 24)}
+                selectedColor={obj.stroke}
+                onSelect={(c) => updateObj(obj.id, { stroke: c, strokeWidth: Math.max(obj.strokeWidth || 0, 2) } as Partial<ShapeObject>)}
+                columns={8}
+                swatchSize="sm"
+                allowNoFill
+                noFillSelected={!obj.stroke || obj.stroke === "transparent"}
+                onNoFill={() => updateObj(obj.id, { stroke: "transparent", strokeWidth: 0 } as Partial<ShapeObject>)}
+                showCustomHex
+              />
+            </div>
+
+            {/* Border weight */}
+            <div>
+              <div className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Weight</div>
+              <div className="flex gap-1">
+                {[0, 1, 2, 3, 4, 6, 8].map(w => (
+                  <button
+                    key={w}
+                    onClick={() => updateObj(obj.id, { strokeWidth: w, stroke: w === 0 ? "transparent" : (obj.stroke === "transparent" ? "#1a1a2e" : obj.stroke) } as Partial<ShapeObject>)}
+                    className={`flex-1 h-8 flex items-center justify-center rounded-lg transition-all cursor-pointer ${
+                      obj.strokeWidth === w
+                        ? "bg-blue-50 dark:bg-blue-900/30 ring-1.5 ring-blue-400"
+                        : "hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                    }`}
+                    title={w === 0 ? "None" : `${w}px`}
+                  >
+                    {w === 0 ? (
+                      <svg viewBox="0 0 20 20" className="w-4 h-4 text-gray-400"><line x1="4" y1="16" x2="16" y2="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+                    ) : (
+                      <div style={{ width: 18, height: Math.max(1, w), backgroundColor: obj.stroke && obj.stroke !== "transparent" ? obj.stroke : "#6b7280", borderRadius: 1 }} />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Border style — future: dashed, dotted */}
+            <div>
+              <div className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Style</div>
+              <div className="flex gap-1">
+                {[
+                  { label: "Solid", svg: <line x1="2" y1="10" x2="30" y2="10" stroke="currentColor" strokeWidth="2" /> },
+                  { label: "Dashed", svg: <line x1="2" y1="10" x2="30" y2="10" stroke="currentColor" strokeWidth="2" strokeDasharray="4 3" /> },
+                  { label: "Dotted", svg: <line x1="2" y1="10" x2="30" y2="10" stroke="currentColor" strokeWidth="2" strokeDasharray="1.5 2.5" strokeLinecap="round" /> },
+                ].map((s, i) => (
+                  <button
+                    key={i}
+                    className="flex-1 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-all"
+                    title={s.label}
+                  >
+                    <svg viewBox="0 0 32 20" className="w-6 h-4 text-gray-500 dark:text-gray-400">{s.svg}</svg>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === "text" && (
+          <div className="space-y-3">
+            {/* Text color */}
+            <div>
+              <div className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Color</div>
+              <ColorGrid
+                colors={TEXT_COLORS}
+                selectedColor={obj.textColor || "#ffffff"}
+                onSelect={(c) => updateObj(obj.id, { textColor: c } as Partial<ShapeObject>)}
+                columns={5}
+                swatchSize="sm"
+                showCustomHex
+              />
+            </div>
+
+            {/* Text size */}
+            <div>
+              <div className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Size</div>
+              <div className="flex gap-1">
+                {[8, 10, 12, 14, 18, 24, 32, 48].map(s => (
+                  <button
+                    key={s}
+                    onClick={() => updateObj(obj.id, { textSize: s } as Partial<ShapeObject>)}
+                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-medium transition-all cursor-pointer ${
+                      (obj.textSize || 14) === s
+                        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 ring-1 ring-blue-200 dark:ring-blue-800"
+                        : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-100 dark:border-gray-800"
+                    }`}
+                  >{s}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Hint */}
+            <div className="flex items-center gap-2 pt-1 border-t border-gray-100 dark:border-gray-800">
+              <div className="w-5 h-5 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                <span className="text-[10px] text-gray-400">T</span>
+              </div>
+              <span className="text-[10px] text-gray-400 dark:text-gray-500">Double-click shape to type text</span>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

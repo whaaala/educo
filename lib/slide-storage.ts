@@ -56,7 +56,7 @@ export interface ImageObject extends SlideObjectBase {
 
 export interface ShapeObject extends SlideObjectBase {
   type: "shape";
-  shape: "rect" | "circle" | "triangle" | "arrow-right" | "arrow-down" | "line-h" | "line-v" | "line-diag" | "star";
+  shape: string; // Any shape key from SHAPE_PATHS
   fill: string;
   stroke: string;
   strokeWidth: number;
