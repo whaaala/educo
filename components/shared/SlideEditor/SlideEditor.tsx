@@ -11,6 +11,7 @@ import {
   Bookmark, ShieldCheck, Globe, Tag, FolderPlus, Lock, AlertTriangle, Send, Mail,
 } from "lucide-react";
 import { slideStorage, type SlideData, type SlideObject, type PresentationPermissions, DEFAULT_PERMISSIONS, createTextBox, createImageObj, createShapeObj, createDrawingObj, makeDefaultTitleObjects, makeDefaultContentObjects, makeDefaultClosingObjects } from "@/lib/slide-storage";
+import { driveStorage, type DriveItem } from "@/lib/drive-storage";
 import { permissionRequests } from "@/lib/permission-requests";
 import { useNotifications } from "@/contexts/NotificationContext";
 import SlideMenuBar from "./SlideMenuBar";
@@ -861,6 +862,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [imageUrlInput, setImageUrlInput] = useState("");
   const [showImageSearchDialog, setShowImageSearchDialog] = useState(false);
   const [imageSearchQuery, setImageSearchQuery] = useState("");
+  const [showDrivePickerDialog, setShowDrivePickerDialog] = useState(false);
   const [showCameraCapture, setShowCameraCapture] = useState(false);
   const cameraVideoRef = useRef<HTMLVideoElement>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
@@ -1852,7 +1854,8 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           }
 
           // ── Insert menu ──
-          case "insert:imageUpload": case "insert:imageDrive": { handleImageUpload(); break; }
+          case "insert:imageUpload": { handleImageUpload(); break; }
+          case "insert:imageDrive": { setShowDrivePickerDialog(true); break; }
           case "insert:imageUrl": { setShowImageUrlDialog(true); break; }
           case "insert:imageWeb": { setShowImageSearchDialog(true); break; }
           case "insert:imageCamera": { setShowCameraCapture(true); break; }
@@ -3148,33 +3151,28 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
 
       {/* ── Image Search Dialog ── */}
       {showImageSearchDialog && (
-        <EditorDialog title="Search for images" onClose={() => setShowImageSearchDialog(false)}>
-          <div className="space-y-3">
-            <div className="flex gap-2">
-              <input
-                autoFocus
-                value={imageSearchQuery}
-                onChange={(e) => setImageSearchQuery(e.target.value)}
-                placeholder="Search images..."
-                className="flex-1 px-3 py-2 rounded-lg text-[13px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 outline-none focus:ring-2 focus:ring-blue-400"
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-2 max-h-[300px] overflow-y-auto">
-              {/* Sample placeholder images using picsum */}
-              {[101,102,103,104,106,107,108,109,110,111,112,113].map(id => (
-                <button key={id} onClick={() => {
-                  migrateSlideToObjects();
-                  addObjectToSlide(createImageObj(`https://picsum.photos/id/${id}/800/600`, { ...getInsertPosition(50, 40), width: 50, height: 40, zIndex: currentObjects.length + 1 }));
-                  setShowImageSearchDialog(false);
-                  setToast("Image inserted");
-                }} className="aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-blue-500 transition-all cursor-pointer">
-                  <img src={`https://picsum.photos/id/${id}/200/150`} alt={`Image ${id}`} className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-            <p className="text-[11px] text-gray-400 text-center">Click an image to insert it into your slide</p>
-          </div>
-        </EditorDialog>
+        <ImageSearchDialog
+          onInsert={(src) => {
+            migrateSlideToObjects();
+            addObjectToSlide(createImageObj(src, { ...getInsertPosition(50, 40), width: 50, height: 40, zIndex: currentObjects.length + 1 }));
+            setShowImageSearchDialog(false);
+            setToast("Image inserted");
+          }}
+          onClose={() => setShowImageSearchDialog(false)}
+        />
+      )}
+
+      {/* ── Drive Picker Dialog ── */}
+      {showDrivePickerDialog && (
+        <DrivePickerDialog
+          onInsert={(src) => {
+            migrateSlideToObjects();
+            addObjectToSlide(createImageObj(src, { ...getInsertPosition(50, 40), width: 50, height: 40, zIndex: currentObjects.length + 1 }));
+            setShowDrivePickerDialog(false);
+            setToast("Image inserted from Drive");
+          }}
+          onClose={() => setShowDrivePickerDialog(false)}
+        />
       )}
 
       {/* ── Camera Capture Dialog ── */}
@@ -3531,5 +3529,344 @@ function SlideshowPresenter({ slides, activeSlideIdx, setActiveSlideIdx, slideRa
         )}
       </div>
     </div>
+  );
+}
+
+// ══════════════════════════════════════════════════
+// ImageSearchDialog — web image search with categories
+// ══════════════════════════════════════════════════
+
+const IMAGE_CATEGORIES = [
+  { label: "All", query: "" },
+  { label: "Business", query: "business" },
+  { label: "Education", query: "education" },
+  { label: "Technology", query: "technology" },
+  { label: "Nature", query: "nature" },
+  { label: "People", query: "people" },
+  { label: "Architecture", query: "architecture" },
+  { label: "Food", query: "food" },
+  { label: "Travel", query: "travel" },
+  { label: "Health", query: "health" },
+  { label: "Sports", query: "sports" },
+  { label: "Abstract", query: "abstract" },
+];
+
+// Curated picsum image IDs organized by category for offline/fast access
+const CURATED_IMAGES: Record<string, number[]> = {
+  "": [1,2,3,4,5,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50],
+  business: [3,7,20,60,180,366,380,395,403,445,453,488,502,514,532,566,593,620,659,674],
+  education: [4,24,42,60,180,301,343,367,403,445,488,514,532,566,593,620,659,674,733,756],
+  technology: [0,2,60,160,180,325,366,367,403,445,453,488,502,514,532,566,593,620,659,674],
+  nature: [10,11,13,14,15,16,17,18,19,22,23,25,27,28,29,33,34,35,36,37,38,39,40,41,43,44,46,47,48,49],
+  people: [1,7,8,64,65,91,177,203,275,306,338,349,399,433,447,453,473,505,550,557],
+  architecture: [9,12,20,21,26,30,31,32,49,101,109,164,175,188,260,264,274,304,356,363],
+  food: [75,88,89,102,139,163,225,279,292,312,326,365,390,429,431,488,493,547,571,627],
+  travel: [10,11,13,14,16,28,33,39,42,48,50,55,57,58,100,106,119,122,129,142],
+  health: [1,8,64,65,91,177,203,275,306,338,349,399,433,447,453,473,505,550,557,583],
+  sports: [1,8,54,64,65,91,106,177,203,275,306,338,349,399,433,447,453,473,505,550],
+  abstract: [2,50,51,52,53,54,55,56,57,58,59,60,61,62,63,66,67,68,69,70],
+};
+
+function ImageSearchDialog({ onInsert, onClose }: { onInsert: (src: string) => void; onClose: () => void }) {
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("");
+  const [page, setPage] = useState(0);
+
+  // Filter images: use category curated list, then filter by search query (simulated)
+  const baseIds = CURATED_IMAGES[category] || CURATED_IMAGES[""];
+  const pageSize = 18;
+  const displayIds = baseIds.slice(0, (page + 1) * pageSize);
+  const hasMore = displayIds.length < baseIds.length;
+
+  // When user types a search query, try to match a category
+  const handleSearch = () => {
+    const q = query.toLowerCase().trim();
+    const match = IMAGE_CATEGORIES.find(c => c.query && q.includes(c.query));
+    if (match) setCategory(match.query);
+    else setCategory("");
+    setPage(0);
+  };
+
+  return (
+    <EditorDialog title="Search for images" onClose={onClose}>
+      <div className="space-y-3" style={{ minWidth: 500 }}>
+        {/* Search bar */}
+        <div className="flex gap-2">
+          <input
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
+            placeholder="Search images (e.g. nature, business, technology)..."
+            className="flex-1 px-3 py-2 rounded-lg text-[13px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <button onClick={handleSearch} className="px-4 py-2 rounded-lg bg-blue-600 text-white text-[12px] font-medium hover:bg-blue-700 cursor-pointer transition-colors">
+            Search
+          </button>
+        </div>
+
+        {/* Category chips */}
+        <div className="flex flex-wrap gap-1.5">
+          {IMAGE_CATEGORIES.map(cat => (
+            <button
+              key={cat.query}
+              onClick={() => { setCategory(cat.query); setPage(0); }}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors cursor-pointer ${
+                category === cat.query
+                  ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Image grid */}
+        <div className="grid grid-cols-3 gap-2 max-h-[350px] overflow-y-auto pr-1">
+          {displayIds.map(id => (
+            <button
+              key={id}
+              onClick={() => onInsert(`https://picsum.photos/id/${id}/800/600`)}
+              className="aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-blue-500 hover:shadow-md transition-all cursor-pointer group"
+            >
+              <img
+                src={`https://picsum.photos/id/${id}/300/200`}
+                alt={`Image ${id}`}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                loading="lazy"
+              />
+            </button>
+          ))}
+        </div>
+
+        {/* Load more */}
+        {hasMore && (
+          <div className="flex justify-center">
+            <button onClick={() => setPage(p => p + 1)} className="px-4 py-1.5 rounded-lg text-[12px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+              Load more images
+            </button>
+          </div>
+        )}
+
+        <p className="text-[10px] text-gray-400 text-center">Click an image to insert · Images from Picsum Photos</p>
+      </div>
+    </EditorDialog>
+  );
+}
+
+// ══════════════════════════════════════════════════
+// DrivePickerDialog — browse Drive files and select images
+// ══════════════════════════════════════════════════
+
+function DrivePickerDialog({ onInsert, onClose }: { onInsert: (src: string) => void; onClose: () => void }) {
+  const [currentFolder, setCurrentFolder] = useState("root");
+  const [breadcrumb, setBreadcrumb] = useState<{ id: string; name: string }[]>([{ id: "root", name: "My Drive" }]);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const items = driveStorage.getChildren(currentFolder);
+  const folders = items.filter(i => i.type === "folder");
+  const files = items.filter(i => i.type === "file");
+  const imageFiles = files.filter(f => f.mimeType?.startsWith("image/") || f.name.match(/\.(png|jpg|jpeg|gif|webp|svg|bmp)$/i));
+  const otherFiles = files.filter(f => !imageFiles.includes(f));
+  // Also find ALL images across the entire Drive for quick access
+  const allItems = driveStorage.list();
+  const allImages = allItems.filter(i => i.type === "file" && (i.mimeType?.startsWith("image/") || i.name.match(/\.(png|jpg|jpeg|gif|webp|svg|bmp)$/i)));
+
+  const navigateToFolder = (folder: DriveItem) => {
+    setCurrentFolder(folder.id);
+    setBreadcrumb(prev => [...prev, { id: folder.id, name: folder.name }]);
+  };
+
+  const navigateToBreadcrumb = (idx: number) => {
+    setCurrentFolder(breadcrumb[idx].id);
+    setBreadcrumb(prev => prev.slice(0, idx + 1));
+  };
+
+  /** Get stored image data from localStorage */
+  const getFileData = (file: DriveItem): string | null => {
+    const dataKey = `educo_drive_file_${file.id}`;
+    return localStorage.getItem(dataKey) || null;
+  };
+
+  /** Upload an image file to Drive (saves to localStorage + creates Drive entry) */
+  const uploadImageToDrive = (file: File, targetFolder: string) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      // Create Drive file entry
+      const fileId = driveStorage.create({
+        parentId: targetFolder,
+        name: file.name,
+        type: "file",
+        mimeType: file.type,
+        size: file.size,
+        sourceType: "upload",
+      });
+      // Store actual file data
+      localStorage.setItem(`educo_drive_file_${fileId}`, dataUrl);
+      // Refresh the view
+      setRefreshKey(k => k + 1);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <EditorDialog title="Insert from Drive" onClose={onClose}>
+      <div className="space-y-3" style={{ minWidth: 480, minHeight: 300 }}>
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-1 text-[12px] flex-wrap">
+          {breadcrumb.map((b, i) => (
+            <span key={b.id} className="flex items-center gap-1">
+              {i > 0 && <span className="text-gray-400">/</span>}
+              <button
+                onClick={() => navigateToBreadcrumb(i)}
+                className={`px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors ${
+                  i === breadcrumb.length - 1 ? "font-semibold text-gray-700 dark:text-gray-300" : "text-blue-600 dark:text-blue-400"
+                }`}
+              >
+                {b.name}
+              </button>
+            </span>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="max-h-[350px] overflow-y-auto space-y-1 pr-1">
+          {/* Folders */}
+          {folders.map(folder => (
+            <button
+              key={folder.id}
+              onClick={() => navigateToFolder(folder)}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer text-left"
+            >
+              <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
+                <FolderPlus className="w-4 h-4 text-blue-500" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[13px] font-medium text-gray-700 dark:text-gray-300 truncate">{folder.name}</p>
+                <p className="text-[10px] text-gray-400">Folder</p>
+              </div>
+            </button>
+          ))}
+
+          {/* Image files — shown as grid */}
+          {imageFiles.length > 0 && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 px-3 py-1.5">Images</p>
+              <div className="grid grid-cols-3 gap-2 px-2">
+                {imageFiles.map(file => {
+                  const data = getFileData(file);
+                  return (
+                    <button
+                      key={file.id}
+                      onClick={() => { if (data) onInsert(data); }}
+                      className={`aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-blue-500 transition-all cursor-pointer group flex flex-col ${!data ? "opacity-50" : ""}`}
+                    >
+                      {data ? (
+                        <img src={data} alt={file.name} className="w-full flex-1 object-cover" />
+                      ) : (
+                        <div className="w-full flex-1 bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                          <ImageIcon className="w-5 h-5 text-gray-400" />
+                        </div>
+                      )}
+                      <p className="text-[9px] text-gray-500 truncate px-1 py-0.5">{file.name}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Other files */}
+          {otherFiles.map(file => (
+            <div
+              key={file.id}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left opacity-50"
+            >
+              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                <Type className="w-4 h-4 text-gray-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[13px] font-medium text-gray-500 truncate">{file.name}</p>
+                <p className="text-[10px] text-gray-400">{file.mimeType || "File"}</p>
+              </div>
+            </div>
+          ))}
+
+          {/* Empty state */}
+          {items.length === 0 && (
+            <div className="py-8 text-center">
+              <p className="text-[13px] text-gray-400">This folder is empty</p>
+              <p className="text-[11px] text-gray-400 mt-1">Upload files to your Drive to see them here</p>
+            </div>
+          )}
+
+          {/* No images in current folder */}
+          {imageFiles.length === 0 && folders.length === 0 && otherFiles.length > 0 && (
+            <div className="py-4 text-center">
+              <p className="text-[12px] text-gray-400">No images in this folder</p>
+            </div>
+          )}
+        </div>
+
+        {/* All images in Drive (quick access) */}
+        {currentFolder === "root" && allImages.length > 0 && imageFiles.length === 0 && (
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 px-3 py-1.5">All images in Drive</p>
+            <div className="grid grid-cols-3 gap-2 px-2">
+              {allImages.slice(0, 12).map(file => {
+                const data = getFileData(file);
+                return data ? (
+                  <button key={file.id} onClick={() => onInsert(data)}
+                    className="aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-blue-500 transition-all cursor-pointer">
+                    <img src={data} alt={file.name} className="w-full h-full object-cover" />
+                  </button>
+                ) : null;
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Upload option */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+          <p className="text-[10px] text-gray-400">Upload saves to Drive & inserts into slide</p>
+          <div className="flex gap-2">
+            <button onClick={() => {
+              const input = document.createElement("input");
+              input.type = "file"; input.accept = "image/*"; input.multiple = true;
+              input.onchange = () => {
+                const fileList = input.files;
+                if (!fileList) return;
+                Array.from(fileList).forEach(f => uploadImageToDrive(f, currentFolder));
+              };
+              input.click();
+            }} className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+              Upload to Drive
+            </button>
+            <button onClick={() => {
+              const input = document.createElement("input");
+              input.type = "file"; input.accept = "image/*";
+              input.onchange = () => {
+                const f = input.files?.[0];
+                if (!f) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                  const dataUrl = reader.result as string;
+                  // Save to Drive AND insert
+                  const fileId = driveStorage.create({ parentId: currentFolder, name: f.name, type: "file", mimeType: f.type, size: f.size, sourceType: "upload" });
+                  localStorage.setItem(`educo_drive_file_${fileId}`, dataUrl);
+                  onInsert(dataUrl);
+                };
+                reader.readAsDataURL(f);
+              };
+              input.click();
+            }} className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-blue-600 text-white hover:bg-blue-700 cursor-pointer transition-colors">
+              Upload & Insert
+            </button>
+          </div>
+        </div>
+      </div>
+    </EditorDialog>
   );
 }
