@@ -4,7 +4,7 @@
 
 // ── Slide Object System ──
 
-export type SlideObjectType = "textbox" | "image" | "shape" | "drawing";
+export type SlideObjectType = "textbox" | "image" | "shape" | "drawing" | "table";
 
 export interface SlideObjectBase {
   id: string;
@@ -75,7 +75,38 @@ export interface DrawingObject extends SlideObjectBase {
   opacity?: number;
 }
 
-export type SlideObject = TextBoxObject | ImageObject | ShapeObject | DrawingObject;
+export interface TableCell {
+  content: string;  // HTML content
+  backgroundColor?: string;
+  color?: string;
+  bold?: boolean;
+  italic?: boolean;
+  fontSize?: number;
+  fontFamily?: string;
+  align?: "left" | "center" | "right";
+  verticalAlign?: "top" | "middle" | "bottom";
+  noWrap?: boolean;  // true = single line truncated, false/undefined = wrap (default)
+}
+
+export interface TableObject extends SlideObjectBase {
+  type: "table";
+  rows: number;
+  cols: number;
+  cells: TableCell[][];  // [row][col]
+  colWidths?: number[];  // % width per column (must sum to 100)
+  rowHeights?: number[]; // % height per row (must sum to 100)
+  borderColor: string;
+  borderWidth: number;
+  headerRow: boolean;    // First row styled as header
+  headerColor: string;   // Header background color
+  evenRowColor: string;  // Alternating row color
+  oddRowColor: string;
+  fontSize: number;
+  fontFamily: string;
+  cellPadding: number;
+}
+
+export type SlideObject = TextBoxObject | ImageObject | ShapeObject | DrawingObject | TableObject;
 
 // ── Slide Object Factories ──
 
@@ -116,6 +147,31 @@ export function createDrawingObj(paths: string, overrides?: Partial<DrawingObjec
     id: objId(), type: "drawing",
     x: 0, y: 0, width: 100, height: 100, rotation: 0, zIndex: 1,
     paths, stroke: "#1a1a2e", strokeWidth: 2,
+    ...overrides,
+  };
+}
+
+export function createTableObj(rows: number, cols: number, overrides?: Partial<TableObject>): TableObject {
+  const cells: TableCell[][] = [];
+  for (let r = 0; r < rows; r++) {
+    const row: TableCell[] = [];
+    for (let c = 0; c < cols; c++) {
+      row.push({ content: r === 0 ? `Header ${c + 1}` : "", bold: r === 0 });
+    }
+    cells.push(row);
+  }
+  const colW = 100 / cols;
+  const rowH = 100 / rows;
+  return {
+    id: objId(), type: "table",
+    x: 10, y: 20, width: 80, height: Math.min(60, 8 + rows * 8), rotation: 0, zIndex: 1,
+    rows, cols, cells,
+    colWidths: Array(cols).fill(colW),
+    rowHeights: Array(rows).fill(rowH),
+    borderColor: "#d1d5db", borderWidth: 1,
+    headerRow: false, headerColor: "transparent",
+    evenRowColor: "#ffffff", oddRowColor: "#ffffff",
+    fontSize: 12, fontFamily: "Inter, sans-serif", cellPadding: 6,
     ...overrides,
   };
 }

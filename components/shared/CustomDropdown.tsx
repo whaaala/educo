@@ -90,7 +90,7 @@ export default function CustomDropdown({
 
       {/* Custom Dropdown Menu */}
       {isOpen && (
-        <div className={`absolute ${dropup ? "bottom-full mb-1" : "top-full mt-1"} left-0 min-w-full w-fit bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[10000] py-1 animate-in fade-in ${dropup ? "slide-in-from-bottom-1" : "slide-in-from-top-1"} duration-[120ms]`}>
+        <div className={`absolute ${dropup ? "bottom-full mb-1" : "top-full mt-1"} left-0 min-w-full w-fit bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[10000] py-1 max-h-[240px] overflow-y-auto animate-in fade-in ${dropup ? "slide-in-from-bottom-1" : "slide-in-from-top-1"} duration-[120ms]`}>
           {options.map((option) => (
             <button
               key={option.value}

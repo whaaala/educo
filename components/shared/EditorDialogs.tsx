@@ -202,13 +202,13 @@ export function TableGridPicker({
   const [hoverRow, setHoverRow] = useState(1);
   const [hoverCol, setHoverCol] = useState(1);
   return (
-    <div className="w-[220px]">
-      <div className="text-[11px] font-medium text-gray-600 dark:text-gray-300 mb-2">
+    <div className="inline-block">
+      <div className="text-[12px] font-semibold text-gray-700 dark:text-gray-300 mb-2 text-center">
         {hoverRow} × {hoverCol}
       </div>
       <div
-        className="grid gap-0.5"
-        style={{ gridTemplateColumns: `repeat(${maxCols}, 1fr)` }}
+        className="inline-grid gap-[3px]"
+        style={{ gridTemplateColumns: `repeat(${maxCols}, 20px)` }}
       >
         {Array.from({ length: maxRows * maxCols }, (_, idx) => {
           const r = Math.floor(idx / maxCols) + 1;
@@ -223,10 +223,10 @@ export function TableGridPicker({
                 setHoverCol(c);
               }}
               onClick={() => onPick(r, c)}
-              className={`w-4 h-4 rounded border transition-colors ${
+              className={`w-5 h-5 rounded-sm border transition-colors cursor-pointer ${
                 active
-                  ? "bg-blue-500/25 border-blue-400 dark:bg-blue-500/25 midnight:bg-cyan-500/25 purple:bg-pink-500/25 midnight:border-cyan-400 purple:border-pink-400"
-                  : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                  ? "bg-blue-500/30 border-blue-400 dark:bg-blue-500/30 midnight:bg-cyan-500/30 purple:bg-pink-500/30 midnight:border-cyan-400 purple:border-pink-400"
+                  : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300"
               }`}
               aria-label={`${r}x${c}`}
             />

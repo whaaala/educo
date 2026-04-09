@@ -10,7 +10,7 @@ import {
   Share2, Undo2, Redo2, ZoomIn, ZoomOut, Minimize2, Minus, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Check, Upload, Eye, PenLine,
   Bookmark, ShieldCheck, Globe, Tag, FolderPlus, Lock, AlertTriangle, Send, Mail,
 } from "lucide-react";
-import { slideStorage, type SlideData, type SlideObject, type PresentationPermissions, DEFAULT_PERMISSIONS, createTextBox, createImageObj, createShapeObj, createDrawingObj, makeDefaultTitleObjects, makeDefaultContentObjects, makeDefaultClosingObjects } from "@/lib/slide-storage";
+import { slideStorage, type SlideData, type SlideObject, type TableObject, type PresentationPermissions, DEFAULT_PERMISSIONS, createTextBox, createImageObj, createShapeObj, createDrawingObj, createTableObj, makeDefaultTitleObjects, makeDefaultContentObjects, makeDefaultClosingObjects } from "@/lib/slide-storage";
 import { driveStorage, type DriveItem } from "@/lib/drive-storage";
 import { permissionRequests } from "@/lib/permission-requests";
 import { useNotifications } from "@/contexts/NotificationContext";
@@ -239,6 +239,44 @@ function SlideContentPreview({ slide, themeTextColor, scale = 1 }: { slide: Slid
                 <path d={obj.paths} fill="none" stroke={obj.stroke} strokeWidth={obj.strokeWidth} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
               </svg>
             )}
+            {obj.type === "table" && (() => {
+              const cw = obj.colWidths || Array(obj.cols).fill(100 / obj.cols);
+              const rh = obj.rowHeights || Array(obj.rows).fill(100 / obj.rows);
+              return (
+              <table className="w-full h-full" style={{ borderCollapse: "collapse", fontSize: obj.fontSize * scale, fontFamily: obj.fontFamily, tableLayout: "fixed" }}>
+                <colgroup>{cw.map((w, i) => <col key={i} style={{ width: `${w}%` }} />)}</colgroup>
+                <tbody>
+                  {obj.cells.map((row, ri) => (
+                    <tr key={ri} style={{ height: `${rh[ri]}%` }}>
+                      {row.map((cell, ci) => {
+                        const isHeader = obj.headerRow && ri === 0;
+                        const bgColor = isHeader ? obj.headerColor : ri % 2 === 0 ? obj.evenRowColor : obj.oddRowColor;
+                        const resolvedBg = cell.backgroundColor || bgColor;
+                        const textColor = isHeader && obj.headerColor !== "transparent" ? "#fff" : (cell.color || "#1f2937");
+                        return (
+                          <td key={ci} style={{
+                            border: `${obj.borderWidth}px solid ${obj.borderColor}`,
+                            padding: obj.cellPadding * scale,
+                            backgroundColor: resolvedBg,
+                            color: textColor,
+                            fontWeight: isHeader || cell.bold ? 700 : 400,
+                            fontStyle: cell.italic ? "italic" : "normal",
+                            textAlign: cell.align || (isHeader ? "center" : "left"),
+                            verticalAlign: cell.verticalAlign || "middle",
+                            overflow: "hidden",
+                            fontSize: cell.fontSize ? cell.fontSize * scale : undefined,
+                            fontFamily: cell.fontFamily || undefined,
+                          }}>
+                            <span className={`block ${cell.noWrap ? "truncate whitespace-nowrap" : "whitespace-pre-wrap break-words"}`}>{cell.content}</span>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              );
+            })()}
           </div>
         ))}
       </div>
@@ -1158,19 +1196,27 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   }, []);
 
   const insertTable = useCallback((rows: number, cols: number) => {
-    if (!editorRef.current) return;
-    let html = '<table style="width:80%;margin:20px auto;border-collapse:collapse;">';
-    for (let r = 0; r < rows; r++) {
-      html += "<tr>";
-      for (let c = 0; c < cols; c++) {
-        html += `<td style="border:1px solid #d1d5db;padding:8px;min-width:60px;">&nbsp;</td>`;
-      }
-      html += "</tr>";
-    }
-    html += "</table>";
-    document.execCommand("insertHTML", false, html);
+    const th = THEMES[theme] || THEMES.default;
+    const tableHeight = Math.min(60, 8 + rows * 8);
+    const tableObj = createTableObj(rows, cols, {
+      x: 10, y: 20, width: 80, height: tableHeight,
+      zIndex: 1,
+    });
+    // Use refs for fresh data — avoids stale closure issues
+    const currentSlides = [...slidesRef.current];
+    const idx = activeSlideIdx;
+    const slide = currentSlides[idx];
+    const existingObjects = slide?.objects || [];
+    tableObj.zIndex = existingObjects.length + 1;
+    currentSlides[idx] = { ...slide, objects: [...existingObjects, tableObj] };
+    // Push undo, update via ref-based onChange
+    undoStackRef.current.push(JSON.stringify(slidesRef.current));
+    if (undoStackRef.current.length > 50) undoStackRef.current.shift();
+    redoStackRef.current = [];
+    onChangeRef.current({ ...valueRef.current, slides: currentSlides });
+    setSelectedObjectId(tableObj.id);
     setShowTablePicker(false);
-  }, []);
+  }, [theme, activeSlideIdx]);
 
   const addComment = useCallback(() => {
     const sel = window.getSelection();
@@ -2075,9 +2121,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         <ToolbarButton title="Align right" Icon={AlignRight} onClick={() => document.execCommand("justifyRight")} disabled={!canDirectEdit} />
         <ToolbarDivider />
         {/* Insert */}
-        <ToolbarDropdown title="Insert table" Icon={Table2} isOpen={showTablePicker} onToggle={() => setShowTablePicker(!showTablePicker)} disabled={!canDirectEdit}>
-          <TableGridPicker onPick={(r, c) => insertTable(r, c)} />
-        </ToolbarDropdown>
+        <ToolbarButton title="Insert table" Icon={Table2} onClick={() => setShowTablePicker(!showTablePicker)} />
         <ToolbarButton title="Insert image" Icon={ImageIcon} onClick={handleImageUpload} disabled={!canDirectEdit} />
         <ToolbarButton title="Insert text box" Icon={Type} onClick={() => {
           const th = THEMES[theme] || THEMES.default;
@@ -3191,6 +3235,20 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           }}
           onClose={() => setShowShapePickerDialog(null)}
         />
+      )}
+
+      {/* ── Table Picker Dialog ── */}
+      {showTablePicker && (
+        <div className="absolute inset-0 z-[210] flex items-center justify-center bg-black/25 backdrop-blur-[2px]" onClick={() => setShowTablePicker(false)}>
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl p-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[13px] font-bold text-gray-800 dark:text-gray-100">Insert Table</span>
+              <button className="px-2 py-1 rounded-lg text-[12px] text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer" onClick={() => setShowTablePicker(false)}>Close</button>
+            </div>
+            <TableGridPicker onPick={(r, c) => insertTable(r, c)} />
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 text-center">Hover to select size, click to insert</p>
+          </div>
+        </div>
       )}
 
       {showDrivePickerDialog && (
