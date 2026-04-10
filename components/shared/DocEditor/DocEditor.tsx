@@ -7216,7 +7216,7 @@ export default function DocEditor({
             {moreToolbarOpen && (
               <div
                 data-doc-menu-panel
-                className="absolute right-0 top-full mt-1 z-[120] w-[220px] rounded-2xl overflow-hidden bg-white/80 dark:bg-[#121212]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0d2e]/80 backdrop-blur-[20px] backdrop-saturate-[180%] border border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50 midnight:border-cyan-400/20 purple:border-pink-400/20 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_12px_24px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.3),0_12px_24px_-4px_rgba(0,0,0,0.4)] py-1.5"
+                className="absolute right-0 top-full mt-1 z-[120] w-[220px] rounded-2xl overflow-hidden bg-white/80 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 backdrop-blur-[20px] backdrop-saturate-[180%] border border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50 midnight:border-cyan-400/20 purple:border-pink-400/20 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_12px_24px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.3),0_12px_24px_-4px_rgba(0,0,0,0.4)] py-1.5"
               >
                 {/* Alignment */}
                 <div className="px-2 py-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wider">Alignment</div>
@@ -7261,7 +7261,7 @@ export default function DocEditor({
                 {/* Clear formatting */}
                 <button type="button" onMouseDown={(e) => e.preventDefault()}
                   onClick={() => { focusEditor(); exec("removeFormat"); emitChange(); setMoreToolbarOpen(false); }}
-                  className="w-full flex items-center gap-2.5 px-3 min-h-[40px] text-left text-[13px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/60 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-3 min-h-[40px] text-left text-[13px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                 >
                   <RemoveFormatting className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                   <span>Clear formatting</span>
@@ -9716,7 +9716,7 @@ export default function DocEditor({
       {dialog === "findReplace" && (
         <div
           data-doc-find-replace-panel
-          className="absolute right-3 top-[92px] z-[150] w-[300px] rounded-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 midnight:border-gray-600/60 purple:border-purple-700/60 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0d1829]/95 purple:bg-[#1a0d2e]/95 backdrop-blur-md shadow-xl p-3"
+          className="absolute right-3 top-[92px] z-[150] w-[300px] rounded-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 midnight:border-gray-600/60 purple:border-purple-700/60 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0d1829]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-md shadow-xl p-3"
         >
           <div className="flex items-center justify-between mb-3">
             <span className="text-[12px] font-bold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
@@ -10807,7 +10807,7 @@ function ViewMenuPanel({ children }: { children: React.ReactNode }) {
   }, []);
 
   const glassClasses = [
-    "bg-white/80 dark:bg-[#121212]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0d2e]/80",
+    "bg-white/80 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80",
     "backdrop-blur-[20px] backdrop-saturate-[180%]",
     "border border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50 midnight:border-cyan-400/20 purple:border-pink-400/20",
   ].join(" ");
@@ -10942,7 +10942,7 @@ function ViewMenuItem({
           "font-[420] hover:font-[520]",
           disabled
             ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed"
-            : "text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 hover:bg-gray-100/60 dark:hover:bg-white/5 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8 cursor-pointer",
+            : "text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 hover:bg-gray-100/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8 cursor-pointer",
           // Active mode glow for "Suggesting" style context-aware feedback
           isChecked && !hasSubmenu
             ? "bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
@@ -11015,7 +11015,7 @@ function ViewMenuToggle({
         "w-full flex items-center gap-2.5 px-3 text-left transition-all duration-150 min-h-[44px] cursor-pointer",
         "font-[420] hover:font-[520]",
         "text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50",
-        "hover:bg-gray-100/60 dark:hover:bg-white/5 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8",
+        "hover:bg-gray-100/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8",
       ].join(" ")}
       role="switch"
       aria-checked={isOn}
@@ -11098,7 +11098,7 @@ function FullscreenFloatingPill({
 
   if (!visible) return null;
 
-  const pillBtnClass = "px-3 py-2 text-[12px] font-medium transition-colors hover:bg-white/20 dark:hover:bg-white/10 cursor-pointer min-h-[44px] flex items-center";
+  const pillBtnClass = "px-3 py-2 text-[12px] font-medium transition-colors hover:bg-white/20 dark:hover:bg-[#22262e] cursor-pointer min-h-[44px] flex items-center";
 
   return (
     <div
@@ -11107,7 +11107,7 @@ function FullscreenFloatingPill({
         "fixed top-3 left-1/2 -translate-x-1/2 z-[10000]",
         "flex items-center rounded-full",
         // Glassmorphism pill
-        "bg-gray-900/70 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0d2e]/80",
+        "bg-gray-900/70 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80",
         "backdrop-blur-[20px] backdrop-saturate-[180%]",
         "border border-white/10",
         "shadow-[0_8px_32px_rgba(0,0,0,0.3)]",

@@ -129,7 +129,7 @@ function FolderNode({ item, selectedId, expandedIds, disabledIds, currentParentI
           w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors
           ${isSelected
             ? "bg-blue-100 dark:bg-blue-500/20"
-            : "bg-gray-100 dark:bg-white/5"
+            : "bg-gray-100 dark:bg-[#1a1d24]/50"
           }
         `}>
           {isRoot ? (
@@ -174,7 +174,7 @@ function FolderNode({ item, selectedId, expandedIds, disabledIds, currentParentI
       {(isExpanded || searchQuery) && (hasChildren || filteredChildren.length > 0) && (
         <div className="relative">
           <div
-            className="absolute top-0 bottom-0 w-px bg-gray-100 dark:bg-white/5"
+            className="absolute top-0 bottom-0 w-px bg-gray-100 dark:bg-[#1a1d24]/50"
             style={{ left: `${depth * 24 + 22}px` }}
           />
           {(searchQuery ? filteredChildren : children).map(child => (
@@ -374,7 +374,7 @@ export default function MoveDialog({
             </div>
 
             {/* File being moved */}
-            <div className="flex items-center gap-3 px-3.5 py-3 rounded-xl bg-gray-50 dark:bg-white/[0.04] border border-gray-100 dark:border-white/[0.06]">
+            <div className="flex items-center gap-3 px-3.5 py-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24]/40 border border-gray-100 dark:border-gray-700">
               <div className="w-9 h-9 rounded-lg bg-white dark:bg-white/10 border border-gray-100 dark:border-white/[0.08] flex items-center justify-center shadow-sm">
                 {getSourceIcon(sourceType, "w-4.5 h-4.5")}
               </div>
@@ -400,7 +400,7 @@ export default function MoveDialog({
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search folders..."
-                className="w-full pl-9 pr-3 py-2 rounded-xl bg-gray-50 dark:bg-white/[0.04] border border-gray-100 dark:border-white/[0.06] text-[13px] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-300 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500/30 transition-all"
+                className="w-full pl-9 pr-3 py-2 rounded-xl bg-gray-50 dark:bg-[#1a1d24]/40 border border-gray-100 dark:border-gray-700 text-[13px] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-300 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500/30 transition-all"
               />
             </div>
           </div>
@@ -424,7 +424,7 @@ export default function MoveDialog({
 
             {rootFolders.length === 0 && (
               <div className="text-center py-12">
-                <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-3">
+                <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-[#1a1d24]/50 flex items-center justify-center mx-auto mb-3">
                   <Folder className="w-6 h-6 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500" />
                 </div>
                 <p className="text-[14px] font-medium text-gray-400">No folders yet</p>
@@ -506,7 +506,7 @@ export default function MoveDialog({
                     flex items-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 cursor-pointer
                     ${isValidSelection && !isMoving
                       ? "text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/25 hover:shadow-lg hover:shadow-blue-600/30 active:scale-[0.98]"
-                      : "text-gray-400 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 bg-gray-100 dark:bg-white/5 cursor-not-allowed"
+                      : "text-gray-400 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 bg-gray-100 dark:bg-[#1a1d24]/50 cursor-not-allowed"
                     }
                   `}
                 >

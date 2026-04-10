@@ -84,7 +84,7 @@ export default function NewFolderDialog({
               onChange={e => setName(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") handleSubmit(); }}
               autoFocus
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 midnight:bg-white/[0.03] purple:bg-white/[0.03] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[15px] font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 outline-none focus:bg-white dark:focus:bg-white/8 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-400 purple:focus:border-pink-400 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-400/10 purple:focus:ring-pink-400/10 transition-all duration-200"
+              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-white/[0.03] purple:bg-white/[0.03] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[15px] font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 outline-none focus:bg-white dark:focus:bg-white/8 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-400 purple:focus:border-pink-400 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-400/10 purple:focus:ring-pink-400/10 transition-all duration-200"
               placeholder="Enter folder name"
             />
           </div>

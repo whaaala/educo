@@ -219,7 +219,7 @@ describe("FullscreenFloatingPill", () => {
     // Glassmorphism pill supports all themes
     expect(source).toContain("dark:bg-[#1a1d24]/80");
     expect(source).toContain("midnight:bg-[#0a0e27]/80");
-    expect(source).toContain("purple:bg-[#1a0d2e]/80");
+    expect(source).toContain("purple:bg-[#1a0b2e]/80");
   });
 
   it("highlights the currently active zoom level", () => {

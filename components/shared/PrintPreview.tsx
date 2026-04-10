@@ -8,6 +8,7 @@
  */
 
 import { useState, useRef, useCallback } from "react";
+import Button from "@/components/shared/Button";
 import Tooltip from "@/components/shared/Tooltip";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import {
@@ -160,11 +161,16 @@ function DownloadPdfButton({ title, html, slides, type, layout }: {
 
   return (
     <Tooltip content="Download as PDF file">
-      <button onClick={handleDownload} disabled={downloading}
-        className="flex items-center gap-1.5 text-[12px] text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:text-gray-900 dark:hover:text-white midnight:hover:text-cyan-50 purple:hover:text-pink-50 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 cursor-pointer transition-colors disabled:opacity-50">
-        {downloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+      <Button
+        variant="outline"
+        size="sm"
+        icon={downloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+        onClick={handleDownload}
+        disabled={downloading}
+        className="!rounded-full"
+      >
         <span className="hidden sm:inline">{downloading ? "Preparing..." : "Download as PDF"}</span>
-      </button>
+      </Button>
     </Tooltip>
   );
 }
@@ -286,11 +292,14 @@ export default function PrintPreview({ type, title, slides = [], html = "", onBa
 
           {/* Print — opens browser print dialog */}
           <Tooltip content="Print">
-            <button onClick={() => window.print()}
-              className="flex items-center gap-1.5 text-[12px] text-white bg-blue-600 hover:bg-blue-700 px-4 py-1.5 rounded-lg font-medium cursor-pointer shadow-sm transition-colors">
-              <Printer className="w-3.5 h-3.5" />
+            <Button
+              size="sm"
+              icon={<Printer className="w-3.5 h-3.5" />}
+              onClick={() => window.print()}
+              className="!rounded-full"
+            >
               Print
-            </button>
+            </Button>
           </Tooltip>
         </div>
 

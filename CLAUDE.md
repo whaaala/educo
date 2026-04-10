@@ -1,17 +1,22 @@
 # Educo Project — Claude Code Instructions
 
-> **Adding new rules:** When the user asks to add a new instruction/rule, add it as a line to the BEFORE or AFTER checklist, or as a numbered item under Core Rules. If the rule needs detailed explanation, create a file in `docs/` and reference it with a one-line link. NEVER let this prompt grow beyond ~120 lines — keep it concise.
+> **STRICT ENFORCEMENT:** Every checklist item below is MANDATORY — not aspirational. Do NOT skip any item. Do NOT say "done" until every BEFORE and AFTER item is checked. If you cannot complete an item, explicitly tell the user which item you're skipping and why.
+
+> **Adding new rules:** Add to BEFORE/AFTER checklist or Core Rules. Detailed explanations go in `docs/` with a one-line link. Keep this file concise.
 
 ## ⚠️ BEFORE Starting Any Implementation
 
 Run through this checklist BEFORE writing any code:
 
-- [ ] **Check existing components** — search `components/` for reusable parts. Do NOT duplicate.
-- [ ] **Plan for ALL platforms** — desktop (1280px+), tablet (768px), mobile (375px)
+- [ ] **Check existing shared components** — search `components/shared/` for `Button`, `FormDropdown`, `CustomDropdown`, `FormInput`, `Modal`, `EditorDialog`, `ColorPickerPopover`, `DataTable`, etc. NEVER duplicate what exists.
+- [ ] **IMPLEMENT for ALL platforms AND screen sizes** — web (desktop 1280px+, tablet 768px, mobile 375px) AND React Native mobile/tablet app (`apps/mobile/`). Every feature MUST be built for BOTH web responsive AND the native mobile/tablet app. Neither is optional.
+- [ ] **Plan for ALL themes** — check `lib/theme-config.ts` for available themes. Every UI element must work in ALL of them.
 - [ ] **Plan ALL side effects** — if feature A affects B/C/D, plan to handle all of them
 - [ ] **Think in components** — break UI into reusable, prop-driven pieces
 - [ ] **Check existing tests** — find and update relevant `.feature`, `.test.tsx`, `.visual.test.tsx` files
 - [ ] **No `alert()`, `confirm()`, `prompt()`** — plan to use modal/dialog components
+- [ ] **No hardcoded colors or inline styles** — use Tailwind theme classes and shared components
+- [ ] **Plan for accessibility** — aria labels, keyboard navigation, color contrast, focus management
 
 ## ✅ AFTER Completing Any Implementation
 
@@ -23,6 +28,8 @@ Run through this checklist BEFORE telling the user it's done:
 - [ ] **State persists** — close/reopen dialogs, reload page — state survives
 - [ ] **No runtime errors** — check browser console, Metro logs, dev server output
 - [ ] **App loads on ALL devices** — desktop browser, mobile emulator (5556), tablet emulator (5554)
+- [ ] **Mobile/tablet app implemented** — feature works in `apps/mobile/` for both phone and tablet
+- [ ] **⚠️ REMIND USER**: "Do you want me to implement this feature in the mobile/tablet app (`apps/mobile/`) as well?" — ALWAYS ask this after completing any web feature
 - [ ] **Unit tests** — helper functions, data mutations, pure logic
 - [ ] **Functional tests** — component behavior with props/state (black box: input→output, white box: internal logic)
 - [ ] **Integration tests** — components working together, data flow between parent/child
@@ -32,18 +39,21 @@ Run through this checklist BEFORE telling the user it's done:
 - [ ] **Tests pass** — `npx vitest run` (web), `cd apps/mobile && npx jest` (mobile)
 - [ ] **Feature files updated** — `.feature` files in `tests/features/` match new scenarios
 - [ ] **Responsive** — verified on mobile (375px), tablet (768px), desktop (1280px+)
+- [ ] **ALL available themes verified** — light, dark, midnight, purple all look correct
+- [ ] **Shared components used** — no hardcoded buttons, inputs, dropdowns, modals, or color pickers
+- [ ] **No hardcoded colors** — no `#hex` inline, no `bg-blue-600` without dark/midnight/purple variants
+- [ ] **WCAG compliant** — aria labels, keyboard nav, color contrast 4.5:1, focus visible
 
 ---
 
 ## Core Rules
 
-### 1. Component Architecture
-- Every UI element is a reusable component with props
-- Check existing components before creating new ones
-- Data flows via props — never hardcode
-- Platform-aware via `isTablet`/`layout` props — don't duplicate components
-- Screen components only compose children and manage state
-- Separate fixed (header/nav) from scrollable (content) — never nest ScrollViews
+### 1. Component Architecture & Reuse (MANDATORY)
+- **BEFORE implementing ANY feature, check `components/shared/` for reusable components** — see [docs/SHARED_COMPONENTS.md](docs/SHARED_COMPONENTS.md) for full list
+- NEVER create inline buttons/inputs/dropdowns/modals when a shared component exists
+- Every UI element is a reusable component with props — data flows via props, never hardcode
+- **Every feature MUST be implemented for BOTH web AND mobile/tablet app** (`apps/mobile/`) — use `isTablet`/`layout` props, don't duplicate components
+- **No hardcoded colors, styles, or inline elements** — always use shared themed components
 
 ### 2. Keyboard Shortcuts (MANDATORY)
 - **Every feature MUST have keyboard shortcuts** — no feature should be mouse-only
@@ -56,24 +66,26 @@ Run through this checklist BEFORE telling the user it's done:
 - **No `alert()`, `window.confirm()`, `window.prompt()`** — use EditorDialog (desktop) or Modal (mobile)
 - Every interactive element MUST perform its intended action and persist state
 - Follow existing patterns: lucide-react icons on desktop, Ionicons on mobile, Inter fonts, ThemeContext colors
-- All features responsive: mobile (375px), tablet (768px), desktop (1280px+)
+- **ALL features MUST be fully responsive on web AND implemented in the React Native app** — web: mobile (375px), tablet (768px), desktop (1280px+). Native: `apps/mobile/` with `isTablet` support. Every feature MUST work on ALL platforms and screen sizes.
 - **Loading spinners are MANDATORY on ALL pages** — use `PageLoader` (`components/shared/PageLoader.tsx`) for full-page loading states and `InPageSpinner` (`components/shared/InPageSpinner.tsx`) for content-area loading. Every page must show a spinner while data/components load. This applies to all existing and newly implemented pages.
 - **Every UI element MUST have working functionality** — no placeholder UI. When implementing any component, menu, button, or interactive element, the actual functionality must be implemented alongside the UI. Never create a button/menu item without its working action. Test every item works in ALL places the component is used.
 
-### 4. Theme Support (MANDATORY)
-- **Every feature, component, and page MUST support ALL 4 themes**: light, dark, midnight, purple
-- Every `dark:` Tailwind class MUST have corresponding `midnight:` and `purple:` variants
-- Theme color mapping (must match MainLayout: `dark:bg-[#0f1115]`, `midnight:bg-[#0a0e27]`, `purple:bg-[#1a0b2e]`):
-  - Backgrounds: `dark:bg-gray-900` → `midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]`, `dark:bg-gray-800` → `midnight:bg-[#111827] purple:bg-[#2a1447]`
-  - Text: `dark:text-gray-300` → `midnight:text-cyan-200 purple:text-pink-200`
-  - Borders: `dark:border-gray-700` → `midnight:border-cyan-500/20 purple:border-pink-500/20`
-  - Hover: `dark:hover:bg-gray-800` → `midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5`
-- Use `scripts/add-theme-variants.js <file>` to bulk-add missing theme variants
-- Theme MUST work on ALL screen sizes (mobile 375px, tablet 768px, desktop 1280px+)
-- NO hardcoded colors — always use Tailwind theme-aware classes
-- Test every implementation in all 4 themes before reporting done
+### 4. Accessibility — WCAG Compliance (MANDATORY)
+- **ALL pages and features MUST follow WCAG 2.1 AA guidelines** — see [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md) for full checklist
+- Every interactive element: `aria-label`, `role`, keyboard navigable (Tab/Enter/Escape)
+- Color contrast: minimum 4.5:1 for text, 3:1 for large text — applies to ALL available themes
+- Images/icons: `alt` text or `aria-hidden="true"` for decorative
+- Forms: visible labels, error messages linked with `aria-describedby`, focus management
+- No content conveyed by color alone — use icons/text alongside color indicators
 
-### 5. Testing (ALL types required for every change)
+### 5. Theme Support (MANDATORY)
+- **Every feature MUST support ALL available themes** defined in `lib/theme-config.ts` — see [docs/THEME_GUIDE.md](docs/THEME_GUIDE.md) for color mapping
+- Every `dark:` class MUST have `midnight:` and `purple:` variants
+- Use `scripts/add-theme-variants.js <file>` to bulk-add missing variants
+- NO hardcoded colors — use Tailwind theme classes and `Button`/shared components
+- Test in all available themes on all screen sizes before reporting done
+
+### 6. Testing (ALL types required for every change)
 - **Unit** — pure functions, helpers, data mutations, storage methods
 - **Functional** — component renders, prop handling, state changes, event handlers (black box + white box)
 - **Integration** — components working together, parent↔child data flow, context providers
@@ -85,7 +97,7 @@ Run through this checklist BEFORE telling the user it's done:
 - Mobile tests cover BOTH `isTablet=true` and `isTablet=false`
 - Feature files in `tests/features/` — one per component/module
 
-### 6. Session Continuity (MANDATORY)
+### 7. Session Continuity (MANDATORY)
 - **When the conversation ends, context limit is reached, or the user stops work** — you MUST save a memory file recording:
   - The **current task/feature** being worked on
   - **Exactly where you stopped** (last file edited, last step completed, next step planned)
@@ -94,7 +106,7 @@ Run through this checklist BEFORE telling the user it's done:
 - Save to `memory/project_last_session.md` (overwrite each time) and keep `MEMORY.md` index updated
 - This is NON-NEGOTIABLE — never end a session without saving this state
 
-### 7. Verification
+### 8. Verification
 - After ANY code change, verify app loads without errors on ALL target devices
 - Check Metro/dev server logs for errors before reporting success
 - Never say "done" without personally verifying every interaction
@@ -124,24 +136,9 @@ See [docs/EMULATOR_SETUP.md](docs/EMULATOR_SETUP.md) for full setup and troubles
 - After ANY mobile code change: reload both emulators, verify "Android Bundled" in Metro logs, confirm no red error screens
 - Run `cd apps/mobile && npx jest` after every change
 
-## BDD & Feature Files
+## Tests & BDD
 
-```
-tests/features/
-├── components/shared/     # Desktop component specs
-├── mobile/                # Mobile/tablet specs
-├── e2e/                   # End-to-end specs
-└── unit/                  # Unit test specs
-```
-
-Rules: one `.feature` per module, standard Gherkin, scenarios match tests 1:1.
-
-## Test Locations
-
-| Type | Desktop | Mobile |
-|------|---------|--------|
-| Unit | `tests/unit/` | `apps/mobile/__tests__/` |
-| Component | `tests/components/shared/` | `apps/mobile/__tests__/` |
-| Visual | `*.visual.test.tsx` | — |
-| E2E | `tests/e2e/` | `tests/features/mobile/` |
-| Feature | `tests/features/` | `tests/features/mobile/` |
+- Feature files: `tests/features/` (desktop) | `tests/features/mobile/` (mobile) — one `.feature` per module
+- Web tests: `tests/unit/`, `tests/components/shared/`, `tests/e2e/` — run with `npx vitest run`
+- Mobile tests: `apps/mobile/__tests__/` — run with `cd apps/mobile && npx jest`
+- Visual: `*.visual.test.tsx` — Playwright MCP for UI verification

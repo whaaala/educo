@@ -477,7 +477,7 @@ export function ViewMenuPanel({ children }: { children: React.ReactNode }) {
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  const glassClasses = "bg-white/80 dark:bg-[#121212]/80 backdrop-blur-[20px] backdrop-saturate-[180%] border border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50";
+  const glassClasses = "bg-white/80 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-[20px] backdrop-saturate-[180%] border border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30";
 
   if (isMobile && typeof document !== "undefined") {
     return createPortal(
@@ -522,7 +522,7 @@ export function ViewMenuItem({
     >
       <button type="button" disabled={disabled} onClick={() => { if (!disabled) onClick?.(); }}
         className={["w-full flex items-center gap-2.5 px-3 text-left transition-all duration-150 min-h-[44px]", "font-[420] hover:font-[520]",
-          disabled ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/60 dark:hover:bg-white/5 cursor-pointer",
+          disabled ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer",
           isChecked ? "bg-blue-50/50 dark:bg-blue-500/10" : "",
         ].join(" ")}
       >
@@ -546,7 +546,7 @@ export function ViewMenuToggle({ label, description, shortcut, isOn, onToggle }:
 }) {
   return (
     <button type="button" onClick={onToggle}
-      className="w-full flex items-center gap-2.5 px-3 text-left transition-all duration-150 min-h-[44px] cursor-pointer font-[420] hover:font-[520] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/60 dark:hover:bg-white/5"
+      className="w-full flex items-center gap-2.5 px-3 text-left transition-all duration-150 min-h-[44px] cursor-pointer font-[420] hover:font-[520] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
       role="switch" aria-checked={isOn} aria-label={label}
     >
       <div className="flex-1 min-w-0">

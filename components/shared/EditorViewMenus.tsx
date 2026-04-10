@@ -93,7 +93,7 @@ export function ViewMenuPanel({ children }: { children: React.ReactNode }) {
   }, []);
 
   const glassClasses = [
-    "bg-white/80 dark:bg-[#121212]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0d2e]/80",
+    "bg-white/80 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80",
     "backdrop-blur-[20px] backdrop-saturate-[180%]",
     "border border-gray-300/60 dark:border-gray-600/50 midnight:border-cyan-400/20 purple:border-pink-400/20",
   ].join(" ");
@@ -219,7 +219,7 @@ export function ViewMenuItem({
           "font-[420] hover:font-[520]",
           disabled
             ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
-            : "text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 hover:bg-gray-100/60 dark:hover:bg-white/5 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8 cursor-pointer",
+            : "text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 hover:bg-gray-100/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8 cursor-pointer",
           isChecked && !hasSubmenu
             ? "bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
             : "",
@@ -274,7 +274,7 @@ export function ViewMenuToggle({ label, description, shortcut, isOn, onToggle }:
         "w-full flex items-center gap-2.5 px-3 text-left transition-all duration-150 min-h-[44px] cursor-pointer",
         "font-[420] hover:font-[520]",
         "text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50",
-        "hover:bg-gray-100/60 dark:hover:bg-white/5 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8",
+        "hover:bg-gray-100/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8",
       ].join(" ")}
       role="switch"
       aria-checked={isOn}
