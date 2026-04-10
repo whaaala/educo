@@ -100,7 +100,7 @@ const categoryColors: Record<string, string> = {
   amber: "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800",
   emerald: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
   rose: "bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800",
-  gray: "bg-gray-100 dark:bg-gray-700/30 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700",
+  gray: "bg-gray-100 dark:bg-[#22262e]/30 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700",
 };
 
 export default function MessageTeacherModal({
@@ -268,7 +268,7 @@ export default function MessageTeacherModal({
         onClick={handleClose}
       >
         <div
-          className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+          className="bg-white dark:bg-[#0f1115] rounded-3xl shadow-2xl w-full max-w-2xl max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
           onClick={(e) => e.stopPropagation()}
         >
           {isSent ? (
@@ -317,7 +317,7 @@ export default function MessageTeacherModal({
                   </div>
                   <button
                     onClick={handleClose}
-                    className="p-2 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white transition-all cursor-pointer"
+                    className="p-2 rounded-xl bg-gray-100 dark:bg-[#22262e] hover:bg-gray-200 dark:hover:bg-[#2a2d35] text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white transition-all cursor-pointer"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -343,7 +343,7 @@ export default function MessageTeacherModal({
                       className={`w-full flex items-center gap-3 p-3 rounded-2xl border-2 transition-all cursor-pointer ${
                         selectedTeacher
                           ? "border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20"
-                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-gray-50/50 dark:bg-gray-800/50"
+                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-gray-50/50 dark:bg-[#1a1d24]/50"
                       }`}
                     >
                       {selectedTeacher ? (
@@ -371,7 +371,7 @@ export default function MessageTeacherModal({
                         </>
                       ) : (
                         <>
-                          <div className="w-11 h-11 rounded-xl bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                          <div className="w-11 h-11 rounded-xl bg-gray-200 dark:bg-[#22262e] flex items-center justify-center">
                             <User className="w-5 h-5 text-gray-400" />
                           </div>
                           <span className="flex-1 text-left text-gray-400 dark:text-gray-500">Select a teacher...</span>
@@ -382,7 +382,7 @@ export default function MessageTeacherModal({
 
                     {/* Teacher Dropdown */}
                     {showTeacherDropdown && (
-                      <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1a1d24] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
                         {/* Search */}
                         <div className="p-3 border-b border-gray-100 dark:border-gray-700">
                           <div className="relative">
@@ -392,7 +392,7 @@ export default function MessageTeacherModal({
                               value={teacherSearch}
                               onChange={(e) => setTeacherSearch(e.target.value)}
                               placeholder="Search teachers..."
-                              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm border-0 focus:ring-2 focus:ring-blue-500/30 outline-none"
+                              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-100 dark:bg-[#22262e] text-gray-900 dark:text-white text-sm border-0 focus:ring-2 focus:ring-blue-500/30 outline-none"
                               autoFocus
                             />
                           </div>
@@ -410,7 +410,7 @@ export default function MessageTeacherModal({
                               className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all cursor-pointer ${
                                 selectedTeacherId === teacher.id
                                   ? "bg-blue-50 dark:bg-blue-900/30"
-                                  : "hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                                  : "hover:bg-gray-50 dark:hover:bg-[#22262e]/50"
                               }`}
                             >
                               <div className="relative">
@@ -423,7 +423,7 @@ export default function MessageTeacherModal({
                                   unoptimized
                                 />
                                 {teacher.isClassTeacher && (
-                                  <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-gray-800 flex items-center justify-center">
+                                  <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-[#1a1d24] flex items-center justify-center">
                                     <GraduationCap className="w-2 h-2 text-white" />
                                   </div>
                                 )}
@@ -464,7 +464,7 @@ export default function MessageTeacherModal({
                           className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition-all cursor-pointer ${
                             isSelected
                               ? categoryColors[cat.color]
-                              : "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              : "bg-gray-50 dark:bg-[#1a1d24] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-[#22262e]"
                           }`}
                         >
                           <Icon className="w-4 h-4" />
@@ -489,7 +489,7 @@ export default function MessageTeacherModal({
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                     placeholder="What's this message about?"
-                    className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-[#1a1d24] border-2 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
                   />
                 </div>
 
@@ -509,7 +509,7 @@ export default function MessageTeacherModal({
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="Type your message here..."
                       rows={5}
-                      className="w-full px-4 py-3 pb-14 rounded-2xl bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none"
+                      className="w-full px-4 py-3 pb-14 rounded-2xl bg-gray-50 dark:bg-[#1a1d24] border-2 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none"
                     />
                     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                       <div className="flex items-center gap-1">
@@ -523,7 +523,7 @@ export default function MessageTeacherModal({
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
-                          className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                          className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
                         >
                           <Paperclip className="w-5 h-5" />
                         </button>
@@ -554,7 +554,7 @@ export default function MessageTeacherModal({
                         return (
                           <div
                             key={attachment.id}
-                            className="relative group flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
+                            className="relative group flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-[#1a1d24] rounded-xl border border-gray-200 dark:border-gray-700"
                           >
                             {attachment.preview ? (
                               <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
@@ -567,7 +567,7 @@ export default function MessageTeacherModal({
                                 />
                               </div>
                             ) : (
-                              <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                              <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-[#22262e] flex items-center justify-center flex-shrink-0">
                                 <FileIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                               </div>
                             )}
@@ -600,11 +600,11 @@ export default function MessageTeacherModal({
               </div>
 
               {/* Footer */}
-              <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
+              <div className="px-6 py-4 border-t border-gray-100 dark:border-[#1a1d24] bg-gray-50/50 dark:bg-[#1a1d24]/50">
                 <div className="flex items-center justify-between gap-4">
                   <button
                     onClick={handleClose}
-                    className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-all cursor-pointer"
+                    className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#22262e] transition-all cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -614,7 +614,7 @@ export default function MessageTeacherModal({
                     className={`group relative inline-flex items-center gap-2.5 px-6 py-2.5 rounded-xl font-semibold text-sm transition-all cursor-pointer overflow-hidden ${
                       isValid && !isSending
                         ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40"
-                        : "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                        : "bg-gray-200 dark:bg-[#22262e] text-gray-400 dark:text-gray-500 cursor-not-allowed"
                     }`}
                   >
                     {isValid && !isSending && (

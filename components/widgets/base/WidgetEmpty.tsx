@@ -42,7 +42,7 @@ export function WidgetEmpty({
       <div
         className={cn(
           "p-3 rounded-xl mb-3",
-          "bg-gray-100/80 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50"
+          "bg-gray-100/80 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50"
         )}
       >
         <div className="text-gray-400 dark:text-gray-500 midnight:text-gray-500 purple:text-gray-500">

@@ -40,12 +40,12 @@ export default function QuickActionsCard({
       case "casual":
         return "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400";
       default:
-        return "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400";
+        return "bg-gray-100 dark:bg-[#22262e] text-gray-600 dark:text-gray-400";
     }
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
+    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
       {/* Header */}
       <div className="p-4 border-b border-gray-100 dark:border-gray-700/50">
         <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
@@ -101,7 +101,7 @@ export default function QuickActionsCard({
                 {leave.used} Used
               </p>
               {/* Progress Bar */}
-              <div className="mt-2 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="mt-2 h-1.5 bg-gray-200 dark:bg-[#22262e] rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
                     leave.icon === "medical"

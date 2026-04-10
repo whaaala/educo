@@ -100,7 +100,7 @@ export default function WhiteboardContextMenu({
   const menu = (
     <div
       ref={menuRef}
-      className="fixed min-w-[220px] py-1 bg-white dark:bg-gray-800 midnight:bg-[#0d1526] purple:bg-[#1f1035] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-2xl backdrop-blur-sm"
+      className="fixed min-w-[220px] py-1 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-2xl backdrop-blur-sm"
       style={{ left: adjustedPos.x, top: adjustedPos.y, zIndex: 99999 }}
       onContextMenu={(e) => e.preventDefault()}
       onPointerDown={(e) => e.stopPropagation()}
@@ -113,7 +113,7 @@ export default function WhiteboardContextMenu({
             <MenuItem action={action} onClose={onClose} />
           )}
           {action.dividerAfter && (
-            <div className="h-px mx-2 my-1 bg-gray-100 dark:bg-gray-700 midnight:bg-cyan-500/10 purple:bg-pink-500/10" />
+            <div className="h-px mx-2 my-1 bg-gray-100 dark:bg-[#22262e] midnight:bg-cyan-500/10 purple:bg-pink-500/10" />
           )}
         </div>
       ))}
@@ -145,10 +145,10 @@ function MenuItem({
       disabled={action.disabled}
       className={`flex items-center gap-2.5 w-full px-3 py-1.5 text-left text-[13px] transition-colors cursor-pointer ${
         action.disabled
-          ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+          ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed"
           : action.danger
-          ? "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20"
-          : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-gray-700/60 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+          ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20"
+          : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/60 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
       }`}
     >
       {action.icon && (
@@ -186,7 +186,7 @@ function SubmenuItem({
           e.stopPropagation();
           setIsOpen((prev) => !prev);
         }}
-        className="flex items-center gap-2.5 w-full px-3 py-1.5 text-left text-[13px] transition-colors cursor-pointer text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-gray-700/60 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+        className="flex items-center gap-2.5 w-full px-3 py-1.5 text-left text-[13px] transition-colors cursor-pointer text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/60 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
       >
         {action.icon && (
           <span className="w-4 h-4 flex items-center justify-center flex-shrink-0 opacity-70">
@@ -195,7 +195,7 @@ function SubmenuItem({
         )}
         <span className="flex-1">{action.label}</span>
         <ChevronToggle
-          className={`w-3.5 h-3.5 text-gray-400 dark:text-gray-500 transition-transform duration-150 ${
+          className={`w-3.5 h-3.5 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 transition-transform duration-150 ${
             isOpen ? "rotate-180" : ""
           }`}
         />
@@ -208,7 +208,7 @@ function SubmenuItem({
             <div key={child.id}>
               <MenuItem action={child} onClose={onClose} />
               {child.dividerAfter && (
-                <div className="h-px mx-2 my-1 bg-gray-100 dark:bg-gray-700 midnight:bg-cyan-500/10 purple:bg-pink-500/10" />
+                <div className="h-px mx-2 my-1 bg-gray-100 dark:bg-[#22262e] midnight:bg-cyan-500/10 purple:bg-pink-500/10" />
               )}
             </div>
           ))}

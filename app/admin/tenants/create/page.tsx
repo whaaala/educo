@@ -363,8 +363,8 @@ export default function CreateTenantPage() {
           {/* Basic Information */}
           <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 rounded-lg">
+                <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
               <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
                 Basic Information
@@ -838,7 +838,7 @@ export default function CreateTenantPage() {
           <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <Mail className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <Mail className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
               </div>
               <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
                 Contact Information
@@ -1037,7 +1037,7 @@ export default function CreateTenantPage() {
           <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-                <Building2 className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <Building2 className="w-5 h-5 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
               </div>
               <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
                 Bank Account (Optional)
@@ -1109,8 +1109,8 @@ export default function CreateTenantPage() {
           </div>
 
           {errors.submit && (
-            <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-sm text-red-600 dark:text-red-400">{errors.submit}</p>
+            <div className="p-4 bg-red-50 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-sm text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">{errors.submit}</p>
             </div>
           )}
           </form>

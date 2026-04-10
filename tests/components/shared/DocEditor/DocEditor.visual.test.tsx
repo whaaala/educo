@@ -127,9 +127,9 @@ describe("DocEditor — Visual / CSS", () => {
       const root = container.querySelector("[data-doc-editor-root]");
       expectClasses(root, [
         "bg-white",
-        "dark:bg-gray-900",
-        "midnight:bg-[#0d1526]",
-        "purple:bg-[#1f1035]",
+        "dark:bg-[#0f1115]",
+        "midnight:bg-[#0a0e27]",
+        "purple:bg-[#1a0b2e]",
       ]);
     });
 
@@ -171,13 +171,13 @@ describe("DocEditor — Visual / CSS", () => {
         "sm:pb-2",
         "border-b",
         "border-gray-100",
-        "dark:border-gray-800",
+        "dark:border-[#1a1d24]",
         "midnight:border-cyan-500/10",
         "purple:border-pink-500/10",
         "bg-white/70",
-        "dark:bg-gray-900/40",
-        "midnight:bg-[#0d1526]/60",
-        "purple:bg-[#1f1035]/60",
+        "dark:bg-[#0f1115]/40",
+        "midnight:bg-[#0a0e27]/60",
+        "purple:bg-[#1a0b2e]/60",
         "backdrop-blur",
       ]);
     });
@@ -273,7 +273,7 @@ describe("DocEditor — Visual / CSS", () => {
       // And it should have inactive hover classes
       expectClasses(firstMenuButton, [
         "hover:bg-gray-100/70",
-        "dark:hover:bg-gray-800/60",
+        "dark:hover:bg-[#22262e]/60",
         "midnight:hover:bg-cyan-500/8",
         "purple:hover:bg-pink-500/8",
       ]);
@@ -302,7 +302,7 @@ describe("DocEditor — Visual / CSS", () => {
         "justify-center",
         "rounded",
         "hover:bg-gray-100",
-        "dark:hover:bg-gray-800",
+        "dark:hover:bg-[#22262e]",
         "midnight:hover:bg-cyan-500/10",
         "purple:hover:bg-pink-500/10",
         "transition-colors",
@@ -390,7 +390,7 @@ describe("DocEditor — Visual / CSS", () => {
         "w-px",
         "h-5",
         "bg-gray-300",
-        "dark:bg-gray-600",
+        "dark:bg-[#2a2d35]",
         "midnight:bg-cyan-500/15",
         "purple:bg-pink-500/15",
         "mx-0.5",
@@ -459,11 +459,11 @@ describe("DocEditor — Visual / CSS", () => {
         "shadow-md",
         "bg-white",
         "dark:bg-gray-950",
-        "midnight:bg-[#0b1220]",
-        "purple:bg-[#170a27]",
+        "midnight:bg-[#0a0e27]",
+        "purple:bg-[#1a0b2e]",
         "border",
         "border-gray-200/80",
-        "dark:border-gray-800",
+        "dark:border-[#1a1d24]",
         "midnight:border-cyan-500/10",
         "purple:border-pink-500/10",
       ]);

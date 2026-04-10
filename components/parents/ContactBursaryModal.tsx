@@ -65,7 +65,7 @@ export default function ContactBursaryModal({ isOpen, onClose }: ContactBursaryM
                 <button
                   type="button"
                   onClick={() => handleCopy(financeContact.phone, "phone")}
-                  className="p-1 rounded-md hover:bg-white/60 dark:hover:bg-gray-700/60 transition-colors cursor-pointer shrink-0"
+                  className="p-1 rounded-md hover:bg-white/60 dark:hover:bg-[#22262e]/60 transition-colors cursor-pointer shrink-0"
                 >
                   {copiedField === "phone" ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3 text-gray-400" />}
                 </button>
@@ -95,7 +95,7 @@ export default function ContactBursaryModal({ isOpen, onClose }: ContactBursaryM
                 <button
                   type="button"
                   onClick={() => handleCopy(financeContact.email, "email")}
-                  className="p-1 rounded-md hover:bg-white/60 dark:hover:bg-gray-700/60 transition-colors cursor-pointer shrink-0"
+                  className="p-1 rounded-md hover:bg-white/60 dark:hover:bg-[#22262e]/60 transition-colors cursor-pointer shrink-0"
                 >
                   {copiedField === "email" ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3 text-gray-400" />}
                 </button>
@@ -124,7 +124,7 @@ export default function ContactBursaryModal({ isOpen, onClose }: ContactBursaryM
                 <button
                   type="button"
                   onClick={() => handleCopy(financeContact.address, "address")}
-                  className="p-1 rounded-md hover:bg-white/60 dark:hover:bg-gray-700/60 transition-colors cursor-pointer shrink-0"
+                  className="p-1 rounded-md hover:bg-white/60 dark:hover:bg-[#22262e]/60 transition-colors cursor-pointer shrink-0"
                 >
                   {copiedField === "address" ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3 text-gray-400" />}
                 </button>
@@ -150,7 +150,7 @@ export default function ContactBursaryModal({ isOpen, onClose }: ContactBursaryM
                 <button
                   type="button"
                   onClick={() => handleCopy(financeContact.officeHours, "hours")}
-                  className="p-1 rounded-md hover:bg-white/60 dark:hover:bg-gray-700/60 transition-colors cursor-pointer shrink-0"
+                  className="p-1 rounded-md hover:bg-white/60 dark:hover:bg-[#22262e]/60 transition-colors cursor-pointer shrink-0"
                 >
                   {copiedField === "hours" ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3 text-gray-400" />}
                 </button>
@@ -196,7 +196,7 @@ export default function ContactBursaryModal({ isOpen, onClose }: ContactBursaryM
                   <button
                     type="button"
                     onClick={() => handleCopy(financeContact.accountNumber, "account")}
-                    className="p-1.5 rounded-md hover:bg-gray-200/80 dark:hover:bg-gray-600/80 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-md hover:bg-gray-200/80 dark:hover:bg-[#2a2d35]/80 transition-colors cursor-pointer"
                   >
                     {copiedField === "account" ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5 text-gray-400" />}
                   </button>

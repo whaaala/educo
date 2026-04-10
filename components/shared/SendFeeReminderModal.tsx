@@ -279,7 +279,7 @@ export default function SendFeeReminderModal({
   // Footer content
   const footerContent = !isSent ? (
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+      <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
         {channels.length > 0 && (
           <span>
             Sending to {channels.length} channel{channels.length > 1 ? "s" : ""}
@@ -307,20 +307,20 @@ export default function SendFeeReminderModal({
   const getTabColor = (channelId: string, isActive: boolean) => {
     const colors: Record<string, { active: string; inactive: string }> = {
       email: {
-        active: "border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20",
-        inactive: "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800",
+        active: "border-blue-500 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20",
+        inactive: "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5",
       },
       sms: {
-        active: "border-green-500 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20",
-        inactive: "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800",
+        active: "border-green-500 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 bg-green-50 dark:bg-green-900/20",
+        inactive: "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5",
       },
       push: {
         active: "border-purple-500 text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20",
-        inactive: "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800",
+        inactive: "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5",
       },
       whatsapp: {
         active: "border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20",
-        inactive: "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800",
+        inactive: "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5",
       },
     };
     return isActive ? colors[channelId]?.active : colors[channelId]?.inactive;
@@ -339,12 +339,12 @@ export default function SendFeeReminderModal({
       {isSent ? (
         <div className="py-8 text-center">
           <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-            <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
+            <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
             Reminder Sent Successfully!
           </h3>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
             {isScheduled
               ? `Reminder scheduled for ${formatDisplayDate(scheduleDate)} at ${scheduleTime}`
               : `Reminder sent to ${parentName} via ${channels.map(c => channelOptions.find(o => o.id === c)?.label).join(", ")}`}
@@ -353,9 +353,9 @@ export default function SendFeeReminderModal({
       ) : (
         <div className="space-y-6">
           {/* Parent & Student Info */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-4">
-              <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+              <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]">
                 <Image
                   src={`https://i.pravatar.cc/150?u=${parentId}`}
                   alt={parentName}
@@ -367,24 +367,24 @@ export default function SendFeeReminderModal({
               <div>
                 <div className="flex items-center gap-2">
                   <User className="w-3.5 h-3.5 text-gray-500" />
-                  <p className="font-semibold text-gray-900 dark:text-white">{parentName}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{parentName}</p>
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                   <GraduationCap className="w-3.5 h-3.5 text-gray-500" />
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Parent of {childName}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Parent of {childName}</p>
                 </div>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-xl font-bold text-red-600 dark:text-red-400">{money(balance)}</p>
+              <p className="text-xl font-bold text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">{money(balance)}</p>
               <div className="flex items-center gap-1 mt-1">
                 {isOverdue ? (
-                  <span className="inline-flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                  <span className="inline-flex items-center gap-1 text-xs text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
                     <AlertCircle className="w-3 h-3" />
                     Overdue
                   </span>
                 ) : (
-                  <span className="text-xs text-gray-600 dark:text-gray-400">
+                  <span className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                     Due: {new Date(dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                   </span>
                 )}
@@ -394,7 +394,7 @@ export default function SendFeeReminderModal({
 
           {/* Channel Selection */}
           <div>
-            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3">
               {channelSectionLabel}
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -405,8 +405,8 @@ export default function SendFeeReminderModal({
                   onClick={() => toggleChannel(channel.id)}
                   className={`p-3 rounded-xl border-2 transition-all text-left cursor-pointer ${
                     channels.includes(channel.id)
-                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-400"
-                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 dark:border-blue-400"
+                      : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -414,7 +414,7 @@ export default function SendFeeReminderModal({
                       className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                         channels.includes(channel.id)
                           ? "bg-blue-500 text-white"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                          : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
                       }`}
                     >
                       {channel.icon}
@@ -423,13 +423,13 @@ export default function SendFeeReminderModal({
                       <p
                         className={`font-medium text-sm ${
                           channels.includes(channel.id)
-                            ? "text-blue-700 dark:text-blue-300"
-                            : "text-gray-900 dark:text-white"
+                            ? "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
+                            : "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
                         }`}
                       >
                         {channel.label}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[120px]">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate max-w-[120px]">
                         {channel.description}
                       </p>
                     </div>
@@ -444,7 +444,7 @@ export default function SendFeeReminderModal({
             <div>
               {/* Tabs for multiple channels */}
               {channels.length > 1 && (
-                <div className="flex gap-1 mb-4 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl overflow-x-auto">
+                <div className="flex gap-1 mb-4 p-1 bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl overflow-x-auto">
                   {channels.map((channelId) => {
                     const channel = channelOptions.find((c) => c.id === channelId);
                     const hasError = isOverLimit(channelId, "message") || (channelId === "email" && isOverLimit(channelId, "subject"));
@@ -472,10 +472,10 @@ export default function SendFeeReminderModal({
                 {(activeTab === "email" || activeTab === "push") && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                        <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 flex items-center gap-1.5">
+                        <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
                           {activeTab === "email" ? (
-                            <Mail className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400" />
+                            <Mail className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                           ) : (
                             <Bell className="w-2.5 h-2.5 text-purple-600 dark:text-purple-400" />
                           )}
@@ -493,11 +493,11 @@ export default function SendFeeReminderModal({
                       value={messages[activeTab]?.subject || ""}
                       onChange={(e) => updateMessage(activeTab, "subject", e.target.value)}
                       placeholder={activeTab === "email" ? "Enter email subject" : "Enter notification title"}
-                      className={`w-full min-h-[46px] text-sm font-normal bg-white dark:bg-gray-800 border rounded-xl px-4 py-2.5 outline-none focus:ring-2 transition-all duration-200 ${
+                      className={`w-full min-h-[46px] text-sm font-normal bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border rounded-xl px-4 py-2.5 outline-none focus:ring-2 transition-all duration-200 ${
                         isOverLimit(activeTab, "subject")
                           ? "border-red-500 focus:ring-red-500/20 focus:border-red-500"
-                          : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:ring-blue-500/20 focus:border-blue-500"
-                      } text-gray-900 dark:text-white`}
+                          : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 focus:ring-blue-500/20 focus:border-blue-500"
+                      } text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50`}
                     />
                     {isOverLimit(activeTab, "subject") && (
                       <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
@@ -544,7 +544,7 @@ export default function SendFeeReminderModal({
 
           {/* No channels selected message */}
           {channels.length === 0 && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
               <Bell className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p>Select at least one channel to send the reminder</p>
             </div>
@@ -552,15 +552,15 @@ export default function SendFeeReminderModal({
 
           {/* Schedule Option */}
           {showScheduleOption && (
-          <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <label className="flex items-center justify-between cursor-pointer">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
                   <Calendar className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white text-sm">Schedule for later</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Send at a specific date and time</p>
+                  <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">Schedule for later</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Send at a specific date and time</p>
                 </div>
               </div>
               <button
@@ -569,7 +569,7 @@ export default function SendFeeReminderModal({
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all cursor-pointer ${
                   isScheduled
                     ? "bg-orange-500"
-                    : "bg-gray-300 dark:bg-gray-600"
+                    : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700"
                 }`}
               >
                 <span
@@ -584,7 +584,7 @@ export default function SendFeeReminderModal({
               <div className="mt-4 grid grid-cols-2 gap-4">
                 {/* Date Picker */}
                 <div className="group">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2 flex items-center gap-1.5">
                     <div className="w-4 h-4 rounded bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
                       <Calendar className="w-2.5 h-2.5 text-orange-600 dark:text-orange-400" />
                     </div>
@@ -597,12 +597,12 @@ export default function SendFeeReminderModal({
                       setShowDatePicker(!showDatePicker);
                       setShowTimePicker(false);
                     }}
-                    className="w-full min-h-[46px] text-sm font-normal text-left bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl px-4 py-2.5 outline-none focus:ring-2 transition-all duration-200 cursor-pointer"
+                    className="w-full min-h-[46px] text-sm font-normal text-left bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl px-4 py-2.5 outline-none focus:ring-2 transition-all duration-200 cursor-pointer"
                   >
                     {scheduleDate ? (
-                      <span className="text-gray-900 dark:text-white">{formatDisplayDate(scheduleDate)}</span>
+                      <span className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{formatDisplayDate(scheduleDate)}</span>
                     ) : (
-                      <span className="text-gray-400/70 dark:text-gray-500/70 italic">Select date</span>
+                      <span className="text-gray-400/70 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400/70 italic">Select date</span>
                     )}
                   </button>
                   {showDatePicker && (
@@ -617,7 +617,7 @@ export default function SendFeeReminderModal({
 
                 {/* Time Picker */}
                 <div className="group">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2 flex items-center gap-1.5">
                     <div className="w-4 h-4 rounded bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
                       <Clock className="w-2.5 h-2.5 text-orange-600 dark:text-orange-400" />
                     </div>
@@ -630,12 +630,12 @@ export default function SendFeeReminderModal({
                       setShowTimePicker(!showTimePicker);
                       setShowDatePicker(false);
                     }}
-                    className="w-full min-h-[46px] text-sm font-normal text-left bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl px-4 py-2.5 outline-none focus:ring-2 transition-all duration-200 cursor-pointer"
+                    className="w-full min-h-[46px] text-sm font-normal text-left bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl px-4 py-2.5 outline-none focus:ring-2 transition-all duration-200 cursor-pointer"
                   >
                     {scheduleTime ? (
-                      <span className="text-gray-900 dark:text-white">{scheduleTime}</span>
+                      <span className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{scheduleTime}</span>
                     ) : (
-                      <span className="text-gray-400/70 dark:text-gray-500/70 italic">Select time</span>
+                      <span className="text-gray-400/70 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400/70 italic">Select time</span>
                     )}
                   </button>
                   {showTimePicker && (

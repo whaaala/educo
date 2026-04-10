@@ -38,7 +38,7 @@ export function ToolbarButton({
         onClick={onClick}
         disabled={disabled}
         aria-label={title}
-        className={`w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${active ? "bg-blue-100 dark:bg-blue-900/40 ring-1 ring-blue-400" : ""} ${className ?? ""}`}
+        className={`w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${active ? "bg-blue-100 dark:bg-blue-900/40 ring-1 ring-blue-400" : ""} ${className ?? ""}`}
       >
         <Icon
           className={`w-4 h-4 ${
@@ -56,7 +56,7 @@ export function ToolbarButton({
 
 export function ToolbarDivider() {
   return (
-    <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 midnight:bg-cyan-500/15 purple:bg-pink-500/15 mx-0.5" />
+    <div className="w-px h-5 bg-gray-300 dark:bg-[#2a2d35] midnight:bg-cyan-500/15 purple:bg-pink-500/15 mx-0.5" />
   );
 }
 
@@ -114,7 +114,7 @@ export function ToolbarDropdown({
           onClick={onToggle}
           disabled={disabled}
           aria-label={title}
-          className="h-7 inline-flex items-center gap-1 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-[11px] font-medium text-gray-600 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"
+          className="h-7 inline-flex items-center gap-1 px-2 rounded hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-[11px] font-medium text-gray-600 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"
         >
           {Icon && <Icon className="w-3.5 h-3.5" />}
           {label && <span className="truncate max-w-[80px]">{label}</span>}
@@ -125,7 +125,7 @@ export function ToolbarDropdown({
         <div
           className={`absolute z-[120] top-full mt-1 ${
             align === "right" ? "right-0" : "left-0"
-          } ${width} rounded-xl border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 max-h-[80vh] overflow-y-auto overflow-x-hidden`}
+          } ${width} rounded-xl border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 max-h-[80vh] overflow-y-auto overflow-x-hidden`}
         >
           {children}
         </div>

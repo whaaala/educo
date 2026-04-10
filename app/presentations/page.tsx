@@ -68,28 +68,28 @@ export default function PresentationsHomePage() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search presentations..."
-              className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-[14px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all" />
+              className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-[14px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all" />
           </div>
         </div>
 
         {/* Start a New Presentation */}
         <section className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[13px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Start a new presentation</h2>
+            <h2 className="text-[13px] font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Start a new presentation</h2>
             <button onClick={() => router.push("/presentations/templates")}
-              className="text-[12px] font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
+              className="text-[12px] font-medium text-blue-600 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400 hover:underline cursor-pointer">
               Template gallery
             </button>
           </div>
           <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
             {/* Blank */}
             <button onClick={() => handleNewPres()} className="flex-shrink-0 w-[180px] group cursor-pointer">
-              <div className="aspect-video rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 flex items-center justify-center transition-shadow duration-300 hover:border-blue-400 hover:shadow-lg">
-                <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
+              <div className="aspect-video rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-center justify-center transition-shadow duration-300 hover:border-blue-400 hover:shadow-lg">
+                <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 midnight:group-hover:bg-cyan-500/10 purple:group-hover:bg-pink-500/10 transition-colors">
                   <Plus className="w-6 h-6 text-gray-400 group-hover:text-blue-500 transition-colors" />
                 </div>
               </div>
-              <p className="mt-2 text-[12px] font-medium text-gray-600 dark:text-gray-400 text-center">Blank</p>
+              <p className="mt-2 text-[12px] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-center">Blank</p>
             </button>
             {/* Template previews */}
             {SLIDE_TEMPLATES.slice(0, 5).map(tpl => (
@@ -101,33 +101,33 @@ export default function PresentationsHomePage() {
         {/* Recent Presentations */}
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[13px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Recent presentations</h2>
+            <h2 className="text-[13px] font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Recent presentations</h2>
             <div className="flex items-center gap-2">
               <div className="relative">
                 <button onClick={() => setSortOpen(!sortOpen)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
                   <Clock className="w-3.5 h-3.5" />
                   {sortBy === "lastOpened" ? "Last opened" : "Title"}
                   <ChevronDown className="w-3 h-3" />
                 </button>
                 {sortOpen && (
-                  <div className="absolute right-0 top-full mt-1 w-[160px] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-lg shadow-xl border border-gray-200/60 dark:border-gray-700/60 z-50 py-1">
+                  <div className="absolute right-0 top-full mt-1 w-[160px] bg-white/95 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl rounded-lg shadow-xl border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 z-50 py-1">
                     {([["lastOpened", "Last opened"], ["title", "Title"]] as const).map(([key, label]) => (
                       <button key={key} onClick={() => { setSortBy(key); setSortOpen(false); }}
-                        className={`w-full px-3 py-2 text-left text-[12px] cursor-pointer transition-colors ${sortBy === key ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20 font-medium" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"}`}>
+                        className={`w-full px-3 py-2 text-left text-[12px] cursor-pointer transition-colors ${sortBy === key ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-500/10 purple:bg-pink-500/10 font-medium" : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}>
                         {label}
                       </button>
                     ))}
                   </div>
                 )}
               </div>
-              <div className="flex items-center rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="flex items-center rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
                 <button onClick={() => setViewMode("grid")}
-                  className={`p-1.5 transition-colors cursor-pointer ${viewMode === "grid" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600" : "text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"}`}>
+                  className={`p-1.5 transition-colors cursor-pointer ${viewMode === "grid" ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-500/10 purple:bg-pink-500/10 text-blue-600" : "text-gray-400 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}>
                   <LayoutGrid className="w-4 h-4" />
                 </button>
                 <button onClick={() => setViewMode("list")}
-                  className={`p-1.5 transition-colors cursor-pointer ${viewMode === "list" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600" : "text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"}`}>
+                  className={`p-1.5 transition-colors cursor-pointer ${viewMode === "list" ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-500/10 purple:bg-pink-500/10 text-blue-600" : "text-gray-400 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}>
                   <List className="w-4 h-4" />
                 </button>
               </div>
@@ -139,14 +139,14 @@ export default function PresentationsHomePage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {filteredPres.map(pres => (
                 <div key={pres.id} className="group relative cursor-pointer" onClick={() => handleOpenPres(pres.id)}>
-                  <div className="aspect-video rounded-xl bg-white dark:bg-gray-900 border border-gray-200/60 dark:border-gray-700/50 shadow-sm transition-shadow duration-300 group-hover:shadow-lg relative overflow-hidden">
+                  <div className="aspect-video rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm transition-shadow duration-300 group-hover:shadow-lg relative overflow-hidden">
                     {pres.slides[0] ? (
                       <div className="absolute inset-0 overflow-hidden">
                         <div className="w-[640px] origin-top-left pointer-events-none" style={{ transform: "scale(0.28)" }}>
                           <div style={{ aspectRatio: "16/9", background: pres.slides[0].background || "#fff" }}
                             dangerouslySetInnerHTML={{ __html: pres.slides[0].content }} />
                         </div>
-                        <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white dark:from-gray-900 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white dark:from-gray-900 midnight:from-[#0d1526] purple:from-[#1f1035] to-transparent" />
                       </div>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -165,13 +165,13 @@ export default function PresentationsHomePage() {
                       </button>
                     </div>
                     {menuOpenId === pres.id && (
-                      <div className="absolute top-8 right-1.5 w-[140px] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-lg shadow-xl border border-gray-200/60 z-50 py-1"
+                      <div className="absolute top-8 right-1.5 w-[140px] bg-white/95 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl rounded-lg shadow-xl border border-gray-200/60 midnight:border-cyan-500/20 purple:border-pink-500/20 z-50 py-1"
                         onClick={e => e.stopPropagation()}>
-                        <button className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 hover:bg-gray-50 flex items-center gap-2 cursor-pointer"
+                        <button className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-2 cursor-pointer"
                           onClick={() => { handleOpenPres(pres.id); setMenuOpenId(null); }}>
                           <ExternalLink className="w-3.5 h-3.5" /> Open
                         </button>
-                        <button className="w-full px-3 py-1.5 text-left text-[12px] text-red-600 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
+                        <button className="w-full px-3 py-1.5 text-left text-[12px] text-red-600 hover:bg-red-50 midnight:hover:bg-red-500/10 purple:hover:bg-red-500/10 flex items-center gap-2 cursor-pointer"
                           onClick={() => { deletePres(pres.id); setMenuOpenId(null); }}>
                           <Trash2 className="w-3.5 h-3.5" /> Remove
                         </button>
@@ -180,7 +180,7 @@ export default function PresentationsHomePage() {
                     <div className="absolute inset-[-1px] rounded-xl border-2 border-transparent group-hover:border-blue-400/50 transition-colors duration-300 pointer-events-none z-[5]" />
                   </div>
                   <div className="mt-2 px-0.5">
-                    <p className="text-[13px] font-semibold text-gray-800 dark:text-gray-200 truncate">{pres.title}</p>
+                    <p className="text-[13px] font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 truncate">{pres.title}</p>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <Presentation className="w-3 h-3 text-orange-500 flex-shrink-0" />
                       <span className="text-[11px] text-gray-400">{timeAgo(pres.updatedAt)}</span>
@@ -194,20 +194,20 @@ export default function PresentationsHomePage() {
 
           {/* List View */}
           {viewMode === "list" && (
-            <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden">
-              <div className="grid grid-cols-[40%_20%_30%_10%] px-4 py-2 border-b border-gray-100 dark:border-gray-800 text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+            <div className="rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] overflow-hidden">
+              <div className="grid grid-cols-[40%_20%_30%_10%] px-4 py-2 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 text-[11px] font-semibold text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide">
                 <span>Name</span><span>Owner</span><span>Last opened</span><span></span>
               </div>
               {filteredPres.map(pres => (
                 <div key={pres.id} onClick={() => handleOpenPres(pres.id)}
-                  className="grid grid-cols-[40%_20%_30%_10%] items-center px-4 h-[52px] border-b border-gray-50 dark:border-gray-800/50 last:border-b-0 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 cursor-pointer group">
+                  className="grid grid-cols-[40%_20%_30%_10%] items-center px-4 h-[52px] border-b border-gray-50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/10 purple:border-pink-500/10 last:border-b-0 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 cursor-pointer group">
                   <div className="flex items-center gap-3 min-w-0">
                     <Presentation className="w-4 h-4 text-orange-500 flex-shrink-0" />
-                    <span className="text-[13px] text-gray-800 dark:text-gray-200 truncate">{pres.title}</span>
+                    <span className="text-[13px] text-gray-800 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 truncate">{pres.title}</span>
                     {pres.starred && <Star className="w-3 h-3 text-amber-400 fill-current flex-shrink-0" />}
                   </div>
-                  <span className="text-[12px] text-gray-500">{pres.owner}</span>
-                  <span className="text-[12px] text-gray-500">{timeAgo(pres.updatedAt)}</span>
+                  <span className="text-[12px] text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{pres.owner}</span>
+                  <span className="text-[12px] text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{timeAgo(pres.updatedAt)}</span>
                   <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onClick={e => { e.stopPropagation(); setMenuOpenId(menuOpenId === pres.id ? null : pres.id); }}
                       className="p-1 rounded text-gray-400 hover:text-gray-600 cursor-pointer relative">
@@ -239,18 +239,18 @@ function SlideTemplateCard({ template, onClick }: { template: typeof SLIDE_TEMPL
 
   return (
     <button onClick={onClick} className="flex-shrink-0 w-[180px] group cursor-pointer text-left">
-      <div className="aspect-video rounded-xl bg-white dark:bg-gray-900 relative transition-shadow duration-300 hover:shadow-xl overflow-hidden"
+      <div className="aspect-video rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] relative transition-shadow duration-300 hover:shadow-xl overflow-hidden"
         style={{ borderTop: `3px solid ${accent}`, boxShadow: '0 0 0 1px rgba(0,0,0,0.06)' }}>
         <div className="absolute inset-0 overflow-hidden">
           <div className="w-[640px] origin-top-left pointer-events-none" style={{ transform: "scale(0.28)" }}>
             <div style={{ aspectRatio: "16/9", background: firstSlide?.background || "#fff" }}
               dangerouslySetInnerHTML={{ __html: firstSlide?.content || "" }} />
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white dark:from-gray-900 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white dark:from-gray-900 midnight:from-[#0d1526] purple:from-[#1f1035] to-transparent" />
         </div>
         <div className="absolute inset-[-1px] rounded-xl border-2 border-transparent group-hover:border-blue-400/50 transition-colors duration-300 pointer-events-none" />
       </div>
-      <p className="mt-2 text-[12px] font-medium text-gray-700 dark:text-gray-300 truncate text-center">{template.label}</p>
+      <p className="mt-2 text-[12px] font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 truncate text-center">{template.label}</p>
     </button>
   );
 }

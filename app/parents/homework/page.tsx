@@ -251,25 +251,25 @@ function getStatusConfig(status: Homework["status"]) {
       return {
         label: "Graded",
         icon: CheckCircle2,
-        className: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
+        className: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
       };
     case "submitted":
       return {
         label: "Submitted",
         icon: Clock,
-        className: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
+        className: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
       };
     case "pending":
       return {
         label: "Pending",
         icon: Clock,
-        className: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
+        className: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
       };
     case "overdue":
       return {
         label: "Overdue",
         icon: AlertTriangle,
-        className: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
+        className: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
       };
   }
 }
@@ -286,7 +286,7 @@ export default function ParentHomeworkPage() {
       sortable: true,
       render: (hw) => (
         <div className="flex items-center gap-3">
-          <div className="relative w-9 h-9 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+          <div className="relative w-9 h-9 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex-shrink-0">
             <Image
               src={hw.childPhoto}
               alt={hw.childName}
@@ -296,10 +296,10 @@ export default function ParentHomeworkPage() {
             />
           </div>
           <div>
-            <span className="text-sm font-medium text-gray-900 dark:text-white block">
+            <span className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 block">
               {hw.childName}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
               {hw.class} - {hw.section}
             </span>
           </div>
@@ -312,10 +312,10 @@ export default function ParentHomeworkPage() {
       sortable: true,
       render: (hw) => (
         <div>
-          <span className="text-sm font-medium text-gray-900 dark:text-white block">
+          <span className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 block">
             {hw.subject}
           </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
             {hw.teacher}
           </span>
         </div>
@@ -327,10 +327,10 @@ export default function ParentHomeworkPage() {
       sortable: true,
       render: (hw) => (
         <div className="max-w-xs">
-          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+          <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
             {hw.title}
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
             {hw.description}
           </p>
         </div>
@@ -345,7 +345,7 @@ export default function ParentHomeworkPage() {
         return (
           <div className="flex items-center gap-1.5">
             <Calendar className={`w-3.5 h-3.5 ${isOverdue ? "text-red-500" : "text-gray-400"}`} />
-            <span className={`text-sm ${isOverdue ? "text-red-600 dark:text-red-400 font-medium" : "text-gray-600 dark:text-gray-300"}`}>
+            <span className={`text-sm ${isOverdue ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 font-medium" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"}`}>
               {formatDate(hw.dueDate)}
             </span>
           </div>
@@ -378,7 +378,7 @@ export default function ParentHomeworkPage() {
         const percentage = (hw.score / (hw.maxScore || 100)) * 100;
         return (
           <div className="flex items-center gap-2">
-            <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div className="w-12 h-1.5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full ${
                   percentage >= 70 ? "bg-green-500" : percentage >= 50 ? "bg-amber-500" : "bg-red-500"
@@ -386,15 +386,15 @@ export default function ParentHomeworkPage() {
                 style={{ width: `${percentage}%` }}
               />
             </div>
-            <span className="text-sm font-semibold text-gray-900 dark:text-white">
+            <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
               {hw.score}/{hw.maxScore}
             </span>
             {hw.grade && (
               <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                hw.grade === "A" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-                hw.grade === "B" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" :
-                hw.grade === "C" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
-                "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                hw.grade === "A" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" :
+                hw.grade === "B" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" :
+                hw.grade === "C" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" :
+                "bg-red-100 text-red-700 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
               }`}>
                 {hw.grade}
               </span>
@@ -445,16 +445,16 @@ export default function ParentHomeworkPage() {
       enableExport={false}
       enableViewToggle={false}
     >
-      <div className="mt-6 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-6">
+      <div className="mt-6 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-6">
         <div className="flex items-start gap-4">
           <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
             <FileText className="w-6 h-6 text-emerald-600 dark:text-emerald-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+            <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
               Track Your Child&apos;s Progress
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
               Click the eye icon on any homework to view full details including assignment
               instructions, submission status, teacher feedback, and grades.
             </p>

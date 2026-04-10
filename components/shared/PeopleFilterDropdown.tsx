@@ -161,7 +161,7 @@ export default function PeopleFilterDropdown({
       {isOpen && (
         <div className="absolute top-full mt-1 right-0 sm:right-auto sm:left-0 w-[260px] sm:w-[300px] bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[10000] animate-in fade-in slide-in-from-top-1 duration-[120ms] overflow-hidden">
           {/* Search */}
-          <div className="p-3 border-b border-gray-100 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10">
+          <div className="p-3 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
             <SearchBar
               value={searchQuery}
               onChange={setSearchQuery}
@@ -220,7 +220,7 @@ export default function PeopleFilterDropdown({
             {/* Anyone with the link */}
             {showAnyoneOption && !searchQuery && (
               <>
-                <div className="my-1 h-px bg-gray-100 dark:bg-gray-800 mx-3" />
+                <div className="my-1 h-px bg-gray-100 dark:bg-[#1a1d24] mx-3" />
                 <button
                   onClick={() => handleSelect({ id: "anyone", name: "Anyone with the link", email: "", isMe: false })}
                   className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"

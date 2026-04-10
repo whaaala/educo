@@ -147,7 +147,7 @@ export function GridWidget({
         )}
 
         {/* Content */}
-        <div className="p-2 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900">
+        <div className="p-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
           <p className="text-xs font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 midnight:group-hover:text-indigo-400 purple:group-hover:text-pink-400 transition-colors">
             {item.title}
           </p>

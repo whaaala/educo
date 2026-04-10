@@ -128,7 +128,7 @@ const badgeVariants = {
 const highlightStyles = {
   green: "from-emerald-50 to-green-50 dark:from-emerald-900/30 dark:to-green-900/30 border-emerald-200/60 dark:border-emerald-700/60",
   red: "from-red-50 to-rose-50 dark:from-red-900/30 dark:to-rose-900/30 border-red-200/60 dark:border-red-700/60",
-  blue: "from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 border-blue-200/60 dark:border-blue-700/60",
+  blue: "from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 border-blue-200/60 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/60",
   amber: "from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30 border-amber-200/60 dark:border-amber-700/60",
   purple: "from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 border-purple-200/60 dark:border-purple-700/60",
 };
@@ -246,7 +246,7 @@ export default function DetailViewModal({
                 </div>
               )}
               {header.subtitle && (
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 font-medium">
+                <p className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-4 font-medium">
                   {header.subtitle}
                 </p>
               )}
@@ -255,7 +255,7 @@ export default function DetailViewModal({
                   {header.chips.map((chip, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800 dark:to-slate-800 text-gray-700 dark:text-gray-300 border border-gray-200/50 dark:border-gray-600/50 shadow-sm capitalize"
+                      className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800 dark:to-slate-800 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 border border-gray-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50 shadow-sm capitalize"
                     >
                       {chip.label}
                     </span>
@@ -270,16 +270,16 @@ export default function DetailViewModal({
         {sections.map((section) => (
           <div key={section.id}>
             {section.title && (
-              <h4 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+              <h4 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-widest mb-3">
                 {section.title}
               </h4>
             )}
 
             {/* Description */}
             {section.type === "description" && section.content && (
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 dark:from-gray-800/80 dark:via-gray-800/60 dark:to-gray-900/80 p-5 border border-gray-200/60 dark:border-gray-700/60 shadow-sm">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 dark:from-gray-800/80 dark:via-gray-800/60 dark:to-gray-900/80 p-5 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 shadow-sm">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-full blur-2xl" />
-                <div className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed relative z-10">
+                <div className="text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 leading-relaxed relative z-10">
                   {section.content}
                 </div>
               </div>
@@ -289,16 +289,16 @@ export default function DetailViewModal({
             {section.type === "grid" && section.fields && (
               <div className={`grid grid-cols-2 ${section.columns === 3 ? "md:grid-cols-3" : ""} gap-3`}>
                 {section.fields.map((field, idx) => {
-                  const hl = field.highlight ? highlightStyles[field.highlight] : "from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 border-gray-200/60 dark:border-gray-700/60";
+                  const hl = field.highlight ? highlightStyles[field.highlight] : "from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60";
                   return (
                     <div
                       key={idx}
                       className={`group relative overflow-hidden rounded-xl bg-gradient-to-br ${hl} p-4 border shadow-sm hover:shadow-md transition-all duration-300 ${field.fullWidth ? "col-span-2 md:col-span-full" : ""}`}
                     >
-                      <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">
+                      <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-widest mb-1.5">
                         {field.label}
                       </p>
-                      <div className={`text-sm font-bold text-gray-900 dark:text-white relative z-10 ${field.valueClassName || ""}`}>
+                      <div className={`text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 relative z-10 ${field.valueClassName || ""}`}>
                         {field.value}
                       </div>
                     </div>
@@ -313,7 +313,7 @@ export default function DetailViewModal({
                 {section.tags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-gray-100 to-slate-100 dark:from-gray-700 dark:to-slate-700 text-gray-600 dark:text-gray-300 border border-gray-200/50 dark:border-gray-600/50 shadow-sm"
+                    className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-gray-100 to-slate-100 dark:from-gray-700 dark:to-slate-700 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 border border-gray-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50 shadow-sm"
                   >
                     #{tag.label}
                   </span>
@@ -326,8 +326,8 @@ export default function DetailViewModal({
               <div className="space-y-2">
                 {section.rows.map((row, idx) => (
                   <div key={idx} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">{row.label}</span>
-                    <span className="font-medium text-gray-900 dark:text-white">{row.value}</span>
+                    <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{row.label}</span>
+                    <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{row.value}</span>
                   </div>
                 ))}
               </div>
@@ -340,10 +340,10 @@ export default function DetailViewModal({
 
         {/* Footer info */}
         {footerInfo && (
-          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200/60 dark:border-gray-700/60 pt-4">
+          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 pt-4">
             {footerInfo.items.map((item, idx) => (
               <p key={idx} className="flex items-center gap-1.5">
-                <span className="font-semibold text-gray-600 dark:text-gray-300">{item.label}:</span>
+                <span className="font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{item.label}:</span>
                 {item.value}
               </p>
             ))}

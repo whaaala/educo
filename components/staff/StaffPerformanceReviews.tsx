@@ -294,7 +294,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
         </div>
 
         {/* Filter Buttons - Matching ExamResults pattern */}
-        <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-3 sm:p-4">
+        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-3 sm:p-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             {/* Year Selector */}
             <div className="w-full sm:w-auto">
@@ -315,7 +315,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "all"
                     ? "bg-blue-600 dark:bg-blue-500 text-white shadow-sm"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
                 }`}
               >
                 <span className="flex items-center gap-1.5">
@@ -323,7 +323,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
                   <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
                     statusFilter === "all"
                       ? "bg-blue-500 dark:bg-blue-600 text-white"
-                      : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
+                      : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
                   }`}>
                     {statusCounts.all}
                   </span>
@@ -336,7 +336,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "Completed"
                     ? "bg-emerald-600 dark:bg-emerald-500 text-white shadow-sm"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
                 }`}
               >
                 <span className="flex items-center gap-1.5">
@@ -345,7 +345,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
                   <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
                     statusFilter === "Completed"
                       ? "bg-emerald-500 dark:bg-emerald-600 text-white"
-                      : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
+                      : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
                   }`}>
                     {statusCounts.Completed}
                   </span>
@@ -358,7 +358,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "Pending"
                     ? "bg-amber-600 dark:bg-amber-500 text-white shadow-sm"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
                 }`}
               >
                 <span className="flex items-center gap-1.5">
@@ -367,7 +367,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
                   <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
                     statusFilter === "Pending"
                       ? "bg-amber-500 dark:bg-amber-600 text-white"
-                      : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
+                      : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
                   }`}>
                     {statusCounts.Pending}
                   </span>
@@ -380,7 +380,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "In Progress"
                     ? "bg-cyan-600 dark:bg-cyan-500 text-white shadow-sm"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
                 }`}
               >
                 <span className="flex items-center gap-1.5">
@@ -389,7 +389,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
                   <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
                     statusFilter === "In Progress"
                       ? "bg-cyan-500 dark:bg-cyan-600 text-white"
-                      : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
+                      : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
                   }`}>
                     {statusCounts["In Progress"]}
                   </span>
@@ -401,7 +401,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
       </div>
 
       {/* Performance Reviews Table */}
-      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
         <ResponsiveListTable<PerformanceReview> variant="contained" showColumnHeaders={true}
           data={filteredReviews}
           columns={reviewColumns}

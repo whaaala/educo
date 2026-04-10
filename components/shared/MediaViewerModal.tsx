@@ -215,7 +215,7 @@ function AudioPlayer({ src, fileName }: { src: string; fileName: string }) {
       {/* Progress */}
       <div className="mb-6">
         <div className="cursor-pointer group/bar" onClick={handleSeek}>
-          <div className="relative h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full hover:h-2.5 transition-all duration-150">
+          <div className="relative h-1.5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-full hover:h-2.5 transition-all duration-150">
             <div className="absolute inset-y-0 left-0 bg-violet-500 rounded-full" style={{ width: `${progress}%` }} />
             <div className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-violet-500 rounded-full shadow-lg opacity-0 group-hover/bar:opacity-100 transition-opacity" style={{ left: `calc(${progress}% - 8px)` }} />
           </div>
@@ -228,14 +228,14 @@ function AudioPlayer({ src, fileName }: { src: string; fileName: string }) {
 
       {/* Controls */}
       <div className="flex items-center justify-center gap-8">
-        <button onClick={() => skip(-10)} className="text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer active:scale-90">
+        <button onClick={() => skip(-10)} className="text-gray-400 hover:text-gray-700 dark:hover:text-white midnight:hover:text-cyan-50 purple:hover:text-pink-50 transition-colors cursor-pointer active:scale-90">
           <SkipBack className="w-6 h-6" />
         </button>
         <button onClick={togglePlay}
           className="w-16 h-16 rounded-full bg-violet-500 hover:bg-violet-600 flex items-center justify-center shadow-xl shadow-violet-500/30 hover:shadow-2xl hover:shadow-violet-500/40 transition-all active:scale-95 cursor-pointer">
           {playing ? <Pause className="w-7 h-7 text-white" fill="white" /> : <Play className="w-7 h-7 text-white ml-0.5" fill="white" />}
         </button>
-        <button onClick={() => skip(10)} className="text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer active:scale-90">
+        <button onClick={() => skip(10)} className="text-gray-400 hover:text-gray-700 dark:hover:text-white midnight:hover:text-cyan-50 purple:hover:text-pink-50 transition-colors cursor-pointer active:scale-90">
           <SkipForward className="w-6 h-6" />
         </button>
       </div>
@@ -251,7 +251,7 @@ function ImageViewer({ src, fileName }: { src: string; fileName: string }) {
 
   return (
     <div className="flex flex-col items-center gap-4 w-full">
-      <div className="relative w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900/50 rounded-2xl overflow-hidden" style={{ minHeight: "300px", maxHeight: "78vh" }}>
+      <div className="relative w-full flex items-center justify-center bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-2xl overflow-hidden" style={{ minHeight: "300px", maxHeight: "78vh" }}>
         {!loaded && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-10 h-10 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -268,16 +268,16 @@ function ImageViewer({ src, fileName }: { src: string; fileName: string }) {
       </div>
 
       {/* Zoom controls */}
-      <div className="inline-flex items-center gap-1.5 bg-white dark:bg-gray-800 rounded-full px-3 py-1.5 shadow-lg border border-gray-200 dark:border-gray-700">
-        <button onClick={() => setZoom(z => Math.max(0.25, z - 0.25))} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+      <div className="inline-flex items-center gap-1.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-full px-3 py-1.5 shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <button onClick={() => setZoom(z => Math.max(0.25, z - 0.25))} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
           <ZoomOut className="w-4 h-4 text-gray-500" />
         </button>
-        <span className="text-[12px] font-semibold text-gray-600 dark:text-gray-400 w-10 text-center tabular-nums">{Math.round(zoom * 100)}%</span>
-        <button onClick={() => setZoom(z => Math.min(4, z + 0.25))} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+        <span className="text-[12px] font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 w-10 text-center tabular-nums">{Math.round(zoom * 100)}%</span>
+        <button onClick={() => setZoom(z => Math.min(4, z + 0.25))} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
           <ZoomIn className="w-4 h-4 text-gray-500" />
         </button>
-        <div className="w-px h-4 bg-gray-200 dark:bg-gray-700" />
-        <button onClick={() => setZoom(1)} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer" title="Reset zoom">
+        <div className="w-px h-4 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
+        <button onClick={() => setZoom(1)} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer" title="Reset zoom">
           <RotateCcw className="w-3.5 h-3.5 text-gray-500" />
         </button>
       </div>
@@ -311,26 +311,26 @@ export default function MediaViewerModal({
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
         {/* Modal */}
-        <div className="relative z-10 w-full max-w-6xl bg-white dark:bg-[#1a1d23] midnight:bg-[#111827] purple:bg-[#1e1030] rounded-2xl shadow-[0_25px_60px_-12px_rgba(0,0,0,0.5)] animate-in zoom-in-[0.97] fade-in duration-200 flex flex-col max-h-[94vh] overflow-hidden">
+        <div className="relative z-10 w-full max-w-6xl bg-white dark:bg-[#1a1d23] midnight:bg-[#0a0e27] purple:bg-[#1e1030] rounded-2xl shadow-[0_25px_60px_-12px_rgba(0,0,0,0.5)] animate-in zoom-in-[0.97] fade-in duration-200 flex flex-col max-h-[94vh] overflow-hidden">
 
           {/* Header */}
-          <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 flex-shrink-0">
             <div className="flex items-center gap-3 min-w-0">
               <div className={`w-9 h-9 rounded-xl ${typeBg} flex items-center justify-center flex-shrink-0`}>
                 <span className={typeColor}>{typeIcon}</span>
               </div>
               <div className="min-w-0">
-                <p className="text-[14px] font-semibold text-gray-900 dark:text-white truncate">{fileName}</p>
+                <p className="text-[14px] font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{fileName}</p>
                 {fileSize && <p className="text-[11px] text-gray-400 mt-0.5">{fileSize}</p>}
               </div>
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
               {onDownload && (
-                <button onClick={onDownload} className="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 transition-all cursor-pointer" title="Download">
+                <button onClick={onDownload} className="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 midnight:hover:text-cyan-100 purple:hover:text-pink-100 hover:bg-gray-100 dark:hover:bg-white/5 transition-all cursor-pointer" title="Download">
                   <Download className="w-4 h-4" />
                 </button>
               )}
-              <button onClick={onClose} className="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 transition-all cursor-pointer" title="Close">
+              <button onClick={onClose} className="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 midnight:hover:text-cyan-100 purple:hover:text-pink-100 hover:bg-gray-100 dark:hover:bg-white/5 transition-all cursor-pointer" title="Close">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -343,8 +343,8 @@ export default function MediaViewerModal({
                 <div className={`w-16 h-16 rounded-2xl ${typeBg} flex items-center justify-center mb-4`}>
                   <span className={`${typeColor} opacity-50`}>{type === "video" ? <Film className="w-8 h-8" /> : type === "audio" ? <Music className="w-8 h-8" /> : <ImageIcon className="w-8 h-8" />}</span>
                 </div>
-                <p className="text-[15px] font-semibold text-gray-400 dark:text-gray-500">No preview available</p>
-                <p className="text-[13px] text-gray-300 dark:text-gray-600 mt-1">This file was uploaded to your Drive storage</p>
+                <p className="text-[15px] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">No preview available</p>
+                <p className="text-[13px] text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 mt-1">This file was uploaded to your Drive storage</p>
               </div>
             ) : (
               <>

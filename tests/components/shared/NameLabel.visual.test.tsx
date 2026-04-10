@@ -9,7 +9,7 @@ describe("NameLabel — Visual / CSS", () => {
 
       const label = screen.getByText("John");
       expect(label.className).toContain("bg-gray-900");
-      expect(label.className).toContain("dark:bg-gray-800");
+      expect(label.className).toContain("dark:bg-[#1a1d24]");
       expect(label.className).toContain("midnight:bg-gray-950");
       expect(label.className).toContain("purple:bg-gray-950");
     });

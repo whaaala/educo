@@ -73,7 +73,7 @@ describe("ConfirmationModal — Visual / CSS", () => {
       render(<ConfirmationModal {...defaultProps} />);
       const cancel = screen.getByText("Cancel");
       expect(cancel.className).toContain("bg-white");
-      expect(cancel.className).toContain("dark:bg-gray-800");
+      expect(cancel.className).toContain("dark:bg-[#1a1d24]");
       expect(cancel.className).toContain("border");
       expect(cancel.className).toContain("rounded-lg");
     });

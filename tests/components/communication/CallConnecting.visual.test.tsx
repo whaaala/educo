@@ -23,7 +23,7 @@ describe("CallConnecting — Visual / CSS", () => {
     it("has dark theme background", () => {
       const { container } = render(<CallConnecting callType="video" />);
       const outer = container.firstChild as HTMLElement;
-      expect(outer.className).toContain("dark:bg-gray-900");
+      expect(outer.className).toContain("dark:bg-[#0f1115]");
     });
 
     it("has midnight theme background", () => {

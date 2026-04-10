@@ -724,7 +724,7 @@ export default function IssueBookModal({
           title="Book Information"
           icon={<BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
         >
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+          <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
             <div className="flex items-start gap-4">
               {book.coverImage ? (
                 <img
@@ -745,7 +745,7 @@ export default function IssueBookModal({
                   by {book.author}
                 </p>
                 <div className="flex flex-wrap items-center gap-2 mt-2">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300">
                     <Hash className="w-3 h-3" />
                     {book.isbn}
                   </span>
@@ -769,14 +769,14 @@ export default function IssueBookModal({
         >
           {/* Selected Member Display */}
           {selectedMember ? (
-            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+            <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
                   {selectedMember.avatarUrl ? (
                     <img
                       src={selectedMember.avatarUrl}
                       alt={selectedMember.name}
-                      className="w-10 h-10 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-gray-700"
+                      className="w-10 h-10 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-[#22262e]"
                     />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/40 dark:to-purple-800/40 flex items-center justify-center">
@@ -889,7 +889,7 @@ export default function IssueBookModal({
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search by name, ID, class, or department..."
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                     />
                   </div>
 
@@ -901,14 +901,14 @@ export default function IssueBookModal({
                           key={member.id}
                           type="button"
                           onClick={() => handleSelectMember(member)}
-                          className="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                          className="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
                         >
                           <div className="flex items-start gap-3">
                             {member.avatarUrl ? (
                               <img
                                 src={member.avatarUrl}
                                 alt={member.name}
-                                className="w-8 h-8 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-gray-700"
+                                className="w-8 h-8 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-[#22262e]"
                               />
                             ) : (
                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center flex-shrink-0">

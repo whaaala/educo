@@ -96,7 +96,7 @@ export default function AvatarHover({
             </div>
           )}
           {/* Name label */}
-          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-3 py-1 bg-gray-900 dark:bg-gray-800 text-white text-[11px] font-semibold rounded-lg shadow-lg whitespace-nowrap border border-gray-700 dark:border-gray-700">
+          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-3 py-1 bg-gray-900 dark:bg-[#1a1d24] text-white text-[11px] font-semibold rounded-lg shadow-lg whitespace-nowrap border border-gray-700 dark:border-gray-700">
             {name}
           </div>
         </div>,

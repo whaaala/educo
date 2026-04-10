@@ -48,7 +48,7 @@ export default function TransferStatusBadge({ status, size = "md" }: TransferSta
     cancelled: {
       icon: Ban,
       label: "Cancelled",
-      className: "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800",
+      className: "bg-gray-100 text-gray-700 border-gray-200 dark:bg-[#0f1115]/20 dark:text-gray-400 dark:border-[#1a1d24]",
     },
   };
 

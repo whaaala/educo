@@ -565,7 +565,7 @@ export default function AddMemberModal({
                   ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
                   : step.completed
                     ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                    : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                    : "bg-gray-100 text-gray-500 dark:bg-[#1a1d24] dark:text-gray-400"
               }`}>
                 {step.completed && !isActive ? (
                   <CheckCircle2 className="w-3.5 h-3.5" />
@@ -659,7 +659,7 @@ export default function AddMemberModal({
               {/* Student Option */}
               <button
                 onClick={() => handleSelectCategory("student")}
-                className="group relative p-5 rounded-xl border-2 transition-all duration-200 hover:shadow-lg text-left border-gray-200 dark:border-gray-700 hover:border-purple-400 dark:hover:border-purple-600 bg-white dark:bg-gray-800"
+                className="group relative p-5 rounded-xl border-2 transition-all duration-200 hover:shadow-lg text-left border-gray-200 dark:border-gray-700 hover:border-purple-400 dark:hover:border-purple-600 bg-white dark:bg-[#1a1d24]"
               >
                 <div className="flex items-start gap-4">
                   <div className="p-3 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
@@ -678,7 +678,7 @@ export default function AddMemberModal({
               {/* Personnel Option */}
               <button
                 onClick={() => handleSelectCategory("personnel")}
-                className="group relative p-5 rounded-xl border-2 transition-all duration-200 hover:shadow-lg text-left border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600 bg-white dark:bg-gray-800"
+                className="group relative p-5 rounded-xl border-2 transition-all duration-200 hover:shadow-lg text-left border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600 bg-white dark:bg-[#1a1d24]"
               >
                 <div className="flex items-start gap-4">
                   <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
@@ -716,7 +716,7 @@ export default function AddMemberModal({
                   <button
                     key={option.type}
                     onClick={() => handleSelectPersonnelType(option.type)}
-                    className={`group relative p-5 rounded-xl border-2 transition-all duration-200 hover:shadow-lg text-left border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ${
+                    className={`group relative p-5 rounded-xl border-2 transition-all duration-200 hover:shadow-lg text-left border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1d24] ${
                       isCyan
                         ? "hover:border-cyan-400 dark:hover:border-cyan-600"
                         : "hover:border-orange-400 dark:hover:border-orange-600"
@@ -801,7 +801,7 @@ export default function AddMemberModal({
                   value={personSearchQuery}
                   onChange={(e) => setPersonSearchQuery(e.target.value)}
                   placeholder={`Search ${formData.type === "teacher" && hasTertiaryLevel ? "lecturer" : formData.type}s by name, email...`}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
                 />
               </div>
             )}
@@ -828,7 +828,7 @@ export default function AddMemberModal({
                     onClick={() => handleSelectPerson(person)}
                     className="w-full flex items-center gap-3 p-3 hover:bg-purple-50/50 dark:hover:bg-purple-900/10 transition-all text-left cursor-pointer group"
                   >
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                    <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-100 dark:bg-[#22262e] flex-shrink-0">
                       <Image
                         src={person.avatarUrl || ""}
                         alt={person.name}
@@ -875,7 +875,7 @@ export default function AddMemberModal({
             {selectedPerson && (
               <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
                 <div className="flex items-start gap-4">
-                  <div className="relative w-14 h-14 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0 ring-2 ring-white dark:ring-gray-700">
+                  <div className="relative w-14 h-14 rounded-full overflow-hidden bg-gray-100 dark:bg-[#22262e] flex-shrink-0 ring-2 ring-white dark:ring-gray-700">
                     <Image
                       src={selectedPerson.avatarUrl || ""}
                       alt={selectedPerson.name}

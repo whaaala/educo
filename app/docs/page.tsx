@@ -83,7 +83,7 @@ export default function DocsPage() {
                   className={`w-full text-left p-4 rounded-lg transition-all duration-200 ${
                     activeDoc === doc.id
                       ? "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 border-2 border-blue-500 dark:border-blue-600 midnight:border-cyan-500 purple:border-pink-500"
-                      : "bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-blue-300 dark:hover:border-blue-600"
+                      : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-blue-300 dark:hover:border-blue-600"
                   }`}
                 >
                   <div className="flex items-center gap-3 mb-1">
@@ -113,7 +113,7 @@ export default function DocsPage() {
           </div>
 
           {/* Content */}
-          <div className="flex-1 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-auto">
+          <div className="flex-1 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-auto">
             <div className="p-8">
               {activeDoc === "overview" && <OverviewDoc />}
               {activeDoc === "feature-flags" && <FeatureFlagsDoc />}
@@ -308,7 +308,7 @@ function FeatureFlagsDoc() {
             {category.flags.map((flag) => (
               <div
                 key={flag.name}
-                className="flex items-center justify-between p-4 bg-white dark:bg-gray-700/50 midnight:bg-gray-700/50 purple:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
+                className="flex items-center justify-between p-4 bg-white dark:bg-[#22262e]/50 midnight:bg-gray-700/50 purple:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
               >
                 <div className="flex-1">
                   <code className="text-sm font-mono text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
@@ -322,7 +322,7 @@ function FeatureFlagsDoc() {
                   className={`px-3 py-1 rounded-full text-xs font-semibold ${
                     flag.enabled
                       ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
-                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400"
+                      : "bg-gray-100 dark:bg-[#1a1d24] text-gray-700 dark:text-gray-400"
                   }`}
                 >
                   {flag.enabled ? "Enabled" : "Disabled"}
@@ -460,7 +460,7 @@ function ImplementationDoc() {
         {implementationStatus.map((item) => (
           <div
             key={item.phase}
-            className="p-4 bg-white dark:bg-gray-700/50 midnight:bg-gray-700/50 purple:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
+            className="p-4 bg-white dark:bg-[#22262e]/50 midnight:bg-gray-700/50 purple:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
           >
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
@@ -472,7 +472,7 @@ function ImplementationDoc() {
                     ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
                     : item.status === "in-progress"
                     ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400"
+                    : "bg-gray-100 dark:bg-[#1a1d24] text-gray-700 dark:text-gray-400"
                 }`}
               >
                 {item.status === "completed" ? "✅ Completed" : item.status === "in-progress" ? "🚧 In Progress" : "📋 Pending"}
@@ -480,14 +480,14 @@ function ImplementationDoc() {
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div className="w-full bg-gray-200 dark:bg-[#22262e] rounded-full h-2">
               <div
                 className={`h-2 rounded-full transition-all duration-300 ${
                   item.progress === 100
                     ? "bg-green-500 dark:bg-green-600"
                     : item.progress > 0
                     ? "bg-blue-500 dark:bg-blue-600"
-                    : "bg-gray-300 dark:bg-gray-600"
+                    : "bg-gray-300 dark:bg-[#2a2d35]"
                 }`}
                 style={{ width: `${item.progress}%` }}
               />

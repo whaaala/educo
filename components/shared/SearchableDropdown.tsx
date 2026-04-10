@@ -204,7 +204,7 @@ export default function SearchableDropdown({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="appearance-none w-full text-sm font-normal text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-500 purple:focus:border-pink-500 rounded-xl px-4 py-2.5 pr-10 cursor-pointer outline-none focus:ring-2 transition-all duration-200 border text-left"
+          className="appearance-none w-full text-sm font-normal text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-500 purple:focus:border-pink-500 rounded-xl px-4 py-2.5 pr-10 cursor-pointer outline-none focus:ring-2 transition-all duration-200 border text-left"
         >
           {selectedOption?.label || (
             <span className="text-gray-400/70 dark:text-gray-500/70 midnight:text-cyan-400/50 purple:text-pink-400/50 italic font-normal">
@@ -222,7 +222,7 @@ export default function SearchableDropdown({
 
         {/* Custom Dropdown Menu */}
         {isOpen && (
-          <div className="absolute top-full mt-1 left-0 w-full bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[10000] flex flex-col max-h-80">
+          <div className="absolute top-full mt-1 left-0 w-full bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[10000] flex flex-col max-h-80">
             {/* Search Input */}
             <div className="p-2 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="relative">
@@ -241,7 +241,7 @@ export default function SearchableDropdown({
                     }
                   }}
                   placeholder={searchPlaceholder}
-                  className="w-full pl-10 pr-8 py-2 text-sm bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-500 purple:focus:border-pink-500"
+                  className="w-full pl-10 pr-8 py-2 text-sm bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-500 purple:focus:border-pink-500"
                   autoFocus
                   onKeyDown={(e) => {
                     // Prevent dropdown from closing on Escape if searching
@@ -279,7 +279,7 @@ export default function SearchableDropdown({
                     className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
                       value === option.value
                         ? "bg-blue-600 text-white"
-                        : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                        : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                     }`}
                   >
                     {option.label}

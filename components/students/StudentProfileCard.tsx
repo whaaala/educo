@@ -127,7 +127,7 @@ export default function StudentProfileCard({
         <div className="space-y-1.5 sm:space-y-3">
           {/* Roll No */}
           {studentData.rollNumber && (
-            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Roll No</span>
               <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.rollNumber}</span>
             </div>
@@ -135,7 +135,7 @@ export default function StudentProfileCard({
 
           {/* Gender */}
           {studentData.gender && (
-            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Gender</span>
               <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.gender}</span>
             </div>
@@ -143,7 +143,7 @@ export default function StudentProfileCard({
 
           {/* Date Of Birth */}
           {studentData.dateOfBirth && (
-            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Date Of Birth</span>
               <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                 {formatDate(studentData.dateOfBirth)}
@@ -153,7 +153,7 @@ export default function StudentProfileCard({
 
           {/* Blood Group */}
           {studentData.bloodGroup && (
-            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Blood Group</span>
               <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.bloodGroup}</span>
             </div>
@@ -161,7 +161,7 @@ export default function StudentProfileCard({
 
           {/* Religion */}
           {studentData.religion && (
-            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Religion</span>
               <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.religion}</span>
             </div>
@@ -169,7 +169,7 @@ export default function StudentProfileCard({
 
           {/* Caste */}
           {studentData.caste && (
-            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Caste</span>
               <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.caste}</span>
             </div>
@@ -177,7 +177,7 @@ export default function StudentProfileCard({
 
           {/* Category */}
           {studentData.category && (
-            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Category</span>
               <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.category}</span>
             </div>
@@ -185,14 +185,14 @@ export default function StudentProfileCard({
 
           {/* Mother tongue */}
           {studentData.motherTongue && (
-            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Mother tongue</span>
               <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.motherTongue}</span>
             </div>
           )}
 
           {/* Language */}
-          <div className="flex justify-between items-start py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/20 purple:hover:bg-gray-800/20 transition-colors">
+          <div className="flex justify-between items-start py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
             <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 pt-0.5 sm:pt-1">Language</span>
             <div className="flex gap-1 sm:gap-1.5 flex-wrap justify-end">
               {Array.isArray(studentData.languagesKnown) && studentData.languagesKnown.length > 0 ? (

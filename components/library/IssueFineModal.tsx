@@ -332,7 +332,7 @@ export default function IssueFineModal({
                   }`}
                 >
                   <div className="flex flex-col items-center gap-2">
-                    <div className={`p-2 rounded-lg ${isSelected ? config.bgClass : "bg-gray-100 dark:bg-gray-800"}`}>
+                    <div className={`p-2 rounded-lg ${isSelected ? config.bgClass : "bg-gray-100 dark:bg-[#1a1d24]"}`}>
                       <span className={isSelected ? config.textClass : "text-gray-500 dark:text-gray-400"}>
                         {getFineTypeIcon(type)}
                       </span>
@@ -385,7 +385,7 @@ export default function IssueFineModal({
 
           {/* Calculation breakdown */}
           {useAutoCalculation && fineType === "overdue" && daysOverdue > 0 && (
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24]/50 text-xs text-gray-500 dark:text-gray-400">
               <Info className="w-4 h-4" />
               <span>
                 {daysOverdue} days × {formatCurrency(finePerDay)} = {formatCurrency(fineAmount)}

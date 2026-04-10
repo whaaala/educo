@@ -52,30 +52,30 @@ export interface EntityCardProps<T> {
 
 // Badge color classes
 const badgeColors: Record<ColorVariant, string> = {
-  blue: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
-  green: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
-  red: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
+  blue: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
+  green: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
+  red: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
   orange: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400",
   purple: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
-  amber: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
+  amber: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
   indigo: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400",
   teal: "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400",
   pink: "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400",
-  gray: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300",
+  gray: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200",
 };
 
 // Stat color classes
 const statColors: Record<ColorVariant, string> = {
-  blue: "text-blue-600 dark:text-blue-400",
-  green: "text-green-600 dark:text-green-400",
-  red: "text-red-600 dark:text-red-400",
+  blue: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
+  green: "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
+  red: "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
   orange: "text-orange-600 dark:text-orange-400",
   purple: "text-purple-600 dark:text-purple-400",
-  amber: "text-amber-600 dark:text-amber-400",
+  amber: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
   indigo: "text-indigo-600 dark:text-indigo-400",
   teal: "text-teal-600 dark:text-teal-400",
   pink: "text-pink-600 dark:text-pink-400",
-  gray: "text-gray-600 dark:text-gray-400",
+  gray: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
 };
 
 /**
@@ -164,12 +164,12 @@ export default function EntityCard<T>({
     <div
       ref={cardRef}
       className={`
-        relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900
+        relative bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]
         rounded-xl border transition-all duration-200
         ${
           isSelected
             ? "border-blue-500 dark:border-blue-400 midnight:border-cyan-500 purple:border-pink-500 ring-2 ring-blue-500/20"
-            : "border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 hover:border-gray-300 dark:hover:border-gray-600"
+            : "border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
         }
         ${onClick ? "cursor-pointer hover:shadow-md" : ""}
         ${className}
@@ -202,20 +202,20 @@ export default function EntityCard<T>({
               p-1.5 rounded-lg transition-colors cursor-pointer
               ${
                 showMenu
-                  ? "bg-gray-200 dark:bg-gray-600"
-                  : "hover:bg-gray-100 dark:hover:bg-gray-700 bg-white/80 dark:bg-gray-800/80"
+                  ? "bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700"
+                  : "hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80"
               }
             `}
           >
-            <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+            <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
           </button>
 
           {showMenu && (
             <div
               className={`
                 absolute right-0 z-50 min-w-[160px]
-                bg-white dark:bg-gray-800 rounded-xl shadow-xl
-                border border-gray-200 dark:border-gray-700
+                bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-xl
+                border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20
                 py-1 animate-in zoom-in-95 duration-150
                 ${menuPosition === "top" ? "bottom-full mb-1" : "top-full mt-1"}
               `}
@@ -239,8 +239,8 @@ export default function EntityCard<T>({
                       transition-colors cursor-pointer
                       ${
                         isDanger
-                          ? "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20"
+                          : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                       }
                     `}
                   >
@@ -259,7 +259,7 @@ export default function EntityCard<T>({
         {/* Avatar & Title Section */}
         <div className="flex items-start gap-3 mb-3">
           {/* Avatar */}
-          <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden flex-shrink-0 bg-gray-200 dark:bg-gray-700">
+          <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden flex-shrink-0 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]">
             {avatar ? (
               <Image
                 src={avatar}
@@ -284,12 +284,12 @@ export default function EntityCard<T>({
               {title}
             </h3>
             {subtitle && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
                 {subtitle}
               </p>
             )}
             {secondaryInfo && (
-              <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">
+              <p className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 truncate mt-0.5">
                 {secondaryInfo}
               </p>
             )}
@@ -312,18 +312,18 @@ export default function EntityCard<T>({
 
         {/* Stats */}
         {stats && stats.length > 0 && (
-          <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+          <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             {stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
                 <div key={index} className="text-center">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-0.5">
                     {stat.label}
                   </p>
                   <p
                     className={`
                       text-sm font-semibold flex items-center justify-center gap-1
-                      ${stat.color ? statColors[stat.color] : "text-gray-900 dark:text-white"}
+                      ${stat.color ? statColors[stat.color] : "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"}
                     `}
                   >
                     {Icon && <Icon className="w-3.5 h-3.5" />}

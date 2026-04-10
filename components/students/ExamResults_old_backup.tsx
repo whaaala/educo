@@ -316,12 +316,12 @@ export default function ExamResults({
           return (
             <div
               key={exam.id}
-              className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-200 hover:shadow-md"
+              className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-200 hover:shadow-md"
             >
               {/* Exam Header - Clickable */}
               <button
                 onClick={() => toggleExam(exam.id)}
-                className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 midnight:hover:bg-gray-700/50 purple:hover:bg-gray-700/50 transition-colors cursor-pointer"
+                className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 hover:bg-gray-100 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10/50 purple:hover:bg-pink-500/10/50 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30">
@@ -354,7 +354,7 @@ export default function ExamResults({
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr className="bg-gray-50 dark:bg-gray-700/30 midnight:bg-gray-700/30 purple:bg-gray-700/30 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                        <tr className="bg-gray-50 dark:bg-[#22262e]/30 midnight:bg-gray-700/30 purple:bg-gray-700/30 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                           <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
                             {isTertiary ? "Course" : "Subject"}
                           </th>
@@ -384,7 +384,7 @@ export default function ExamResults({
                       </thead>
                       <tbody className="divide-y divide-gray-200 dark:divide-gray-700 midnight:divide-cyan-500/10 purple:divide-pink-500/10">
                         {exam.subjects.map((subject, index) => (
-                          <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/20 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
+                          <tr key={index} className="hover:bg-gray-50 dark:hover:bg-[#22262e]/20 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
                             <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
                               {subject.name} ({subject.code})
                             </td>
@@ -426,7 +426,7 @@ export default function ExamResults({
                   </div>
 
                   {/* Summary Footer */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-gray-900 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 rounded-lg text-white">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-gray-900 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-lg text-white">
                     <div className="flex flex-wrap items-center gap-4 sm:gap-6">
                       {!isTertiary && exam.rank !== undefined && (
                         <div className="text-sm">

@@ -126,7 +126,7 @@ export default function NotificationDropdown() {
 
   const getNotificationColors = (type: NotificationType) => {
     const colors: Record<NotificationType, { bg: string; text: string; gradient: string }> = {
-      general: { bg: "bg-gray-100 dark:bg-gray-700/50", text: "text-gray-600 dark:text-gray-400", gradient: "from-gray-500 to-gray-600" },
+      general: { bg: "bg-gray-100 dark:bg-[#22262e]/50", text: "text-gray-600 dark:text-gray-400", gradient: "from-gray-500 to-gray-600" },
       performance: { bg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-600 dark:text-amber-400", gradient: "from-amber-500 to-orange-500" },
       appointment: { bg: "bg-purple-50 dark:bg-purple-500/10", text: "text-purple-600 dark:text-purple-400", gradient: "from-purple-500 to-pink-500" },
       record: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", gradient: "from-blue-500 to-indigo-500" },
@@ -161,7 +161,7 @@ export default function NotificationDropdown() {
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative w-10 h-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 cursor-pointer group"
+        className="relative w-10 h-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#22262e] rounded-xl transition-all duration-200 cursor-pointer group"
         aria-label="Notifications"
         aria-expanded={isOpen}
       >
@@ -189,7 +189,7 @@ export default function NotificationDropdown() {
             <div
               ref={dropdownRef}
               style={dropdownStyle}
-              className="w-[380px] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700/50 z-[9999] transition-colors duration-300 overflow-hidden flex flex-col"
+              className="w-[380px] bg-white dark:bg-[#0f1115] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700/50 z-[9999] transition-colors duration-300 overflow-hidden flex flex-col"
               role="menu"
               aria-orientation="vertical"
               onClick={(e) => e.stopPropagation()}
@@ -223,7 +223,7 @@ export default function NotificationDropdown() {
 
               {/* Mark All as Read */}
               {unreadCount > 0 && (
-                <div className="px-5 py-2.5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                <div className="px-5 py-2.5 border-b border-gray-100 dark:border-[#1a1d24] bg-gray-50/50 dark:bg-[#1a1d24]/30">
                   <button
                     type="button"
                     onClick={(e) => {
@@ -242,7 +242,7 @@ export default function NotificationDropdown() {
               <div className="max-h-[360px] overflow-y-auto">
                 {displayNotifications.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 px-4">
-                    <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                    <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] flex items-center justify-center mb-4">
                       <Bell className="w-8 h-8 text-gray-400" />
                     </div>
                     <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -263,7 +263,7 @@ export default function NotificationDropdown() {
                         <div
                           key={notification.id}
                           onClick={isPermRequest ? undefined : () => handleNotificationClick(notification)}
-                          className={`w-full text-left p-4 transition-all duration-200 cursor-pointer group hover:bg-gray-50/50 dark:hover:bg-gray-800/30 relative ${
+                          className={`w-full text-left p-4 transition-all duration-200 cursor-pointer group hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 relative ${
                             !notification.read
                               ? "bg-gradient-to-r from-blue-50/50 via-transparent to-transparent dark:from-blue-500/5 dark:via-transparent"
                               : ""
@@ -363,7 +363,7 @@ export default function NotificationDropdown() {
                                   }
                                   markAsRead(notification.id);
                                 }}
-                                className="px-3 py-1.5 text-[11px] font-semibold text-gray-700 dark:text-gray-200 bg-gray-100/80 dark:bg-gray-700/50 hover:bg-gray-200/80 dark:hover:bg-gray-600/50 border border-gray-200/50 dark:border-gray-600/50 rounded-lg transition-all cursor-pointer"
+                                className="px-3 py-1.5 text-[11px] font-semibold text-gray-700 dark:text-gray-200 bg-gray-100/80 dark:bg-[#22262e]/50 hover:bg-gray-200/80 dark:hover:bg-[#2a2d35]/50 border border-gray-200/50 dark:border-gray-600/50 rounded-lg transition-all cursor-pointer"
                               >
                                 ✗ Deny
                               </button>
@@ -378,7 +378,7 @@ export default function NotificationDropdown() {
 
               {/* Footer */}
               {notifications.length > 0 && (
-                <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                <div className="px-4 py-3 border-t border-gray-100 dark:border-[#1a1d24] bg-gray-50/50 dark:bg-[#1a1d24]/30">
                   <button
                     type="button"
                     onClick={(e) => {

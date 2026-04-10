@@ -115,7 +115,7 @@ export default function TransferDetailsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-gray-900 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="relative px-6 py-5 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 midnight:from-cyan-900/10 midnight:to-cyan-800/10 purple:from-pink-900/10 purple:to-pink-800/10">
           <div className="flex items-start justify-between">
@@ -151,7 +151,7 @@ export default function TransferDetailsModal({
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
+              className="p-2 rounded-lg hover:bg-white/50 dark:hover:bg-[#22262e]/50 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
             </button>
@@ -162,7 +162,7 @@ export default function TransferDetailsModal({
         <div className="flex-1 overflow-y-auto px-6 py-6">
           <div className="space-y-6">
             {/* Staff Information Section */}
-            <div className="bg-gray-50 dark:bg-gray-800/50 midnight:bg-cyan-900/10 purple:bg-pink-900/10 rounded-xl p-5 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-cyan-900/10 purple:bg-pink-900/10 rounded-xl p-5 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4 flex items-center gap-2">
                 <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 Staff Information
@@ -203,14 +203,14 @@ export default function TransferDetailsModal({
                 {transferChange.label}
               </h3>
               <div className="flex items-center justify-center gap-4">
-                <div className="flex-1 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="flex-1 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Current</p>
                   <p className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                     {transferChange.from || "-"}
                   </p>
                 </div>
                 <ArrowRight className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                <div className="flex-1 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="flex-1 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">New</p>
                   <p className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                     {transferChange.to || "-"}
@@ -229,25 +229,25 @@ export default function TransferDetailsModal({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {transfer.currentSalary && transfer.newSalary && (
                     <>
-                      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-4 border border-amber-200 dark:border-amber-700">
+                      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-4 border border-amber-200 dark:border-amber-700">
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Current Salary</p>
                         <p className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                           ₦{transfer.currentSalary.toLocaleString()}
                         </p>
                       </div>
-                      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-4 border border-amber-200 dark:border-amber-700">
+                      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-4 border border-amber-200 dark:border-amber-700">
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">New Salary</p>
                         <p className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                           ₦{transfer.newSalary.toLocaleString()}
                         </p>
                       </div>
-                      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-4 border border-amber-200 dark:border-amber-700">
+                      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-4 border border-amber-200 dark:border-amber-700">
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Salary Increase</p>
                         <p className="text-lg font-bold text-amber-700 dark:text-amber-300">
                           ₦{(transfer.newSalary - transfer.currentSalary).toLocaleString()}
                         </p>
                       </div>
-                      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-4 border border-amber-200 dark:border-amber-700">
+                      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-4 border border-amber-200 dark:border-amber-700">
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Percentage Increase</p>
                         <p className="text-lg font-bold text-amber-700 dark:text-amber-300">
                           {(((transfer.newSalary - transfer.currentSalary) / transfer.currentSalary) * 100).toFixed(2)}%
@@ -257,7 +257,7 @@ export default function TransferDetailsModal({
                   )}
                 </div>
                 {transfer.newResponsibilities && (
-                  <div className="mt-4 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-4 border border-amber-200 dark:border-amber-700">
+                  <div className="mt-4 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-4 border border-amber-200 dark:border-amber-700">
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">New Responsibilities</p>
                     <p className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 whitespace-pre-wrap">
                       {transfer.newResponsibilities}
@@ -276,7 +276,7 @@ export default function TransferDetailsModal({
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {transfer.lastWorkingDay && (
-                    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-4 border border-red-200 dark:border-red-700">
+                    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-4 border border-red-200 dark:border-red-700">
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Last Working Day</p>
                       <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                         {formatDate(transfer.lastWorkingDay)}
@@ -284,7 +284,7 @@ export default function TransferDetailsModal({
                     </div>
                   )}
                   {transfer.severancePackage && transfer.severancePackage > 0 && (
-                    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-4 border border-red-200 dark:border-red-700">
+                    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-4 border border-red-200 dark:border-red-700">
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Severance Package</p>
                       <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                         ₦{transfer.severancePackage.toLocaleString()}
@@ -293,7 +293,7 @@ export default function TransferDetailsModal({
                   )}
                 </div>
                 {transfer.terminationReason && (
-                  <div className="mt-4 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-4 border border-red-200 dark:border-red-700">
+                  <div className="mt-4 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-4 border border-red-200 dark:border-red-700">
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Termination Reason</p>
                     <p className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 whitespace-pre-wrap">
                       {transfer.terminationReason}
@@ -305,7 +305,7 @@ export default function TransferDetailsModal({
 
             {/* Current Position Details */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
                   <Building2 className="w-3 h-3" />
                   Current Department
@@ -314,7 +314,7 @@ export default function TransferDetailsModal({
                   {transfer.currentDepartment}
                 </p>
               </div>
-              <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
                   Current Branch
@@ -324,7 +324,7 @@ export default function TransferDetailsModal({
                 </p>
               </div>
               {transfer.currentLocation && (
-                <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
                     Current Location
@@ -337,7 +337,7 @@ export default function TransferDetailsModal({
             </div>
 
             {/* Timeline Section */}
-            <div className="bg-gray-50 dark:bg-gray-800/50 midnight:bg-cyan-900/10 purple:bg-pink-900/10 rounded-xl p-5 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-cyan-900/10 purple:bg-pink-900/10 rounded-xl p-5 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 Timeline
@@ -376,7 +376,7 @@ export default function TransferDetailsModal({
             </div>
 
             {/* Reason Section */}
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-5 border border-gray-200 dark:border-gray-700">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2 flex items-center gap-2">
                 <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 Transfer Reason
@@ -388,7 +388,7 @@ export default function TransferDetailsModal({
 
             {/* Remarks (if any) */}
             {transfer.remarks && (
-              <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-5 border border-gray-200 dark:border-gray-700">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2 flex items-center gap-2">
                   <MessageSquare className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                   Additional Remarks
@@ -401,7 +401,7 @@ export default function TransferDetailsModal({
 
             {/* Approval Section (if approved/rejected) */}
             {(transfer.approvedBy || transfer.rejectedBy) && (
-              <div className="bg-gray-50 dark:bg-gray-800/50 midnight:bg-cyan-900/10 purple:bg-pink-900/10 rounded-xl p-5 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+              <div className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-cyan-900/10 purple:bg-pink-900/10 rounded-xl p-5 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
                   Approval Information
                 </h3>
@@ -436,7 +436,7 @@ export default function TransferDetailsModal({
 
         {/* Footer Actions */}
         {transfer.status === "pending" && (onApprove || onReject) && (
-          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-gray-800/50 midnight:bg-cyan-900/5 purple:bg-pink-900/5">
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-cyan-900/5 purple:bg-pink-900/5">
             <div className="flex items-center justify-end gap-3">
               {onReject && (
                 <button
@@ -447,7 +447,7 @@ export default function TransferDetailsModal({
                       onClose();
                     }
                   }}
-                  className="px-5 py-2.5 text-sm font-medium text-red-700 dark:text-red-300 bg-white dark:bg-gray-800 border-2 border-red-300 dark:border-red-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors shadow-sm cursor-pointer flex items-center gap-2"
+                  className="px-5 py-2.5 text-sm font-medium text-red-700 dark:text-red-300 bg-white dark:bg-[#1a1d24] border-2 border-red-300 dark:border-red-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors shadow-sm cursor-pointer flex items-center gap-2"
                 >
                   <XCircle className="w-4 h-4" />
                   Reject Request
@@ -470,7 +470,7 @@ export default function TransferDetailsModal({
         )}
 
         {transfer.status === "approved" && onProcess && (
-          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-gray-800/50 midnight:bg-cyan-900/5 purple:bg-pink-900/5">
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-cyan-900/5 purple:bg-pink-900/5">
             <div className="flex items-center justify-end gap-3">
               <button
                 onClick={() => {

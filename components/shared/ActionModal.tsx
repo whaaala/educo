@@ -79,20 +79,20 @@ const variantConfig: Record<ActionVariant, {
 }> = {
   danger: {
     icon: XCircle,
-    iconBg: "bg-red-100 dark:bg-red-900/30",
-    iconColor: "text-red-600 dark:text-red-400",
+    iconBg: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30",
+    iconColor: "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
     accentBorder: "border-l-red-500",
   },
   warning: {
     icon: AlertTriangle,
     iconBg: "bg-amber-100 dark:bg-amber-900/30",
-    iconColor: "text-amber-600 dark:text-amber-400",
+    iconColor: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
     accentBorder: "border-l-amber-500",
   },
   info: {
     icon: Info,
-    iconBg: "bg-blue-100 dark:bg-blue-900/30",
-    iconColor: "text-blue-600 dark:text-blue-400",
+    iconBg: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30",
+    iconColor: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
     accentBorder: "border-l-blue-500",
   },
   success: {
@@ -244,7 +244,7 @@ export default function ActionModal({
         {/* Message */}
         {message && (
           <div className={`rounded-xl border-l-4 ${config.accentBorder} bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800/60 dark:to-gray-900/60 p-4`}>
-            <div className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
+            <div className="text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 leading-relaxed">
               {message}
             </div>
           </div>
@@ -252,25 +252,25 @@ export default function ActionModal({
 
         {/* Detail text */}
         {detail && (
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
             {detail}
           </div>
         )}
 
         {/* Detail items */}
         {details && details.length > 0 && (
-          <div className="rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 border border-gray-200/60 dark:border-gray-700/60 overflow-hidden">
+          <div className="rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 overflow-hidden">
             {details.map((item, idx) => (
               <div
                 key={idx}
                 className={`flex items-center justify-between px-4 py-3 ${
-                  idx < details.length - 1 ? "border-b border-gray-100 dark:border-gray-700/50" : ""
+                  idx < details.length - 1 ? "border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50" : ""
                 }`}
               >
-                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
                   {item.label}
                 </span>
-                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                   {item.value}
                 </span>
               </div>

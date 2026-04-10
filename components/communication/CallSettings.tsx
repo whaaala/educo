@@ -468,14 +468,14 @@ export default function CallSettings({
       }
     >
       {/* Pill-style Tab Bar */}
-      <div className="flex bg-gray-100 dark:bg-gray-700/50 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl p-1 mb-6">
+      <div className="flex bg-gray-100 dark:bg-[#22262e]/50 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl p-1 mb-6">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex-1 justify-center cursor-pointer ${
               activeTab === tab.id
-                ? "bg-white dark:bg-gray-600 midnight:bg-cyan-500/20 purple:bg-pink-500/20 text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 shadow-sm"
+                ? "bg-white dark:bg-[#2a2d35] midnight:bg-cyan-500/20 purple:bg-pink-500/20 text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 shadow-sm"
                 : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 hover:text-gray-700 dark:hover:text-gray-300"
             }`}
           >
@@ -508,7 +508,7 @@ export default function CallSettings({
             >
               {isTestingMic ? "Stop Test" : "Test Microphone"}
             </Button>
-            <div className="flex-1 h-3 bg-gray-200 dark:bg-gray-700 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-full overflow-hidden">
+            <div className="flex-1 h-3 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-75"
                 style={{ width: `${micLevel}%` }}
@@ -551,14 +551,14 @@ export default function CallSettings({
               ].map((item) => (
                 <label
                   key={item.key}
-                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 transition-colors"
+                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 transition-colors"
                 >
                   <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{item.label}</span>
                   <div
                     className={`w-11 h-6 rounded-full relative transition-colors cursor-pointer ${
                       item.state
                         ? "bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500"
-                        : "bg-gray-300 dark:bg-gray-600 midnight:bg-gray-700 purple:bg-gray-700"
+                        : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700"
                     }`}
                     onClick={() => item.setState(!item.state)}
                   >
@@ -675,7 +675,7 @@ export default function CallSettings({
                 }`}
               >
                 {bg.type === "none" ? (
-                  <div className="w-full h-full bg-gray-100 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] flex items-center justify-center">
+                  <div className="w-full h-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] flex items-center justify-center">
                     <X className="w-6 h-6 text-gray-400" />
                   </div>
                 ) : bg.type === "blur" ? (

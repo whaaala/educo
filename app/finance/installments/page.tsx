@@ -487,9 +487,9 @@ export default function InstallmentPlansPage() {
         label: "Defaulted",
       },
       cancelled: {
-        bg: "bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800",
+        bg: "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340]",
         text: "text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400",
-        border: "border-gray-200 dark:border-gray-700",
+        border: "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20",
         icon: XCircle,
         label: "Cancelled",
       },
@@ -509,9 +509,9 @@ export default function InstallmentPlansPage() {
   // Installment status badge
   const getInstallmentStatusBadge = (status: InstallmentStatus) => {
     const statusConfig = {
-      pending: { bg: "bg-gray-100 dark:bg-gray-700", text: "text-gray-600 dark:text-gray-300", label: "Pending" },
+      pending: { bg: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]", text: "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200", label: "Pending" },
       paid: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-300", label: "Paid" },
-      overdue: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-300", label: "Overdue" },
+      overdue: { bg: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30", text: "text-red-700 dark:text-red-300", label: "Overdue" },
       partially_paid: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-300", label: "Partial" },
       waived: { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-300", label: "Waived" },
     };
@@ -593,7 +593,7 @@ export default function InstallmentPlansPage() {
       sortable: true,
       className: "text-left",
       render: (plan) => (
-        <div className={`font-semibold ${plan.remainingAmount === 0 ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`} style={{ fontSize: '11.8px' }}>
+        <div className={`font-semibold ${plan.remainingAmount === 0 ? "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" : "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400"}`} style={{ fontSize: '11.8px' }}>
           {formatCurrency(plan.remainingAmount, countryCode)}
         </div>
       ),
@@ -632,7 +632,7 @@ export default function InstallmentPlansPage() {
             className="group relative p-2 rounded-lg bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/30 dark:to-blue-900/20 midnight:from-blue-950/30 midnight:to-blue-900/20 purple:from-blue-950/30 purple:to-blue-900/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-blue-900/40 dark:hover:to-blue-800/30 transition-all duration-200 cursor-pointer border border-blue-200/40 dark:border-blue-800/30 hover:border-blue-400/60 dark:hover:border-blue-600/50 active:scale-95"
             title="View"
           >
-            <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
+            <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
           </button>
           <button
             onClick={(e) => {
@@ -663,7 +663,7 @@ export default function InstallmentPlansPage() {
             className="group relative p-2 rounded-lg bg-gradient-to-br from-red-50/50 to-red-100/30 dark:from-red-950/30 dark:to-red-900/20 midnight:from-red-950/30 midnight:to-red-900/20 purple:from-red-950/30 purple:to-red-900/20 hover:from-red-100 hover:to-red-100 dark:hover:from-red-900/40 dark:hover:to-red-800/30 transition-all duration-200 cursor-pointer border border-red-200/40 dark:border-red-800/30 hover:border-red-400/60 dark:hover:border-red-600/50 active:scale-95"
             title="Delete"
           >
-            <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors" />
+            <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors" />
           </button>
         </div>
       ),
@@ -781,26 +781,26 @@ export default function InstallmentPlansPage() {
             <div className="flex items-center justify-center py-12">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                   {isRefreshing ? "Refreshing..." : "Filtering..."}
                 </p>
               </div>
             </div>
           ) : filteredData.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-8 sm:p-12">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-8 sm:p-12">
               <div className="flex flex-col items-center justify-center">
                 <div className="relative mb-4">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 animate-pulse" />
                   </div>
                   <div className="relative z-10 flex items-center justify-center w-16 h-16">
-                    <Layers className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                    <Layers className="w-8 h-8 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
                   </div>
                 </div>
-                <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 mb-1 text-center">
+                <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1 text-center">
                   No installment plans found
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4 text-center">
                   {searchQuery
                     ? "No results match your search. Try adjusting your filters."
                     : "Get started by adding your first installment plan."}
@@ -814,7 +814,7 @@ export default function InstallmentPlansPage() {
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                    className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline"
                   >
                     Clear search
                   </button>
@@ -828,7 +828,7 @@ export default function InstallmentPlansPage() {
 
               <div
                 key={`table-data-${filterKey}`}
-                className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden"
+                className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden"
               >
                 <ResponsiveListTable variant="contained" showColumnHeaders={true}
                   columns={columns}
@@ -1014,7 +1014,7 @@ function InstallmentPlanViewModal({
         {/* Edit Mode Banner */}
         {isEditMode && (
           <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 flex items-center gap-2">
-            <Edit className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <Edit className="w-4 h-4 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
             <span className="text-sm text-amber-700 dark:text-amber-300">
               Edit mode enabled - You can modify installment amounts and due dates below
             </span>
@@ -1038,12 +1038,12 @@ function InstallmentPlanViewModal({
           {/* Progress */}
           <div className="mt-4">
             <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-600 dark:text-gray-400">Payment Progress</span>
-              <span className="font-semibold text-gray-900 dark:text-white">
+              <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Payment Progress</span>
+              <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                 {formatCurrency(displayPlan.paidAmount, countryCode)} / {formatCurrency(displayPlan.totalAmount, countryCode)}
               </span>
             </div>
-            <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div className="w-full h-3 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${
                   percentage === 100
@@ -1057,7 +1057,7 @@ function InstallmentPlanViewModal({
             </div>
             <div className="flex justify-between text-xs mt-1">
               <span className="text-gray-500">{percentage.toFixed(0)}% Complete</span>
-              <span className="text-amber-600 dark:text-amber-400 font-medium">
+              <span className="text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 font-medium">
                 {formatCurrency(displayPlan.remainingAmount, countryCode)} remaining
               </span>
             </div>
@@ -1066,23 +1066,23 @@ function InstallmentPlanViewModal({
 
         {/* Plan Details Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Fee Type</p>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">{displayPlan.feeTypeName}</p>
+          <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Fee Type</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-1">{displayPlan.feeTypeName}</p>
           </div>
-          <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Installments</p>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">{displayPlan.installmentCount} payments</p>
+          <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Installments</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-1">{displayPlan.installmentCount} payments</p>
           </div>
-          <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Start Date</p>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">
+          <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Start Date</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-1">
               {new Date(displayPlan.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </p>
           </div>
-          <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400">End Date</p>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">
+          <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">End Date</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-1">
               {new Date(displayPlan.endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </p>
           </div>
@@ -1105,7 +1105,7 @@ function InstallmentPlanViewModal({
                     ? "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"
                     : installment.status === "partially_paid"
                     ? "bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800"
-                    : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                    : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                 }`}
               >
                 {/* Sequence Number */}
@@ -1116,7 +1116,7 @@ function InstallmentPlanViewModal({
                     ? "bg-red-500 text-white"
                     : installment.status === "partially_paid"
                     ? "bg-amber-500 text-white"
-                    : "bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
+                    : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                 }`}>
                   {installment.sequence}
                 </div>
@@ -1125,7 +1125,7 @@ function InstallmentPlanViewModal({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                         Installment {installment.sequence}
                       </p>
                       {isEditMode ? (
@@ -1148,7 +1148,7 @@ function InstallmentPlanViewModal({
                           />
                         </div>
                       ) : (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
                           Due: {new Date(installment.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                         </p>
                       )}
@@ -1159,15 +1159,15 @@ function InstallmentPlanViewModal({
                   {!isEditMode && (
                     <div className="flex items-center justify-between mt-2">
                       <div className="text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">Amount: </span>
-                        <span className="font-semibold text-gray-900 dark:text-white">
+                        <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Amount: </span>
+                        <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                           {formatCurrency(installment.amount, countryCode)}
                         </span>
                       </div>
                       {installment.paidAmount > 0 && (
                         <div className="text-sm">
-                          <span className="text-gray-600 dark:text-gray-400">Paid: </span>
-                          <span className="font-semibold text-green-600 dark:text-green-400">
+                          <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Paid: </span>
+                          <span className="font-semibold text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
                             {formatCurrency(installment.paidAmount, countryCode)}
                           </span>
                         </div>
@@ -1176,14 +1176,14 @@ function InstallmentPlanViewModal({
                   )}
 
                   {isEditMode && (
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-200 dark:border-gray-600">
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
                       <div className="flex items-center gap-2">
                         {getInstallmentStatusBadge(installment.status)}
                       </div>
                       {installment.paidAmount > 0 && (
                         <div className="text-sm">
-                          <span className="text-gray-600 dark:text-gray-400">Paid: </span>
-                          <span className="font-semibold text-green-600 dark:text-green-400">
+                          <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Paid: </span>
+                          <span className="font-semibold text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
                             {formatCurrency(installment.paidAmount, countryCode)}
                           </span>
                         </div>
@@ -1193,8 +1193,8 @@ function InstallmentPlanViewModal({
 
                   {/* Payment Info */}
                   {installment.paidDate && (
-                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                      <div className="flex flex-wrap gap-4 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                      <div className="flex flex-wrap gap-4 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                         <span>Paid: {new Date(installment.paidDate).toLocaleDateString()}</span>
                         {installment.paymentMethod && <span>Via: {installment.paymentMethod}</span>}
                         {installment.paymentReference && <span>Ref: {installment.paymentReference}</span>}
@@ -1204,7 +1204,7 @@ function InstallmentPlanViewModal({
 
                   {/* Late Fee */}
                   {installment.lateFeeApplied && installment.lateFeeApplied > 0 && (
-                    <div className="mt-2 text-xs text-red-600 dark:text-red-400">
+                    <div className="mt-2 text-xs text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
                       Late fee applied: {formatCurrency(installment.lateFeeApplied, countryCode)}
                     </div>
                   )}
@@ -1216,10 +1216,10 @@ function InstallmentPlanViewModal({
 
         {/* Edit Mode Actions */}
         {isEditMode && (
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 rounded-lg transition-colors"
             >
               Cancel
             </button>
@@ -1317,15 +1317,15 @@ function DuplicatePlanModal({
     >
       <div className="space-y-6">
         {/* Source Plan Info */}
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Copying from:</p>
+        <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2">Copying from:</p>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-semibold text-gray-900 dark:text-white">{plan.studentName}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{plan.feeTypeName} - {plan.installmentCount} installments</p>
+              <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{plan.studentName}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{plan.feeTypeName} - {plan.installmentCount} installments</p>
             </div>
             <div className="text-right">
-              <p className="font-semibold text-gray-900 dark:text-white">{formatCurrency(plan.totalAmount, countryCode)}</p>
+              <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{formatCurrency(plan.totalAmount, countryCode)}</p>
               <p className="text-xs text-gray-500">{plan.academicYear} | {plan.term.replace("-", " ")}</p>
             </div>
           </div>
@@ -1333,9 +1333,9 @@ function DuplicatePlanModal({
 
         {/* Student Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
-            <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
-              <User className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400" />
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2 flex items-center gap-1.5">
+            <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+              <User className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
             <span>Select Student</span>
             <span className="text-red-500 ml-1">*</span>
@@ -1350,7 +1350,7 @@ function DuplicatePlanModal({
             <select
               value={selectedStudentId}
               onChange={(e) => setSelectedStudentId(e.target.value)}
-              className="w-full h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-1 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
+              className="w-full h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm focus:ring-1 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
             >
               <option value="">Select a student...</option>
               {availableStudents.map((student) => (
@@ -1364,15 +1364,15 @@ function DuplicatePlanModal({
 
         {/* Selected Student Preview */}
         {selectedStudent && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
-            <p className="text-xs text-blue-600 dark:text-blue-400 mb-1">New plan will be created for:</p>
+          <div className="bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+            <p className="text-xs text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 mb-1">New plan will be created for:</p>
             <p className="font-semibold text-blue-900 dark:text-blue-100">{selectedStudent.name}</p>
-            <p className="text-sm text-blue-700 dark:text-blue-300">{selectedStudent.number} - {selectedStudent.class}</p>
+            <p className="text-sm text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">{selectedStudent.number} - {selectedStudent.class}</p>
           </div>
         )}
 
         {/* Edit Toggle */}
-        <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <input
             type="checkbox"
             id="editInstallments"
@@ -1381,15 +1381,15 @@ function DuplicatePlanModal({
             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
           <label htmlFor="editInstallments" className="flex-1 cursor-pointer">
-            <p className="text-sm font-medium text-gray-900 dark:text-white">Modify installment amounts and dates</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Leave unchecked to keep the same schedule as the original plan</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Modify installment amounts and dates</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Leave unchecked to keep the same schedule as the original plan</p>
           </label>
         </div>
 
         {/* Editable Installments */}
         {editInstallments && (
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               Edit Payment Schedule
             </h4>
@@ -1397,7 +1397,7 @@ function DuplicatePlanModal({
               {editedInstallments.map((inst, index) => (
                 <div
                   key={inst.id}
-                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                 >
                   <div className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold">
                     {inst.sequence}
@@ -1423,20 +1423,20 @@ function DuplicatePlanModal({
                 </div>
               ))}
             </div>
-            <div className="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <p className="text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Total: </span>
-                <span className="font-semibold text-gray-900 dark:text-white">{formatCurrency(totalAmount, countryCode)}</span>
+                <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Total: </span>
+                <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{formatCurrency(totalAmount, countryCode)}</span>
               </p>
             </div>
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 rounded-lg transition-colors"
           >
             Cancel
           </button>

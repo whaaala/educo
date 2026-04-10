@@ -168,7 +168,7 @@ export default function TransferRequestModal({
 
   const modalContent = (
     <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/60 backdrop-blur-md pt-4 pb-4 px-4 sm:px-6 overflow-y-auto">
-      <div ref={modalRef} className="relative w-full max-w-3xl bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200">
+      <div ref={modalRef} className="relative w-full max-w-3xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header with Gradient */}
         <div className="flex-shrink-0 relative bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 dark:from-blue-500 dark:via-blue-600 dark:to-purple-500 midnight:from-cyan-600 midnight:via-cyan-700 midnight:to-purple-600 purple:from-pink-600 purple:via-pink-700 purple:to-purple-600 px-4 sm:px-6 py-4 sm:py-5 overflow-hidden">
           {/* Animated background patterns */}
@@ -212,7 +212,7 @@ export default function TransferRequestModal({
 
         {/* Student Info Card */}
         <div className="px-4 sm:px-5 py-3 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-pink-50/40 dark:from-gray-800/50 dark:via-gray-800/40 dark:to-gray-800/30 midnight:from-cyan-900/10 midnight:via-cyan-800/8 midnight:to-cyan-700/5 purple:from-pink-900/10 purple:via-pink-800/8 purple:to-pink-700/5 animate-in fade-in slide-in-from-top-2 duration-500">
-          <div className="relative group bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl p-4 shadow-lg border-2 border-blue-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:shadow-xl hover:border-blue-300/80 dark:hover:border-gray-600/80 midnight:hover:border-cyan-400/50 purple:hover:border-pink-400/50 transition-all duration-300 overflow-hidden">
+          <div className="relative group bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-4 shadow-lg border-2 border-blue-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:shadow-xl hover:border-blue-300/80 dark:hover:border-gray-600/80 midnight:hover:border-cyan-400/50 purple:hover:border-pink-400/50 transition-all duration-300 overflow-hidden">
             {/* Animated background gradient on hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-400/5 dark:via-purple-400/5 dark:to-pink-400/5 midnight:from-cyan-500/5 midnight:via-purple-500/5 midnight:to-cyan-500/5 purple:from-pink-500/5 purple:via-purple-500/5 purple:to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
@@ -419,7 +419,7 @@ export default function TransferRequestModal({
             <FormTextarea
               label="Additional Notes"
               icon={<FileText className="w-3.5 h-3.5" />}
-              iconBgColor="bg-gray-100 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50"
+              iconBgColor="bg-gray-100 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50"
               iconColor="text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400"
               value={formData.notes || ""}
               onChange={(value) => handleChange("notes", value)}
@@ -446,7 +446,7 @@ export default function TransferRequestModal({
                   className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all shadow-inner ${
                     formData.notifyParent
                       ? "bg-gradient-to-r from-green-500 to-green-600 shadow-green-500/50"
-                      : "bg-gray-300 dark:bg-gray-600"
+                      : "bg-gray-300 dark:bg-[#2a2d35]"
                   }`}
                 >
                   <span
@@ -463,7 +463,7 @@ export default function TransferRequestModal({
         </div>
 
         {/* Footer - Fixed */}
-        <div className="flex-shrink-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 px-4 sm:px-5 py-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 shadow-lg">
+        <div className="flex-shrink-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 px-4 sm:px-5 py-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 shadow-lg">
           <FormButton
             type="button"
             onClick={onClose}

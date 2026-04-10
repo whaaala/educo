@@ -220,7 +220,7 @@ export default function SendChatModal({
       <div className="flex flex-col h-[450px]">
         {/* Header with recipient info */}
         <div className="flex-shrink-0 mb-4">
-          <div className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="relative">
               {recipient.profilePhoto ? (
                 <div className="w-12 h-12 rounded-full overflow-hidden">
@@ -235,23 +235,23 @@ export default function SendChatModal({
                   <span className="text-lg font-bold text-white">{initials}</span>
                 </div>
               )}
-              <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white dark:border-gray-800" />
+              <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 dark:text-white">{fullName}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{fullName}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                 {recipient.role && <span>{recipient.role}</span>}
                 {recipient.phone && <span> &bull; {recipient.phone}</span>}
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full">
+              <span className="px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 rounded-full">
                 Online
               </span>
               {chatPageUrl && (
                 <button
                   onClick={handleViewAllChats}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 rounded-lg transition-colors cursor-pointer"
                   title={`Open full chat with this ${recipientType}`}
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -275,7 +275,7 @@ export default function SendChatModal({
               <div key={msg.id}>
                 {showDate && (
                   <div className="flex items-center justify-center my-4">
-                    <span className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <span className="px-3 py-1 rounded-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                       {new Date(msg.timestamp).toLocaleDateString([], {
                         weekday: "long",
                         month: "short",
@@ -315,7 +315,7 @@ export default function SendChatModal({
                         className={`px-4 py-2.5 rounded-2xl ${
                           isSender
                             ? "bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-br-md"
-                            : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-bl-md"
+                            : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 rounded-bl-md"
                         }`}
                       >
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -327,7 +327,7 @@ export default function SendChatModal({
                           isSender ? "justify-end" : "justify-start"
                         }`}
                       >
-                        <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                        <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
                           {formatTime(msg.timestamp)}
                         </span>
                         {isSender && <CheckCircle2 className="w-3 h-3 text-blue-500" />}
@@ -358,7 +358,7 @@ export default function SendChatModal({
                     </span>
                   </div>
                 )}
-                <div className="px-4 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800 rounded-bl-md">
+                <div className="px-4 py-3 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-bl-md">
                   <div className="flex gap-1">
                     <span
                       className="w-2 h-2 rounded-full bg-gray-400 animate-bounce"
@@ -381,14 +381,14 @@ export default function SendChatModal({
         </div>
 
         {/* Chat Input */}
-        <div className="flex-shrink-0 pt-3 border-t border-gray-200 dark:border-gray-700 mt-3 relative overflow-visible">
+        <div className="flex-shrink-0 pt-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 mt-3 relative overflow-visible">
           {/* Chat Attachments Preview */}
           {chatAttachments.length > 0 && (
             <div className="flex gap-2 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
               {chatAttachments.map((file, index) => (
                 <div key={index} className="relative flex-shrink-0 group">
                   {file.type.startsWith("image/") ? (
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                       <img
                         src={URL.createObjectURL(file)}
                         alt={file.name}
@@ -396,7 +396,7 @@ export default function SendChatModal({
                       />
                     </div>
                   ) : (
-                    <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center p-1">
+                    <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex flex-col items-center justify-center p-1">
                       <span className="text-lg">{getFileIcon(file)}</span>
                       <span className="text-[8px] text-gray-500 truncate w-full text-center">
                         {file.name.slice(0, 8)}...
@@ -429,7 +429,7 @@ export default function SendChatModal({
                 }}
                 placeholder="Type a message..."
                 rows={1}
-                className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none text-sm text-gray-900 dark:text-white placeholder-gray-400"
+                className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400"
               />
             </div>
 
@@ -437,14 +437,14 @@ export default function SendChatModal({
             <EmojiPickerPopover
               onEmojiSelect={handleEmojiSelect}
               position="top"
-              buttonClassName="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              buttonClassName="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
             />
 
             {/* Attachment Button */}
             <button
               type="button"
               onClick={() => chatFileInputRef.current?.click()}
-              className="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              className="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
             >
               <Paperclip className="w-5 h-5" />
             </button>

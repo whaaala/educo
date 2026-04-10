@@ -189,7 +189,7 @@ describe("ToolbarDivider", () => {
     });
 
     it("should include theme variant divider colors (structural)", () => {
-      expect(source).toContain("dark:bg-gray-600");
+      expect(source).toContain("dark:bg-[#2a2d35]");
       expect(source).toContain("midnight:bg-cyan-500/15");
       expect(source).toContain("purple:bg-pink-500/15");
     });

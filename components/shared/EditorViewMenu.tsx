@@ -171,9 +171,9 @@ export function EditorViewMenuPanel({ config, onClose, anchorRef }: EditorViewMe
   }, [anchorRef, isMobile]);
 
   const glassClasses = [
-    "bg-white/80 dark:bg-[#121212]/80 midnight:bg-[#0b1220]/80 purple:bg-[#1a0d2e]/80",
+    "bg-white/80 dark:bg-[#121212]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0d2e]/80",
     "backdrop-blur-[20px] backdrop-saturate-[180%]",
-    "border border-gray-300/60 dark:border-gray-600/50 midnight:border-cyan-400/20 purple:border-pink-400/20",
+    "border border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50 midnight:border-cyan-400/20 purple:border-pink-400/20",
   ].join(" ");
 
   if (typeof document === "undefined") return null;
@@ -197,7 +197,7 @@ export function EditorViewMenuPanel({ config, onClose, anchorRef }: EditorViewMe
           ].join(" ")}
         >
           <div className="flex justify-center pt-3 pb-1">
-            <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+            <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700" />
           </div>
           <div className="px-1 pb-6 max-h-[70vh] overflow-y-auto">
             <ViewMenuContent mode={mode} sections={sections} zoom={zoom} fullscreen={fullscreen} openSub={openSub} setOpenSub={setOpenSub} />

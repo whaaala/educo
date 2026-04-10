@@ -369,7 +369,7 @@ export default function PayrollManagementPage() {
         </>
       }
       beforeContent={
-        <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 space-y-4">
+        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 space-y-4">
           {/* Month Selector */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
@@ -380,7 +380,7 @@ export default function PayrollManagementPage() {
                 type="month"
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
               />
             </div>
             <div className="flex items-end">
@@ -404,7 +404,7 @@ export default function PayrollManagementPage() {
                 <select
                   value={bulkAction}
                   onChange={(e) => setBulkAction(e.target.value)}
-                  className="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                  className="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
                 >
                   <option value="">Select Action</option>
                   <option value="approve">Approve</option>
@@ -424,7 +424,7 @@ export default function PayrollManagementPage() {
 
             <button
               onClick={handleSelectAll}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors"
             >
               {selectedStaff.size === monthFilteredRecords.length ? "Deselect All" : "Select All"}
             </button>
@@ -432,10 +432,10 @@ export default function PayrollManagementPage() {
         </div>
       }
       customListComponent={
-        <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
+        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+              <thead className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 <tr>
                   <th className="px-4 py-3 text-left">
                     <input
@@ -475,7 +475,7 @@ export default function PayrollManagementPage() {
                 {monthFilteredRecords.map((record) => (
                   <tr
                     key={record.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-gray-800/50 purple:hover:bg-gray-800/50 transition-colors"
+                    className="hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5/50 purple:hover:bg-pink-500/5/50 transition-colors"
                   >
                     <td className="px-4 py-3">
                       <input
@@ -548,7 +548,7 @@ export default function PayrollManagementPage() {
 // Status Card Component
 function StatusCard({ label, value, color }: { label: string; value: number; color: string }) {
   const colorClasses = {
-    gray: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+    gray: "bg-gray-100 text-gray-700 dark:bg-[#1a1d24] dark:text-gray-300",
     yellow: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
     blue: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
     indigo: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
@@ -569,7 +569,7 @@ function StatusCard({ label, value, color }: { label: string; value: number; col
 // Status Badge Component
 function PayrollStatusBadge({ status }: { status: PayrollStatus }) {
   const statusConfig = {
-    draft: { label: "Draft", color: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400" },
+    draft: { label: "Draft", color: "bg-gray-100 text-gray-700 dark:bg-[#0f1115]/30 dark:text-gray-400" },
     "pending-approval": { label: "Pending", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" },
     approved: { label: "Approved", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
     processing: { label: "Processing", color: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400" },

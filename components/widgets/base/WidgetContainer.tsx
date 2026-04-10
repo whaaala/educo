@@ -70,7 +70,7 @@ export const WidgetContainer = forwardRef<HTMLDivElement, WidgetContainerProps>(
         ref={ref}
         className={cn(
           // Base styles
-          "relative bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900",
+          "relative bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]",
           "rounded-2xl border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10",
           "shadow-sm overflow-hidden flex flex-col",
           // Transitions

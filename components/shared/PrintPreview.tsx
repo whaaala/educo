@@ -161,7 +161,7 @@ function DownloadPdfButton({ title, html, slides, type, layout }: {
   return (
     <Tooltip content="Download as PDF file">
       <button onClick={handleDownload} disabled={downloading}
-        className="flex items-center gap-1.5 text-[12px] text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors disabled:opacity-50">
+        className="flex items-center gap-1.5 text-[12px] text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:text-gray-900 dark:hover:text-white midnight:hover:text-cyan-50 purple:hover:text-pink-50 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 cursor-pointer transition-colors disabled:opacity-50">
         {downloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
         <span className="hidden sm:inline">{downloading ? "Preparing..." : "Download as PDF"}</span>
       </button>
@@ -230,17 +230,17 @@ export default function PrintPreview({ type, title, slides = [], html = "", onBa
 
       <div className="flex flex-col -mx-6 -mt-6 -mb-6 overflow-hidden" style={{ height: "calc(100vh - 64px)" }}>
         {/* ── Toolbar ── */}
-        <div className="pp-toolbar flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shrink-0 z-20">
+        <div className="pp-toolbar flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-b border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 shrink-0 z-20">
           {/* Back */}
           <Tooltip content={`Back to ${isPresentation ? "presentation" : "document"} editor`}>
             <button onClick={onBack}
-              className="flex items-center gap-1.5 text-[13px] text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium cursor-pointer transition-colors">
+              className="flex items-center gap-1.5 text-[13px] text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:text-blue-600 dark:hover:text-blue-400 font-medium cursor-pointer transition-colors">
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">{title || "Back"}</span>
             </button>
           </Tooltip>
 
-          <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
+          <div className="w-px h-5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-1" />
 
           {/* Slide count + notes dropdown (presentations only) */}
           {isPresentation && (
@@ -270,8 +270,8 @@ export default function PrintPreview({ type, title, slides = [], html = "", onBa
               <button onClick={() => setShowBg(!showBg)}
                 className={`flex items-center gap-1.5 text-[12px] px-2.5 py-1.5 rounded-lg cursor-pointer transition-all ${
                   !showBg
-                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 font-medium"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 font-medium"
+                    : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
                 }`}>
                 {showBg ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 <span className="hidden md:inline">{showBg ? "Hide background" : "Show background"}</span>

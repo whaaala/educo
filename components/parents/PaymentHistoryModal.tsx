@@ -337,7 +337,7 @@ export default function PaymentHistoryModal({
           type="button"
           onClick={() => setShowExportMenu(!showExportMenu)}
           disabled={filteredPayments.length === 0}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-[#1a1d24] hover:bg-gray-200 dark:hover:bg-[#22262e] text-gray-700 dark:text-gray-300 font-medium transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Download className="w-4 h-4" />
           Export
@@ -346,11 +346,11 @@ export default function PaymentHistoryModal({
 
         {/* Export Dropdown Menu */}
         {showExportMenu && (
-          <div className="absolute bottom-full right-0 mb-2 w-48 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 z-50">
+          <div className="absolute bottom-full right-0 mb-2 w-48 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 z-50">
             <button
               type="button"
               onClick={handleExportCSV}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
             >
               <FileSpreadsheet className="w-4 h-4 text-green-600 dark:text-green-400" />
               Export as CSV
@@ -358,7 +358,7 @@ export default function PaymentHistoryModal({
             <button
               type="button"
               onClick={handleExportPDF}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
             >
               <FileText className="w-4 h-4 text-red-600 dark:text-red-400" />
               Export as PDF
@@ -440,7 +440,7 @@ export default function PaymentHistoryModal({
         <div className="space-y-6 max-h-[400px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
           {Object.keys(paymentsByYear).length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-[#1a1d24] flex items-center justify-center mx-auto mb-4">
                 <Receipt className="w-8 h-8 text-gray-400" />
               </div>
               <p className="text-gray-500 dark:text-gray-400 font-medium">No payments found</p>
@@ -459,7 +459,7 @@ export default function PaymentHistoryModal({
                       <Calendar className="w-4 h-4 text-green-600 dark:text-green-400" />
                       <span className="text-sm font-semibold text-green-700 dark:text-green-300">{year}</span>
                     </div>
-                    <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+                    <div className="flex-1 h-px bg-gray-200 dark:bg-[#22262e]" />
                     <span className="text-xs text-gray-500 dark:text-gray-400">
                       {paymentsByYear[year].length} payment{paymentsByYear[year].length !== 1 ? "s" : ""}
                     </span>
@@ -475,11 +475,11 @@ export default function PaymentHistoryModal({
                           key={payment.id}
                           type="button"
                           onClick={() => onViewReceipt(payment)}
-                          className="w-full p-4 rounded-xl bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20 hover:border-green-300 dark:hover:border-green-600 hover:shadow-md transition-all cursor-pointer text-left group"
+                          className="w-full p-4 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20 hover:border-green-300 dark:hover:border-green-600 hover:shadow-md transition-all cursor-pointer text-left group"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-700/50 group-hover:bg-green-100 dark:group-hover:bg-green-900/30 transition-colors">
+                              <div className="p-2.5 rounded-xl bg-gray-100 dark:bg-[#22262e]/50 group-hover:bg-green-100 dark:group-hover:bg-green-900/30 transition-colors">
                                 {getMethodIcon(payment.paymentMethod)}
                               </div>
                               <div className="min-w-0">

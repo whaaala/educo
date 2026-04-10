@@ -306,7 +306,7 @@ export default function ChatPageContent({
             }
           }}
           onClick={(e) => e.stopPropagation()}
-          className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+          className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
         />
       ),
       render: (chat) => (
@@ -315,7 +315,7 @@ export default function ChatPageContent({
           checked={selectedIds.has(chat.id)}
           onChange={(e) => handleCardSelect(chat.id, e.target.checked)}
           onClick={(e) => e.stopPropagation()}
-          className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+          className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
         />
       ),
     },
@@ -328,7 +328,7 @@ export default function ChatPageContent({
       render: (chat) => (
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="relative flex-shrink-0 group">
-            <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 transition-all duration-300 ease-out group-hover:scale-150 group-hover:shadow-lg group-hover:ring-2 group-hover:ring-blue-500 group-hover:z-[100]">
+            <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] transition-all duration-300 ease-out group-hover:scale-150 group-hover:shadow-lg group-hover:ring-2 group-hover:ring-blue-500 group-hover:z-[100]">
               {chat.recipientAvatar ? (
                 <Image
                   src={chat.recipientAvatar}
@@ -344,7 +344,7 @@ export default function ChatPageContent({
               )}
             </div>
             {chat.isOnline && (
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full" />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-white dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 rounded-full" />
             )}
           </div>
           <div className="min-w-0 flex-1">
@@ -352,15 +352,15 @@ export default function ChatPageContent({
               <p
                 className={`text-xs sm:text-sm truncate ${
                   chat.unreadCount > 0
-                    ? "font-semibold text-gray-900 dark:text-white"
-                    : "font-medium text-gray-700 dark:text-gray-300"
+                    ? "font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                    : "font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                 }`}
               >
                 {chat.recipientName}
               </p>
             </Tooltip>
             <Tooltip content={chat.recipientEmail} block>
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate hidden sm:block">
                 {chat.recipientEmail}
               </p>
             </Tooltip>
@@ -387,8 +387,8 @@ export default function ChatPageContent({
             <p
               className={`text-xs sm:text-sm truncate ${
                 chat.unreadCount > 0
-                  ? "font-medium text-gray-900 dark:text-white"
-                  : "text-gray-600 dark:text-gray-400"
+                  ? "font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                  : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
               }`}
             >
               {chat.lastMessage}
@@ -405,7 +405,7 @@ export default function ChatPageContent({
       sortValue: (chat) => new Date(chat.lastMessageTime).getTime(),
       render: (chat) => (
         <div className="flex items-center gap-1 sm:gap-2">
-          <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
             {formatChatTime(chat.lastMessageTime)}
           </span>
           {chat.unreadCount > 0 && (
@@ -429,9 +429,9 @@ export default function ChatPageContent({
           <Tooltip content="Open Chat">
             <button
               onClick={() => handleViewChat(chat)}
-              className="p-1 sm:p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              className="p-1 sm:p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
             >
-              <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
             </button>
           </Tooltip>
           <Tooltip content="Delete">
@@ -439,7 +439,7 @@ export default function ChatPageContent({
               onClick={() => handleDeleteClick(chat)}
               className="p-1 sm:p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors cursor-pointer hidden sm:block"
             >
-              <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+              <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
             </button>
           </Tooltip>
         </div>
@@ -484,8 +484,8 @@ export default function ChatPageContent({
               <DeleteAllButton selectedCount={selectedIds.size} onDeleteAll={handleDeleteAll} />
             )}
 
-            <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-              <span className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
+            <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+              <span className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 whitespace-nowrap">
                 {filteredConversations.length} chats
               </span>
             </div>
@@ -519,13 +519,13 @@ export default function ChatPageContent({
             />
           ) : filteredConversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
-              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700/20 flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/20 flex items-center justify-center mb-4">
                 <MessageCircle className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-1">
+              <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1">
                 No chats found
               </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                 {hasActiveFilters
                   ? "Try adjusting your filters."
                   : `Start a new chat with a ${config.recipientLabel.toLowerCase()}.`}
@@ -533,7 +533,7 @@ export default function ChatPageContent({
               {hasActiveFilters && (
                 <button
                   onClick={handleClearFilters}
-                  className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                  className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer"
                 >
                   Clear filters
                 </button>

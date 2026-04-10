@@ -33,7 +33,7 @@ export interface EditorMenuItem {
 
 // ── Divider ──
 export function EditorMenuDivider() {
-  return <div className="my-1 h-px bg-gray-100 dark:bg-gray-800" />;
+  return <div className="my-1 h-px bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]" />;
 }
 
 // ── SubmenuPanel (portalled, positioned relative to parent — exact DocEditor code) ──
@@ -84,7 +84,7 @@ function SubmenuPanel({ children, className = "" }: { children: React.ReactNode;
       <div
         ref={panelRef}
         data-editor-menu-panel
-        className={`fixed z-[10000] rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible ${className}`}
+        className={`fixed z-[10000] rounded-2xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible ${className}`}
         onMouseEnter={() => timerCtx?.cancelClose()}
         onMouseLeave={() => timerCtx?.scheduleClose()}
       >
@@ -158,20 +158,20 @@ function EditorMenuItem_Internal({
         className={[
           "w-full flex items-center gap-2.5 px-3 py-1.5 text-left text-[13px] transition-colors",
           disabled
-            ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
-            : "text-gray-700 dark:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-800/70 cursor-pointer",
+            ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed"
+            : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/70 cursor-pointer",
         ].join(" ")}
       >
         <span className="w-5 flex-shrink-0 flex items-center justify-center">
           {isChecked ? (
-            <Check className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+            <Check className="w-4 h-4 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
           ) : Icon ? (
-            <Icon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+            <Icon className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
           ) : null}
         </span>
         <span className="flex-1 min-w-0 truncate">{label}</span>
-        {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 tabular-nums">{shortcut}</span>}
-        {hasSubmenu && <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />}
+        {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 tabular-nums">{shortcut}</span>}
+        {hasSubmenu && <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />}
       </button>
       <SubmenuTimerContext.Provider value={hasSubmenu ? timerCallbacks : null}>
         <SubmenuAnchorContext.Provider value={containerRef}>
@@ -247,8 +247,8 @@ export function EditorMenuRoot({
         type="button"
         className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
           isOpen
-            ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-100"
+            ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50"
+            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/60 hover:text-gray-900 dark:hover:text-gray-100"
         }`}
         onClick={() => (isOpen ? onClose() : onOpen(id))}
         onMouseEnter={() => openMenu && openMenu !== id && onOpen(id)}
@@ -258,7 +258,7 @@ export function EditorMenuRoot({
       {isOpen && typeof document !== "undefined" && createPortal(
         <div
           data-editor-menu-panel
-          className="fixed z-[10000] w-[280px] rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible"
+          className="fixed z-[10000] w-[280px] rounded-2xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible"
           style={{ top: pos.top, left: pos.left }}
         >
           <SubmenuCloseContext.Provider value={() => {}}>
@@ -313,7 +313,7 @@ export function EditorMenuBar({ menus, fileMenuConfig, editMenuConfig, viewMenuC
 
   return (
     <MenuCloseContext.Provider value={close}>
-      <div ref={menuBarRef} className="flex items-center flex-wrap gap-0.5 px-2 py-0.5 text-[13px] text-gray-600 dark:text-gray-300 select-none border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <div ref={menuBarRef} className="flex items-center flex-wrap gap-0.5 px-2 py-0.5 text-[13px] text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 select-none border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
         {menus.map(m => {
           // File menu uses EditorFileMenuPanel when config is provided
           if (m.id === "file" && fileMenuConfig && FileMenuPanel) {
@@ -369,8 +369,8 @@ function FileMenuRoot({ isOpen, onOpen, onClose, openMenu, fileMenuConfig, FileM
         type="button"
         className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
           isOpen
-            ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-100"
+            ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50"
+            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/60 hover:text-gray-900 dark:hover:text-gray-100"
         }`}
         onClick={() => (isOpen ? onClose() : onOpen())}
         onMouseEnter={() => openMenu && !isOpen && onOpen()}
@@ -395,8 +395,8 @@ function EditMenuRoot({ isOpen, onOpen, onClose, openMenu, editMenuConfig, EditM
         type="button"
         className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
           isOpen
-            ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-100"
+            ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50"
+            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/60 hover:text-gray-900 dark:hover:text-gray-100"
         }`}
         onClick={() => (isOpen ? onClose() : onOpen())}
         onMouseEnter={() => openMenu && !isOpen && onOpen()}
@@ -421,8 +421,8 @@ function ViewMenuRoot({ isOpen, onOpen, onClose, openMenu, viewMenuConfig, ViewM
         type="button"
         className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
           isOpen
-            ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-100"
+            ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50"
+            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/60 hover:text-gray-900 dark:hover:text-gray-100"
         }`}
         onClick={() => (isOpen ? onClose() : onOpen())}
         onMouseEnter={() => openMenu && !isOpen && onOpen()}
@@ -447,8 +447,8 @@ function InsertMenuRoot({ isOpen, onOpen, onClose, openMenu, insertMenuConfig, I
         type="button"
         className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
           isOpen
-            ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-100"
+            ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50"
+            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/60 hover:text-gray-900 dark:hover:text-gray-100"
         }`}
         onClick={() => (isOpen ? onClose() : onOpen())}
         onMouseEnter={() => openMenu && !isOpen && onOpen()}
@@ -477,14 +477,14 @@ export function ViewMenuPanel({ children }: { children: React.ReactNode }) {
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  const glassClasses = "bg-white/80 dark:bg-[#121212]/80 backdrop-blur-[20px] backdrop-saturate-[180%] border border-gray-300/60 dark:border-gray-600/50";
+  const glassClasses = "bg-white/80 dark:bg-[#121212]/80 backdrop-blur-[20px] backdrop-saturate-[180%] border border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50";
 
   if (isMobile && typeof document !== "undefined") {
     return createPortal(
       <>
         <div className="fixed inset-0 z-[300] bg-black/30 backdrop-blur-sm" />
         <div className={`fixed bottom-0 left-0 right-0 z-[301] rounded-t-3xl ${glassClasses} shadow-[0_-8px_32px_rgba(0,0,0,0.15)]`}>
-          <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" /></div>
+          <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700" /></div>
           <div className="px-1 pb-6 max-h-[70vh] overflow-y-auto">{children}</div>
         </div>
       </>,
@@ -522,19 +522,19 @@ export function ViewMenuItem({
     >
       <button type="button" disabled={disabled} onClick={() => { if (!disabled) onClick?.(); }}
         className={["w-full flex items-center gap-2.5 px-3 text-left transition-all duration-150 min-h-[44px]", "font-[420] hover:font-[520]",
-          disabled ? "text-gray-300 dark:text-gray-600 cursor-not-allowed" : "text-gray-700 dark:text-gray-200 hover:bg-gray-100/60 dark:hover:bg-white/5 cursor-pointer",
+          disabled ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/60 dark:hover:bg-white/5 cursor-pointer",
           isChecked ? "bg-blue-50/50 dark:bg-blue-500/10" : "",
         ].join(" ")}
       >
         <span className="w-5 flex-shrink-0 flex items-center justify-center">
-          {isChecked ? <Check className="w-4 h-4 text-blue-500 dark:text-blue-400" /> : Icon ? <Icon className="w-4 h-4 text-gray-500 dark:text-gray-400" /> : null}
+          {isChecked ? <Check className="w-4 h-4 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" /> : Icon ? <Icon className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" /> : null}
         </span>
         <div className="flex-1 min-w-0">
           <span className="block text-[13px] leading-tight truncate">{label}</span>
-          {description && <span className="block text-[11px] leading-tight text-gray-400 dark:text-gray-500 mt-0.5 truncate">{description}</span>}
+          {description && <span className="block text-[11px] leading-tight text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-0.5 truncate">{description}</span>}
         </div>
-        {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 tabular-nums">{shortcut}</span>}
-        {hasSubmenu && <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />}
+        {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 tabular-nums">{shortcut}</span>}
+        {hasSubmenu && <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />}
       </button>
       {submenuContent && isSubmenuOpen && submenuContent}
     </div>
@@ -546,15 +546,15 @@ export function ViewMenuToggle({ label, description, shortcut, isOn, onToggle }:
 }) {
   return (
     <button type="button" onClick={onToggle}
-      className="w-full flex items-center gap-2.5 px-3 text-left transition-all duration-150 min-h-[44px] cursor-pointer font-[420] hover:font-[520] text-gray-700 dark:text-gray-200 hover:bg-gray-100/60 dark:hover:bg-white/5"
+      className="w-full flex items-center gap-2.5 px-3 text-left transition-all duration-150 min-h-[44px] cursor-pointer font-[420] hover:font-[520] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/60 dark:hover:bg-white/5"
       role="switch" aria-checked={isOn} aria-label={label}
     >
       <div className="flex-1 min-w-0">
         <span className="block text-[13px] leading-tight truncate">{label}</span>
-        {description && <span className="block text-[11px] leading-tight text-gray-400 dark:text-gray-500 mt-0.5 truncate">{description}</span>}
+        {description && <span className="block text-[11px] leading-tight text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-0.5 truncate">{description}</span>}
       </div>
-      {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 tabular-nums mr-2">{shortcut}</span>}
-      <div className={`relative w-[38px] h-[22px] rounded-full flex-shrink-0 transition-colors duration-200 ${isOn ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"}`}>
+      {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 tabular-nums mr-2">{shortcut}</span>}
+      <div className={`relative w-[38px] h-[22px] rounded-full flex-shrink-0 transition-colors duration-200 ${isOn ? "bg-blue-500" : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700"}`}>
         <div className={`absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white shadow-sm transition-transform duration-200 ${isOn ? "translate-x-[18px]" : "translate-x-[2px]"}`} />
       </div>
     </button>

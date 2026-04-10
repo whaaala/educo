@@ -483,7 +483,7 @@ export default function ScheduleMeetingModal({
               error={errors.subject}
             />
             {showSubjectSuggestions && subject.length > 0 && filteredSuggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 max-h-48 overflow-y-auto z-50">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 max-h-48 overflow-y-auto z-50">
                 {filteredSuggestions.map((suggestion) => (
                   <button
                     key={suggestion}
@@ -492,7 +492,7 @@ export default function ScheduleMeetingModal({
                       setSubject(suggestion);
                       setShowSubjectSuggestions(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                   >
                     {suggestion}
                   </button>
@@ -591,7 +591,7 @@ export default function ScheduleMeetingModal({
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
                 meetingFormat === "in_person"
                   ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
-                  : "border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
+                  : "border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
               }`}
             >
               <Building2 className="w-5 h-5" />
@@ -603,7 +603,7 @@ export default function ScheduleMeetingModal({
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
                 meetingFormat === "virtual"
                   ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
-                  : "border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
+                  : "border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
               }`}
             >
               <Video className="w-5 h-5" />
@@ -622,7 +622,7 @@ export default function ScheduleMeetingModal({
                   className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border transition-all duration-200 cursor-pointer ${
                     virtualType === "video"
                       ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
-                      : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
+                      : "border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
                   }`}
                 >
                   <Video className="w-4 h-4" />
@@ -634,7 +634,7 @@ export default function ScheduleMeetingModal({
                   className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border transition-all duration-200 cursor-pointer ${
                     virtualType === "audio"
                       ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
-                      : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
+                      : "border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
                   }`}
                 >
                   <Mic className="w-4 h-4" />

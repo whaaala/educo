@@ -610,7 +610,7 @@ export default function ReceiptsPage() {
       sortable: true,
       className: "text-left",
       render: (receipt) => (
-        <span className="font-mono font-semibold text-blue-600 dark:text-blue-400" style={{ fontSize: '11.8px' }}>
+        <span className="font-mono font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" style={{ fontSize: '11.8px' }}>
           {receipt.receiptNumber}
         </span>
       ),
@@ -628,7 +628,7 @@ export default function ReceiptsPage() {
               alt={receipt.studentName}
               width={36}
               height={36}
-              className="w-9 h-9 rounded-full object-cover ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
+              className="w-9 h-9 rounded-full object-cover ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
               style={{ position: 'relative', transformOrigin: 'center center' }}
               unoptimized
             />
@@ -684,7 +684,7 @@ export default function ReceiptsPage() {
       sortable: true,
       className: "text-left",
       render: (receipt) => (
-        <div className={`font-semibold ${receipt.balance === 0 ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`} style={{ fontSize: '11.8px' }}>
+        <div className={`font-semibold ${receipt.balance === 0 ? "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" : "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400"}`} style={{ fontSize: '11.8px' }}>
           {formatCurrency(receipt.balance, countryCode)}
         </div>
       ),
@@ -695,7 +695,7 @@ export default function ReceiptsPage() {
       sortable: true,
       className: "text-left",
       render: (receipt) => (
-        <span className="text-gray-600 dark:text-gray-400" style={{ fontSize: '11.8px' }}>
+        <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" style={{ fontSize: '11.8px' }}>
           {getPaymentMethodLabel(receipt.paymentMethod)}
         </span>
       ),
@@ -720,17 +720,17 @@ export default function ReceiptsPage() {
             className="group relative p-2 rounded-lg bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/30 dark:to-blue-900/20 midnight:from-blue-950/30 midnight:to-blue-900/20 purple:from-blue-950/30 purple:to-blue-900/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-blue-900/40 dark:hover:to-blue-800/30 transition-all duration-200 cursor-pointer border border-blue-200/40 dark:border-blue-800/30 hover:border-blue-400/60 dark:hover:border-blue-600/50 active:scale-95"
             title="View"
           >
-            <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
+            <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
               handlePrint(receipt);
             }}
-            className="group relative p-2 rounded-lg bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-gray-950/30 dark:to-gray-900/20 midnight:from-gray-950/30 midnight:to-gray-900/20 purple:from-gray-950/30 purple:to-gray-900/20 hover:from-gray-100 hover:to-gray-100 dark:hover:from-gray-900/40 dark:hover:to-gray-800/30 transition-all duration-200 cursor-pointer border border-gray-200/40 dark:border-gray-800/30 hover:border-gray-400/60 dark:hover:border-gray-600/50 active:scale-95"
+            className="group relative p-2 rounded-lg bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-gray-950/30 dark:to-gray-900/20 midnight:from-gray-950/30 midnight:to-gray-900/20 purple:from-gray-950/30 purple:to-gray-900/20 hover:from-gray-100 hover:to-gray-100 dark:hover:from-gray-900/40 dark:hover:to-gray-800/30 transition-all duration-200 cursor-pointer border border-gray-200/40 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/30 hover:border-gray-400/60 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30/50 active:scale-95"
             title="Print"
           >
-            <Printer className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" />
+            <Printer className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" />
           </button>
           <button
             onClick={(e) => {
@@ -740,7 +740,7 @@ export default function ReceiptsPage() {
             className="group relative p-2 rounded-lg bg-gradient-to-br from-green-50/50 to-green-100/30 dark:from-green-950/30 dark:to-green-900/20 midnight:from-green-950/30 midnight:to-green-900/20 purple:from-green-950/30 purple:to-green-900/20 hover:from-green-100 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/30 transition-all duration-200 cursor-pointer border border-green-200/40 dark:border-green-800/30 hover:border-green-400/60 dark:hover:border-green-600/50 active:scale-95"
             title="Download PDF"
           >
-            <Download className="w-4 h-4 text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors" />
+            <Download className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors" />
           </button>
           {receipt.status !== "voided" && (
             <button
@@ -752,7 +752,7 @@ export default function ReceiptsPage() {
               className="group relative p-2 rounded-lg bg-gradient-to-br from-red-50/50 to-red-100/30 dark:from-red-950/30 dark:to-red-900/20 midnight:from-red-950/30 midnight:to-red-900/20 purple:from-red-950/30 purple:to-red-900/20 hover:from-red-100 hover:to-red-100 dark:hover:from-red-900/40 dark:hover:to-red-800/30 transition-all duration-200 cursor-pointer border border-red-200/40 dark:border-red-800/30 hover:border-red-400/60 dark:hover:border-red-600/50 active:scale-95"
               title="Void"
             >
-              <XCircle className="w-4 h-4 text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors" />
+              <XCircle className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors" />
             </button>
           )}
         </div>
@@ -873,20 +873,20 @@ export default function ReceiptsPage() {
           {isLoading ? (
             <PageSpinner message={isRefreshing ? "Refreshing..." : "Filtering..."} size="md" />
           ) : filteredData.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-8 sm:p-12">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-8 sm:p-12">
               <div className="flex flex-col items-center justify-center">
                 <div className="relative mb-4">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 animate-pulse" />
                   </div>
                   <div className="relative z-10 flex items-center justify-center w-16 h-16">
-                    <Receipt className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                    <Receipt className="w-8 h-8 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
                   </div>
                 </div>
-                <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 mb-1 text-center">
+                <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1 text-center">
                   No receipts found
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4 text-center">
                   {searchQuery
                     ? "No results match your search. Try adjusting your filters."
                     : "Get started by generating your first receipt."}
@@ -900,7 +900,7 @@ export default function ReceiptsPage() {
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                    className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline"
                   >
                     Clear search
                   </button>
@@ -914,7 +914,7 @@ export default function ReceiptsPage() {
 
               <div
                 key={`table-data-${filterKey}`}
-                className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm"
+                className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm"
               >
                 <ResponsiveListTable variant="contained" showColumnHeaders={true}
                   columns={columns}
@@ -1022,13 +1022,13 @@ function ReceiptViewModal({
 }: ReceiptViewModalProps) {
   const itemRows = receipt.items.map((item) => (
     <tr key={item.id}>
-      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
         {item.description}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 text-right">
+      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-right">
         {item.quantity}
       </td>
-      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white text-right">
+      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-right">
         {formatCurrency(item.amount * item.quantity, countryCode)}
       </td>
     </tr>
@@ -1067,10 +1067,10 @@ function ReceiptViewModal({
         ],
         subtitle: (
           <div className="flex items-center justify-between gap-2">
-            <span className="text-sm text-gray-600 dark:text-gray-300">
+            <span className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
               {receipt.studentName} • {receipt.studentNumber} • {receipt.classLevel}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
               {receipt.academicYear} • {receipt.term.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
             </span>
           </div>
@@ -1082,17 +1082,17 @@ function ReceiptViewModal({
           title: "Items",
           type: "custom",
           children: (
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+            <div className="border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg overflow-hidden">
               <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-800">
+                <thead className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">
                       Description
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">
                       Qty
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">
                       Amount
                     </th>
                   </tr>

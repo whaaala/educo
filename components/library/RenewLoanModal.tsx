@@ -242,7 +242,7 @@ export default function RenewLoanModal({
             {/* Current Due Date */}
             <div className="text-center">
               <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Current Due</p>
-              <div className={`p-3 rounded-xl ${isOverdue ? "bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700" : "bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"}`}>
+              <div className={`p-3 rounded-xl ${isOverdue ? "bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700" : "bg-gray-100 dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700"}`}>
                 <p className={`text-sm font-bold ${isOverdue ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>
                   {currentDueDate.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                 </p>
@@ -289,7 +289,7 @@ export default function RenewLoanModal({
           </div>
 
           {/* Progress Bar */}
-          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-3 bg-gray-200 dark:bg-[#22262e] rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-500"
               style={{ width: `${(loan.renewalCount / loan.maxRenewals) * 100}%` }}
@@ -306,7 +306,7 @@ export default function RenewLoanModal({
                     ? "bg-gradient-to-br from-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-500/30"
                     : i === loan.renewalCount
                       ? "bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 border-2 border-purple-400 dark:border-purple-500 animate-pulse"
-                      : "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
+                      : "bg-gray-100 dark:bg-[#22262e] text-gray-400 dark:text-gray-500"
                 }`}
               >
                 {i + 1}

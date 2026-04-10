@@ -9,9 +9,9 @@ describe("SecondaryButton — Visual / CSS", () => {
 
       const btn = screen.getByText("Cancel").closest("button")!;
       expect(btn.className).toContain("bg-white");
-      expect(btn.className).toContain("dark:bg-gray-800");
-      expect(btn.className).toContain("midnight:bg-gray-800/80");
-      expect(btn.className).toContain("purple:bg-gray-800/80");
+      expect(btn.className).toContain("dark:bg-[#1a1d24]");
+      expect(btn.className).toContain("midnight:bg-[#0f1330]/80");
+      expect(btn.className).toContain("purple:bg-[#251340]/80");
     });
 
     it("has theme text colors", () => {

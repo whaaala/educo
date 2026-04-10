@@ -129,7 +129,7 @@ export default function AbsenceReasonModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+      <div className="relative w-full max-w-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header with gradient */}
         <div className="relative bg-gradient-to-r from-red-500 to-rose-600 dark:from-red-600 dark:to-rose-700 midnight:from-red-600 midnight:to-rose-700 purple:from-red-600 purple:to-rose-700 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -172,7 +172,7 @@ export default function AbsenceReasonModal({
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
           {/* Student ID Display */}
           {studentId && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-gray-700 purple:border-gray-700">
+            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-gray-700 purple:border-gray-700">
               <span className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400">
                 ID:
               </span>
@@ -206,7 +206,7 @@ export default function AbsenceReasonModal({
               className={`w-full p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer text-left ${
                 excused
                   ? "border-blue-500 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20"
-                  : "border-gray-200 dark:border-gray-600 midnight:border-gray-700 purple:border-gray-700 hover:border-gray-300 dark:hover:border-gray-500 midnight:hover:border-gray-600 purple:hover:border-gray-600 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800"
+                  : "border-gray-200 dark:border-gray-600 midnight:border-gray-700 purple:border-gray-700 hover:border-gray-300 dark:hover:border-gray-500 midnight:hover:border-gray-600 purple:hover:border-gray-600 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340]"
               }`}
             >
               <div className="flex items-start gap-3">
@@ -214,7 +214,7 @@ export default function AbsenceReasonModal({
                   className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
                     excused
                       ? "bg-blue-100 dark:bg-blue-800/50 midnight:bg-cyan-800/50 purple:bg-pink-800/50"
-                      : "bg-gray-100 dark:bg-gray-700 midnight:bg-gray-700 purple:bg-gray-700"
+                      : "bg-gray-100 dark:bg-[#22262e] midnight:bg-gray-700 purple:bg-gray-700"
                   }`}
                 >
                   <ShieldCheck
@@ -262,7 +262,7 @@ export default function AbsenceReasonModal({
             onChange={(value) => setNotes(value)}
             placeholder="Add any additional information about this absence..."
             icon={<FileText className="w-2.5 h-2.5" />}
-            iconBgColor="bg-gray-100 dark:bg-gray-700 midnight:bg-gray-700 purple:bg-gray-700"
+            iconBgColor="bg-gray-100 dark:bg-[#22262e] midnight:bg-gray-700 purple:bg-gray-700"
             iconColor="text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400"
             rows={3}
             optional
@@ -318,10 +318,10 @@ export default function AbsenceReasonModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 flex items-center justify-end gap-3">
+        <div className="px-6 py-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border-t border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 flex items-center justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
+            className="px-6 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all duration-200 cursor-pointer"
           >
             Cancel
           </button>

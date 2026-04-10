@@ -386,7 +386,7 @@ export default function MeetingDetailsPage() {
             {/* Meeting Info Card - Modern Unified Design */}
             <div className={cn(
               "relative overflow-hidden rounded-3xl",
-              "bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90",
+              "bg-white dark:bg-[#1a1d24]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90",
               "shadow-xl shadow-gray-200/50 dark:shadow-gray-900/50 midnight:shadow-black/30 purple:shadow-black/30",
               "border border-gray-100 dark:border-gray-700/50 midnight:border-gray-800/50 purple:border-gray-800/50"
             )}>
@@ -524,7 +524,7 @@ export default function MeetingDetailsPage() {
                       {/* Meeting Link */}
                       <div className={cn(
                         "group relative p-4 rounded-xl",
-                        "bg-white dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50",
+                        "bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50",
                         "border border-gray-200 dark:border-gray-700/50 midnight:border-gray-700/50 purple:border-gray-700/50",
                         "hover:border-blue-300 dark:hover:border-blue-700/50",
                         "midnight:hover:border-cyan-700/50 purple:hover:border-pink-700/50",
@@ -557,8 +557,8 @@ export default function MeetingDetailsPage() {
                               onClick={() => navigator.clipboard.writeText(meeting.meetingLink || "")}
                               className={cn(
                                 "p-2 rounded-lg transition-all duration-200 cursor-pointer",
-                                "bg-gray-100 dark:bg-gray-700/50 midnight:bg-gray-700/50 purple:bg-gray-700/50",
-                                "hover:bg-gray-200 dark:hover:bg-gray-600/50 midnight:hover:bg-gray-600/50 purple:hover:bg-gray-600/50",
+                                "bg-gray-100 dark:bg-[#22262e]/50 midnight:bg-gray-700/50 purple:bg-gray-700/50",
+                                "hover:bg-gray-200 dark:hover:bg-[#2a2d35]/50 midnight:hover:bg-gray-600/50 purple:hover:bg-gray-600/50",
                                 "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200",
                                 "midnight:hover:text-gray-200 purple:hover:text-gray-200"
                               )}
@@ -592,10 +592,10 @@ export default function MeetingDetailsPage() {
                             <div
                               className={cn(
                                 "group relative p-3.5 rounded-xl cursor-pointer",
-                                "bg-white dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50",
+                                "bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50",
                                 "border border-gray-200 dark:border-gray-700/50 midnight:border-gray-700/50 purple:border-gray-700/50",
                                 "hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-600 purple:hover:border-gray-600",
-                                "hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-gray-700/50 purple:hover:bg-gray-700/50",
+                                "hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10/50 purple:hover:bg-pink-500/10/50",
                                 "transition-all duration-200"
                               )}
                               onClick={() => navigator.clipboard.writeText(meeting.meetingId || "")}
@@ -629,10 +629,10 @@ export default function MeetingDetailsPage() {
                             <div
                               className={cn(
                                 "group relative p-3.5 rounded-xl cursor-pointer",
-                                "bg-white dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50",
+                                "bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50",
                                 "border border-gray-200 dark:border-gray-700/50 midnight:border-gray-700/50 purple:border-gray-700/50",
                                 "hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-600 purple:hover:border-gray-600",
-                                "hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-gray-700/50 purple:hover:bg-gray-700/50",
+                                "hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10/50 purple:hover:bg-pink-500/10/50",
                                 "transition-all duration-200"
                               )}
                               onClick={() => navigator.clipboard.writeText(meeting.passcode || "")}

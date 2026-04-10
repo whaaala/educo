@@ -168,11 +168,11 @@ export default function LeaveNotificationDropdown({
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative w-10 h-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 cursor-pointer group"
+        className="relative w-10 h-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 rounded-xl transition-all duration-200 cursor-pointer group"
         aria-label="Leave Notifications"
         aria-expanded={isOpen}
       >
-        <CalendarCheck className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:scale-110 transition-transform" />
+        <CalendarCheck className="w-5 h-5 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 group-hover:scale-110 transition-transform" />
         {/* Notification Badge with Count */}
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-gradient-to-br from-cyan-500 to-blue-600 text-white text-[10px] font-bold rounded-full ring-2 ring-white dark:ring-gray-900 shadow-lg">
@@ -195,7 +195,7 @@ export default function LeaveNotificationDropdown({
 
             <div
               style={dropdownStyle}
-              className="w-[380px] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700/50 z-[9999] transition-colors duration-300 overflow-hidden flex flex-col"
+              className="w-[380px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 z-[9999] transition-colors duration-300 overflow-hidden flex flex-col"
               role="menu"
               aria-orientation="vertical"
             >
@@ -228,7 +228,7 @@ export default function LeaveNotificationDropdown({
 
               {/* Mark All as Read */}
               {unreadCount > 0 && (
-                <div className="px-5 py-2.5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                <div className="px-5 py-2.5 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30">
                   <button
                     onClick={markAllAsRead}
                     className="text-xs font-medium text-cyan-600 dark:text-cyan-400 hover:underline cursor-pointer"
@@ -242,13 +242,13 @@ export default function LeaveNotificationDropdown({
               <div className="max-h-[360px] overflow-y-auto">
                 {relevantNotifications.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 px-4">
-                    <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                    <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-center justify-center mb-4">
                       <CalendarCheck className="w-8 h-8 text-gray-400" />
                     </div>
-                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                       No leave notifications
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1 text-center">
                       {isAdmin
                         ? "New leave requests will appear here"
                         : "Updates on your leave requests will appear here"}
@@ -266,7 +266,7 @@ export default function LeaveNotificationDropdown({
                           onClick={() => handleNotificationClick(notification)}
                           className={`w-full text-left p-4 rounded-xl border transition-all duration-200 cursor-pointer group ${
                             notification.read
-                              ? "bg-white dark:bg-gray-800/50 border-gray-100 dark:border-gray-700/30 hover:bg-gray-50 dark:hover:bg-gray-800"
+                              ? "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
                               : `${colors.bg} border-transparent hover:shadow-md`
                           }`}
                         >
@@ -281,17 +281,17 @@ export default function LeaveNotificationDropdown({
                             {/* Content */}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
-                                <h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                                   {notification.title}
                                 </h4>
                                 {!notification.read && (
                                   <span className="w-2 h-2 rounded-full bg-cyan-500 flex-shrink-0" />
                                 )}
                               </div>
-                              <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
+                              <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 line-clamp-2 mb-2">
                                 {notification.message}
                               </p>
-                              <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-500">
+                              <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
                                 <Clock className="w-3 h-3" />
                                 <span>{formatTimeAgo(notification.createdAt)}</span>
                               </div>
@@ -311,7 +311,7 @@ export default function LeaveNotificationDropdown({
 
               {/* Footer */}
               {relevantNotifications.length > 0 && (
-                <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                <div className="px-4 py-3 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30">
                   <button
                     onClick={() => {
                       setIsOpen(false);

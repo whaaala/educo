@@ -18,7 +18,7 @@ describe("CallHeader — Visual / CSS", () => {
       const { container } = render(<CallHeader {...defaultProps} />);
       const header = container.firstChild as HTMLElement;
       expect(header.className).toContain("bg-white");
-      expect(header.className).toContain("dark:bg-gray-900");
+      expect(header.className).toContain("dark:bg-[#0f1115]");
       expect(header.className).toContain("midnight:bg-[#0f1729]");
       expect(header.className).toContain("purple:bg-[#2a1a3e]");
     });
@@ -28,7 +28,7 @@ describe("CallHeader — Visual / CSS", () => {
       const header = container.firstChild as HTMLElement;
       expect(header.className).toContain("border-b");
       expect(header.className).toContain("border-gray-200");
-      expect(header.className).toContain("dark:border-gray-800");
+      expect(header.className).toContain("dark:border-[#1a1d24]");
     });
 
     it("has flex layout", () => {
@@ -88,7 +88,7 @@ describe("CallHeader — Visual / CSS", () => {
       const badge = container.querySelector(".hidden.sm\\:flex");
       expect(badge).not.toBeNull();
       expect(badge!.className).toContain("bg-gray-100");
-      expect(badge!.className).toContain("dark:bg-gray-800");
+      expect(badge!.className).toContain("dark:bg-[#1a1d24]");
     });
   });
 

@@ -158,7 +158,7 @@ export default function EditableTransferLetterModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 midnight:bg-slate-900 purple:bg-purple-950 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-slate-900 purple:bg-purple-950 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 midnight:border-slate-700 purple:border-purple-800">
           <div className="flex items-center gap-3">
@@ -180,7 +180,7 @@ export default function EditableTransferLetterModal({
               className={`p-2 rounded-lg transition-all ${
                 isEditing
                   ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
-                  : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+                  : "hover:bg-gray-100 dark:hover:bg-[#22262e] text-gray-600 dark:text-gray-400"
               }`}
               title={isEditing ? "View Mode" : "Edit Mode"}
             >
@@ -188,21 +188,21 @@ export default function EditableTransferLetterModal({
             </button>
             <button
               onClick={handleDownloadPDF}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] text-gray-600 dark:text-gray-400 transition-colors"
               title="Download PDF"
             >
               <Download className="w-5 h-5" />
             </button>
             <button
               onClick={handlePrint}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] text-gray-600 dark:text-gray-400 transition-colors"
               title="Print"
             >
               <Printer className="w-5 h-5" />
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] text-gray-600 dark:text-gray-400 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -211,7 +211,7 @@ export default function EditableTransferLetterModal({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-3xl mx-auto bg-white dark:bg-gray-900 midnight:bg-slate-800 purple:bg-purple-900 p-8 rounded-lg shadow-lg">
+          <div className="max-w-3xl mx-auto bg-white dark:bg-[#0f1115] midnight:bg-slate-800 purple:bg-purple-900 p-8 rounded-lg shadow-lg">
             {isEditing ? (
               <div className="space-y-4">
                 {/* School Details */}
@@ -225,7 +225,7 @@ export default function EditableTransferLetterModal({
                     onChange={(e) =>
                       setLetterData({ ...letterData, schoolName: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white"
                   />
                 </div>
 
@@ -239,7 +239,7 @@ export default function EditableTransferLetterModal({
                     onChange={(e) =>
                       setLetterData({ ...letterData, schoolAddress: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white"
                   />
                 </div>
 
@@ -254,7 +254,7 @@ export default function EditableTransferLetterModal({
                       onChange={(e) =>
                         setLetterData({ ...letterData, schoolPhone: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white"
                     />
                   </div>
                   <div className="space-y-2">
@@ -267,12 +267,12 @@ export default function EditableTransferLetterModal({
                       onChange={(e) =>
                         setLetterData({ ...letterData, schoolEmail: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white"
                     />
                   </div>
                 </div>
 
-                <div className="h-px bg-gray-200 dark:bg-gray-700 my-4" />
+                <div className="h-px bg-gray-200 dark:bg-[#22262e] my-4" />
 
                 {/* Letter Content */}
                 <div className="space-y-2">
@@ -285,7 +285,7 @@ export default function EditableTransferLetterModal({
                     onChange={(e) =>
                       setLetterData({ ...letterData, letterTitle: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white"
                   />
                 </div>
 
@@ -299,7 +299,7 @@ export default function EditableTransferLetterModal({
                     onChange={(e) =>
                       setLetterData({ ...letterData, salutation: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white"
                   />
                 </div>
 
@@ -313,7 +313,7 @@ export default function EditableTransferLetterModal({
                       setLetterData({ ...letterData, bodyIntro: e.target.value })
                     }
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white"
                   />
                 </div>
 
@@ -327,7 +327,7 @@ export default function EditableTransferLetterModal({
                       setLetterData({ ...letterData, bodyDetails: e.target.value })
                     }
                     rows={5}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white"
                   />
                 </div>
 
@@ -342,7 +342,7 @@ export default function EditableTransferLetterModal({
                         setLetterData({ ...letterData, reason: e.target.value })
                       }
                       rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white"
                     />
                   </div>
                 )}
@@ -358,7 +358,7 @@ export default function EditableTransferLetterModal({
                         setLetterData({ ...letterData, newResponsibilities: e.target.value })
                       }
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white"
                     />
                   </div>
                 )}
@@ -373,7 +373,7 @@ export default function EditableTransferLetterModal({
                       setLetterData({ ...letterData, bodyClosing: e.target.value })
                     }
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white"
                   />
                 </div>
 
@@ -388,7 +388,7 @@ export default function EditableTransferLetterModal({
                       onChange={(e) =>
                         setLetterData({ ...letterData, principalName: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white"
                     />
                   </div>
                   <div className="space-y-2">
@@ -401,7 +401,7 @@ export default function EditableTransferLetterModal({
                       onChange={(e) =>
                         setLetterData({ ...letterData, principalTitle: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white"
                     />
                   </div>
                 </div>
@@ -451,7 +451,7 @@ export default function EditableTransferLetterModal({
                   {letterData.bodyIntro}
                 </p>
 
-                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                <div className="bg-gray-50 dark:bg-[#1a1d24] p-4 rounded-lg">
                   <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
                     {transfer.transferType === "promotion"
                       ? "Details of your promotion:"

@@ -30,9 +30,9 @@ describe("FormBadge — Visual / CSS", () => {
       const badgeContainer = container.querySelector(".h-\\[46px\\]");
       expect(badgeContainer).toBeInTheDocument();
       expect(badgeContainer!.className).toContain("bg-white");
-      expect(badgeContainer!.className).toContain("dark:bg-gray-800");
-      expect(badgeContainer!.className).toContain("midnight:bg-gray-900");
-      expect(badgeContainer!.className).toContain("purple:bg-gray-900");
+      expect(badgeContainer!.className).toContain("dark:bg-[#1a1d24]");
+      expect(badgeContainer!.className).toContain("midnight:bg-[#0a0e27]");
+      expect(badgeContainer!.className).toContain("purple:bg-[#1a0b2e]");
     });
 
     it("badge container has rounded-xl border", () => {

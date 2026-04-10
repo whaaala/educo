@@ -23,6 +23,7 @@ import { SHAPE_DEFS } from "./shapes";
 import { ToolbarButton, ToolbarDivider, ToolbarDropdown } from "@/components/shared/EditorToolbar";
 import { EditorDialog, EditorDialogButton, TableGridPicker, EditingModeButton, type EditingMode } from "@/components/shared/EditorDialogs";
 import { CommentAvatar, CommentCard, FloatingCommentPill, useMention, type DocComment, type CommentAuthor } from "@/components/shared/EditorComments";
+import Button from "@/components/shared/Button";
 import ShareDialog from "@/components/shared/ShareDialog";
 import PublishDialog from "@/components/shared/PublishDialog";
 import EmailDialog, { type EmailMode } from "@/components/shared/EmailDialog";
@@ -140,14 +141,11 @@ function SlideRuler({ direction, length, slideOffset }: { direction: "h" | "v"; 
   const totalCm = Math.ceil(length / pxPerCm);
 
   return (
-    <div className={`relative ${isH ? "h-[20px] w-full" : "w-[20px] h-full"} bg-[#f1f3f4] dark:bg-gray-900/80 select-none overflow-hidden`}>
+    <div className={`relative ${isH ? "h-[20px] w-full" : "w-[20px] h-full"} bg-[#f1f3f4] dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 select-none overflow-hidden`}>
       {/* Slide range highlight */}
       <div
-        className={`absolute ${isH ? "h-full" : "w-full"}`}
-        style={{
-          background: "rgba(255,255,255,0.7)",
-          ...(isH ? { left: slideOffset, width: length } : { top: slideOffset, height: length }),
-        }}
+        className={`absolute ${isH ? "h-full" : "w-full"} bg-white/70 dark:bg-[#1a1d24]/50 midnight:bg-cyan-900/30 purple:bg-pink-900/30`}
+        style={isH ? { left: slideOffset, width: length } : { top: slideOffset, height: length }}
       />
       {/* Ticks and numbers */}
       {Array.from({ length: totalCm + 1 }, (_, i) => {
@@ -186,7 +184,7 @@ function SlideRuler({ direction, length, slideOffset }: { direction: "h" | "v"; 
         );
       })}
       {/* Border line */}
-      <div className={`absolute ${isH ? "bottom-0 left-0 right-0 h-px" : "right-0 top-0 bottom-0 w-px"} bg-gray-300/50 dark:bg-gray-700/50`} />
+      <div className={`absolute ${isH ? "bottom-0 left-0 right-0 h-px" : "right-0 top-0 bottom-0 w-px"} bg-gray-300/50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50`} />
     </div>
   );
 }
@@ -360,7 +358,7 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, on
   const slideTop = 18 + (containerSize.h - 18 - size.h) / 2;
 
   return (
-    <div ref={containerRef} className="flex-1 flex flex-col bg-[#e8eaed]/60 dark:bg-gray-950 overflow-hidden relative">
+    <div ref={containerRef} className="flex-1 flex flex-col bg-[#e8eaed]/60 dark:bg-[#0b0e14] midnight:bg-[#060a1e] purple:bg-[#120722] overflow-hidden relative">
       {/* Horizontal ruler */}
       {showRuler && <SlideRuler direction="h" length={size.w} slideOffset={slideLeft} />}
 
@@ -516,19 +514,19 @@ function SlidePickerModal({ title: modalTitle, subtitle, slides: slideList, defa
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-[600px] max-w-[92vw] max-h-[80vh] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden">
+      <div className="relative z-10 w-[600px] max-w-[92vw] max-h-[80vh] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
           <div>
-            <h2 className="text-[16px] font-semibold text-gray-900 dark:text-gray-100">{modalTitle}</h2>
+            <h2 className="text-[16px] font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">{modalTitle}</h2>
             {subtitle && <p className="text-[12px] text-gray-400 mt-0.5">{subtitle}</p>}
           </div>
           <div className="flex items-center gap-2">
             <button onClick={toggleAll}
-              className="px-3 py-1.5 rounded-lg text-[12px] font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer">
+              className="px-3 py-1.5 rounded-lg text-[12px] font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors cursor-pointer">
               {selectedIds.size === slideList.length ? "Deselect all" : "Select all"}
             </button>
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
               <X className="w-4 h-4 text-gray-400" />
             </button>
           </div>
@@ -543,8 +541,8 @@ function SlidePickerModal({ title: modalTitle, subtitle, slides: slideList, defa
                 <button key={slide.id} onClick={() => toggleSlide(slide.id)}
                   className={`relative rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group ${
                     isSelected
-                      ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 shadow-lg shadow-blue-500/10"
-                      : "ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-blue-300 dark:hover:ring-blue-700 hover:shadow-md"
+                      ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 midnight:ring-offset-[#0d1526] purple:ring-offset-[#1f1035] shadow-lg shadow-blue-500/10"
+                      : "ring-1 ring-gray-200 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-blue-300 dark:hover:ring-blue-700 hover:shadow-md"
                   }`}
                 >
                   <div className="aspect-video overflow-hidden bg-white" style={{ background: slide.background || "#fff" }}>
@@ -557,7 +555,7 @@ function SlidePickerModal({ title: modalTitle, subtitle, slides: slideList, defa
                   </div>
                   <div className="absolute top-2 right-2">
                     <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-200 ${
-                      isSelected ? "bg-blue-500 shadow-md shadow-blue-500/30" : "bg-white/80 dark:bg-gray-800/80 border-2 border-gray-300 dark:border-gray-600 group-hover:border-blue-400"
+                      isSelected ? "bg-blue-500 shadow-md shadow-blue-500/30" : "bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 group-hover:border-blue-400"
                     }`}>
                       {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
                     </div>
@@ -570,10 +568,10 @@ function SlidePickerModal({ title: modalTitle, subtitle, slides: slideList, defa
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+        <div className="flex items-center justify-between px-6 py-3.5 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gray-50/50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
           <span className="text-[13px] text-gray-400">{selectedIds.size} of {slideList.length} selected</span>
           <div className="flex gap-2.5">
-            <button onClick={onClose} className="px-5 py-2 rounded-xl text-[13px] font-medium text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">Cancel</button>
+            <button onClick={onClose} className="px-5 py-2 rounded-xl text-[13px] font-medium text-gray-600 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">Cancel</button>
             <button onClick={() => onConfirm(slideList.filter(s => selectedIds.has(s.id)))} disabled={selectedIds.size === 0}
               className="px-5 py-2 rounded-xl text-[13px] font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-blue-500/20 hover:shadow-md transition-all cursor-pointer">
               {confirmLabel} {selectedIds.size > 0 ? `(${selectedIds.size})` : ""}
@@ -652,19 +650,19 @@ function ImportSlidesModal({ currentPresId, onImport, onClose }: {
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative z-10 w-[600px] max-w-[92vw] max-h-[80vh] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden">
+      <div className="relative z-10 w-[600px] max-w-[92vw] max-h-[80vh] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
           <div className="flex items-center gap-3">
             {selectedPresId && (
               <button onClick={() => { setSelectedPresId(null); setSelectedSlideIds(new Set()); }}
-                className="p-1.5 -ml-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                className="p-1.5 -ml-1 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
                 <ArrowLeft className="w-4 h-4 text-gray-500" />
               </button>
             )}
             <div>
-              <h2 className="text-[16px] font-semibold text-gray-900 dark:text-gray-100">
+              <h2 className="text-[16px] font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
                 {selectedPresId ? "Select slides" : "Import slides"}
               </h2>
               {selectedPresId && selectedPres && (
@@ -678,12 +676,12 @@ function ImportSlidesModal({ currentPresId, onImport, onClose }: {
           <div className="flex items-center gap-2">
             {selectedPresId && (
               <button onClick={selectAll}
-                className="px-3 py-1.5 rounded-lg text-[12px] font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer">
+                className="px-3 py-1.5 rounded-lg text-[12px] font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors cursor-pointer">
                 {selectedSlideIds.size === selectedPres?.slides.length ? "Deselect all" : "Select all"}
               </button>
             )}
             <button onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
               <X className="w-4 h-4 text-gray-400" />
             </button>
           </div>
@@ -693,10 +691,10 @@ function ImportSlidesModal({ currentPresId, onImport, onClose }: {
         <div className="flex-1 overflow-y-auto p-5">
           {presentations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-center justify-center mb-4">
                 <Upload className="w-7 h-7 text-gray-300" />
               </div>
-              <p className="text-[15px] font-medium text-gray-600 dark:text-gray-400">No presentations found</p>
+              <p className="text-[15px] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">No presentations found</p>
               <p className="text-[13px] text-gray-400 mt-1 max-w-[280px]">Create another presentation first, then come back to import slides from it</p>
             </div>
 
@@ -707,21 +705,21 @@ function ImportSlidesModal({ currentPresId, onImport, onClose }: {
                 <button
                   key={p.id}
                   onClick={() => { setSelectedPresId(p.id); setSelectedSlideIds(new Set(p.slides.map(s => s.id))); }}
-                  className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-left transition-all duration-200 cursor-pointer group border border-gray-100 dark:border-gray-800 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50/40 dark:hover:bg-blue-900/10 hover:shadow-sm"
+                  className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-left transition-all duration-200 cursor-pointer group border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50/40 dark:hover:bg-blue-900/10 midnight:hover:bg-cyan-900/10 purple:hover:bg-pink-900/10 hover:shadow-sm"
                 >
                   {/* Thumbnail */}
-                  <div className="w-[96px] flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700">
+                  <div className="w-[96px] flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                     <div className="w-[384px] origin-top-left pointer-events-none" style={{ transform: "scale(0.25)", background: p.slides[0]?.background || "#fff" }}>
                       <div style={{ aspectRatio: "16/9" }} dangerouslySetInnerHTML={{ __html: p.slides[0]?.content || "" }} />
                     </div>
                   </div>
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-semibold text-gray-800 dark:text-gray-200 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <p className="text-[14px] font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       {p.title}
                     </p>
                     <div className="flex items-center gap-3 mt-1.5">
-                      <span className="inline-flex items-center gap-1 text-[11px] text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-[11px] text-gray-400 bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] px-2 py-0.5 rounded-full">
                         {p.slides.length} slide{p.slides.length !== 1 ? "s" : ""}
                       </span>
                       <span className="text-[11px] text-gray-400">
@@ -746,8 +744,8 @@ function ImportSlidesModal({ currentPresId, onImport, onClose }: {
                     onClick={() => toggleSlide(slide.id)}
                     className={`relative rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group ${
                       isSelected
-                        ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 shadow-lg shadow-blue-500/10"
-                        : "ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-blue-300 dark:hover:ring-blue-700 hover:shadow-md"
+                        ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 midnight:ring-offset-[#0d1526] purple:ring-offset-[#1f1035] shadow-lg shadow-blue-500/10"
+                        : "ring-1 ring-gray-200 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-blue-300 dark:hover:ring-blue-700 hover:shadow-md"
                     }`}
                   >
                     {/* Slide preview */}
@@ -773,7 +771,7 @@ function ImportSlidesModal({ currentPresId, onImport, onClose }: {
                       <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-200 ${
                         isSelected
                           ? "bg-blue-500 shadow-md shadow-blue-500/30"
-                          : "bg-white/80 dark:bg-gray-800/80 border-2 border-gray-300 dark:border-gray-600 group-hover:border-blue-400"
+                          : "bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 group-hover:border-blue-400"
                       }`}>
                         {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
                       </div>
@@ -792,13 +790,13 @@ function ImportSlidesModal({ currentPresId, onImport, onClose }: {
 
         {/* Footer — only on step 2 */}
         {selectedPresId && (
-          <div className="flex items-center justify-between px-6 py-3.5 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+          <div className="flex items-center justify-between px-6 py-3.5 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gray-50/50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
             <span className="text-[13px] text-gray-400">
               {selectedSlideIds.size} of {selectedPres?.slides.length} selected
             </span>
             <div className="flex gap-2.5">
               <button onClick={onClose}
-                className="px-5 py-2 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                className="px-5 py-2 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
                 Cancel
               </button>
               <button onClick={handleImport} disabled={selectedSlideIds.size === 0}
@@ -1500,7 +1498,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const editorContent = (
     <div
       className={[
-        "flex flex-col h-full bg-[#f8f9fa] dark:bg-gray-950 slide-editor-root",
+        "flex flex-col h-full bg-[#f8f9fa] dark:bg-[#0b0e14] midnight:bg-[#060a1e] purple:bg-[#120722] slide-editor-root",
         isFullscreen ? "fixed inset-0 z-[9999]" : "relative",
       ].join(" ")}
       lang={(() => {
@@ -1562,9 +1560,9 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       </div>
 
       {/* ── Top Header — always visible ── */}
-      <div className="flex items-center gap-3 px-4 py-2 bg-white dark:bg-gray-900 border-b border-gray-200/80 dark:border-gray-800 flex-shrink-0">
+      <div className="flex items-center gap-3 px-4 py-2 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-b border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 flex-shrink-0">
         <button onClick={() => window.location.href = "/presentations"}
-          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer">
+          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all duration-200 cursor-pointer">
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div className="flex items-center gap-1.5 min-w-0">
@@ -1572,11 +1570,11 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             value={title}
             onChange={e => onChange({ ...value, title: e.target.value })}
             placeholder="Untitled presentation"
-            className="text-[17px] font-semibold text-gray-800 dark:text-gray-200 bg-transparent outline-none border-b-2 border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus:border-blue-500 px-1 py-0.5 max-w-[340px] transition-all duration-200"
+            className="text-[17px] font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-transparent outline-none border-b-2 border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus:border-blue-500 px-1 py-0.5 max-w-[340px] transition-all duration-200"
           />
           <button
             onClick={() => setShowAddToFolderDialog(true)}
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-colors cursor-pointer shrink-0"
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 dark:hover:text-blue-400 transition-colors cursor-pointer shrink-0"
             title={`Located in: ${currentFolder}`}
           >
             <FolderPlus className="w-3 h-3" />
@@ -1588,36 +1586,44 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         {/* Collapse/expand toggle for menus+toolbar */}
         <button
           onClick={() => setHeaderCollapsed(c => !c)}
-          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
+          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all duration-200 cursor-pointer"
           title={headerCollapsed ? "Show menus & toolbar" : "Hide menus & toolbar"}
         >
           {headerCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
         </button>
         <ToolbarButton title="Comments" Icon={MessageCircle} onClick={() => setShowCommentSidebar(!showCommentSidebar)} active={showCommentSidebar} />
         {permissions.requireSignIn && (
-          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-[10px] font-medium" title="Sign-in required to view">
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 text-[10px] font-medium" title="Sign-in required to view">
             <Lock className="w-3 h-3" /> Sign-in required
           </span>
         )}
         {permissions.disableCopyPrintDownload && (
-          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-[10px] font-medium" title="Copy, print, and download disabled">
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400 text-[10px] font-medium" title="Copy, print, and download disabled">
             <ShieldCheck className="w-3 h-3" /> Restricted
           </span>
         )}
-        <button onClick={() => {
+        <Button
+          size="sm"
+          icon={<Share2 className="w-3.5 h-3.5" />}
+          className="!rounded-full"
+          onClick={() => {
             if (permissions.preventAccessChange) {
               setPermissionBlockedMsg({ message: "Sharing permissions are locked. Only the owner can manage access." });
             } else {
               setShowShareDialog(true);
             }
           }}
-          className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gray-100 text-gray-700 text-[12px] font-medium hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer">
-          <Share2 className="w-3.5 h-3.5" /> Share
-        </button>
-        <button onClick={() => { setActiveSlideIdx(0); setIsPresenting(true); }}
-          className="flex items-center gap-2 px-5 py-1.5 rounded-full bg-gradient-to-r from-blue-600 to-blue-500 text-white text-[13px] font-semibold hover:from-blue-700 hover:to-blue-600 shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200 cursor-pointer">
-          <Play className="w-3.5 h-3.5 fill-current" /> Present
-        </button>
+        >
+          Share
+        </Button>
+        <Button
+          size="sm"
+          icon={<Play className="w-3.5 h-3.5 fill-current" />}
+          className="!rounded-full !px-5"
+          onClick={() => { setActiveSlideIdx(0); setIsPresenting(true); }}
+        >
+          Present
+        </Button>
       </div>
 
       {/* ── Collapsible Menu + Toolbar ── */}
@@ -2098,7 +2104,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       }} />
 
       {/* ── Slide Toolbar (using shared ToolbarButton & ToolbarDivider) ── */}
-      <div className="flex items-center gap-0.5 px-3 py-1.5 bg-white dark:bg-gray-900 border-b border-gray-200/60 dark:border-gray-800 flex-shrink-0">
+      <div className="flex items-center gap-0.5 px-3 py-1.5 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-b border-gray-200/60 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 flex-shrink-0">
         <ToolbarButton title="New slide (Ctrl+M)" Icon={Plus} onClick={addSlide} disabled={!canDirectEdit} />
         <ToolbarButton title="Duplicate slide" Icon={Copy} onClick={duplicateSlide} disabled={!canDirectEdit} />
         <ToolbarButton title="Delete slide" Icon={Trash2} onClick={deleteSlide} disabled={!canDirectEdit || slides.length <= 1} />
@@ -2133,7 +2139,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
               <button key={shape} onClick={() => {
                 const th = THEMES[theme] || THEMES.default;
                 addObjectToSlide(createShapeObj(shape, { fill: th.accent, zIndex: currentObjects.length + 1 }));
-              }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-center">
+              }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-center">
                 <div className="w-8 h-8 mx-auto"><ShapeSVGPreview shape={shape} /></div>
                 <span className="text-[9px] text-gray-500 mt-0.5 block">{label}</span>
               </button>
@@ -2154,10 +2160,10 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
 
       {/* Find and Replace panel */}
       {showFindReplace && (
-        <div className="absolute right-3 top-[120px] z-[150] w-[280px] rounded-2xl border border-gray-200/80 dark:border-gray-700/80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-xl p-3">
+        <div className="absolute right-3 top-[120px] z-[150] w-[280px] rounded-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-md shadow-xl p-3">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[12px] font-bold text-gray-700 dark:text-gray-200">Find and replace</span>
-            <button onClick={() => setShowFindReplace(false)} className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition-colors cursor-pointer" aria-label="Close">
+            <span className="text-[12px] font-bold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Find and replace</span>
+            <button onClick={() => setShowFindReplace(false)} className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 text-gray-400 transition-colors cursor-pointer" aria-label="Close">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -2165,25 +2171,25 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             <input value={findQuery} onChange={(e) => setFindQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); slideFindNext(); } }}
               placeholder="Find…" autoFocus
-              className="w-full px-3 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none focus:ring-1 focus:ring-blue-400" />
+              className="w-full px-3 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 outline-none focus:ring-1 focus:ring-blue-400" />
             <button onClick={slideFindNext}
-              className="px-3 py-1.5 rounded-lg text-[12px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+              className="px-3 py-1.5 rounded-lg text-[12px] font-medium bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
               Find next
             </button>
           </div>
-          <div className="my-2.5 border-t border-gray-200/60 dark:border-gray-700/60" />
+          <div className="my-2.5 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60" />
           <div className="space-y-1.5">
             <input value={replaceQuery} onChange={(e) => setReplaceQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); slideReplace(); } }}
               placeholder="Replace with…"
-              className="w-full px-3 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none focus:ring-1 focus:ring-blue-400" />
+              className="w-full px-3 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 outline-none focus:ring-1 focus:ring-blue-400" />
             <div className="flex items-center gap-1.5">
               <button onClick={slideReplace}
-                className="px-3 py-1.5 rounded-lg text-[12px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+                className="px-3 py-1.5 rounded-lg text-[12px] font-medium bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
                 Replace
               </button>
               <button onClick={slideReplaceAll}
-                className="px-3 py-1.5 rounded-lg text-[12px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+                className="px-3 py-1.5 rounded-lg text-[12px] font-medium bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
                 Replace all
               </button>
             </div>
@@ -2193,7 +2199,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
 
       {/* ── Mode Banners ── */}
       {editingMode === "viewing" && (
-        <div className="flex items-center justify-center gap-2 px-4 py-1.5 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 text-[11px] font-medium select-none flex-shrink-0">
+        <div className="flex items-center justify-center gap-2 px-4 py-1.5 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 text-[11px] font-medium select-none flex-shrink-0">
           <Eye className="w-3.5 h-3.5" />
           <span>You are viewing this presentation. To make edits, switch to Editing mode.</span>
           <button onClick={() => setEditingMode("editing")} className="ml-2 px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-800/30 hover:bg-amber-200 dark:hover:bg-amber-700/40 transition-colors cursor-pointer font-semibold">
@@ -2202,7 +2208,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         </div>
       )}
       {editingMode === "suggesting" && (
-        <div className="flex items-center justify-center gap-2 px-4 py-1.5 bg-green-50 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800/40 text-green-700 dark:text-green-400 text-[11px] font-medium select-none flex-shrink-0">
+        <div className="flex items-center justify-center gap-2 px-4 py-1.5 bg-green-50 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800/40 text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 text-[11px] font-medium select-none flex-shrink-0">
           <MessageCircle className="w-3.5 h-3.5" />
           <span>Suggesting mode — your edits will appear as suggestions that can be accepted or rejected.</span>
         </div>
@@ -2210,10 +2216,10 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
 
       {/* ── Grid View (replaces main area when active) ── */}
       {showGridView && (
-        <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-950 p-6">
+        <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-[#0b0e14] midnight:bg-[#060a1e] purple:bg-[#120722] p-6">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-[14px] font-semibold text-gray-700 dark:text-gray-300">All Slides ({slides.length})</h2>
-            <button onClick={() => setShowGridView(false)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+            <h2 className="text-[14px] font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">All Slides ({slides.length})</h2>
+            <button onClick={() => setShowGridView(false)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
               <X className="w-3.5 h-3.5" /> Close grid
             </button>
           </div>
@@ -2241,7 +2247,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                 className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group ${
                   idx === activeSlideIdx
                     ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-gray-100 dark:ring-offset-gray-950 shadow-lg"
-                    : "ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-gray-400 hover:shadow-lg"
+                    : "ring-1 ring-gray-200 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-gray-400 hover:shadow-lg"
                 }`}
               >
                 <div className="w-full overflow-hidden relative" style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}`, background: slide.background || "#fff" }}>
@@ -2251,7 +2257,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                   {/* Hover overlay */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
                 </div>
-                <div className="px-2.5 py-2 bg-white dark:bg-gray-900 flex items-center justify-between">
+                <div className="px-2.5 py-2 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-center justify-between">
                   <span className={`text-[11px] font-semibold ${idx === activeSlideIdx ? "text-blue-600" : "text-gray-500"}`}>Slide {idx + 1}</span>
                   <span className="text-[10px] text-gray-400 capitalize">{slide.transition || "fade"}</span>
                 </div>
@@ -2260,7 +2266,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             {/* Add slide in grid */}
             <button
               onClick={() => { addSlide(); setShowGridView(false); }}
-              className="rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all duration-200 cursor-pointer group"
+              className="rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex flex-col items-center justify-center hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 midnight:hover:bg-cyan-900/10 purple:hover:bg-pink-900/10 transition-all duration-200 cursor-pointer group"
               style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}` }}
             >
               <Plus className="w-8 h-8 text-gray-300 group-hover:text-blue-500 transition-colors" />
@@ -2275,10 +2281,10 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         {/* Filmstrip — collapsible */}
         {filmstripCollapsed ? (
           /* Collapsed: thin strip with expand button */
-          <div className="flex-shrink-0 w-[24px] bg-[#f1f3f4] dark:bg-gray-900/50 border-r border-gray-200/80 dark:border-gray-800 flex items-start justify-center pt-3">
+          <div className="flex-shrink-0 w-[24px] bg-[#f1f3f4] dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-r border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 flex items-start justify-center pt-3">
             <button
               onClick={() => setFilmstripCollapsed(false)}
-              className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
+              className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all duration-200 cursor-pointer"
               title="Show filmstrip"
             >
               <ChevronRight className="w-3.5 h-3.5" />
@@ -2287,7 +2293,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         ) : (
           /* Expanded: full filmstrip with slides */
           <div
-            className="flex-shrink-0 w-[200px] lg:w-[220px] bg-[#f1f3f4] dark:bg-gray-900/50 border-r border-gray-200/80 dark:border-gray-800 flex flex-col outline-none"
+            className="flex-shrink-0 w-[200px] lg:w-[220px] bg-[#f1f3f4] dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-r border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 flex flex-col outline-none"
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === "ArrowDown" || e.key === "ArrowRight") {
@@ -2362,8 +2368,8 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                     onClick={() => { setActiveSlideIdx(idx); (filmstripRef.current?.closest('[tabindex]') as HTMLElement)?.focus(); }}
                     className={`flex-1 rounded-lg overflow-hidden transition-all duration-200 cursor-grab active:cursor-grabbing ${
                       idx === activeSlideIdx
-                        ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-[#f1f3f4] dark:ring-offset-gray-900 shadow-lg shadow-blue-500/10"
-                        : "ring-1 ring-gray-300/60 dark:ring-gray-700/60 hover:ring-gray-400 dark:hover:ring-gray-600 hover:shadow-md"
+                        ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-[#f1f3f4] dark:ring-offset-gray-900 midnight:ring-offset-[#0d1526] purple:ring-offset-[#1f1035] shadow-lg shadow-blue-500/10"
+                        : "ring-1 ring-gray-300/60 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-gray-400 dark:hover:ring-gray-600 hover:shadow-md"
                     }`}
                   >
                     <div className="w-full overflow-hidden" style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}`, background: slide.background || "#fff" }}>
@@ -2378,16 +2384,16 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
               <div className="flex items-start gap-2">
                 <span className="w-5" />
                 <button onClick={addSlide}
-                  className="flex-1 aspect-video rounded-lg border-2 border-dashed border-gray-300/80 dark:border-gray-600 flex items-center justify-center hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all duration-200 cursor-pointer group">
+                  className="flex-1 aspect-video rounded-lg border-2 border-dashed border-gray-300/80 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex items-center justify-center hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 midnight:hover:bg-cyan-900/10 purple:hover:bg-pink-900/10 transition-all duration-200 cursor-pointer group">
                   <Plus className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
                 </button>
               </div>
             </div>
             {/* Collapse button — pinned at bottom */}
-            <div className="flex-shrink-0 flex justify-center py-1.5 border-t border-gray-200/60 dark:border-gray-800">
+            <div className="flex-shrink-0 flex justify-center py-1.5 border-t border-gray-200/60 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
               <button
                 onClick={() => setFilmstripCollapsed(true)}
-                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all duration-200 cursor-pointer"
                 title="Hide filmstrip"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -2429,18 +2435,18 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           {/* Suggestion accept/reject popup */}
           {activeSuggestionId && suggestionPopupPos && (
             <div
-              className="fixed z-[300] flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-gray-800 shadow-xl border border-gray-200 dark:border-gray-700"
+              className="fixed z-[300] flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
               style={{ top: suggestionPopupPos.top, left: suggestionPopupPos.left }}
             >
               <button
                 onClick={() => acceptSuggestion(activeSuggestionId)}
-                className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-800/40 transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 hover:bg-green-100 dark:hover:bg-green-800/40 transition-colors cursor-pointer"
               >
                 Accept
               </button>
               <button
                 onClick={() => rejectSuggestion(activeSuggestionId)}
-                className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800/40 transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-red-50 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-100 dark:hover:bg-red-800/40 transition-colors cursor-pointer"
               >
                 Reject
               </button>
@@ -2452,7 +2458,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             <>
               {/* Draggable resize handle */}
               <div
-                className="flex-shrink-0 h-[5px] bg-gray-100 dark:bg-gray-800 cursor-row-resize hover:bg-blue-100 dark:hover:bg-blue-900/20 active:bg-blue-200 transition-colors group relative select-none"
+                className="flex-shrink-0 h-[5px] bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] cursor-row-resize hover:bg-blue-100 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 active:bg-blue-200 transition-colors group relative select-none"
                 onMouseDown={(e) => {
                   e.preventDefault();
                   isDraggingNotes.current = true;
@@ -2476,20 +2482,20 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
               >
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="flex gap-0.5">
-                    <div className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600 group-hover:bg-blue-400 transition-colors" />
-                    <div className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600 group-hover:bg-blue-400 transition-colors" />
-                    <div className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600 group-hover:bg-blue-400 transition-colors" />
+                    <div className="w-1 h-1 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 group-hover:bg-blue-400 transition-colors" />
+                    <div className="w-1 h-1 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 group-hover:bg-blue-400 transition-colors" />
+                    <div className="w-1 h-1 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 group-hover:bg-blue-400 transition-colors" />
                   </div>
                 </div>
               </div>
               {/* Notes textarea */}
-              <div className="flex-shrink-0 bg-white dark:bg-gray-900 overflow-hidden transition-[height] duration-150" style={{ height: notesHeight }}>
+              <div className="flex-shrink-0 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] overflow-hidden transition-[height] duration-150" style={{ height: notesHeight }}>
                 <div className="px-5 py-1.5 h-full">
                   <textarea
                     value={activeSlide?.notes || ""}
                     onChange={e => updateCurrentSlide({ notes: e.target.value })}
                     placeholder="Click to add speaker notes"
-                    className="w-full h-full text-[13px] text-gray-600 dark:text-gray-400 bg-transparent outline-none resize-none placeholder:text-gray-400/50 dark:placeholder:text-gray-500/40 leading-relaxed"
+                    className="w-full h-full text-[13px] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 bg-transparent outline-none resize-none placeholder:text-gray-400/50 dark:placeholder:text-gray-500/40 leading-relaxed"
                   />
                 </div>
               </div>
@@ -2497,13 +2503,13 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           )}
 
           {/* Status bar */}
-          <div className="flex-shrink-0 flex items-center justify-between px-4 py-0.5 border-t border-gray-200/80 dark:border-gray-800 bg-[#f8f9fa] dark:bg-gray-900/80 h-[28px]">
+          <div className="flex-shrink-0 flex items-center justify-between px-4 py-0.5 border-t border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-[#f8f9fa] dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 h-[28px]">
             <div className="flex items-center gap-1.5">
-              <button className="p-0.5 rounded hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-colors cursor-pointer" title="Grid view">
+              <button className="p-0.5 rounded hover:bg-gray-200/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer" title="Grid view">
                 <LayoutGrid className="w-3.5 h-3.5 text-gray-400" />
               </button>
               <button
-                className="p-0.5 rounded hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="p-0.5 rounded hover:bg-gray-200/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
                 title={notesHeight > 0 ? "Hide speaker notes" : "Show speaker notes"}
                 onClick={() => setNotesHeight(h => h > 0 ? 0 : 90)}
               >
@@ -2514,11 +2520,11 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
               Slide {activeSlideIdx + 1} of {slides.length} · {presentationLanguage}
             </span>
             <div className="flex items-center gap-1">
-              <button onClick={() => setZoom(z => Math.max(50, z - 25))} className="p-0.5 rounded hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+              <button onClick={() => setZoom(z => Math.max(50, z - 25))} className="p-0.5 rounded hover:bg-gray-200/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
                 <ZoomOut className="w-3.5 h-3.5 text-gray-400" />
               </button>
               <span className="text-[10px] text-gray-400 font-medium min-w-[32px] text-center">{zoom}%</span>
-              <button onClick={() => setZoom(z => Math.min(200, z + 25))} className="p-0.5 rounded hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+              <button onClick={() => setZoom(z => Math.min(200, z + 25))} className="p-0.5 rounded hover:bg-gray-200/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
                 <ZoomIn className="w-3.5 h-3.5 text-gray-400" />
               </button>
             </div>
@@ -2527,12 +2533,12 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
 
         {/* Right Panel — Themes / Transitions / Comments */}
         {(showThemes || showTransitions || showCommentSidebar) && (
-          <div className="w-[300px] flex-shrink-0 bg-white dark:bg-gray-900 border-l border-gray-200/80 dark:border-gray-800 overflow-y-auto p-4">
+          <div className="w-[300px] flex-shrink-0 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-l border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 overflow-y-auto p-4">
             {showThemes && (
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-[13px] font-semibold text-gray-700 dark:text-gray-300">Themes</h3>
-                  <button onClick={() => setShowThemes(false)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                  <h3 className="text-[13px] font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">Themes</h3>
+                  <button onClick={() => setShowThemes(false)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
                     <X className="w-3.5 h-3.5 text-gray-400" />
                   </button>
                 </div>
@@ -2541,7 +2547,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                   const catThemes = Object.entries(THEMES).filter(([, t]) => t.category === cat);
                   return (
                     <div key={cat} className="mb-4">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mb-2">
                         {cat === "light" ? "Light" : cat === "dark" ? "Dark" : "Gradient"}
                       </p>
                       <div className="grid grid-cols-2 gap-2">
@@ -2555,8 +2561,8 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                             }}
                             className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group ${
                               theme === key
-                                ? "ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900 shadow-lg scale-[1.02]"
-                                : "ring-1 ring-gray-200/80 dark:ring-gray-700/60 hover:ring-gray-300 hover:shadow-md hover:scale-[1.01]"
+                                ? "ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900 midnight:ring-offset-[#0d1526] purple:ring-offset-[#1f1035] shadow-lg scale-[1.02]"
+                                : "ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-gray-300 hover:shadow-md hover:scale-[1.01]"
                             }`}
                           >
                             <div className="aspect-video relative overflow-hidden" style={{ background: t.bg }}>
@@ -2569,7 +2575,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 dark:group-hover:bg-white/5 transition-colors" />
                             </div>
                             <p className={`text-[10px] text-center py-1.5 font-medium ${
-                              theme === key ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"
+                              theme === key ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
                             }`}>{t.label}</p>
                           </button>
                         ))}
@@ -2580,10 +2586,10 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
               </div>
             )}
             {showTransitions && (
-              <div className={showThemes ? "mt-5 pt-5 border-t border-gray-100 dark:border-gray-800" : ""}>
+              <div className={showThemes ? "mt-5 pt-5 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10" : ""}>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-[13px] font-semibold text-gray-700 dark:text-gray-300">Transitions</h3>
-                  <button onClick={() => setShowTransitions(false)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                  <h3 className="text-[13px] font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">Transitions</h3>
+                  <button onClick={() => setShowTransitions(false)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
                     <X className="w-3.5 h-3.5 text-gray-400" />
                   </button>
                 </div>
@@ -2594,12 +2600,12 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                       onClick={() => updateCurrentSlide({ transition: t })}
                       className={`w-full px-3.5 py-2.5 rounded-xl text-left text-[13px] transition-all duration-200 cursor-pointer flex items-center gap-3 ${
                         activeSlide?.transition === t
-                          ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium ring-1 ring-blue-200 dark:ring-blue-800"
-                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                          ? "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium ring-1 ring-blue-200 dark:ring-blue-800"
+                          : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/50"
                       }`}
                     >
                       <span className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold ${
-                        activeSlide?.transition === t ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600" : "bg-gray-100 dark:bg-gray-800 text-gray-400"
+                        activeSlide?.transition === t ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600" : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-400"
                       }`}>
                         {t === "none" ? "—" : t.charAt(0).toUpperCase()}
                       </span>
@@ -2610,10 +2616,10 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
               </div>
             )}
             {showCommentSidebar && (
-              <div className={showThemes || showTransitions ? "mt-4 pt-4 border-t border-gray-100 dark:border-gray-800" : ""}>
+              <div className={showThemes || showTransitions ? "mt-4 pt-4 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10" : ""}>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-[12px] font-bold text-gray-500 uppercase tracking-wider">Comments</h3>
-                  <button onClick={() => setShowCommentSidebar(false)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
+                  <button onClick={() => setShowCommentSidebar(false)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 cursor-pointer">
                     <X className="w-3.5 h-3.5 text-gray-400" />
                   </button>
                 </div>
@@ -2777,13 +2783,13 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       {/* Details Dialog */}
       {showDetailsDialog && (
         <EditorDialog title="Presentation Details" onClose={() => setShowDetailsDialog(false)}>
-          <div className="space-y-3 text-[13px] text-gray-600 dark:text-gray-400">
-            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Title</span><span>{title}</span></div>
-            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Slides</span><span>{slides.length}</span></div>
-            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Theme</span><span className="capitalize">{theme}</span></div>
-            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Owner</span><span>You</span></div>
-            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Last modified</span><span>{new Date().toLocaleDateString()}</span></div>
-            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Created</span><span>{new Date().toLocaleDateString()}</span></div>
+          <div className="space-y-3 text-[13px] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Title</span><span>{title}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Slides</span><span>{slides.length}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Theme</span><span className="capitalize">{theme}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Owner</span><span>You</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Last modified</span><span>{new Date().toLocaleDateString()}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Created</span><span>{new Date().toLocaleDateString()}</span></div>
           </div>
         </EditorDialog>
       )}
@@ -2792,7 +2798,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       {showPageSetup && (
         <EditorDialog title="Page Setup" onClose={() => setShowPageSetup(false)}>
           <div className="space-y-4">
-            <p className="text-[13px] text-gray-500 dark:text-gray-400">Slide dimensions</p>
+            <p className="text-[13px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Slide dimensions</p>
             <div className="grid grid-cols-2 gap-2">
               {[
                 { label: "Widescreen 16:9", w: 16, h: 9 },
@@ -2805,8 +2811,8 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                   <button key={opt.label} onClick={() => { setSlideRatio(opt); setShowPageSetup(false); }}
                     className={`flex flex-col items-center gap-2 px-3 py-3 rounded-xl border text-[12px] transition-colors cursor-pointer ${
                       isSelected
-                        ? "border-blue-400 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-semibold"
-                        : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300"
+                        ? "border-blue-400 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 font-semibold"
+                        : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 hover:border-blue-300"
                     }`}>
                     <div className="border border-current rounded" style={{ width: 48, aspectRatio: `${opt.w}/${opt.h}` }} />
                     {opt.label}
@@ -2815,7 +2821,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                 );
               })}
             </div>
-            <p className="text-[11px] text-gray-400 dark:text-gray-500">Current: {slideRatio.label} ({slideRatio.w}:{slideRatio.h})</p>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Current: {slideRatio.label} ({slideRatio.w}:{slideRatio.h})</p>
           </div>
         </EditorDialog>
       )}
@@ -2826,9 +2832,9 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           <div className="space-y-3">
             <p className="text-[12px] text-gray-400">Saved versions of this presentation</p>
             <div className="space-y-2">
-              <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                <p className="text-[13px] font-medium text-blue-700 dark:text-blue-300">Current version</p>
-                <p className="text-[11px] text-blue-500 dark:text-blue-400 mt-0.5">{new Date().toLocaleString()}</p>
+              <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 border border-blue-200 dark:border-blue-800">
+                <p className="text-[13px] font-medium text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">Current version</p>
+                <p className="text-[11px] text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 mt-0.5">{new Date().toLocaleString()}</p>
               </div>
               <p className="text-[12px] text-gray-400 text-center py-4">No previous versions saved yet</p>
             </div>
@@ -2851,24 +2857,24 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           return (
             <EditorDialog title="Add to Folder" onClose={() => setShowAddToFolderDialog(false)}>
               <div className="space-y-4">
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800">
-                  <FolderPlus className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 border border-blue-200 dark:border-blue-800">
+                  <FolderPlus className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 shrink-0" />
                   <div>
-                    <p className="text-[13px] font-medium text-blue-800 dark:text-blue-200">{title}</p>
-                    <p className="text-[11px] text-blue-600 dark:text-blue-400">Currently in: <span className="font-semibold">{currentFolder}</span></p>
+                    <p className="text-[13px] font-medium text-blue-800 dark:text-blue-200 midnight:text-cyan-200 purple:text-pink-200">{title}</p>
+                    <p className="text-[11px] text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">Currently in: <span className="font-semibold">{currentFolder}</span></p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-[12px] font-medium text-gray-700 dark:text-gray-300 mb-2">Move to:</p>
+                  <p className="text-[12px] font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2">Move to:</p>
                   <div className="space-y-1.5">
                     {folders.map(folder => (
                       <button key={folder} onClick={() => setSelected(folder)}
                         className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left text-[13px] transition-colors cursor-pointer ${
                           selected === folder
-                            ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold border border-blue-300 dark:border-blue-700"
+                            ? "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 font-semibold border border-blue-300 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500"
                             : folder === currentFolder
-                              ? "bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-transparent"
-                              : "text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-transparent"
+                              ? "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 border border-transparent"
+                              : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 border border-transparent"
                         }`}>
                         <FolderPlus className={`w-4 h-4 ${selected === folder ? "text-blue-500" : "text-gray-400"}`} />
                         {folder}
@@ -2915,13 +2921,13 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                 {items.map((item) => {
                   const enabled = localPerms[item.key];
                   return (
-                    <div key={item.key} className={`flex items-start gap-3 p-3 rounded-xl border transition-colors ${enabled ? "border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-900/10" : "border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700"}`}>
-                      <item.icon className={`w-4.5 h-4.5 mt-0.5 shrink-0 ${enabled ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"}`} />
+                    <div key={item.key} className={`flex items-start gap-3 p-3 rounded-xl border transition-colors ${enabled ? "border-blue-300 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500 bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10" : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-300 dark:hover:border-blue-700"}`}>
+                      <item.icon className={`w-4.5 h-4.5 mt-0.5 shrink-0 ${enabled ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"}`} />
                       <div className="flex-1">
-                        <p className={`text-[13px] font-medium ${enabled ? "text-blue-800 dark:text-blue-200" : "text-gray-800 dark:text-gray-200"}`}>{item.label}</p>
-                        <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{item.desc}</p>
+                        <p className={`text-[13px] font-medium ${enabled ? "text-blue-800 dark:text-blue-200 midnight:text-cyan-200 purple:text-pink-200" : "text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"}`}>{item.label}</p>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">{item.desc}</p>
                       </div>
-                      <button className={`mt-0.5 w-9 h-5 rounded-full transition-colors cursor-pointer ${enabled ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"}`}
+                      <button className={`mt-0.5 w-9 h-5 rounded-full transition-colors cursor-pointer ${enabled ? "bg-blue-600" : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700"}`}
                         onClick={() => toggle(item.key)}>
                         <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${enabled ? "translate-x-4.5" : "translate-x-0.5"}`} />
                       </button>
@@ -2947,7 +2953,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       {showLanguageDialog && (
         <EditorDialog title="Slide Language" onClose={() => setShowLanguageDialog(false)}>
           <div className="space-y-4">
-            <p className="text-[12px] text-gray-500 dark:text-gray-400">Set the language for slide content. Placeholder text on slides will be translated to the selected language.</p>
+            <p className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Set the language for slide content. Placeholder text on slides will be translated to the selected language.</p>
             <div className="grid grid-cols-2 gap-1.5 max-h-[240px] overflow-y-auto">
               {["English", "Spanish", "French", "German", "Portuguese", "Italian", "Dutch", "Russian", "Chinese", "Japanese", "Korean", "Arabic", "Hindi", "Yoruba", "Igbo", "Hausa", "Swahili", "Zulu"].map(lang => (
                 <button key={lang} onClick={() => {
@@ -2985,8 +2991,8 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                   }}
                   className={`px-3 py-2 rounded-lg text-[12px] text-left transition-colors cursor-pointer ${
                     presentationLanguage === lang
-                      ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold border border-blue-300 dark:border-blue-700"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent"
+                      ? "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 font-semibold border border-blue-300 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500"
+                      : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border border-transparent"
                   }`}>
                   {presentationLanguage === lang && <Check className="w-3 h-3 inline mr-1.5" />}
                   {lang}
@@ -3003,13 +3009,13 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           const [versionName, setVersionNameLocal] = React.useState(`Version ${new Date().toLocaleDateString()}`);
           return (
             <div className="space-y-4">
-              <p className="text-[12px] text-gray-500 dark:text-gray-400">Give this version a name so you can find it later in version history.</p>
+              <p className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Give this version a name so you can find it later in version history.</p>
               <input
                 type="text"
                 value={versionName}
                 onChange={e => setVersionNameLocal(e.target.value)}
                 autoFocus
-                className="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-[13px] text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-[13px] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 placeholder="e.g. Final draft, Before review..."
               />
               <div className="flex justify-end gap-2">
@@ -3082,7 +3088,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
 
               {!permissionRequestSent ? (
                 <>
-                  <p className="text-[12px] text-gray-500 dark:text-gray-400">
+                  <p className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                     {isOwner
                       ? "You set this restriction in Sharing Permissions. You can edit your permissions to change this."
                       : `This restriction was set by the document owner in Sharing Permissions.${canRequest ? " You can request permission from the owner." : ""}`
@@ -3114,10 +3120,10 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
               ) : (
                 <>
                   <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800">
-                    <Mail className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0" />
+                    <Mail className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 shrink-0" />
                     <div>
                       <p className="text-[13px] font-medium text-green-800 dark:text-green-200">Permission request sent!</p>
-                      <p className="text-[11px] text-green-600 dark:text-green-400 mt-0.5">
+                      <p className="text-[11px] text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 mt-0.5">
                         A notification and email have been sent to the document owner. You&apos;ll be notified when they respond.
                       </p>
                     </div>
@@ -3142,10 +3148,10 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
               <AlertTriangle className="w-6 h-6 text-red-500 shrink-0" />
               <div>
                 <p className="text-[13px] font-medium text-red-800 dark:text-red-200">Are you sure you want to move this presentation to the bin?</p>
-                <p className="text-[11px] text-red-600 dark:text-red-400 mt-1">&ldquo;{title}&rdquo; · {slides.length} slides</p>
+                <p className="text-[11px] text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mt-1">&ldquo;{title}&rdquo; · {slides.length} slides</p>
               </div>
             </div>
-            <p className="text-[12px] text-gray-500 dark:text-gray-400">You can restore it from the bin within 30 days. After that, it will be permanently deleted.</p>
+            <p className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">You can restore it from the bin within 30 days. After that, it will be permanently deleted.</p>
             <div className="flex justify-end gap-2">
               <EditorDialogButton variant="secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</EditorDialogButton>
               <button onClick={() => {
@@ -3179,10 +3185,10 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                 }
               }}
               placeholder="https://example.com/image.png"
-              className="w-full px-3 py-2 rounded-lg text-[13px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full px-3 py-2 rounded-lg text-[13px] bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 outline-none focus:ring-2 focus:ring-blue-400"
             />
             {imageUrlInput && (
-              <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2">
+              <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] p-2">
                 <img src={imageUrlInput} alt="Preview" className="max-h-[200px] mx-auto object-contain"
                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                   onLoad={(e) => { (e.target as HTMLImageElement).style.display = "block"; }}
@@ -3240,13 +3246,13 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       {/* ── Table Picker Dialog ── */}
       {showTablePicker && (
         <div className="absolute inset-0 z-[210] flex items-center justify-center bg-black/25 backdrop-blur-[2px]" onClick={() => setShowTablePicker(false)}>
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl p-4" onClick={(e) => e.stopPropagation()}>
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl p-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[13px] font-bold text-gray-800 dark:text-gray-100">Insert Table</span>
-              <button className="px-2 py-1 rounded-lg text-[12px] text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer" onClick={() => setShowTablePicker(false)}>Close</button>
+              <span className="text-[13px] font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Insert Table</span>
+              <button className="px-2 py-1 rounded-lg text-[12px] text-gray-500 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 cursor-pointer" onClick={() => setShowTablePicker(false)}>Close</button>
             </div>
             <TableGridPicker onPick={(r, c) => insertTable(r, c)} />
-            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 text-center">Hover to select size, click to insert</p>
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-2 text-center">Hover to select size, click to insert</p>
           </div>
         </div>
       )}
@@ -3287,7 +3293,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                     })
                     .catch(() => setToast("Camera access denied"));
                 }
-              }} className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-[13px] font-medium hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+              }} className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-[13px] font-medium hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer transition-colors">
                 Start Camera
               </button>
               <button onClick={() => {
@@ -3368,7 +3374,7 @@ function SlideFullscreenPill({ onExit, zoom, onZoomChange }: {
   const btnClass = "px-3 py-2 text-[12px] font-medium transition-colors hover:bg-white/20 cursor-pointer min-h-[44px] flex items-center";
 
   return (
-    <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[10000] flex items-center rounded-full bg-gray-900/70 dark:bg-gray-800/80 backdrop-blur-[20px] backdrop-saturate-[180%] border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] text-white">
+    <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[10000] flex items-center rounded-full bg-gray-900/70 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 backdrop-blur-[20px] backdrop-saturate-[180%] border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] text-white">
       {zoomExpanded ? (
         <div className="flex items-center">
           {[50, 75, 100, 150, 200].map((z) => (
@@ -3686,7 +3692,7 @@ function ImageSearchDialog({ onInsert, onClose }: { onInsert: (src: string) => v
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
             placeholder="Search images (e.g. nature, business, technology)..."
-            className="flex-1 px-3 py-2 rounded-lg text-[13px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 outline-none focus:ring-2 focus:ring-blue-400"
+            className="flex-1 px-3 py-2 rounded-lg text-[13px] bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 outline-none focus:ring-2 focus:ring-blue-400"
           />
           <button onClick={handleSearch} className="px-4 py-2 rounded-lg bg-blue-600 text-white text-[12px] font-medium hover:bg-blue-700 cursor-pointer transition-colors">
             Search
@@ -3701,8 +3707,8 @@ function ImageSearchDialog({ onInsert, onClose }: { onInsert: (src: string) => v
               onClick={() => { setCategory(cat.query); setPage(0); }}
               className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors cursor-pointer ${
                 category === cat.query
-                  ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                  : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  ? "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                  : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
               }`}
             >
               {cat.label}
@@ -3716,7 +3722,7 @@ function ImageSearchDialog({ onInsert, onClose }: { onInsert: (src: string) => v
             <button
               key={id}
               onClick={() => onInsert(`https://picsum.photos/id/${id}/800/600`)}
-              className="aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-blue-500 hover:shadow-md transition-all cursor-pointer group"
+              className="aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:ring-2 hover:ring-blue-500 hover:shadow-md transition-all cursor-pointer group"
             >
               <img
                 src={`https://picsum.photos/id/${id}/300/200`}
@@ -3731,7 +3737,7 @@ function ImageSearchDialog({ onInsert, onClose }: { onInsert: (src: string) => v
         {/* Load more */}
         {hasMore && (
           <div className="flex justify-center">
-            <button onClick={() => setPage(p => p + 1)} className="px-4 py-1.5 rounded-lg text-[12px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+            <button onClick={() => setPage(p => p + 1)} className="px-4 py-1.5 rounded-lg text-[12px] font-medium bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer transition-colors">
               Load more images
             </button>
           </div>
@@ -3809,8 +3815,8 @@ function DrivePickerDialog({ onInsert, onClose }: { onInsert: (src: string) => v
               {i > 0 && <span className="text-gray-400">/</span>}
               <button
                 onClick={() => navigateToBreadcrumb(i)}
-                className={`px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors ${
-                  i === breadcrumb.length - 1 ? "font-semibold text-gray-700 dark:text-gray-300" : "text-blue-600 dark:text-blue-400"
+                className={`px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 cursor-pointer transition-colors ${
+                  i === breadcrumb.length - 1 ? "font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200" : "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                 }`}
               >
                 {b.name}
@@ -3826,13 +3832,13 @@ function DrivePickerDialog({ onInsert, onClose }: { onInsert: (src: string) => v
             <button
               key={folder.id}
               onClick={() => navigateToFolder(folder)}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer text-left"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-left"
             >
-              <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
                 <FolderPlus className="w-4 h-4 text-blue-500" />
               </div>
               <div className="min-w-0">
-                <p className="text-[13px] font-medium text-gray-700 dark:text-gray-300 truncate">{folder.name}</p>
+                <p className="text-[13px] font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 truncate">{folder.name}</p>
                 <p className="text-[10px] text-gray-400">Folder</p>
               </div>
             </button>
@@ -3849,12 +3855,12 @@ function DrivePickerDialog({ onInsert, onClose }: { onInsert: (src: string) => v
                     <button
                       key={file.id}
                       onClick={() => { if (data) onInsert(data); }}
-                      className={`aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-blue-500 transition-all cursor-pointer group flex flex-col ${!data ? "opacity-50" : ""}`}
+                      className={`aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:ring-2 hover:ring-blue-500 transition-all cursor-pointer group flex flex-col ${!data ? "opacity-50" : ""}`}
                     >
                       {data ? (
                         <img src={data} alt={file.name} className="w-full flex-1 object-cover" />
                       ) : (
-                        <div className="w-full flex-1 bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                        <div className="w-full flex-1 bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-center justify-center">
                           <ImageIcon className="w-5 h-5 text-gray-400" />
                         </div>
                       )}
@@ -3872,7 +3878,7 @@ function DrivePickerDialog({ onInsert, onClose }: { onInsert: (src: string) => v
               key={file.id}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left opacity-50"
             >
-              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-center justify-center flex-shrink-0">
                 <Type className="w-4 h-4 text-gray-400" />
               </div>
               <div className="min-w-0">
@@ -3907,7 +3913,7 @@ function DrivePickerDialog({ onInsert, onClose }: { onInsert: (src: string) => v
                 const data = getFileData(file);
                 return data ? (
                   <button key={file.id} onClick={() => onInsert(data)}
-                    className="aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-blue-500 transition-all cursor-pointer">
+                    className="aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:ring-2 hover:ring-blue-500 transition-all cursor-pointer">
                     <img src={data} alt={file.name} className="w-full h-full object-cover" />
                   </button>
                 ) : null;
@@ -3917,7 +3923,7 @@ function DrivePickerDialog({ onInsert, onClose }: { onInsert: (src: string) => v
         )}
 
         {/* Upload option */}
-        <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <p className="text-[10px] text-gray-400">Upload saves to Drive & inserts into slide</p>
           <div className="flex gap-2">
             <button onClick={() => {
@@ -3929,7 +3935,7 @@ function DrivePickerDialog({ onInsert, onClose }: { onInsert: (src: string) => v
                 Array.from(fileList).forEach(f => uploadImageToDrive(f, currentFolder));
               };
               input.click();
-            }} className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+            }} className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer transition-colors">
               Upload to Drive
             </button>
             <button onClick={() => {

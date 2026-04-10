@@ -175,7 +175,7 @@ function getPlatformInfo(platform: MeetingPlatform) {
         name: "Zoom",
         icon: <ZoomIcon />,
         gradient: "from-blue-500/10 to-blue-600/5",
-        textClass: "text-blue-600 dark:text-blue-400",
+        textClass: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
         iconBg: "bg-blue-500/10",
       };
     case "google-meet":
@@ -183,7 +183,7 @@ function getPlatformInfo(platform: MeetingPlatform) {
         name: "Google Meet",
         icon: <GoogleMeetIcon />,
         gradient: "from-green-500/10 to-green-600/5",
-        textClass: "text-green-600 dark:text-green-400",
+        textClass: "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
         iconBg: "bg-green-500/10",
       };
     case "whatsapp-video":
@@ -223,7 +223,7 @@ function getPlatformInfo(platform: MeetingPlatform) {
         name: "Meeting",
         icon: <Video className="w-4 h-4" />,
         gradient: "from-gray-500/10 to-gray-600/5",
-        textClass: "text-gray-600 dark:text-gray-400",
+        textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
         iconBg: "bg-gray-500/10",
       };
   }
@@ -530,7 +530,7 @@ export default function MeetingDetailsModal({
                   </div>
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Student</span>
                 </div>
-                <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{meeting.childName}</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight">{meeting.childName}</p>
                 {meeting.childClass && (
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{meeting.childClass}</p>
                 )}
@@ -544,11 +544,11 @@ export default function MeetingDetailsModal({
             <div className="relative">
               <div className="flex items-center gap-2 mb-2">
                 <div className="p-1.5 rounded-lg bg-blue-500/10">
-                  <Calendar className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
+                  <Calendar className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Date & Time</span>
               </div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{formatShortDate(meeting.scheduledDate)}</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight">{formatShortDate(meeting.scheduledDate)}</p>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 {meeting.scheduledTime} <span className="text-slate-300 dark:text-slate-600">•</span> {meeting.duration} min
@@ -567,7 +567,7 @@ export default function MeetingDetailsModal({
                   </div>
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Location</span>
                 </div>
-                <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{meeting.location}</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight">{meeting.location}</p>
               </div>
             </div>
           )}
@@ -579,11 +579,11 @@ export default function MeetingDetailsModal({
               <div className="relative">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="p-1.5 rounded-lg bg-amber-500/10">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
                   </div>
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Type</span>
                 </div>
-                <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight capitalize">{meeting.meetingType.replace(/_/g, " ").replace(/-/g, " ")}</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight capitalize">{meeting.meetingType.replace(/_/g, " ").replace(/-/g, " ")}</p>
               </div>
             </div>
           )}
@@ -610,7 +610,7 @@ export default function MeetingDetailsModal({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">{otherParticipantLabel}</p>
-                <p className="text-base font-bold text-slate-900 dark:text-white truncate">{otherParticipantName}</p>
+                <p className="text-base font-bold text-slate-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{otherParticipantName}</p>
                 {otherParticipantRole && (
                   <p className="text-xs text-slate-500 dark:text-slate-400">{otherParticipantRole}</p>
                 )}
@@ -624,7 +624,7 @@ export default function MeetingDetailsModal({
           <div className="rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/30 p-4 border border-slate-200/60 dark:border-slate-700/40 space-y-3">
             <div className="flex items-center gap-2">
               <div className="p-1.5 rounded-lg bg-blue-500/10">
-                <Video className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
+                <Video className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
               <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Meeting Credentials</span>
             </div>
@@ -634,7 +634,7 @@ export default function MeetingDetailsModal({
                 <div className="flex items-center justify-between gap-3 px-3 py-2 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-slate-200/50 dark:border-slate-700/30">
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">Meeting ID</p>
-                    <p className="text-sm font-mono font-semibold text-slate-800 dark:text-white truncate">{meeting.meetingId}</p>
+                    <p className="text-sm font-mono font-semibold text-slate-800 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{meeting.meetingId}</p>
                   </div>
                   <button
                     onClick={() => copyToClipboard(meeting.meetingId!.replace(/\s/g, ""), "meetingId")}
@@ -653,7 +653,7 @@ export default function MeetingDetailsModal({
                 <div className="flex items-center justify-between gap-3 px-3 py-2 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-slate-200/50 dark:border-slate-700/30">
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">Passcode</p>
-                    <p className="text-sm font-mono font-semibold text-slate-800 dark:text-white">{meeting.passcode}</p>
+                    <p className="text-sm font-mono font-semibold text-slate-800 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{meeting.passcode}</p>
                   </div>
                   <button
                     onClick={() => copyToClipboard(meeting.passcode!, "passcode")}
@@ -771,7 +771,7 @@ export default function MeetingDetailsModal({
           <div className="rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/30 dark:from-amber-900/20 dark:to-amber-800/10 p-4 border border-amber-200/60 dark:border-amber-700/30">
             <div className="flex items-center gap-2">
               <div className="p-1.5 rounded-lg bg-amber-500/10">
-                <AlertCircle className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+                <AlertCircle className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
               </div>
               <span className="text-xs text-amber-700 dark:text-amber-300">No outcome has been recorded for this meeting yet.</span>
             </div>
@@ -783,7 +783,7 @@ export default function MeetingDetailsModal({
           <div className="rounded-2xl bg-gradient-to-br from-red-50 to-red-100/30 dark:from-red-900/20 dark:to-red-800/10 p-4 border border-red-200/60 dark:border-red-700/30">
             <div className="flex items-center gap-2 mb-3">
               <div className="p-1.5 rounded-lg bg-red-500/10">
-                <Ban className="w-3.5 h-3.5 text-red-500 dark:text-red-400" />
+                <Ban className="w-3.5 h-3.5 text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
               </div>
               <span className="text-xs font-semibold text-red-700 dark:text-red-300">Cancellation Reason</span>
             </div>
@@ -791,7 +791,7 @@ export default function MeetingDetailsModal({
               {meeting.cancellationReason}
             </p>
             {meeting.cancelledByName && (
-              <p className="text-[10px] text-red-500 dark:text-red-400 mt-2 font-medium">
+              <p className="text-[10px] text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mt-2 font-medium">
                 Cancelled by {meeting.cancelledByName}
                 {meeting.cancelledAt && ` on ${formatShortDate(meeting.cancelledAt.split("T")[0])}`}
               </p>
@@ -815,7 +815,7 @@ export default function MeetingDetailsModal({
           <div className="rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/30 p-4 border border-slate-200/60 dark:border-slate-700/40 space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="p-1.5 rounded-lg bg-blue-500/10">
-                <Edit className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
+                <Edit className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
               <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Edit Meeting Details</span>
             </div>
@@ -887,7 +887,7 @@ export default function MeetingDetailsModal({
               {canCancel && (
                 <button
                   onClick={() => setShowCancelForm(true)}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-red-700 dark:text-red-300 bg-red-100/80 dark:bg-red-900/30 hover:bg-red-200/80 dark:hover:bg-red-900/50 rounded-xl transition-all hover:-translate-y-0.5 cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-red-700 dark:text-red-300 bg-red-100/80 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 hover:bg-red-200/80 dark:hover:bg-red-900/50 rounded-xl transition-all hover:-translate-y-0.5 cursor-pointer"
                 >
                   <Ban className="w-4 h-4" />
                   Cancel
@@ -912,7 +912,7 @@ export default function MeetingDetailsModal({
           <div className="rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/30 p-4 border border-slate-200/60 dark:border-slate-700/40 space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="p-1.5 rounded-lg bg-red-500/10">
-                <Ban className="w-3.5 h-3.5 text-red-500 dark:text-red-400" />
+                <Ban className="w-3.5 h-3.5 text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
               </div>
               <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Cancel Meeting</span>
             </div>
@@ -952,7 +952,7 @@ export default function MeetingDetailsModal({
           <div className="rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/30 p-4 border border-slate-200/60 dark:border-slate-700/40 space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="p-1.5 rounded-lg bg-amber-500/10">
-                <CalendarClock className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+                <CalendarClock className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
               </div>
               <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                 {viewContext === "parent" ? "Request Reschedule" : "Reschedule Meeting"}
@@ -1086,7 +1086,7 @@ export default function MeetingDetailsModal({
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-slate-900 dark:text-white">{participant.name}</p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{participant.name}</p>
                       <p className="text-[10px] text-slate-500 dark:text-slate-400">{participant.role}</p>
                     </div>
                   </div>

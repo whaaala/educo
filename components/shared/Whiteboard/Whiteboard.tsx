@@ -1490,7 +1490,7 @@ export default function Whiteboard({
                   commitText();
                 }
               }}
-              className="p-1 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-2 border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 rounded-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 outline-none shadow-lg whitespace-pre-wrap break-words cursor-text"
+              className="p-1 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-2 border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 rounded-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 outline-none shadow-lg whitespace-pre-wrap break-words cursor-text"
               style={{
                 fontSize: (editingText.fontSize || 16) * viewport.zoom,
                 fontFamily: `${activeFontFamily || "Inter"}, system-ui, sans-serif`,

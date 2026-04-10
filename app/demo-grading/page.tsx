@@ -27,11 +27,11 @@ export default function GradingDemo() {
       afterStats={
         <div className="mt-6 max-w-7xl mx-auto space-y-6">
           {/* Demo Header */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-6 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
               Configurable Grading System Demo
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-6">
               This demo showcases the Adaptive Grading Engine (AGE) with configurable grading components per subject/module.
               Click the settings icon next to any subject to configure its grading system.
             </p>
@@ -39,7 +39,7 @@ export default function GradingDemo() {
             {/* Demo Controls */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2">
                   Education Level
                 </label>
                 <CustomDropdown
@@ -54,7 +54,7 @@ export default function GradingDemo() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2">
                   Configuration Access
                 </label>
                 <button
@@ -62,7 +62,7 @@ export default function GradingDemo() {
                   className={`w-full px-4 py-2 rounded-lg font-medium transition-colors ${
                     allowConfiguration
                       ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700"
-                      : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                      : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
                   }`}
                 >
                   {allowConfiguration
@@ -73,11 +73,11 @@ export default function GradingDemo() {
             </div>
 
             {/* Feature List */}
-            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <h3 className="text-sm font-bold text-blue-900 dark:text-blue-300 mb-2">
+            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <h3 className="text-sm font-bold text-blue-900 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
                 Features:
               </h3>
-              <ul className="text-xs text-blue-800 dark:text-blue-400 space-y-1">
+              <ul className="text-xs text-blue-800 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 space-y-1">
                 <li>• Turn on/off individual grading components (Classwork, Tests, Projects, Behavior, etc.)</li>
                 <li>• Adjust weight percentage for each component</li>
                 <li>• Add custom grading components with name, weight, and category</li>

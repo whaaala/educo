@@ -42,12 +42,12 @@ export interface FormSectionProps {
 
 // Icon color classes
 const iconColors = {
-  blue: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
-  green: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
+  blue: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
+  green: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
   purple: "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
   orange: "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
-  red: "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400",
-  gray: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400",
+  red: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
+  gray: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
 };
 
 // Field width classes
@@ -180,10 +180,10 @@ export default function FormSection({
                 onChange={(e) => onChange?.(field.id, e.target.checked)}
                 className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
               />
-              <span className="text-sm text-gray-700 dark:text-gray-300">{field.label}</span>
+              <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{field.label}</span>
             </label>
             {field.helpText && (
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{field.helpText}</p>
             )}
           </div>
         );
@@ -205,7 +205,7 @@ export default function FormSection({
               maxLength={field.validation?.maxLength}
             />
             {field.helpText && !error && (
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{field.helpText}</p>
             )}
           </div>
         );
@@ -215,7 +215,7 @@ export default function FormSection({
   return (
     <section
       className={`
-        bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900
+        bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]
         rounded-xl border border-gray-200 dark:border-gray-700
         midnight:border-cyan-700/30 purple:border-pink-700/30
         overflow-hidden transition-all duration-200
@@ -229,7 +229,7 @@ export default function FormSection({
         disabled={!collapsible}
         className={`
           w-full flex items-center gap-3 px-4 sm:px-6 py-4
-          ${collapsible ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50" : "cursor-default"}
+          ${collapsible ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50" : "cursor-default"}
           transition-colors
         `}
         aria-expanded={isExpanded}
@@ -248,7 +248,7 @@ export default function FormSection({
             {title}
           </h3>
           {description && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+            <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
               {description}
             </p>
           )}
@@ -258,7 +258,7 @@ export default function FormSection({
         {collapsible && (
           <ChevronDown
             className={`
-              w-5 h-5 text-gray-400 dark:text-gray-500 flex-shrink-0
+              w-5 h-5 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 flex-shrink-0
               transition-transform duration-200
               ${isExpanded ? "rotate-180" : ""}
             `}
@@ -287,7 +287,7 @@ export default function FormSection({
                 {fields.map(renderField)}
               </div>
             ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400">No fields configured</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">No fields configured</p>
             )}
           </div>
         </div>

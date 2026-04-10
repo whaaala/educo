@@ -88,7 +88,7 @@ export default function CheckSalaryModal({
     <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/60 backdrop-blur-md pt-4 pb-4 px-4 sm:px-6 overflow-y-auto">
       <div
         ref={modalRef}
-        className="relative w-full max-w-3xl bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200"
+        className="relative w-full max-w-3xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200"
       >
         {/* Header with Gradient */}
         <div className="flex-shrink-0 relative bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 midnight:from-cyan-600 midnight:to-purple-600 purple:from-pink-600 purple:to-purple-600 px-4 sm:px-5 py-3 sm:py-4">
@@ -202,7 +202,7 @@ export default function CheckSalaryModal({
               </div>
 
               {/* Deductions */}
-              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30">
+              <div className="p-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30">
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">
                   Deductions
                 </p>
@@ -304,7 +304,7 @@ export default function CheckSalaryModal({
                     <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                       Current Salary
                     </label>
-                    <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600">
+                    <div className="p-3 bg-white dark:bg-[#1a1d24] rounded-lg border border-gray-300 dark:border-gray-600">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">
                         {currencySymbol}{staff.salary.toLocaleString()}
                       </p>
@@ -318,7 +318,7 @@ export default function CheckSalaryModal({
                       type="number"
                       value={newSalary}
                       onChange={(e) => setNewSalary(e.target.value)}
-                      className="w-full p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg border-2 border-green-300 dark:border-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full p-3 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white rounded-lg border-2 border-green-300 dark:border-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       placeholder="Enter new salary"
                     />
                   </div>
@@ -353,7 +353,7 @@ export default function CheckSalaryModal({
                     value={increaseReason}
                     onChange={(e) => setIncreaseReason(e.target.value)}
                     rows={3}
-                    className="w-full p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg border-2 border-green-300 dark:border-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                    className="w-full p-3 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white rounded-lg border-2 border-green-300 dark:border-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
                     placeholder="Enter reason for salary increase (e.g., promotion, performance review, annual increment)"
                   />
                 </div>
@@ -364,7 +364,7 @@ export default function CheckSalaryModal({
         </div>
 
         {/* Footer - Fixed */}
-        <div className="flex-shrink-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 px-4 sm:px-5 py-3 flex items-center justify-between shadow-lg">
+        <div className="flex-shrink-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 px-4 sm:px-5 py-3 flex items-center justify-between shadow-lg">
           {!isEditingMode ? (
             <>
               <button
@@ -388,7 +388,7 @@ export default function CheckSalaryModal({
               <button
                 type="button"
                 onClick={handleCancel}
-                className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm cursor-pointer"
+                className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-[#1a1d24] border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e] transition-colors shadow-sm cursor-pointer"
               >
                 Cancel
               </button>

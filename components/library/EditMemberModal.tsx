@@ -229,7 +229,7 @@ export default function EditMemberModal({
               <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                 formData.isActive
                   ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                  : "bg-gray-100 dark:bg-[#22262e] text-gray-600 dark:text-gray-400"
               }`}>
                 {formData.isActive ? <UserCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
                 {formData.isActive ? "Active" : "Inactive"}
@@ -301,7 +301,7 @@ export default function EditMemberModal({
             value={formData.isActive.toString()}
             onChange={(val) => setFormData({ ...formData, isActive: val === "true" })}
             options={STATUS_OPTIONS}
-            iconBgColor={formData.isActive ? "bg-green-100 dark:bg-green-900/30" : "bg-gray-100 dark:bg-gray-700"}
+            iconBgColor={formData.isActive ? "bg-green-100 dark:bg-green-900/30" : "bg-gray-100 dark:bg-[#22262e]"}
             iconColor={formData.isActive ? "text-green-600 dark:text-green-400" : "text-gray-600 dark:text-gray-400"}
           />
 
@@ -360,15 +360,15 @@ export default function EditMemberModal({
             Current Borrowing Status
           </h4>
           <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-3 rounded-lg bg-white/60 dark:bg-gray-800/40">
+            <div className="text-center p-3 rounded-lg bg-white/60 dark:bg-[#1a1d24]/40">
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{member.currentBooksCount}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">Current Books</p>
             </div>
-            <div className="text-center p-3 rounded-lg bg-white/60 dark:bg-gray-800/40">
+            <div className="text-center p-3 rounded-lg bg-white/60 dark:bg-[#1a1d24]/40">
               <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{member.totalBorrowedCount}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">Total Borrowed</p>
             </div>
-            <div className="text-center p-3 rounded-lg bg-white/60 dark:bg-gray-800/40">
+            <div className="text-center p-3 rounded-lg bg-white/60 dark:bg-[#1a1d24]/40">
               <p className={`text-2xl font-bold ${member.finesDue > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
                 {member.finesDue > 0 ? `₦${member.finesDue.toLocaleString()}` : "₦0"}
               </p>

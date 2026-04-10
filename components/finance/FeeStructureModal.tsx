@@ -179,7 +179,7 @@ export default function FeeStructureModal({
       <button
         type="button"
         onClick={handleClose}
-        className="w-full sm:w-auto px-6 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 midnight:bg-cyan-900/20 midnight:hover:bg-cyan-900/30 purple:bg-pink-900/20 purple:hover:bg-pink-900/30 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 rounded-lg text-sm font-medium transition-all cursor-pointer"
+        className="w-full sm:w-auto px-6 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-[#22262e] dark:hover:bg-[#2a2d35] midnight:bg-cyan-900/20 midnight:hover:bg-cyan-900/30 purple:bg-pink-900/20 purple:hover:bg-pink-900/30 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 rounded-lg text-sm font-medium transition-all cursor-pointer"
       >
         Cancel
       </button>
@@ -328,7 +328,7 @@ export default function FeeStructureModal({
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
                   formData.allowInstallments
                     ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500"
-                    : "bg-gray-300 dark:bg-gray-600 midnight:bg-gray-700 purple:bg-gray-700"
+                    : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700"
                 }`}
               >
                 <span

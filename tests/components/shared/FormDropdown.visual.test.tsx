@@ -36,9 +36,9 @@ describe("FormDropdown — Visual / CSS", () => {
       render(<FormDropdown {...defaultProps} />);
       const btn = screen.getByRole("button");
       expect(btn.className).toContain("bg-white");
-      expect(btn.className).toContain("dark:bg-gray-800");
-      expect(btn.className).toContain("midnight:bg-gray-900");
-      expect(btn.className).toContain("purple:bg-gray-900");
+      expect(btn.className).toContain("dark:bg-[#1a1d24]");
+      expect(btn.className).toContain("midnight:bg-[#0a0e27]");
+      expect(btn.className).toContain("purple:bg-[#1a0b2e]");
     });
 
     it("dropdown button has rounded-xl", () => {

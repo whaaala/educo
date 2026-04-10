@@ -377,7 +377,7 @@ export default function ValidationErrorsModal({
        {/* Modal Content */}
               <div
          ref={modalRef}
-         className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] mb-4 flex flex-col animate-in zoom-in-95 duration-200"
+         className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl w-full max-w-lg max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] mb-4 flex flex-col animate-in zoom-in-95 duration-200"
          onClick={(e) => e.stopPropagation()}
        >
         {/* Header */}
@@ -427,7 +427,7 @@ export default function ValidationErrorsModal({
                                  <div
                    key={fieldName}
                    onClick={() => handleScrollToField(fieldName)}
-                   className="flex items-start gap-2 p-2 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 transition-colors duration-200 cursor-pointer group"
+                   className="flex items-start gap-2 p-2 bg-gray-50 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors duration-200 cursor-pointer group"
                  >
                    <div className="flex-shrink-0 w-5 h-5 bg-yellow-500 dark:bg-yellow-600 midnight:bg-yellow-600 purple:bg-yellow-600 rounded-full flex items-center justify-center text-white text-xs font-semibold mt-0.5">
                      {index + 1}

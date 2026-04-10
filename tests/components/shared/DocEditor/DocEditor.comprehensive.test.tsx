@@ -1283,7 +1283,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       expectClasses(pageWrapper, [
         "border",
         "border-gray-200/80",
-        "dark:border-gray-800",
+        "dark:border-[#1a1d24]",
       ]);
     });
   });
@@ -1407,13 +1407,13 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
 
     it("table editor panel has theme background and border classes when open", () => {
       // The panel element uses these classes (verified from source):
-      // fixed z-[280] bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035]
+      // fixed z-[280] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]
       // border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20
       // rounded-xl shadow-2xl
       // We verify this exists in the component rendering pattern
       const expectedClasses = [
         "fixed", "z-[280]",
-        "bg-white", "dark:bg-gray-900", "midnight:bg-[#0d1526]", "purple:bg-[#1f1035]",
+        "bg-white", "dark:bg-[#0f1115]", "midnight:bg-[#0a0e27]", "purple:bg-[#1a0b2e]",
         "border", "border-gray-200", "dark:border-gray-700",
         "midnight:border-cyan-500/20", "purple:border-pink-500/20",
         "rounded-xl", "shadow-2xl",
@@ -1428,12 +1428,12 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
     it("table editor panel toolbar has correct layout classes", () => {
       // Panel toolbar uses these classes:
       // flex items-center gap-0.5 px-2 py-1.5 border-b
-      // border-gray-100 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10
-      // bg-gray-50/80 dark:bg-gray-800/50 midnight:bg-[#111827]/60 purple:bg-[#2a1447]/60 flex-wrap
+      // border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10
+      // bg-gray-50/80 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/60 purple:bg-[#1a0b2e]/60 flex-wrap
       const expectedClasses = [
         "flex", "items-center", "gap-0.5", "px-2", "py-1.5",
-        "border-b", "border-gray-100", "dark:border-gray-800",
-        "bg-gray-50/80", "dark:bg-gray-800/50", "flex-wrap",
+        "border-b", "border-gray-100", "dark:border-[#1a1d24]",
+        "bg-gray-50/80", "dark:bg-[#1a1d24]/50", "flex-wrap",
       ];
       for (const cls of expectedClasses) {
         expect(cls.length).toBeGreaterThan(0);
@@ -1443,7 +1443,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
 
     it("table panel action buttons have correct hover and text classes", () => {
       // Insert row/col buttons use:
-      // p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-700
+      // p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-[#22262e]
       // text-gray-600 dark:text-gray-300 cursor-pointer flex items-center gap-0.5 text-[10px] font-medium
       const expectedClasses = [
         "p-1.5", "rounded-md", "cursor-pointer",
@@ -1473,20 +1473,20 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       // Active header toggle:
       // bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300
       // Inactive:
-      // hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400
+      // hover:bg-gray-200/70 dark:hover:bg-[#22262e] text-gray-500 dark:text-gray-400
       const activeClasses = [
         "bg-blue-100", "dark:bg-blue-900/40", "text-blue-700", "dark:text-blue-300",
       ];
       const inactiveClasses = [
-        "hover:bg-gray-200/70", "dark:hover:bg-gray-700", "text-gray-500", "dark:text-gray-400",
+        "hover:bg-gray-200/70", "dark:hover:bg-[#22262e]", "text-gray-500", "dark:text-gray-400",
       ];
       expect(activeClasses).toHaveLength(4);
       expect(inactiveClasses).toHaveLength(4);
     });
 
     it("table panel dividers have correct theme classes", () => {
-      // Dividers: w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1
-      const expectedClasses = ["w-px", "h-5", "bg-gray-200", "dark:bg-gray-700", "mx-1"];
+      // Dividers: w-px h-5 bg-gray-200 dark:bg-[#22262e] mx-1
+      const expectedClasses = ["w-px", "h-5", "bg-gray-200", "dark:bg-[#22262e]", "mx-1"];
       for (const cls of expectedClasses) {
         expect(cls.length).toBeGreaterThan(0);
       }

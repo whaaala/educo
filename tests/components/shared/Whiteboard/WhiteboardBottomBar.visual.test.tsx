@@ -33,7 +33,7 @@ describe("WhiteboardBottomBar — Visual / CSS", () => {
         <WhiteboardBottomBar {...defaultProps} />
       );
       const bar = container.firstChild as HTMLElement;
-      expect(bar.className).toContain("dark:bg-gray-800");
+      expect(bar.className).toContain("dark:bg-[#1a1d24]");
       expect(bar.className).toContain("dark:border-gray-700");
     });
 
@@ -108,7 +108,7 @@ describe("WhiteboardBottomBar — Visual / CSS", () => {
       render(<WhiteboardBottomBar {...defaultProps} />);
       const undoBtn = screen.getByTitle("Undo (Ctrl+Z)");
       expect(undoBtn.className).toContain("hover:bg-gray-100");
-      expect(undoBtn.className).toContain("dark:hover:bg-gray-700");
+      expect(undoBtn.className).toContain("dark:hover:bg-[#22262e]");
     });
 
     it("clear/danger button has hover:text-red-600 and hover:bg-red-50", () => {
@@ -163,7 +163,7 @@ describe("WhiteboardBottomBar — Visual / CSS", () => {
       await user.click(screen.getByTitle("Clear all"));
       const cancelBtn = screen.getByText("Cancel");
       expect(cancelBtn.className).toContain("bg-gray-100");
-      expect(cancelBtn.className).toContain("dark:bg-gray-700");
+      expect(cancelBtn.className).toContain("dark:bg-[#22262e]");
     });
 
     it("clear/confirm button has red background", async () => {

@@ -111,7 +111,7 @@ export default function EditDisciplinaryActionModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-gray-800/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -137,7 +137,7 @@ export default function EditDisciplinaryActionModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-gray-800/50 purple:hover:bg-gray-800/50 rounded-lg transition-all duration-200 hover:rotate-90 active:scale-95 cursor-pointer"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5/50 purple:hover:bg-pink-500/5/50 rounded-lg transition-all duration-200 hover:rotate-90 active:scale-95 cursor-pointer"
               aria-label="Close"
             >
               <X className="w-5 h-5 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
@@ -157,7 +157,7 @@ export default function EditDisciplinaryActionModal({
           )}
 
           {/* Staff Info - Read Only */}
-          <div className="bg-gray-50 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="bg-gray-50 dark:bg-[#1a1d24]/30 midnight:bg-[#0a0e27]/30 purple:bg-[#1a0b2e]/30 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-3">
               {action.profilePhoto ? (
                 <img
@@ -343,7 +343,7 @@ export default function EditDisciplinaryActionModal({
                   id="followUpRequired"
                   checked={formData.followUpRequired}
                   onChange={(e) => setFormData({ ...formData, followUpRequired: e.target.checked })}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-[#22262e] dark:border-gray-600 cursor-pointer"
                 />
                 <label htmlFor="followUpRequired" className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 cursor-pointer">
                   Follow-up Required
@@ -393,12 +393,12 @@ export default function EditDisciplinaryActionModal({
           </div>
 
           {/* Footer - Sticky */}
-          <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50">
+          <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
             <div className="flex flex-col sm:flex-row gap-3 justify-end">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-colors cursor-pointer"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
               >
                 Cancel
               </button>

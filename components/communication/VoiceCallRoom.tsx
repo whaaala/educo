@@ -435,7 +435,7 @@ export default function VoiceCallRoom({
       <div
         className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 midnight:from-[#060a1a] midnight:via-[#0f1729] midnight:to-[#060a1a] purple:from-[#120622] purple:via-[#2a1a3e] purple:to-[#120622]"
       >
-        <div className="text-center max-w-md p-8 bg-white dark:bg-gray-800 midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-3xl shadow-2xl mx-4 midnight:border midnight:border-cyan-500/20 purple:border purple:border-pink-500/20">
+        <div className="text-center max-w-md p-8 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-3xl shadow-2xl mx-4 midnight:border midnight:border-cyan-500/20 purple:border purple:border-pink-500/20">
           <div
             className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
             style={{ backgroundColor: `${primaryColor}20` }}
@@ -484,7 +484,7 @@ export default function VoiceCallRoom({
   })();
 
   return (
-    <div className="relative flex flex-col h-full bg-gray-100 dark:bg-gray-900 midnight:bg-[#060a1a] purple:bg-[#120622]">
+    <div className="relative flex flex-col h-full bg-gray-100 dark:bg-[#0f1115] midnight:bg-[#060a1a] purple:bg-[#120622]">
       {/* Header */}
       <CallHeader
         title={meetingTitle || "Voice Call"}
@@ -513,7 +513,7 @@ export default function VoiceCallRoom({
             <div className="flex-1 flex gap-2 sm:gap-3 lg:gap-4 min-h-0">
               <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-4 min-h-0">
                 {/* Whiteboard (main area) */}
-                <div className="flex-1 relative rounded-xl sm:rounded-2xl overflow-hidden min-h-0 bg-white dark:bg-gray-900 midnight:bg-[#0a0f1a] purple:bg-[#120622] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                <div className="flex-1 relative rounded-xl sm:rounded-2xl overflow-hidden min-h-0 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0f1a] purple:bg-[#120622] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <WhiteboardPanel
                     primaryColor={primaryColor}
                     secondaryColor={secondaryColor}
@@ -526,7 +526,7 @@ export default function VoiceCallRoom({
                 <div className="hidden lg:flex lg:flex-col gap-2 overflow-y-auto lg:w-40 xl:w-48 p-1">
                   {/* Whiteboard active thumbnail */}
                   <div
-                    className="relative flex-shrink-0 rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer bg-white dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33]"
+                    className="relative flex-shrink-0 rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer bg-white dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33]"
                     style={{ boxShadow: `0 0 0 2px ${primaryColor}` }}
                   >
                     <WhiteboardThumbnail elements={whiteboardElements} className="w-full h-full" />
@@ -568,7 +568,7 @@ export default function VoiceCallRoom({
                   <div
                     onClick={() => { setFocusedId("local"); }}
                     className={cn(
-                      "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all",
+                      "relative flex-shrink-0 bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all",
                       "w-full aspect-video"
                     )}
                   >
@@ -596,7 +596,7 @@ export default function VoiceCallRoom({
                   {remoteParticipants.length === 0 && (
                     <div
                       onClick={() => { setFocusedId("recipient"); }}
-                      className="relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
+                      className="relative flex-shrink-0 bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
                     >
                       <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                         {recipientAvatar ? (
@@ -624,7 +624,7 @@ export default function VoiceCallRoom({
                     <div
                       key={participant.id}
                       onClick={() => { setFocusedId(participant.id); }}
-                      className="relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
+                      className="relative flex-shrink-0 bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
                     >
                       <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                         {participant.avatar ? (
@@ -654,7 +654,7 @@ export default function VoiceCallRoom({
                     <div
                       key={p.id}
                       onClick={() => { setFocusedId(p.id); }}
-                      className="relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
+                      className="relative flex-shrink-0 bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
                     >
                       <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                         {p.avatar ? (
@@ -686,7 +686,7 @@ export default function VoiceCallRoom({
             <div className="flex-1 flex gap-2 sm:gap-3 lg:gap-4 min-h-0">
               {/* Main view: screen share (default) or focused person */}
               {(!focusedId || focusedId === "screen-share") ? (
-                <div className="flex-1 relative bg-gray-200 dark:bg-gray-900 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden">
+                <div className="flex-1 relative bg-gray-200 dark:bg-[#0f1115] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden">
                   <video
                     ref={setScreenShareVideoRef}
                     autoPlay
@@ -715,7 +715,7 @@ export default function VoiceCallRoom({
                   </div>
                 </div>
               ) : (
-                <div className="flex-1 relative bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden min-h-0">
+                <div className="flex-1 relative bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden min-h-0">
                   {!spotlightPerson.isWaiting ? (
                     <>
                       <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
@@ -797,7 +797,7 @@ export default function VoiceCallRoom({
                 {showWhiteboard && (
                   <div
                     onClick={() => { setFocusedId(null); }}
-                    className="relative flex-shrink-0 rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all bg-white dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33]"
+                    className="relative flex-shrink-0 rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all bg-white dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33]"
                   >
                     <WhiteboardThumbnail elements={whiteboardElements} className="w-full h-full" />
                     <div className="absolute bottom-1.5 left-1.5">
@@ -813,7 +813,7 @@ export default function VoiceCallRoom({
                 <div
                   onClick={() => setFocusedId(focusedId === "local" ? "screen-share" : "local")}
                   className={cn(
-                    "relative aspect-video bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg cursor-pointer transition-all",
+                    "relative aspect-video bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg cursor-pointer transition-all",
                     focusedId === "local" && "ring-2 ring-blue-500"
                   )}
                 >
@@ -837,7 +837,7 @@ export default function VoiceCallRoom({
                   <div
                     onClick={() => setFocusedId(focusedId === "recipient" ? null : "recipient")}
                     className={cn(
-                      "relative aspect-video bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg cursor-pointer transition-all",
+                      "relative aspect-video bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg cursor-pointer transition-all",
                       focusedId === "recipient" && "ring-2 ring-blue-500"
                     )}
                   >
@@ -863,7 +863,7 @@ export default function VoiceCallRoom({
                     key={participant.id}
                     onClick={() => setFocusedId(focusedId === participant.id ? null : participant.id)}
                     className={cn(
-                      "relative aspect-video bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg cursor-pointer transition-all",
+                      "relative aspect-video bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg cursor-pointer transition-all",
                       focusedId === participant.id ? "ring-2 ring-blue-500" : participant.isSpeaking && "ring-2 ring-green-500"
                     )}
                   >
@@ -889,7 +889,7 @@ export default function VoiceCallRoom({
                     key={p.id}
                     onClick={() => setFocusedId(focusedId === p.id ? null : p.id)}
                     className={cn(
-                      "relative aspect-video bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg cursor-pointer transition-all",
+                      "relative aspect-video bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden flex-shrink-0 shadow-lg cursor-pointer transition-all",
                       focusedId === p.id && "ring-2 ring-blue-500"
                     )}
                   >
@@ -917,7 +917,7 @@ export default function VoiceCallRoom({
             <div className="flex-1 flex gap-2 sm:gap-3 lg:gap-4 min-h-0">
               <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-4 min-h-0">
                 {/* Primary Tile (large) */}
-                <div className="flex-1 relative bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden min-h-0">
+                <div className="flex-1 relative bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden min-h-0">
                   {!spotlightPerson.isWaiting ? (
                     <>
                       {/* Focused person avatar */}
@@ -1036,7 +1036,7 @@ export default function VoiceCallRoom({
                   {showWhiteboard && (
                     <div
                       onClick={() => { setFocusedId(null); }}
-                      className="relative flex-shrink-0 rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all bg-white dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33]"
+                      className="relative flex-shrink-0 rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all bg-white dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33]"
                     >
                       <WhiteboardThumbnail elements={whiteboardElements} className="w-full h-full" />
                       <div className="absolute bottom-1.5 left-1.5">
@@ -1052,7 +1052,7 @@ export default function VoiceCallRoom({
                   <div
                     onClick={() => setFocusedId(focusedId === "local" ? null : "local")}
                     className={cn(
-                      "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg cursor-pointer transition-all",
+                      "relative flex-shrink-0 bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg cursor-pointer transition-all",
                       "w-full aspect-video",
                       focusedId === "local" && "ring-2 ring-blue-500"
                     )}
@@ -1092,7 +1092,7 @@ export default function VoiceCallRoom({
                     <div
                       onClick={() => setFocusedId(focusedId === "recipient" ? null : "recipient")}
                       className={cn(
-                        "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer transition-all",
+                        "relative flex-shrink-0 bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer transition-all",
                         focusedId === "recipient" && "ring-2 ring-blue-500"
                       )}
                     >
@@ -1123,7 +1123,7 @@ export default function VoiceCallRoom({
                       key={participant.id}
                       onClick={() => setFocusedId(focusedId === participant.id ? null : participant.id)}
                       className={cn(
-                        "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg cursor-pointer transition-all",
+                        "relative flex-shrink-0 bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg cursor-pointer transition-all",
                         "w-full aspect-video",
                         focusedId === participant.id ? "ring-2 ring-blue-500" : participant.isSpeaking && "ring-2 ring-green-500"
                       )}
@@ -1165,7 +1165,7 @@ export default function VoiceCallRoom({
                       key={p.id}
                       onClick={() => setFocusedId(focusedId === p.id ? null : p.id)}
                       className={cn(
-                        "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer transition-all",
+                        "relative flex-shrink-0 bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer transition-all",
                         focusedId === p.id && "ring-2 ring-blue-500"
                       )}
                     >
@@ -1194,7 +1194,7 @@ export default function VoiceCallRoom({
                   {remoteParticipants.length > 4 && (
                     <button
                       onClick={() => setShowParticipants(true)}
-                      className="relative flex-shrink-0 bg-gray-200/80 dark:bg-gray-800/80 midnight:bg-[#0d1220]/80 purple:bg-[#1f0d33]/80 rounded-xl overflow-hidden shadow-lg cursor-pointer w-full aspect-video flex items-center justify-center hover:bg-gray-300/80 dark:hover:bg-gray-700/80 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 transition-all duration-200 hover:scale-105 active:scale-95"
+                      className="relative flex-shrink-0 bg-gray-200/80 dark:bg-[#1a1d24]/80 midnight:bg-[#0d1220]/80 purple:bg-[#1f0d33]/80 rounded-xl overflow-hidden shadow-lg cursor-pointer w-full aspect-video flex items-center justify-center hover:bg-gray-300/80 dark:hover:bg-[#22262e]/80 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 transition-all duration-200 hover:scale-105 active:scale-95"
                     >
                       <div className="text-center">
                         <div
@@ -1237,7 +1237,7 @@ export default function VoiceCallRoom({
               )}
             >
               {/* Local user tile */}
-              <div className="relative bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden min-h-0">
+              <div className="relative bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden min-h-0">
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                   {/* Audio visualizer for local user */}
                   {!isMuted && (
@@ -1291,7 +1291,7 @@ export default function VoiceCallRoom({
                 <div
                   key={participant.id}
                   className={cn(
-                    "relative bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden min-h-0",
+                    "relative bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl sm:rounded-2xl overflow-hidden min-h-0",
                     participant.isSpeaking && "ring-2 ring-green-500"
                   )}
                 >
@@ -1369,7 +1369,7 @@ export default function VoiceCallRoom({
               {invitedParticipants.map((p) => (
                 <div
                   key={p.id}
-                  className="relative bg-gray-200/60 dark:bg-gray-800/50 midnight:bg-[#0d1220]/50 purple:bg-[#1f0d33]/50 rounded-xl sm:rounded-2xl overflow-hidden min-h-0 border-2 border-dashed border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                  className="relative bg-gray-200/60 dark:bg-[#1a1d24]/50 midnight:bg-[#0d1220]/50 purple:bg-[#1f0d33]/50 rounded-xl sm:rounded-2xl overflow-hidden min-h-0 border-2 border-dashed border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                 >
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                     {p.avatar ? (
@@ -1400,7 +1400,7 @@ export default function VoiceCallRoom({
 
               {/* Recipient tile - waiting to join (only when alone) */}
               {remoteParticipants.length === 0 && (
-                <div className="relative bg-gray-200/60 dark:bg-gray-800/50 midnight:bg-[#0d1220]/50 purple:bg-[#1f0d33]/50 rounded-xl sm:rounded-2xl overflow-hidden min-h-0 border-2 border-dashed border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                <div className="relative bg-gray-200/60 dark:bg-[#1a1d24]/50 midnight:bg-[#0d1220]/50 purple:bg-[#1f0d33]/50 rounded-xl sm:rounded-2xl overflow-hidden min-h-0 border-2 border-dashed border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                     {recipientAvatar ? (
                       <img
@@ -1435,7 +1435,7 @@ export default function VoiceCallRoom({
               {showWhiteboard && (
                 <div
                   onClick={() => { setFocusedId(null); }}
-                  className="relative flex-shrink-0 rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all bg-white dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33]"
+                  className="relative flex-shrink-0 rounded-xl overflow-hidden shadow-lg w-full aspect-video cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all bg-white dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33]"
                 >
                   <WhiteboardThumbnail elements={whiteboardElements} className="w-full h-full" />
                   <div className="absolute bottom-1.5 left-1.5">
@@ -1468,7 +1468,7 @@ export default function VoiceCallRoom({
               {/* Local user thumbnail */}
               <div
                 className={cn(
-                  "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg",
+                  "relative flex-shrink-0 bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg",
                   "w-full aspect-video"
                 )}
               >
@@ -1504,7 +1504,7 @@ export default function VoiceCallRoom({
 
               {/* Recipient waiting thumbnail - shown when alone */}
               {remoteParticipants.length === 0 && (
-                <div className="relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video">
+                <div className="relative flex-shrink-0 bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video">
                   <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                     {recipientAvatar ? (
                       <img src={recipientAvatar} alt={recipientName || "Recipient"} className="w-12 h-12 rounded-full object-cover opacity-50" />
@@ -1531,7 +1531,7 @@ export default function VoiceCallRoom({
                 <div
                   key={participant.id}
                   className={cn(
-                    "relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg",
+                    "relative flex-shrink-0 bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg",
                     "w-full aspect-video",
                     participant.isSpeaking && "ring-2 ring-green-500"
                   )}
@@ -1569,7 +1569,7 @@ export default function VoiceCallRoom({
 
               {/* Invited participants thumbnails */}
               {invitedParticipants.map((p) => (
-                <div key={p.id} className="relative flex-shrink-0 bg-gray-200 dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video">
+                <div key={p.id} className="relative flex-shrink-0 bg-gray-200 dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl overflow-hidden shadow-lg w-full aspect-video">
                   <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 midnight:from-[#0a0f1f] midnight:to-[#0d1220] purple:from-[#150a28] purple:to-[#1f0d33]">
                     {p.avatar ? (
                       <img src={p.avatar} alt={p.name} className="w-12 h-12 rounded-full object-cover opacity-50" />
@@ -1595,7 +1595,7 @@ export default function VoiceCallRoom({
               {remoteParticipants.length > 4 && (
                 <button
                   onClick={() => setShowParticipants(true)}
-                  className="relative flex-shrink-0 bg-gray-200/80 dark:bg-gray-800/80 midnight:bg-[#0d1220]/80 purple:bg-[#1f0d33]/80 rounded-xl overflow-hidden shadow-lg cursor-pointer w-full aspect-video flex items-center justify-center hover:bg-gray-300/80 dark:hover:bg-gray-700/80 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 transition-all duration-200 hover:scale-105 active:scale-95"
+                  className="relative flex-shrink-0 bg-gray-200/80 dark:bg-[#1a1d24]/80 midnight:bg-[#0d1220]/80 purple:bg-[#1f0d33]/80 rounded-xl overflow-hidden shadow-lg cursor-pointer w-full aspect-video flex items-center justify-center hover:bg-gray-300/80 dark:hover:bg-[#22262e]/80 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                   <div className="text-center">
                     <div
@@ -1621,7 +1621,7 @@ export default function VoiceCallRoom({
 
         {/* Side Panels */}
         {(showParticipants || showChat) && (
-          <div className="hidden sm:flex flex-col w-80 lg:w-[320px] border-l border-gray-200 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e]">
+          <div className="hidden sm:flex flex-col w-80 lg:w-[320px] border-l border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0f1729] purple:bg-[#2a1a3e]">
             {showParticipants && (
               <ParticipantsPanel
                 participants={uiParticipants}
@@ -1650,7 +1650,7 @@ export default function VoiceCallRoom({
 
       {/* Mobile Panels (full screen overlays) */}
       {showParticipants && (
-        <div className="sm:hidden fixed inset-0 z-50 bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e]">
+        <div className="sm:hidden fixed inset-0 z-50 bg-white dark:bg-[#0f1115] midnight:bg-[#0f1729] purple:bg-[#2a1a3e]">
           <ParticipantsPanel
             participants={uiParticipants}
             currentUserId={userId}
@@ -1663,7 +1663,7 @@ export default function VoiceCallRoom({
       )}
 
       {showChat && (
-        <div className="sm:hidden fixed inset-0 z-50 bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e]">
+        <div className="sm:hidden fixed inset-0 z-50 bg-white dark:bg-[#0f1115] midnight:bg-[#0f1729] purple:bg-[#2a1a3e]">
           <LiveChatPanel
             messages={uiMessages}
             currentUserId={userId}

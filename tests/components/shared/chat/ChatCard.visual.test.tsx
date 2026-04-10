@@ -31,7 +31,7 @@ describe("ChatCard — Visual / CSS", () => {
       const { container } = render(<ChatCard {...defaultProps} />);
       const card = container.firstChild as HTMLElement;
       expect(card.className).toContain("bg-white");
-      expect(card.className).toContain("dark:bg-gray-800");
+      expect(card.className).toContain("dark:bg-[#1a1d24]");
     });
 
     it("has rounded-xl border shadow", () => {

@@ -18,7 +18,7 @@ describe("PageLoader — Visual / CSS", () => {
 
       const overlay = container.firstChild as HTMLElement;
       expect(overlay.className).toContain("bg-white");
-      expect(overlay.className).toContain("dark:bg-gray-900");
+      expect(overlay.className).toContain("dark:bg-[#0f1115]");
       expect(overlay.className).toContain("midnight:bg-gray-950");
       expect(overlay.className).toContain("purple:bg-gray-950");
     });

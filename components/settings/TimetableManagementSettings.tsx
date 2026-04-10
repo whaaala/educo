@@ -115,7 +115,7 @@ export default function TimetableManagementSettings() {
           <select
             value={currentUser.id}
             onChange={(e) => handleUserChange(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-blue-300 dark:border-blue-600 bg-white dark:bg-gray-800 text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+            className="px-4 py-2 rounded-lg border border-blue-300 dark:border-blue-600 bg-white dark:bg-[#1a1d24] text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
           >
             {MOCK_USERS.map((user) => (
               <option key={user.id} value={user.id}>
@@ -135,7 +135,7 @@ export default function TimetableManagementSettings() {
       </div>
 
       {/* Timetable Configuration */}
-      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="flex items-center justify-between">
             <div>
@@ -171,27 +171,27 @@ export default function TimetableManagementSettings() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-lg p-4">
                   <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Calendar Type</div>
                   <div className="text-sm font-semibold text-gray-900 dark:text-white">{customConfig.calendarType}</div>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-lg p-4">
                   <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Week Structure</div>
                   <div className="text-sm font-semibold text-gray-900 dark:text-white capitalize">{customConfig.weekStructure}</div>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-lg p-4">
                   <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Periods Per Day</div>
                   <div className="text-sm font-semibold text-gray-900 dark:text-white">{customConfig.periodsPerDay}</div>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-lg p-4">
                   <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Period Duration (Time Slot)</div>
                   <div className="text-sm font-semibold text-gray-900 dark:text-white">{customConfig.periodDuration} minutes ({customConfig.periodDuration === 60 ? '1 hour' : `${(customConfig.periodDuration / 60).toFixed(1)} hours`})</div>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-lg p-4">
                   <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">School Hours</div>
                   <div className="text-sm font-semibold text-gray-900 dark:text-white">{customConfig.schoolStartTime} - {customConfig.schoolEndTime}</div>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-lg p-4">
                   <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Days of Week</div>
                   <div className="text-sm font-semibold text-gray-900 dark:text-white">{customConfig.daysOfWeek.length} days</div>
                 </div>
@@ -223,7 +223,7 @@ export default function TimetableManagementSettings() {
                             handleSaveSettings(updatedConfig);
                           }
                         }}
-                        className="w-20 px-3 py-2 rounded-lg border border-blue-300 dark:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-semibold text-center focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-20 px-3 py-2 rounded-lg border border-blue-300 dark:border-blue-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white text-sm font-semibold text-center focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                       <span className="text-sm font-medium text-blue-900 dark:text-blue-300">minutes</span>
                     </div>
@@ -239,7 +239,7 @@ export default function TimetableManagementSettings() {
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                           customConfig.periodDuration === duration
                             ? 'bg-blue-600 text-white'
-                            : 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30'
+                            : 'bg-white dark:bg-[#1a1d24] text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30'
                         }`}
                       >
                         {duration}min
@@ -264,7 +264,7 @@ export default function TimetableManagementSettings() {
       </div>
 
       {/* Custom Events Management */}
-      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="flex items-center justify-between">
             <div>
@@ -292,7 +292,7 @@ export default function TimetableManagementSettings() {
               {customEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
+                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#1a1d24]/50 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">

@@ -24,7 +24,7 @@ export default function NameLabel({
         inline-block
         ${sizeClasses[variant]}
         rounded-lg
-        bg-gray-900 dark:bg-gray-800
+        bg-gray-900 dark:bg-[#1a1d24]
         midnight:bg-gray-950 purple:bg-gray-950
         text-white
         font-medium

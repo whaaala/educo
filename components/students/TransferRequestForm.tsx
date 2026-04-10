@@ -157,7 +157,7 @@ export default function TransferRequestForm({
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="w-full sm:w-auto px-4 py-2 sm:py-2.5 rounded-lg font-medium text-xs sm:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2 sm:py-2.5 rounded-lg font-medium text-xs sm:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             Cancel
           </button>
@@ -363,7 +363,7 @@ export default function TransferRequestForm({
           />
 
           {/* Notify Parent Checkbox */}
-          <label className="flex items-start sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg bg-gray-50 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 cursor-pointer">
+          <label className="flex items-start sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] cursor-pointer">
             <input
               type="checkbox"
               checked={formData.notifyParent}

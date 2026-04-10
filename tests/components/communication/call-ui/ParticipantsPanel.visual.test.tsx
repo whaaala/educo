@@ -18,7 +18,7 @@ describe("ParticipantsPanel — Visual / CSS", () => {
       const { container } = render(<ParticipantsPanel {...defaultProps} />);
       const panel = container.firstChild as HTMLElement;
       expect(panel.className).toContain("bg-white");
-      expect(panel.className).toContain("dark:bg-gray-900");
+      expect(panel.className).toContain("dark:bg-[#0f1115]");
       expect(panel.className).toContain("midnight:bg-[#0f1729]");
       expect(panel.className).toContain("purple:bg-[#2a1a3e]");
     });
@@ -39,7 +39,7 @@ describe("ParticipantsPanel — Visual / CSS", () => {
       const header = container.querySelector(".border-b");
       expect(header).toBeInTheDocument();
       expect(header!.className).toContain("border-gray-100");
-      expect(header!.className).toContain("dark:border-gray-800");
+      expect(header!.className).toContain("dark:border-[#1a1d24]");
     });
 
     it("title has theme text colors", () => {

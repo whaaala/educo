@@ -181,7 +181,7 @@ function ControlButton({
 // Divider component for visual separation
 function ControlDivider() {
   return (
-    <div className="hidden sm:block w-px h-7 bg-gray-200 dark:bg-gray-700/50 midnight:bg-cyan-500/15 purple:bg-pink-500/15 mx-1.5 rounded-full" />
+    <div className="hidden sm:block w-px h-7 bg-gray-200 dark:bg-[#22262e]/50 midnight:bg-cyan-500/15 purple:bg-pink-500/15 mx-1.5 rounded-full" />
   );
 }
 
@@ -221,8 +221,8 @@ export function ControlBar({
     <div
       className={cn(
         "relative flex flex-wrap items-center justify-center gap-1 sm:gap-2 lg:gap-3 px-2 sm:px-6 py-2 sm:py-4",
-        "bg-white/98 dark:bg-gray-900/98 midnight:bg-[#0f1729]/98 purple:bg-[#2a1a3e]/98 backdrop-blur-xl",
-        "border-t border-gray-100 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20",
+        "bg-white/98 dark:bg-[#0f1115]/98 midnight:bg-[#0f1729]/98 purple:bg-[#2a1a3e]/98 backdrop-blur-xl",
+        "border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20",
         "shadow-[0_-4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.3)]",
         className
       )}

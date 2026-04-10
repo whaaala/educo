@@ -246,7 +246,7 @@ export default function TeacherDashboardPage() {
             {teacherData.todaySchedule.map((session, index) => (
               <div
                 key={index}
-                className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20"
               >
                 <div className="flex-shrink-0">
                   <Clock className="w-5 h-5 text-gray-400 dark:text-gray-500" />
@@ -286,7 +286,7 @@ export default function TeacherDashboardPage() {
               .map((meeting) => (
                 <div
                   key={meeting.id}
-                  className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                  className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20"
                 >
                   <div className="flex-shrink-0">
                     <Video className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
@@ -330,7 +330,7 @@ export default function TeacherDashboardPage() {
             <Link
               key={cls.id}
               href={`/teachers/portal/my-classes/${cls.id}`}
-              className="block p-4 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-500 dark:hover:border-blue-500 midnight:hover:border-cyan-400 purple:hover:border-pink-400 transition-colors"
+              className="block p-4 bg-gray-50 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-500 dark:hover:border-blue-500 midnight:hover:border-cyan-400 purple:hover:border-pink-400 transition-colors"
             >
               <div className="flex items-start justify-between">
                 <div>

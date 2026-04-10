@@ -118,7 +118,7 @@ export default function VerticalToolbar({
   return (
     <div
       ref={containerRef}
-      className={`flex flex-col items-center w-11 py-1.5 gap-0.5 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-xl shadow-lg shadow-black/5 dark:shadow-black/20 select-none ${className}`}
+      className={`flex flex-col items-center w-11 py-1.5 gap-0.5 bg-white/95 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-xl shadow-lg shadow-black/5 dark:shadow-black/20 select-none ${className}`}
     >
       {header}
 
@@ -127,7 +127,7 @@ export default function VerticalToolbar({
           return (
             <div
               key={`divider-${dividerKey++}`}
-              className="w-6 h-px bg-gray-200/60 dark:bg-gray-700/60 midnight:bg-cyan-500/10 purple:bg-pink-500/10 my-0.5"
+              className="w-6 h-px bg-gray-200/60 dark:bg-[#22262e]/60 midnight:bg-cyan-500/10 purple:bg-pink-500/10 my-0.5"
             />
           );
         }
@@ -152,7 +152,7 @@ export default function VerticalToolbar({
               className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150 cursor-pointer ${
                 isActive
                   ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400"
-                  : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                  : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
               }`}
               title={entry.label}
             >
@@ -211,7 +211,7 @@ function SectionButton({
         className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150 cursor-pointer ${
           isActive || isHovered
             ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400"
-            : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+            : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
         }`}
         title={section.label}
       >
@@ -226,8 +226,8 @@ function SectionButton({
           onMouseLeave={onFlyoutLeave}
         >
           {/* Arrow pointer */}
-          <div className="absolute left-0 top-1/2 -translate-x-[5px] -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-white dark:bg-gray-800 midnight:bg-[#0d1526] purple:bg-[#1f1035] border-l border-b border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15" />
-          <div className="relative bg-white/95 dark:bg-gray-800/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-xl shadow-lg shadow-black/8 dark:shadow-black/30 p-2 min-w-[140px]">
+          <div className="absolute left-0 top-1/2 -translate-x-[5px] -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-l border-b border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15" />
+          <div className="relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-xl shadow-lg shadow-black/8 dark:shadow-black/30 p-2 min-w-[140px]">
             <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50 px-1 mb-1.5">
               {section.label}
             </div>
@@ -245,7 +245,7 @@ function SectionButton({
                     className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg transition-all duration-100 cursor-pointer ${
                       isToolActive
                         ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400"
-                        : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                        : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                     }`}
                     title={tool.label}
                   >

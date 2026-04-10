@@ -180,7 +180,7 @@ function getStatusConfig(status: LeaveStatus) {
         label: "Pending",
         icon: Clock,
         bg: "bg-amber-50 dark:bg-amber-500/10",
-        text: "text-amber-600 dark:text-amber-400",
+        text: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
         border: "border-amber-200 dark:border-amber-500/20",
         accent: "amber",
       };
@@ -199,7 +199,7 @@ function getStatusConfig(status: LeaveStatus) {
 function getLeaveTypeConfig(type: LeaveType | string) {
   switch (type) {
     case "Medical":
-      return { icon: Stethoscope, bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", color: "blue" };
+      return { icon: Stethoscope, bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400", color: "blue" };
     case "Family":
       return { icon: Heart, bg: "bg-pink-50 dark:bg-pink-500/10", text: "text-pink-600 dark:text-pink-400", color: "pink" };
     case "Personal":
@@ -211,7 +211,7 @@ function getLeaveTypeConfig(type: LeaveType | string) {
     case "Other":
       return { icon: PenLine, bg: "bg-orange-50 dark:bg-orange-500/10", text: "text-orange-600 dark:text-orange-400", color: "orange" };
     default:
-      return { icon: FileText, bg: "bg-gray-50 dark:bg-gray-500/10", text: "text-gray-600 dark:text-gray-400", color: "gray" };
+      return { icon: FileText, bg: "bg-gray-50 dark:bg-gray-500/10", text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300", color: "gray" };
   }
 }
 
@@ -280,7 +280,7 @@ export default function ParentLeavesPage() {
         sortValue: (l) => l.childName,
         render: (leave) => (
           <div className="flex items-center gap-3">
-            <div className="relative w-9 h-9 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+            <div className="relative w-9 h-9 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex-shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={leave.childPhoto || "https://i.pravatar.cc/100?u=" + leave.childId}
@@ -289,10 +289,10 @@ export default function ParentLeavesPage() {
               />
             </div>
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+              <div className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                 {leave.childName}
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+              <div className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
                 {leave.classLevel}
               </div>
             </div>
@@ -321,9 +321,9 @@ export default function ParentLeavesPage() {
         sortable: true,
         sortValue: (l) => new Date(l.fromDate).getTime(),
         render: (leave) => (
-          <div className="text-sm text-gray-700 dark:text-gray-300">
+          <div className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
             <div className="font-medium">{formatShortDate(leave.fromDate)} → {formatShortDate(leave.toDate)}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
               Applied: {formatShortDate(leave.appliedDate)}
             </div>
           </div>
@@ -335,7 +335,7 @@ export default function ParentLeavesPage() {
         sortable: true,
         sortValue: (l) => l.days,
         render: (leave) => (
-          <span className="text-sm font-semibold text-gray-900 dark:text-white">
+          <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
             {leave.days}
           </span>
         ),
@@ -366,7 +366,7 @@ export default function ParentLeavesPage() {
           <button
             type="button"
             onClick={() => setSelectedLeave(leave)}
-            className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-blue-700 dark:text-blue-300 text-xs font-semibold"
+            className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 text-xs font-semibold"
           >
             View
           </button>
@@ -412,12 +412,12 @@ export default function ParentLeavesPage() {
       {/* Guidelines */}
       <div className="mt-6 bg-gradient-to-br from-cyan-50/80 via-blue-50/80 to-indigo-50/80 dark:from-cyan-950/30 dark:via-blue-950/30 dark:to-indigo-950/30 backdrop-blur-xl rounded-2xl border border-cyan-200/50 dark:border-cyan-800/30 p-4 sm:p-6">
         <div className="flex items-start gap-3 sm:gap-4">
-          <div className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-gray-800/80 shadow-sm shrink-0">
+          <div className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm shrink-0">
             <Info className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-600 dark:text-cyan-400" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Leave Request Guidelines</h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">Leave Request Guidelines</h3>
+            <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 leading-relaxed">
               Submit leave requests at least 3 days in advance. Medical emergencies can be submitted anytime with supporting documents.
             </p>
           </div>
@@ -550,7 +550,7 @@ function ApplyLeaveModal({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => !isSubmitting && onClose()}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
       >
         {/* Header */}
         <div className="relative px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-r from-cyan-500 to-blue-600">
@@ -574,14 +574,14 @@ function ApplyLeaveModal({
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
                 <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Leave Request Submitted!</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Your request has been sent for approval.</p>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">Leave Request Submitted!</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Your request has been sent for approval.</p>
             </div>
           ) : (
             <>
               {/* Select Child */}
               <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Select Child</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider mb-2">Select Child</label>
                 <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
                   {children.map((child) => (
                     <button
@@ -590,14 +590,14 @@ function ApplyLeaveModal({
                       className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
                         selectedChildId === child.id
                           ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-500/10"
-                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                          : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
                       }`}
                     >
                       <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs">
                         {child.name.split(" ").map((n) => n[0]).join("")}
                       </div>
                       <div className="text-left">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{child.name}</p>
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{child.name}</p>
                         <p className="text-xs text-gray-500">{child.classLevel}</p>
                       </div>
                     </button>
@@ -607,7 +607,7 @@ function ApplyLeaveModal({
 
               {/* Leave Type */}
               <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Leave Type</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider mb-2">Leave Type</label>
                 <div className="flex flex-wrap gap-2">
                   {leaveTypes.map(({ type, icon: Icon }) => {
                     const config = getLeaveTypeConfig(type);
@@ -621,7 +621,7 @@ function ApplyLeaveModal({
                         className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 text-sm font-medium transition-all ${
                           leaveType === type
                             ? `border-${config.color}-500 ${config.bg} ${config.text}`
-                            : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300"
+                            : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:border-gray-300"
                         }`}
                       >
                         <Icon className="w-4 h-4" />
@@ -639,7 +639,7 @@ function ApplyLeaveModal({
                       value={customLeaveType}
                       onChange={(e) => setCustomLeaveType(e.target.value)}
                       placeholder="Enter custom leave type (e.g., Bereavement, Cultural Event)"
-                      className="w-full px-4 py-2.5 rounded-xl border border-orange-200 dark:border-orange-700/50 bg-orange-50/50 dark:bg-orange-900/10 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                      className="w-full px-4 py-2.5 rounded-xl border border-orange-200 dark:border-orange-700/50 bg-orange-50/50 dark:bg-orange-900/10 text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                     />
                     {!customLeaveType.trim() && (
                       <p className="mt-1.5 text-xs text-orange-600 dark:text-orange-400">Please specify the leave type</p>
@@ -692,11 +692,11 @@ function ApplyLeaveModal({
 
         {/* Footer */}
         {!isSuccess && (
-          <div className="px-4 sm:px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700/50 flex gap-3">
+          <div className="px-4 sm:px-6 py-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 flex gap-3">
             <button
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 py-2.5 rounded-xl bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-semibold transition-colors disabled:opacity-50"
+              className="flex-1 py-2.5 rounded-xl bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] hover:bg-gray-300 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 text-sm font-semibold transition-colors disabled:opacity-50"
             >
               Cancel
             </button>

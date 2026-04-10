@@ -67,7 +67,7 @@ export interface StatsWidgetProps {
 // ============================================================================
 
 const variantBgStyles: Record<string, string> = {
-  default: "bg-gray-50 dark:bg-gray-700/30 midnight:bg-gray-800/40 purple:bg-gray-800/40",
+  default: "bg-gray-50 dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/40 purple:bg-[#251340]/40",
   primary: "bg-blue-50 dark:bg-blue-900/30 midnight:bg-blue-900/30 purple:bg-pink-900/30",
   success: "bg-green-50 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30",
   warning: "bg-amber-50 dark:bg-amber-900/30 midnight:bg-amber-900/30 purple:bg-amber-900/30",

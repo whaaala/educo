@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import {
   ChevronRight,
   Plus,
+  Share2,
   Trash2,
   MoreVertical,
   Table2,
@@ -126,6 +127,7 @@ import DrawingCanvas from "./DrawingCanvas";
 import { EditorFileMenuPanel } from "@/components/shared/EditorFileMenu";
 import { EditorViewMenuPanel, type ViewMenuConfig } from "@/components/shared/EditorViewMenu";
 import Tooltip from "@/components/shared/Tooltip";
+import Button from "@/components/shared/Button";
 import ShareDialog from "@/components/shared/ShareDialog";
 import type { ShareTarget } from "@/components/shared/ShareDialog";
 import PublishDialog from "@/components/shared/PublishDialog";
@@ -5061,7 +5063,7 @@ export default function DocEditor({
           isFullscreen
             ? "flex flex-col w-full h-full rounded-none border-0"
             : "flex flex-col w-full h-full rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20",
-          "bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035]",
+          "bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]",
           // Important: keep overflow visible so dropdown submenus can render outside the panel.
           "shadow-sm",
           className,
@@ -5075,7 +5077,7 @@ export default function DocEditor({
         <div
           ref={tablePanelElRef}
           data-doc-table-editor-panel
-          className="fixed z-[280] bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-2xl"
+          className="fixed z-[280] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-2xl"
           style={{
             left: tablePanelPos.left,
             top: tablePanelPos.top,
@@ -5084,12 +5086,12 @@ export default function DocEditor({
           onMouseDown={(e) => e.stopPropagation()}
         >
           {/* Panel toolbar */}
-          <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-gray-100 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gray-50/80 dark:bg-gray-800/50 midnight:bg-[#111827]/60 purple:bg-[#2a1447]/60 flex-wrap">
+          <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/60 purple:bg-[#1a0b2e]/60 flex-wrap">
             {/* Drag handle to reorder table */}
             <Tooltip content="Drag to reorder table" delay={400}>
               <button
                 type="button"
-                className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-grab active:cursor-grabbing"
+                className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 cursor-grab active:cursor-grabbing"
                 onMouseDown={handleTableDragStart}
               >
                 <GripVertical size={14} />
@@ -5097,55 +5099,55 @@ export default function DocEditor({
             </Tooltip>
             {/* Move table up/down */}
             <Tooltip content="Move table up" delay={400}>
-              <button type="button" className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer" onClick={moveTableUp}>
+              <button type="button" className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 cursor-pointer" onClick={moveTableUp}>
                 <MoveUp size={14} />
               </button>
             </Tooltip>
             <Tooltip content="Move table down" delay={400}>
-              <button type="button" className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer" onClick={moveTableDown}>
+              <button type="button" className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 cursor-pointer" onClick={moveTableDown}>
                 <MoveDown size={14} />
               </button>
             </Tooltip>
 
-            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
+            <div className="w-px h-5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-1" />
 
             {/* Insert row/column */}
             <Tooltip content="Insert row above" delay={400}>
-              <button type="button" className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-pointer flex items-center gap-0.5 text-[10px] font-medium" onClick={() => insertWidgetRow("above")}>
+              <button type="button" className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 cursor-pointer flex items-center gap-0.5 text-[10px] font-medium" onClick={() => insertWidgetRow("above")}>
                 <Plus size={12} /><ArrowUp size={10} />
               </button>
             </Tooltip>
             <Tooltip content="Insert row below" delay={400}>
-              <button type="button" className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-pointer flex items-center gap-0.5 text-[10px] font-medium" onClick={() => insertWidgetRow("below")}>
+              <button type="button" className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 cursor-pointer flex items-center gap-0.5 text-[10px] font-medium" onClick={() => insertWidgetRow("below")}>
                 <Plus size={12} /><ArrowDown size={10} />
               </button>
             </Tooltip>
             <Tooltip content="Insert column left" delay={400}>
-              <button type="button" className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-pointer flex items-center gap-0.5 text-[10px] font-medium" onClick={() => insertWidgetCol("left")}>
+              <button type="button" className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 cursor-pointer flex items-center gap-0.5 text-[10px] font-medium" onClick={() => insertWidgetCol("left")}>
                 <Plus size={12} /><ArrowLeft size={10} />
               </button>
             </Tooltip>
             <Tooltip content="Insert column right" delay={400}>
-              <button type="button" className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-pointer flex items-center gap-0.5 text-[10px] font-medium" onClick={() => insertWidgetCol("right")}>
+              <button type="button" className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 cursor-pointer flex items-center gap-0.5 text-[10px] font-medium" onClick={() => insertWidgetCol("right")}>
                 <Plus size={12} /><ArrowRight size={10} />
               </button>
             </Tooltip>
 
-            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
+            <div className="w-px h-5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-1" />
 
             {/* Delete row/column */}
             <Tooltip content="Delete row" delay={400}>
-              <button type="button" className="p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 cursor-pointer flex items-center gap-0.5 text-[10px]" onClick={deleteWidgetRow}>
+              <button type="button" className="p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-red-600 dark:hover:text-red-400 cursor-pointer flex items-center gap-0.5 text-[10px]" onClick={deleteWidgetRow}>
                 <Minus size={12} /><span>Row</span>
               </button>
             </Tooltip>
             <Tooltip content="Delete column" delay={400}>
-              <button type="button" className="p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 cursor-pointer flex items-center gap-0.5 text-[10px]" onClick={deleteWidgetCol}>
+              <button type="button" className="p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-red-600 dark:hover:text-red-400 cursor-pointer flex items-center gap-0.5 text-[10px]" onClick={deleteWidgetCol}>
                 <Minus size={12} /><span>Col</span>
               </button>
             </Tooltip>
 
-            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
+            <div className="w-px h-5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-1" />
 
             {/* Header toggles */}
             <Tooltip content="Toggle header row" delay={400}>
@@ -5153,8 +5155,8 @@ export default function DocEditor({
                 type="button"
                 className={`px-1.5 py-1 rounded-md text-[10px] font-bold cursor-pointer transition-colors ${
                   tableWidgetEditor.model.headerRow
-                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
-                    : "hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
+                    : "hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
                 }`}
                 onClick={toggleWidgetHeaderRow}
               >
@@ -5166,8 +5168,8 @@ export default function DocEditor({
                 type="button"
                 className={`px-1.5 py-1 rounded-md text-[10px] font-bold cursor-pointer transition-colors ${
                   tableWidgetEditor.model.headerCol
-                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
-                    : "hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
+                    : "hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
               }`}
               onClick={toggleWidgetHeaderCol}
             >
@@ -5175,14 +5177,14 @@ export default function DocEditor({
               </button>
             </Tooltip>
 
-            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
+            <div className="w-px h-5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-1" />
 
             {/* Text formatting popover */}
             <div className="relative">
               <Tooltip content="Text formatting" delay={400}>
                 <button
                   type="button"
-                  className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer flex items-center gap-0.5 text-[10px]"
+                  className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 cursor-pointer flex items-center gap-0.5 text-[10px]"
                 onClick={() => { setTableTextPopover(!tableTextPopover); setTableBorderPopover(false); setTableCellBgPopover(false); }}
               >
                 <Type size={14} />
@@ -5211,24 +5213,24 @@ export default function DocEditor({
                 const effColor = eff.color ?? "#1f2937";
                 return (
                 <div
-                  className="absolute top-full right-0 mt-2 w-[290px] bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] border border-gray-200/80 dark:border-gray-700/80 rounded-2xl shadow-2xl z-[300] backdrop-blur-sm"
+                  className="absolute top-full right-0 mt-2 w-[290px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 rounded-2xl shadow-2xl z-[300] backdrop-blur-sm"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="p-4 space-y-3">
                     {/* Scope toggle */}
-                    <div className="flex rounded-lg bg-gray-100 dark:bg-gray-800 p-0.5">
-                      <button type="button" className={`flex-1 py-1.5 text-[10px] font-medium rounded-md cursor-pointer transition-all ${textFmtScope === "cell" ? "bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"}`} onClick={() => setTextFmtScope("cell")}>This cell</button>
-                      <button type="button" className={`flex-1 py-1.5 text-[10px] font-medium rounded-md cursor-pointer transition-all ${textFmtScope === "all" ? "bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"}`} onClick={() => setTextFmtScope("all")}>All cells</button>
-                      <button type="button" className={`flex-1 py-1.5 text-[10px] font-medium rounded-md cursor-pointer transition-all ${textFmtScope === "header" ? "bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"}`} onClick={() => setTextFmtScope("header")}>Headers</button>
+                    <div className="flex rounded-lg bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] p-0.5">
+                      <button type="button" className={`flex-1 py-1.5 text-[10px] font-medium rounded-md cursor-pointer transition-all ${textFmtScope === "cell" ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 shadow-sm" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"}`} onClick={() => setTextFmtScope("cell")}>This cell</button>
+                      <button type="button" className={`flex-1 py-1.5 text-[10px] font-medium rounded-md cursor-pointer transition-all ${textFmtScope === "all" ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 shadow-sm" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"}`} onClick={() => setTextFmtScope("all")}>All cells</button>
+                      <button type="button" className={`flex-1 py-1.5 text-[10px] font-medium rounded-md cursor-pointer transition-all ${textFmtScope === "header" ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 shadow-sm" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"}`} onClick={() => setTextFmtScope("header")}>Headers</button>
                     </div>
 
                     {/* Font family — categorized scrollable list */}
                     <div>
-                      <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-1.5">Font</div>
+                      <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5">Font</div>
                       <div className="max-h-[200px] overflow-y-auto scrollbar-thin space-y-2 pr-1">
                         {FONT_FAMILY_CATEGORIES.map((cat) => (
                           <div key={cat.label}>
-                            <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1 sticky top-0 bg-white dark:bg-gray-900 py-0.5">{cat.label}</div>
+                            <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mb-1 sticky top-0 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] py-0.5">{cat.label}</div>
                             <div className="grid grid-cols-3 gap-1">
                               {cat.fonts.map((f) => (
                                 <button
@@ -5237,7 +5239,7 @@ export default function DocEditor({
                                   className={`px-2 py-1.5 text-[10px] rounded-lg border cursor-pointer transition-all truncate ${
                                     effFont === f
                                       ? "bg-blue-500 border-blue-500 text-white shadow-sm"
-                                      : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                      : "border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20"
                                   }`}
                                   style={{ fontFamily: `${f}, system-ui, sans-serif` }}
                                   onClick={() => setWidgetTextFmt({ fontFamily: f })}
@@ -5254,58 +5256,58 @@ export default function DocEditor({
 
                     {/* Font size — presets + custom input */}
                     <div>
-                      <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-1.5">Size</div>
+                      <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5">Size</div>
                       <div className="flex items-center gap-1.5">
-                        <button type="button" className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                        <button type="button" className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer"
                           onClick={() => { const idx = FONT_SIZES.findIndex((s) => s >= effSize); setWidgetTextFmt({ fontSizePx: idx > 0 ? FONT_SIZES[idx - 1] : FONT_SIZES[0] }); }}
                         ><Minus size={12} /></button>
                         <div className="flex gap-1 flex-wrap flex-1 justify-center">
                           {[8, 10, 12, 14, 18, 24, 30, 36, 48].map((s) => (
                             <button key={s} type="button"
-                              className={`min-w-[26px] py-1 text-[10px] font-medium rounded-md border cursor-pointer transition-all ${effSize === s ? "bg-blue-500 border-blue-500 text-white shadow-sm" : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"}`}
+                              className={`min-w-[26px] py-1 text-[10px] font-medium rounded-md border cursor-pointer transition-all ${effSize === s ? "bg-blue-500 border-blue-500 text-white shadow-sm" : "border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20"}`}
                               onClick={() => setWidgetTextFmt({ fontSizePx: s })}
                             >{s}</button>
                           ))}
                         </div>
-                        <button type="button" className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                        <button type="button" className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer"
                           onClick={() => { const idx = FONT_SIZES.findIndex((s) => s > effSize); setWidgetTextFmt({ fontSizePx: idx >= 0 ? FONT_SIZES[idx] : FONT_SIZES[FONT_SIZES.length - 1] }); }}
                         ><Plus size={12} /></button>
                       </div>
                       {/* Custom size input */}
                       <div className="flex items-center gap-2 mt-1.5">
-                        <span className="text-[10px] text-gray-400 dark:text-gray-500">Custom:</span>
+                        <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Custom:</span>
                         <input
                           type="number"
                           min={6}
                           max={120}
                           value={effSize}
                           onChange={(e) => { const v = parseInt(e.target.value); if (v >= 6 && v <= 120) setWidgetTextFmt({ fontSizePx: v }); }}
-                          className="w-[56px] px-2 py-1 text-[11px] font-mono rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 outline-none focus:border-blue-400"
+                          className="w-[56px] px-2 py-1 text-[11px] font-mono rounded-md border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 outline-none focus:border-blue-400"
                         />
                         <span className="text-[10px] text-gray-400">px</span>
                       </div>
                     </div>
 
                     {/* B / I / U + Alignment */}
-                    <div className="flex items-center gap-1 pt-1 border-t border-gray-100 dark:border-gray-700/50">
-                      <Tooltip content="Bold" delay={400}><button type="button" className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${effBold ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+                    <div className="flex items-center gap-1 pt-1 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                      <Tooltip content="Bold" delay={400}><button type="button" className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${effBold ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"}`}
                         onClick={() => setWidgetTextFmt({ bold: !effBold })}><Bold size={13} /></button></Tooltip>
-                      <Tooltip content="Italic" delay={400}><button type="button" className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${effItalic ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+                      <Tooltip content="Italic" delay={400}><button type="button" className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${effItalic ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"}`}
                         onClick={() => setWidgetTextFmt({ italic: !effItalic })}><Italic size={13} /></button></Tooltip>
-                      <Tooltip content="Underline" delay={400}><button type="button" className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${effUnderline ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+                      <Tooltip content="Underline" delay={400}><button type="button" className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${effUnderline ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"}`}
                         onClick={() => setWidgetTextFmt({ underline: !effUnderline })}><Underline size={13} /></button></Tooltip>
-                      <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
-                      <Tooltip content="Align left" delay={400}><button type="button" className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${effAlign === "left" ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+                      <div className="w-px h-5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-1" />
+                      <Tooltip content="Align left" delay={400}><button type="button" className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${effAlign === "left" ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"}`}
                         onClick={() => setWidgetTextFmt({ textAlign: "left" })}><AlignLeft size={13} /></button></Tooltip>
-                      <Tooltip content="Align center" delay={400}><button type="button" className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${effAlign === "center" ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+                      <Tooltip content="Align center" delay={400}><button type="button" className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${effAlign === "center" ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"}`}
                         onClick={() => setWidgetTextFmt({ textAlign: "center" })}><AlignCenter size={13} /></button></Tooltip>
-                      <Tooltip content="Align right" delay={400}><button type="button" className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${effAlign === "right" ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+                      <Tooltip content="Align right" delay={400}><button type="button" className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${effAlign === "right" ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"}`}
                         onClick={() => setWidgetTextFmt({ textAlign: "right" })}><AlignRight size={13} /></button></Tooltip>
                     </div>
 
                     {/* Font color — tabbed: Solid / Gradient / Glossy */}
-                    <div className="pt-1 border-t border-gray-100 dark:border-gray-700/50">
-                      <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-1.5">Color</div>
+                    <div className="pt-1 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                      <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5">Color</div>
                       <TabbedColorPalette
                         solidColors={TEXT_COLORS_MATRIX.flat()}
                         gradientColors={TEXT_GRADIENT_COLORS}
@@ -5322,13 +5324,13 @@ export default function DocEditor({
               })()}
             </div>
 
-            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
+            <div className="w-px h-5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-1" />
 
             {/* Border settings */}
             <div className="relative">
               <Tooltip content="Border settings" delay={400}><button
                 type="button"
-                className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer flex items-center gap-0.5 text-[10px]"
+                className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 cursor-pointer flex items-center gap-0.5 text-[10px]"
                 onClick={() => { setTableBorderPopover(!tableBorderPopover); setTableCellBgPopover(false); setTableTextPopover(false); }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -5347,18 +5349,18 @@ export default function DocEditor({
                 const effectiveBorderColor = borderScope === "cell" && activeCell?.border?.color != null ? activeCell.border.color : tableWidgetEditor.model.border.color;
                 return (
                 <div
-                  className="absolute top-full right-0 mt-2 w-[280px] bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] border border-gray-200/80 dark:border-gray-700/80 rounded-2xl shadow-2xl z-[300] backdrop-blur-sm"
+                  className="absolute top-full right-0 mt-2 w-[280px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 rounded-2xl shadow-2xl z-[300] backdrop-blur-sm"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="p-4 space-y-4">
                     {/* Scope toggle */}
-                    <div className="flex rounded-lg bg-gray-100 dark:bg-gray-800 p-0.5">
+                    <div className="flex rounded-lg bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] p-0.5">
                       <button
                         type="button"
                         className={`flex-1 py-1.5 text-[11px] font-medium rounded-md cursor-pointer transition-all ${
                           borderScope === "cell"
-                            ? "bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm"
-                            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                            ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 shadow-sm"
+                            : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
                         }`}
                         onClick={() => setBorderScope("cell")}
                       >
@@ -5368,8 +5370,8 @@ export default function DocEditor({
                         type="button"
                         className={`flex-1 py-1.5 text-[11px] font-medium rounded-md cursor-pointer transition-all ${
                           borderScope === "all"
-                            ? "bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm"
-                            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                            ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 shadow-sm"
+                            : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
                         }`}
                         onClick={() => setBorderScope("all")}
                       >
@@ -5378,7 +5380,7 @@ export default function DocEditor({
                     </div>
                     {/* Width */}
                     <div>
-                      <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-2">Width</div>
+                      <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2">Width</div>
                       <div className="flex gap-1.5">
                         {[0.5, 1, 1.5, 2, 3].map((w) => (
                           <button
@@ -5387,7 +5389,7 @@ export default function DocEditor({
                             className={`flex-1 py-1.5 text-[11px] font-medium rounded-lg border cursor-pointer transition-all ${
                               effectiveBorderWidth === w
                                 ? "bg-blue-500 border-blue-500 text-white shadow-sm"
-                                : "border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-600 text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                : "border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-blue-300 dark:hover:border-blue-600 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20"
                             }`}
                             onClick={() => setWidgetBorder({ widthPx: w })}
                           >
@@ -5398,7 +5400,7 @@ export default function DocEditor({
                     </div>
                     {/* Style */}
                     <div>
-                      <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-2">Style</div>
+                      <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2">Style</div>
                       <div className="flex gap-1.5">
                         {(["solid", "dashed", "dotted"] as const).map((s) => (
                           <button
@@ -5407,7 +5409,7 @@ export default function DocEditor({
                             className={`flex-1 py-1.5 text-[11px] font-medium rounded-lg border cursor-pointer capitalize transition-all ${
                               effectiveBorderStyle === s
                                 ? "bg-blue-500 border-blue-500 text-white shadow-sm"
-                                : "border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-600 text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                : "border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-blue-300 dark:hover:border-blue-600 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20"
                             }`}
                             onClick={() => setWidgetBorder({ style: s })}
                           >
@@ -5418,7 +5420,7 @@ export default function DocEditor({
                     </div>
                     {/* Color */}
                     <div>
-                      <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-2">Color</div>
+                      <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2">Color</div>
                       <ColorGrid
                         colors={BORDER_COLORS}
                         selectedColor={effectiveBorderColor}
@@ -5438,11 +5440,11 @@ export default function DocEditor({
             <div className="relative">
               <Tooltip content="Cell background color" delay={400}><button
                 type="button"
-                className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-700 cursor-pointer flex items-center gap-0.5"
+                className="p-1.5 rounded-md hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer flex items-center gap-0.5"
                 onClick={() => { setTableCellBgPopover(!tableCellBgPopover); setTableBorderPopover(false); setTableTextPopover(false); }}
               >
                 <div
-                  className="w-4 h-3 rounded-sm border border-gray-300 dark:border-gray-600"
+                  className="w-4 h-3 rounded-sm border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
                   style={{ background: (() => {
                     const ac = tableWidgetEditor.activeCell;
                     const cell = tableWidgetEditor.model.rows[ac.r]?.[ac.c];
@@ -5461,18 +5463,18 @@ export default function DocEditor({
                 const isNoFill = !effectiveCellBg || effectiveCellBg === "transparent";
                 return (
                 <div
-                  className="absolute top-full right-0 mt-2 w-[280px] bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] border border-gray-200/80 dark:border-gray-700/80 rounded-2xl shadow-2xl z-[300] backdrop-blur-sm"
+                  className="absolute top-full right-0 mt-2 w-[280px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 rounded-2xl shadow-2xl z-[300] backdrop-blur-sm"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="p-4 space-y-3">
                     {/* Scope toggle */}
-                    <div className="flex rounded-lg bg-gray-100 dark:bg-gray-800 p-0.5">
+                    <div className="flex rounded-lg bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] p-0.5">
                       <button
                         type="button"
                         className={`flex-1 py-1.5 text-[11px] font-medium rounded-md cursor-pointer transition-all ${
                           bgScope === "cell"
-                            ? "bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm"
-                            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                            ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 shadow-sm"
+                            : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
                         }`}
                         onClick={() => setBgScope("cell")}
                       >
@@ -5482,15 +5484,15 @@ export default function DocEditor({
                         type="button"
                         className={`flex-1 py-1.5 text-[11px] font-medium rounded-md cursor-pointer transition-all ${
                           bgScope === "all"
-                            ? "bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm"
-                            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                            ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 shadow-sm"
+                            : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
                         }`}
                         onClick={() => setBgScope("all")}
                       >
                         All cells
                       </button>
                     </div>
-                    <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Background</div>
+                    <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Background</div>
                     <ColorGrid
                       colors={CELL_BG_COLORS}
                       selectedColor={effectiveCellBg}
@@ -5508,12 +5510,12 @@ export default function DocEditor({
               })()}
             </div>
 
-            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
+            <div className="w-px h-5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-1" />
 
             {/* Table width control */}
             <div className="flex items-center gap-0.5">
-              <span className="text-[9px] text-gray-400 dark:text-gray-500 font-medium">W</span>
-              <Tooltip content="Decrease table width" delay={400}><button type="button" className="p-1 rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer"
+              <span className="text-[9px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 font-medium">W</span>
+              <Tooltip content="Decrease table width" delay={400}><button type="button" className="p-1 rounded-md hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 cursor-pointer"
                 onClick={() => {
                   updateTableWidgetModel((m) => {
                     const cols = m.rows[0]?.length ?? 1;
@@ -5525,10 +5527,10 @@ export default function DocEditor({
                   commitWidgetSoon(true);
                 }}
               ><Minus size={10} /></button></Tooltip>
-              <span className="text-[10px] font-mono text-gray-500 dark:text-gray-400 min-w-[32px] text-center">
+              <span className="text-[10px] font-mono text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 min-w-[32px] text-center">
                 {tableWidgetEditor.model.colWidthsPx ? tableWidgetEditor.model.colWidthsPx.reduce((a, b) => a + b, 0) : "—"}
               </span>
-              <Tooltip content="Increase table width" delay={400}><button type="button" className="p-1 rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer"
+              <Tooltip content="Increase table width" delay={400}><button type="button" className="p-1 rounded-md hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 cursor-pointer"
                 onClick={() => {
                   updateTableWidgetModel((m) => {
                     const cols = m.rows[0]?.length ?? 1;
@@ -5546,8 +5548,8 @@ export default function DocEditor({
 
             {/* Table row height control */}
             <div className="flex items-center gap-0.5">
-              <span className="text-[9px] text-gray-400 dark:text-gray-500 font-medium">H</span>
-              <Tooltip content="Decrease row heights" delay={400}><button type="button" className="p-1 rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer"
+              <span className="text-[9px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 font-medium">H</span>
+              <Tooltip content="Decrease row heights" delay={400}><button type="button" className="p-1 rounded-md hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 cursor-pointer"
                 onClick={() => {
                   updateTableWidgetModel((m) => {
                     const rows = m.rows.length;
@@ -5558,10 +5560,10 @@ export default function DocEditor({
                   commitWidgetSoon(true);
                 }}
               ><Minus size={10} /></button></Tooltip>
-              <span className="text-[10px] font-mono text-gray-500 dark:text-gray-400 min-w-[24px] text-center">
+              <span className="text-[10px] font-mono text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 min-w-[24px] text-center">
                 {tableWidgetEditor.model.rowHeightsPx?.[0] ?? 40}
               </span>
-              <Tooltip content="Increase row heights" delay={400}><button type="button" className="p-1 rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer"
+              <Tooltip content="Increase row heights" delay={400}><button type="button" className="p-1 rounded-md hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 cursor-pointer"
                 onClick={() => {
                   updateTableWidgetModel((m) => {
                     const rows = m.rows.length;
@@ -5574,7 +5576,7 @@ export default function DocEditor({
               ><Plus size={10} /></button></Tooltip>
             </div>
 
-            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
+            <div className="w-px h-5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-1" />
 
             {/* Merge / Unmerge */}
             {(() => {
@@ -5593,8 +5595,8 @@ export default function DocEditor({
                     disabled={!canMerge}
                     className={`px-1.5 py-1 rounded-md text-[10px] font-medium transition-colors ${
                       canMerge
-                        ? "cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                        : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                        ? "cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                        : "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed"
                     }`}
                     onClick={canMerge ? mergeSelectedCells : undefined}
                   >
@@ -5607,7 +5609,7 @@ export default function DocEditor({
                     className={`px-1.5 py-1 rounded-md text-[10px] font-medium transition-colors ${
                       canUnmerge
                         ? "cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/30 text-orange-600 dark:text-orange-400"
-                        : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                        : "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed"
                     }`}
                     onClick={canUnmerge ? unmergeActiveCell : undefined}
                   >
@@ -5617,7 +5619,7 @@ export default function DocEditor({
               );
             })()}
 
-            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
+            <div className="w-px h-5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-1" />
 
             {/* Vertical alignment */}
             {(() => {
@@ -5682,8 +5684,8 @@ export default function DocEditor({
                       title={o.title}
                       className={`p-1 rounded-md cursor-pointer transition-colors ${
                         curVAlign === o.value
-                          ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400"
-                          : "hover:bg-gray-200/70 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+                          ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                          : "hover:bg-gray-200/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
                       }`}
                       onClick={() => setWidgetTextFmt({ verticalAlign: o.value }, "cell")}
                     >
@@ -5697,7 +5699,7 @@ export default function DocEditor({
             <div className="flex-1" />
 
             {/* Delete table */}
-            <Tooltip content="Delete table" delay={400}><button type="button" className="p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-600 dark:hover:text-red-400 cursor-pointer" onClick={deleteWidgetTable}>
+            <Tooltip content="Delete table" delay={400}><button type="button" className="p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 text-gray-400 hover:text-red-600 dark:hover:text-red-400 cursor-pointer" onClick={deleteWidgetTable}>
               <Trash2 size={14} />
             </button></Tooltip>
           </div>
@@ -5842,7 +5844,7 @@ export default function DocEditor({
                               }}
                               contentEditable
                               suppressContentEditableWarning
-                              className="outline-none min-h-[24px] text-gray-800 dark:text-gray-200"
+                              className="outline-none min-h-[24px] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"
                               style={{
                                 fontFamily: `${txtFont}, system-ui, sans-serif`,
                                 fontSize: `${txtSize}px`,
@@ -6045,14 +6047,14 @@ export default function DocEditor({
 
       {/* Header row: doc icon + title (rename) */}
       {!isFullscreen && (
-      <div data-doc-header className="relative z-[50] px-2 sm:px-4 pt-2 sm:pt-3 pb-1.5 sm:pb-2 border-b border-gray-100 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-gray-900/40 midnight:bg-[#0d1526]/60 purple:bg-[#1f1035]/60 backdrop-blur">
+      <div data-doc-header className="relative z-[50] px-2 sm:px-4 pt-2 sm:pt-3 pb-1.5 sm:pb-2 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0a0e27]/60 purple:bg-[#1a0b2e]/60 backdrop-blur">
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Back to documents */}
           <Tooltip content="Back to Documents" delay={400}>
             <button
               type="button"
               onClick={() => { window.location.href = "/documents"; }}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer flex-shrink-0"
+              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer flex-shrink-0"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
@@ -6071,13 +6073,13 @@ export default function DocEditor({
                 }}
                 placeholder="Untitled document"
                 disabled={!canEdit}
-                className="min-w-0 w-full max-w-[240px] sm:max-w-[480px] bg-transparent text-[15px] sm:text-[18px] font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 outline-none rounded-lg px-2 sm:px-3 py-1.5 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus:border-blue-400 dark:focus:border-blue-500 focus:bg-white dark:focus:bg-gray-800 transition-all placeholder:text-gray-400 placeholder:font-normal"
+                className="min-w-0 w-full max-w-[240px] sm:max-w-[480px] bg-transparent text-[15px] sm:text-[18px] font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 outline-none rounded-lg px-2 sm:px-3 py-1.5 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 focus:bg-white dark:focus:bg-gray-800 transition-all placeholder:text-gray-400 placeholder:font-normal"
                 aria-label="Document title"
               />
               <Tooltip content="Star" delay={400}>
                 <button
                   type="button"
-                  className="p-1 sm:p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                  className="p-1 sm:p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
                 >
                   <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
@@ -6093,8 +6095,8 @@ export default function DocEditor({
                 className={[
                   "relative p-1.5 sm:p-2 rounded-full transition-all duration-200 cursor-pointer",
                   showComments
-                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                    : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800",
+                    ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                    : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5",
                 ].join(" ")}
                 aria-label="Toggle comments panel"
               >
@@ -6106,20 +6108,16 @@ export default function DocEditor({
                 )}
               </button>
             </Tooltip>
-            <button
-              type="button"
-              onClick={() => setDialog("share")}
-              className="px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-[12px] sm:text-[13px] font-semibold text-white bg-[#1a73e8] hover:bg-[#1765cc] shadow-sm transition-colors cursor-pointer"
-            >
+            <Button onClick={() => setDialog("share")} size="sm" icon={<Share2 className="w-3.5 h-3.5" />} className="!rounded-full">
               Share
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Menubar */}
         <div
           data-doc-menubar
-          className="mt-1 sm:mt-2 flex items-center flex-wrap gap-1 sm:gap-2 text-[12px] sm:text-[13px] text-gray-700 dark:text-gray-200 select-none"
+          className="mt-1 sm:mt-2 flex items-center flex-wrap gap-1 sm:gap-2 text-[12px] sm:text-[13px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 select-none"
         >
           <MenuRoot
             id="file"
@@ -6718,7 +6716,7 @@ export default function DocEditor({
 
       {/* Toolbar — Google Docs order */}
       {!isChromeCollapsed && (
-      <div data-doc-toolbar className="px-1.5 sm:px-3 pt-1.5 sm:pt-2 pb-1 sm:pb-1.5 border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10">
+      <div data-doc-toolbar className="px-1.5 sm:px-3 pt-1.5 sm:pt-2 pb-1 sm:pb-1.5 border-b border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
         <div className="flex flex-wrap items-center gap-0.5">
           {/* Search */}
           <ToolbarButton disabled={false} onClick={() => setDialog("findReplace")} title="Search" Icon={Search} />
@@ -6752,13 +6750,13 @@ export default function DocEditor({
             <div className="py-1">
               <button type="button" onMouseDown={(e) => e.preventDefault()}
                 onClick={() => { setZoomLevel(100); setZoomOpen(false); }}
-                className={`w-full px-3 py-1.5 text-left text-[12px] transition-colors cursor-pointer font-medium ${zoomLevel === 100 ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
+                className={`w-full px-3 py-1.5 text-left text-[12px] transition-colors cursor-pointer font-medium ${zoomLevel === 100 ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
               >Fit</button>
-              <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+              <div className="my-1 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20" />
               {[50, 75, 100, 125, 150, 200].map((z) => (
                 <button key={z} type="button" onMouseDown={(e) => e.preventDefault()}
                   onClick={() => { setZoomLevel(z); setZoomOpen(false); }}
-                  className={`w-full px-3 py-1.5 text-left text-[12px] transition-colors cursor-pointer ${z === zoomLevel ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
+                  className={`w-full px-3 py-1.5 text-left text-[12px] transition-colors cursor-pointer ${z === zoomLevel ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-semibold" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
                 >{z}%</button>
               ))}
             </div>
@@ -6780,15 +6778,15 @@ export default function DocEditor({
                 { label: "Heading 1", tag: "h1", cls: "text-[22px] font-bold" },
                 { label: "Heading 2", tag: "h2", cls: "text-[18px] font-bold" },
                 { label: "Heading 3", tag: "h3", cls: "text-[15px] font-bold" },
-                { label: "Heading 4", tag: "h4", cls: "text-[13px] font-bold text-gray-700 dark:text-gray-300" },
-                { label: "Heading 5", tag: "h5", cls: "text-[12px] font-bold text-gray-600 dark:text-gray-400" },
-                { label: "Heading 6", tag: "h6", cls: "text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase" },
+                { label: "Heading 4", tag: "h4", cls: "text-[13px] font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200" },
+                { label: "Heading 5", tag: "h5", cls: "text-[12px] font-bold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" },
+                { label: "Heading 6", tag: "h6", cls: "text-[11px] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase" },
                 { label: "Title", tag: "h1", cls: "text-[26px] font-normal" },
                 { label: "Subtitle", tag: "h2", cls: "text-[14px] font-normal text-gray-500" },
               ].map((s) => (
                 <button key={s.label} type="button" onMouseDown={(e) => e.preventDefault()}
                   onClick={() => { handleCommand("formatBlock", s.tag); setCurrentParagraphStyle(s.label); setParagraphStyleOpen(false); }}
-                  className={`w-full px-3 py-2 text-left ${s.cls} transition-colors cursor-pointer ${currentParagraphStyle === s.label ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
+                  className={`w-full px-3 py-2 text-left ${s.cls} transition-colors cursor-pointer ${currentParagraphStyle === s.label ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
                 >{s.label}</button>
               ))}
             </div>
@@ -6807,32 +6805,32 @@ export default function DocEditor({
             <div className="p-2 max-h-[320px] overflow-y-auto space-y-2">
               {recentFonts.length > 0 && (
                 <div>
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1 sticky top-0 bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] py-0.5 z-10">Recently used</div>
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mb-1 sticky top-0 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] py-0.5 z-10">Recently used</div>
                   {recentFonts.map((f) => (
                     <button key={`recent-${f}`} type="button" onMouseDown={(e) => e.preventDefault()}
                       onClick={() => { handleFontFamilyChange(f); setFontFamilyOpen(false); }}
                       style={{ fontFamily: `${f}, system-ui, sans-serif` }}
-                      className={`w-full px-2 py-1.5 text-left text-[12px] rounded-lg truncate transition-colors cursor-pointer ${f === currentFontFamily ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
+                      className={`w-full px-2 py-1.5 text-left text-[12px] rounded-lg truncate transition-colors cursor-pointer ${f === currentFontFamily ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
                     >{f}</button>
                   ))}
-                  <div className="mx-1 mt-1 mb-2 border-t border-gray-100 dark:border-gray-700" />
+                  <div className="mx-1 mt-1 mb-2 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20" />
                 </div>
               )}
               {FONT_FAMILY_CATEGORIES.map((cat) => (
                 <div key={cat.label}>
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1 sticky top-0 bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] py-0.5 z-10">{cat.label}</div>
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mb-1 sticky top-0 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] py-0.5 z-10">{cat.label}</div>
                   {cat.fonts.map((f) => (
                     <button key={f} type="button" onMouseDown={(e) => e.preventDefault()}
                       onClick={() => { handleFontFamilyChange(f); setFontFamilyOpen(false); }}
                       style={{ fontFamily: `${f}, system-ui, sans-serif` }}
-                      className={`w-full px-2 py-1.5 text-left text-[12px] rounded-lg truncate transition-colors cursor-pointer ${f === currentFontFamily ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
+                      className={`w-full px-2 py-1.5 text-left text-[12px] rounded-lg truncate transition-colors cursor-pointer ${f === currentFontFamily ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
                     >{f}</button>
                   ))}
                 </div>
               ))}
               {/* Font weight section */}
-              <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
-                <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">Weight</div>
+              <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mb-1">Weight</div>
                 <div className="grid grid-cols-3 gap-1">
                   {([
                     { label: "Thin", value: "100" },
@@ -6856,7 +6854,7 @@ export default function DocEditor({
                         setFontFamilyOpen(false);
                       }}
                       style={{ fontWeight: w.value }}
-                      className="px-2 py-1.5 text-[11px] rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer text-center"
+                      className="px-2 py-1.5 text-[11px] rounded-lg text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-center"
                     >{w.label}</button>
                   ))}
                 </div>
@@ -6870,15 +6868,15 @@ export default function DocEditor({
             <button type="button" disabled={!canEdit}
               onMouseDown={(e) => { if (!canEdit) return; e.preventDefault(); }}
               onClick={() => { const ns = Math.max(1, currentFontSize - 1); handleFontSizeChange(ns); }}
-              className="w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-50"
+              className="w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer disabled:opacity-50"
             >
-              <Minus className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+              <Minus className="w-3 h-3 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200" />
             </button>
           </Tooltip>
           {/* Font size — editable input + dropdown */}
           <div className="relative" ref={(el) => { (fontSizeDropdownRef as React.MutableRefObject<HTMLDivElement | null>).current = el; }}>
             <Tooltip content="Font size" delay={400}>
-              <div className="flex items-center h-7 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <div className="flex items-center h-7 rounded hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
                 <input
                   type="text"
                   inputMode="numeric"
@@ -6904,23 +6902,23 @@ export default function DocEditor({
                     if (v >= 1 && v <= 400) { handleFontSizeChange(v); }
                     else { setFontSizeInputVal(`${currentFontSize}`); }
                   }}
-                  className="w-8 h-7 text-center text-[12px] bg-transparent border border-transparent focus:border-blue-400 dark:focus:border-blue-500 rounded outline-none text-gray-700 dark:text-gray-200 cursor-pointer disabled:opacity-50"
+                  className="w-8 h-7 text-center text-[12px] bg-transparent border border-transparent focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 rounded outline-none text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 cursor-pointer disabled:opacity-50"
                 />
                 <button type="button" disabled={!canEdit}
                   onMouseDown={(e) => { e.preventDefault(); }}
                   onClick={() => { closeAllToolbarDropdowns(); setFontSizeOpen(!fontSizeOpen); }}
                   className="w-4 h-7 inline-flex items-center justify-center cursor-pointer disabled:opacity-50"
                 >
-                  <ChevronDown className="w-3 h-3 text-gray-500 dark:text-gray-400" />
+                  <ChevronDown className="w-3 h-3 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                 </button>
               </div>
             </Tooltip>
             {fontSizeOpen && (
-              <div className="absolute top-full left-0 mt-1 w-[80px] bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[200] py-1 max-h-[280px] overflow-y-auto">
+              <div className="absolute top-full left-0 mt-1 w-[80px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[200] py-1 max-h-[280px] overflow-y-auto">
                 {[8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 36, 48, 72, 96].map((s) => (
                   <button key={s} type="button" onMouseDown={(e) => e.preventDefault()}
                     onClick={() => { handleFontSizeChange(s); setFontSizeOpen(false); }}
-                    className={`w-full px-3 py-1.5 text-left text-[12px] transition-colors cursor-pointer ${s === currentFontSize ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
+                    className={`w-full px-3 py-1.5 text-left text-[12px] transition-colors cursor-pointer ${s === currentFontSize ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-semibold" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
                   >{s}</button>
                 ))}
               </div>
@@ -6930,9 +6928,9 @@ export default function DocEditor({
             <button type="button" disabled={!canEdit}
               onMouseDown={(e) => { if (!canEdit) return; e.preventDefault(); }}
               onClick={() => { const ns = Math.min(400, currentFontSize + 1); handleFontSizeChange(ns); }}
-              className="w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-50"
+              className="w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer disabled:opacity-50"
             >
-              <Plus className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+              <Plus className="w-3 h-3 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200" />
             </button>
           </Tooltip>
           <ToolbarDivider />
@@ -7001,7 +6999,7 @@ export default function DocEditor({
               />
               <button type="button"
                 onClick={() => { focusEditor(); exec("hiliteColor", "transparent"); emitChange(); setHighlightOpen(false); }}
-                className="mt-2 w-full text-center text-[11px] text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 py-1 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="mt-2 w-full text-center text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-200 midnight:hover:text-cyan-100 purple:hover:text-pink-100 py-1 rounded-md hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
               >Remove highlight</button>
             </div>
           </ToolbarDropdown>
@@ -7037,7 +7035,7 @@ export default function DocEditor({
               ]).map((item) => (
                 <button key={item.key} type="button" onMouseDown={(e) => e.preventDefault()}
                   onClick={() => { handleCommand(item.cmd); setCurrentAlignment(item.key); setAlignmentOpen(false); }}
-                  className={`w-full px-3 py-1.5 text-left text-[12px] flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer ${currentAlignment === item.key ? "text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20" : "text-gray-700 dark:text-gray-200"}`}
+                  className={`w-full px-3 py-1.5 text-left text-[12px] flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer ${currentAlignment === item.key ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50/50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"}`}
                 >
                   <item.icon className="w-4 h-4" />
                   <span>{item.label}</span>
@@ -7062,22 +7060,22 @@ export default function DocEditor({
               {[...LINE_SPACINGS, { value: 2.5, label: "2.5" }, { value: 3.0, label: "3.0" }].map((ls) => (
                 <button key={ls.value} type="button" onMouseDown={(e) => e.preventDefault()}
                   onClick={() => { handleLineSpacingChange(ls.value); setLineSpacingOpen(false); }}
-                  className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                  className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
                 >{ls.label}</button>
               ))}
-              <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+              <div className="my-1 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20" />
               <button type="button" onMouseDown={(e) => e.preventDefault()}
                 onClick={() => { handleAddSpaceBefore(); setLineSpacingOpen(false); }}
-                className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
               >Add space before paragraph</button>
               <button type="button" onMouseDown={(e) => e.preventDefault()}
                 onClick={() => { handleAddSpaceAfter(); setLineSpacingOpen(false); }}
-                className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
               >Add space after paragraph</button>
-              <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+              <div className="my-1 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20" />
               <button type="button" onMouseDown={(e) => e.preventDefault()}
                 onClick={() => { handleCustomSpacing(); setLineSpacingOpen(false); }}
-                className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
               >Custom spacing</button>
             </div>
           </ToolbarDropdown>
@@ -7093,7 +7091,7 @@ export default function DocEditor({
             width="w-[220px]"
           >
             <div className="py-1">
-              <div className="px-3 py-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Bullet list</div>
+              <div className="px-3 py-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wider">Bullet list</div>
               <div className="grid grid-cols-3 gap-0.5 px-2 pb-1">
                 {([
                   { type: "disc", icon: <Circle className="w-2 h-2 fill-current" />, label: "Disc" },
@@ -7117,9 +7115,9 @@ export default function DocEditor({
                       setListStyleOpen(false);
                     }}
                     title={style.label}
-                    className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"
+                    className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"
                   >
-                    <div className="w-8 h-8 flex flex-col items-start justify-center gap-0.5 border border-gray-200 dark:border-gray-600 rounded-md p-1.5">
+                    <div className="w-8 h-8 flex flex-col items-start justify-center gap-0.5 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-md p-1.5">
                       <div className="flex items-center gap-1"><span className="flex-shrink-0">{style.icon}</span><div className="h-[2px] w-4 bg-gray-300 dark:bg-gray-500 rounded-full" /></div>
                       <div className="flex items-center gap-1"><span className="flex-shrink-0">{style.icon}</span><div className="h-[2px] w-3 bg-gray-300 dark:bg-gray-500 rounded-full" /></div>
                       <div className="flex items-center gap-1"><span className="flex-shrink-0">{style.icon}</span><div className="h-[2px] w-5 bg-gray-300 dark:bg-gray-500 rounded-full" /></div>
@@ -7128,8 +7126,8 @@ export default function DocEditor({
                   </button>
                 ))}
               </div>
-              <div className="mx-2 border-t border-gray-100 dark:border-gray-700" />
-              <div className="px-3 py-1 mt-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Numbered list</div>
+              <div className="mx-2 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20" />
+              <div className="px-3 py-1 mt-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wider">Numbered list</div>
               <div className="grid grid-cols-3 gap-0.5 px-2 pb-1">
                 {([
                   { type: "decimal", display: ["1.", "2.", "3."], label: "Numbers" },
@@ -7153,9 +7151,9 @@ export default function DocEditor({
                       setListStyleOpen(false);
                     }}
                     title={style.label}
-                    className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"
+                    className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"
                   >
-                    <div className="w-8 h-8 flex flex-col items-start justify-center gap-0.5 border border-gray-200 dark:border-gray-600 rounded-md p-1.5">
+                    <div className="w-8 h-8 flex flex-col items-start justify-center gap-0.5 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-md p-1.5">
                       {style.display.map((d, i) => (
                         <div key={i} className="flex items-center gap-1"><span className="text-[6px] font-medium leading-none">{d}</span><div className={`h-[2px] ${i === 1 ? "w-3" : i === 2 ? "w-5" : "w-4"} bg-gray-300 dark:bg-gray-500 rounded-full`} /></div>
                       ))}
@@ -7164,8 +7162,8 @@ export default function DocEditor({
                   </button>
                 ))}
               </div>
-              <div className="mx-2 border-t border-gray-100 dark:border-gray-700" />
-              <div className="px-3 py-1 mt-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Checklist</div>
+              <div className="mx-2 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20" />
+              <div className="px-3 py-1 mt-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wider">Checklist</div>
               <div className="grid grid-cols-4 gap-0.5 px-2 pb-1">
                 {([
                   { symbol: "☐", filled: "☑", label: "Standard", style: "checkbox" },
@@ -7183,9 +7181,9 @@ export default function DocEditor({
                       setListStyleOpen(false);
                     }}
                     title={ck.label}
-                    className="flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"
+                    className="flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"
                   >
-                    <div className="w-7 h-7 flex items-center justify-center border border-gray-200 dark:border-gray-600 rounded-md text-[14px]">{ck.symbol}</div>
+                    <div className="w-7 h-7 flex items-center justify-center border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-md text-[14px]">{ck.symbol}</div>
                     <span className="text-[9px]">{ck.label}</span>
                   </button>
                 ))}
@@ -7210,18 +7208,18 @@ export default function DocEditor({
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => { closeAllToolbarDropdowns(); setMoreToolbarOpen(!moreToolbarOpen); }}
-                className="w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
               >
-                <Ellipsis className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                <Ellipsis className="w-4 h-4 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200" />
               </button>
             </Tooltip>
             {moreToolbarOpen && (
               <div
                 data-doc-menu-panel
-                className="absolute right-0 top-full mt-1 z-[120] w-[220px] rounded-2xl overflow-hidden bg-white/80 dark:bg-[#121212]/80 midnight:bg-[#0b1220]/80 purple:bg-[#1a0d2e]/80 backdrop-blur-[20px] backdrop-saturate-[180%] border border-gray-300/60 dark:border-gray-600/50 midnight:border-cyan-400/20 purple:border-pink-400/20 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_12px_24px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.3),0_12px_24px_-4px_rgba(0,0,0,0.4)] py-1.5"
+                className="absolute right-0 top-full mt-1 z-[120] w-[220px] rounded-2xl overflow-hidden bg-white/80 dark:bg-[#121212]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0d2e]/80 backdrop-blur-[20px] backdrop-saturate-[180%] border border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50 midnight:border-cyan-400/20 purple:border-pink-400/20 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_12px_24px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.3),0_12px_24px_-4px_rgba(0,0,0,0.4)] py-1.5"
               >
                 {/* Alignment */}
-                <div className="px-2 py-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Alignment</div>
+                <div className="px-2 py-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wider">Alignment</div>
                 <div className="flex items-center gap-0.5 px-2 pb-1">
                   {([
                     { cmd: "justifyLeft", icon: AlignLeft, label: "Left" },
@@ -7232,7 +7230,7 @@ export default function DocEditor({
                     <button key={item.cmd} type="button" title={item.label}
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => { handleCommand(item.cmd); setMoreToolbarOpen(false); }}
-                      className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"
+                      className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"
                     >
                       <item.icon className="w-4 h-4" />
                     </button>
@@ -7240,32 +7238,32 @@ export default function DocEditor({
                 </div>
                 <div className="my-1 mx-3 h-px bg-gradient-to-r from-transparent via-gray-200/80 dark:via-gray-700/60 to-transparent" />
                 {/* Spacing */}
-                <div className="px-2 py-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Spacing</div>
+                <div className="px-2 py-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wider">Spacing</div>
                 <div className="flex items-center gap-0.5 px-2 pb-1">
                   {[1.0, 1.15, 1.5, 2.0].map((v) => (
                     <button key={v} type="button" title={`${v} spacing`}
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => { handleLineSpacingChange(v); setMoreToolbarOpen(false); }}
-                      className="px-2 h-8 rounded-lg text-[11px] font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"
+                      className="px-2 h-8 rounded-lg text-[11px] font-medium hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"
                     >{v}</button>
                   ))}
                 </div>
                 <div className="my-1 mx-3 h-px bg-gradient-to-r from-transparent via-gray-200/80 dark:via-gray-700/60 to-transparent" />
                 {/* Lists & indent */}
-                <div className="px-2 py-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Lists & indent</div>
+                <div className="px-2 py-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wider">Lists & indent</div>
                 <div className="flex items-center gap-0.5 px-2 pb-1">
-                  <button type="button" title="Bulleted list" onMouseDown={(e) => e.preventDefault()} onClick={() => { handleCommand("insertUnorderedList"); setMoreToolbarOpen(false); }} className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"><List className="w-4 h-4" /></button>
-                  <button type="button" title="Numbered list" onMouseDown={(e) => e.preventDefault()} onClick={() => { handleCommand("insertOrderedList"); setMoreToolbarOpen(false); }} className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"><ListOrdered className="w-4 h-4" /></button>
-                  <button type="button" title="Decrease indent" onMouseDown={(e) => e.preventDefault()} onClick={() => { handleCommand("outdent"); setMoreToolbarOpen(false); }} className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"><IndentDecrease className="w-4 h-4" /></button>
-                  <button type="button" title="Increase indent" onMouseDown={(e) => e.preventDefault()} onClick={() => { handleCommand("indent"); setMoreToolbarOpen(false); }} className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-700 dark:text-gray-200"><IndentIncrease className="w-4 h-4" /></button>
+                  <button type="button" title="Bulleted list" onMouseDown={(e) => e.preventDefault()} onClick={() => { handleCommand("insertUnorderedList"); setMoreToolbarOpen(false); }} className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"><List className="w-4 h-4" /></button>
+                  <button type="button" title="Numbered list" onMouseDown={(e) => e.preventDefault()} onClick={() => { handleCommand("insertOrderedList"); setMoreToolbarOpen(false); }} className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"><ListOrdered className="w-4 h-4" /></button>
+                  <button type="button" title="Decrease indent" onMouseDown={(e) => e.preventDefault()} onClick={() => { handleCommand("outdent"); setMoreToolbarOpen(false); }} className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"><IndentDecrease className="w-4 h-4" /></button>
+                  <button type="button" title="Increase indent" onMouseDown={(e) => e.preventDefault()} onClick={() => { handleCommand("indent"); setMoreToolbarOpen(false); }} className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"><IndentIncrease className="w-4 h-4" /></button>
                 </div>
                 <div className="my-1 mx-3 h-px bg-gradient-to-r from-transparent via-gray-200/80 dark:via-gray-700/60 to-transparent" />
                 {/* Clear formatting */}
                 <button type="button" onMouseDown={(e) => e.preventDefault()}
                   onClick={() => { focusEditor(); exec("removeFormat"); emitChange(); setMoreToolbarOpen(false); }}
-                  className="w-full flex items-center gap-2.5 px-3 min-h-[40px] text-left text-[13px] text-gray-700 dark:text-gray-200 hover:bg-gray-100/60 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-3 min-h-[40px] text-left text-[13px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/60 dark:hover:bg-white/5 transition-colors cursor-pointer"
                 >
-                  <RemoveFormatting className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  <RemoveFormatting className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                   <span>Clear formatting</span>
                 </button>
               </div>
@@ -7282,7 +7280,7 @@ export default function DocEditor({
           <Tooltip content="Hide the menus (Ctrl+Shift+F)" delay={400}>
             <button type="button"
               onClick={() => setIsChromeCollapsed(true)}
-              className="w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              className="w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
             >
               <ChevronUp className="w-4 h-4 text-gray-500" />
             </button>
@@ -7293,10 +7291,10 @@ export default function DocEditor({
 
       {/* Toolbar restore — show when collapsed */}
       {isChromeCollapsed && !isFullscreen && (
-        <div data-doc-toolbar-restore className="px-3 py-0.5 flex justify-end border-b border-gray-200 dark:border-gray-800">
+        <div data-doc-toolbar-restore className="px-3 py-0.5 flex justify-end border-b border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
           <Tooltip content="Show the menus (Ctrl+Shift+F)" delay={400}>
             <button type="button" onClick={() => setIsChromeCollapsed(false)}
-              className="w-7 h-5 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+              className="w-7 h-5 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
               <ChevronDown className="w-4 h-4 text-gray-400" />
             </button>
           </Tooltip>
@@ -7312,9 +7310,9 @@ export default function DocEditor({
               <button
                 type="button"
                 onClick={() => setIsSidebarCollapsed(false)}
-                className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
               >
-                <ArrowRight className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <ArrowRight className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
               </button>
             </Tooltip>
           </div>
@@ -7324,19 +7322,19 @@ export default function DocEditor({
           <>
           {/* Mobile backdrop overlay */}
           <div data-doc-sidebar-backdrop className="absolute inset-0 bg-black/20 z-[90] md:hidden" onClick={() => setIsSidebarCollapsed(true)} />
-          <div className="w-[260px] flex-shrink-0 absolute md:relative z-[100] md:z-auto h-full md:h-auto border-r border-gray-200 dark:border-gray-700 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white dark:bg-gray-900 midnight:bg-[#0d1526] purple:bg-[#1f1035] overflow-y-auto" data-doc-sidebar onClick={() => setTabMenuOpenId(null)}>
+          <div className="w-[260px] flex-shrink-0 absolute md:relative z-[100] md:z-auto h-full md:h-auto border-r border-gray-200 dark:border-gray-700 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] overflow-y-auto" data-doc-sidebar onClick={() => setTabMenuOpenId(null)}>
             <div className="p-3">
               {/* Back arrow — collapses sidebar only */}
               <Tooltip content="Close sidebar" delay={400}>
-                <button type="button" onClick={() => setIsSidebarCollapsed(true)} className="mb-3 p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
-                  <ArrowLeft className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <button type="button" onClick={() => setIsSidebarCollapsed(true)} className="mb-3 p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
+                  <ArrowLeft className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                 </button>
               </Tooltip>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[12px] font-semibold text-gray-700 dark:text-gray-200">Document tabs</span>
+                <span className="text-[12px] font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Document tabs</span>
                 <Tooltip content="Add tab" delay={400}>
-                  <button type="button" onClick={handleCreateTab} className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
-                    <Plus className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  <button type="button" onClick={handleCreateTab} className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
+                    <Plus className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                   </button>
                 </Tooltip>
               </div>
@@ -7349,10 +7347,10 @@ export default function DocEditor({
                       className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors ${
                         tab.id === activeTabId
                           ? "bg-blue-50/80 dark:bg-blue-900/20 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
-                          : "hover:bg-gray-50 dark:hover:bg-gray-800"
+                          : "hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
                       }`}
                     >
-                      <FileText className={`w-4 h-4 flex-shrink-0 ${tab.id === activeTabId ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"}`} />
+                      <FileText className={`w-4 h-4 flex-shrink-0 ${tab.id === activeTabId ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400"}`} />
                       {renamingTabId === tab.id ? (
                         <input
                           autoFocus
@@ -7371,11 +7369,11 @@ export default function DocEditor({
                             }
                             if (e.key === "Escape") setRenamingTabId(null);
                           }}
-                          className="flex-1 text-[12px] font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-blue-400 rounded px-1 py-0 outline-none min-w-0"
+                          className="flex-1 text-[12px] font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-blue-400 rounded px-1 py-0 outline-none min-w-0"
                         />
                       ) : (
                         <span
-                          className="flex-1 text-[12px] font-medium text-gray-700 dark:text-gray-200 truncate"
+                          className="flex-1 text-[12px] font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate"
                           onDoubleClick={(e) => { e.stopPropagation(); setRenamingTabId(tab.id); }}
                         >{tab.name}</span>
                       )}
@@ -7383,7 +7381,7 @@ export default function DocEditor({
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); setTabMenuOpenId(tabMenuOpenId === tab.id ? null : tab.id); }}
-                          className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer flex-shrink-0"
+                          className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer flex-shrink-0"
                         >
                           <MoreVertical className="w-3.5 h-3.5 text-gray-400" />
                         </button>
@@ -7392,15 +7390,15 @@ export default function DocEditor({
                     {/* Tab context menu — positioned below the tab */}
                     {tabMenuOpenId === tab.id && (
                       <div
-                        className="absolute right-0 top-full mt-1 z-50 w-[160px] rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl py-1"
+                        className="absolute right-0 top-full mt-1 z-50 w-[160px] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-xl py-1"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button type="button" onClick={() => { setRenamingTabId(tab.id); setTabMenuOpenId(null); }}
-                          className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer">Rename</button>
+                          className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">Rename</button>
                         <button type="button" onClick={() => handleDuplicateTab(tab.id)}
-                          className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer">Duplicate</button>
+                          className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">Duplicate</button>
                         <button type="button" onClick={() => handleDeleteTab(tab.id)}
-                          className="w-full px-3 py-1.5 text-left text-[12px] text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer">Delete</button>
+                          className="w-full px-3 py-1.5 text-left text-[12px] text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">Delete</button>
                       </div>
                     )}
                   </div>
@@ -7408,8 +7406,8 @@ export default function DocEditor({
               </div>
               {/* Outline: shown when document has headings AND showOutline is enabled */}
               {showOutline && sidebarHeadings.length > 0 && (
-                <div data-doc-outline-panel className="border-t border-gray-100 dark:border-gray-700 pt-3 mt-1">
-                  <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1">Outline</span>
+                <div data-doc-outline-panel className="border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 pt-3 mt-1">
+                  <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider px-1">Outline</span>
                   <div className="mt-2 space-y-0.5">
                     {sidebarHeadings.map((h, i) => (
                       <button key={`${h.id}-${i}`} type="button"
@@ -7419,11 +7417,11 @@ export default function DocEditor({
                           const el = root.querySelector(`#${CSS.escape(h.id)}`) || root.querySelectorAll(`h${h.level}`)[i];
                           if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); }
                         }}
-                        className="w-full text-left px-2 py-1 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer group"
+                        className="w-full text-left px-2 py-1 rounded-md hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer group"
                         style={{ paddingLeft: `${(h.level - 1) * 12 + 8}px` }}
                         title={h.text}
                       >
-                        <span className="text-[11px] text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 truncate block">{h.text}</span>
+                        <span className="text-[11px] text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 truncate block">{h.text}</span>
                       </button>
                     ))}
                   </div>
@@ -7450,24 +7448,24 @@ export default function DocEditor({
         >
           {/* Mode indicators */}
           {docMode === "viewing" && (
-            <div className="sticky top-0 z-[50] flex items-center justify-center gap-2 px-4 py-1.5 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 text-[11px] font-medium">
+            <div className="sticky top-0 z-[50] flex items-center justify-center gap-2 px-4 py-1.5 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 text-[11px] font-medium">
               <Eye className="w-3.5 h-3.5" />
               <span>You are viewing this document. To make edits, switch to Editing mode.</span>
             </div>
           )}
           {docMode === "suggesting" && (
-            <div className="sticky top-0 z-[50] flex items-center justify-center gap-2 px-4 py-1.5 bg-green-50 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800/40 text-green-700 dark:text-green-400 text-[11px] font-medium">
+            <div className="sticky top-0 z-[50] flex items-center justify-center gap-2 px-4 py-1.5 bg-green-50 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800/40 text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 text-[11px] font-medium">
               <MessageSquarePlus className="w-3.5 h-3.5" />
               <span>Suggesting mode — your edits will appear as suggestions that can be accepted or rejected.</span>
             </div>
           )}
           {!isFullscreen && showEquationToolbar && (
             <div data-doc-equation-toolbar className="mx-auto w-full max-w-[860px] mb-2 px-2">
-              <div className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-gray-900/60 midnight:bg-[#0b1220] purple:bg-[#170a27] backdrop-blur-sm">
-                <Sigma className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <div className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] backdrop-blur-sm">
+                <Sigma className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                 <input
                   placeholder="Insert equation (LaTeX/plain)…"
-                  className="flex-1 px-2 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none"
+                  className="flex-1 px-2 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 outline-none"
                   onKeyDown={(e) => {
                     if (e.key !== "Enter") return;
                     const v = (e.currentTarget.value || "").trim();
@@ -7478,14 +7476,14 @@ export default function DocEditor({
                     if (el) el.value = "";
                   }}
                 />
-                <span className="text-[11px] text-gray-400 dark:text-gray-500">Enter</span>
+                <span className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Enter</span>
               </div>
             </div>
           )}
           {/* Drawing annotation overlay + toolbar */}
           {drawingMode && (
-            <div className="sticky top-0 z-[60] flex items-center justify-center py-1.5 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-200/60 dark:border-gray-700/60 shadow-sm">
-              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <div className="sticky top-0 z-[60] flex items-center justify-center py-1.5 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl border-b border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 shadow-sm">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 {/* Tool buttons */}
                 {([
                   { id: "pen" as const, label: "Pen", icon: <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 17l1.5-4L14 3.5a1.5 1.5 0 012 0l.5.5a1.5 1.5 0 010 2L7 15.5z"/><path d="M11 6l3 3"/></svg> },
@@ -7498,38 +7496,38 @@ export default function DocEditor({
                   <Tooltip key={tool.id} content={tool.label} delay={200}>
                     <button type="button"
                       onClick={() => setDrawingMode(tool.id)}
-                      className={`p-2 rounded-lg transition-all cursor-pointer ${drawingMode === tool.id ? "bg-blue-500 text-white shadow-sm" : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"}`}
+                      className={`p-2 rounded-lg transition-all cursor-pointer ${drawingMode === tool.id ? "bg-blue-500 text-white shadow-sm" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"}`}
                     >{tool.icon}</button>
                   </Tooltip>
                 ))}
-                <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1" />
+                <div className="w-px h-5 bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 mx-1" />
                 {/* Size slider */}
                 <Tooltip content={`Size: ${drawingSize}px`} delay={200}>
                   <input type="range" min={1} max={20} value={drawingSize}
                     onChange={e => setDrawingSize(Number(e.target.value))}
                     className="w-16 h-1 accent-blue-500 cursor-pointer" />
                 </Tooltip>
-                <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1" />
+                <div className="w-px h-5 bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 mx-1" />
                 {/* Color swatches */}
                 {["#1a73e8", "#e53935", "#43a047", "#fb8c00", "#8e24aa", "#000000"].map(c => (
                   <button key={c} type="button" onClick={() => setDrawingColor(c)}
                     className={`w-5 h-5 rounded-full cursor-pointer transition-transform ${drawingColor === c ? "ring-2 ring-offset-1 ring-blue-500 scale-110" : "hover:scale-110"}`}
                     style={{ backgroundColor: c }} />
                 ))}
-                <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1" />
+                <div className="w-px h-5 bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 mx-1" />
                 {/* Clear & close */}
                 <Tooltip content="Clear all drawings" delay={200}>
                   <button type="button" onClick={() => {
                     const canvas = drawCanvasRef.current;
                     if (canvas) { const ctx = canvas.getContext("2d"); if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height); }
                     drawingRef.current.paths = null;
-                  }} className="p-2 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 transition-colors cursor-pointer">
+                  }} className="p-2 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 transition-colors cursor-pointer">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </Tooltip>
                 <Tooltip content="Exit drawing mode" delay={200}>
                   <button type="button" onClick={() => setDrawingMode(null)}
-                    className="p-2 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+                    className="p-2 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </Tooltip>
@@ -7569,10 +7567,10 @@ export default function DocEditor({
                           {/* Section break indicator */}
                           {sIdx > 0 && pIdx === 0 && (
                             <div data-doc-section-indicator className="w-full flex justify-center mb-3">
-                              <div className="flex items-center gap-2 text-[11px] text-gray-400 dark:text-gray-500 select-none" style={{ maxWidth: dims.pageWidthPx }}>
-                                <div className="flex-1 border-t border-dashed border-gray-300 dark:border-gray-700" />
+                              <div className="flex items-center gap-2 text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 select-none" style={{ maxWidth: dims.pageWidthPx }}>
+                                <div className="flex-1 border-t border-dashed border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20" />
                                 <span>Section break</span>
-                                <div className="flex-1 border-t border-dashed border-gray-300 dark:border-gray-700" />
+                                <div className="flex-1 border-t border-dashed border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20" />
                               </div>
                             </div>
                           )}
@@ -7586,13 +7584,13 @@ export default function DocEditor({
                               }}
                             >
                               {/* Ruler bar */}
-                              <div className="h-[22px] relative rounded-sm bg-white dark:bg-gray-900 border border-gray-200/60 dark:border-gray-700/40 overflow-hidden">
+                              <div className="h-[22px] relative rounded-sm bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 overflow-hidden">
                                 {/* Margin zone shading — gray areas for margins */}
                                 <div className="absolute top-0 bottom-0 bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-850" style={{ left: 0, width: dims.marginLeftPx }} />
                                 <div className="absolute top-0 bottom-0 bg-gradient-to-l from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-850" style={{ right: 0, width: dims.marginRightPx }} />
                                 {/* Margin boundary lines */}
-                                <div className="absolute top-0 bottom-0 w-px bg-gray-300/60 dark:bg-gray-600/40" style={{ left: dims.marginLeftPx }} />
-                                <div className="absolute top-0 bottom-0 w-px bg-gray-300/60 dark:bg-gray-600/40" style={{ right: dims.marginRightPx }} />
+                                <div className="absolute top-0 bottom-0 w-px bg-gray-300/60 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700/40" style={{ left: dims.marginLeftPx }} />
+                                <div className="absolute top-0 bottom-0 w-px bg-gray-300/60 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700/40" style={{ right: dims.marginRightPx }} />
                                 {/* Tick marks */}
                                 <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox={`0 0 ${dims.pageWidthPx} 22`}>
                                   {Array.from({ length: Math.ceil((dims.pageWidthPx - dims.marginLeftPx - dims.marginRightPx) / 96) + 1 }, (_, i) => {
@@ -7644,10 +7642,10 @@ export default function DocEditor({
                             className={[
                               "w-full rounded relative",
                               sInfo.pageSetup.pageColor === "#ffffff"
-                                ? "bg-white dark:bg-gray-950 midnight:bg-[#0b1220] purple:bg-[#170a27]"
+                                ? "bg-white dark:bg-gray-950 midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]"
                                 : "",
                               "shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.06)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)]",
-                              "border border-gray-200/50 dark:border-gray-800/50 midnight:border-cyan-500/10 purple:border-pink-500/10",
+                              "border border-gray-200/50 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/50 midnight:border-cyan-500/10 purple:border-pink-500/10",
                             ].join(" ")}
                             style={{
                               maxWidth: isFullscreen ? "min(1200px, calc(100vw - 64px))" : dims.pageWidthPx,
@@ -7701,9 +7699,9 @@ export default function DocEditor({
                                     <button key={tpl.id}
                                       onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleTemplateInsert(tpl); }}
-                                      className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title={tpl.label}>
-                                      <TplIcon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                                      <span className="text-gray-700 dark:text-gray-200">{tpl.label}</span>
+                                      className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/90 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer" title={tpl.label}>
+                                      <TplIcon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                                      <span className="text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">{tpl.label}</span>
                                     </button>
                                   );
                                 })}
@@ -7711,15 +7709,15 @@ export default function DocEditor({
                                   <button
                                     onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMoreOpen((v) => !v); }}
-                                    className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title="More templates">
-                                    <Package className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                    <span className="text-gray-700 dark:text-gray-200">More</span>
+                                    className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/90 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer" title="More templates">
+                                    <Package className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                                    <span className="text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">More</span>
                                   </button>
                                 )}
                               </div>
                             )}
                           </div>
-                          <div data-doc-page-label className="mt-2 text-[11px] text-gray-400 dark:text-gray-500 select-none">
+                          <div data-doc-page-label className="mt-2 text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 select-none">
                             Page {globalIdx + 1}
                           </div>
                         </div>
@@ -7733,7 +7731,7 @@ export default function DocEditor({
                 className={[
                   "mx-auto w-full rounded-sm shadow-sm border border-transparent py-4 sm:py-6 md:py-10 relative",
                   pageSetup.pageColor === "#ffffff"
-                    ? "bg-white dark:bg-gray-950 midnight:bg-[#0b1220] purple:bg-[#170a27]"
+                    ? "bg-white dark:bg-gray-950 midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]"
                     : "",
                 ].join(" ")}
                 style={{
@@ -7788,9 +7786,9 @@ export default function DocEditor({
                         <button key={tpl.id}
                           onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleTemplateInsert(tpl); }}
-                          className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title={tpl.label}>
-                          <TplIcon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                          <span className="text-gray-700 dark:text-gray-200">{tpl.label}</span>
+                          className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/90 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer" title={tpl.label}>
+                          <TplIcon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                          <span className="text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">{tpl.label}</span>
                         </button>
                       );
                     })}
@@ -7798,9 +7796,9 @@ export default function DocEditor({
                       <button
                         onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMoreOpen((v) => !v); }}
-                        className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer" title="More templates">
-                        <Package className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                        <span className="text-gray-700 dark:text-gray-200">More</span>
+                        className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/90 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer" title="More templates">
+                        <Package className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                        <span className="text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">More</span>
                       </button>
                     )}
                   </div>
@@ -7883,14 +7881,14 @@ export default function DocEditor({
           <div className="p-3 space-y-3">
             {/* Header with dismiss */}
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
                 Comments ({openComments.length})
               </span>
               <Tooltip content="Dismiss all" delay={300}>
                 <button
                   type="button"
                   onClick={() => { setShowFloatingComments(false); setFloatingCommentsDismissed(true); }}
-                  className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                  className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
                   aria-label="Dismiss all floating comments"
                 >
                   <X className="w-3.5 h-3.5 text-gray-400" />
@@ -7926,7 +7924,7 @@ export default function DocEditor({
             <button
               type="button"
               onClick={() => { setFloatingCommentsDismissed(false); setShowFloatingComments(true); }}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-800/40 transition-colors cursor-pointer shadow-sm border border-blue-200/50 dark:border-blue-700/50"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-100 dark:hover:bg-blue-800/40 transition-colors cursor-pointer shadow-sm border border-blue-200/50 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/50"
               aria-label="Show floating comments"
             >
               <MessageCircle className="w-3.5 h-3.5" />
@@ -7939,9 +7937,9 @@ export default function DocEditor({
       {/* ── Image Loading Overlay ── */}
       {imageLoading && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/20 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white/90 dark:bg-gray-900/90 midnight:bg-[#0d1526]/90 purple:bg-[#1f1035]/90 backdrop-blur-xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50">
+          <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white/90 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 backdrop-blur-xl shadow-2xl border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
             <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-            <span className="text-[13px] font-medium text-gray-700 dark:text-gray-200">Inserting image…</span>
+            <span className="text-[13px] font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Inserting image…</span>
           </div>
         </div>
       )}
@@ -7951,7 +7949,7 @@ export default function DocEditor({
         <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => { setShowImageUrlModal(false); setImageUrlInput(""); setImageUrlError(""); }}>
           <div
             data-doc-image-url-modal
-            className="w-full max-w-[480px] mx-4 rounded-2xl bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6"
+            className="w-full max-w-[480px] mx-4 rounded-2xl bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-2xl border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
@@ -7959,7 +7957,7 @@ export default function DocEditor({
               <button
                 type="button"
                 onClick={() => { setShowImageUrlModal(false); setImageUrlInput(""); setImageUrlError(""); }}
-                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
                 aria-label="Close"
               >
                 <X className="w-4 h-4 text-gray-500" />
@@ -7967,7 +7965,7 @@ export default function DocEditor({
             </div>
             <div className="flex flex-col gap-3">
               <div>
-                <label htmlFor="image-url-input" className="text-[12px] font-medium text-gray-500 dark:text-gray-400 mb-1 block">Paste an image URL</label>
+                <label htmlFor="image-url-input" className="text-[12px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1 block">Paste an image URL</label>
                 <input
                   id="image-url-input"
                   type="url"
@@ -7977,12 +7975,12 @@ export default function DocEditor({
                   placeholder="https://example.com/image.png"
                   className={[
                     "w-full px-3 py-2.5 rounded-xl text-[13px] outline-none transition-all",
-                    "bg-gray-50 dark:bg-gray-800 midnight:bg-[#0b1220] purple:bg-[#170a27]",
+                    "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]",
                     "border",
                     imageUrlError
                       ? "border-red-400 dark:border-red-500 focus:ring-2 focus:ring-red-200 dark:focus:ring-red-500/20"
                       : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/20",
-                    "text-gray-800 dark:text-gray-100 placeholder:text-gray-400",
+                    "text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400",
                   ].join(" ")}
                   autoFocus
                 />
@@ -7990,7 +7988,7 @@ export default function DocEditor({
               </div>
               {/* URL preview */}
               {imageUrlInput.trim() && !imageUrlError && (() => { try { new URL(imageUrlInput); return true; } catch { return false; } })() && (
-                <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 flex items-center justify-center min-h-[120px] max-h-[200px] overflow-hidden">
+                <div className="rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] p-3 flex items-center justify-center min-h-[120px] max-h-[200px] overflow-hidden">
                   <img
                     src={imageUrlInput.trim()}
                     alt="Preview"
@@ -8004,7 +8002,7 @@ export default function DocEditor({
                 <button
                   type="button"
                   onClick={() => { setShowImageUrlModal(false); setImageUrlInput(""); setImageUrlError(""); }}
-                  className="px-4 py-2 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -8026,9 +8024,9 @@ export default function DocEditor({
       {!isFullscreen && showImageSearchSidebar && (
         <div
           data-doc-image-search-panel
-          className="absolute right-0 top-0 bottom-0 z-[150] w-[340px] max-md:hidden border-l border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-xl shadow-[-4px_0_24px_-4px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden"
+          className="absolute right-0 top-0 bottom-0 z-[150] w-[340px] max-md:hidden border-l border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-[-4px_0_24px_-4px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden"
         >
-          <div className="flex items-center justify-between px-3 py-3 border-b border-gray-100 dark:border-gray-800">
+          <div className="flex items-center justify-between px-3 py-3 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
             <div className="flex items-center gap-2">
               <Search className="w-4 h-4 text-blue-500" />
               <span className="text-[13px] font-bold text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50">Search the web</span>
@@ -8037,7 +8035,7 @@ export default function DocEditor({
               <button
                 type="button"
                 onClick={() => setShowImageSearchSidebar(false)}
-                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
                 aria-label="Close image search panel"
               >
                 <PanelRightClose className="w-3.5 h-3.5 text-gray-500" />
@@ -8056,7 +8054,7 @@ export default function DocEditor({
                   }
                 }}
                 placeholder="Search Google Images…"
-                className="flex-1 px-3 py-2 rounded-xl text-[13px] bg-gray-50 dark:bg-gray-800 midnight:bg-[#0b1220] purple:bg-[#170a27] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-800 dark:text-gray-100 placeholder:text-gray-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/20"
+                className="flex-1 px-3 py-2 rounded-xl text-[13px] bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/20"
                 autoFocus
               />
               <button
@@ -8074,7 +8072,7 @@ export default function DocEditor({
             </div>
           </div>
           <div className="flex-1 px-3 py-2 overflow-y-auto">
-            <p className="text-[12px] text-gray-500 dark:text-gray-400 mb-3">Search for images, then paste the URL using &quot;By URL&quot; to insert.</p>
+            <p className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-3">Search for images, then paste the URL using &quot;By URL&quot; to insert.</p>
             <div className="space-y-2">
               <button
                 type="button"
@@ -8085,7 +8083,7 @@ export default function DocEditor({
                   setImageUrlInput("");
                   setImageUrlError("");
                 }}
-                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-[12px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
+                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-[12px] font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
               >
                 <Link className="w-3.5 h-3.5" />
                 Paste image URL
@@ -8093,7 +8091,7 @@ export default function DocEditor({
               <button
                 type="button"
                 onClick={() => { saveEditorSelection(); setShowImageSearchSidebar(false); imageInputRef.current?.click(); }}
-                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-[12px] font-medium text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-[12px] font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
               >
                 <Upload className="w-3.5 h-3.5" />
                 Upload from computer instead
@@ -8327,7 +8325,7 @@ export default function DocEditor({
         return (
           <div
             data-doc-image-toolbar
-            className="fixed z-[160] flex items-center gap-1 px-2 py-1.5 rounded-full bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-2xl shadow-2xl border border-indigo-200/60 dark:border-indigo-500/30 midnight:border-cyan-500/20 purple:border-pink-500/20"
+            className="fixed z-[160] flex items-center gap-1 px-2 py-1.5 rounded-full bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-2xl shadow-2xl border border-indigo-200/60 dark:border-indigo-500/30 midnight:border-cyan-500/20 purple:border-pink-500/20"
             style={{
               top: Math.max(4, top),
               left: Math.max(8, left),
@@ -8340,10 +8338,10 @@ export default function DocEditor({
               <button
                 type="button"
                 onClick={() => setShowImageOptions(true)}
-                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
                 aria-label="Image options"
               >
-                <SlidersHorizontal className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                <SlidersHorizontal className="w-4 h-4 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200" />
               </button>
             </Tooltip>
             <Tooltip content="Replace image" delay={200}>
@@ -8376,55 +8374,55 @@ export default function DocEditor({
                   };
                   input.click();
                 }}
-                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
                 aria-label="Replace image"
               >
-                <Replace className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                <Replace className="w-4 h-4 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200" />
               </button>
             </Tooltip>
-            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
+            <div className="w-px h-5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-0.5" />
             {/* Text wrapping & position quick buttons */}
             <Tooltip content="In line with text" delay={200}>
               <button
                 type="button"
                 onClick={() => selectedImage && applyImageWrapMode(selectedImage, "inline")}
-                className={`p-2 rounded-xl transition-colors cursor-pointer ${imageWrapMode === "inline" ? "bg-indigo-100 dark:bg-indigo-900/30" : "hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                className={`p-2 rounded-xl transition-colors cursor-pointer ${imageWrapMode === "inline" ? "bg-indigo-100 dark:bg-indigo-900/30" : "hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
                 aria-label="In line with text"
               >
-                <Minus className={`w-4 h-4 ${imageWrapMode === "inline" ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300"}`} />
+                <Minus className={`w-4 h-4 ${imageWrapMode === "inline" ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"}`} />
               </button>
             </Tooltip>
             <Tooltip content="Wrap text left" delay={200}>
               <button
                 type="button"
                 onClick={() => selectedImage && applyImageWrapMode(selectedImage, "wrapLeft")}
-                className={`p-2 rounded-xl transition-colors cursor-pointer ${imageWrapMode === "wrapLeft" ? "bg-indigo-100 dark:bg-indigo-900/30" : "hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                className={`p-2 rounded-xl transition-colors cursor-pointer ${imageWrapMode === "wrapLeft" ? "bg-indigo-100 dark:bg-indigo-900/30" : "hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
                 aria-label="Wrap text left"
               >
-                <AlignLeft className={`w-4 h-4 ${imageWrapMode === "wrapLeft" ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300"}`} />
+                <AlignLeft className={`w-4 h-4 ${imageWrapMode === "wrapLeft" ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"}`} />
               </button>
             </Tooltip>
             <Tooltip content="Wrap text right" delay={200}>
               <button
                 type="button"
                 onClick={() => selectedImage && applyImageWrapMode(selectedImage, "wrapRight")}
-                className={`p-2 rounded-xl transition-colors cursor-pointer ${imageWrapMode === "wrapRight" ? "bg-indigo-100 dark:bg-indigo-900/30" : "hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                className={`p-2 rounded-xl transition-colors cursor-pointer ${imageWrapMode === "wrapRight" ? "bg-indigo-100 dark:bg-indigo-900/30" : "hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
                 aria-label="Wrap text right"
               >
-                <AlignRight className={`w-4 h-4 ${imageWrapMode === "wrapRight" ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300"}`} />
+                <AlignRight className={`w-4 h-4 ${imageWrapMode === "wrapRight" ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"}`} />
               </button>
             </Tooltip>
             <Tooltip content="Break text (centered)" delay={200}>
               <button
                 type="button"
                 onClick={() => selectedImage && applyImageWrapMode(selectedImage, "breakText")}
-                className={`p-2 rounded-xl transition-colors cursor-pointer ${imageWrapMode === "breakText" ? "bg-indigo-100 dark:bg-indigo-900/30" : "hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                className={`p-2 rounded-xl transition-colors cursor-pointer ${imageWrapMode === "breakText" ? "bg-indigo-100 dark:bg-indigo-900/30" : "hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
                 aria-label="Break text"
               >
-                <AlignCenter className={`w-4 h-4 ${imageWrapMode === "breakText" ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300"}`} />
+                <AlignCenter className={`w-4 h-4 ${imageWrapMode === "breakText" ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"}`} />
               </button>
             </Tooltip>
-            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
+            <div className="w-px h-5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-0.5" />
             <Tooltip content={showCropOverlay ? "Exit crop" : "Crop image"} delay={200}>
               <button
                 type="button"
@@ -8455,10 +8453,10 @@ export default function DocEditor({
                     setShowCropOverlay(true);
                   }
                 }}
-                className={`p-2 rounded-xl transition-colors cursor-pointer ${showCropOverlay ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600" : "hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                className={`p-2 rounded-xl transition-colors cursor-pointer ${showCropOverlay ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600" : "hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
                 aria-label="Crop image"
               >
-                <Crop className={`w-4 h-4 ${showCropOverlay ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300"}`} />
+                <Crop className={`w-4 h-4 ${showCropOverlay ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"}`} />
               </button>
             </Tooltip>
             {/* Undo crop button — only visible when image has an active crop wrapper */}
@@ -8474,7 +8472,7 @@ export default function DocEditor({
                       showToast("Crop removed — image restored");
                     }
                   }}
-                  className="p-2 rounded-xl transition-colors cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20"
+                  className="p-2 rounded-xl transition-colors cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20"
                   aria-label="Remove crop"
                 >
                   <Undo2 className="w-4 h-4 text-orange-500 dark:text-orange-400" />
@@ -8493,10 +8491,10 @@ export default function DocEditor({
                     setSelectedImageRect(selectedImage.getBoundingClientRect());
                   }
                 }}
-                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
                 aria-label="Rotate 90 degrees"
               >
-                <RotateCcw className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                <RotateCcw className="w-4 h-4 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200" />
               </button>
             </Tooltip>
             <Tooltip content="Reset image" delay={200}>
@@ -8544,13 +8542,13 @@ export default function DocEditor({
                     showToast("Image reset to original");
                   }
                 }}
-                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
                 aria-label="Reset image"
               >
-                <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200" />
               </button>
             </Tooltip>
-            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
+            <div className="w-px h-5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-0.5" />
             <Tooltip content="Delete image" delay={200}>
               <button
                 type="button"
@@ -8570,7 +8568,7 @@ export default function DocEditor({
                     emitChange();
                   }
                 }}
-                className="p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                className="p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 transition-colors cursor-pointer"
                 aria-label="Delete image"
               >
                 <Trash2 className="w-4 h-4 text-red-500" />
@@ -8883,7 +8881,7 @@ export default function DocEditor({
               <button
                 type="button"
                 onClick={() => setShowCropOverlay(false)}
-                className="px-4 py-1.5 rounded-lg text-[11px] font-semibold bg-white/95 dark:bg-gray-800/95 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer shadow-lg border border-gray-200 dark:border-gray-700 backdrop-blur-md"
+                className="px-4 py-1.5 rounded-lg text-[11px] font-semibold bg-white/95 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 backdrop-blur-md"
               >
                 Cancel
               </button>
@@ -8913,12 +8911,12 @@ export default function DocEditor({
       {showImageOptions && selectedImage && (
         <div
           data-doc-image-options-panel
-          className="absolute right-0 top-0 bottom-0 z-[155] w-[300px] max-md:hidden border-l border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-xl shadow-[-4px_0_24px_-4px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden"
+          className="absolute right-0 top-0 bottom-0 z-[155] w-[300px] max-md:hidden border-l border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-[-4px_0_24px_-4px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden"
           onClick={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-3 py-3 border-b border-gray-100 dark:border-gray-800">
+          <div className="flex items-center justify-between px-3 py-3 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="w-4 h-4 text-blue-500" />
               <span className="text-[13px] font-bold text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50">Image options</span>
@@ -8926,7 +8924,7 @@ export default function DocEditor({
             <button
               type="button"
               onClick={() => setShowImageOptions(false)}
-              className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
               aria-label="Close image options"
             >
               <X className="w-3.5 h-3.5 text-gray-500" />
@@ -8934,7 +8932,7 @@ export default function DocEditor({
           </div>
           <div className="flex-1 overflow-y-auto px-3 py-3 space-y-5">
             {/* Thumbnail preview — shows live CSS filter feedback */}
-            <div className="relative rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <div className="relative rounded-xl overflow-hidden bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <img
                 src={selectedImage.src}
                 alt="Preview"
@@ -8948,10 +8946,10 @@ export default function DocEditor({
             </div>
             {/* Size & Rotation */}
             <div>
-              <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">Size &amp; Rotation</h4>
+              <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mb-2">Size &amp; Rotation</h4>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[11px] text-gray-500 dark:text-gray-400">Width</label>
+                  <label className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Width</label>
                   <input
                     type="number"
                     defaultValue={selectedImage.offsetWidth || selectedImage.naturalWidth}
@@ -8962,11 +8960,11 @@ export default function DocEditor({
                         emitChange();
                       }
                     }}
-                    className="w-full mt-0.5 px-2 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none"
+                    className="w-full mt-0.5 px-2 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-gray-500 dark:text-gray-400">Height</label>
+                  <label className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Height</label>
                   <input
                     type="number"
                     defaultValue={selectedImage.offsetHeight || selectedImage.naturalHeight}
@@ -8977,13 +8975,13 @@ export default function DocEditor({
                         emitChange();
                       }
                     }}
-                    className="w-full mt-0.5 px-2 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none"
+                    className="w-full mt-0.5 px-2 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 outline-none"
                   />
                 </div>
               </div>
               {/* Rotation input */}
               <div className="mt-2">
-                <label className="text-[11px] text-gray-500 dark:text-gray-400">Rotation</label>
+                <label className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Rotation</label>
                 <div className="flex items-center gap-2 mt-0.5">
                   <input
                     type="number"
@@ -9000,7 +8998,7 @@ export default function DocEditor({
                         setSelectedImageRect(selectedImage.getBoundingClientRect());
                       }
                     }}
-                    className="flex-1 px-2 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none"
+                    className="flex-1 px-2 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 outline-none"
                   />
                   <span className="text-[11px] text-gray-400">deg</span>
                 </div>
@@ -9009,7 +9007,7 @@ export default function DocEditor({
 
             {/* Text Wrapping */}
             <div>
-              <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">Text wrapping</h4>
+              <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mb-2">Text wrapping</h4>
               <div className="flex gap-1">
                 {([
                   { mode: "inline" as const, label: "Inline", icon: Minus, desc: "In line with text" },
@@ -9024,7 +9022,7 @@ export default function DocEditor({
                       className={`flex-1 flex flex-col items-center gap-1 px-2 py-2 rounded-lg text-[10px] font-medium transition-colors cursor-pointer ${
                         imageWrapMode === mode
                           ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 ring-1 ring-indigo-300 dark:ring-indigo-600"
-                          : "text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                       }`}
                       aria-label={desc}
                     >
@@ -9038,12 +9036,12 @@ export default function DocEditor({
 
             {/* Adjustments */}
             <div>
-              <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Adjustments</h4>
+              <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mb-3">Adjustments</h4>
               <div className="space-y-3">
                 {/* Opacity */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-[11px] text-gray-500 dark:text-gray-400">Opacity</label>
+                    <label className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Opacity</label>
                     <span className="text-[11px] text-gray-400 tabular-nums">{imageOptions.opacity}%</span>
                   </div>
                   <input
@@ -9059,13 +9057,13 @@ export default function DocEditor({
                         emitChange();
                       }
                     }}
-                    className="w-full h-1.5 rounded-full appearance-none bg-gray-200 dark:bg-gray-700 accent-blue-500 cursor-pointer"
+                    className="w-full h-1.5 rounded-full appearance-none bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] accent-blue-500 cursor-pointer"
                   />
                 </div>
                 {/* Brightness */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-[11px] text-gray-500 dark:text-gray-400">Brightness</label>
+                    <label className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Brightness</label>
                     <span className="text-[11px] text-gray-400 tabular-nums">{imageOptions.brightness}%</span>
                   </div>
                   <input
@@ -9082,13 +9080,13 @@ export default function DocEditor({
                         emitChange();
                       }
                     }}
-                    className="w-full h-1.5 rounded-full appearance-none bg-gray-200 dark:bg-gray-700 accent-blue-500 cursor-pointer"
+                    className="w-full h-1.5 rounded-full appearance-none bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] accent-blue-500 cursor-pointer"
                   />
                 </div>
                 {/* Contrast */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-[11px] text-gray-500 dark:text-gray-400">Contrast</label>
+                    <label className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Contrast</label>
                     <span className="text-[11px] text-gray-400 tabular-nums">{imageOptions.contrast}%</span>
                   </div>
                   <input
@@ -9105,7 +9103,7 @@ export default function DocEditor({
                         emitChange();
                       }
                     }}
-                    className="w-full h-1.5 rounded-full appearance-none bg-gray-200 dark:bg-gray-700 accent-blue-500 cursor-pointer"
+                    className="w-full h-1.5 rounded-full appearance-none bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] accent-blue-500 cursor-pointer"
                   />
                 </div>
               </div>
@@ -9125,7 +9123,7 @@ export default function DocEditor({
                   emitChange();
                 }
               }}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[12px] font-medium text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[12px] font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               Reset all adjustments
@@ -9138,16 +9136,16 @@ export default function DocEditor({
       {!isFullscreen && showComments && (
         <div
           data-doc-comments-panel
-          className="absolute right-0 top-0 bottom-0 z-[150] w-[340px] max-md:hidden border-l border-gray-200/80 dark:border-gray-700/80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-[-4px_0_24px_-4px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden"
+          className="absolute right-0 top-0 bottom-0 z-[150] w-[340px] max-md:hidden border-l border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-[-4px_0_24px_-4px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden"
         >
           {/* Header with tabs */}
-          <div className="border-b border-gray-100 dark:border-gray-800">
+          <div className="border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
             <div className="flex items-center justify-between px-3 pt-2.5 pb-0">
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4 text-blue-500" />
-                <span className="text-[13px] font-bold text-gray-700 dark:text-gray-200">Comments</span>
+                <span className="text-[13px] font-bold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Comments</span>
                 {openComments.length > 0 && (
-                  <span className="text-[10px] font-semibold bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 px-1.5 py-0.5 rounded-full">
+                  <span className="text-[10px] font-semibold bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 px-1.5 py-0.5 rounded-full">
                     {openComments.length}
                   </span>
                 )}
@@ -9156,7 +9154,7 @@ export default function DocEditor({
                 <button
                   type="button"
                   onClick={() => { setShowComments(false); setSidebarManuallyDismissed(true); }}
-                  className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                  className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
                   aria-label="Close comments panel"
                 >
                   <PanelRightClose className="w-3.5 h-3.5 text-gray-500" />
@@ -9175,8 +9173,8 @@ export default function DocEditor({
                   className={[
                     "flex-1 text-center text-[12px] font-medium pb-2 border-b-2 transition-all duration-200 cursor-pointer",
                     commentTab === tab
-                      ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                      : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300",
+                      ? "border-blue-500 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                      : "border-transparent text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200",
                   ].join(" ")}
                 >
                   {tab === "for-you" ? "For you" : "All comments"}
@@ -9191,8 +9189,8 @@ export default function DocEditor({
           </div>
 
           {/* Filter controls */}
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-50 dark:border-gray-800/50">
-            <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800/60 rounded-lg p-0.5">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-50 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/50">
+            <div className="flex items-center gap-1 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 rounded-lg p-0.5">
               {(["open", "resolved", "rejected", "all"] as const).map((f) => (
                 <button
                   key={f}
@@ -9201,8 +9199,8 @@ export default function DocEditor({
                   className={[
                     "px-2 py-1 text-[10px] font-medium rounded-md transition-all duration-150 cursor-pointer",
                     commentFilter === f
-                      ? "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300",
+                      ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 shadow-sm"
+                      : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200",
                   ].join(" ")}
                 >
                   {f === "open" ? "Open" : f === "resolved" ? "Resolved" : f === "rejected" ? "Rejected" : "All"}
@@ -9224,15 +9222,15 @@ export default function DocEditor({
           <div ref={sidebarFeedRef} className="flex-1 overflow-y-auto p-2 space-y-2">
             {filteredComments.length === 0 ? (
               <div className="text-center py-8 px-4">
-                <MessageCircle className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+                <MessageCircle className="w-8 h-8 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 mx-auto mb-2" />
                 {commentTab === "for-you" ? (
                   <>
-                    <p className="text-[12px] text-gray-500 dark:text-gray-400 font-medium">&ldquo;For you&rdquo; will list comments that need your attention.</p>
-                    <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">Start a discussion by selecting text and adding a comment.</p>
+                    <p className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium">&ldquo;For you&rdquo; will list comments that need your attention.</p>
+                    <p className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-1">Start a discussion by selecting text and adding a comment.</p>
                   </>
                 ) : commentFilter !== "open" ? (
                   <>
-                    <p className="text-[12px] text-gray-500 dark:text-gray-400 font-medium">No matching results</p>
+                    <p className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium">No matching results</p>
                     <button
                       type="button"
                       onClick={() => setCommentFilter("open")}
@@ -9243,8 +9241,8 @@ export default function DocEditor({
                   </>
                 ) : (
                   <>
-                    <p className="text-[12px] text-gray-500 dark:text-gray-400 font-medium">No comments yet</p>
-                    <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">Select text and click the comment button to add one</p>
+                    <p className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium">No comments yet</p>
+                    <p className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-1">Select text and click the comment button to add one</p>
                   </>
                 )}
               </div>
@@ -9270,7 +9268,7 @@ export default function DocEditor({
           </div>
 
           {/* Add comment button at bottom of panel */}
-          <div className="border-t border-gray-100 dark:border-gray-800 px-3 py-2.5">
+          <div className="border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 px-3 py-2.5">
             <button
               type="button"
               onMouseDown={(e) => e.preventDefault()}
@@ -9322,15 +9320,15 @@ export default function DocEditor({
         return (
         <div
           data-doc-comment-popover
-          className="absolute z-[200] w-[300px] rounded-2xl border border-gray-200/80 dark:border-gray-700/80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl"
+          className="absolute z-[200] w-[300px] rounded-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-2xl"
           style={{ left: clampedLeft, top: clampedTop }}
         >
           <div className="p-3">
             <div className="flex items-center gap-2 mb-2">
               <CommentAvatar author={commentAuthor} size={28} />
-              <span className="text-[12px] font-semibold text-gray-700 dark:text-gray-200">{commentAuthor.name}</span>
+              <span className="text-[12px] font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">{commentAuthor.name}</span>
             </div>
-            <div className="text-[11px] text-gray-400 dark:text-gray-500 mb-2 px-1 py-0.5 bg-yellow-50/60 dark:bg-yellow-900/20 rounded border-l-2 border-yellow-400 dark:border-yellow-600 line-clamp-2">
+            <div className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mb-2 px-1 py-0.5 bg-yellow-50/60 dark:bg-yellow-900/20 rounded border-l-2 border-yellow-400 dark:border-yellow-600 line-clamp-2">
               &ldquo;{commentPopover.selectedText}&rdquo;
             </div>
             <div className="relative">
@@ -9339,7 +9337,7 @@ export default function DocEditor({
                 autoFocus
                 value={commentText}
                 placeholder="Add a comment... (use @ to mention)"
-                className="w-full text-[12px] text-gray-700 dark:text-gray-200 bg-gray-50/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 resize-none outline-none focus:ring-2 focus:ring-blue-400/40 placeholder-gray-400 dark:placeholder-gray-500"
+                className="w-full text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl px-3 py-2 resize-none outline-none focus:ring-2 focus:ring-blue-400/40 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400"
                 rows={3}
                 onKeyDown={(e) => {
                   popoverMention.handleKeyDown(e);
@@ -9370,7 +9368,7 @@ export default function DocEditor({
               <button
                 type="button"
                 onClick={() => { setCommentPopover({ show: false, x: 0, y: 0, selectedText: "", range: null }); setCommentText(""); }}
-                className="text-[11px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="text-[11px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -9395,19 +9393,19 @@ export default function DocEditor({
       {!isFullscreen && (showComments || (showFloatingComments && openComments.length > 0)) && (
         <div
           data-doc-comments-mobile-sheet
-          className="md:hidden fixed inset-x-0 bottom-0 z-[200] max-h-[70vh] rounded-t-2xl border-t border-gray-200/80 dark:border-gray-700/80 bg-white/98 dark:bg-gray-900/98 backdrop-blur-xl shadow-[0_-8px_32px_-4px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden"
+          className="md:hidden fixed inset-x-0 bottom-0 z-[200] max-h-[70vh] rounded-t-2xl border-t border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 bg-white/98 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/98 backdrop-blur-xl shadow-[0_-8px_32px_-4px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden"
         >
           {/* Drag handle */}
           <div className="flex justify-center pt-2 pb-1">
-            <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+            <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700" />
           </div>
           {/* Header */}
           <div className="flex items-center justify-between px-4 pb-2">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-4 h-4 text-blue-500" />
-              <span className="text-[13px] font-bold text-gray-700 dark:text-gray-200">Comments</span>
+              <span className="text-[13px] font-bold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Comments</span>
               {openComments.length > 0 && (
-                <span className="text-[10px] font-semibold bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 px-1.5 py-0.5 rounded-full">
+                <span className="text-[10px] font-semibold bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 px-1.5 py-0.5 rounded-full">
                   {openComments.length}
                 </span>
               )}
@@ -9415,7 +9413,7 @@ export default function DocEditor({
             <button
               type="button"
               onClick={() => { setShowComments(false); setSidebarManuallyDismissed(true); }}
-              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
               aria-label="Close comments"
             >
               <X className="w-4 h-4 text-gray-500" />
@@ -9432,7 +9430,7 @@ export default function DocEditor({
                   "px-3 py-1 text-[11px] font-medium rounded-full transition-all duration-150 cursor-pointer whitespace-nowrap",
                   commentFilter === f
                     ? "bg-blue-500 text-white shadow-sm"
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400",
+                    : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
                 ].join(" ")}
               >
                 {f === "open" ? "Open" : f === "resolved" ? "Resolved" : f === "rejected" ? "Rejected" : "All"}
@@ -9443,8 +9441,8 @@ export default function DocEditor({
           <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-2">
             {filteredComments.length === 0 ? (
               <div className="text-center py-6 px-4">
-                <MessageCircle className="w-7 h-7 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-                <p className="text-[12px] text-gray-500 dark:text-gray-400">No comments yet</p>
+                <MessageCircle className="w-7 h-7 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 mx-auto mb-2" />
+                <p className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">No comments yet</p>
               </div>
             ) : (
               filteredComments.map((comment) => (
@@ -9562,10 +9560,10 @@ export default function DocEditor({
               <AlertTriangle className="w-6 h-6 text-red-500 shrink-0" />
               <div>
                 <p className="text-[13px] font-medium text-red-800 dark:text-red-200">Are you sure you want to move this document to the bin?</p>
-                <p className="text-[11px] text-red-600 dark:text-red-400 mt-1">&ldquo;{docTitle}&rdquo;</p>
+                <p className="text-[11px] text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mt-1">&ldquo;{docTitle}&rdquo;</p>
               </div>
             </div>
-            <p className="text-[12px] text-gray-500 dark:text-gray-400">You can restore it from the bin within 30 days. After that, it will be permanently deleted.</p>
+            <p className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">You can restore it from the bin within 30 days. After that, it will be permanently deleted.</p>
             <div className="flex justify-end gap-2">
               <EditorDialogButton variant="secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</EditorDialogButton>
               <button onClick={() => {
@@ -9593,13 +9591,13 @@ export default function DocEditor({
           const [versionName, setVersionNameLocal] = useState(`Version ${new Date().toLocaleDateString()}`);
           return (
             <div className="space-y-4">
-              <p className="text-[12px] text-gray-500 dark:text-gray-400">Give this version a name so you can find it later in version history.</p>
+              <p className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Give this version a name so you can find it later in version history.</p>
               <input
                 type="text"
                 value={versionName}
                 onChange={e => setVersionNameLocal(e.target.value)}
                 autoFocus
-                className="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-[13px] text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-[13px] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 placeholder="e.g. Final draft, Before review..."
               />
               <div className="flex justify-end gap-2">
@@ -9643,22 +9641,22 @@ export default function DocEditor({
           return (
             <EditorDialog title="Add to Folder" onClose={() => setShowAddToFolderDialog(false)}>
               <div className="space-y-4">
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800">
-                  <FolderInput className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 border border-blue-200 dark:border-blue-800">
+                  <FolderInput className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 shrink-0" />
                   <div>
-                    <p className="text-[13px] font-medium text-blue-800 dark:text-blue-200">{docTitle}</p>
-                    <p className="text-[11px] text-blue-600 dark:text-blue-400">Currently in: <span className="font-semibold">Documents</span></p>
+                    <p className="text-[13px] font-medium text-blue-800 dark:text-blue-200 midnight:text-cyan-200 purple:text-pink-200">{docTitle}</p>
+                    <p className="text-[11px] text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">Currently in: <span className="font-semibold">Documents</span></p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-[12px] font-medium text-gray-700 dark:text-gray-300 mb-2">Move to:</p>
+                  <p className="text-[12px] font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2">Move to:</p>
                   <div className="space-y-1.5">
                     {folders.map(folder => (
                       <button key={folder} onClick={() => setSelected(folder)}
                         className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left text-[13px] transition-colors cursor-pointer ${
                           selected === folder
-                            ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold border border-blue-300 dark:border-blue-700"
-                            : "text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-transparent"
+                            ? "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 font-semibold border border-blue-300 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500"
+                            : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 border border-transparent"
                         }`}>
                         <FolderInput className={`w-4 h-4 ${selected === folder ? "text-blue-500" : "text-gray-400"}`} />
                         {folder}
@@ -9682,7 +9680,7 @@ export default function DocEditor({
       {dialog === "language" && (
         <EditorDialog title="Document Language" onClose={() => setDialog(null)}>
           <div className="space-y-4">
-            <p className="text-[12px] text-gray-500 dark:text-gray-400">Set the language for document content. The spellchecker and text tools will use the selected language.</p>
+            <p className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Set the language for document content. The spellchecker and text tools will use the selected language.</p>
             <div className="grid grid-cols-2 gap-1.5 max-h-[240px] overflow-y-auto">
               {filteredLanguages.map(l => (
                 <button key={l.tag} onClick={() => {
@@ -9702,8 +9700,8 @@ export default function DocEditor({
                   }}
                   className={`px-3 py-2 rounded-lg text-[12px] text-left transition-colors cursor-pointer ${
                     language === l.tag
-                      ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold border border-blue-300 dark:border-blue-700"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent"
+                      ? "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 font-semibold border border-blue-300 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500"
+                      : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border border-transparent"
                   }`}>
                   {language === l.tag && <Check className="w-3 h-3 inline mr-1.5" />}
                   {l.label}
@@ -9718,7 +9716,7 @@ export default function DocEditor({
       {dialog === "findReplace" && (
         <div
           data-doc-find-replace-panel
-          className="absolute right-3 top-[92px] z-[150] w-[300px] rounded-2xl border border-gray-200/80 dark:border-gray-700/80 midnight:border-gray-600/60 purple:border-purple-700/60 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1829]/95 purple:bg-[#1a0d2e]/95 backdrop-blur-md shadow-xl p-3"
+          className="absolute right-3 top-[92px] z-[150] w-[300px] rounded-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 midnight:border-gray-600/60 purple:border-purple-700/60 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0d1829]/95 purple:bg-[#1a0d2e]/95 backdrop-blur-md shadow-xl p-3"
         >
           <div className="flex items-center justify-between mb-3">
             <span className="text-[12px] font-bold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
@@ -9730,7 +9728,7 @@ export default function DocEditor({
                 setFindMatchCount(null);
                 setDialog(null);
               }}
-              className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-500 transition-colors"
+              className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 transition-colors"
               aria-label="Close find and replace"
             >
               <X className="w-3.5 h-3.5" />
@@ -9750,11 +9748,11 @@ export default function DocEditor({
                   }
                 }}
                 placeholder="Find…"
-                className="w-full px-3 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 midnight:bg-[#111d30] purple:bg-[#1f0f35] border border-gray-200 dark:border-gray-700 midnight:border-gray-600 purple:border-purple-700 text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 outline-none focus:ring-1 focus:ring-blue-400"
+                className="w-full px-3 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#111d30] purple:bg-[#1f0f35] border border-gray-200 dark:border-gray-700 midnight:border-gray-600 purple:border-purple-700 text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 outline-none focus:ring-1 focus:ring-blue-400"
                 autoFocus
               />
               {findMatchCount && (
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 dark:text-gray-500 pointer-events-none">
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 pointer-events-none">
                   {findMatchCount.current}/{findMatchCount.total}
                 </span>
               )}
@@ -9770,7 +9768,7 @@ export default function DocEditor({
           </div>
 
           {/* Divider */}
-          <div className="my-2.5 border-t border-gray-200/60 dark:border-gray-700/60 midnight:border-gray-600/40 purple:border-purple-700/40" />
+          <div className="my-2.5 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-gray-600/40 purple:border-purple-700/40" />
 
           {/* Replace section */}
           <div data-doc-replace-section className="space-y-1.5">
@@ -9784,7 +9782,7 @@ export default function DocEditor({
                 }
               }}
               placeholder="Replace with…"
-              className="w-full px-3 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-gray-800 midnight:bg-[#111d30] purple:bg-[#1f0f35] border border-gray-200 dark:border-gray-700 midnight:border-gray-600 purple:border-purple-700 text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 outline-none focus:ring-1 focus:ring-blue-400"
+              className="w-full px-3 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#111d30] purple:bg-[#1f0f35] border border-gray-200 dark:border-gray-700 midnight:border-gray-600 purple:border-purple-700 text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 outline-none focus:ring-1 focus:ring-blue-400"
             />
             <div className="flex items-center gap-1.5">
               <DialogButton
@@ -9869,14 +9867,14 @@ export default function DocEditor({
 
       {dialog === "details" && (
         <EditorDialog title="Document Details" onClose={() => setDialog(null)}>
-          <div className="space-y-3 text-[13px] text-gray-600 dark:text-gray-400">
-            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Title</span><span>{docTitle}</span></div>
-            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Language</span><span>{language}</span></div>
-            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Characters</span><span>{getDocumentText().length.toLocaleString()}</span></div>
-            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Words</span><span>{getDocumentText().split(/\s+/).filter(Boolean).length.toLocaleString()}</span></div>
-            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Owner</span><span>You</span></div>
-            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Last modified</span><span>{new Date().toLocaleDateString()}</span></div>
-            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200">Created</span><span>{new Date().toLocaleDateString()}</span></div>
+          <div className="space-y-3 text-[13px] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Title</span><span>{docTitle}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Language</span><span>{language}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Characters</span><span>{getDocumentText().length.toLocaleString()}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Words</span><span>{getDocumentText().split(/\s+/).filter(Boolean).length.toLocaleString()}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Owner</span><span>You</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Last modified</span><span>{new Date().toLocaleDateString()}</span></div>
+            <div className="flex justify-between"><span className="font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Created</span><span>{new Date().toLocaleDateString()}</span></div>
           </div>
         </EditorDialog>
       )}
@@ -9900,12 +9898,12 @@ export default function DocEditor({
                 {items.map((item) => {
                   const enabled = localPerms[item.key as keyof typeof localPerms];
                   return (
-                    <div key={item.key} className={`flex items-start gap-3 p-3 rounded-xl border transition-colors ${enabled ? "border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-900/10" : "border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700"}`}>
+                    <div key={item.key} className={`flex items-start gap-3 p-3 rounded-xl border transition-colors ${enabled ? "border-blue-300 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500 bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10" : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-300 dark:hover:border-blue-700"}`}>
                       <div className="flex-1">
-                        <p className={`text-[13px] font-medium ${enabled ? "text-blue-800 dark:text-blue-200" : "text-gray-800 dark:text-gray-200"}`}>{item.label}</p>
-                        <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{item.desc}</p>
+                        <p className={`text-[13px] font-medium ${enabled ? "text-blue-800 dark:text-blue-200 midnight:text-cyan-200 purple:text-pink-200" : "text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"}`}>{item.label}</p>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">{item.desc}</p>
                       </div>
-                      <button className={`mt-0.5 w-9 h-5 rounded-full transition-colors cursor-pointer ${enabled ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"}`}
+                      <button className={`mt-0.5 w-9 h-5 rounded-full transition-colors cursor-pointer ${enabled ? "bg-blue-600" : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700"}`}
                         onClick={() => toggle(item.key)}>
                         <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${enabled ? "translate-x-4.5" : "translate-x-0.5"}`} />
                       </button>
@@ -9933,9 +9931,9 @@ export default function DocEditor({
             <p className="text-[12px] text-gray-400">Saved versions of this document</p>
             {versions.length === 0 ? (
               <>
-                <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                  <p className="text-[13px] font-medium text-blue-700 dark:text-blue-300">Current version</p>
-                  <p className="text-[11px] text-blue-500 dark:text-blue-400 mt-0.5">{new Date().toLocaleString()}</p>
+                <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 border border-blue-200 dark:border-blue-800">
+                  <p className="text-[13px] font-medium text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">Current version</p>
+                  <p className="text-[11px] text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 mt-0.5">{new Date().toLocaleString()}</p>
                 </div>
                 <p className="text-[12px] text-gray-400 text-center py-4">
                   No previous versions saved yet. Versions are saved automatically when you share or publish,
@@ -9944,15 +9942,15 @@ export default function DocEditor({
               </>
             ) : (
               <div className="space-y-2">
-                <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                  <p className="text-[13px] font-medium text-blue-700 dark:text-blue-300">Current version</p>
-                  <p className="text-[11px] text-blue-500 dark:text-blue-400 mt-0.5">{new Date().toLocaleString()}</p>
+                <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 border border-blue-200 dark:border-blue-800">
+                  <p className="text-[13px] font-medium text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">Current version</p>
+                  <p className="text-[11px] text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 mt-0.5">{new Date().toLocaleString()}</p>
                 </div>
                 <div className="max-h-[240px] overflow-auto scrollbar-thin space-y-1">
                   {versions.map((v) => (
                     <button
                       key={v.ts}
-                      className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer group"
+                      className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer group"
                       onClick={() => {
                         updateValue({ title: v.title, html: v.html, language: v.language });
                         showToast("Version restored");
@@ -9962,22 +9960,22 @@ export default function DocEditor({
                       <div className="flex items-center gap-2">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-[12px] font-semibold text-gray-700 dark:text-gray-200">
+                            <span className="text-[12px] font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
                               {formatTimeAgo(new Date(v.ts).toISOString())}
                             </span>
                             <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
                               v.type === "auto"
-                                ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
-                                : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+                                ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                                : "bg-gray-100 text-gray-500 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
                             }`}>
                               {v.type === "auto" ? "Auto" : "Manual"}
                             </span>
                           </div>
                           {v.label && (
-                            <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{v.label}</div>
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">{v.label}</div>
                           )}
                         </div>
-                        <span className="text-[10px] text-blue-500 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                        <span className="text-[10px] text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                           Restore
                         </span>
                       </div>
@@ -10145,16 +10143,16 @@ export default function DocEditor({
       {/* Suggestion accept/reject popup */}
       {activeSuggestionId && suggestionPopupPos && (
         <div
-          className="absolute z-[200] flex items-center gap-1 px-1.5 py-1 rounded-lg bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-700"
+          className="absolute z-[200] flex items-center gap-1 px-1.5 py-1 rounded-lg bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
           style={{ top: suggestionPopupPos.top, left: suggestionPopupPos.left }}
         >
           <button type="button"
             onClick={() => { acceptSuggestion(activeSuggestionId); setActiveSuggestionId(null); setSuggestionPopupPos(null); }}
-            className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 transition-colors cursor-pointer"
+            className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 dark:hover:bg-green-900/50 transition-colors cursor-pointer"
           >Accept</button>
           <button type="button"
             onClick={() => { rejectSuggestion(activeSuggestionId); setActiveSuggestionId(null); setSuggestionPopupPos(null); }}
-            className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors cursor-pointer"
+            className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 dark:text-red-400 midnight:text-red-400 purple:text-red-400 dark:hover:bg-red-900/50 transition-colors cursor-pointer"
           >Reject</button>
         </div>
       )}
@@ -10178,7 +10176,7 @@ export default function DocEditor({
 }
 
 function ToolbarDivider() {
-  return <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 midnight:bg-cyan-500/15 purple:bg-pink-500/15 mx-0.5" />;
+  return <div className="w-px h-5 bg-gray-300 dark:bg-[#2a2d35] midnight:bg-cyan-500/15 purple:bg-pink-500/15 mx-0.5" />;
 }
 
 function ToolbarDropdown({
@@ -10226,7 +10224,7 @@ function ToolbarDropdown({
           onClick={onToggle}
           disabled={disabled}
           aria-label={title}
-          className="h-7 inline-flex items-center gap-1 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-[11px] font-medium text-gray-600 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"
+          className="h-7 inline-flex items-center gap-1 px-2 rounded hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-[11px] font-medium text-gray-600 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"
         >
           {Icon && <Icon className="w-3.5 h-3.5" />}
           {label && <span className="truncate max-w-[80px]">{label}</span>}
@@ -10234,7 +10232,7 @@ function ToolbarDropdown({
         </button>
       </Tooltip>
       {isOpen && (
-        <div className={`absolute z-[120] top-full mt-1 ${align === "right" ? "right-0" : "left-0"} ${width} rounded-xl border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 max-h-[80vh] overflow-y-auto overflow-x-hidden`}>
+        <div className={`absolute z-[120] top-full mt-1 ${align === "right" ? "right-0" : "left-0"} ${width} rounded-xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 max-h-[80vh] overflow-y-auto overflow-x-hidden`}>
           {children}
         </div>
       )}
@@ -10256,13 +10254,13 @@ function DocDialog({
       data-doc-dialog
       className="absolute inset-0 z-[210] flex items-center justify-center bg-black/25 backdrop-blur-[2px] p-4"
     >
-      <div className="w-full max-w-[520px] rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl p-4">
+      <div className="w-full max-w-[520px] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl p-4">
         <div className="flex items-center justify-between mb-3">
-          <div className="text-[13px] font-bold text-gray-800 dark:text-gray-100">
+          <div className="text-[13px] font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
             {title}
           </div>
           <button
-            className="px-2 py-1 rounded-lg text-[12px] text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="px-2 py-1 rounded-lg text-[12px] text-gray-500 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
             onClick={onClose}
           >
             Close
@@ -10284,7 +10282,7 @@ function DialogButton({
   return (
     <button
       onClick={onClick}
-      className="px-3 py-2 rounded-xl text-[12px] font-semibold border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+      className="px-3 py-2 rounded-xl text-[12px] font-semibold border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
     >
       {children}
     </button>
@@ -10337,15 +10335,15 @@ function PageSetupDialog({
 
   return (
     <div data-doc-dialog className="absolute inset-0 z-[210] flex items-center justify-center bg-black/25 backdrop-blur-[2px] p-4">
-      <div className="w-full max-w-[560px] rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl">
+      <div className="w-full max-w-[560px] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-1">
-          <div className="text-[16px] font-bold text-gray-800 dark:text-gray-100">Page setup</div>
-          <button className="px-2 py-1 rounded-lg text-[13px] text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer" onClick={onClose}>Close</button>
+          <div className="text-[16px] font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Page setup</div>
+          <button className="px-2 py-1 rounded-lg text-[13px] text-gray-500 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 cursor-pointer" onClick={onClose}>Close</button>
         </div>
 
         {/* Tab bar */}
-        <div className="flex gap-0 px-6 mt-1 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex gap-0 px-6 mt-1 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           {(["pages", "pageless"] as const).map((t) => (
             <button
               key={t}
@@ -10353,8 +10351,8 @@ function PageSetupDialog({
               className={[
                 "px-4 py-2.5 text-[13px] font-semibold capitalize cursor-pointer transition-colors",
                 tab === t
-                  ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300",
+                  ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 border-b-2 border-blue-600 dark:border-blue-400"
+                  : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200",
               ].join(" ")}
             >
               {t}
@@ -10379,9 +10377,9 @@ function PageSetupDialog({
             <>
               {/* Orientation */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
-                  <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
-                    <RotateCw className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2 flex items-center gap-1.5">
+                  <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+                    <RotateCw className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                   </div>
                   <span>Orientation</span>
                 </label>
@@ -10390,11 +10388,11 @@ function PageSetupDialog({
                     <label key={o} className="flex items-center gap-2.5 cursor-pointer" onClick={() => setDraft((d) => ({ ...d, orientation: o }))}>
                       <div className={[
                         "w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center transition-colors",
-                        draft.orientation === o ? "border-blue-600 dark:border-blue-400" : "border-gray-300 dark:border-gray-600",
+                        draft.orientation === o ? "border-blue-600 dark:border-blue-400" : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30",
                       ].join(" ")}>
                         {draft.orientation === o && <div className="w-2.5 h-2.5 rounded-full bg-blue-600 dark:bg-blue-400" />}
                       </div>
-                      <span className="text-sm text-gray-700 dark:text-gray-200 capitalize">{o}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 capitalize">{o}</span>
                     </label>
                   ))}
                 </div>
@@ -10410,24 +10408,24 @@ function PageSetupDialog({
                   options={paperSizeOptions}
                 />
                 <div ref={colorRef}>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
-                    <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
-                      <Palette className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2 flex items-center gap-1.5">
+                    <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+                      <Palette className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
                     <span>Page colour</span>
                   </label>
                   <button
-                    className="flex items-center gap-2 min-h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200"
+                    className="flex items-center gap-2 min-h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 transition-all duration-200"
                     onClick={() => setShowColorPicker((v) => !v)}
                   >
-                    <div className="w-6 h-6 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm" style={{ backgroundColor: draft.pageColor }} />
-                    <ChevronRight className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${showColorPicker ? "rotate-[-90deg]" : "rotate-90"}`} />
+                    <div className="w-6 h-6 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 shadow-sm" style={{ backgroundColor: draft.pageColor }} />
+                    <ChevronRight className={`w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 transition-transform ${showColorPicker ? "rotate-[-90deg]" : "rotate-90"}`} />
                   </button>
                 </div>
               </div>
               {showColorPicker && (
-                <div ref={colorGridRef} className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                  <div className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">Default</div>
+                <div ref={colorGridRef} className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+                  <div className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2">Default</div>
                   <ColorGrid
                     colors={PAGE_COLORS}
                     selectedColor={draft.pageColor}
@@ -10441,9 +10439,9 @@ function PageSetupDialog({
 
               {/* Margins */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
-                  <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
-                    <Maximize2 className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2 flex items-center gap-1.5">
+                  <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+                    <Maximize2 className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                   </div>
                   <span>Margins (centimetres)</span>
                 </label>
@@ -10474,23 +10472,23 @@ function PageSetupDialog({
           {tab === "pageless" && (
             <>
               <div ref={colorRef}>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
-                  <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
-                    <Palette className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2 flex items-center gap-1.5">
+                  <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center flex-shrink-0 opacity-70">
+                    <Palette className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                   </div>
                   <span>Page colour</span>
                 </label>
                 <button
-                  className="flex items-center gap-2 min-h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200"
+                  className="flex items-center gap-2 min-h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 transition-all duration-200"
                   onClick={() => setShowColorPicker((v) => !v)}
                 >
-                  <div className="w-6 h-6 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm" style={{ backgroundColor: draft.pageColor }} />
-                  <ChevronRight className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${showColorPicker ? "rotate-[-90deg]" : "rotate-90"}`} />
+                  <div className="w-6 h-6 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 shadow-sm" style={{ backgroundColor: draft.pageColor }} />
+                  <ChevronRight className={`w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 transition-transform ${showColorPicker ? "rotate-[-90deg]" : "rotate-90"}`} />
                 </button>
               </div>
               {showColorPicker && (
-                <div ref={colorGridRef} className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                  <div className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">Default</div>
+                <div ref={colorGridRef} className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+                  <div className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2">Default</div>
                   <ColorGrid
                     colors={PAGE_COLORS}
                     selectedColor={draft.pageColor}
@@ -10508,7 +10506,7 @@ function PageSetupDialog({
         {/* Footer */}
         <div className="flex items-center justify-between px-6 pb-5 pt-1">
           <button
-            className="text-sm text-blue-600 dark:text-blue-400 hover:underline cursor-pointer font-semibold"
+            className="text-sm text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer font-semibold"
             onClick={() => {
               try {
                 localStorage.setItem("educo_page_setup_default", JSON.stringify(draft));
@@ -10523,7 +10521,7 @@ function PageSetupDialog({
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              className="px-5 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
             >
               Cancel
             </button>
@@ -10573,8 +10571,8 @@ function MenuRoot({
         type="button"
         className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
           isOpen
-            ? "bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
-            : "hover:bg-gray-100/70 dark:hover:bg-gray-800/60 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8"
+            ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-cyan-500/10 purple:bg-pink-500/10"
+            : "hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/60 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8"
         }`}
         onClick={() => (isOpen ? onClose() : onOpen(id))}
         onMouseEnter={() => openMenu && onOpen(id)}
@@ -10590,7 +10588,7 @@ function MenuPanel({ children }: { children: React.ReactNode }) {
   return (
     <div
       data-doc-menu-panel
-      className="absolute z-[120] mt-2 left-0 w-[260px] rounded-2xl border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible"
+      className="absolute z-[120] mt-2 left-0 w-[260px] rounded-2xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible"
     >
       <div className="py-1 max-h-[calc(100vh-120px)] overflow-y-auto">{children}</div>
     </div>
@@ -10656,7 +10654,7 @@ function SubmenuPanel({
       <div
         ref={panelRef}
         data-doc-menu-panel
-        className={`fixed z-[10000] rounded-2xl border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible ${className}`}
+        className={`fixed z-[10000] rounded-2xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible ${className}`}
         onMouseEnter={() => timerCtx?.cancelClose()}
         onMouseLeave={() => timerCtx?.scheduleClose()}
       >
@@ -10670,7 +10668,7 @@ function SubmenuPanel({
 }
 
 function MenuDivider() {
-  return <div className="my-1 h-px bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-500/10 purple:bg-pink-500/10" />;
+  return <div className="my-1 h-px bg-gray-100 dark:bg-[#1a1d24] midnight:bg-cyan-500/10 purple:bg-pink-500/10" />;
 }
 
 function MenuItem({
@@ -10763,20 +10761,20 @@ function MenuItem({
         onClick={handleClick}
         className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-[12px] transition-colors ${
           disabled
-            ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
-            : "text-gray-700 dark:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-800/70 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer"
+            ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed"
+            : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/70 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer"
         }`}
       >
         <span className="w-4 flex-shrink-0 flex items-center justify-center">
           {isChecked ? (
-            <span className="text-[12px] font-bold text-blue-600 dark:text-blue-400">✓</span>
+            <span className="text-[12px] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">✓</span>
           ) : Icon ? (
-            <Icon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+            <Icon className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
           ) : null}
         </span>
         <span className="flex-1 min-w-0 truncate">{label}</span>
-        {shortcut && <span className="text-[12px] text-gray-400 dark:text-gray-500">{shortcut}</span>}
-        {hasSubmenu && <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />}
+        {shortcut && <span className="text-[12px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{shortcut}</span>}
+        {hasSubmenu && <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />}
       </button>
       <SubmenuTimerContext.Provider value={hasSubmenu ? timerCallbacks : null}>
         <SubmenuAnchorContext.Provider value={containerRef}>
@@ -10809,9 +10807,9 @@ function ViewMenuPanel({ children }: { children: React.ReactNode }) {
   }, []);
 
   const glassClasses = [
-    "bg-white/80 dark:bg-[#121212]/80 midnight:bg-[#0b1220]/80 purple:bg-[#1a0d2e]/80",
+    "bg-white/80 dark:bg-[#121212]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0d2e]/80",
     "backdrop-blur-[20px] backdrop-saturate-[180%]",
-    "border border-gray-300/60 dark:border-gray-600/50 midnight:border-cyan-400/20 purple:border-pink-400/20",
+    "border border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50 midnight:border-cyan-400/20 purple:border-pink-400/20",
   ].join(" ");
 
   // Mobile: full-screen overlay bottom sheet with large touch targets
@@ -10835,7 +10833,7 @@ function ViewMenuPanel({ children }: { children: React.ReactNode }) {
         >
           {/* Drag handle */}
           <div className="flex justify-center pt-3 pb-1">
-            <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+            <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700" />
           </div>
           <div className="px-1 pb-6 max-h-[70vh] overflow-y-auto">{children}</div>
         </div>
@@ -10943,7 +10941,7 @@ function ViewMenuItem({
           // Variable typography: heavier weight on hover
           "font-[420] hover:font-[520]",
           disabled
-            ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+            ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed"
             : "text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 hover:bg-gray-100/60 dark:hover:bg-white/5 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8 cursor-pointer",
           // Active mode glow for "Suggesting" style context-aware feedback
           isChecked && !hasSubmenu
@@ -10972,13 +10970,13 @@ function ViewMenuItem({
               ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.2)]"
               : activeMode === "viewing"
                 ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
-                : "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300",
+                : "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300",
           ].join(" ")}>
             {activeMode.charAt(0).toUpperCase() + activeMode.slice(1)}
           </span>
         )}
-        {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 tabular-nums">{shortcut}</span>}
-        {hasSubmenu && <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />}
+        {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 tabular-nums">{shortcut}</span>}
+        {hasSubmenu && <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />}
       </button>
       <SubmenuTimerContext.Provider value={hasSubmenu ? timerCallbacks : null}>
         <SubmenuAnchorContext.Provider value={containerRef}>
@@ -11031,14 +11029,14 @@ function ViewMenuToggle({
           )}
         </div>
       </div>
-      {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 tabular-nums mr-2">{shortcut}</span>}
+      {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 tabular-nums mr-2">{shortcut}</span>}
       {/* iOS-style pill toggle switch */}
       <div
         className={[
           "relative w-[38px] h-[22px] rounded-full flex-shrink-0 transition-colors duration-200",
           isOn
             ? "bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500"
-            : "bg-gray-300 dark:bg-gray-600 midnight:bg-gray-600 purple:bg-gray-600",
+            : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-600 purple:bg-gray-600",
         ].join(" ")}
       >
         <div
@@ -11109,7 +11107,7 @@ function FullscreenFloatingPill({
         "fixed top-3 left-1/2 -translate-x-1/2 z-[10000]",
         "flex items-center rounded-full",
         // Glassmorphism pill
-        "bg-gray-900/70 dark:bg-gray-800/80 midnight:bg-[#0b1220]/80 purple:bg-[#1a0d2e]/80",
+        "bg-gray-900/70 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0d2e]/80",
         "backdrop-blur-[20px] backdrop-saturate-[180%]",
         "border border-white/10",
         "shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
@@ -11174,7 +11172,7 @@ function TableGridPicker({
   const [hoverCol, setHoverCol] = useState(1);
   return (
     <div className="w-[220px]">
-      <div className="text-[11px] font-medium text-gray-600 dark:text-gray-300 mb-2">
+      <div className="text-[11px] font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2">
         {hoverRow} × {hoverCol}
       </div>
       <div className="grid gap-0.5" style={{ gridTemplateColumns: `repeat(${maxCols}, 1fr)` }}>
@@ -11194,7 +11192,7 @@ function TableGridPicker({
               className={`w-4 h-4 rounded border transition-colors ${
                 active
                   ? "bg-blue-500/25 border-blue-400 dark:bg-blue-500/25 midnight:bg-cyan-500/25 purple:bg-pink-500/25 midnight:border-cyan-400 purple:border-pink-400"
-                  : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                  : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
               }`}
               aria-label={`${r}x${c}`}
             />
@@ -11228,9 +11226,9 @@ function ToolbarButton({
         onClick={onClick}
         disabled={disabled}
         aria-label={title}
-        className={`w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${active ? "bg-blue-100 dark:bg-blue-900/40 ring-1 ring-blue-400" : ""}`}
+        className={`w-7 h-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${active ? "bg-blue-100 dark:bg-blue-900/40 ring-1 ring-blue-400" : ""}`}
       >
-        <Icon className={`w-4 h-4 ${active ? "text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"}`} />
+        <Icon className={`w-4 h-4 ${active ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-600 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"}`} />
       </button>
     </Tooltip>
   );
@@ -11263,7 +11261,7 @@ function EditingModeButton({
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="h-7 inline-flex items-center gap-1.5 px-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-[11px] font-medium text-gray-600 dark:text-gray-200"
+          className="h-7 inline-flex items-center gap-1.5 px-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-[11px] font-medium text-gray-600 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"
         >
           <PenLine className="w-3.5 h-3.5" />
           <span>{label}</span>
@@ -11271,7 +11269,7 @@ function EditingModeButton({
         </button>
       </Tooltip>
       {open && (
-        <div className="absolute z-[120] top-full mt-1 right-0 w-[180px] rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-900 shadow-xl py-1">
+        <div className="absolute z-[120] top-full mt-1 right-0 w-[180px] rounded-xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-xl py-1">
           {([
             { mode: "editing" as const, icon: PenLine, desc: "Edit directly" },
             { mode: "suggesting" as const, icon: MessageSquarePlus, desc: "Edits become suggestions" },
@@ -11283,14 +11281,14 @@ function EditingModeButton({
               onClick={() => { onModeChange(mode); setOpen(false); }}
               className={`w-full px-3 py-2 text-left transition-colors cursor-pointer flex items-center gap-2.5 ${
                 mode === docMode
-                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                  : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                  : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
               }`}
             >
               <MIcon className="w-4 h-4 flex-shrink-0" />
               <div>
                 <div className={`text-[12px] ${mode === docMode ? "font-semibold" : ""}`}>{mode.charAt(0).toUpperCase() + mode.slice(1)}</div>
-                <div className="text-[10px] text-gray-400 dark:text-gray-500">{desc}</div>
+                <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{desc}</div>
               </div>
               {mode === docMode && <Check className="w-3.5 h-3.5 ml-auto flex-shrink-0" />}
             </button>
@@ -11429,8 +11427,8 @@ function MentionPopover({
       data-mention-popover
       className={[
         "absolute left-0 w-full max-h-[180px] overflow-y-auto z-[250]",
-        "rounded-xl border border-white/20 dark:border-gray-600/40",
-        "bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl",
+        "rounded-xl border border-white/20 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/40",
+        "bg-white/80 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 backdrop-blur-xl",
         "shadow-2xl shadow-black/10 dark:shadow-black/30",
         position === "above" ? "bottom-full mb-1.5" : "top-full mt-1.5",
       ].join(" ")}
@@ -11449,8 +11447,8 @@ function MentionPopover({
             className={[
               "w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors cursor-pointer",
               i === highlightIdx
-                ? "bg-blue-50/80 dark:bg-blue-900/30"
-                : "hover:bg-gray-50/80 dark:hover:bg-gray-800/50",
+                ? "bg-blue-50/80 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+                : "hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/50",
             ].join(" ")}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => onSelect(user)}
@@ -11459,13 +11457,13 @@ function MentionPopover({
             <div className="min-w-0 flex-1">
               <div className={[
                 "text-[12px] font-medium truncate",
-                i === highlightIdx ? "text-blue-700 dark:text-blue-300" : "text-gray-700 dark:text-gray-200",
+                i === highlightIdx ? "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100",
               ].join(" ")}>
                 {user.name}
               </div>
             </div>
             {i === highlightIdx && (
-              <span className="text-[9px] text-gray-400 dark:text-gray-500 flex-shrink-0">Enter</span>
+              <span className="text-[9px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 flex-shrink-0">Enter</span>
             )}
           </button>
         ))}
@@ -11483,7 +11481,7 @@ function renderMentionPills(text: string) {
         <span
           key={i}
           data-mention-pill
-          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-blue-100/80 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-[10px] font-semibold leading-none whitespace-nowrap"
+          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-blue-100/80 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 text-[10px] font-semibold leading-none whitespace-nowrap"
         >
           <AtSign className="w-2.5 h-2.5 opacity-70" />
           {part.slice(1)}
@@ -11552,8 +11550,8 @@ function FloatingCommentPill({
       className={[
         "pointer-events-auto rounded-lg border transition-all duration-200 cursor-pointer",
         isActive
-          ? "border-blue-300/80 dark:border-blue-600/60 bg-white dark:bg-gray-900 shadow-lg ring-1 ring-blue-200/40"
-          : "border-gray-200/80 dark:border-gray-700/60 bg-white/95 dark:bg-gray-900/95 hover:border-blue-200/60 hover:shadow-md",
+          ? "border-blue-300/80 dark:border-blue-600/60 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg ring-1 ring-blue-200/40"
+          : "border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 hover:border-blue-200/60 hover:shadow-md",
       ].join(" ")}
       onClick={() => { onSelect(); onScrollTo(); }}
     >
@@ -11564,22 +11562,22 @@ function FloatingCommentPill({
           <div className="flex items-center gap-2 min-w-0">
             <CommentAvatar author={comment.author} size={24} />
             <div className="min-w-0">
-              <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 truncate">{comment.author.name}</div>
-              <div className="text-[10px] text-gray-400 dark:text-gray-500">{formatTimeAgo(comment.createdAt)}</div>
+              <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">{comment.author.name}</div>
+              <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{formatTimeAgo(comment.createdAt)}</div>
             </div>
           </div>
           <div className="flex items-center gap-0.5 flex-shrink-0">
             <button type="button" onClick={(e) => { e.stopPropagation(); onOpenSidebar(); }}
-              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer" title="Open in sidebar">
+              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer" title="Open in sidebar">
               <MessageCircle className="w-3 h-3 text-gray-400" />
             </button>
             <div className="relative" onClick={(e) => e.stopPropagation()}>
               <button type="button" onClick={() => setShowActions(!showActions)}
-                className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
                 <MoreHorizontal className="w-3.5 h-3.5 text-gray-400" />
               </button>
               {showActions && (
-                <div className="absolute right-0 top-full mt-1 w-[120px] rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl py-1 z-20">
+                <div className="absolute right-0 top-full mt-1 w-[120px] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-xl py-1 z-20">
                   {isOwner && !isResolved && (
                     <>
                       <button type="button" onClick={() => { onResolve(); setShowActions(false); }}
@@ -11587,19 +11585,19 @@ function FloatingCommentPill({
                         <CheckCircle2 className="w-3 h-3" /> Resolve
                       </button>
                       <button type="button" onClick={() => { onReject(); setShowActions(false); }}
-                        className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer">
+                        className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 cursor-pointer">
                         <XCircle className="w-3 h-3" /> Reject
                       </button>
                     </>
                   )}
                   {isResolved && onReopen && (
                     <button type="button" onClick={() => { onReopen(); setShowActions(false); }}
-                      className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer">
+                      className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 cursor-pointer">
                       <Reply className="w-3 h-3" /> Reopen
                     </button>
                   )}
                   <button type="button" onClick={() => { onDelete(); setShowActions(false); }}
-                    className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer">
+                    className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 cursor-pointer">
                     <X className="w-3 h-3" /> Delete
                   </button>
                 </div>
@@ -11609,18 +11607,18 @@ function FloatingCommentPill({
         </div>
 
         {/* Selected text excerpt */}
-        <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-2 px-2 py-1 bg-yellow-50/60 dark:bg-yellow-900/15 rounded border-l-2 border-yellow-400 dark:border-yellow-600 line-clamp-2">
+        <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mb-2 px-2 py-1 bg-yellow-50/60 dark:bg-yellow-900/15 rounded border-l-2 border-yellow-400 dark:border-yellow-600 line-clamp-2">
           &ldquo;{comment.selectedText}&rdquo;
         </div>
 
         {/* Comment body */}
-        <p className="text-[11px] text-gray-700 dark:text-gray-200 leading-relaxed">
+        <p className="text-[11px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 leading-relaxed">
           {renderMentionPills(comment.text)}
         </p>
 
         {/* Reply count indicator (collapsed) */}
         {!isActive && comment.replies.length > 0 && (
-          <div className="mt-2 flex items-center gap-1 text-[10px] text-blue-500 dark:text-blue-400">
+          <div className="mt-2 flex items-center gap-1 text-[10px] text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
             <CornerDownRight className="w-3 h-3" />
             <span>{comment.replies.length} {comment.replies.length === 1 ? "reply" : "replies"}</span>
           </div>
@@ -11629,7 +11627,7 @@ function FloatingCommentPill({
 
       {/* Expanded section — replies + reply input (only when active) */}
       {isActive && (
-        <div className="border-t border-gray-100 dark:border-gray-800" onClick={(e) => e.stopPropagation()}>
+        <div className="border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10" onClick={(e) => e.stopPropagation()}>
           {/* Replies */}
           {comment.replies.length > 0 && (
             <div className="px-3 pt-2 pb-1 space-y-2 max-h-[160px] overflow-y-auto">
@@ -11638,10 +11636,10 @@ function FloatingCommentPill({
                   <CommentAvatar author={reply.author} size={20} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300">{reply.author.name}</span>
+                      <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{reply.author.name}</span>
                       <span className="text-[9px] text-gray-400">{formatTimeAgo(reply.createdAt)}</span>
                     </div>
-                    <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">{renderMentionPills(reply.text)}</p>
+                    <p className="text-[11px] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 leading-relaxed">{renderMentionPills(reply.text)}</p>
                   </div>
                 </div>
               ))}
@@ -11660,7 +11658,7 @@ function FloatingCommentPill({
                   mention.handleKeyDown(e);
                   if (!mention.active && e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmitReply();
                 }}
-                className="w-full px-2.5 py-1.5 rounded-lg text-[11px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none focus:ring-1 focus:ring-blue-400 resize-none"
+                className="w-full px-2.5 py-1.5 rounded-lg text-[11px] bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 outline-none focus:ring-1 focus:ring-blue-400 resize-none"
                 rows={2}
               />
               {mention.active && (
@@ -11787,8 +11785,8 @@ function CommentCard({
       className={[
         "rounded-xl border p-2.5 transition-all duration-200 cursor-pointer group",
         isActive
-          ? "border-blue-300 dark:border-blue-600 bg-blue-50/60 dark:bg-blue-900/20 shadow-md ring-1 ring-blue-200/50 dark:ring-blue-700/30"
-          : "border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-sm",
+          ? "border-blue-300 dark:border-blue-600 bg-blue-50/60 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 shadow-md ring-1 ring-blue-200/50 dark:ring-blue-700/30"
+          : "border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-sm",
         isResolved ? "opacity-70" : "",
       ].join(" ")}
     >
@@ -11797,8 +11795,8 @@ function CommentCard({
         <div className="flex items-center gap-2 min-w-0">
           <CommentAvatar author={comment.author} size={24} />
           <div className="min-w-0">
-            <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 truncate">{comment.author.name}</div>
-            <div className="text-[10px] text-gray-400 dark:text-gray-500">{timeAgo}</div>
+            <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">{comment.author.name}</div>
+            <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{timeAgo}</div>
           </div>
         </div>
         <div className="flex items-center gap-0.5">
@@ -11809,7 +11807,7 @@ function CommentCard({
             </span>
           )}
           {comment.status === "rejected" && (
-            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 mr-1">
+            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mr-1">
               Rejected
             </span>
           )}
@@ -11831,7 +11829,7 @@ function CommentCard({
                   onClick={(e) => { e.stopPropagation(); onReject(); }}
                   className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
                 >
-                  <X className="w-3.5 h-3.5 text-red-400 dark:text-red-400" />
+                  <X className="w-3.5 h-3.5 text-red-400 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
                 </button>
               </Tooltip>
             </div>
@@ -11844,7 +11842,7 @@ function CommentCard({
                 onClick={(e) => { e.stopPropagation(); onReopen(); }}
                 className="w-6 h-6 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all cursor-pointer"
               >
-                <RotateCw className="w-3 h-3 text-blue-500 dark:text-blue-400" />
+                <RotateCw className="w-3 h-3 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </button>
             </Tooltip>
           )}
@@ -11853,7 +11851,7 @@ function CommentCard({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); setShowReplyInput(true); }}
-              className="w-6 h-6 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all cursor-pointer"
+              className="w-6 h-6 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all cursor-pointer"
               title="Reply"
             >
               <MessageCircle className="w-3.5 h-3.5 text-gray-400" />
@@ -11864,12 +11862,12 @@ function CommentCard({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); setShowActions(!showActions); }}
-              className="w-6 h-6 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all cursor-pointer"
+              className="w-6 h-6 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all cursor-pointer"
             >
               <MoreHorizontal className="w-3.5 h-3.5 text-gray-400" />
             </button>
             {showActions && (
-              <div className="absolute right-0 top-full mt-1 w-[140px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl py-1 z-10">
+              <div className="absolute right-0 top-full mt-1 w-[140px] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-xl py-1 z-10">
                 {isOwner && !isResolved && (
                   <>
                     <button
@@ -11883,7 +11881,7 @@ function CommentCard({
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); onReject(); setShowActions(false); }}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 transition-colors cursor-pointer"
                     >
                       <XCircle className="w-3.5 h-3.5" />
                       Reject
@@ -11894,7 +11892,7 @@ function CommentCard({
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); onReopen(); setShowActions(false); }}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors cursor-pointer"
                   >
                     <RotateCw className="w-3.5 h-3.5" />
                     Reopen
@@ -11904,7 +11902,7 @@ function CommentCard({
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); onDelete(); setShowActions(false); }}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     Delete
@@ -11919,25 +11917,25 @@ function CommentCard({
       {/* Tab indicator */}
       {comment.tabId && (
         <div className="mb-1">
-          <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+          <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
             {comment.tabId.replace("tab-", "Tab ")}
           </span>
         </div>
       )}
 
       {/* Selected text excerpt */}
-      <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-1.5 px-1.5 py-1 bg-yellow-50/60 dark:bg-yellow-900/15 rounded border-l-2 border-yellow-400 dark:border-yellow-600 line-clamp-1">
+      <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mb-1.5 px-1.5 py-1 bg-yellow-50/60 dark:bg-yellow-900/15 rounded border-l-2 border-yellow-400 dark:border-yellow-600 line-clamp-1">
         &ldquo;{comment.selectedText}&rdquo;
       </div>
 
       {/* Comment body */}
-      <p className="text-[12px] text-gray-700 dark:text-gray-200 leading-relaxed mb-1.5">
+      <p className="text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 leading-relaxed mb-1.5">
         {renderMentionPills(comment.text)}
       </p>
 
       {/* Resolution info */}
       {comment.resolution && (
-        <div className="text-[10px] text-gray-400 dark:text-gray-500 italic mb-1.5 flex items-center gap-1">
+        <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 italic mb-1.5 flex items-center gap-1">
           {comment.resolution.action === "resolved" ? (
             <CheckCircle2 className="w-3 h-3 text-emerald-500" />
           ) : (
@@ -11950,16 +11948,16 @@ function CommentCard({
 
       {/* Replies thread */}
       {comment.replies.length > 0 && (
-        <div className="mt-2 space-y-1.5 pl-3 border-l-2 border-gray-100 dark:border-gray-800">
+        <div className="mt-2 space-y-1.5 pl-3 border-l-2 border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
           {comment.replies.map((reply) => (
             <div key={reply.id} className="flex gap-2">
               <CommentAvatar author={reply.author} size={20} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300">{reply.author.name}</span>
+                  <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{reply.author.name}</span>
                   <span className="text-[9px] text-gray-400">{formatTimeAgo(reply.createdAt)}</span>
                 </div>
-                <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
+                <p className="text-[11px] text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 leading-relaxed">
                   {renderMentionPills(reply.text)}
                 </p>
               </div>
@@ -11985,7 +11983,7 @@ function CommentCard({
                     if (e.key === "Escape" && !mention.active) { setShowReplyInput(false); setReplyText(""); }
                   }}
                   placeholder="Reply... (@ to mention)"
-                  className="w-full text-[11px] text-gray-700 dark:text-gray-200 bg-gray-50/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5 resize-none outline-none focus:ring-2 focus:ring-blue-400/40 placeholder-gray-400"
+                  className="w-full text-[11px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg px-2.5 py-1.5 resize-none outline-none focus:ring-2 focus:ring-blue-400/40 placeholder-gray-400"
                   rows={2}
                 />
                 {mention.active && (
@@ -12000,7 +11998,7 @@ function CommentCard({
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); setShowReplyInput(false); setReplyText(""); }}
-                  className="text-[10px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                  className="text-[10px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -12067,9 +12065,9 @@ function DocUserMenu({ user }: { user: { firstName?: string; lastName?: string; 
         </button>
       </Tooltip>
       {open && (
-        <div className="absolute z-[200] top-full mt-2 right-0 w-[220px] rounded-xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200/80 dark:border-gray-700/60 overflow-hidden">
+        <div className="absolute z-[200] top-full mt-2 right-0 w-[220px] rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 overflow-hidden">
           {/* Profile card */}
-          <div className="px-3 py-3 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/40 dark:to-gray-900">
+          <div className="px-3 py-3 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/40 dark:to-gray-900">
             <div className="flex items-center gap-2.5">
               <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
                 {user?.avatar ? (
@@ -12081,28 +12079,28 @@ function DocUserMenu({ user }: { user: { firstName?: string; lastName?: string; 
                 )}
               </div>
               <div className="min-w-0">
-                <div className="text-[13px] font-semibold text-gray-900 dark:text-white truncate">{name}</div>
-                <div className="text-[11px] text-gray-500 dark:text-gray-400">{roleLabel}</div>
+                <div className="text-[13px] font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{name}</div>
+                <div className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{roleLabel}</div>
               </div>
             </div>
           </div>
           {/* Menu items */}
           <div className="py-1">
             <button type="button" onClick={() => { setOpen(false); window.location.href = "/"; }}
-              className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer flex items-center gap-2.5">
+              className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer flex items-center gap-2.5">
               <Home className="w-3.5 h-3.5 text-gray-400" /> Home
             </button>
             <button type="button" onClick={() => { setOpen(false); window.location.href = "/dashboard"; }}
-              className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer flex items-center gap-2.5">
+              className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer flex items-center gap-2.5">
               <LayoutGrid className="w-3.5 h-3.5 text-gray-400" /> Dashboard
             </button>
             <button type="button" onClick={() => setOpen(false)}
-              className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer flex items-center gap-2.5">
+              className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer flex items-center gap-2.5">
               <Settings className="w-3.5 h-3.5 text-gray-400" /> Settings
             </button>
-            <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
+            <div className="my-1 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10" />
             <button type="button" onClick={() => setOpen(false)}
-              className="w-full px-3 py-2 text-left text-[12px] text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer flex items-center gap-2.5">
+              className="w-full px-3 py-2 text-left text-[12px] text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 transition-colors cursor-pointer flex items-center gap-2.5">
               <LogOut className="w-3.5 h-3.5" /> Sign out
             </button>
           </div>

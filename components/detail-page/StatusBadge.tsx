@@ -82,7 +82,7 @@ export function StatusBadge({
       defaultLabel: "Completed",
     },
     cancelled: {
-      bg: "bg-gray-100 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50",
+      bg: "bg-gray-100 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50",
       text: "text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400",
       dot: "bg-gray-400",
       defaultLabel: "Cancelled",

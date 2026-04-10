@@ -245,7 +245,7 @@ export default function DualCalendar({ startDate, endDate, onApply, onCancel }: 
                     : inRange
                     ? "bg-blue-100 dark:bg-blue-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
                     : dayInfo.isCurrentMonth
-                    ? "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                    ? "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                     : ""
                   }
                   ${today && !start && !end ? "ring-2 ring-blue-500 dark:ring-blue-400 midnight:ring-cyan-400 purple:ring-pink-400" : ""}
@@ -267,7 +267,7 @@ export default function DualCalendar({ startDate, endDate, onApply, onCancel }: 
         <button
           type="button"
           onClick={handlePrevMonth}
-          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors"
         >
           <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
         </button>
@@ -283,7 +283,7 @@ export default function DualCalendar({ startDate, endDate, onApply, onCancel }: 
         <button
           type="button"
           onClick={handleNextMonth}
-          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors"
         >
           <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
         </button>
@@ -292,7 +292,7 @@ export default function DualCalendar({ startDate, endDate, onApply, onCancel }: 
       {/* Dual Calendars */}
       <div className="flex flex-col sm:flex-row gap-4 mb-4">
         {renderCalendar(leftMonth, true)}
-        <div className="h-px sm:h-auto sm:w-px bg-gray-200 dark:bg-gray-700 midnight:bg-cyan-500/20 purple:border-pink-500/20" />
+        <div className="h-px sm:h-auto sm:w-px bg-gray-200 dark:bg-[#22262e] midnight:bg-cyan-500/20 purple:border-pink-500/20" />
         {renderCalendar(rightMonth, false)}
       </div>
 
@@ -301,7 +301,7 @@ export default function DualCalendar({ startDate, endDate, onApply, onCancel }: 
         <button
           type="button"
           onClick={onCancel}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors"
+          className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors"
         >
           Cancel
         </button>
@@ -312,7 +312,7 @@ export default function DualCalendar({ startDate, endDate, onApply, onCancel }: 
           className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-md ${
             tempStartDate && tempEndDate
               ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 text-white cursor-pointer"
-              : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed"
+              : "bg-gray-300 dark:bg-[#22262e] text-gray-500 dark:text-gray-500 cursor-not-allowed"
           }`}
         >
           Apply

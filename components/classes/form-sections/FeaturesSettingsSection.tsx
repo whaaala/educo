@@ -78,7 +78,7 @@ export default function FeaturesSettingsSection({
   };
 
   return (
-    <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <section className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
       {/* Collapsible Header */}
       <button
         type="button"
@@ -149,13 +149,13 @@ export default function FeaturesSettingsSection({
                 .map((feature) => (
                 <label
                   key={feature.key}
-                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/10 purple:border-pink-500/10 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/10 purple:border-pink-500/10 cursor-pointer hover:bg-gray-100 dark:hover:bg-[#22262e] transition-colors"
                 >
                   <input
                     type="checkbox"
                     checked={formData.enabledFeatures?.[feature.key] || false}
                     onChange={() => handleFeatureToggle(feature.key)}
-                    className="w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                    className="w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-[#22262e] dark:border-gray-600"
                   />
                   <span className="text-sm text-gray-700 dark:text-gray-300">
                     {feature.label}
@@ -187,7 +187,7 @@ export default function FeaturesSettingsSection({
                 type="checkbox"
                 checked={formData.hostelEligibility || false}
                 onChange={(e) => onChange("hostelEligibility", e.target.checked)}
-                className="w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                className="w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-[#22262e] dark:border-gray-600"
               />
               <label className="text-sm text-gray-700 dark:text-gray-300">
                 {isTertiary

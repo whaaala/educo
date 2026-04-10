@@ -83,7 +83,7 @@ export default function TransferRequestDetailModal({
     <div className="flex items-center justify-end gap-3">
       <button
         onClick={onClose}
-        className="px-6 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 midnight:bg-gray-700 midnight:hover:bg-gray-600 purple:bg-gray-700 purple:hover:bg-gray-600 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-semibold transition-colors cursor-pointer"
+        className="px-6 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-[#2a2d35] dark:hover:bg-gray-500 midnight:bg-gray-700 midnight:hover:bg-gray-600 purple:bg-gray-700 purple:hover:bg-gray-600 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-semibold transition-colors cursor-pointer"
       >
         Close
       </button>
@@ -132,7 +132,7 @@ export default function TransferRequestDetailModal({
       >
         <div className="space-y-6">
           {/* Student Information */}
-          <div className="bg-white dark:bg-gray-700/30 midnight:bg-gray-800/30 purple:bg-gray-800/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 shadow-sm">
+          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 shadow-sm">
             <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4 flex items-center gap-2">
               <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20">
                 <User className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
@@ -174,7 +174,7 @@ export default function TransferRequestDetailModal({
           {/* Transfer Overview */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Current Location */}
-            <div className="bg-white dark:bg-gray-700/30 midnight:bg-gray-800/30 purple:bg-gray-800/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <Building2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Current Location</p>
@@ -192,7 +192,7 @@ export default function TransferRequestDetailModal({
             </div>
 
             {/* Destination */}
-            <div className="bg-white dark:bg-gray-700/30 midnight:bg-gray-800/30 purple:bg-gray-800/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <ArrowRight className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Destination</p>
@@ -218,7 +218,7 @@ export default function TransferRequestDetailModal({
           </div>
 
           {/* Transfer Reason */}
-          <div className="bg-white dark:bg-gray-700/30 midnight:bg-gray-800/30 purple:bg-gray-800/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 shadow-sm">
+          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 shadow-sm">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 flex items-center gap-2">
               <FileText className="w-5 h-5 text-gray-700 dark:text-gray-300" />
               Reason for Transfer
@@ -239,7 +239,7 @@ export default function TransferRequestDetailModal({
           {/* Timeline & Financial */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Timeline */}
-            <div className="bg-white dark:bg-gray-700/30 midnight:bg-gray-800/30 purple:bg-gray-800/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Timeline</p>
@@ -269,7 +269,7 @@ export default function TransferRequestDetailModal({
             </div>
 
             {/* Financial Status */}
-            <div className="bg-white dark:bg-gray-700/30 midnight:bg-gray-800/30 purple:bg-gray-800/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <DollarSign className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Financial Status</p>
@@ -290,7 +290,7 @@ export default function TransferRequestDetailModal({
                   <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${
                     request.feeStructureUpdated
                       ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-                      : "bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400"
+                      : "bg-gray-100 text-gray-700 dark:bg-[#0f1115]/20 dark:text-gray-400"
                   }`}>
                     {request.feeStructureUpdated ? "Updated" : "Pending"}
                   </span>
@@ -300,7 +300,7 @@ export default function TransferRequestDetailModal({
           </div>
 
           {/* Requested By */}
-          <div className="bg-white dark:bg-gray-700/30 midnight:bg-gray-800/30 purple:bg-gray-800/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 shadow-sm">
+          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 shadow-sm">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3">
               Requested By
             </h3>
@@ -329,7 +329,7 @@ export default function TransferRequestDetailModal({
           }}
         >
           <div
-            className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl p-6 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200"
+            className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl p-6 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
@@ -342,7 +342,7 @@ export default function TransferRequestDetailModal({
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
               placeholder="Enter rejection reason..."
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
               rows={4}
             />
             <div className="flex items-center justify-end gap-3 mt-4">
@@ -351,7 +351,7 @@ export default function TransferRequestDetailModal({
                   setShowRejectModal(false);
                   setRejectionReason("");
                 }}
-                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
               >
                 Cancel
               </button>

@@ -509,7 +509,7 @@ export function EmojiReactionBar({
         ))}
 
         {/* GIPHY Toggle - always visible */}
-        <div className="w-px h-6 bg-gray-200 dark:bg-gray-600/50 midnight:bg-cyan-500/20 purple:bg-pink-500/20 mx-0.5 flex-shrink-0" />
+        <div className="w-px h-6 bg-gray-200 dark:bg-[#2a2d35]/50 midnight:bg-cyan-500/20 purple:bg-pink-500/20 mx-0.5 flex-shrink-0" />
         <button
           onClick={() => setShowGiphy(!showGiphy)}
           title="Toggle GIPHY menu"

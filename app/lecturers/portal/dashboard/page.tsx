@@ -251,16 +251,16 @@ export default function LecturerDashboardPage() {
             {lecturerData.todaySchedule.map((session, index) => (
               <div
                 key={index}
-                className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20"
               >
                 <div className="flex-shrink-0">
-                  <Clock className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                  <Clock className="w-5 h-5 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
                     {session.course}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                     {session.time} • {session.venue} • {session.level}
                   </p>
                 </div>
@@ -280,21 +280,21 @@ export default function LecturerDashboardPage() {
               <Link
                 key={course.id}
                 href={`/lecturers/portal/my-courses/${course.id}`}
-                className="block p-4 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-500 dark:hover:border-blue-500 midnight:hover:border-cyan-400 purple:hover:border-pink-400 transition-colors"
+                className="block p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-500 dark:hover:border-blue-500 midnight:hover:border-cyan-400 purple:hover:border-pink-400 transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
                       {course.code} - {course.title}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
                       {course.students} Students • {course.credits} Credits • {course.level}
                     </p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                    <p className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-0.5">
                       {course.schedule} • {course.venue}
                     </p>
                   </div>
-                  <span className="px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
+                  <span className="px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 rounded">
                     Active
                   </span>
                 </div>
@@ -316,23 +316,23 @@ export default function LecturerDashboardPage() {
         customComponent: (
           <div className="space-y-3">
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 midnight:bg-blue-500/10 purple:bg-blue-500/10 border border-blue-200 dark:border-blue-800 midnight:border-blue-500/30 purple:border-blue-500/30 rounded-lg">
-              <p className="text-sm font-medium text-blue-900 dark:text-blue-200">
+              <p className="text-sm font-medium text-blue-900 dark:text-blue-200 midnight:text-cyan-200 purple:text-pink-200">
                 {lecturerData.officeHours.nextSession}
               </p>
-              <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+              <p className="text-xs text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 mt-1">
                 {lecturerData.officeHours.location}
               </p>
             </div>
 
             <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Booked Slots</span>
-              <span className="font-medium text-gray-900 dark:text-white">
+              <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Booked Slots</span>
+              <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                 {lecturerData.officeHours.bookedSlots}
               </span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Available Slots</span>
-              <span className="font-medium text-green-600 dark:text-green-400">
+              <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Available Slots</span>
+              <span className="font-medium text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
                 {lecturerData.officeHours.availableSlots}
               </span>
             </div>

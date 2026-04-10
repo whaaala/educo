@@ -138,9 +138,9 @@ function getStatusInfo(status: SubjectProgress["status"]): {
     case "completed":
       return { bg: "bg-emerald-100 dark:bg-emerald-900/40", text: "text-emerald-700 dark:text-emerald-400", label: "Completed" };
     case "in_progress":
-      return { bg: "bg-amber-100 dark:bg-amber-900/40", text: "text-amber-700 dark:text-amber-400", label: "In Progress" };
+      return { bg: "bg-amber-100 dark:bg-amber-900/40", text: "text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400", label: "In Progress" };
     case "pending":
-      return { bg: "bg-gray-100 dark:bg-gray-700/40", text: "text-gray-600 dark:text-gray-400", label: "Pending" };
+      return { bg: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/40", text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300", label: "Pending" };
   }
 }
 
@@ -162,21 +162,21 @@ function getTrendInfo(trend: SubjectProgress["trend"]): {
       return {
         icon: <TrendingDown className="w-3 h-3 md:w-4 md:h-4" />,
         label: "Declining",
-        color: "text-red-600 dark:text-red-400",
+        color: "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
         bg: "bg-red-50 dark:bg-red-500/10",
       };
     case "stable":
       return {
         icon: <Minus className="w-3 h-3 md:w-4 md:h-4" />,
         label: "Stable",
-        color: "text-amber-600 dark:text-amber-400",
+        color: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
         bg: "bg-amber-50 dark:bg-amber-500/10",
       };
     default:
       return {
         icon: <Minus className="w-3 h-3 md:w-4 md:h-4" />,
         label: "-",
-        color: "text-gray-400 dark:text-gray-500",
+        color: "text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400",
         bg: "bg-gray-50 dark:bg-gray-500/10",
       };
   }
@@ -273,12 +273,12 @@ export default function TermProgressPage() {
           </div>
 
           {/* Student Info Card */}
-          <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-gray-800/60 dark:via-gray-800/40 dark:to-blue-900/20 border border-gray-200/60 dark:border-gray-700/50 shadow-sm">
+          <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-gray-800/60 dark:via-gray-800/40 dark:to-blue-900/20 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 shadow-sm">
           <div className="flex items-center gap-4">
             {/* Profile Photo */}
             <div className="relative flex-shrink-0 group/avatar">
               <div className="absolute -inset-1 bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-400 dark:from-blue-500 dark:via-indigo-500 dark:to-purple-500 rounded-2xl opacity-60 group-hover/avatar:opacity-80 blur-sm transition-opacity duration-300" />
-              <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/50 ring-2 ring-white dark:ring-gray-700 shadow-lg">
+              <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/50 ring-2 ring-white dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 shadow-lg">
                 <Image
                   src={child.avatar}
                   alt={child.name}
@@ -294,11 +294,11 @@ export default function TermProgressPage() {
 
             {/* Info Section */}
             <div className="flex-1 min-w-0">
-              <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-1">
+              <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
                 {child.name}
               </h2>
               <div className="flex flex-wrap items-center gap-2 text-xs">
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium">
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 font-medium">
                   <BookOpen className="w-3.5 h-3.5" />
                   {child.class}
                 </span>
@@ -306,27 +306,27 @@ export default function TermProgressPage() {
                   <Calendar className="w-3.5 h-3.5" />
                   {child.term} {child.year}
                 </span>
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 font-medium">
                   Updated: {formatDate(child.lastUpdated)}
                 </span>
               </div>
             </div>
 
             {/* Status Badge - Top Right */}
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 ring-1 ring-amber-200/50 dark:ring-amber-700/50 self-start">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 ring-1 ring-amber-200/50 dark:ring-amber-700/50 self-start">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
               In Progress
             </span>
           </div>
 
           {/* Term Completion Progress */}
-          <div className="mt-4 pt-4 border-t border-gray-200/60 dark:border-gray-700/50">
+          <div className="mt-4 pt-4 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm">
                   <PieChart className="w-4 h-4 text-white" />
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
+                <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
                   Term Completion
                 </h3>
               </div>
@@ -334,13 +334,13 @@ export default function TermProgressPage() {
                 {overallProgress}%
               </span>
             </div>
-            <div className="w-full h-2 bg-gray-100 dark:bg-gray-700/50 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full transition-all duration-500"
                 style={{ width: `${overallProgress}%` }}
               />
             </div>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide mt-1.5">
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide mt-1.5">
               {completedSubjects} of {totalSubjects} subjects completed
             </p>
           </div>
@@ -354,11 +354,11 @@ export default function TermProgressPage() {
               <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm">
                 <BookOpen className="w-4 h-4 text-white" />
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
+              <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
                 Subject Progress
               </h3>
             </div>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
               {totalSubjects} subjects
             </span>
           </div>
@@ -382,12 +382,12 @@ export default function TermProgressPage() {
               return (
                 <div
                   key={subject.name}
-                  className="group p-5 rounded-xl bg-gradient-to-br from-slate-50 via-white to-gray-50/50 dark:from-gray-800/60 dark:via-gray-800/40 dark:to-gray-900/30 border border-gray-200/60 dark:border-gray-700/50 shadow-sm hover:shadow-md transition-all duration-300"
+                  className="group p-5 rounded-xl bg-gradient-to-br from-slate-50 via-white to-gray-50/50 dark:from-gray-800/60 dark:via-gray-800/40 dark:to-gray-900/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 shadow-sm hover:shadow-md transition-all duration-300"
                 >
                   {/* Card Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                      <h4 className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                         {subject.name}
                       </h4>
                       <span
@@ -407,7 +407,7 @@ export default function TermProgressPage() {
                       <div className={`absolute -inset-1 rounded-full bg-gradient-to-br ${scoreGradient} opacity-30 blur-md`} />
                       {/* Main circle */}
                       <div
-                        className={`relative w-10 h-10 rounded-full bg-gradient-to-br ${scoreGradient} flex items-center justify-center shadow-lg ring-2 ring-white dark:ring-gray-700`}
+                        className={`relative w-10 h-10 rounded-full bg-gradient-to-br ${scoreGradient} flex items-center justify-center shadow-lg ring-2 ring-white dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20`}
                       >
                         <span className="text-[11px] font-bold text-white drop-shadow-sm">
                           {subject.currentAverage > 0
@@ -429,7 +429,7 @@ export default function TermProgressPage() {
                             ? `${subject.currentAverage}%`
                             : "-"}
                         </p>
-                        <p className="text-[9px] text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Average</p>
+                        <p className="text-[9px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide">Average</p>
                       </div>
                     </div>
 
@@ -437,10 +437,10 @@ export default function TermProgressPage() {
                     <div className="relative py-3 px-2.5 rounded-lg bg-amber-50/40 dark:bg-amber-900/20 border border-amber-100/60 dark:border-amber-800/30 overflow-hidden">
                       <div className="absolute inset-0 bg-gradient-to-br from-amber-500/[0.03] to-orange-500/[0.03] dark:from-amber-500/[0.05] dark:to-orange-500/[0.05] pointer-events-none" />
                       <div className="relative text-center">
-                        <p className="text-sm font-bold text-amber-600 dark:text-amber-400">
+                        <p className="text-sm font-bold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">
                           {subject.testsCompleted}/{subject.totalTests}
                         </p>
-                        <p className="text-[9px] text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Tests</p>
+                        <p className="text-[9px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide">Tests</p>
                       </div>
                     </div>
 
@@ -453,7 +453,7 @@ export default function TermProgressPage() {
                             ? `${subject.lastTestScore}%`
                             : "-"}
                         </p>
-                        <p className="text-[9px] text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Last Test</p>
+                        <p className="text-[9px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide">Last Test</p>
                       </div>
                     </div>
 
@@ -462,10 +462,10 @@ export default function TermProgressPage() {
                       subject.trend === "up"
                         ? "bg-emerald-50/40 dark:bg-emerald-900/20 border border-emerald-100/60 dark:border-emerald-800/30"
                         : subject.trend === "down"
-                        ? "bg-red-50/40 dark:bg-red-900/20 border border-red-100/60 dark:border-red-800/30"
+                        ? "bg-red-50/40 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 border border-red-100/60 dark:border-red-800/30"
                         : subject.trend === "stable"
                         ? "bg-amber-50/40 dark:bg-amber-900/20 border border-amber-100/60 dark:border-amber-800/30"
-                        : "bg-gray-50/40 dark:bg-gray-900/20 border border-gray-100/60 dark:border-gray-700/30"
+                        : "bg-gray-50/40 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/20 border border-gray-100/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30"
                     }`}>
                       <div className={`absolute inset-0 pointer-events-none ${
                         subject.trend === "up"
@@ -480,17 +480,17 @@ export default function TermProgressPage() {
                         <p className={`text-sm font-bold ${trendInfo.color}`}>
                           {trendInfo.label}
                         </p>
-                        <p className="text-[9px] text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Trend</p>
+                        <p className="text-[9px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide">Trend</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Progress Bar Row */}
-                  <div className="flex items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700/50">
-                    <span className="text-[10px] font-bold text-gray-900 dark:text-white">
+                  <div className="flex items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                    <span className="text-[10px] font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                       {progressPercent}%
                     </span>
-                    <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-700/50 rounded-full overflow-hidden">
+                    <div className="flex-1 h-1.5 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
                           subject.status === "completed"
@@ -500,7 +500,7 @@ export default function TermProgressPage() {
                         style={{ width: `${progressPercent}%` }}
                       />
                     </div>
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                       complete
                     </span>
                   </div>

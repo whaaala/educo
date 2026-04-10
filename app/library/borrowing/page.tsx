@@ -393,9 +393,9 @@ export default function BorrowingPage() {
         label: "Returned",
       },
       lost: {
-        bg: "bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800",
+        bg: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]",
         text: "text-gray-700 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300",
-        border: "border-gray-200 dark:border-gray-600",
+        border: "border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30",
         icon: <AlertCircle className="w-3 h-3" />,
         label: "Lost",
       },
@@ -449,7 +449,7 @@ export default function BorrowingPage() {
 
     if (diffDays < 0) {
       return (
-        <span className="text-red-600 dark:text-red-400 font-medium" style={{ fontSize: '10px' }}>
+        <span className="text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 font-medium" style={{ fontSize: '10px' }}>
           {Math.abs(diffDays)} days overdue
         </span>
       );
@@ -463,7 +463,7 @@ export default function BorrowingPage() {
       );
     }
     return (
-      <span className="text-gray-500 dark:text-gray-400" style={{ fontSize: '10px' }}>
+      <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" style={{ fontSize: '10px' }}>
         {diffDays} days left
       </span>
     );
@@ -521,7 +521,7 @@ export default function BorrowingPage() {
               alt={loan.memberName}
               width={32}
               height={32}
-              className="absolute inset-0 w-8 h-8 rounded-full object-cover ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-300 ease-out group-hover/avatar:scale-[2.5] group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90"
+              className="absolute inset-0 w-8 h-8 rounded-full object-cover ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-300 ease-out group-hover/avatar:scale-[2.5] group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90"
               style={{ transformOrigin: 'left center' }}
               unoptimized
             />
@@ -568,7 +568,7 @@ export default function BorrowingPage() {
       sortable: true,
       render: (loan) =>
         loan.fineAmount > 0 ? (
-          <span className={`font-semibold ${loan.finePaid ? "text-gray-500 line-through" : "text-red-600 dark:text-red-400"}`} style={{ fontSize: '11.8px' }}>
+          <span className={`font-semibold ${loan.finePaid ? "text-gray-500 line-through" : "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"}`} style={{ fontSize: '11.8px' }}>
             {formatCurrency(loan.fineAmount, countryCode)}
           </span>
         ) : (
@@ -586,7 +586,7 @@ export default function BorrowingPage() {
               onClick={(e) => { e.stopPropagation(); handleView(loan); }}
               className="group relative p-2 rounded-lg bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/30 dark:to-blue-900/20 midnight:from-blue-950/30 midnight:to-blue-900/20 purple:from-blue-950/30 purple:to-blue-900/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-blue-900/40 dark:hover:to-blue-800/30 transition-all duration-200 cursor-pointer border border-blue-200/40 dark:border-blue-800/30 hover:border-blue-400/60 dark:hover:border-blue-600/50 active:scale-95"
             >
-              <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
+              <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
             </button>
           </Tooltip>
           {(loan.status === "active" || loan.status === "overdue") && (
@@ -596,7 +596,7 @@ export default function BorrowingPage() {
                   onClick={(e) => { e.stopPropagation(); handleReturnClick(loan); }}
                   className="group relative p-2 rounded-lg bg-gradient-to-br from-green-50/50 to-green-100/30 dark:from-green-950/30 dark:to-green-900/20 midnight:from-green-950/30 midnight:to-green-900/20 purple:from-green-950/30 purple:to-green-900/20 hover:from-green-100 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/30 transition-all duration-200 cursor-pointer border border-green-200/40 dark:border-green-800/30 hover:border-green-400/60 dark:hover:border-green-600/50 active:scale-95"
                 >
-                  <RotateCcw className="w-4 h-4 text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors" />
+                  <RotateCcw className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors" />
                 </button>
               </Tooltip>
               {loan.renewalCount < loan.maxRenewals && (
@@ -614,7 +614,7 @@ export default function BorrowingPage() {
                   onClick={(e) => { e.stopPropagation(); handleIssueFineClick(loan); }}
                   className="group relative p-2 rounded-lg bg-gradient-to-br from-amber-50/50 to-amber-100/30 dark:from-amber-950/30 dark:to-amber-900/20 midnight:from-amber-950/30 midnight:to-amber-900/20 purple:from-amber-950/30 purple:to-amber-900/20 hover:from-amber-100 hover:to-amber-100 dark:hover:from-amber-900/40 dark:hover:to-amber-800/30 transition-all duration-200 cursor-pointer border border-amber-200/40 dark:border-amber-800/30 hover:border-amber-400/60 dark:hover:border-amber-600/50 active:scale-95"
                 >
-                  <span className="text-sm font-bold text-amber-600 dark:text-amber-400 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">{countryConfig.currency.symbol}</span>
+                  <span className="text-sm font-bold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">{countryConfig.currency.symbol}</span>
                 </button>
               </Tooltip>
             </>

@@ -43,7 +43,7 @@ export default function SecondaryButton({
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2 bg-white dark:bg-gray-800 midnight:bg-gray-800/80 purple:bg-gray-800/80 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 transition-all duration-200 flex items-center gap-2 cursor-pointer text-sm font-medium ${className}`}
+      className={`px-4 py-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330]/80 purple:bg-[#251340]/80 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 transition-all duration-200 flex items-center gap-2 cursor-pointer text-sm font-medium ${className}`}
     >
       {renderIcon()}
       {displayText && (

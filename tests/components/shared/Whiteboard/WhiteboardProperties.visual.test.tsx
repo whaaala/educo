@@ -34,7 +34,7 @@ describe("WhiteboardProperties — Visual / CSS", () => {
         <WhiteboardProperties {...defaultProps} />
       );
       const panel = container.firstChild as HTMLElement;
-      expect(panel.className).toContain("dark:bg-gray-800");
+      expect(panel.className).toContain("dark:bg-[#1a1d24]");
       expect(panel.className).toContain("dark:border-gray-700");
     });
 
@@ -134,7 +134,7 @@ describe("WhiteboardProperties — Visual / CSS", () => {
       );
       const btn = screen.getByTitle("2px"); // Not the active one
       expect(btn.className).toContain("hover:bg-gray-100");
-      expect(btn.className).toContain("dark:hover:bg-gray-700");
+      expect(btn.className).toContain("dark:hover:bg-[#22262e]");
     });
 
     it("stroke width buttons are 7x7 rounded-lg", () => {

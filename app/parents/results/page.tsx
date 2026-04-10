@@ -531,7 +531,7 @@ export default function ParentResultsPage() {
       sortable: true,
       render: (result) => (
         <div className="flex items-center gap-3">
-          <div className="relative w-9 h-9 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+          <div className="relative w-9 h-9 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex-shrink-0">
             <Image
               src={result.childPhoto}
               alt={result.childName}
@@ -540,7 +540,7 @@ export default function ParentResultsPage() {
               unoptimized
             />
           </div>
-          <span className="text-sm font-medium text-gray-900 dark:text-white">
+          <span className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
             {result.childName}
           </span>
         </div>
@@ -551,7 +551,7 @@ export default function ParentResultsPage() {
       label: "Class",
       sortable: true,
       render: (result) => (
-        <span className="text-sm text-gray-600 dark:text-gray-300">
+        <span className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
           {result.class} - {result.section}
         </span>
       ),
@@ -562,7 +562,7 @@ export default function ParentResultsPage() {
       sortable: true,
       render: (result) => (
         <div className="flex items-center gap-2">
-          <div className="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div className="w-16 h-2 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 result.percentage >= 70
@@ -574,7 +574,7 @@ export default function ParentResultsPage() {
               style={{ width: `${result.percentage}%` }}
             />
           </div>
-          <span className="text-sm font-semibold text-gray-900 dark:text-white">
+          <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
             {result.percentage}%
           </span>
         </div>
@@ -586,8 +586,8 @@ export default function ParentResultsPage() {
       sortable: true,
       render: (result) => (
         <div>
-          <p className="text-sm text-gray-900 dark:text-white">{result.examType}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">{result.term}</p>
+          <p className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{result.examType}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{result.term}</p>
         </div>
       ),
     },
@@ -599,8 +599,8 @@ export default function ParentResultsPage() {
         <span
           className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
             result.status === "pass"
-              ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-              : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+              ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
+              : "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
           }`}
         >
           {result.status === "pass" ? (
@@ -628,7 +628,7 @@ export default function ParentResultsPage() {
           <button
             type="button"
             onClick={() => handleDownloadReportCard(result)}
-            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 transition-colors cursor-pointer"
             title="Download Report Card"
           >
             <Download className="w-4 h-4" />
@@ -665,16 +665,16 @@ export default function ParentResultsPage() {
       defaultItemsPerPage={10}
       itemsPerPageOptions={[5, 10, 15, 20, 25]}
     >
-      <div className="mt-6 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-6">
+      <div className="mt-6 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-6">
         <div className="flex items-start gap-4">
           <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
             <FileText className="w-6 h-6 text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+            <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
               View Detailed Report Cards
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
               Click the eye icon on any result to view the full report card with subject-wise
               breakdown, teacher remarks, and more detailed performance analysis.
             </p>

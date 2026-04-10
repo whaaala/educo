@@ -41,7 +41,7 @@ export interface FormTextareaProps {
 export default function FormTextarea({
   label,
   icon,
-  iconBgColor = "bg-gray-100 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50",
+  iconBgColor = "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50",
   iconColor = "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400",
   value,
   onChange,
@@ -175,7 +175,7 @@ export default function FormTextarea({
             <span>{label}</span>
             {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
             {optional && !required && (
-              <span className="text-xs text-gray-400 dark:text-gray-500">(Optional)</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">(Optional)</span>
             )}
           </label>
         </Tooltip>
@@ -184,13 +184,13 @@ export default function FormTextarea({
       <div
         className={`relative rounded-xl border transition-all duration-200 ${
           isDragging
-            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20"
             : error
             ? "border-red-500 dark:border-red-400"
             : isOverLimit
             ? "border-red-500 dark:border-red-400"
-            : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500"
-        } bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900`}
+            : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40"
+        } bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -211,12 +211,12 @@ export default function FormTextarea({
             {attachments.map((attachment) => (
               <div
                 key={attachment.id}
-                className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm group/attachment"
+                className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-lg text-sm group/attachment"
               >
-                <span className="text-gray-500 dark:text-gray-400">
+                <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                   {getFileIcon(attachment.type)}
                 </span>
-                <span className="text-gray-700 dark:text-gray-300 max-w-[150px] truncate">
+                <span className="text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 max-w-[150px] truncate">
                   {attachment.name}
                 </span>
                 <span className="text-xs text-gray-400">
@@ -225,9 +225,9 @@ export default function FormTextarea({
                 <button
                   type="button"
                   onClick={() => handleRemoveAttachment(attachment.id)}
-                  className="p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors opacity-60 group-hover/attachment:opacity-100 cursor-pointer"
+                  className="p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-colors opacity-60 group-hover/attachment:opacity-100 cursor-pointer"
                 >
-                  <X className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                  <X className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                 </button>
               </div>
             ))}
@@ -236,7 +236,7 @@ export default function FormTextarea({
 
         {/* Toolbar */}
         {showAttachments && (
-          <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2">
               <input
                 ref={fileInputRef}
@@ -254,10 +254,10 @@ export default function FormTextarea({
                   className={`p-2 rounded-lg transition-colors cursor-pointer ${
                     attachments.length >= maxAttachments
                       ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                      : "hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                   }`}
                 >
-                  <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                 </button>
               </Tooltip>
               {attachments.length > 0 && (
@@ -276,7 +276,7 @@ export default function FormTextarea({
         <div className="absolute inset-0 flex items-center justify-center bg-blue-50/90 dark:bg-blue-900/50 rounded-xl border-2 border-dashed border-blue-500 pointer-events-none">
           <div className="text-center">
             <Paperclip className="w-8 h-8 mx-auto mb-2 text-blue-500" />
-            <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Drop files here</p>
+            <p className="text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">Drop files here</p>
           </div>
         </div>
       )}

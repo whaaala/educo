@@ -601,11 +601,11 @@ export default function ReportCardPage() {
         loadingText="Loading Report Card"
         afterStats={
           <div className="mt-6 flex flex-col items-center justify-center min-h-[60vh]">
-            <AlertCircle className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <AlertCircle className="w-16 h-16 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
               Student Not Found
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">
+            <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-6">
               The student you&apos;re looking for doesn&apos;t exist.
             </p>
             <Link href="/parents/children">
@@ -769,7 +769,7 @@ export default function ReportCardPage() {
                     </div>
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{child.fullName}</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{child.fullName}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 font-medium">
                         {child.classLevel}{child.section && `-${child.section}`}
@@ -812,11 +812,11 @@ export default function ReportCardPage() {
                       {academicData?.currentTermAverage?.toFixed(1) || 0}% avg
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20">
-                    <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/20">
+                    <span className="text-xs font-semibold text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
                       #{academicData?.classPosition}
                     </span>
-                    <span className="text-xs text-blue-600/70 dark:text-blue-400/70">rank</span>
+                    <span className="text-xs text-blue-600/70 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/70">rank</span>
                   </div>
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-50 dark:bg-violet-500/10 border border-violet-200/60 dark:border-violet-500/20">
                     <span className="text-xs font-semibold text-violet-700 dark:text-violet-400">
@@ -856,8 +856,8 @@ export default function ReportCardPage() {
                   {academicData?.currentTermAverage?.toFixed(1) || 0}%
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20">
-                <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/20">
+                <span className="text-xs font-semibold text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
                   #{academicData?.classPosition}
                 </span>
               </div>
@@ -947,8 +947,8 @@ export default function ReportCardPage() {
               <UserCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Parent Portal View</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">Parent Portal View</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                 You are viewing your child&apos;s report card through the Parent Portal.
                 Use the Print or Download options above to save a copy for your records.
               </p>

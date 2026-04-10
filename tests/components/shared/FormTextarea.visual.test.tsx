@@ -29,9 +29,9 @@ describe("FormTextarea — Visual / CSS", () => {
       const wrapper = container.querySelector(".rounded-xl.border");
       expect(wrapper).toBeInTheDocument();
       expect(wrapper!.className).toContain("bg-white");
-      expect(wrapper!.className).toContain("dark:bg-gray-800");
-      expect(wrapper!.className).toContain("midnight:bg-gray-900");
-      expect(wrapper!.className).toContain("purple:bg-gray-900");
+      expect(wrapper!.className).toContain("dark:bg-[#1a1d24]");
+      expect(wrapper!.className).toContain("midnight:bg-[#0a0e27]");
+      expect(wrapper!.className).toContain("purple:bg-[#1a0b2e]");
     });
 
     it("container has rounded-xl border", () => {

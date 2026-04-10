@@ -133,7 +133,7 @@ function FolderNode({ item, selectedId, expandedIds, disabledIds, currentParentI
           }
         `}>
           {isRoot ? (
-            <HardDrive className={`w-4 h-4 ${isSelected ? "text-blue-500" : "text-gray-500 dark:text-gray-400"}`} />
+            <HardDrive className={`w-4 h-4 ${isSelected ? "text-blue-500" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"}`} />
           ) : isExpanded ? (
             <FolderOpen className={`w-4 h-4 ${isSelected ? "text-blue-500" : folderColor}`} />
           ) : (
@@ -145,15 +145,15 @@ function FolderNode({ item, selectedId, expandedIds, disabledIds, currentParentI
         <div className="flex-1 min-w-0">
           <span className={`text-[13px] leading-tight block truncate ${
             isSelected
-              ? "font-semibold text-gray-900 dark:text-white"
+              ? "font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
               : isDisabled
-                ? "text-gray-400 dark:text-gray-500"
-                : "text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white"
+                ? "text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400"
+                : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 group-hover:text-gray-900 dark:group-hover:text-white"
           }`}>
             {item.name}
           </span>
           {isRoot && !isSelected && (
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 leading-tight">
               {driveStorage.getFolders(item.id).length} folders
             </span>
           )}
@@ -166,7 +166,7 @@ function FolderNode({ item, selectedId, expandedIds, disabledIds, currentParentI
           </span>
         )}
         {item.readOnly && (
-          <Lock className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 flex-shrink-0" />
+          <Lock className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 flex-shrink-0" />
         )}
       </button>
 
@@ -364,7 +364,7 @@ export default function MoveDialog({
                   <FolderInput className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-[16px] font-semibold text-gray-900 dark:text-white">Move to</h2>
+                  <h2 className="text-[16px] font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Move to</h2>
                   <p className="text-[12px] text-gray-400 mt-0.5">Choose a destination folder</p>
                 </div>
               </div>
@@ -379,9 +379,9 @@ export default function MoveDialog({
                 {getSourceIcon(sourceType, "w-4.5 h-4.5")}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-medium text-gray-800 dark:text-gray-200 truncate">{fileName}</p>
+                <p className="text-[13px] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">{fileName}</p>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <Home className="w-3 h-3 text-gray-300 dark:text-gray-500" />
+                  <Home className="w-3 h-3 text-gray-300 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
                   <p className="text-[11px] text-gray-400 truncate">
                     {currentPath.map(p => p.name).join(" / ") || "My Drive"}
                   </p>
@@ -400,7 +400,7 @@ export default function MoveDialog({
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search folders..."
-                className="w-full pl-9 pr-3 py-2 rounded-xl bg-gray-50 dark:bg-white/[0.04] border border-gray-100 dark:border-white/[0.06] text-[13px] text-gray-800 dark:text-gray-200 placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-300 dark:focus:border-blue-500/30 transition-all"
+                className="w-full pl-9 pr-3 py-2 rounded-xl bg-gray-50 dark:bg-white/[0.04] border border-gray-100 dark:border-white/[0.06] text-[13px] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-300 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500/30 transition-all"
               />
             </div>
           </div>
@@ -425,17 +425,17 @@ export default function MoveDialog({
             {rootFolders.length === 0 && (
               <div className="text-center py-12">
                 <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-3">
-                  <Folder className="w-6 h-6 text-gray-300 dark:text-gray-600" />
+                  <Folder className="w-6 h-6 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500" />
                 </div>
                 <p className="text-[14px] font-medium text-gray-400">No folders yet</p>
-                <p className="text-[12px] text-gray-300 dark:text-gray-600 mt-1">Create your first folder below</p>
+                <p className="text-[12px] text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 mt-1">Create your first folder below</p>
               </div>
             )}
           </div>
 
           {/* ── New folder inline ── */}
           {isCreatingFolder && (
-            <div className="mx-4 mb-3 p-3 rounded-xl bg-blue-50/50 dark:bg-blue-500/5 border border-blue-100 dark:border-blue-500/10">
+            <div className="mx-4 mb-3 p-3 rounded-xl bg-blue-50/50 dark:bg-blue-500/5 border border-blue-100 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/10">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-500/15 flex items-center justify-center flex-shrink-0">
                   <FolderPlus className="w-4 h-4 text-blue-500" />
@@ -451,7 +451,7 @@ export default function MoveDialog({
                   }}
                   placeholder="Folder name"
                   autoFocus
-                  className="flex-1 px-3 py-1.5 rounded-lg bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 text-[13px] text-gray-800 dark:text-gray-200 placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-400/40 transition-all"
+                  className="flex-1 px-3 py-1.5 rounded-lg bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 text-[13px] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-400/40 transition-all"
                 />
                 <button
                   onClick={handleCreateFolder}
@@ -478,7 +478,7 @@ export default function MoveDialog({
                 <span className="text-[11px] text-gray-400">Moving to:</span>
                 <div className="flex items-center gap-1">
                   <Folder className={`w-3 h-3 ${getFolderColor(selectedFolder.name)}`} />
-                  <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300">{selectedFolder.name}</span>
+                  <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{selectedFolder.name}</span>
                 </div>
               </div>
             )}
@@ -486,7 +486,7 @@ export default function MoveDialog({
             <div className="flex items-center justify-between">
               <button
                 onClick={() => { setIsCreatingFolder(true); setTimeout(() => newFolderInputRef.current?.focus(), 50); }}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 New folder
@@ -495,7 +495,7 @@ export default function MoveDialog({
               <div className="flex items-center gap-2">
                 <button
                   onClick={onClose}
-                  className="px-4 py-2.5 rounded-xl text-[13px] font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl text-[13px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -506,7 +506,7 @@ export default function MoveDialog({
                     flex items-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 cursor-pointer
                     ${isValidSelection && !isMoving
                       ? "text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/25 hover:shadow-lg hover:shadow-blue-600/30 active:scale-[0.98]"
-                      : "text-gray-400 dark:text-gray-600 bg-gray-100 dark:bg-white/5 cursor-not-allowed"
+                      : "text-gray-400 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 bg-gray-100 dark:bg-white/5 cursor-not-allowed"
                     }
                   `}
                 >

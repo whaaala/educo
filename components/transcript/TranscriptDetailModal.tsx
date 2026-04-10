@@ -69,7 +69,7 @@ export default function TranscriptDetailModal({ request, isOpen, onClose }: Tran
         <select
           value={selectedTenant}
           onChange={(e) => setSelectedTenant(e.target.value)}
-          className="flex-1 px-3 py-2 text-xs sm:text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+          className="flex-1 px-3 py-2 text-xs sm:text-sm bg-white dark:bg-[#22262e] border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
         >
           {tenantOptions.map((option) => (
             <option key={option.id} value={option.id}>
@@ -87,7 +87,7 @@ export default function TranscriptDetailModal({ request, isOpen, onClose }: Tran
             type="button"
             onClick={zoomOut}
             disabled={zoomLevel <= 50}
-            className="flex-1 sm:flex-initial px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="flex-1 sm:flex-initial px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             -
           </button>
@@ -98,14 +98,14 @@ export default function TranscriptDetailModal({ request, isOpen, onClose }: Tran
             type="button"
             onClick={zoomIn}
             disabled={zoomLevel >= 150}
-            className="flex-1 sm:flex-initial px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="flex-1 sm:flex-initial px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             +
           </button>
           <button
             type="button"
             onClick={resetZoom}
-            className="flex-1 sm:flex-initial px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-lg cursor-pointer"
+            className="flex-1 sm:flex-initial px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-lg cursor-pointer"
           >
             Reset
           </button>
@@ -116,7 +116,7 @@ export default function TranscriptDetailModal({ request, isOpen, onClose }: Tran
           <button
             type="button"
             onClick={handlePrint}
-            className="flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 midnight:bg-cyan-900/20 midnight:hover:bg-cyan-900/30 purple:bg-pink-900/20 purple:hover:bg-pink-900/30 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 rounded-lg text-xs sm:text-sm font-medium transition-colors cursor-pointer flex-1"
+            className="flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-[#22262e] dark:hover:bg-[#2a2d35] midnight:bg-cyan-900/20 midnight:hover:bg-cyan-900/30 purple:bg-pink-900/20 purple:hover:bg-pink-900/30 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 rounded-lg text-xs sm:text-sm font-medium transition-colors cursor-pointer flex-1"
           >
             <Printer className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span className="hidden xs:inline">Print</span>
@@ -159,7 +159,7 @@ export default function TranscriptDetailModal({ request, isOpen, onClose }: Tran
         {/* Transcript Preview Container */}
         <div
           id="transcript-preview-container"
-          className="overflow-auto max-h-[50vh] sm:max-h-[60vh] md:max-h-[70vh] bg-gray-100 dark:bg-gray-900 midnight:bg-[#0a0f1a] purple:bg-[#1a0f28] p-2 sm:p-4 rounded-lg"
+          className="overflow-auto max-h-[50vh] sm:max-h-[60vh] md:max-h-[70vh] bg-gray-100 dark:bg-[#0f1115] midnight:bg-[#0a0f1a] purple:bg-[#1a0f28] p-2 sm:p-4 rounded-lg"
           style={{
             zoom: `${zoomLevel}%`,
           }}

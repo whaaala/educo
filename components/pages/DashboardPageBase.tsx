@@ -116,9 +116,9 @@ const quickActionColors: Record<ColorVariant, { bg: string; iconBg: string; hove
     hover: "hover:bg-pink-100 dark:hover:bg-pink-900/30",
   },
   gray: {
-    bg: "bg-gray-50 dark:bg-gray-800/50",
-    iconBg: "bg-gray-100 dark:bg-gray-700",
-    hover: "hover:bg-gray-100 dark:hover:bg-gray-700/50",
+    bg: "bg-gray-50 dark:bg-[#1a1d24]/50",
+    iconBg: "bg-gray-100 dark:bg-[#22262e]",
+    hover: "hover:bg-gray-100 dark:hover:bg-[#22262e]/50",
   },
 };
 
@@ -133,7 +133,7 @@ const activityIconColors: Record<ColorVariant, string> = {
   indigo: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400",
   teal: "bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400",
   pink: "bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400",
-  gray: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400",
+  gray: "bg-gray-100 dark:bg-[#22262e] text-gray-600 dark:text-gray-400",
 };
 
 export default function DashboardPageBase<T = unknown>({
@@ -228,7 +228,7 @@ export default function DashboardPageBase<T = unknown>({
     return (
       <div
         key={widget.title}
-        className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500"
+        className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500"
         style={{ animationDelay: `${index * 150}ms` }}
       >
         {/* Widget Header */}
@@ -285,13 +285,13 @@ export default function DashboardPageBase<T = unknown>({
                 <Link
                   key={item.id}
                   href={item.href || "#"}
-                  className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                  className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e]/50 transition-colors"
                   onClick={(e) => {
                     if (!item.href) e.preventDefault();
                   }}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-400">
+                    <span className="w-6 h-6 rounded-full bg-gray-100 dark:bg-[#22262e] flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-400">
                       {i + 1}
                     </span>
                     {item.avatar ? (

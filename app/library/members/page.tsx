@@ -372,7 +372,7 @@ export default function LibraryMembersPage() {
     }
     return (
       <span
-        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 border-gray-200 dark:border-gray-600"
+        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
         style={{ fontSize: "11.8px" }}
       >
         <UserX className="w-3 h-3" />
@@ -449,7 +449,7 @@ export default function LibraryMembersPage() {
               alt={member.name}
               width={32}
               height={32}
-              className="absolute inset-0 w-8 h-8 rounded-full object-cover ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-300 ease-out group-hover/avatar:scale-[2.5] group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90"
+              className="absolute inset-0 w-8 h-8 rounded-full object-cover ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-300 ease-out group-hover/avatar:scale-[2.5] group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90"
               style={{ transformOrigin: "left center" }}
               unoptimized
             />
@@ -487,7 +487,7 @@ export default function LibraryMembersPage() {
           <span
             className={`font-semibold ${
               member.currentBooksCount >= member.maxBooksAllowed
-                ? "text-red-600 dark:text-red-400"
+                ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
                 : "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
             }`}
             style={{ fontSize: "11.8px" }}
@@ -543,7 +543,7 @@ export default function LibraryMembersPage() {
       render: (member) =>
         member.finesDue > 0 ? (
           <span
-            className="font-semibold text-red-600 dark:text-red-400"
+            className="font-semibold text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
             style={{ fontSize: "11.8px" }}
           >
             {formatCurrency(member.finesDue, countryCode)}
@@ -574,7 +574,7 @@ export default function LibraryMembersPage() {
               }}
               className="group relative p-2 rounded-lg bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/30 dark:to-blue-900/20 midnight:from-blue-950/30 midnight:to-blue-900/20 purple:from-blue-950/30 purple:to-blue-900/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-blue-900/40 dark:hover:to-blue-800/30 transition-all duration-200 cursor-pointer border border-blue-200/40 dark:border-blue-800/30 hover:border-blue-400/60 dark:hover:border-blue-600/50 active:scale-95"
             >
-              <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
+              <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
             </button>
           </Tooltip>
           <Tooltip content="Edit Member">
@@ -585,7 +585,7 @@ export default function LibraryMembersPage() {
               }}
               className="group relative p-2 rounded-lg bg-gradient-to-br from-amber-50/50 to-amber-100/30 dark:from-amber-950/30 dark:to-amber-900/20 midnight:from-amber-950/30 midnight:to-amber-900/20 purple:from-amber-950/30 purple:to-amber-900/20 hover:from-amber-100 hover:to-amber-100 dark:hover:from-amber-900/40 dark:hover:to-amber-800/30 transition-all duration-200 cursor-pointer border border-amber-200/40 dark:border-amber-800/30 hover:border-amber-400/60 dark:hover:border-amber-600/50 active:scale-95"
             >
-              <Edit className="w-4 h-4 text-amber-600 dark:text-amber-400 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors" />
+              <Edit className="w-4 h-4 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors" />
             </button>
           </Tooltip>
         </div>
@@ -656,7 +656,7 @@ export default function LibraryMembersPage() {
           size="3xl"
           header={{
             image: (
-              <div className="relative w-16 h-16 rounded-2xl overflow-hidden ring-2 ring-white/80 dark:ring-gray-700/50 shadow-lg">
+              <div className="relative w-16 h-16 rounded-2xl overflow-hidden ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 shadow-lg">
                 <Image
                   src={viewingMember.avatarUrl || `https://i.pravatar.cc/150?u=${viewingMember.id}`}
                   alt={viewingMember.name}
@@ -684,10 +684,10 @@ export default function LibraryMembersPage() {
             ],
             subtitle: (
               <div className="space-y-1">
-                <p className="text-sm text-gray-600 dark:text-gray-300">
+                <p className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                   {viewingMember.email || "-"} • {viewingMember.phone || "-"}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                   {viewingMember.class || viewingMember.department || "-"}
                 </p>
               </div>

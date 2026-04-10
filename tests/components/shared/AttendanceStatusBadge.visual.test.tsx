@@ -42,7 +42,7 @@ describe("AttendanceStatusBadge — Visual / CSS", () => {
       );
       const badge = container.querySelector(".rounded-full")!;
       expect(badge.className).toContain("bg-gray-200");
-      expect(badge.className).toContain("dark:bg-gray-700");
+      expect(badge.className).toContain("dark:bg-[#22262e]");
     });
   });
 

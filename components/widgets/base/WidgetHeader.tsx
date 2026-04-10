@@ -147,7 +147,7 @@ export function WidgetHeader({
             className={cn(
               "p-1 rounded-md cursor-grab active:cursor-grabbing transition-all duration-200",
               "text-gray-400 dark:text-gray-500",
-              "hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50",
+              "hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#22262e]/50",
               "focus:outline-none focus:ring-2 focus:ring-blue-500/30"
             )}
             {...dragHandleProps}

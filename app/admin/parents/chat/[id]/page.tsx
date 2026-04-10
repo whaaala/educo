@@ -223,18 +223,18 @@ export default function ParentChatPage() {
       afterStats={
         <div className="flex flex-col h-[calc(100vh-120px)]">
           {/* Chat Container */}
-          <div className="flex-1 flex bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
+          <div className="flex-1 flex bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden shadow-sm">
           {/* Chat Area */}
           <div className="flex-1 flex flex-col min-w-0">
             {/* Chat Header */}
-            <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-800">
+            <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-800">
               <div className="flex items-center gap-3">
                 {/* Back Button */}
                 <button
                   onClick={() => router.push("/admin/parents")}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-full transition-colors"
                 >
-                  <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                 </button>
 
                 {/* Avatar */}
@@ -244,10 +244,10 @@ export default function ParentChatPage() {
                     alt={`${parent.firstName} ${parent.lastName}`}
                     width={44}
                     height={44}
-                    className="w-11 h-11 rounded-full border-2 border-white dark:border-gray-700 shadow-sm"
+                    className="w-11 h-11 rounded-full border-2 border-white dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm"
                   />
                 ) : (
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center border-2 border-white dark:border-gray-700 shadow-sm">
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center border-2 border-white dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
                     <span className="text-white font-bold text-lg">
                       {parent.firstName.charAt(0).toUpperCase()}
                     </span>
@@ -259,7 +259,7 @@ export default function ParentChatPage() {
                   className="flex-1 min-w-0 cursor-pointer"
                   onClick={() => setShowParticipantInfo(!showParticipantInfo)}
                 >
-                  <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                  <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                     Message to {parent.firstName}
                   </h3>
                   <p className="text-xs text-green-500 font-medium">Online</p>
@@ -268,14 +268,14 @@ export default function ParentChatPage() {
                 {/* Actions */}
                 <div className="flex items-center gap-1">
                   {showSearch ? (
-                    <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-1.5">
+                    <div className="flex items-center gap-2 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-full px-3 py-1.5">
                       <Search className="w-4 h-4 text-gray-500" />
                       <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search messages..."
-                        className="bg-transparent text-sm w-40 focus:outline-none text-gray-900 dark:text-white"
+                        className="bg-transparent text-sm w-40 focus:outline-none text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
                         autoFocus
                       />
                       <button
@@ -283,7 +283,7 @@ export default function ParentChatPage() {
                           setShowSearch(false);
                           setSearchQuery("");
                         }}
-                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full"
+                        className="p-1 hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 rounded-full"
                       >
                         <X className="w-4 h-4 text-gray-500" />
                       </button>
@@ -292,30 +292,30 @@ export default function ParentChatPage() {
                     <>
                       <button
                         onClick={() => setShowSearch(true)}
-                        className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                        className="p-2.5 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-full transition-colors"
                         title="Search messages"
                       >
-                        <Search className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        <Search className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                       </button>
                       <button
                         onClick={() => parentParticipant && startVoiceCall(parentParticipant)}
-                        className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                        className="p-2.5 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-full transition-colors"
                         title="Voice call"
                       >
-                        <Phone className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        <Phone className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                       </button>
                       <button
                         onClick={() => parentParticipant && startVideoCall(parentParticipant)}
-                        className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                        className="p-2.5 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-full transition-colors"
                         title="Video call"
                       >
-                        <Video className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        <Video className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                       </button>
                       <button
-                        className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                        className="p-2.5 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-full transition-colors"
                         title="More options"
                       >
-                        <MoreVertical className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        <MoreVertical className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                       </button>
                     </>
                   )}
@@ -324,10 +324,10 @@ export default function ParentChatPage() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900/50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-                  <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mb-4">
+                  <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center mb-4">
                     <Send className="w-10 h-10 opacity-50" />
                   </div>
                   <p className="text-lg font-medium">No messages yet</p>
@@ -338,7 +338,7 @@ export default function ParentChatPage() {
                   <div key={group.date}>
                     {/* Date separator */}
                     <div className="flex items-center justify-center my-4">
-                      <span className="px-4 py-1.5 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs font-medium rounded-full shadow-sm border border-gray-200 dark:border-gray-700">
+                      <span className="px-4 py-1.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-xs font-medium rounded-full shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                         {group.date}
                       </span>
                     </div>
@@ -383,7 +383,7 @@ export default function ParentChatPage() {
                             className={`max-w-[70%] rounded-2xl px-4 py-2.5 shadow-sm ${
                               isOwn
                                 ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-br-md"
-                                : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-bl-md border border-gray-100 dark:border-gray-700"
+                                : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 rounded-bl-md border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                             }`}
                           >
                             <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
@@ -416,42 +416,42 @@ export default function ParentChatPage() {
             </div>
 
             {/* Input */}
-            <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
               <div className="flex items-center gap-3">
                 {/* Attachment */}
                 <div className="relative">
                   <button
                     onClick={() => setShowAttachMenu(!showAttachMenu)}
-                    className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                    className="p-2.5 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-full transition-colors"
                   >
-                    <Paperclip className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <Paperclip className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                   </button>
 
                   {showAttachMenu && (
-                    <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 min-w-[160px] z-10">
+                    <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 min-w-[160px] z-10">
                       <button
                         onClick={() => {
                           fileInputRef.current?.click();
                           setShowAttachMenu(false);
                         }}
-                        className="flex items-center gap-3 w-full px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 text-left transition-colors"
+                        className="flex items-center gap-3 w-full px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-left transition-colors"
                       >
-                        <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                          <ImageIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
+                          <ImageIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                         </div>
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Image</span>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">Image</span>
                       </button>
                       <button
                         onClick={() => {
                           fileInputRef.current?.click();
                           setShowAttachMenu(false);
                         }}
-                        className="flex items-center gap-3 w-full px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 text-left transition-colors"
+                        className="flex items-center gap-3 w-full px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-left transition-colors"
                       >
                         <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
                           <Paperclip className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                         </div>
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Document</span>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">Document</span>
                       </button>
                     </div>
                   )}
@@ -465,8 +465,8 @@ export default function ParentChatPage() {
                 </div>
 
                 {/* Emoji */}
-                <button className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                  <Smile className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <button className="p-2.5 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-full transition-colors">
+                  <Smile className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                 </button>
 
                 {/* Input */}
@@ -477,7 +477,7 @@ export default function ParentChatPage() {
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
                   placeholder="Type a message..."
-                  className="flex-1 px-5 py-3 bg-gray-100 dark:bg-gray-700 border-0 rounded-full text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm"
+                  className="flex-1 px-5 py-3 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border-0 rounded-full text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm"
                 />
 
                 {/* Send */}
@@ -487,7 +487,7 @@ export default function ParentChatPage() {
                   className={`p-3 rounded-full transition-all ${
                     newMessage.trim() && !isSending
                       ? "bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg shadow-blue-500/30"
-                      : "bg-gray-200 dark:bg-gray-700 text-gray-400"
+                      : "bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-400"
                   }`}
                 >
                   {isSending ? (
@@ -502,13 +502,13 @@ export default function ParentChatPage() {
 
           {/* Participant Info Sidebar */}
           {showParticipantInfo && (
-            <div className="w-80 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex-shrink-0">
+            <div className="w-80 border-l border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex-shrink-0">
               <div className="p-6">
                 {/* Close button */}
                 <div className="flex justify-end mb-4">
                   <button
                     onClick={() => setShowParticipantInfo(false)}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-full transition-colors"
                   >
                     <X className="w-5 h-5 text-gray-500" />
                   </button>
@@ -522,59 +522,59 @@ export default function ParentChatPage() {
                       alt={`${parent.firstName} ${parent.lastName}`}
                       width={96}
                       height={96}
-                      className="w-24 h-24 rounded-full mx-auto border-4 border-white dark:border-gray-700 shadow-lg"
+                      className="w-24 h-24 rounded-full mx-auto border-4 border-white dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-lg"
                     />
                   ) : (
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto border-4 border-white dark:border-gray-700 shadow-lg">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto border-4 border-white dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-lg">
                       <span className="text-white font-bold text-3xl">
                         {parent.firstName.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   )}
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mt-4">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-4">
                     {parent.firstName} {parent.lastName}
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                     {parent.relationship}
                   </p>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 mt-2">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 mt-2">
                     Online
                   </span>
                 </div>
 
                 {/* Contact Info */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                      <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
+                      <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Email</p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Email</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                         {parent.email}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
                     <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                      <Phone className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      <Phone className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Phone</p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Phone</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                         {parent.phone}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
                     <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
                       <User className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Children</p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Children</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                         {parent.children.length} {parent.children.length === 1 ? "child" : "children"}
                       </p>
                     </div>

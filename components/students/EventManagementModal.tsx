@@ -124,7 +124,7 @@ export default function EventManagementModal({
             </p>
             <button
               onClick={onClose}
-              className="px-6 py-2 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              className="px-6 py-2 rounded-xl bg-gray-200 dark:bg-[#22262e] text-gray-900 dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-[#2a2d35] transition-colors"
             >
               Close
             </button>
@@ -150,7 +150,7 @@ export default function EventManagementModal({
             </p>
             <button
               onClick={onClose}
-              className="px-6 py-2 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              className="px-6 py-2 rounded-xl bg-gray-200 dark:bg-[#22262e] text-gray-900 dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-[#2a2d35] transition-colors"
             >
               Close
             </button>
@@ -184,7 +184,7 @@ export default function EventManagementModal({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors"
           >
             <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
@@ -210,7 +210,7 @@ export default function EventManagementModal({
                 <select
                   value={selectedDay}
                   onChange={(e) => setSelectedDay(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                 >
                   {daysOfWeek.map((day) => (
                     <option key={day} value={day}>
@@ -228,7 +228,7 @@ export default function EventManagementModal({
                 <select
                   value={selectedPeriod}
                   onChange={(e) => setSelectedPeriod(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                 >
                   {periods.map((period) => (
                     <option key={period} value={period}>
@@ -252,7 +252,7 @@ export default function EventManagementModal({
                 value={formData.subject}
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                 placeholder="e.g., Mathematics, Assembly, Study Hall"
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
           </div>
@@ -292,7 +292,7 @@ export default function EventManagementModal({
                   value={formData.teacher}
                   onChange={(e) => setFormData({ ...formData, teacher: e.target.value })}
                   placeholder="e.g., Mr. Smith"
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>
             </div>
@@ -310,14 +310,14 @@ export default function EventManagementModal({
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Add notes or additional information..."
                 rows={4}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none resize-none"
               />
             </div>
           </div>
 
           {/* Event Info */}
           {isEditMode && event && (
-            <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 midnight:bg-cyan-900/10 purple:bg-pink-900/10 space-y-2">
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-cyan-900/10 purple:bg-pink-900/10 space-y-2">
               <div className="text-xs text-gray-600 dark:text-gray-400">
                 <span className="font-semibold">Created:</span>{" "}
                 {event.createdAt ? new Date(event.createdAt).toLocaleString() : "Unknown"}
@@ -351,7 +351,7 @@ export default function EventManagementModal({
           <div className="flex items-center gap-3 ml-auto">
             <button
               onClick={onClose}
-              className="px-6 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="px-6 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-[#22262e] transition-colors"
             >
               Cancel
             </button>

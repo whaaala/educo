@@ -80,7 +80,7 @@ export default function ApplyLeaveModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden border border-gray-200/50 dark:border-gray-800/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modern Compact Header */}
@@ -114,7 +114,7 @@ export default function ApplyLeaveModal({
             {/* Modern close button */}
             <button
               onClick={onClose}
-              className="cursor-pointer w-8 h-8 sm:w-9 sm:h-9 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 hover:rotate-90 active:scale-90 group flex items-center justify-center"
+              className="cursor-pointer w-8 h-8 sm:w-9 sm:h-9 rounded-lg hover:bg-gray-100/80 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 hover:rotate-90 active:scale-90 group flex items-center justify-center"
               aria-label="Close modal"
             >
               <X className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/70 purple:text-pink-400/70 group-hover:text-gray-600 dark:group-hover:text-gray-300 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors" />

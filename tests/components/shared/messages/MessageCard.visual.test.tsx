@@ -37,9 +37,9 @@ describe("MessageCard — Visual / CSS", () => {
       const { container } = render(<MessageCard {...defaultProps} />);
       const card = container.firstChild as HTMLElement;
       expect(card.className).toContain("bg-white");
-      expect(card.className).toContain("dark:bg-gray-800");
-      expect(card.className).toContain("midnight:bg-gray-900");
-      expect(card.className).toContain("purple:bg-gray-900");
+      expect(card.className).toContain("dark:bg-[#1a1d24]");
+      expect(card.className).toContain("midnight:bg-[#0a0e27]");
+      expect(card.className).toContain("purple:bg-[#1a0b2e]");
     });
 
     it("has rounded-xl with border", () => {

@@ -313,13 +313,13 @@ export default function EditFeeRecordPage() {
         loadingText="Loading Fee Record"
         afterStats={
           <div className="mt-6 flex flex-col items-center justify-center min-h-[60vh]">
-            <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
-              <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+            <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 flex items-center justify-center mb-4">
+              <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
               Fee Record Not Found
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">
+            <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-6">
               The fee record you&apos;re looking for doesn&apos;t exist or has been deleted.
             </p>
             <button
@@ -384,23 +384,23 @@ export default function EditFeeRecordPage() {
           {selectedStudent && formData.feeType && formData.amount && (
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 midnight:from-gray-900 midnight:to-gray-900 purple:from-gray-900 purple:to-gray-900 rounded-xl border border-blue-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                     Fee Record Preview
                   </h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                     Review the updated fee details before saving
                   </p>
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 rounded-xl p-4 space-y-3">
-                <div className="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-600">
+              <div className="bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-xl p-4 space-y-3">
+                <div className="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-600">
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700">
                       <Image
                         src={selectedStudent.profilePhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedStudent.fullName)}&background=random`}
                         alt={selectedStudent.fullName}
@@ -410,19 +410,19 @@ export default function EditFeeRecordPage() {
                       />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900 dark:text-white">
+                      <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                         {selectedStudent.fullName}
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                         {selectedStudent.classLevel} | Parent: {selectedParent ? `${selectedParent.firstName} ${selectedParent.lastName}` : ""}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                       {settings.currency}{formatCurrency(formData.amount)}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                       {formData.feeType}
                     </p>
                   </div>
@@ -430,22 +430,22 @@ export default function EditFeeRecordPage() {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-500 dark:text-gray-400">Term</p>
-                    <p className="font-medium text-gray-900 dark:text-white">{formData.term || "-"}</p>
+                    <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Term</p>
+                    <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{formData.term || "-"}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500 dark:text-gray-400">Academic Year</p>
-                    <p className="font-medium text-gray-900 dark:text-white">{formData.academicYear}</p>
+                    <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Academic Year</p>
+                    <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{formData.academicYear}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500 dark:text-gray-400">Due Date</p>
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Due Date</p>
+                    <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                       {formData.dueDate ? new Date(formData.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "-"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-500 dark:text-gray-400">Paid Amount</p>
-                    <p className="font-medium text-green-600 dark:text-green-400">
+                    <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Paid Amount</p>
+                    <p className="font-medium text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
                       {settings.currency}{formatCurrency((originalRecord?.paidAmount || 0).toString())}
                     </p>
                   </div>
@@ -460,7 +460,7 @@ export default function EditFeeRecordPage() {
           ref={buttonsRef}
           className={`${
             isSticky ? "fixed" : "relative"
-          } bottom-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-t-xl shadow-lg backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 py-4 px-6 z-50`}
+          } bottom-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-t-xl shadow-lg backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 py-4 px-6 z-50`}
           style={
             isSticky
               ? {
@@ -477,7 +477,7 @@ export default function EditFeeRecordPage() {
             <button
               type="button"
               onClick={handleCancel}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-all duration-200 cursor-pointer"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 cursor-pointer"
             >
               Cancel
             </button>

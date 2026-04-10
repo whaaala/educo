@@ -198,8 +198,8 @@ export default function ActionsDropdown<T>({
           onClick={handleToggle}
           className={`
             flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
-            bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600
-            hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer
+            bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30
+            hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer
             ${triggerClassName}
           `}
         >
@@ -217,11 +217,11 @@ export default function ActionsDropdown<T>({
         onClick={handleToggle}
         className={`
           p-2 rounded-lg transition-colors cursor-pointer
-          ${isOpen ? "bg-gray-200 dark:bg-gray-600" : "hover:bg-gray-100 dark:hover:bg-gray-700"}
+          ${isOpen ? "bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700" : "hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"}
           ${triggerClassName}
         `}
       >
-        <IconComponent className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+        <IconComponent className="w-5 h-5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
       </button>
     );
   };
@@ -232,7 +232,7 @@ export default function ActionsDropdown<T>({
       ref={menuRef}
       className={`
         ${menuWidths[menuWidth]}
-        bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900
+        bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]
         rounded-xl shadow-xl border border-gray-200 dark:border-gray-700
         midnight:border-cyan-700/30 purple:border-pink-700/30
         py-1 animate-in zoom-in-95 duration-150
@@ -249,7 +249,7 @@ export default function ActionsDropdown<T>({
         return (
           <div key={action.id}>
             {action.dividerBefore && index > 0 && (
-              <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+              <div className="border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 my-1" />
             )}
             <button
               onClick={(e) => {
@@ -263,12 +263,12 @@ export default function ActionsDropdown<T>({
                 transition-colors cursor-pointer
                 ${
                   isDanger
-                    ? "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20"
                     : isWarning
                     ? "text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
                     : isSuccess
-                    ? "text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
-                    : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                    ? "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                    : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50"
                 }
               `}
             >

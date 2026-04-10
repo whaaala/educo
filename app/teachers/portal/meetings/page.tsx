@@ -135,16 +135,16 @@ function getPlatformInfo(platform: MeetingPlatform) {
       return {
         name: "Zoom",
         icon: <ZoomIcon />,
-        bgClass: "bg-blue-50 dark:bg-blue-900/30",
-        textClass: "text-blue-600 dark:text-blue-400",
-        borderClass: "border-blue-200 dark:border-blue-700/30",
+        bgClass: "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30",
+        textClass: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
+        borderClass: "border-blue-200 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/30",
       };
     case "google-meet":
       return {
         name: "Google Meet",
         icon: <GoogleMeetIcon />,
         bgClass: "bg-green-50 dark:bg-green-900/30",
-        textClass: "text-green-600 dark:text-green-400",
+        textClass: "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
         borderClass: "border-green-200 dark:border-green-700/30",
       };
     case "whatsapp-video":
@@ -175,17 +175,17 @@ function getPlatformInfo(platform: MeetingPlatform) {
       return {
         name: "In Person",
         icon: <Users />,
-        bgClass: "bg-gray-50 dark:bg-gray-900/30",
-        textClass: "text-gray-600 dark:text-gray-400",
-        borderClass: "border-gray-200 dark:border-gray-700/30",
+        bgClass: "bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30",
+        textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
+        borderClass: "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30",
       };
     default:
       return {
         name: "Meeting",
         icon: <Video />,
-        bgClass: "bg-gray-50 dark:bg-gray-900/30",
-        textClass: "text-gray-600 dark:text-gray-400",
-        borderClass: "border-gray-200 dark:border-gray-700/30",
+        bgClass: "bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30",
+        textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
+        borderClass: "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30",
       };
   }
 }
@@ -197,7 +197,7 @@ function getStatusInfo(status: MeetingStatus) {
         label: "Scheduled",
         icon: <Clock className="w-3.5 h-3.5" />,
         bgClass: "bg-blue-100 dark:bg-blue-900/40",
-        textClass: "text-blue-700 dark:text-blue-300",
+        textClass: "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300",
       };
     case "pending_approval":
       return {
@@ -217,8 +217,8 @@ function getStatusInfo(status: MeetingStatus) {
       return {
         label: "Completed",
         icon: <CheckCircle2 className="w-3.5 h-3.5" />,
-        bgClass: "bg-gray-100 dark:bg-gray-700/40",
-        textClass: "text-gray-600 dark:text-gray-400",
+        bgClass: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/40",
+        textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
       };
     case "cancelled":
       return {
@@ -231,8 +231,8 @@ function getStatusInfo(status: MeetingStatus) {
       return {
         label: status,
         icon: <Clock className="w-3.5 h-3.5" />,
-        bgClass: "bg-gray-100 dark:bg-gray-700/40",
-        textClass: "text-gray-600 dark:text-gray-400",
+        bgClass: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/40",
+        textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
       };
   }
 }
@@ -499,51 +499,51 @@ export default function TeacherMeetingsPage() {
 
           {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-900/30">
-                <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <div className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
+                <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{upcomingMeetings.length}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Upcoming</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{upcomingMeetings.length}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Upcoming</p>
               </div>
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-lg bg-orange-50 dark:bg-orange-900/30">
                 <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                   {meetings.filter((m) => m.status === "pending_approval").length}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Pending Approval</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Pending Approval</p>
               </div>
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-lg bg-green-50 dark:bg-green-900/30">
-                <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                   {meetings.filter((m) => m.status === "completed").length}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Completed</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Completed</p>
               </div>
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-lg bg-purple-50 dark:bg-purple-900/30">
                 <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{meetings.length}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Total Meetings</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{meetings.length}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Total Meetings</p>
               </div>
             </div>
           </div>
@@ -558,14 +558,14 @@ export default function TeacherMeetingsPage() {
               placeholder="Search meetings, parents, students..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
             />
           </div>
 
           <select
             value={selectedPlatform}
             onChange={(e) => setSelectedPlatform(e.target.value as MeetingPlatform | "all")}
-            className="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
+            className="px-4 py-2.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
           >
             <option value="all">All Platforms</option>
             <option value="educo-meet">Educo Meet</option>
@@ -579,7 +579,7 @@ export default function TeacherMeetingsPage() {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value as MeetingStatus | "all")}
-            className="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
+            className="px-4 py-2.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
           >
             <option value="all">All Status</option>
             <option value="scheduled">Scheduled</option>
@@ -593,8 +593,8 @@ export default function TeacherMeetingsPage() {
         {/* Upcoming Meetings */}
         {upcomingMeetings.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               Upcoming Meetings
               <span className="text-xs font-semibold text-white bg-blue-600 px-2 py-0.5 rounded-full">
                 {upcomingMeetings.length}
@@ -609,14 +609,14 @@ export default function TeacherMeetingsPage() {
                 return (
                   <div
                     key={meeting.id}
-                    className={`group bg-white dark:bg-gray-800 rounded-2xl border ${platformInfo.borderClass} shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden`}
+                    className={`group bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border ${platformInfo.borderClass} shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden`}
                   >
                     <div className="p-5">
                       <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                         {/* Parent Info */}
                         <div className="flex items-center gap-4 flex-1">
                           <div className="relative">
-                            <div className="w-14 h-14 rounded-xl overflow-hidden ring-2 ring-white dark:ring-gray-700 shadow-md">
+                            <div className="w-14 h-14 rounded-xl overflow-hidden ring-2 ring-white dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 shadow-md">
                               <Image
                                 src={meeting.parentPhoto}
                                 alt={meeting.parentName}
@@ -643,7 +643,7 @@ export default function TeacherMeetingsPage() {
 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-bold text-gray-900 dark:text-white truncate">{meeting.title}</h3>
+                              <h3 className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{meeting.title}</h3>
                               <span
                                 className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${statusInfo.bgClass} ${statusInfo.textClass}`}
                               >
@@ -656,14 +656,14 @@ export default function TeacherMeetingsPage() {
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1">{meeting.description}</p>
-                            <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            <p className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 line-clamp-1">{meeting.description}</p>
+                            <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                               <span className="flex items-center gap-1">
                                 <User className="w-3.5 h-3.5" />
                                 {meeting.parentName}
                               </span>
                               {meeting.childName && (
-                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700 font-medium">
+                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] font-medium">
                                   <GraduationCap className="w-3 h-3" />
                                   {meeting.childName} ({meeting.childClass})
                                 </span>
@@ -675,8 +675,8 @@ export default function TeacherMeetingsPage() {
                         {/* Meeting Time & Actions */}
                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                           <div className="text-left sm:text-right">
-                            <p className="text-sm font-bold text-gray-900 dark:text-white">{formatDate(meeting.scheduledDate)}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                            <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{formatDate(meeting.scheduledDate)}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                               {meeting.scheduledTime} - {meeting.duration} min
                             </p>
                           </div>
@@ -738,7 +738,7 @@ export default function TeacherMeetingsPage() {
                             {/* View Details button for upcoming meetings */}
                             <button
                               onClick={() => handleViewMeetingDetails(meeting)}
-                              className="flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                              className="flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-xl transition-colors"
                             >
                               <Eye className="w-4 h-4" />
                               Details
@@ -749,17 +749,17 @@ export default function TeacherMeetingsPage() {
 
                       {/* Meeting Details */}
                       {(meeting.meetingId || meeting.passcode) && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                           <div className="flex flex-wrap gap-4">
                             {meeting.meetingId && (
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-500 dark:text-gray-400">Meeting ID:</span>
-                                <span className="text-xs font-mono font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Meeting ID:</span>
+                                <span className="text-xs font-mono font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] px-2 py-1 rounded">
                                   {meeting.meetingId}
                                 </span>
                                 <button
                                   onClick={() => copyToClipboard(meeting.meetingId!.replace(/\s/g, ""))}
-                                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                  className="p-1 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded transition-colors"
                                 >
                                   <Copy className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600" />
                                 </button>
@@ -767,13 +767,13 @@ export default function TeacherMeetingsPage() {
                             )}
                             {meeting.passcode && (
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-500 dark:text-gray-400">Passcode:</span>
-                                <span className="text-xs font-mono font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Passcode:</span>
+                                <span className="text-xs font-mono font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] px-2 py-1 rounded">
                                   {meeting.passcode}
                                 </span>
                                 <button
                                   onClick={() => copyToClipboard(meeting.passcode!)}
-                                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                  className="p-1 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded transition-colors"
                                 >
                                   <Copy className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600" />
                                 </button>
@@ -793,10 +793,10 @@ export default function TeacherMeetingsPage() {
         {/* Past Meetings */}
         {pastMeetings.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
               <Clock className="w-5 h-5 text-gray-500" />
               Past Meetings
-              <span className="text-xs font-semibold text-gray-600 bg-gray-200 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full">
+              <span className="text-xs font-semibold text-gray-600 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 px-2 py-0.5 rounded-full">
                 {pastMeetings.length}
               </span>
             </h2>
@@ -809,7 +809,7 @@ export default function TeacherMeetingsPage() {
                 return (
                   <div
                     key={meeting.id}
-                    className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 p-4 opacity-75 hover:opacity-100"
+                    className="group bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-200 p-4 opacity-75 hover:opacity-100"
                   >
                     <div className="flex items-center gap-4">
                       <div className="relative">
@@ -830,7 +830,7 @@ export default function TeacherMeetingsPage() {
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-gray-700 dark:text-gray-300 text-sm truncate">{meeting.title}</h3>
+                          <h3 className="font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 text-sm truncate">{meeting.title}</h3>
                           <span
                             className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold ${statusInfo.bgClass} ${statusInfo.textClass}`}
                           >
@@ -838,7 +838,7 @@ export default function TeacherMeetingsPage() {
                             {statusInfo.label}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
                           {meeting.parentName} - {meeting.childName} - {formatDate(meeting.scheduledDate)} at {meeting.scheduledTime}
                         </p>
                       </div>
@@ -849,7 +849,7 @@ export default function TeacherMeetingsPage() {
                         </span>
                         <button
                           onClick={() => handleViewMeetingDetails(meeting)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           View Details
@@ -866,11 +866,11 @@ export default function TeacherMeetingsPage() {
         {/* Empty State */}
         {filteredMeetings.length === 0 && (
           <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-center justify-center">
               <Video className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No meetings found</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">No meetings found</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4">
               {searchQuery || selectedPlatform !== "all" || selectedStatus !== "all"
                 ? "Try adjusting your filters"
                 : "You don't have any meetings scheduled yet"}

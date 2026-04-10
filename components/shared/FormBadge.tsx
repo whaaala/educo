@@ -48,7 +48,7 @@ export default function FormBadge({
         {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
       </label>
       <div
-        className={`appearance-none w-full h-[46px] text-sm font-normal text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 ${
+        className={`appearance-none w-full h-[46px] text-sm font-normal text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] ${
           error ? "border-red-500 dark:border-red-400" : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
         } rounded-xl px-4 py-2.5 border transition-all duration-200 flex items-center`}
       >

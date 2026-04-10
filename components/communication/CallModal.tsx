@@ -27,7 +27,7 @@ const ChatRoom = dynamic(() => import("./ChatRoom"), {
 
 function LoadingScreen({ text }: { text: string }) {
   return (
-    <div className="flex items-center justify-center h-full bg-gray-100 dark:bg-gray-900 midnight:bg-[#060a1a] purple:bg-[#120622]">
+    <div className="flex items-center justify-center h-full bg-gray-100 dark:bg-[#0f1115] midnight:bg-[#060a1a] purple:bg-[#120622]">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4" />
         <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{text}</p>
@@ -171,7 +171,7 @@ export default function CallModal({
       const VideoCallRoom = eagerVideoCallRoomRef.current || DynamicVideoCallRoom;
       return (
         <div
-          className="fixed top-[64px] bottom-0 right-0 z-30 bg-gray-100 dark:bg-gray-900 midnight:bg-[#060a1a] purple:bg-[#120622] left-0 lg:left-[var(--sidebar-width)]"
+          className="fixed top-[64px] bottom-0 right-0 z-30 bg-gray-100 dark:bg-[#0f1115] midnight:bg-[#060a1a] purple:bg-[#120622] left-0 lg:left-[var(--sidebar-width)]"
           style={{ "--sidebar-width": `${sidebarWidth}px` } as React.CSSProperties}
         >
           <VideoCallRoom
@@ -198,7 +198,7 @@ export default function CallModal({
     if (selectedCallType === "voice") {
       return (
         <div
-          className="fixed top-[64px] bottom-0 right-0 z-30 bg-gray-100 dark:bg-gray-900 midnight:bg-[#060a1a] purple:bg-[#120622] left-0 lg:left-[var(--sidebar-width)]"
+          className="fixed top-[64px] bottom-0 right-0 z-30 bg-gray-100 dark:bg-[#0f1115] midnight:bg-[#060a1a] purple:bg-[#120622] left-0 lg:left-[var(--sidebar-width)]"
           style={{ "--sidebar-width": `${sidebarWidth}px` } as React.CSSProperties}
         >
           <VoiceCallRoom
@@ -228,7 +228,7 @@ export default function CallModal({
     if (selectedCallType === "chat") {
       return (
         <div
-          className="fixed top-[64px] bottom-0 right-0 z-30 bg-gray-100 dark:bg-gray-900 midnight:bg-[#060a1a] purple:bg-[#120622] left-0 lg:left-[var(--sidebar-width)]"
+          className="fixed top-[64px] bottom-0 right-0 z-30 bg-gray-100 dark:bg-[#0f1115] midnight:bg-[#060a1a] purple:bg-[#120622] left-0 lg:left-[var(--sidebar-width)]"
           style={{ "--sidebar-width": `${sidebarWidth}px` } as React.CSSProperties}
         >
           <ChatRoom
@@ -259,7 +259,7 @@ export default function CallModal({
   // Show call type selection screen
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="bg-white dark:bg-[#1a1d24] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
           <div className="flex items-center justify-between mb-4">
@@ -403,7 +403,7 @@ export default function CallModal({
           </div>
 
           {/* Room Info */}
-          <div className="mt-6 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+          <div className="mt-6 p-3 bg-gray-50 dark:bg-[#0f1115]/50 rounded-lg">
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
               Room ID: <span className="font-mono">{roomId.slice(0, 20)}...</span>
             </p>

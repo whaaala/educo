@@ -23,7 +23,7 @@ describe("JoinRequestNotification — Visual / CSS", () => {
       const { container } = render(<JoinRequestNotification {...defaultProps} />);
       const notification = container.firstChild as HTMLElement;
       expect(notification.className).toContain("bg-white");
-      expect(notification.className).toContain("dark:bg-gray-800");
+      expect(notification.className).toContain("dark:bg-[#1a1d24]");
     });
 
     it("has slide-in animation", () => {

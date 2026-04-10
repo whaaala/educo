@@ -119,7 +119,7 @@ export default function ClassCard({
   return (
     <>
       <div className="relative group/card">
-        <div className="group relative bg-white dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 hover:bg-gradient-to-br hover:from-blue-100 hover:via-purple-100 hover:to-pink-100 dark:hover:bg-gray-800/90 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 dark:hover:shadow-blue-400/30 midnight:hover:shadow-cyan-400/30 purple:hover:shadow-pink-400/30 hover:border-purple-300/60 dark:hover:border-blue-400/50 midnight:hover:border-cyan-400/50 purple:hover:border-pink-400/50 h-[420px] flex flex-col group-has-[:hover.group\\/avatar]:blur-[6px]">
+        <div className="group relative bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 hover:bg-gradient-to-br hover:from-blue-100 hover:via-purple-100 hover:to-pink-100 dark:hover:bg-[#22262e]/90 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 dark:hover:shadow-blue-400/30 midnight:hover:shadow-cyan-400/30 purple:hover:shadow-pink-400/30 hover:border-purple-300/60 dark:hover:border-blue-400/50 midnight:hover:border-cyan-400/50 purple:hover:border-pink-400/50 h-[420px] flex flex-col group-has-[:hover.group\\/avatar]:blur-[6px]">
           {/* Gradient Overlay Effect */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/3 to-pink-500/5 dark:from-blue-400/15 dark:via-purple-400/8 dark:to-pink-400/15 midnight:from-cyan-400/15 midnight:via-purple-400/8 midnight:to-cyan-400/15 purple:from-pink-400/15 purple:via-purple-400/8 purple:to-pink-400/15 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
 
@@ -147,7 +147,7 @@ export default function ClassCard({
                 </span>
               </TruncateTooltip>
               {isTertiary && classData.semester && (
-                <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400 bg-white/70 dark:bg-gray-700/50 px-2 py-0.5 rounded-md border border-gray-200/50 dark:border-gray-600/50 whitespace-nowrap flex-shrink-0">
+                <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400 bg-white/70 dark:bg-[#22262e]/50 px-2 py-0.5 rounded-md border border-gray-200/50 dark:border-gray-600/50 whitespace-nowrap flex-shrink-0">
                   {classData.semester}
                 </span>
               )}
@@ -188,7 +188,7 @@ export default function ClassCard({
 
               <button
                 onClick={handleViewDetails}
-                className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 cursor-pointer"
+                className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 cursor-pointer"
                 title="View Details"
               >
                 <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 midnight:hover:text-cyan-400 purple:hover:text-pink-400 transition-colors" />
@@ -273,7 +273,7 @@ export default function ClassCard({
             {/* Details Section */}
             <div className="space-y-1 relative z-0">
             {/* Teacher Info */}
-            <div className="group/detail flex items-center justify-between py-1.5 px-3 rounded-lg bg-white/70 backdrop-blur-sm dark:bg-gray-700/40 midnight:bg-cyan-500/10 purple:bg-pink-500/10 group-hover:bg-white/95 dark:group-hover:bg-gray-700/60 midnight:group-hover:bg-cyan-500/25 purple:group-hover:bg-pink-500/25 transition-all duration-200 border border-white/40 group-hover:border-white/60">
+            <div className="group/detail flex items-center justify-between py-1.5 px-3 rounded-lg bg-white/70 backdrop-blur-sm dark:bg-[#22262e]/40 midnight:bg-cyan-500/10 purple:bg-pink-500/10 group-hover:bg-white/95 dark:group-hover:bg-gray-700/60 midnight:group-hover:bg-cyan-500/25 purple:group-hover:bg-pink-500/25 transition-all duration-200 border border-white/40 group-hover:border-white/60">
               <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors uppercase tracking-wider flex-shrink-0">
                 {teacherLabel}
               </span>
@@ -285,7 +285,7 @@ export default function ClassCard({
             </div>
 
             {/* Students */}
-            <div className="group/detail flex items-center justify-between py-1.5 px-3 rounded-lg bg-white/70 backdrop-blur-sm dark:bg-gray-700/40 midnight:bg-cyan-500/10 purple:bg-pink-500/10 group-hover:bg-white/95 dark:group-hover:bg-gray-700/60 midnight:group-hover:bg-cyan-500/25 purple:group-hover:bg-pink-500/25 transition-all duration-200 border border-white/40 group-hover:border-white/60">
+            <div className="group/detail flex items-center justify-between py-1.5 px-3 rounded-lg bg-white/70 backdrop-blur-sm dark:bg-[#22262e]/40 midnight:bg-cyan-500/10 purple:bg-pink-500/10 group-hover:bg-white/95 dark:group-hover:bg-gray-700/60 midnight:group-hover:bg-cyan-500/25 purple:group-hover:bg-pink-500/25 transition-all duration-200 border border-white/40 group-hover:border-white/60">
               <TruncateTooltip content={studentsLabel}>
                 <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors uppercase tracking-wider truncate">
                   {studentsLabel}
@@ -297,7 +297,7 @@ export default function ClassCard({
             </div>
 
             {/* Room/Courses */}
-            <div className="group/detail flex items-center justify-between py-1.5 px-3 rounded-lg bg-white/70 backdrop-blur-sm dark:bg-gray-700/40 midnight:bg-cyan-500/10 purple:bg-pink-500/10 group-hover:bg-white/95 dark:group-hover:bg-gray-700/60 midnight:group-hover:bg-cyan-500/25 purple:group-hover:bg-pink-500/25 transition-all duration-200 border border-white/40 group-hover:border-white/60">
+            <div className="group/detail flex items-center justify-between py-1.5 px-3 rounded-lg bg-white/70 backdrop-blur-sm dark:bg-[#22262e]/40 midnight:bg-cyan-500/10 purple:bg-pink-500/10 group-hover:bg-white/95 dark:group-hover:bg-gray-700/60 midnight:group-hover:bg-cyan-500/25 purple:group-hover:bg-pink-500/25 transition-all duration-200 border border-white/40 group-hover:border-white/60">
               <TruncateTooltip content={isTertiary ? coursesLabel : "ROOM"}>
                 <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors uppercase tracking-wider truncate">
                   {isTertiary ? coursesLabel : "ROOM"}
@@ -328,7 +328,7 @@ export default function ClassCard({
                       key={index}
                       className={`flex items-center gap-2 px-3 rounded-lg transition-colors h-[30px] ${
                         subject
-                          ? 'bg-white/70 backdrop-blur-sm dark:bg-gray-700/40 midnight:bg-cyan-500/10 purple:bg-pink-500/10 border border-white/40 dark:border-gray-600/40 midnight:border-cyan-500/30 purple:border-pink-500/30 group-hover:bg-white/90 dark:group-hover:bg-gray-700/60 midnight:group-hover:bg-cyan-500/20 purple:group-hover:bg-pink-500/20'
+                          ? 'bg-white/70 backdrop-blur-sm dark:bg-[#22262e]/40 midnight:bg-cyan-500/10 purple:bg-pink-500/10 border border-white/40 dark:border-gray-600/40 midnight:border-cyan-500/30 purple:border-pink-500/30 group-hover:bg-white/90 dark:group-hover:bg-gray-700/60 midnight:group-hover:bg-cyan-500/20 purple:group-hover:bg-pink-500/20'
                           : 'opacity-0 pointer-events-none'
                       }`}
                     >

@@ -193,8 +193,8 @@ export function MentionPopover({
       data-mention-popover
       className={[
         "absolute left-0 w-full max-h-[180px] overflow-y-auto z-[250]",
-        "rounded-xl border border-white/20 dark:border-gray-600/40",
-        "bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl",
+        "rounded-xl border border-white/20 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/40",
+        "bg-white/80 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 backdrop-blur-xl",
         "shadow-2xl shadow-black/10 dark:shadow-black/30",
         position === "above" ? "bottom-full mb-1.5" : "top-full mt-1.5",
       ].join(" ")}
@@ -213,8 +213,8 @@ export function MentionPopover({
             className={[
               "w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors cursor-pointer",
               i === highlightIdx
-                ? "bg-blue-50/80 dark:bg-blue-900/30"
-                : "hover:bg-gray-50/80 dark:hover:bg-gray-800/50",
+                ? "bg-blue-50/80 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+                : "hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/50",
             ].join(" ")}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => onSelect(user)}
@@ -223,13 +223,13 @@ export function MentionPopover({
             <div className="min-w-0 flex-1">
               <div className={[
                 "text-[12px] font-medium truncate",
-                i === highlightIdx ? "text-blue-700 dark:text-blue-300" : "text-gray-700 dark:text-gray-200",
+                i === highlightIdx ? "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100",
               ].join(" ")}>
                 {user.name}
               </div>
             </div>
             {i === highlightIdx && (
-              <span className="text-[9px] text-gray-400 dark:text-gray-500 flex-shrink-0">Enter</span>
+              <span className="text-[9px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 flex-shrink-0">Enter</span>
             )}
           </button>
         ))}
@@ -248,7 +248,7 @@ export function renderMentionPills(text: string) {
         <span
           key={i}
           data-mention-pill
-          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-blue-100/80 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-[10px] font-semibold leading-none whitespace-nowrap"
+          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-blue-100/80 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 text-[10px] font-semibold leading-none whitespace-nowrap"
         >
           <AtSign className="w-2.5 h-2.5 opacity-70" />
           {part.slice(1)}
@@ -356,8 +356,8 @@ export function CommentCard({
       className={[
         "rounded-xl border p-2.5 transition-all duration-200 cursor-pointer group",
         isActive
-          ? "border-blue-300 dark:border-blue-600 bg-blue-50/60 dark:bg-blue-900/20 shadow-md ring-1 ring-blue-200/50 dark:ring-blue-700/30"
-          : "border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-sm",
+          ? "border-blue-300 dark:border-blue-600 bg-blue-50/60 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 shadow-md ring-1 ring-blue-200/50 dark:ring-blue-700/30"
+          : "border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-sm",
         isResolved ? "opacity-70" : "",
       ].join(" ")}
     >
@@ -366,8 +366,8 @@ export function CommentCard({
         <div className="flex items-center gap-2 min-w-0">
           <CommentAvatar author={comment.author} size={24} />
           <div className="min-w-0">
-            <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 truncate">{comment.author.name}</div>
-            <div className="text-[10px] text-gray-400 dark:text-gray-500">{timeAgo}</div>
+            <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">{comment.author.name}</div>
+            <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{timeAgo}</div>
           </div>
         </div>
         <div className="flex items-center gap-0.5">
@@ -377,7 +377,7 @@ export function CommentCard({
             </span>
           )}
           {comment.status === "rejected" && (
-            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 mr-1">
+            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mr-1">
               Rejected
             </span>
           )}
@@ -398,7 +398,7 @@ export function CommentCard({
                   onClick={(e) => { e.stopPropagation(); onReject(); }}
                   className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
                 >
-                  <X className="w-3.5 h-3.5 text-red-400 dark:text-red-400" />
+                  <X className="w-3.5 h-3.5 text-red-400 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
                 </button>
               </Tooltip>
             </div>
@@ -410,7 +410,7 @@ export function CommentCard({
                 onClick={(e) => { e.stopPropagation(); onReopen(); }}
                 className="w-6 h-6 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all cursor-pointer"
               >
-                <RotateCw className="w-3 h-3 text-blue-500 dark:text-blue-400" />
+                <RotateCw className="w-3 h-3 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </button>
             </Tooltip>
           )}
@@ -418,7 +418,7 @@ export function CommentCard({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); setShowReplyInput(true); }}
-              className="w-6 h-6 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all cursor-pointer"
+              className="w-6 h-6 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all cursor-pointer"
               title="Reply"
             >
               <MessageCircle className="w-3.5 h-3.5 text-gray-400" />
@@ -428,12 +428,12 @@ export function CommentCard({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); setShowActions(!showActions); }}
-              className="w-6 h-6 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all cursor-pointer"
+              className="w-6 h-6 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all cursor-pointer"
             >
               <MoreHorizontal className="w-3.5 h-3.5 text-gray-400" />
             </button>
             {showActions && (
-              <div className="absolute right-0 top-full mt-1 w-[140px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl py-1 z-10">
+              <div className="absolute right-0 top-full mt-1 w-[140px] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-xl py-1 z-10">
                 {isOwner && !isResolved && (
                   <>
                     <button
@@ -447,7 +447,7 @@ export function CommentCard({
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); onReject(); setShowActions(false); }}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 transition-colors cursor-pointer"
                     >
                       <XCircle className="w-3.5 h-3.5" />
                       Reject
@@ -458,7 +458,7 @@ export function CommentCard({
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); onReopen(); setShowActions(false); }}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors cursor-pointer"
                   >
                     <RotateCw className="w-3.5 h-3.5" />
                     Reopen
@@ -468,7 +468,7 @@ export function CommentCard({
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); onDelete(); setShowActions(false); }}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     Delete
@@ -483,25 +483,25 @@ export function CommentCard({
       {/* Tab indicator */}
       {comment.tabId && (
         <div className="mb-1">
-          <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+          <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
             {comment.tabId.replace("tab-", "Tab ")}
           </span>
         </div>
       )}
 
       {/* Selected text excerpt */}
-      <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-1.5 px-1.5 py-1 bg-yellow-50/60 dark:bg-yellow-900/15 rounded border-l-2 border-yellow-400 dark:border-yellow-600 line-clamp-1">
+      <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mb-1.5 px-1.5 py-1 bg-yellow-50/60 dark:bg-yellow-900/15 rounded border-l-2 border-yellow-400 dark:border-yellow-600 line-clamp-1">
         &ldquo;{comment.selectedText}&rdquo;
       </div>
 
       {/* Comment body */}
-      <p className="text-[12px] text-gray-700 dark:text-gray-200 leading-relaxed mb-1.5">
+      <p className="text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 leading-relaxed mb-1.5">
         {renderMentionPills(comment.text)}
       </p>
 
       {/* Resolution info */}
       {comment.resolution && (
-        <div className="text-[10px] text-gray-400 dark:text-gray-500 italic mb-1.5 flex items-center gap-1">
+        <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 italic mb-1.5 flex items-center gap-1">
           {comment.resolution.action === "resolved" ? (
             <CheckCircle2 className="w-3 h-3 text-emerald-500" />
           ) : (
@@ -514,16 +514,16 @@ export function CommentCard({
 
       {/* Replies thread */}
       {comment.replies.length > 0 && (
-        <div className="mt-2 space-y-1.5 pl-3 border-l-2 border-gray-100 dark:border-gray-800">
+        <div className="mt-2 space-y-1.5 pl-3 border-l-2 border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
           {comment.replies.map((reply) => (
             <div key={reply.id} className="flex gap-2">
               <CommentAvatar author={reply.author} size={20} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300">{reply.author.name}</span>
+                  <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{reply.author.name}</span>
                   <span className="text-[9px] text-gray-400">{formatTimeAgo(reply.createdAt)}</span>
                 </div>
-                <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
+                <p className="text-[11px] text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 leading-relaxed">
                   {renderMentionPills(reply.text)}
                 </p>
               </div>
@@ -549,7 +549,7 @@ export function CommentCard({
                     if (e.key === "Escape" && !mention.active) { setShowReplyInput(false); setReplyText(""); }
                   }}
                   placeholder="Reply... (@ to mention)"
-                  className="w-full text-[11px] text-gray-700 dark:text-gray-200 bg-gray-50/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5 resize-none outline-none focus:ring-2 focus:ring-blue-400/40 placeholder-gray-400"
+                  className="w-full text-[11px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg px-2.5 py-1.5 resize-none outline-none focus:ring-2 focus:ring-blue-400/40 placeholder-gray-400"
                   rows={2}
                 />
                 {mention.active && (
@@ -564,7 +564,7 @@ export function CommentCard({
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); setShowReplyInput(false); setReplyText(""); }}
-                  className="text-[10px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                  className="text-[10px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -649,8 +649,8 @@ export function FloatingCommentPill({
       className={[
         "pointer-events-auto rounded-lg border transition-all duration-200 cursor-pointer",
         isActive
-          ? "border-blue-300/80 dark:border-blue-600/60 bg-white dark:bg-gray-900 shadow-lg ring-1 ring-blue-200/40"
-          : "border-gray-200/80 dark:border-gray-700/60 bg-white/95 dark:bg-gray-900/95 hover:border-blue-200/60 hover:shadow-md",
+          ? "border-blue-300/80 dark:border-blue-600/60 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg ring-1 ring-blue-200/40"
+          : "border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 hover:border-blue-200/60 hover:shadow-md",
       ].join(" ")}
       onClick={() => { onSelect(); onScrollTo(); }}
     >
@@ -660,22 +660,22 @@ export function FloatingCommentPill({
           <div className="flex items-center gap-2 min-w-0">
             <CommentAvatar author={comment.author} size={24} />
             <div className="min-w-0">
-              <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 truncate">{comment.author.name}</div>
-              <div className="text-[10px] text-gray-400 dark:text-gray-500">{formatTimeAgo(comment.createdAt)}</div>
+              <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">{comment.author.name}</div>
+              <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{formatTimeAgo(comment.createdAt)}</div>
             </div>
           </div>
           <div className="flex items-center gap-0.5 flex-shrink-0">
             <button type="button" onClick={(e) => { e.stopPropagation(); onOpenSidebar(); }}
-              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer" title="Open in sidebar">
+              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer" title="Open in sidebar">
               <MessageCircle className="w-3 h-3 text-gray-400" />
             </button>
             <div className="relative" onClick={(e) => e.stopPropagation()}>
               <button type="button" onClick={() => setShowActions(!showActions)}
-                className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
                 <MoreHorizontal className="w-3.5 h-3.5 text-gray-400" />
               </button>
               {showActions && (
-                <div className="absolute right-0 top-full mt-1 w-[120px] rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl py-1 z-20">
+                <div className="absolute right-0 top-full mt-1 w-[120px] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-xl py-1 z-20">
                   {isOwner && !isResolved && (
                     <>
                       <button type="button" onClick={() => { onResolve(); setShowActions(false); }}
@@ -683,19 +683,19 @@ export function FloatingCommentPill({
                         <CheckCircle2 className="w-3 h-3" /> Resolve
                       </button>
                       <button type="button" onClick={() => { onReject(); setShowActions(false); }}
-                        className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer">
+                        className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 cursor-pointer">
                         <XCircle className="w-3 h-3" /> Reject
                       </button>
                     </>
                   )}
                   {isResolved && onReopen && (
                     <button type="button" onClick={() => { onReopen(); setShowActions(false); }}
-                      className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer">
+                      className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 cursor-pointer">
                       <Reply className="w-3 h-3" /> Reopen
                     </button>
                   )}
                   <button type="button" onClick={() => { onDelete(); setShowActions(false); }}
-                    className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer">
+                    className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 cursor-pointer">
                     <X className="w-3 h-3" /> Delete
                   </button>
                 </div>
@@ -705,18 +705,18 @@ export function FloatingCommentPill({
         </div>
 
         {/* Selected text excerpt */}
-        <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-2 px-2 py-1 bg-yellow-50/60 dark:bg-yellow-900/15 rounded border-l-2 border-yellow-400 dark:border-yellow-600 line-clamp-2">
+        <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mb-2 px-2 py-1 bg-yellow-50/60 dark:bg-yellow-900/15 rounded border-l-2 border-yellow-400 dark:border-yellow-600 line-clamp-2">
           &ldquo;{comment.selectedText}&rdquo;
         </div>
 
         {/* Comment body */}
-        <p className="text-[11px] text-gray-700 dark:text-gray-200 leading-relaxed">
+        <p className="text-[11px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 leading-relaxed">
           {renderMentionPills(comment.text)}
         </p>
 
         {/* Reply count indicator (collapsed) */}
         {!isActive && comment.replies.length > 0 && (
-          <div className="mt-2 flex items-center gap-1 text-[10px] text-blue-500 dark:text-blue-400">
+          <div className="mt-2 flex items-center gap-1 text-[10px] text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
             <CornerDownRight className="w-3 h-3" />
             <span>{comment.replies.length} {comment.replies.length === 1 ? "reply" : "replies"}</span>
           </div>
@@ -725,7 +725,7 @@ export function FloatingCommentPill({
 
       {/* Expanded section -- replies + reply input (only when active) */}
       {isActive && (
-        <div className="border-t border-gray-100 dark:border-gray-800" onClick={(e) => e.stopPropagation()}>
+        <div className="border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10" onClick={(e) => e.stopPropagation()}>
           {comment.replies.length > 0 && (
             <div className="px-3 pt-2 pb-1 space-y-2 max-h-[160px] overflow-y-auto">
               {comment.replies.map((reply) => (
@@ -733,10 +733,10 @@ export function FloatingCommentPill({
                   <CommentAvatar author={reply.author} size={20} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300">{reply.author.name}</span>
+                      <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{reply.author.name}</span>
                       <span className="text-[9px] text-gray-400">{formatTimeAgo(reply.createdAt)}</span>
                     </div>
-                    <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">{renderMentionPills(reply.text)}</p>
+                    <p className="text-[11px] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 leading-relaxed">{renderMentionPills(reply.text)}</p>
                   </div>
                 </div>
               ))}
@@ -755,7 +755,7 @@ export function FloatingCommentPill({
                   mention.handleKeyDown(e);
                   if (!mention.active && e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmitReply();
                 }}
-                className="w-full px-2.5 py-1.5 rounded-lg text-[11px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 outline-none focus:ring-1 focus:ring-blue-400 resize-none"
+                className="w-full px-2.5 py-1.5 rounded-lg text-[11px] bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 outline-none focus:ring-1 focus:ring-blue-400 resize-none"
                 rows={2}
               />
               {mention.active && (

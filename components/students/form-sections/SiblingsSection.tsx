@@ -190,7 +190,7 @@ export default function SiblingsSection({
   };
 
   return (
-    <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <section className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
       {/* Collapsible Header */}
       <button
         type="button"
@@ -267,7 +267,7 @@ export default function SiblingsSection({
                       <table className="w-full">
                         {/* Table Header */}
                         <thead>
-                          <tr className="bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                          <tr className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                             <th className="text-left text-xs font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider px-4 py-3">
                               First Name
                             </th>
@@ -288,7 +288,7 @@ export default function SiblingsSection({
                           {siblingsAtSchool.map((sibling) => (
                             <tr
                               key={sibling.id}
-                              className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/50 midnight:hover:bg-gray-800/50 purple:hover:bg-gray-800/50 transition-colors"
+                              className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5/50 purple:hover:bg-pink-500/5/50 transition-colors"
                             >
                               <td className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 px-4 py-3">
                                 {sibling.firstName}
@@ -343,7 +343,7 @@ export default function SiblingsSection({
                   {siblingsAtOtherSchools.map((sibling, index) => (
                     <div
                       key={sibling.id}
-                      className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 shadow-sm"
+                      className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm"
                     >
                       {/* Sibling Header */}
                       <div className="flex items-center justify-between mb-4">

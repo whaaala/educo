@@ -57,7 +57,7 @@ export default function LeaveStatusSection({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
+    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
       {/* Header */}
       <div className="p-4 border-b border-gray-100 dark:border-gray-700/50 flex items-center justify-between">
         <div className="flex items-center gap-2">

@@ -1065,7 +1065,7 @@ export default function AdminParentFeesPage() {
     const config = {
       paid: {
         bg: "bg-green-100 dark:bg-green-900/30",
-        text: "text-green-700 dark:text-green-400",
+        text: "text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
         icon: <CheckCircle2 className="w-3 h-3" />,
         label: "Paid",
       },
@@ -1076,14 +1076,14 @@ export default function AdminParentFeesPage() {
         label: "Partial",
       },
       pending: {
-        bg: "bg-blue-100 dark:bg-blue-900/30",
-        text: "text-blue-700 dark:text-blue-400",
+        bg: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30",
+        text: "text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
         icon: <Clock className="w-3 h-3" />,
         label: "Pending",
       },
       overdue: {
-        bg: "bg-red-100 dark:bg-red-900/30",
-        text: "text-red-700 dark:text-red-400",
+        bg: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30",
+        text: "text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
         icon: <AlertCircle className="w-3 h-3" />,
         label: "Overdue",
       },
@@ -1109,7 +1109,7 @@ export default function AdminParentFeesPage() {
           <div className="flex items-center gap-2 overflow-visible">
             <Tooltip content={`${record.parentName}\n${record.parentEmail}`}>
               <div className="group relative flex-shrink-0">
-                <div className="relative w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 cursor-pointer transition-all duration-300 ease-out group-hover:scale-[2] group-hover:ring-3 group-hover:ring-blue-500 group-hover:shadow-xl group-hover:z-[9999]">
+                <div className="relative w-8 h-8 rounded-full bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] cursor-pointer transition-all duration-300 ease-out group-hover:scale-[2] group-hover:ring-3 group-hover:ring-blue-500 group-hover:shadow-xl group-hover:z-[9999]">
                   <Image
                     src={`https://i.pravatar.cc/150?u=${record.parentId}`}
                     alt={record.parentName}
@@ -1121,8 +1121,8 @@ export default function AdminParentFeesPage() {
               </div>
             </Tooltip>
             <div className="min-w-0 flex-1 overflow-hidden">
-              <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm truncate">{record.parentName}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">{record.parentEmail}</p>
+              <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xs sm:text-sm truncate">{record.parentName}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate hidden sm:block">{record.parentEmail}</p>
             </div>
           </div>
         ),
@@ -1137,7 +1137,7 @@ export default function AdminParentFeesPage() {
           <div className="flex items-center gap-2 overflow-visible">
             <Tooltip content={`${record.childName}\n${record.childClass}`}>
               <div className="group relative flex-shrink-0">
-                <div className="relative w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 cursor-pointer transition-all duration-300 ease-out group-hover:scale-[2] group-hover:ring-3 group-hover:ring-green-500 group-hover:shadow-xl group-hover:z-[9999]">
+                <div className="relative w-8 h-8 rounded-full bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] cursor-pointer transition-all duration-300 ease-out group-hover:scale-[2] group-hover:ring-3 group-hover:ring-green-500 group-hover:shadow-xl group-hover:z-[9999]">
                   <Image
                     src={`https://i.pravatar.cc/150?u=${record.childId}`}
                     alt={record.childName}
@@ -1149,8 +1149,8 @@ export default function AdminParentFeesPage() {
               </div>
             </Tooltip>
             <div className="min-w-0 flex-1 overflow-hidden">
-              <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm truncate">{record.childName}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">{record.childClass}</p>
+              <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xs sm:text-sm truncate">{record.childName}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">{record.childClass}</p>
             </div>
           </div>
         ),
@@ -1164,8 +1164,8 @@ export default function AdminParentFeesPage() {
         render: (record) => (
           <Tooltip content={`${record.feeType}\n${record.term} - ${record.academicYear}`}>
             <div className="overflow-hidden">
-              <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm truncate">{record.feeType}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+              <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xs sm:text-sm truncate">{record.feeType}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
                 {record.term} - {record.academicYear}
               </p>
             </div>
@@ -1178,7 +1178,7 @@ export default function AdminParentFeesPage() {
         sortable: true,
         className: "w-[15%] lg:w-[7%]",
         render: (record) => (
-          <span className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm whitespace-nowrap">
+          <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xs sm:text-sm whitespace-nowrap">
             {money(record.amount)}
           </span>
         ),
@@ -1190,7 +1190,7 @@ export default function AdminParentFeesPage() {
         className: "w-[7%]",
         hidden: { mobile: true, tablet: true },
         render: (record) => (
-          <span className="font-medium text-green-600 dark:text-green-400 text-xs sm:text-sm whitespace-nowrap">
+          <span className="font-medium text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 text-xs sm:text-sm whitespace-nowrap">
             {money(record.paidAmount)}
           </span>
         ),
@@ -1203,7 +1203,7 @@ export default function AdminParentFeesPage() {
         render: (record) => (
           <span
             className={`font-semibold text-xs sm:text-sm whitespace-nowrap ${
-              record.balance > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
+              record.balance > 0 ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
             }`}
           >
             {money(record.balance)}
@@ -1217,7 +1217,7 @@ export default function AdminParentFeesPage() {
         className: "w-[8%]",
         hidden: { mobile: true, tablet: true },
         render: (record) => (
-          <span className="text-gray-700 dark:text-gray-300 text-xs sm:text-sm whitespace-nowrap">
+          <span className="text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 text-xs sm:text-sm whitespace-nowrap">
             {new Date(record.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
           </span>
         ),
@@ -1242,9 +1242,9 @@ export default function AdminParentFeesPage() {
                 <button
                   type="button"
                   onClick={() => handleViewDetails(record)}
-                  className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                  className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                 >
-                  <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                 </button>
               </Tooltip>
               {record.paymentHistory.length > 0 && (
@@ -1254,7 +1254,7 @@ export default function AdminParentFeesPage() {
                     onClick={() => handleViewReceipt(record)}
                     className="p-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
                   >
-                    <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                   </button>
                 </Tooltip>
               )}
@@ -1625,9 +1625,9 @@ function FeeRecordCard({
   onRecordPayment,
 }: FeeRecordCardProps) {
   return (
-    <div className={`bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border ${isSelected ? 'border-blue-500 dark:border-blue-400 ring-2 ring-blue-500/20' : 'border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20'} shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden`}>
+    <div className={`bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border ${isSelected ? 'border-blue-500 dark:border-blue-400 ring-2 ring-blue-500/20' : 'border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20'} shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden`}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+      <div className="p-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             {/* Selection Checkbox */}
@@ -1636,11 +1636,11 @@ function FeeRecordCard({
                 type="checkbox"
                 checked={isSelected}
                 onChange={(e) => onSelectionChange(record.id, e.target.checked)}
-                className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer flex-shrink-0"
+                className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer flex-shrink-0"
                 onClick={(e) => e.stopPropagation()}
               />
             )}
-            <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+            <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex-shrink-0">
               <Image
                 src={`https://i.pravatar.cc/150?u=${record.childId}`}
                 alt={record.childName}
@@ -1650,10 +1650,10 @@ function FeeRecordCard({
               />
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+              <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm truncate">
                 {record.childName}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{record.childClass}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{record.childClass}</p>
             </div>
           </div>
           {getStatusBadge(record.status)}
@@ -1664,34 +1664,34 @@ function FeeRecordCard({
       <div className="p-4 space-y-3">
         {/* Fee Type */}
         <div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Fee Type</p>
-          <p className="font-medium text-gray-900 dark:text-white text-sm">{record.feeType}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">{record.term} - {record.academicYear}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-0.5">Fee Type</p>
+          <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">{record.feeType}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{record.term} - {record.academicYear}</p>
         </div>
 
         {/* Amounts */}
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Amount</p>
-            <p className="font-semibold text-gray-900 dark:text-white text-sm">{money(record.amount)}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-0.5">Amount</p>
+            <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">{money(record.amount)}</p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Paid</p>
-            <p className="font-medium text-green-600 dark:text-green-400 text-sm">{money(record.paidAmount)}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-0.5">Paid</p>
+            <p className="font-medium text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 text-sm">{money(record.paidAmount)}</p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Balance</p>
-            <p className={`font-semibold text-sm ${record.balance > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-0.5">Balance</p>
+            <p className={`font-semibold text-sm ${record.balance > 0 ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"}`}>
               {money(record.balance)}
             </p>
           </div>
         </div>
 
         {/* Parent Info */}
-        <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Parent</p>
+        <div className="pt-2 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">Parent</p>
           <div className="flex items-center gap-2">
-            <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+            <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex-shrink-0">
               <Image
                 src={`https://i.pravatar.cc/150?u=${record.parentId}`}
                 alt={record.parentName}
@@ -1701,15 +1701,15 @@ function FeeRecordCard({
               />
             </div>
             <div className="min-w-0">
-              <p className="font-medium text-gray-900 dark:text-white text-xs truncate">{record.parentName}</p>
+              <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xs truncate">{record.parentName}</p>
             </div>
           </div>
         </div>
 
         {/* Due Date */}
         <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-500 dark:text-gray-400">Due Date</span>
-          <span className="font-medium text-gray-900 dark:text-white">
+          <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Due Date</span>
+          <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
             {new Date(record.dueDate).toLocaleDateString("en-GB", {
               day: "numeric",
               month: "short",
@@ -1720,7 +1720,7 @@ function FeeRecordCard({
       </div>
 
       {/* Actions */}
-      <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex items-center justify-end gap-2">
+      <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 flex items-center justify-end gap-2">
         <Tooltip content={reminderCount > 0 ? `Send Reminder (${reminderCount} sent)` : "Send Reminder"}>
           <button
             type="button"
@@ -1742,7 +1742,7 @@ function FeeRecordCard({
               onClick={() => onViewReminderHistory(record)}
               className="p-2 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors cursor-pointer"
             >
-              <History className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <History className="w-4 h-4 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
             </button>
           </Tooltip>
         )}
@@ -1753,7 +1753,7 @@ function FeeRecordCard({
               onClick={() => onViewReceipt(record)}
               className="p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
             >
-              <FileCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <FileCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             </button>
           </Tooltip>
         )}
@@ -1761,9 +1761,9 @@ function FeeRecordCard({
           <button
             type="button"
             onClick={() => onViewDetails(record)}
-            className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+            className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
           >
-            <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
           </button>
         </Tooltip>
         <FeeActionsDropdown

@@ -109,8 +109,8 @@ export default function CommunicationTestPage() {
         <div className="mt-6 max-w-4xl mx-auto">
 
         {/* Platform Status */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl p-6 shadow-lg mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4 flex items-center gap-2">
             <Settings className="w-5 h-5" />
             Platform Configuration Status
           </h2>
@@ -122,7 +122,7 @@ export default function CommunicationTestPage() {
                 className={`p-4 rounded-xl border-2 ${
                   platform.configured
                     ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                    : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50"
+                    : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50"
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1">
@@ -131,19 +131,19 @@ export default function CommunicationTestPage() {
                   ) : (
                     <XCircle className="w-4 h-4 text-gray-400" />
                   )}
-                  <span className="font-medium text-gray-900 dark:text-white text-sm">
+                  <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
                     {platform.name}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                   {platform.configured ? "Ready" : "Not configured"}
                 </p>
               </div>
             ))}
           </div>
 
-          <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-            <p className="text-sm text-blue-800 dark:text-blue-200">
+          <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-xl">
+            <p className="text-sm text-blue-800 dark:text-blue-200 midnight:text-cyan-200 purple:text-pink-200">
               <strong>Best platforms:</strong> Video: {bestVideoPlatform || "None"} |
               Voice: {bestVoicePlatform || "None"} |
               Chat: {bestChatPlatform || "None"}
@@ -152,21 +152,21 @@ export default function CommunicationTestPage() {
         </div>
 
         {/* Room Configuration */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl p-6 shadow-lg mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
             Test Configuration
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2">
                 Room ID
               </label>
               <input
                 type="text"
                 value={roomId}
                 onChange={(e) => setRoomId(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
                 placeholder="Enter room ID"
               />
               <p className="text-xs text-gray-500 mt-1">
@@ -175,14 +175,14 @@ export default function CommunicationTestPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2">
                 Your Info
               </label>
-              <div className="px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl">
-                <p className="text-sm text-gray-900 dark:text-white">
+              <div className="px-4 py-2 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-xl">
+                <p className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                   <strong>User ID:</strong> {userId}
                 </p>
-                <p className="text-sm text-gray-900 dark:text-white">
+                <p className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                   <strong>Name:</strong> {userName}
                 </p>
               </div>

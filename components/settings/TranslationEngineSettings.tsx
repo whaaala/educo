@@ -124,7 +124,7 @@ export default function TranslationEngineSettings() {
   const effectiveAllowed = serverConfig?.allowedProviders || ["google"];
 
   return (
-    <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <section className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 px-6 py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -190,14 +190,14 @@ export default function TranslationEngineSettings() {
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
                   serverConfig?.enabled
                     ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                    : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+                    : "bg-gray-100 text-gray-800 dark:bg-[#0f1115]/30 dark:text-gray-400"
                 }`}
               >
                 {serverConfig?.enabled ? "Enabled" : "Disabled"}
               </div>
             </div>
 
-            <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-900/30">
+            <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-[#0f1115]/30">
               <div className="text-sm font-semibold text-gray-900 dark:text-white">
                 Allowed providers (from tenant config)
               </div>
@@ -217,7 +217,7 @@ export default function TranslationEngineSettings() {
                     className={`flex items-center gap-2 px-4 py-3 rounded-xl border cursor-pointer transition-colors ${
                       draftDefault === p
                         ? "border-blue-300 bg-blue-50 dark:bg-blue-900/10"
-                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0f1115]"
                     }`}
                   >
                     <input

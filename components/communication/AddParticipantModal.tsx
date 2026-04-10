@@ -151,7 +151,7 @@ export default function AddParticipantModal({
       }
     >
       {/* Share Meeting Details */}
-      <div className="p-4 mb-5 bg-gray-50 dark:bg-gray-700/30 midnight:bg-[#0d1220]/60 purple:bg-[#1f0d33]/60 rounded-xl border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15">
+      <div className="p-4 mb-5 bg-gray-50 dark:bg-[#22262e]/30 midnight:bg-[#0d1220]/60 purple:bg-[#1f0d33]/60 rounded-xl border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15">
         <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 mb-3 flex items-center gap-2">
           <Link2 className="w-4 h-4" />
           Share Meeting Details
@@ -159,13 +159,13 @@ export default function AddParticipantModal({
         <div className="space-y-3">
           {/* Meeting Link */}
           <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-2.5 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15">
+            <div className="flex-1 px-3 py-2.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15">
               <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 mb-0.5">Meeting Link</p>
               <p className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{meetingLink}</p>
             </div>
             <button
               onClick={() => copyToClipboard(meetingLink, "link")}
-              className="p-3 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15 transition-colors cursor-pointer"
+              className="p-3 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 rounded-lg border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15 transition-colors cursor-pointer"
               title="Copy link"
             >
               {copiedField === "link" ? (
@@ -178,13 +178,13 @@ export default function AddParticipantModal({
 
           {/* Room ID */}
           <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-2.5 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15">
+            <div className="flex-1 px-3 py-2.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15">
               <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 mb-0.5">Room ID</p>
               <p className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-mono">{roomId}</p>
             </div>
             <button
               onClick={() => copyToClipboard(roomId, "roomId")}
-              className="p-3 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15 transition-colors cursor-pointer"
+              className="p-3 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 rounded-lg border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15 transition-colors cursor-pointer"
               title="Copy Room ID"
             >
               {copiedField === "roomId" ? (
@@ -205,7 +205,7 @@ export default function AddParticipantModal({
                 );
                 window.open(`mailto:?subject=${subject}&body=${body}`);
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15 transition-colors text-gray-700 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 text-sm cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 rounded-lg border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15 transition-colors text-gray-700 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 text-sm cursor-pointer"
             >
               <Mail className="w-4 h-4" />
               Share via Email
@@ -217,7 +217,7 @@ export default function AddParticipantModal({
                 );
                 window.open(`https://wa.me/?text=${text}`);
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15 transition-colors text-gray-700 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 text-sm cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 rounded-lg border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15 transition-colors text-gray-700 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 text-sm cursor-pointer"
             >
               <MessageSquare className="w-4 h-4" />
               Share via WhatsApp
@@ -236,19 +236,19 @@ export default function AddParticipantModal({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by name, email, class, or department..."
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400/40 purple:placeholder-pink-400/40 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400/40 purple:placeholder-pink-400/40 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 focus:border-transparent"
               suppressHydrationWarning
             />
           </div>
 
-          <div className="flex items-center bg-gray-100 dark:bg-gray-700/50 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl p-1 border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15">
+          <div className="flex items-center bg-gray-100 dark:bg-[#22262e]/50 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl p-1 border border-gray-200 dark:border-gray-600/50 midnight:border-cyan-500/15 purple:border-pink-500/15">
             {(["all", "teacher", "parent", "student"] as const).map((role) => (
               <button
                 key={role}
                 onClick={() => setSelectedRole(role)}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                   selectedRole === role
-                    ? "bg-white dark:bg-gray-600 midnight:bg-cyan-500/20 purple:bg-pink-500/20 text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 shadow-sm"
+                    ? "bg-white dark:bg-[#2a2d35] midnight:bg-cyan-500/20 purple:bg-pink-500/20 text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 shadow-sm"
                     : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300/50 purple:text-pink-300/50 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
               >
@@ -274,7 +274,7 @@ export default function AddParticipantModal({
               return (
                 <div
                   key={participant.id}
-                  className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-700/30 midnight:bg-[#0d1220]/60 purple:bg-[#1f0d33]/60 hover:bg-gray-100 dark:hover:bg-gray-700/50 midnight:hover:bg-[#0d1220] purple:hover:bg-[#1f0d33] rounded-xl border border-gray-200/60 dark:border-gray-600/30 midnight:border-cyan-500/10 purple:border-pink-500/10 transition-colors"
+                  className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-[#22262e]/30 midnight:bg-[#0d1220]/60 purple:bg-[#1f0d33]/60 hover:bg-gray-100 dark:hover:bg-[#22262e]/50 midnight:hover:bg-[#0d1220] purple:hover:bg-[#1f0d33] rounded-xl border border-gray-200/60 dark:border-gray-600/30 midnight:border-cyan-500/10 purple:border-pink-500/10 transition-colors"
                 >
                   {/* Avatar */}
                   <div className="relative">

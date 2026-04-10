@@ -814,8 +814,8 @@ export default function AttendancePage() {
                   <FormDropdown
                     label="Education Level"
                     icon={<GraduationCap className="w-full h-full" />}
-                    iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-                    iconColor="text-blue-600 dark:text-blue-400"
+                    iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+                    iconColor="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                     value={educationLevel}
                     onChange={(value) => {
                       setEducationLevel(value as EducationLevel);
@@ -835,7 +835,7 @@ export default function AttendancePage() {
                     label={!isAdmin && userAssignedClasses.length > 0 ? `Your ${terminology.class}` : terminology.class}
                     icon={<BookOpen className="w-full h-full" />}
                     iconBgColor="bg-green-100 dark:bg-green-900/30"
-                    iconColor="text-green-600 dark:text-green-400"
+                    iconColor="text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
                     value={selectedClass}
                     onChange={handleClassChange}
                     options={[
@@ -850,7 +850,7 @@ export default function AttendancePage() {
                     disabled={availableClasses.length === 0}
                   />
                   {!isAdmin && userAssignedClasses.length === 1 && (
-                    <p className="mt-1 text-xs text-green-600 dark:text-green-400">
+                    <p className="mt-1 text-xs text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
                       Auto-selected from your profile
                     </p>
                   )}
@@ -877,7 +877,7 @@ export default function AttendancePage() {
                   label="Date"
                   icon={<Calendar className="w-full h-full" />}
                   iconBgColor="bg-amber-100 dark:bg-amber-900/30"
-                  iconColor="text-amber-600 dark:text-amber-400"
+                  iconColor="text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400"
                   type="date"
                   value={selectedDate}
                   onChange={setSelectedDate}
@@ -905,7 +905,7 @@ export default function AttendancePage() {
                       }}
                       className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
                         attendanceMode === "daily"
-                          ? "bg-white dark:bg-neutral-600 text-blue-600 dark:text-blue-400 shadow-sm"
+                          ? "bg-white dark:bg-neutral-600 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 shadow-sm"
                           : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200"
                       }`}
                     >
@@ -915,7 +915,7 @@ export default function AttendancePage() {
                       onClick={() => setAttendanceMode("lesson")}
                       className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
                         attendanceMode === "lesson"
-                          ? "bg-white dark:bg-neutral-600 text-blue-600 dark:text-blue-400 shadow-sm"
+                          ? "bg-white dark:bg-neutral-600 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 shadow-sm"
                           : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200"
                       }`}
                     >
@@ -963,8 +963,8 @@ export default function AttendancePage() {
 
                     {/* Show selected period/subject summary */}
                     {selectedPeriod && selectedSubject && (
-                      <div className="col-span-1 sm:col-span-2 p-3 bg-white dark:bg-neutral-800 rounded-lg border border-blue-200 dark:border-blue-700">
-                        <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-1">
+                      <div className="col-span-1 sm:col-span-2 p-3 bg-white dark:bg-neutral-800 rounded-lg border border-blue-200 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500">
+                        <p className="text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide mb-1">
                           Lesson Attendance For
                         </p>
                         <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
@@ -1019,7 +1019,7 @@ export default function AttendancePage() {
                         <div className="flex items-center flex-wrap gap-2 mt-1">
                           <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                             currentStaffMember.role === "lecturer"
-                              ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                              ? "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
                               : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
                           }`}>
                             <UserCog className="w-3 h-3" />
@@ -1113,18 +1113,18 @@ export default function AttendancePage() {
           {selectedClass && filteredStudents.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
               {/* Total Card */}
-              <div className="group relative bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-700/50 p-3 sm:p-4 overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
+              <div className="group relative bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/50 p-3 sm:p-4 overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full blur-2xl"></div>
                 <div className="relative">
                   <div className="flex items-center justify-between mb-2">
                     <div className="p-1.5 bg-blue-100 dark:bg-blue-800/30 rounded-lg">
-                      <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <Users className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
                   </div>
-                  <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-0.5">
+                  <p className="text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 mb-0.5">
                     Total Students
                   </p>
-                  <p className="text-xl sm:text-2xl font-bold text-blue-700 dark:text-blue-300">
+                  <p className="text-xl sm:text-2xl font-bold text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
                     {filteredStudents.length}
                   </p>
                 </div>
@@ -1136,7 +1136,7 @@ export default function AttendancePage() {
                 <div className="relative">
                   <div className="flex items-center justify-between mb-2">
                     <div className="p-1.5 bg-green-100 dark:bg-green-800/30 rounded-lg">
-                      <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
+                      <Check className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                     </div>
                     <div className="px-1.5 py-0.5 bg-green-100 dark:bg-green-800/30 rounded-full">
                       <p className="text-[10px] sm:text-xs font-semibold text-green-700 dark:text-green-300">
@@ -1144,7 +1144,7 @@ export default function AttendancePage() {
                       </p>
                     </div>
                   </div>
-                  <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-0.5">
+                  <p className="text-xs font-medium text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 mb-0.5">
                     Present
                   </p>
                   <p className="text-xl sm:text-2xl font-bold text-green-700 dark:text-green-300">
@@ -1159,7 +1159,7 @@ export default function AttendancePage() {
                 <div className="relative">
                   <div className="flex items-center justify-between mb-2">
                     <div className="p-1.5 bg-red-100 dark:bg-red-800/30 rounded-lg">
-                      <X className="w-4 h-4 text-red-600 dark:text-red-400" />
+                      <X className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
                     </div>
                     <div className="px-1.5 py-0.5 bg-red-100 dark:bg-red-800/30 rounded-full">
                       <p className="text-[10px] sm:text-xs font-semibold text-red-700 dark:text-red-300">
@@ -1167,7 +1167,7 @@ export default function AttendancePage() {
                       </p>
                     </div>
                   </div>
-                  <p className="text-xs font-medium text-red-600 dark:text-red-400 mb-0.5">
+                  <p className="text-xs font-medium text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mb-0.5">
                     Absent
                   </p>
                   <p className="text-xl sm:text-2xl font-bold text-red-700 dark:text-red-300">
@@ -1182,7 +1182,7 @@ export default function AttendancePage() {
                 <div className="relative">
                   <div className="flex items-center justify-between mb-2">
                     <div className="p-1.5 bg-amber-100 dark:bg-amber-800/30 rounded-lg">
-                      <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
                     </div>
                     <div className="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-800/30 rounded-full">
                       <p className="text-[10px] sm:text-xs font-semibold text-amber-700 dark:text-amber-300">
@@ -1190,7 +1190,7 @@ export default function AttendancePage() {
                       </p>
                     </div>
                   </div>
-                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400 mb-0.5">
+                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 mb-0.5">
                     Late
                   </p>
                   <p className="text-xl sm:text-2xl font-bold text-amber-700 dark:text-amber-300">
@@ -1237,7 +1237,7 @@ export default function AttendancePage() {
                       {/* Show attendance mode badge */}
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                         attendanceMode === "lesson"
-                          ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                          ? "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
                           : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
                       }`}>
                         {attendanceMode === "lesson" ? (
@@ -1252,7 +1252,7 @@ export default function AttendancePage() {
                       {selectedSection && ` - Section ${selectedSection}`} •{" "}
                       {new Date(selectedDate).toLocaleDateString()}
                       {attendanceMode === "lesson" && selectedPeriod && selectedSubject && (
-                        <span className="text-blue-600 dark:text-blue-400 font-medium">
+                        <span className="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium">
                           {" "}• {availableSubjects.find(s => s.id === selectedSubject)?.label} ({availablePeriods.find(p => p.id === selectedPeriod)?.label})
                         </span>
                       )}
@@ -1300,13 +1300,13 @@ export default function AttendancePage() {
                 {attendanceMode === "lesson" && (!selectedPeriod || !selectedSubject) && (
                   <div className="mt-4 px-4 sm:px-6 py-3 bg-amber-50 dark:bg-amber-900/20 border-t border-amber-200 dark:border-amber-800 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
                     <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                      <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
                         Lesson attendance requires period and subject selection
                       </p>
-                      <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                      <p className="text-xs text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 mt-0.5">
                         Please select both {isEveningWeekendProgram ? "session" : terminology.period.toLowerCase()} and {educationLevel === "Tertiary" ? "course" : "subject"} above to enable saving
                       </p>
                     </div>
@@ -1315,10 +1315,10 @@ export default function AttendancePage() {
 
                 {/* Bulk Absence Bar - Only shows when students are marked absent */}
                 {absentStudents.length > 0 && (
-                  <div className="mt-4 px-4 sm:px-6 py-3 bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800 flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="mt-4 px-4 sm:px-6 py-3 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 border-t border-red-200 dark:border-red-800 flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                        <CircleX className="w-4 h-4 text-red-600 dark:text-red-400" />
+                      <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 flex items-center justify-center">
+                        <CircleX className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
                       </div>
                       <span className="text-sm font-medium text-red-700 dark:text-red-300">
                         {absentStudents.length} {absentStudents.length === 1 ? "student" : "students"} marked absent
@@ -1400,7 +1400,7 @@ export default function AttendancePage() {
                                     Roll No: <span className="font-medium">{student.rollNo}</span>
                                   </p>
                                   {currentStatus === ATTENDANCE_STATUS.LATE && record?.lateMinutes && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-medium">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 text-xs font-medium">
                                       <Clock className="w-3 h-3" />
                                       {record.lateMinutes} min late
                                     </span>
@@ -1408,8 +1408,8 @@ export default function AttendancePage() {
                                   {currentStatus === ATTENDANCE_STATUS.ABSENT && record?.absenceReason && (
                                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                                       record.absenceExcused
-                                        ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                                        : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                                        ? "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                                        : "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
                                     }`}>
                                       {record.absenceExcused ? <CheckCircle className="w-3 h-3" /> : <FileQuestion className="w-3 h-3" />}
                                       {ABSENCE_REASONS.find(r => r.value === record.absenceReason)?.label || record.absenceReason}
@@ -1459,7 +1459,7 @@ export default function AttendancePage() {
                                 className={`group/btn relative p-2.5 sm:p-3 rounded-lg transition-all duration-300 cursor-pointer ${
                                   currentStatus === ATTENDANCE_STATUS.ABSENT
                                     ? "bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/30 scale-110"
-                                    : "bg-white dark:bg-neutral-700 border-2 border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 hover:scale-105"
+                                    : "bg-white dark:bg-neutral-700 border-2 border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 hover:text-red-600 hover:scale-105"
                                 }`}
                               >
                                 <CircleX className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${

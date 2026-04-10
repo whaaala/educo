@@ -71,7 +71,7 @@ export default function AttendanceSettings({ onModeChange }: AttendanceSettingsP
               ${
                 attendanceMode === "by-day"
                   ? "bg-blue-100 dark:bg-blue-900/40 midnight:bg-cyan-900/40 purple:bg-pink-900/40"
-                  : "bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800"
+                  : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340]"
               }
             `}>
               <Calendar className={`
@@ -160,7 +160,7 @@ export default function AttendanceSettings({ onModeChange }: AttendanceSettingsP
               ${
                 attendanceMode === "by-class"
                   ? "bg-blue-100 dark:bg-blue-900/40 midnight:bg-cyan-900/40 purple:bg-pink-900/40"
-                  : "bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800"
+                  : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340]"
               }
             `}>
               <UserCheck className={`
@@ -223,7 +223,7 @@ export default function AttendanceSettings({ onModeChange }: AttendanceSettingsP
       </div>
 
       {/* Save Information */}
-      <div className="p-4 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="p-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
         <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
           <span className="font-semibold">Note:</span> Your attendance mode preference is automatically saved and will be applied across all attendance features in the system.
         </p>

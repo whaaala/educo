@@ -27,7 +27,7 @@ export default function CallConnecting({
   const CallIcon: LucideIcon = isVoice ? Phone : Video;
 
   return (
-    <div className="flex items-center justify-center h-full bg-white dark:bg-gray-900 midnight:bg-[#0a0f1a] purple:bg-[#120622] animate-in fade-in duration-300">
+    <div className="flex items-center justify-center h-full bg-white dark:bg-[#0f1115] midnight:bg-[#0a0f1a] purple:bg-[#120622] animate-in fade-in duration-300">
       <div className="flex flex-col items-center gap-6 px-4">
         {/* Avatar or Spinner */}
         {isVoice && (recipientAvatar || recipientName) ? (

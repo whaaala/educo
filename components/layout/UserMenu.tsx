@@ -146,13 +146,13 @@ export default function UserMenu({
             <div
               style={dropdownStyle}
               ref={dropdownRef}
-              className="w-64 sm:w-72 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[9999] transition-colors duration-300 max-h-[500px] overflow-y-auto"
+              className="w-64 sm:w-72 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-[#1a1d24]/50 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[9999] transition-colors duration-300 max-h-[500px] overflow-y-auto"
               role="menu"
               aria-orientation="vertical"
             >
 
             {/* Profile Card Section */}
-            <div className="px-3 sm:px-4 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-br from-gray-50/50 to-transparent dark:from-gray-800/20">
+            <div className="px-3 sm:px-4 py-3 sm:py-4 border-b border-gray-200 dark:border-[#1a1d24]/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-br from-gray-50/50 to-transparent dark:from-gray-800/20">
               <div className="flex items-center gap-2.5 sm:gap-3">
                 {/* Avatar in dropdown */}
                 <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden bg-gray-200 flex-shrink-0 ring-2 ring-blue-500/10 shadow-lg">

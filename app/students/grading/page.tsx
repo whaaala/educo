@@ -379,7 +379,7 @@ export default function GradingPage() {
   const getGradeColorClass = (color: string) => {
     const colors: { [key: string]: string } = {
       green: "bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800",
-      blue: "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+      blue: "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border-blue-200 dark:border-blue-800",
       cyan: "bg-cyan-100 dark:bg-cyan-950/30 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800",
       yellow: "bg-yellow-100 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800",
       orange: "bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800",
@@ -454,14 +454,14 @@ export default function GradingPage() {
         <div className="flex items-center justify-center gap-2">
           <button
             onClick={() => handleEditGrade(item)}
-            className="p-1.5 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 midnight:text-cyan-400 midnight:hover:text-cyan-300 purple:text-pink-400 purple:hover:text-pink-300 hover:bg-blue-50 dark:hover:bg-blue-950/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded transition-colors"
+            className="p-1.5 text-blue-600 hover:text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 dark:hover:text-blue-300 midnight:text-cyan-400 midnight:hover:text-cyan-300 purple:text-pink-400 purple:hover:text-pink-300 hover:bg-blue-50 dark:hover:bg-blue-950/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded transition-colors"
             title="Edit"
           >
             <Edit className="w-4 h-4" />
           </button>
           <button
             onClick={() => requestDeleteGrade(item)}
-            className="p-1.5 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 midnight:hover:bg-red-500/10 purple:hover:bg-red-500/10 rounded transition-colors"
+            className="p-1.5 text-red-600 hover:text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 midnight:hover:bg-red-500/10 purple:hover:bg-red-500/10 rounded transition-colors"
             title="Delete"
           >
             <Trash2 className="w-4 h-4" />
@@ -595,14 +595,14 @@ export default function GradingPage() {
         {/* Info Card */}
         <div className="bg-blue-50 dark:bg-blue-950/20 midnight:bg-blue-950/30 purple:bg-blue-950/30 border border-blue-200 dark:border-blue-800 midnight:border-blue-700 purple:border-blue-700 rounded-xl p-4">
           <div className="flex items-start gap-3">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
-              <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 rounded-lg flex-shrink-0">
+              <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
                 Grading System Information
               </h3>
-              <p className="text-xs text-blue-800 dark:text-blue-200">
+              <p className="text-xs text-blue-800 dark:text-blue-200 midnight:text-cyan-200 purple:text-pink-200">
                 Configure grading schemes for each class and subject. Each scheme defines grade boundaries,
                 grade points for GPA/CGPA calculation, and remarks. Different classes and subjects can have
                 different grading scales based on your institution's requirements.
@@ -612,12 +612,12 @@ export default function GradingPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm">
+        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm">
           <div className="border-b border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 px-4 sm:px-6 py-4">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
               Select Subject
             </h3>
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
               Choose the subject to view or add grading schemes
             </p>
           </div>
@@ -630,8 +630,8 @@ export default function GradingPage() {
                   <FormDropdown
                     label="Education Level"
                     icon={<GraduationCap className="w-full h-full" />}
-                    iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-                    iconColor="text-blue-600 dark:text-blue-400"
+                    iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+                    iconColor="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                     value={educationLevel}
                     onChange={handleEducationLevelChange}
                     options={settings?.supportedLevels?.map((level) => ({
@@ -673,7 +673,7 @@ export default function GradingPage() {
               return (
                 <div
                   key={subjectName}
-                  className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm grading-table-container"
+                  className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm grading-table-container"
                   data-subject={subjectName}
                 >
                   <div className="border-b border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 px-4 sm:px-6 py-4">
@@ -682,7 +682,7 @@ export default function GradingPage() {
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                           {subjectName}
                         </h3>
-                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
                           {schemes.length} grade(s) configured
                         </p>
                       </div>
@@ -699,7 +699,7 @@ export default function GradingPage() {
                   </div>
 
                   {/* Table matching attendance page design */}
-                  <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-2 sm:gap-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
+                  <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-2 sm:gap-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
                     <h2 className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-300 purple:text-pink-300 tracking-tight whitespace-nowrap">
                       Records
                     </h2>
@@ -724,15 +724,15 @@ export default function GradingPage() {
             })}
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-8 sm:p-12">
+          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-8 sm:p-12">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
-                <BarChart3 className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mb-4">
+                <BarChart3 className="w-8 h-8 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
                 No Grading Schemes Found
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-6">
                 {!selectedSubject
                   ? "Please select a subject to view or add grading schemes"
                   : "No grading schemes configured for the selected subject"}
@@ -760,7 +760,7 @@ export default function GradingPage() {
       >
         <div className="space-y-4">
           <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-            <p className="text-xs text-blue-800 dark:text-blue-200">
+            <p className="text-xs text-blue-800 dark:text-blue-200 midnight:text-cyan-200 purple:text-pink-200">
               <span className="font-semibold">
                 {selectedSubject}
               </span>

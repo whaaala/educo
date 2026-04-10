@@ -214,7 +214,7 @@ export default function EditParentContactModal({
             className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95 cursor-pointer ${
               hasChanges
                 ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl"
-                : "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                : "bg-gray-300 dark:bg-[#2a2d35] text-gray-500 dark:text-gray-400 cursor-not-allowed"
             }`}
           >
             Save Changes

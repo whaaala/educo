@@ -37,13 +37,13 @@ export default function HostelTransportCard({
   return (
     <div className="group bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 p-2 sm:p-3 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       {/* Tabs */}
-      <div className="flex gap-1 mb-1.5 sm:mb-2 pb-1 sm:pb-1.5 border-b border-gray-100 dark:border-gray-800/50 midnight:border-gray-800/30 purple:border-gray-800/30">
+      <div className="flex gap-1 mb-1.5 sm:mb-2 pb-1 sm:pb-1.5 border-b border-gray-100 dark:border-[#1a1d24]/50 midnight:border-gray-800/30 purple:border-gray-800/30">
         <button
           onClick={() => setActiveTab("hostel")}
           className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all duration-200 ${
             activeTab === "hostel"
               ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white shadow-sm"
-              : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:text-gray-900 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-800/50"
+              : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:text-gray-900 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e]/50"
           } cursor-pointer`}
         >
           Hostel
@@ -53,7 +53,7 @@ export default function HostelTransportCard({
           className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all duration-200 ${
             activeTab === "transport"
               ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white shadow-sm"
-              : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:text-gray-900 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-800/50"
+              : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:text-gray-900 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e]/50"
           } cursor-pointer`}
         >
           Transportation

@@ -356,7 +356,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
         key: "date",
         label: "Date",
         sortable: true,
-        className: "text-left sticky left-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 z-10",
+        className: "text-left sticky left-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] z-10",
         render: (row: ClassAttendanceData) => {
           const isDayBlocked = isBlockedDay(row.day);
           return (
@@ -384,7 +384,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
             // Show blocked indicator for days with no classes (regardless of date - past, present, or future)
             return (
               <div className="flex flex-col items-center justify-center gap-1.5 h-full min-h-[60px]">
-                <div className="w-8 h-8 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full bg-gray-300 dark:bg-gray-600 midnight:bg-gray-700 purple:bg-gray-700 flex items-center justify-center shadow-sm opacity-50 flex-shrink-0">
+                <div className="w-8 h-8 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 flex items-center justify-center shadow-sm opacity-50 flex-shrink-0">
                   <span className="text-xs md:text-[10px] font-bold text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">—</span>
                 </div>
                 <Tooltip content="No Class">
@@ -403,7 +403,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
             // Show clock icon for future dates (not yet attended)
             return (
               <div className="flex flex-col items-center justify-center gap-1.5 h-full min-h-[60px]">
-                <div className="w-8 h-8 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full bg-gray-200 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 flex items-center justify-center shadow-sm flex-shrink-0">
+                <div className="w-8 h-8 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center shadow-sm flex-shrink-0">
                   <Clock className="w-4 h-4 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70" />
                 </div>
                 <Tooltip content={subjects[index]}>
@@ -517,7 +517,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-3 lg:gap-5 xl:gap-6 2xl:gap-5 p-3 sm:p-4 md:p-3 lg:p-4 xl:p-5 2xl:p-4 bg-gray-50 dark:bg-gray-800/30 midnight:bg-gray-800/30 purple:bg-gray-800/30 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 backdrop-blur-sm">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-3 lg:gap-5 xl:gap-6 2xl:gap-5 p-3 sm:p-4 md:p-3 lg:p-4 xl:p-5 2xl:p-4 bg-gray-50 dark:bg-[#1a1d24]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 backdrop-blur-sm">
         <AttendanceStatusBadge type="present" label="Present" size="sm" />
         <AttendanceStatusBadge type="absent" label="Absent" size="sm" />
         <AttendanceStatusBadge type="late" label="Late" size="sm" />

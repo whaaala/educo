@@ -139,14 +139,14 @@ export default function FeeSettings() {
                 className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all cursor-pointer ${
                   isEnabled
                     ? "bg-green-50 dark:bg-green-950/20 border-green-500 dark:border-green-600"
-                    : "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                    : "bg-gray-50 dark:bg-[#1a1d24]/50 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                     isEnabled
                       ? "bg-green-100 dark:bg-green-900/30"
-                      : "bg-gray-100 dark:bg-gray-700"
+                      : "bg-gray-100 dark:bg-[#22262e]"
                   }`}>
                     <CreditCard className={`w-5 h-5 ${
                       isEnabled
@@ -198,7 +198,7 @@ export default function FeeSettings() {
                 className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all cursor-pointer ${
                   isEnabled
                     ? "bg-green-50 dark:bg-green-950/20 border-green-500 dark:border-green-600"
-                    : "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                    : "bg-gray-50 dark:bg-[#1a1d24]/50 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                 }`}
               >
                 <div className="text-left flex-1">

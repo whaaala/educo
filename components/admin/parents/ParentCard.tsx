@@ -558,7 +558,7 @@ export default function ParentCard({
               {parent.children.map((child) => (
                 <div
                   key={child.id}
-                  className="flex items-center gap-3 p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                  className="flex items-center gap-3 p-2.5 rounded-lg bg-gray-50 dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700"
                 >
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/20 flex items-center justify-center flex-shrink-0">
                     <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -622,7 +622,7 @@ export default function ParentCard({
         <div className="flex flex-col h-[450px]">
           {/* Header with recipient info */}
           <div className="flex-shrink-0 mb-4">
-            <div className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24]/50 border border-gray-200 dark:border-gray-700">
               <div className="relative">
                 {parent.profilePhoto ? (
                   <div className="w-12 h-12 rounded-full overflow-hidden">
@@ -633,7 +633,7 @@ export default function ParentCard({
                     <span className="text-lg font-bold text-white">{parent.firstName.charAt(0)}{parent.lastName.charAt(0)}</span>
                   </div>
                 )}
-                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white dark:border-gray-800" />
+                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white dark:border-[#1a1d24]" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-900 dark:text-white">{parent.firstName} {parent.lastName}</p>
@@ -646,12 +646,12 @@ export default function ParentCard({
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 p-1.5 rounded-2xl bg-gray-100/80 dark:bg-gray-800/50 mb-4">
+          <div className="flex gap-2 p-1.5 rounded-2xl bg-gray-100/80 dark:bg-[#1a1d24]/50 mb-4">
             <button
               onClick={() => setMessageTab("chat")}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all cursor-pointer ${
                 messageTab === "chat"
-                  ? "bg-white dark:bg-gray-700 text-emerald-600 dark:text-emerald-400 shadow-sm"
+                  ? "bg-white dark:bg-[#22262e] text-emerald-600 dark:text-emerald-400 shadow-sm"
                   : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
               }`}
             >
@@ -665,7 +665,7 @@ export default function ParentCard({
               onClick={() => setMessageTab("email")}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all cursor-pointer ${
                 messageTab === "email"
-                  ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
+                  ? "bg-white dark:bg-[#22262e] text-blue-600 dark:text-blue-400 shadow-sm"
                   : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
               }`}
             >
@@ -690,7 +690,7 @@ export default function ParentCard({
                       <div key={msg.id}>
                         {showDate && (
                           <div className="flex items-center justify-center my-4">
-                            <span className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-500 dark:text-gray-400">
+                            <span className="px-3 py-1 rounded-full bg-gray-100 dark:bg-[#1a1d24] text-xs font-medium text-gray-500 dark:text-gray-400">
                               {new Date(msg.timestamp).toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" })}
                             </span>
                           </div>
@@ -713,7 +713,7 @@ export default function ParentCard({
                                 className={`px-4 py-2.5 rounded-2xl ${
                                   isAdmin
                                     ? "bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-br-md"
-                                    : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-bl-md"
+                                    : "bg-gray-100 dark:bg-[#1a1d24] text-gray-800 dark:text-gray-200 rounded-bl-md"
                                 }`}
                               >
                                 <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.message}</p>
@@ -744,7 +744,7 @@ export default function ParentCard({
                             <span className="text-xs font-bold text-white">{parent.firstName.charAt(0)}</span>
                           </div>
                         )}
-                        <div className="px-4 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800 rounded-bl-md">
+                        <div className="px-4 py-3 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] rounded-bl-md">
                           <div className="flex gap-1">
                             <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "0ms" }} />
                             <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -765,11 +765,11 @@ export default function ParentCard({
                       {chatAttachments.map((file, index) => (
                         <div key={index} className="relative flex-shrink-0 group">
                           {file.type.startsWith("image/") ? (
-                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700">
                               <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />
                             </div>
                           ) : (
-                            <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center p-1">
+                            <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center p-1">
                               <span className="text-lg">{getFileIcon(file)}</span>
                               <span className="text-[8px] text-gray-500 truncate w-full text-center">{file.name.slice(0, 8)}...</span>
                             </div>
@@ -800,7 +800,7 @@ export default function ParentCard({
                         }}
                         placeholder="Type a message..."
                         rows={1}
-                        className="w-full px-4 py-3 pr-20 rounded-2xl bg-gray-100 dark:bg-gray-800 border-0 focus:ring-2 focus:ring-blue-500/50 resize-none text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 outline-none"
+                        className="w-full px-4 py-3 pr-20 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] border-0 focus:ring-2 focus:ring-blue-500/50 resize-none text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                         style={{ minHeight: "48px", maxHeight: "120px" }}
                       />
                     </div>
@@ -808,14 +808,14 @@ export default function ParentCard({
                       <EmojiPickerPopover
                         onEmojiSelect={handleChatEmojiSelect}
                         position="top-right"
-                        buttonClassName="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                        buttonClassName="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
                         pickerWidth={320}
                         pickerHeight={350}
                       />
                       <button
                         type="button"
                         onClick={() => chatFileInputRef.current?.click()}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
                       >
                         <Paperclip className="w-4 h-4" />
                       </button>
@@ -869,7 +869,7 @@ export default function ParentCard({
                               className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
                                 emailSubject === template.subject
                                   ? "bg-blue-500 text-white"
-                                  : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                  : "bg-gray-100 dark:bg-[#1a1d24] text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#22262e]"
                               }`}
                             >
                               {template.label}
@@ -881,7 +881,7 @@ export default function ParentCard({
                       {/* To Field */}
                       <div>
                         <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">To</label>
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700">
                           {parent.profilePhoto ? (
                             <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
                               <img src={parent.profilePhoto} alt={`${parent.firstName}`} className="w-full h-full object-cover" />
@@ -906,7 +906,7 @@ export default function ParentCard({
                           value={emailSubject}
                           onChange={(e) => setEmailSubject(e.target.value)}
                           placeholder="What's this email about?"
-                          className="w-full px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 text-sm outline-none"
+                          className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 text-sm outline-none"
                         />
                       </div>
 
@@ -933,14 +933,14 @@ export default function ParentCard({
                         <EmojiPickerPopover
                           onEmojiSelect={(emoji) => setEmailMessage(prev => prev + emoji)}
                           position="top"
-                          buttonClassName="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                          buttonClassName="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
                           pickerWidth={320}
                           pickerHeight={350}
                         />
                         <button
                           type="button"
                           onClick={() => emailFileInputRef.current?.click()}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
                         >
                           <Paperclip className="w-4 h-4" />
                         </button>
@@ -962,7 +962,7 @@ export default function ParentCard({
                           </p>
                           <div className="flex flex-wrap gap-2">
                             {emailAttachments.map((file, index) => (
-                              <div key={index} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                              <div key={index} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700">
                                 <span>{getFileIcon(file)}</span>
                                 <span className="text-xs text-gray-700 dark:text-gray-300 max-w-[100px] truncate">{file.name}</span>
                                 <span className="text-[10px] text-gray-400">{formatFileSize(file.size)}</span>
@@ -988,7 +988,7 @@ export default function ParentCard({
                             setEmailMessage("");
                             setEmailAttachments([]);
                           }}
-                          className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors cursor-pointer"
+                          className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#22262e] rounded-xl transition-colors cursor-pointer"
                         >
                           Clear
                         </button>

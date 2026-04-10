@@ -125,7 +125,7 @@ export default function ActionBar({
   return (
     <div
       className={`
-        ${sticky ? "sticky top-0 z-30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900" : ""}
+        ${sticky ? "sticky top-0 z-30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]" : ""}
         ${className}
       `}
     >
@@ -254,7 +254,7 @@ export default function ActionBar({
                 <div className="relative">
                   <button
                     onClick={() => setShowBulkMenu(!showBulkMenu)}
-                    className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+                    className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-[#22262e] border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-[#2a2d35] transition-colors cursor-pointer"
                   >
                     More
                     <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${showBulkMenu ? "rotate-180" : ""}`} />
@@ -266,7 +266,7 @@ export default function ActionBar({
                         className="fixed inset-0 z-40"
                         onClick={() => setShowBulkMenu(false)}
                       />
-                      <div className="absolute right-0 top-full mt-1 z-50 min-w-[180px] bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 animate-in zoom-in-95 duration-150">
+                      <div className="absolute right-0 top-full mt-1 z-50 min-w-[180px] bg-white dark:bg-[#1a1d24] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 animate-in zoom-in-95 duration-150">
                         {bulkActions.slice(2).map((action) => {
                           const Icon = action.icon;
                           const isDanger = action.variant === "danger";
@@ -286,7 +286,7 @@ export default function ActionBar({
                                 ${
                                   isDanger
                                     ? "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#22262e]"
                                 }
                               `}
                             >

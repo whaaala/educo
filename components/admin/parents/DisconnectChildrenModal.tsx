@@ -128,7 +128,7 @@ export default function DisconnectChildrenModal({
                 className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                   isSelected
                     ? "bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700"
-                    : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                    : "bg-white dark:bg-[#1a1d24] border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                 }`}
               >
                 {/* Checkbox */}
@@ -170,7 +170,7 @@ export default function DisconnectChildrenModal({
 
         {/* Info Note */}
         {someSelected && (
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-gray-50 dark:bg-[#1a1d24]/50 border border-gray-200 dark:border-gray-700">
             <AlertTriangle className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-gray-600 dark:text-gray-400">
               After disconnecting all children, you will be able to delete this parent from the system.

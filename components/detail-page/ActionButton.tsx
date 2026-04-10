@@ -44,14 +44,14 @@ export function ActionButton({
       "hover:shadow-blue-500/40 dark:hover:shadow-blue-600/40 midnight:hover:shadow-cyan-500/40 purple:hover:shadow-pink-500/40"
     ),
     secondary: cn(
-      "bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800",
-      "hover:bg-gray-200 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700",
+      "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]",
+      "hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10",
       "text-gray-900 dark:text-white midnight:text-white purple:text-white",
       "border border-transparent midnight:border-cyan-500/20 purple:border-pink-500/20"
     ),
     ghost: cn(
       "bg-transparent",
-      "hover:bg-gray-100 dark:hover:bg-gray-700/50 midnight:hover:bg-gray-800/50 purple:hover:bg-gray-800/50",
+      "hover:bg-gray-100 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5/50 purple:hover:bg-pink-500/5/50",
       "text-gray-700 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300"
     ),
     danger: cn(

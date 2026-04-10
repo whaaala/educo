@@ -385,7 +385,7 @@ export default function PayFeesModal({
           <button
             type="button"
             onClick={() => setExpandedFees(!expandedFees)}
-            className="w-full flex items-center justify-between p-3.5 bg-gray-50/80 dark:bg-gray-800/30 midnight:bg-gray-800/30 purple:bg-gray-800/30 cursor-pointer hover:bg-gray-100/80 dark:hover:bg-gray-800/50 transition-colors"
+            className="w-full flex items-center justify-between p-3.5 bg-gray-50/80 dark:bg-[#1a1d24]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 cursor-pointer hover:bg-gray-100/80 dark:hover:bg-[#22262e]/50 transition-colors"
           >
             <div className="flex items-center gap-2.5">
               <div className="p-1.5 rounded-lg bg-green-100/80 dark:bg-green-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20">
@@ -401,7 +401,7 @@ export default function PayFeesModal({
           </button>
 
           {expandedFees && (
-            <div className="p-3 space-y-2.5 bg-white/50 dark:bg-gray-900/20 midnight:bg-gray-900/20 purple:bg-gray-900/20">
+            <div className="p-3 space-y-2.5 bg-white/50 dark:bg-[#0f1115]/20 midnight:bg-[#0a0e27]/20 purple:bg-[#1a0b2e]/20">
               {unpaidFees.map((fee) => {
                 const statusConfig = getStatusConfig(fee.status);
                 const allocation = allocations[fee.id] || 0;
@@ -409,7 +409,7 @@ export default function PayFeesModal({
                 return (
                   <div
                     key={fee.id}
-                    className="bg-white dark:bg-gray-800/80 midnight:bg-gray-800/80 purple:bg-gray-800/80 rounded-xl p-3.5 border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-700/20 purple:border-pink-700/20 transition-all hover:shadow-sm"
+                    className="bg-white dark:bg-[#1a1d24]/80 midnight:bg-[#0f1330]/80 purple:bg-[#251340]/80 rounded-xl p-3.5 border border-gray-100 dark:border-gray-700/50 midnight:border-cyan-700/20 purple:border-pink-700/20 transition-all hover:shadow-sm"
                   >
                     <div className="flex items-start justify-between mb-2.5">
                       <div className="flex-1 min-w-0">
@@ -438,7 +438,7 @@ export default function PayFeesModal({
                     <div className="flex items-center gap-2.5">
                       <div className="flex-1">
                         <div className="relative">
-                          <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded bg-gray-100 dark:bg-gray-700 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded bg-gray-100 dark:bg-[#22262e] midnight:bg-cyan-900/30 purple:bg-pink-900/30">
                             <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-bold text-sm">{currencySymbol}</span>
                           </div>
                           <input
@@ -446,7 +446,7 @@ export default function PayFeesModal({
                             value={allocation > 0 ? allocation.toLocaleString() : ""}
                             onChange={(e) => handleAllocationChange(fee.id, e.target.value, fee.balance)}
                             placeholder="0"
-                            className="w-full h-[46px] pl-14 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 focus:border-blue-400 dark:focus:border-blue-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
+                            className="w-full h-[46px] pl-14 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 focus:border-blue-400 dark:focus:border-blue-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
                           />
                         </div>
                       </div>
@@ -485,7 +485,7 @@ export default function PayFeesModal({
                   className={`relative p-3 sm:p-4 rounded-xl border transition-all duration-200 cursor-pointer group ${
                     isSelected
                       ? "border-green-400/50 dark:border-green-500/40 midnight:border-cyan-500/40 purple:border-pink-500/40 bg-gradient-to-br from-green-50 to-emerald-50/50 dark:from-green-950/40 dark:to-emerald-950/30 midnight:from-cyan-950/40 midnight:to-blue-950/30 purple:from-pink-950/40 purple:to-purple-950/30 shadow-sm"
-                      : "border-gray-200/80 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/80"
+                      : "border-gray-200/80 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 hover:bg-gray-50 dark:hover:bg-[#22262e]/80"
                   }`}
                 >
                   {isSelected && (
@@ -498,7 +498,7 @@ export default function PayFeesModal({
                     className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center mx-auto mb-2 transition-all duration-200 ${
                       isSelected
                         ? "bg-green-500 dark:bg-green-500 midnight:bg-cyan-500 purple:bg-pink-500 shadow-md shadow-green-500/20"
-                        : "bg-gray-100 dark:bg-gray-700/80 group-hover:bg-gray-200 dark:group-hover:bg-gray-700"
+                        : "bg-gray-100 dark:bg-[#22262e]/80 group-hover:bg-gray-200 dark:group-hover:bg-gray-700"
                     }`}
                   >
                     <Icon
@@ -596,7 +596,7 @@ export default function PayFeesModal({
                   </p>
                 </div>
 
-                <div className="p-3 space-y-2 bg-white/50 dark:bg-gray-900/20">
+                <div className="p-3 space-y-2 bg-white/50 dark:bg-[#0f1115]/20">
                   {[
                     { label: "Bank Name", value: settings.bankAccount.bankName },
                     { label: "Account Number", value: settings.bankAccount.accountNumber },
@@ -604,7 +604,7 @@ export default function PayFeesModal({
                   ].map((item) => (
                     <div
                       key={item.label}
-                      className="flex items-center justify-between p-3 bg-white dark:bg-gray-800/60 rounded-xl border border-gray-100 dark:border-gray-700/30 hover:border-gray-200 dark:hover:border-gray-600/50 transition-colors"
+                      className="flex items-center justify-between p-3 bg-white dark:bg-[#1a1d24]/60 rounded-xl border border-gray-100 dark:border-gray-700/30 hover:border-gray-200 dark:hover:border-gray-600/50 transition-colors"
                     >
                       <div>
                         <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium">
@@ -617,7 +617,7 @@ export default function PayFeesModal({
                       <button
                         type="button"
                         onClick={() => handleCopy(item.value, item.label)}
-                        className="p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer"
+                        className="p-2 rounded-lg bg-gray-50 dark:bg-[#22262e]/50 hover:bg-gray-100 dark:hover:bg-[#22262e] transition-all duration-200 cursor-pointer"
                       >
                         {copied === item.label ? (
                           <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -629,7 +629,7 @@ export default function PayFeesModal({
                   ))}
                 </div>
 
-                <div className="px-4 py-2.5 bg-gray-50/80 dark:bg-gray-800/30 border-t border-gray-100 dark:border-gray-700/30">
+                <div className="px-4 py-2.5 bg-gray-50/80 dark:bg-[#1a1d24]/30 border-t border-gray-100 dark:border-gray-700/30">
                   <p className="text-[11px] text-gray-500 dark:text-gray-400 text-center">
                     Use your child&apos;s admission number as payment reference
                   </p>
@@ -652,7 +652,7 @@ export default function PayFeesModal({
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 max-w-xs mx-auto">
                     Visit the school bursar&apos;s office during working hours to make your cash payment.
                   </p>
-                  <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-white dark:bg-gray-800/60 rounded-xl text-xs border border-gray-100 dark:border-gray-700/30">
+                  <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-white dark:bg-[#1a1d24]/60 rounded-xl text-xs border border-gray-100 dark:border-gray-700/30">
                     <Clock className="w-3.5 h-3.5 text-gray-400" />
                     <span className="text-gray-500 dark:text-gray-400">Office Hours:</span>
                     <span className="font-semibold text-gray-800 dark:text-white">8:00 AM - 4:00 PM</span>

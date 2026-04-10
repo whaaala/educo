@@ -66,7 +66,7 @@ function StaffActionsCell({ staff }: { staff: Teacher }) {
           <MessageCircle className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/msg:text-blue-600 dark:group-hover/msg:text-blue-400 transition-colors" />
         </button>
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-          <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">Message</div>
+          <div className="px-2 py-1 bg-gray-900 dark:bg-[#22262e] text-white text-xs rounded whitespace-nowrap">Message</div>
         </div>
       </div>
       <div className="relative group/call flex-shrink-0">
@@ -86,7 +86,7 @@ function StaffActionsCell({ staff }: { staff: Teacher }) {
           <Phone className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/call:text-green-600 dark:group-hover/call:text-green-400 transition-colors" />
         </button>
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/call:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-          <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">Voice Call</div>
+          <div className="px-2 py-1 bg-gray-900 dark:bg-[#22262e] text-white text-xs rounded whitespace-nowrap">Voice Call</div>
         </div>
       </div>
       <div className="relative group/video flex-shrink-0">
@@ -106,7 +106,7 @@ function StaffActionsCell({ staff }: { staff: Teacher }) {
           <Video className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/video:text-purple-600 dark:group-hover/video:text-purple-400 transition-colors" />
         </button>
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/video:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-          <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">Video Call</div>
+          <div className="px-2 py-1 bg-gray-900 dark:bg-[#22262e] text-white text-xs rounded whitespace-nowrap">Video Call</div>
         </div>
       </div>
       <div className="relative group/email flex-shrink-0">
@@ -117,14 +117,14 @@ function StaffActionsCell({ staff }: { staff: Teacher }) {
           <Mail className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/email:text-purple-600 dark:group-hover/email:text-purple-400 transition-colors" />
         </button>
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/email:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-          <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">Email</div>
+          <div className="px-2 py-1 bg-gray-900 dark:bg-[#22262e] text-white text-xs rounded whitespace-nowrap">Email</div>
         </div>
       </div>
       <div className="relative flex-shrink-0 overflow-visible group/more">
         <button
           className={`p-0.5 md:p-1 xl:p-1.5 rounded-md transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer ${
             isMenuOpen
-              ? 'bg-gray-200 dark:bg-gray-600 midnight:bg-cyan-500/30 purple:bg-pink-500/30'
+              ? 'bg-gray-200 dark:bg-[#2a2d35] midnight:bg-cyan-500/30 purple:bg-pink-500/30'
               : 'hover:bg-gray-100 dark:hover:bg-gray-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20'
           }`}
           title="More"
@@ -133,21 +133,21 @@ function StaffActionsCell({ staff }: { staff: Teacher }) {
           <MoreVertical className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors" />
         </button>
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/more:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-          <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">More</div>
+          <div className="px-2 py-1 bg-gray-900 dark:bg-[#22262e] text-white text-xs rounded whitespace-nowrap">More</div>
         </div>
 
         {isMenuOpen && (
-          <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[999999] py-1 animate-in fade-in slide-in-from-top-2 duration-200">
-            <button onClick={() => handleMenuItemClick('View Staff')} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+          <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[999999] py-1 animate-in fade-in slide-in-from-top-2 duration-200">
+            <button onClick={() => handleMenuItemClick('View Staff')} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
               <Eye className="w-4 h-4" /><span>View Staff</span>
             </button>
-            <button onClick={() => handleMenuItemClick('Edit')} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+            <button onClick={() => handleMenuItemClick('Edit')} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
               <Edit className="w-4 h-4" /><span>Edit</span>
             </button>
-            <button onClick={() => handleMenuItemClick('Login Details')} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+            <button onClick={() => handleMenuItemClick('Login Details')} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
               <Lock className="w-4 h-4" /><span>Login Details</span>
             </button>
-            <button onClick={() => handleMenuItemClick('Disable')} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+            <button onClick={() => handleMenuItemClick('Disable')} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
               <Lock className="w-4 h-4" /><span>Disable</span>
             </button>
             <button onClick={() => handleMenuItemClick('Delete')} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-500/10 purple:hover:bg-red-500/10 transition-colors cursor-pointer">
@@ -360,7 +360,7 @@ export default function StaffPage() {
               flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200
               ${selectedCategory === category.value
                 ? 'bg-blue-600 text-white dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 shadow-lg'
-                : 'bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800'
+                : 'bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5'
               }
             `}
           >
@@ -369,7 +369,7 @@ export default function StaffPage() {
               px-2 py-0.5 rounded-full text-xs font-semibold
               ${selectedCategory === category.value
                 ? 'bg-white/20 text-white'
-                : 'bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400'
+                : 'bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400'
               }
             `}>
               {category.count}

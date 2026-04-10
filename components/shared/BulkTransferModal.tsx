@@ -105,7 +105,7 @@ const badgeColorConfig = {
   blue: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
   orange: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400",
   purple: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
-  gray: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300",
+  gray: "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300",
 };
 
 export interface BulkTransferModalProps {
@@ -290,7 +290,7 @@ export default function BulkTransferModal({
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-3xl bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+      <div className="relative w-full max-w-3xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header with gradient */}
         <div className={`relative bg-gradient-to-r ${colors.gradient} px-6 py-4 flex items-center justify-between`}>
           <div className="flex items-center gap-3">
@@ -343,7 +343,7 @@ export default function BulkTransferModal({
                 {students.map((student) => (
                   <div
                     key={student.id}
-                    className="flex items-center justify-between p-3 border-b last:border-b-0 border-gray-100 dark:border-gray-700/50 midnight:border-cyan-700/20 purple:border-pink-700/20 hover:bg-gray-50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors"
+                    className="flex items-center justify-between p-3 border-b last:border-b-0 border-gray-100 dark:border-gray-700/50 midnight:border-cyan-700/20 purple:border-pink-700/20 hover:bg-gray-50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       {student.avatar ? (
@@ -387,7 +387,7 @@ export default function BulkTransferModal({
                   <button
                     key={student.id}
                     onClick={() => handleRestoreStudent(student)}
-                    className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-100 dark:bg-[#22262e] text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35] transition-colors cursor-pointer"
                     title="Click to restore"
                   >
                     <RotateCcw className="w-3 h-3" />
@@ -523,14 +523,14 @@ export default function BulkTransferModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 flex items-center justify-between gap-3">
+        <div className="px-6 py-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 flex items-center justify-between gap-3">
           <div className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
             {students.length} {students.length === 1 ? itemsLabel.toLowerCase().slice(0, -1) : itemsLabel.toLowerCase()} selected
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="px-6 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
+              className="px-6 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all duration-200 cursor-pointer"
             >
               Cancel
             </button>
@@ -540,7 +540,7 @@ export default function BulkTransferModal({
               className={`px-6 py-2.5 rounded-lg font-medium text-sm text-white transition-all duration-200 flex items-center gap-2 ${
                 canSubmit()
                   ? `${colors.button} shadow-md hover:shadow-lg active:scale-95 cursor-pointer`
-                  : "bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-50"
+                  : "bg-gray-400 dark:bg-[#2a2d35] cursor-not-allowed opacity-50"
               }`}
             >
               <ConfirmButtonIcon className="w-4 h-4" />

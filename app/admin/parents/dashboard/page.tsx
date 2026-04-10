@@ -126,11 +126,11 @@ export default function AdminParentDashboardPage() {
         <img src={parent.profilePhoto} alt="" className="w-8 h-8 rounded-full object-cover" />
       ) : (
         <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
-          <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <Users className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
         </div>
       ),
       right: (
-        <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{parent.children.length}</span>
+        <span className="text-lg font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">{parent.children.length}</span>
       ),
       href: `/admin/parents/${parent.id}`,
     }));
@@ -148,11 +148,11 @@ export default function AdminParentDashboardPage() {
           <img src={parent.profilePhoto} alt="" className="w-8 h-8 rounded-full object-cover" />
         ) : (
           <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
-            <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+            <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
           </div>
         ),
         right: (
-          <span className="text-sm font-bold text-red-600 dark:text-red-400">{money(parent.totalOutstandingFees)}</span>
+          <span className="text-sm font-bold text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">{money(parent.totalOutstandingFees)}</span>
         ),
         href: `/admin/parents/${parent.id}`,
         variant: "danger" as const,
@@ -188,7 +188,7 @@ export default function AdminParentDashboardPage() {
       content: (
         <ActivityWidget
           title="Recent Activity"
-          icon={<Activity className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+          icon={<Activity className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />}
           colorScheme="blue"
           items={activityItems}
           maxItems={5}
@@ -215,7 +215,7 @@ export default function AdminParentDashboardPage() {
       content: outstandingItems.length > 0 ? (
         <ListWidget
           title="Highest Outstanding"
-          icon={<AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />}
+          icon={<AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />}
           colorScheme="red"
           items={outstandingItems}
           maxItems={3}
@@ -224,7 +224,7 @@ export default function AdminParentDashboardPage() {
       ) : (
         <ListWidget
           title="Highest Outstanding"
-          icon={<AlertCircle className="w-4 h-4 text-green-600 dark:text-green-400" />}
+          icon={<AlertCircle className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />}
           colorScheme="green"
           items={[]}
           emptyIcon={<CheckCircle2 className="w-10 h-10 text-green-500" />}
@@ -265,7 +265,7 @@ export default function AdminParentDashboardPage() {
       content: (
         <StatsWidget
           title="Engagement"
-          icon={<Bell className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
+          icon={<Bell className="w-4 h-4 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />}
           colorScheme="amber"
           stats={engagementStats}
           columns={3}
@@ -278,7 +278,7 @@ export default function AdminParentDashboardPage() {
       content: (
         <StatsWidget
           title="Collection Rate"
-          icon={<TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+          icon={<TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />}
           colorScheme="blue"
           stats={[
             {
@@ -410,9 +410,9 @@ export default function AdminParentDashboardPage() {
     return (
       <DashboardProvider config={adminDashboardConfig}>
         <div className="mt-6">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-3">
             Dashboard Widgets
-            <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">
+            <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
               (Drag to reorder)
             </span>
           </h3>

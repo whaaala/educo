@@ -148,7 +148,7 @@ export default function StaffTable({
   const getRoleBadgeColor = (role: string) => {
     const colors: { [key: string]: string } = {
       Admin: "bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800",
-      Support: "bg-gray-100 dark:bg-gray-800/30 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700",
+      Support: "bg-gray-100 dark:bg-[#1a1d24]/30 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700",
       Management: "bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800",
     };
     return colors[role] || colors.Support;
@@ -347,7 +347,7 @@ export default function StaffTable({
               <MessageCircle className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/msg:text-blue-600 dark:group-hover/msg:text-blue-400 transition-colors" />
             </button>
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-              <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">
+              <div className="px-2 py-1 bg-gray-900 dark:bg-[#22262e] text-white text-xs rounded whitespace-nowrap">
                 Message
               </div>
             </div>
@@ -369,7 +369,7 @@ export default function StaffTable({
               <Phone className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/call:text-green-600 dark:group-hover/call:text-green-400 transition-colors" />
             </button>
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/call:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-              <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">
+              <div className="px-2 py-1 bg-gray-900 dark:bg-[#22262e] text-white text-xs rounded whitespace-nowrap">
                 Voice Call
               </div>
             </div>
@@ -391,7 +391,7 @@ export default function StaffTable({
               <Video className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/video:text-purple-600 dark:group-hover/video:text-purple-400 transition-colors" />
             </button>
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/video:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-              <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">
+              <div className="px-2 py-1 bg-gray-900 dark:bg-[#22262e] text-white text-xs rounded whitespace-nowrap">
                 Video Call
               </div>
             </div>
@@ -407,7 +407,7 @@ export default function StaffTable({
               <Mail className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/email:text-purple-600 dark:group-hover/email:text-purple-400 transition-colors" />
             </button>
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/email:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-              <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">
+              <div className="px-2 py-1 bg-gray-900 dark:bg-[#22262e] text-white text-xs rounded whitespace-nowrap">
                 Email
               </div>
             </div>
@@ -417,7 +417,7 @@ export default function StaffTable({
               ref={openMenuStaffId === staffMember.id ? buttonRef : null}
               className={`p-0.5 md:p-1 xl:p-1.5 rounded-md transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer ${
                 openMenuStaffId === staffMember.id
-                  ? 'bg-gray-200 dark:bg-gray-600 midnight:bg-cyan-500/30 purple:bg-pink-500/30'
+                  ? 'bg-gray-200 dark:bg-[#2a2d35] midnight:bg-cyan-500/30 purple:bg-pink-500/30'
                   : 'hover:bg-gray-100 dark:hover:bg-gray-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20'
               }`}
               title="More"
@@ -426,7 +426,7 @@ export default function StaffTable({
               <MoreVertical className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors" />
             </button>
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/more:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-              <div className="px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap">
+              <div className="px-2 py-1 bg-gray-900 dark:bg-[#22262e] text-white text-xs rounded whitespace-nowrap">
                 More
               </div>
             </div>
@@ -434,7 +434,7 @@ export default function StaffTable({
             {openMenuStaffId === staffMember.id && (
               <div
                 ref={menuRef}
-                className={`absolute right-0 w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[999999] py-1 animate-in fade-in duration-200 ${
+                className={`absolute right-0 w-52 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[999999] py-1 animate-in fade-in duration-200 ${
                   menuPosition === 'top'
                     ? 'bottom-full mb-1 slide-in-from-bottom-2'
                     : 'top-full mt-1 slide-in-from-top-2'
@@ -442,28 +442,28 @@ export default function StaffTable({
               >
                 <button
                   onClick={() => handleMenuItemClick('View Staff', staffMember)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                 >
                   <Eye className="w-4 h-4" />
                   <span>View Staff</span>
                 </button>
                 <button
                   onClick={() => handleMenuItemClick('Edit', staffMember)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                 >
                   <Edit className="w-4 h-4" />
                   <span>Edit</span>
                 </button>
                 <button
                   onClick={() => handleMenuItemClick('Login Details', staffMember)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                 >
                   <Lock className="w-4 h-4" />
                   <span>Login Details</span>
                 </button>
                 <button
                   onClick={() => handleMenuItemClick('Disable', staffMember)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                 >
                   <Lock className="w-4 h-4" />
                   <span>Disable</span>

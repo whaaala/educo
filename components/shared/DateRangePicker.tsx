@@ -183,7 +183,7 @@ export default function DateRangePicker({ value, onChange, resetKey }: DateRange
         className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg border transition-all duration-200 cursor-pointer ${
           isOpen
             ? "bg-blue-50 border-blue-300 dark:bg-blue-500/20 dark:border-blue-500 midnight:bg-cyan-500/20 midnight:border-cyan-500 purple:bg-pink-500/20 purple:border-pink-500"
-            : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+            : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
         }`}
       >
         <Calendar className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${
@@ -218,7 +218,7 @@ export default function DateRangePicker({ value, onChange, resetKey }: DateRange
                   className={`w-full px-4 py-2.5 text-left text-sm transition-all duration-150 flex items-center justify-between ${
                     selectedOption === option.label
                       ? "bg-blue-50 dark:bg-blue-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 font-semibold"
-                      : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                      : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                   }`}
                 >
                   <span>{option.label}</span>
@@ -233,7 +233,7 @@ export default function DateRangePicker({ value, onChange, resetKey }: DateRange
                 className={`w-full px-4 py-2.5 text-left text-sm transition-all duration-150 flex items-center justify-between ${
                   selectedOption === "Custom Range"
                     ? "bg-blue-50 dark:bg-blue-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 font-semibold"
-                    : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                    : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                 }`}
               >
                 <span>Custom Range</span>

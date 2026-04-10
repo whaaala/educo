@@ -426,9 +426,9 @@ export default function LibraryPage() {
         label: "Damaged",
       },
       maintenance: {
-        bg: "bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800",
+        bg: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]",
         text: "text-gray-700 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300",
-        border: "border-gray-200 dark:border-gray-600",
+        border: "border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30",
         label: "Maintenance",
       },
     };
@@ -445,10 +445,10 @@ export default function LibraryPage() {
   const getConditionBadge = (condition: BookCondition) => {
     const conditionConfig: Record<BookCondition, { bg: string; text: string }> = {
       new: { bg: "bg-emerald-100 dark:bg-emerald-900/30", text: "text-emerald-700 dark:text-emerald-400" },
-      good: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-400" },
-      fair: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-400" },
+      good: { bg: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30", text: "text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" },
+      fair: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" },
       poor: { bg: "bg-orange-100 dark:bg-orange-900/30", text: "text-orange-700 dark:text-orange-400" },
-      damaged: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-400" },
+      damaged: { bg: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30", text: "text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400" },
     };
 
     const config = conditionConfig[condition];
@@ -489,13 +489,13 @@ export default function LibraryPage() {
                 alt={book.title}
                 width={40}
                 height={56}
-                className="absolute inset-0 w-10 h-14 rounded-md object-cover ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-300 ease-out group-hover/cover:scale-[2.5] group-hover/cover:shadow-2xl group-hover/cover:ring-blue-500/90 dark:group-hover/cover:ring-blue-400/90"
+                className="absolute inset-0 w-10 h-14 rounded-md object-cover ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-300 ease-out group-hover/cover:scale-[2.5] group-hover/cover:shadow-2xl group-hover/cover:ring-blue-500/90 dark:group-hover/cover:ring-blue-400/90"
                 style={{ transformOrigin: 'left center' }}
                 unoptimized
               />
             ) : (
               <div
-                className="absolute inset-0 w-10 h-14 rounded-md bg-gray-100 dark:bg-gray-700 ring-2 ring-white/80 dark:ring-gray-700/50 shadow-lg flex items-center justify-center transition-all duration-300 ease-out group-hover/cover:scale-[2.5] group-hover/cover:shadow-2xl group-hover/cover:ring-blue-500/90"
+                className="absolute inset-0 w-10 h-14 rounded-md bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 shadow-lg flex items-center justify-center transition-all duration-300 ease-out group-hover/cover:scale-[2.5] group-hover/cover:shadow-2xl group-hover/cover:ring-blue-500/90"
                 style={{ transformOrigin: 'left center' }}
               >
                 <BookOpen className="w-5 h-5 text-gray-400" />
@@ -509,7 +509,7 @@ export default function LibraryPage() {
             <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 truncate" style={{ fontSize: "10px" }}>
               {book.author}
             </div>
-            <div className="text-gray-400 dark:text-gray-500 font-mono" style={{ fontSize: "9px" }}>
+            <div className="text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 font-mono" style={{ fontSize: "9px" }}>
               {book.isbn}
             </div>
           </div>
@@ -545,10 +545,10 @@ export default function LibraryPage() {
       className: "text-left",
       render: (book) => (
         <div style={{ fontSize: '11.8px' }}>
-          <span className={`font-semibold ${book.availableCopies > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+          <span className={`font-semibold ${book.availableCopies > 0 ? "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" : "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"}`}>
             {book.availableCopies}
           </span>
-          <span className="text-gray-400 dark:text-gray-500"> / {book.totalCopies}</span>
+          <span className="text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400"> / {book.totalCopies}</span>
         </div>
       ),
     },
@@ -588,7 +588,7 @@ export default function LibraryPage() {
               onClick={(e) => { e.stopPropagation(); handleView(book); }}
               className="group relative p-2 rounded-lg bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/30 dark:to-blue-900/20 midnight:from-blue-950/30 midnight:to-blue-900/20 purple:from-blue-950/30 purple:to-blue-900/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-blue-900/40 dark:hover:to-blue-800/30 transition-all duration-200 cursor-pointer border border-blue-200/40 dark:border-blue-800/30 hover:border-blue-400/60 dark:hover:border-blue-600/50 active:scale-95"
             >
-              <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
+              <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
             </button>
           </Tooltip>
           <Tooltip content="Edit Book">
@@ -596,7 +596,7 @@ export default function LibraryPage() {
               onClick={(e) => { e.stopPropagation(); handleEditBook(book); }}
               className="group relative p-2 rounded-lg bg-gradient-to-br from-green-50/50 to-green-100/30 dark:from-green-950/30 dark:to-green-900/20 midnight:from-green-950/30 midnight:to-green-900/20 purple:from-green-950/30 purple:to-green-900/20 hover:from-green-100 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/30 transition-all duration-200 cursor-pointer border border-green-200/40 dark:border-green-800/30 hover:border-green-400/60 dark:hover:border-green-600/50 active:scale-95"
             >
-              <Edit2 className="w-4 h-4 text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors" />
+              <Edit2 className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors" />
             </button>
           </Tooltip>
           <Tooltip content={book.availableCopies > 0 ? "Issue Book" : "No copies available"}>
@@ -606,13 +606,13 @@ export default function LibraryPage() {
               className={`group relative p-2 rounded-lg transition-all duration-200 border ${
                 book.availableCopies > 0
                   ? "bg-gradient-to-br from-purple-50/50 to-purple-100/30 dark:from-purple-950/30 dark:to-purple-900/20 midnight:from-purple-950/30 midnight:to-purple-900/20 purple:from-purple-950/30 purple:to-purple-900/20 hover:from-purple-100 hover:to-purple-100 dark:hover:from-purple-900/40 dark:hover:to-purple-800/30 cursor-pointer border-purple-200/40 dark:border-purple-800/30 hover:border-purple-400/60 dark:hover:border-purple-600/50 active:scale-95"
-                  : "bg-gray-100/50 dark:bg-gray-800/30 cursor-not-allowed opacity-50 border-gray-200/40 dark:border-gray-700/30"
+                  : "bg-gray-100/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 cursor-not-allowed opacity-50 border-gray-200/40 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30"
               }`}
             >
               <BookMarked className={`w-4 h-4 transition-colors ${
                 book.availableCopies > 0
                   ? "text-purple-600 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300"
-                  : "text-gray-400 dark:text-gray-500"
+                  : "text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400"
               }`} />
             </button>
           </Tooltip>
@@ -684,7 +684,7 @@ export default function LibraryPage() {
           size="3xl"
           header={{
             image: (
-              <div className="relative w-20 h-28 rounded-xl overflow-hidden ring-2 ring-white/80 dark:ring-gray-700/50 shadow-lg">
+              <div className="relative w-20 h-28 rounded-xl overflow-hidden ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 shadow-lg">
                 {viewingBook.coverImage ? (
                   <Image
                     src={viewingBook.coverImage}
@@ -694,7 +694,7 @@ export default function LibraryPage() {
                     unoptimized
                   />
                 ) : (
-                  <div className="w-full h-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                  <div className="w-full h-full bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center">
                     <BookOpen className="w-8 h-8 text-gray-400" />
                   </div>
                 )}
@@ -729,10 +729,10 @@ export default function LibraryPage() {
             ],
             subtitle: (
               <div className="space-y-1">
-                <p className="text-sm text-gray-600 dark:text-gray-300">
+                <p className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                   {viewingBook.isbn}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                   {viewingBook.educationLevel} • {viewingBook.subject} • {viewingBook.category.replace("-", " ")}
                 </p>
               </div>

@@ -114,7 +114,7 @@ export default function Tooltip({ content, children, delay = 300, block = false 
             bg-gray-900 dark:bg-gray-950 midnight:bg-gray-950 purple:bg-gray-950
             text-white text-sm font-medium rounded-lg shadow-2xl
             whitespace-nowrap pointer-events-none
-            border border-gray-700 dark:border-gray-800 midnight:border-cyan-500/30 purple:border-pink-500/30
+            border border-gray-700 dark:border-[#1a1d24] midnight:border-cyan-500/30 purple:border-pink-500/30
             backdrop-blur-sm
             transition-opacity duration-200
           `}
@@ -134,7 +134,7 @@ export default function Tooltip({ content, children, delay = 300, block = false 
             className={`
               absolute left-1/2 -translate-x-1/2 w-2 h-2 rotate-45
               bg-gray-900 dark:bg-gray-950 midnight:bg-gray-950 purple:bg-gray-950
-              border-gray-700 dark:border-gray-800 midnight:border-cyan-500/30 purple:border-pink-500/30
+              border-gray-700 dark:border-[#1a1d24] midnight:border-cyan-500/30 purple:border-pink-500/30
               ${position === 'top'
                 ? 'bottom-[-4px] border-r border-b'
                 : 'top-[-4px] border-l border-t'

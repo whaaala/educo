@@ -532,7 +532,7 @@ export default function FeeStructurePage() {
             {item.installmentCount}x
           </span>
         ) : (
-          <span className="text-gray-400 dark:text-gray-500" style={{ fontSize: '11.8px' }}>—</span>
+          <span className="text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" style={{ fontSize: '11.8px' }}>—</span>
         )
       ),
     },
@@ -546,7 +546,7 @@ export default function FeeStructurePage() {
           className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold cursor-pointer transition-colors border whitespace-nowrap ${
             item.isActive
               ? "bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/20 purple:bg-green-900/20 text-green-700 dark:text-green-400 midnight:text-green-400 purple:text-green-400 border-green-200 dark:border-green-800 hover:bg-green-200"
-              : "bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-200"
+              : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-200"
           }`}
           style={{ fontSize: '11.8px' }}
         >
@@ -580,7 +580,7 @@ export default function FeeStructurePage() {
             className="group relative p-2 rounded-lg bg-gradient-to-br from-red-50/50 to-red-100/30 dark:from-red-950/30 dark:to-red-900/20 midnight:from-red-950/30 midnight:to-red-900/20 purple:from-red-950/30 purple:to-red-900/20 hover:from-red-100 hover:to-red-100 dark:hover:from-red-900/40 dark:hover:to-red-800/30 transition-all duration-200 cursor-pointer border border-red-200/40 dark:border-red-800/30 hover:border-red-400/60 dark:hover:border-red-600/50 active:scale-95"
             title="Delete"
           >
-            <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors" />
+            <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors" />
           </button>
         </div>
       ),
@@ -720,26 +720,26 @@ export default function FeeStructurePage() {
             <div className="flex items-center justify-center py-12">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                   {isRefreshing ? "Refreshing..." : "Filtering..."}
                 </p>
               </div>
             </div>
           ) : filteredStructures.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-8 sm:p-12">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-8 sm:p-12">
               <div className="flex flex-col items-center justify-center">
                 <div className="relative mb-4">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 animate-pulse" />
                   </div>
                   <div className="relative z-10 flex items-center justify-center w-16 h-16">
-                    <FileText className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                    <FileText className="w-8 h-8 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
                   </div>
                 </div>
-                <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 mb-1 text-center">
+                <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1 text-center">
                   No fee structures found
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4 text-center">
                   {searchQuery
                     ? "No results match your search. Try adjusting your filters."
                     : "Get started by adding your first fee structure."}
@@ -747,7 +747,7 @@ export default function FeeStructurePage() {
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                    className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline"
                   >
                     Clear search
                   </button>
@@ -761,7 +761,7 @@ export default function FeeStructurePage() {
 
               <div
                 key={`table-data-${searchQuery}-${selectedYear}-${selectedLevel}-${selectedClass}-${selectedCategory}`}
-                className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden"
+                className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden"
               >
                 <ResponsiveListTable variant="contained" showColumnHeaders={true}
                   columns={columns}

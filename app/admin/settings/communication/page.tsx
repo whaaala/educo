@@ -39,7 +39,7 @@ const PLATFORMS = {
     icon: Wifi,
     color: "blue",
     gradient: "from-blue-500 to-blue-600",
-    lightBg: "bg-blue-50 dark:bg-blue-900/20",
+    lightBg: "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20",
     features: ["Free", "Built-in", "P2P"],
   },
   agora: {
@@ -112,7 +112,7 @@ function ToggleSwitch({
       className={`relative inline-flex ${s.track} items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 ${
         enabled
           ? "bg-gradient-to-r from-green-500 to-emerald-500"
-          : "bg-gray-200 dark:bg-gray-700"
+          : "bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"
       }`}
     >
       <span
@@ -140,21 +140,21 @@ function ConfigModeSelector({
         className={`relative p-4 rounded-xl border text-left transition-all duration-200 ${
           value === "platform"
             ? "border-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 dark:border-cyan-500"
-            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800"
+            : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]"
         }`}
       >
         <div className="flex items-start gap-3">
           <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
-            value === "platform" ? "border-cyan-500 dark:border-cyan-400" : "border-gray-300 dark:border-gray-600"
+            value === "platform" ? "border-cyan-500 dark:border-cyan-400" : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
           }`}>
             {value === "platform" && <div className="w-2.5 h-2.5 rounded-full bg-cyan-500 dark:bg-cyan-400" />}
           </div>
           <div>
             <div className="flex items-center gap-2">
               <Globe className={`w-4 h-4 ${value === "platform" ? "text-cyan-500" : "text-gray-400"}`} />
-              <span className="font-medium text-gray-700 dark:text-gray-200">Platform Account</span>
+              <span className="font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Platform Account</span>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
               Use Educo&apos;s shared account. No setup required.
             </p>
           </div>
@@ -167,21 +167,21 @@ function ConfigModeSelector({
         className={`relative p-4 rounded-xl border text-left transition-all duration-200 ${
           value === "tenant"
             ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-500"
-            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800"
+            : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]"
         }`}
       >
         <div className="flex items-start gap-3">
           <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
-            value === "tenant" ? "border-emerald-500 dark:border-emerald-400" : "border-gray-300 dark:border-gray-600"
+            value === "tenant" ? "border-emerald-500 dark:border-emerald-400" : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
           }`}>
             {value === "tenant" && <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />}
           </div>
           <div>
             <div className="flex items-center gap-2">
               <Building2 className={`w-4 h-4 ${value === "tenant" ? "text-emerald-500" : "text-gray-400"}`} />
-              <span className="font-medium text-gray-700 dark:text-gray-200">School Account</span>
+              <span className="font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">School Account</span>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
               Use your own account for full control.
             </p>
           </div>
@@ -210,10 +210,10 @@ function PlatformCard({
   const colorClasses: Record<string, { ring: string; iconBg: string; iconText: string; featureBg: string; featureText: string }> = {
     blue: {
       ring: "ring-blue-400 dark:ring-blue-500",
-      iconBg: "bg-blue-100 dark:bg-blue-900/30",
-      iconText: "text-blue-600 dark:text-blue-400",
-      featureBg: "bg-blue-50 dark:bg-blue-900/20",
-      featureText: "text-blue-600 dark:text-blue-400",
+      iconBg: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30",
+      iconText: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
+      featureBg: "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20",
+      featureText: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
     },
     cyan: {
       ring: "ring-cyan-400 dark:ring-cyan-500",
@@ -232,9 +232,9 @@ function PlatformCard({
     green: {
       ring: "ring-green-400 dark:ring-green-500",
       iconBg: "bg-green-100 dark:bg-green-900/30",
-      iconText: "text-green-600 dark:text-green-400",
+      iconText: "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
       featureBg: "bg-green-50 dark:bg-green-900/20",
-      featureText: "text-green-600 dark:text-green-400",
+      featureText: "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
     },
     emerald: {
       ring: "ring-emerald-400 dark:ring-emerald-500",
@@ -251,7 +251,7 @@ function PlatformCard({
     <div
       className={`relative group cursor-pointer transition-all duration-200 ${
         isSelected
-          ? `ring-2 ${colors.ring} ring-offset-1 dark:ring-offset-gray-900`
+          ? `ring-2 ${colors.ring} ring-offset-1 dark:ring-offset-gray-900 midnight:ring-offset-[#0d1526] purple:ring-offset-[#1f1035]`
           : ""
       }`}
       onClick={onSelect}
@@ -260,9 +260,9 @@ function PlatformCard({
         relative overflow-hidden rounded-xl border transition-all duration-200
         ${isSelected
           ? "border-transparent shadow-md"
-          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+          : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
         }
-        bg-white dark:bg-gray-800
+        bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]
       `}>
         {/* Gradient Header Line */}
         <div className={`h-1.5 bg-gradient-to-r ${platform.gradient} ${isActive ? 'opacity-100' : 'opacity-30'}`} />
@@ -280,12 +280,12 @@ function PlatformCard({
 
           {/* Title */}
           <div className="mb-1.5 sm:mb-2">
-            <h3 className="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-100">{platform.name}</h3>
-            <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500">{platform.subtitle}</p>
+            <h3 className="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">{platform.name}</h3>
+            <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{platform.subtitle}</p>
           </div>
 
           {/* Description - hidden on very small screens */}
-          <p className="hidden sm:block text-xs text-gray-500 dark:text-gray-400 mb-2 sm:mb-3 line-clamp-2">
+          <p className="hidden sm:block text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2 sm:mb-3 line-clamp-2">
             {platform.description}
           </p>
 
@@ -587,9 +587,9 @@ export default function CommunicationSettingsPage() {
       loadingText="Loading Communication Settings"
       afterStats={
         <>
-      <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
+      <div className="flex flex-col h-full bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
         {/* Header - Subtle styling */}
-        <div className="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex-shrink-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="px-4 sm:px-6 py-4 sm:py-5">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -597,10 +597,10 @@ export default function CommunicationSettingsPage() {
                   <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">
+                  <h1 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
                     Communication Settings
                   </h1>
-                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
                     Configure video, voice, and chat platforms
                   </p>
                 </div>
@@ -636,15 +636,15 @@ export default function CommunicationSettingsPage() {
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
             {/* School Selector Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="p-4 sm:p-6">
                 <div className="flex items-center gap-3 mb-4 sm:mb-5">
                   <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg shadow-md">
                     <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100">Select School</h2>
-                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                    <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Select School</h2>
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                       Choose a school to configure
                     </p>
                   </div>
@@ -657,8 +657,8 @@ export default function CommunicationSettingsPage() {
                     onClick={() => setTenantDropdownOpen(!tenantDropdownOpen)}
                     className={`w-full flex items-center justify-between px-3 sm:px-4 py-3 sm:py-4 border rounded-lg transition-all duration-200 ${
                       selectedTenantId
-                        ? "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 hover:border-gray-300"
-                        : "bg-gray-50 dark:bg-gray-700/50 border-dashed border-gray-300 dark:border-gray-600 hover:border-gray-400"
+                        ? "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-300"
+                        : "bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 border-dashed border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400"
                     }`}
                   >
                     {selectedTenant ? (
@@ -671,14 +671,14 @@ export default function CommunicationSettingsPage() {
                         </div>
                         <div className="text-left min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-medium text-sm sm:text-base text-gray-700 dark:text-gray-200 truncate">{selectedTenant.name}</p>
+                            <p className="font-medium text-sm sm:text-base text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">{selectedTenant.name}</p>
                             {hasTenantSettings(selectedTenant.id) && (
-                              <span className="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-[10px] font-medium rounded">
+                              <span className="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 text-[10px] font-medium rounded">
                                 Configured
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
                             {selectedTenant.config.institutionType} • {selectedTenant.contact?.address?.city || "N/A"}
                           </p>
                         </div>
@@ -702,11 +702,11 @@ export default function CommunicationSettingsPage() {
                         onClick={() => setTenantDropdownOpen(false)}
                       />
                       <div
-                        className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg"
+                        className="absolute left-0 right-0 mt-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-lg"
                         style={{ zIndex: 100 }}
                       >
                         {/* Search */}
-                        <div className="p-2 sm:p-3 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
+                        <div className="p-2 sm:p-3 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
                           <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
@@ -714,7 +714,7 @@ export default function CommunicationSettingsPage() {
                               value={tenantSearchQuery}
                               onChange={(e) => setTenantSearchQuery(e.target.value)}
                               placeholder="Search schools..."
-                              className="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-1 focus:ring-gray-400 focus:border-gray-400 outline-none"
+                              className="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm focus:ring-1 focus:ring-gray-400 focus:border-gray-400 outline-none"
                               autoFocus
                               onClick={(e) => e.stopPropagation()}
                             />
@@ -722,9 +722,9 @@ export default function CommunicationSettingsPage() {
                         </div>
 
                         {/* Tenant List */}
-                        <div className="max-h-60 sm:max-h-72 overflow-y-auto p-1.5 sm:p-2 bg-white dark:bg-gray-800">
+                        <div className="max-h-60 sm:max-h-72 overflow-y-auto p-1.5 sm:p-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
                           {filteredTenants.length === 0 ? (
-                            <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                            <div className="p-4 text-center text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-sm">
                               No schools found
                             </div>
                           ) : (
@@ -735,8 +735,8 @@ export default function CommunicationSettingsPage() {
                                 onClick={() => handleSelectTenant(tenant)}
                                 className={`w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg transition-all duration-200 ${
                                   selectedTenantId === tenant.id
-                                    ? "bg-gray-100 dark:bg-gray-700"
-                                    : "hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                                    ? "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"
+                                    : "hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50"
                                 }`}
                               >
                                 <div
@@ -746,14 +746,14 @@ export default function CommunicationSettingsPage() {
                                   {tenant.shortName?.substring(0, 2) || tenant.name.substring(0, 2)}
                                 </div>
                                 <div className="flex-1 text-left min-w-0">
-                                  <p className="font-medium text-sm text-gray-700 dark:text-gray-200 truncate">{tenant.name}</p>
-                                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">
+                                  <p className="font-medium text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">{tenant.name}</p>
+                                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
                                     {tenant.config.institutionType} • {tenant.contact?.address?.city || "N/A"}
                                   </p>
                                 </div>
                                 <div className="flex items-center gap-1.5 flex-shrink-0">
                                   {hasTenantSettings(tenant.id) && (
-                                    <span className="hidden sm:inline px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-[10px] font-medium rounded">
+                                    <span className="hidden sm:inline px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 text-[10px] font-medium rounded">
                                       Configured
                                     </span>
                                   )}
@@ -773,24 +773,24 @@ export default function CommunicationSettingsPage() {
                 {/* Quick Stats for Selected Tenant */}
                 {selectedTenant && (
                   <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-                    <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                      <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Type</p>
-                      <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mt-0.5">{selectedTenant.config.institutionType}</p>
+                    <div className="p-2 sm:p-3 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-lg">
+                      <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Type</p>
+                      <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mt-0.5">{selectedTenant.config.institutionType}</p>
                     </div>
-                    <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                      <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Region</p>
-                      <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mt-0.5">{selectedTenant.config.region}</p>
+                    <div className="p-2 sm:p-3 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-lg">
+                      <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Region</p>
+                      <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mt-0.5">{selectedTenant.config.region}</p>
                     </div>
-                    <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                      <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Plan</p>
-                      <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mt-0.5 capitalize">{selectedTenant.subscription?.plan || "N/A"}</p>
+                    <div className="p-2 sm:p-3 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-lg">
+                      <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Plan</p>
+                      <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mt-0.5 capitalize">{selectedTenant.subscription?.plan || "N/A"}</p>
                     </div>
-                    <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                      <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</p>
+                    <div className="p-2 sm:p-3 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-lg">
+                      <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Status</p>
                       <span className={`inline-flex mt-0.5 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium ${
                         selectedTenant.status === "Active"
-                          ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+                          ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
+                          : "bg-gray-100 text-gray-500 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
                       }`}>
                         {selectedTenant.status}
                       </span>
@@ -802,15 +802,15 @@ export default function CommunicationSettingsPage() {
 
             {/* Platform Configuration */}
             {!selectedTenantId ? (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 sm:p-12 text-center">
+              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-8 sm:p-12 text-center">
                 <div className="max-w-md mx-auto">
                   <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
                     <Building2 className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
                   </div>
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-2">
                     Select a School
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                     Choose a school from the dropdown above to configure its communication settings.
                   </p>
                 </div>
@@ -819,39 +819,39 @@ export default function CommunicationSettingsPage() {
               <>
                 {/* Stats Row - Hidden on mobile, simplified */}
                 <div className="hidden sm:grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+                  <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-3">
                     <div className="flex items-center gap-2">
                       <Radio className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Active</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Active</span>
                     </div>
-                    <p className="text-lg font-semibold text-gray-700 dark:text-gray-200 mt-1">{activePlatformCount}</p>
+                    <p className="text-lg font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mt-1">{activePlatformCount}</p>
                   </div>
-                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+                  <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-3">
                     <div className="flex items-center gap-2">
                       <Video className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Video</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Video</span>
                     </div>
-                    <p className="text-lg font-semibold text-gray-700 dark:text-gray-200 mt-1">{[webrtcForm.enabled, agoraForm.enabled, zoomForm.enabled, googleMeetForm.enabled].filter(Boolean).length}</p>
+                    <p className="text-lg font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mt-1">{[webrtcForm.enabled, agoraForm.enabled, zoomForm.enabled, googleMeetForm.enabled].filter(Boolean).length}</p>
                   </div>
-                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+                  <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-3">
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Voice</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Voice</span>
                     </div>
-                    <p className="text-lg font-semibold text-gray-700 dark:text-gray-200 mt-1">{[webrtcForm.enabled, agoraForm.enabled, whatsAppForm.enabled].filter(Boolean).length}</p>
+                    <p className="text-lg font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mt-1">{[webrtcForm.enabled, agoraForm.enabled, whatsAppForm.enabled].filter(Boolean).length}</p>
                   </div>
-                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+                  <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-3">
                     <div className="flex items-center gap-2">
                       <MessageSquare className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Chat</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Chat</span>
                     </div>
-                    <p className="text-lg font-semibold text-gray-700 dark:text-gray-200 mt-1">{[webrtcForm.enabled, agoraForm.enabled, whatsAppForm.enabled].filter(Boolean).length}</p>
+                    <p className="text-lg font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mt-1">{[webrtcForm.enabled, agoraForm.enabled, whatsAppForm.enabled].filter(Boolean).length}</p>
                   </div>
                 </div>
 
                 {/* Platform Cards Grid */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
-                  <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-200 mb-4">Available Platforms</h3>
+                <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 sm:p-6">
+                  <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-4">Available Platforms</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
                     {Object.values(PLATFORMS).map((platform) => (
                       <PlatformCard
@@ -867,9 +867,9 @@ export default function CommunicationSettingsPage() {
                 </div>
 
                 {/* Selected Platform Configuration */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
                   {/* Platform Header */}
-                  <div className={`p-4 sm:p-5 bg-gradient-to-r ${PLATFORMS[selectedPlatform]?.gradient || 'from-gray-500 to-gray-600'} border-b border-gray-200 dark:border-gray-700`}>
+                  <div className={`p-4 sm:p-5 bg-gradient-to-r ${PLATFORMS[selectedPlatform]?.gradient || 'from-gray-500 to-gray-600'} border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20`}>
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
                         {(() => {
@@ -888,20 +888,20 @@ export default function CommunicationSettingsPage() {
                     {/* WebRTC Config */}
                     {selectedPlatform === "webrtc" && (
                       <div className="space-y-4">
-                        <div className="flex items-start gap-3 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                          <Info className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                        <div className="flex items-start gap-3 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <Info className="w-4 h-4 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 flex-shrink-0 mt-0.5" />
                           <div>
-                            <h4 className="font-medium text-sm text-blue-700 dark:text-blue-300">Free Built-in Communication</h4>
-                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                            <h4 className="font-medium text-sm text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">Free Built-in Communication</h4>
+                            <p className="text-xs text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 mt-1">
                               WebRTC provides free peer-to-peer video, voice, and chat. No setup required.
                             </p>
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                        <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 rounded-lg">
                           <div>
-                            <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200">Enable Educo Meet</h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Use built-in WebRTC</p>
+                            <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Enable Educo Meet</h4>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Use built-in WebRTC</p>
                           </div>
                           <ToggleSwitch
                             enabled={webrtcForm.enabled}
@@ -914,10 +914,10 @@ export default function CommunicationSettingsPage() {
                     {/* Agora Config */}
                     {selectedPlatform === "agora" && (
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                        <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 rounded-lg">
                           <div>
-                            <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200">Enable Agora</h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Video, voice, and chat</p>
+                            <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Enable Agora</h4>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Video, voice, and chat</p>
                           </div>
                           <ToggleSwitch
                             enabled={agoraForm.enabled}
@@ -926,7 +926,7 @@ export default function CommunicationSettingsPage() {
                         </div>
 
                         <div>
-                          <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2">
+                          <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3 flex items-center gap-2">
                             <Shield className="w-3.5 h-3.5 text-gray-400" />
                             Configuration Mode
                           </h4>
@@ -937,7 +937,7 @@ export default function CommunicationSettingsPage() {
                         </div>
 
                         {agoraForm.configMode === "tenant" && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 rounded-lg">
                             <FormInput
                               label="App ID"
                               icon={<Zap className="w-full h-full" />}
@@ -980,10 +980,10 @@ export default function CommunicationSettingsPage() {
                     {/* WhatsApp Config */}
                     {selectedPlatform === "whatsapp" && (
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                        <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 rounded-lg">
                           <div>
-                            <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200">Enable WhatsApp</h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Business API for messaging</p>
+                            <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Enable WhatsApp</h4>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Business API for messaging</p>
                           </div>
                           <ToggleSwitch
                             enabled={whatsAppForm.enabled}
@@ -992,7 +992,7 @@ export default function CommunicationSettingsPage() {
                         </div>
 
                         <div>
-                          <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2">
+                          <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3 flex items-center gap-2">
                             <Shield className="w-3.5 h-3.5 text-gray-400" />
                             Configuration Mode
                           </h4>
@@ -1003,7 +1003,7 @@ export default function CommunicationSettingsPage() {
                         </div>
 
                         {whatsAppForm.configMode === "tenant" && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 rounded-lg">
                             <FormInput
                               label="Phone Number ID"
                               icon={<Phone className="w-full h-full" />}
@@ -1051,10 +1051,10 @@ export default function CommunicationSettingsPage() {
                     {/* Zoom Config */}
                     {selectedPlatform === "zoom" && (
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                        <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 rounded-lg">
                           <div>
-                            <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200">Enable Zoom</h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Video SDK for meetings</p>
+                            <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Enable Zoom</h4>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Video SDK for meetings</p>
                           </div>
                           <ToggleSwitch
                             enabled={zoomForm.enabled}
@@ -1063,7 +1063,7 @@ export default function CommunicationSettingsPage() {
                         </div>
 
                         {zoomForm.enabled && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 rounded-lg">
                             <FormInput
                               label="Client ID"
                               icon={<Video className="w-full h-full" />}
@@ -1111,10 +1111,10 @@ export default function CommunicationSettingsPage() {
                     {/* Google Meet Config */}
                     {selectedPlatform === "google-meet" && (
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                        <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 rounded-lg">
                           <div>
-                            <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200">Enable Google Meet</h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Generate Meet links</p>
+                            <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Enable Google Meet</h4>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Generate Meet links</p>
                           </div>
                           <ToggleSwitch
                             enabled={googleMeetForm.enabled}
@@ -1123,7 +1123,7 @@ export default function CommunicationSettingsPage() {
                         </div>
 
                         {googleMeetForm.enabled && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 rounded-lg">
                             <FormInput
                               label="Client ID"
                               icon={<Video className="w-full h-full" />}
@@ -1147,7 +1147,7 @@ export default function CommunicationSettingsPage() {
                           href="https://console.cloud.google.com/"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+                          className="inline-flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 hover:text-green-700 dark:hover:text-green-300"
                         >
                           Get Google Credentials <ExternalLink className="w-3 h-3" />
                         </a>
@@ -1159,8 +1159,8 @@ export default function CommunicationSettingsPage() {
                 {/* Default Platforms & Features */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
                   {/* Default Platforms */}
-                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-5">
-                    <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-200 mb-4">Default Platforms</h3>
+                  <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 sm:p-5">
+                    <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-4">Default Platforms</h3>
                     <div className="space-y-3">
                       <FormDropdown
                         label="Default Video Platform"
@@ -1200,8 +1200,8 @@ export default function CommunicationSettingsPage() {
                   </div>
 
                   {/* Features */}
-                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-5">
-                    <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-200 mb-4">Features</h3>
+                  <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 sm:p-5">
+                    <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-4">Features</h3>
                     <div className="space-y-2">
                       {[
                         { key: "enableInAppCalling", label: "In-App Calling", description: "Video and voice calls", icon: Phone },
@@ -1211,15 +1211,15 @@ export default function CommunicationSettingsPage() {
                       ].map((feature) => (
                         <div
                           key={feature.key}
-                          className="flex items-center justify-between p-2.5 sm:p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg"
+                          className="flex items-center justify-between p-2.5 sm:p-3 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 rounded-lg"
                         >
                           <div className="flex items-center gap-2 sm:gap-3">
-                            <div className="p-1.5 bg-gray-100 dark:bg-gray-600 rounded">
-                              <feature.icon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                            <div className="p-1.5 bg-gray-100 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 rounded">
+                              <feature.icon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                             </div>
                             <div>
-                              <h5 className="font-medium text-gray-700 dark:text-gray-200 text-xs sm:text-sm">{feature.label}</h5>
-                              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{feature.description}</p>
+                              <h5 className="font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 text-xs sm:text-sm">{feature.label}</h5>
+                              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hidden sm:block">{feature.description}</p>
                             </div>
                           </div>
                           <ToggleSwitch

@@ -27,7 +27,7 @@ describe("ControlBar — Visual / CSS", () => {
       const { container } = render(<ControlBar {...defaultProps} />);
       const bar = container.firstChild as HTMLElement;
       expect(bar.className).toContain("bg-white/98");
-      expect(bar.className).toContain("dark:bg-gray-900/98");
+      expect(bar.className).toContain("dark:bg-[#0f1115]/98");
       expect(bar.className).toContain("midnight:bg-[#0f1729]/98");
       expect(bar.className).toContain("purple:bg-[#2a1a3e]/98");
       expect(bar.className).toContain("backdrop-blur-xl");
@@ -38,7 +38,7 @@ describe("ControlBar — Visual / CSS", () => {
       const bar = container.firstChild as HTMLElement;
       expect(bar.className).toContain("border-t");
       expect(bar.className).toContain("border-gray-100");
-      expect(bar.className).toContain("dark:border-gray-800");
+      expect(bar.className).toContain("dark:border-[#1a1d24]");
     });
 
     it("has responsive gap and padding", () => {

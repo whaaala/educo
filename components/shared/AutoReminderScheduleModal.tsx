@@ -402,12 +402,12 @@ export default function AutoReminderScheduleModal({
       {isSaved ? (
         <div className="py-8 text-center">
           <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-            <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
+            <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
             Reminders Scheduled!
           </h3>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
             {reminders.length} reminder{reminders.length > 1 ? "s" : ""} will be
             sent automatically
           </p>
@@ -415,9 +415,9 @@ export default function AutoReminderScheduleModal({
       ) : (
         <div className="space-y-5">
           {/* Parent & Student Info - Compact */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-3">
-              <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-2 ring-white dark:ring-gray-800">
+              <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] ring-2 ring-white dark:ring-gray-800">
                 <Image
                   src={`https://i.pravatar.cc/150?u=${parentId}`}
                   alt={parentName}
@@ -427,25 +427,25 @@ export default function AutoReminderScheduleModal({
                 />
               </div>
               <div>
-                <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
                   {parentName}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                   Parent of {childName}
                 </p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-lg font-bold text-red-600 dark:text-red-400">
+              <p className="text-lg font-bold text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
                 {money(balance)}
               </p>
               {isOverdue ? (
-                <span className="inline-flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                <span className="inline-flex items-center gap-1 text-xs text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
                   <AlertCircle className="w-3 h-3" />
                   Overdue
                 </span>
               ) : (
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                   Due:{" "}
                   {new Date(dueDate).toLocaleDateString("en-GB", {
                     day: "numeric",
@@ -457,14 +457,14 @@ export default function AutoReminderScheduleModal({
           </div>
 
           {/* Schedule Mode Toggle */}
-          <div className="flex items-center gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
+          <div className="flex items-center gap-2 p-1 bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl">
             <button
               type="button"
               onClick={() => setScheduleMode("interval")}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                 scheduleMode === "interval"
-                  ? "bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 shadow-sm"
-                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-purple-600 dark:text-purple-400 shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-900 dark:hover:text-white midnight:hover:text-cyan-50 purple:hover:text-pink-50"
               }`}
             >
               <Repeat className="w-4 h-4" />
@@ -475,8 +475,8 @@ export default function AutoReminderScheduleModal({
               onClick={() => setScheduleMode("manual")}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                 scheduleMode === "manual"
-                  ? "bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 shadow-sm"
-                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-purple-600 dark:text-purple-400 shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-900 dark:hover:text-white midnight:hover:text-cyan-50 purple:hover:text-pink-50"
               }`}
             >
               <CalendarDays className="w-4 h-4" />
@@ -486,7 +486,7 @@ export default function AutoReminderScheduleModal({
 
           {/* Channel Selection - Compact */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2 uppercase tracking-wide">
               Send Via
             </label>
             <div className="flex flex-wrap gap-2">
@@ -498,7 +498,7 @@ export default function AutoReminderScheduleModal({
                   className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all cursor-pointer ${
                     channels.includes(channel.id)
                       ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300"
-                      : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
+                      : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
                   }`}
                 >
                   {channel.icon}
@@ -514,7 +514,7 @@ export default function AutoReminderScheduleModal({
               <div className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/30">
                 <Settings className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
+              <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
                 Global Settings
               </h3>
             </div>
@@ -522,7 +522,7 @@ export default function AutoReminderScheduleModal({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
               {/* Reminder Count */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5 flex items-center gap-1">
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5 flex items-center gap-1">
                   <Hash className="w-3 h-3" />
                   Number of Reminders
                 </label>
@@ -532,7 +532,7 @@ export default function AutoReminderScheduleModal({
                     onClick={() =>
                       setReminderCount(Math.max(1, reminderCount - 1))
                     }
-                    className="w-9 h-9 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                    className="w-9 h-9 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex items-center justify-center text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer transition-colors"
                   >
                     -
                   </button>
@@ -546,14 +546,14 @@ export default function AutoReminderScheduleModal({
                         Math.min(10, Math.max(1, parseInt(e.target.value) || 1))
                       )
                     }
-                    className="w-14 h-9 text-center text-sm font-semibold bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                    className="w-14 h-9 text-center text-sm font-semibold bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
                   />
                   <button
                     type="button"
                     onClick={() =>
                       setReminderCount(Math.min(10, reminderCount + 1))
                     }
-                    className="w-9 h-9 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                    className="w-9 h-9 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex items-center justify-center text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer transition-colors"
                   >
                     +
                   </button>
@@ -563,7 +563,7 @@ export default function AutoReminderScheduleModal({
               {/* Interval Days (only for interval mode) */}
               {scheduleMode === "interval" && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5 flex items-center gap-1">
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5 flex items-center gap-1">
                     <Timer className="w-3 h-3" />
                     Days Between Reminders
                   </label>
@@ -573,7 +573,7 @@ export default function AutoReminderScheduleModal({
                       onClick={() =>
                         setIntervalDays(Math.max(1, intervalDays - 1))
                       }
-                      className="w-9 h-9 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                      className="w-9 h-9 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex items-center justify-center text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer transition-colors"
                     >
                       -
                     </button>
@@ -590,14 +590,14 @@ export default function AutoReminderScheduleModal({
                           )
                         )
                       }
-                      className="w-14 h-9 text-center text-sm font-semibold bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                      className="w-14 h-9 text-center text-sm font-semibold bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
                     />
                     <button
                       type="button"
                       onClick={() =>
                         setIntervalDays(Math.min(30, intervalDays + 1))
                       }
-                      className="w-9 h-9 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                      className="w-9 h-9 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex items-center justify-center text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer transition-colors"
                     >
                       +
                     </button>
@@ -607,7 +607,7 @@ export default function AutoReminderScheduleModal({
 
               {/* Default Time */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5 flex items-center gap-1">
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5 flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   Default Time
                 </label>
@@ -619,9 +619,9 @@ export default function AutoReminderScheduleModal({
                     setActiveDatePicker(null);
                     setActiveTimePicker(null);
                   }}
-                  className="w-full h-9 text-sm font-medium text-left bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
+                  className="w-full h-9 text-sm font-medium text-left bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
                 >
-                  <span className="text-gray-900 dark:text-white">
+                  <span className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                     {defaultTime}
                   </span>
                 </button>
@@ -645,7 +645,7 @@ export default function AutoReminderScheduleModal({
             {/* Start Date (only for interval mode) */}
             {scheduleMode === "interval" && (
               <div className="mb-4">
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5 flex items-center gap-1">
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5 flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   Start Date
                 </label>
@@ -658,9 +658,9 @@ export default function AutoReminderScheduleModal({
                     setActiveTimePicker(null);
                     setActiveDefaultTimePicker(false);
                   }}
-                  className="w-full sm:w-48 h-9 text-sm font-medium text-left bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
+                  className="w-full sm:w-48 h-9 text-sm font-medium text-left bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
                 >
-                  <span className="text-gray-900 dark:text-white">
+                  <span className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                     {formatDisplayDate(startDate)}
                   </span>
                 </button>
@@ -680,7 +680,7 @@ export default function AutoReminderScheduleModal({
 
             {/* Global Message */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5 flex items-center gap-1">
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5 flex items-center gap-1">
                 <FileText className="w-3 h-3" />
                 Default Reminder Message
               </label>
@@ -688,10 +688,10 @@ export default function AutoReminderScheduleModal({
                 value={globalMessage}
                 onChange={(e) => setGlobalMessage(e.target.value)}
                 rows={4}
-                className="w-full text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all resize-none"
+                className="w-full text-sm bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all resize-none"
                 placeholder="Enter the message that will be sent with each reminder..."
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
                 This message will be used for all reminders unless individually
                 customized.
               </p>
@@ -701,7 +701,7 @@ export default function AutoReminderScheduleModal({
           {/* Manual Mode: Add Reminder Button */}
           {scheduleMode === "manual" && (
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+              <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 uppercase tracking-wide">
                 Scheduled Reminders ({reminders.length})
               </label>
               <button
@@ -721,11 +721,11 @@ export default function AutoReminderScheduleModal({
             {reminders.map((reminder, index) => (
               <div
                 key={reminder.id}
-                className="rounded-xl bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 overflow-hidden"
+                className="rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden"
               >
                 {/* Reminder Header */}
                 <div
-                  className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors"
                   onClick={() => toggleReminderExpanded(reminder.id)}
                 >
                   <div className="flex items-center gap-3">
@@ -733,10 +733,10 @@ export default function AutoReminderScheduleModal({
                       {index + 1}
                     </span>
                     <div>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                         Reminder {index + 1}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                         {reminder.date
                           ? `${formatDisplayDate(reminder.date)} at ${reminder.time}`
                           : "Date not set"}
@@ -761,7 +761,7 @@ export default function AutoReminderScheduleModal({
                         <Trash2 className="w-4 h-4" />
                       </button>
                     )}
-                    <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700">
+                    <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]">
                       {expandedReminders.has(reminder.id) ? (
                         <ChevronUp className="w-4 h-4 text-gray-500" />
                       ) : (
@@ -773,12 +773,12 @@ export default function AutoReminderScheduleModal({
 
                 {/* Expanded Content */}
                 {expandedReminders.has(reminder.id) && (
-                  <div className="px-3 pb-3 pt-0 space-y-3 border-t border-gray-100 dark:border-gray-700">
+                  <div className="px-3 pb-3 pt-0 space-y-3 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                     {/* Date & Time Row */}
                     <div className="grid grid-cols-2 gap-3 pt-3">
                       {/* Date Picker */}
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5 flex items-center gap-1">
+                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5 flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           Date
                         </label>
@@ -798,14 +798,14 @@ export default function AutoReminderScheduleModal({
                             setActiveDefaultTimePicker(false);
                             setActiveStartDatePicker(false);
                           }}
-                          className="w-full h-9 text-sm font-normal text-left bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
+                          className="w-full h-9 text-sm font-normal text-left bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
                         >
                           {reminder.date ? (
-                            <span className="text-gray-900 dark:text-white">
+                            <span className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                               {formatDisplayDate(reminder.date)}
                             </span>
                           ) : (
-                            <span className="text-gray-400 dark:text-gray-500 italic text-xs">
+                            <span className="text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 italic text-xs">
                               Select date
                             </span>
                           )}
@@ -830,7 +830,7 @@ export default function AutoReminderScheduleModal({
 
                       {/* Time Picker */}
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5 flex items-center gap-1">
+                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5 flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           Time
                         </label>
@@ -850,14 +850,14 @@ export default function AutoReminderScheduleModal({
                             setActiveDefaultTimePicker(false);
                             setActiveStartDatePicker(false);
                           }}
-                          className="w-full h-9 text-sm font-normal text-left bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
+                          className="w-full h-9 text-sm font-normal text-left bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
                         >
                           {reminder.time ? (
-                            <span className="text-gray-900 dark:text-white">
+                            <span className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                               {reminder.time}
                             </span>
                           ) : (
-                            <span className="text-gray-400 dark:text-gray-500 italic text-xs">
+                            <span className="text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 italic text-xs">
                               Select time
                             </span>
                           )}
@@ -885,7 +885,7 @@ export default function AutoReminderScheduleModal({
                     {/* Custom Message Toggle & Textarea */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <label className="flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-gray-400">
+                        <label className="flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                           <Edit3 className="w-3 h-3" />
                           Custom Message
                         </label>
@@ -917,7 +917,7 @@ export default function AutoReminderScheduleModal({
                               onClick={(e) => e.stopPropagation()}
                               className="sr-only peer"
                             />
-                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-500/20 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
+                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-500/20 rounded-full peer dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 peer-checked:bg-purple-600"></div>
                           </label>
                         </div>
                       </div>
@@ -929,7 +929,7 @@ export default function AutoReminderScheduleModal({
                           }
                           onClick={(e) => e.stopPropagation()}
                           rows={3}
-                          className="w-full text-sm bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all resize-none"
+                          className="w-full text-sm bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all resize-none"
                           placeholder="Enter a custom message for this reminder..."
                         />
                       )}
@@ -942,7 +942,7 @@ export default function AutoReminderScheduleModal({
 
           {/* Preview */}
           {sortedReminders.length > 0 && (
-            <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border border-blue-200 dark:border-blue-500/20">
+            <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border border-blue-200 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/20">
               <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-3 flex items-center gap-2">
                 <Sparkles className="w-4 h-4" />
                 Schedule Preview
@@ -956,14 +956,14 @@ export default function AutoReminderScheduleModal({
                     <span className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center font-bold flex-shrink-0">
                       {index + 1}
                     </span>
-                    <span className="text-blue-800 dark:text-blue-200">
+                    <span className="text-blue-800 dark:text-blue-200 midnight:text-cyan-200 purple:text-pink-200">
                       <span className="font-semibold">
                         {formatDisplayDate(reminder.date)}
                       </span>
                       {" at "}
                       <span className="font-semibold">{reminder.time}</span>
                       {reminder.useCustomMessage && (
-                        <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
+                        <span className="ml-2 text-xs text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
                           (custom msg)
                         </span>
                       )}
@@ -971,13 +971,13 @@ export default function AutoReminderScheduleModal({
                   </div>
                 ))}
                 {sortedReminders.length > 5 && (
-                  <p className="text-xs text-blue-600 dark:text-blue-400 pl-8">
+                  <p className="text-xs text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 pl-8">
                     +{sortedReminders.length - 5} more reminders
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-blue-200 dark:border-blue-500/20">
-                <span className="text-xs text-blue-700 dark:text-blue-300">
+              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-blue-200 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/20">
+                <span className="text-xs text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
                   Via:
                 </span>
                 {channels.map((ch) => {
@@ -985,7 +985,7 @@ export default function AutoReminderScheduleModal({
                   return (
                     <span
                       key={ch}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-xs font-medium text-blue-700 dark:text-blue-300"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-xs font-medium text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
                     >
                       {channel?.icon}
                       {channel?.label}

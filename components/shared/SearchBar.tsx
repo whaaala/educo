@@ -102,7 +102,7 @@ export default function SearchBar({
       {localValue && (
         <button
           onClick={handleClear}
-          className="flex-shrink-0 p-1 rounded-md transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 hover:scale-110 active:scale-95"
+          className="flex-shrink-0 p-1 rounded-md transition-all duration-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 hover:scale-110 active:scale-95"
           title="Clear search"
         >
           <X

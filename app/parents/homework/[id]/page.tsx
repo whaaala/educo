@@ -65,28 +65,28 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-4xl max-h-[90vh] bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg ${
               file.type === "pdf" ? "bg-rose-50 dark:bg-rose-900/20" :
               file.type === "image" ? "bg-purple-50 dark:bg-purple-900/20" :
-              "bg-blue-50 dark:bg-blue-900/20"
+              "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20"
             }`}>
               {file.type === "pdf" ? (
                 <FileText className="w-5 h-5 text-rose-500 dark:text-rose-400" />
               ) : file.type === "image" ? (
                 <FileImage className="w-5 h-5 text-purple-500 dark:text-purple-400" />
               ) : (
-                <File className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                <File className="w-5 h-5 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               )}
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-800 dark:text-white truncate max-w-md">
+              <h3 className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-md">
                 {file.name}
               </h3>
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                 <span>{file.size}</span>
                 {file.isGraded && (
                   <>
@@ -97,7 +97,7 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
                 {file.hasAnnotations && (
                   <>
                     <span>•</span>
-                    <span className="text-amber-600 dark:text-amber-400 font-medium">With Annotations</span>
+                    <span className="text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 font-medium">With Annotations</span>
                   </>
                 )}
               </div>
@@ -107,7 +107,7 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
             <button
               type="button"
               onClick={handleDownload}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-800/50 text-blue-600 dark:text-blue-400 text-sm font-medium transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 hover:bg-blue-100 dark:hover:bg-blue-800/50 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 text-sm font-medium transition-colors"
             >
               <Download className="w-4 h-4" />
               Download
@@ -115,7 +115,7 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -123,7 +123,7 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-4 bg-gray-50 dark:bg-gray-900">
+        <div className="flex-1 overflow-auto p-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
           {file.type === "image" ? (
             <div className="flex items-center justify-center min-h-[400px]">
               <img
@@ -140,9 +140,9 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
-                      <p class="text-gray-600 dark:text-gray-300 font-medium mb-1">${file.name}</p>
-                      <p class="text-sm text-gray-500 dark:text-gray-400">Image preview not available</p>
-                      <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Click Download to view the file</p>
+                      <p class="text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 font-medium mb-1">${file.name}</p>
+                      <p class="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Image preview not available</p>
+                      <p class="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-2">Click Download to view the file</p>
                     </div>
                   `;
                 }}
@@ -152,7 +152,7 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
             <div className="flex flex-col items-center justify-center min-h-[400px]">
               <iframe
                 src={file.url}
-                className="w-full h-[70vh] rounded-lg border border-gray-200 dark:border-gray-700"
+                className="w-full h-[70vh] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                 title={file.name}
                 onError={() => {}}
               />
@@ -160,18 +160,18 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
                 <div className="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mb-4">
                   <FileText className="w-8 h-8 text-rose-500" />
                 </div>
-                <p className="text-gray-600 dark:text-gray-300 font-medium mb-1">{file.name}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">PDF preview not available</p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Click Download to view the file</p>
+                <p className="text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 font-medium mb-1">{file.name}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">PDF preview not available</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-2">Click Download to view the file</p>
               </div>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
-              <div className="w-20 h-20 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+              <div className="w-20 h-20 rounded-full bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center mb-4">
                 <File className="w-10 h-10 text-blue-500" />
               </div>
-              <p className="text-gray-600 dark:text-gray-300 font-medium mb-1">{file.name}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Document preview not available</p>
+              <p className="text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 font-medium mb-1">{file.name}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4">Document preview not available</p>
               <button
                 type="button"
                 onClick={handleDownload}
@@ -534,21 +534,21 @@ function getStatusConfig(status: Homework["status"]) {
       return {
         label: "Submitted",
         icon: Clock,
-        className: "bg-blue-50/80 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400",
+        className: "bg-blue-50/80 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
         dotColor: "bg-blue-500",
       };
     case "pending":
       return {
         label: "Pending",
         icon: Clock,
-        className: "bg-amber-50/80 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400",
+        className: "bg-amber-50/80 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
         dotColor: "bg-amber-500",
       };
     case "overdue":
       return {
         label: "Overdue",
         icon: AlertTriangle,
-        className: "bg-red-50/80 dark:bg-red-950/30 text-red-600 dark:text-red-400",
+        className: "bg-red-50/80 dark:bg-red-950/30 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
         dotColor: "bg-red-500",
       };
   }
@@ -582,11 +582,11 @@ export default function HomeworkDetailPage() {
         loadingText="Loading Homework"
         afterStats={
           <div className="mt-6 flex flex-col items-center justify-center min-h-[60vh]">
-            <AlertCircle className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <AlertCircle className="w-16 h-16 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
               Homework Not Found
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">
+            <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-6">
               The homework assignment you&apos;re looking for doesn&apos;t exist.
             </p>
             <Link href="/parents/homework">
@@ -620,9 +620,9 @@ export default function HomeworkDetailPage() {
           {/* Left Column - Assignment Details */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-5">
             {/* Assignment Info Card */}
-            <div className="bg-white dark:bg-gray-800/95 rounded-xl border border-gray-100 dark:border-gray-700/60 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 shadow-sm overflow-hidden">
               {/* Header Section */}
-              <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700/40">
+              <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
                   <div className="flex-1">
                     <div className="flex flex-wrap items-center gap-2 mb-2.5">
@@ -635,31 +635,31 @@ export default function HomeworkDetailPage() {
                         {statusConfig.label}
                       </span>
                     </div>
-                    <h1 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                    <h1 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                       {homework.title}
                     </h1>
                   </div>
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 leading-relaxed">
                   {homework.description}
                 </p>
               </div>
 
               {/* Instructions */}
-              <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700/40">
-                <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+              <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+                <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3 flex items-center gap-2">
                   <FileText className="w-4 h-4 text-gray-400" />
                   Instructions
                 </h3>
-                <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-line bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-3.5 leading-relaxed">
+                <div className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 whitespace-pre-line bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-3.5 leading-relaxed">
                   {homework.instructions}
                 </div>
               </div>
 
               {/* Homework Questions/Content */}
               {homework.questions && homework.questions.length > 0 && (
-                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700/40">
-                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-4 flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-indigo-500" />
                     Homework Questions
                     <span className="ml-auto text-xs font-normal text-gray-400">
@@ -677,14 +677,14 @@ export default function HomeworkDetailPage() {
                             {q.number}
                           </span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                            <p className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 leading-relaxed">
                               {q.question}
                             </p>
                             {q.options && (
                               <div className="mt-2 space-y-1.5">
                                 {q.options.map((opt, i) => (
-                                  <div key={i} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                    <span className="w-5 h-5 rounded border border-gray-300 dark:border-gray-600 flex items-center justify-center text-xs">
+                                  <div key={i} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                                    <span className="w-5 h-5 rounded border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex items-center justify-center text-xs">
                                       {String.fromCharCode(65 + i)}
                                     </span>
                                     {opt}
@@ -694,10 +694,10 @@ export default function HomeworkDetailPage() {
                             )}
                             <div className="mt-2 flex items-center gap-3">
                               <span className={`text-xs px-2 py-0.5 rounded ${
-                                q.type === "short" ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400" :
+                                q.type === "short" ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" :
                                 q.type === "long" ? "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400" :
-                                q.type === "multiple-choice" ? "bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400" :
-                                "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400"
+                                q.type === "multiple-choice" ? "bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" :
+                                "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400"
                               }`}>
                                 {q.type === "multiple-choice" ? "MCQ" : q.type.charAt(0).toUpperCase() + q.type.slice(1)}
                               </span>
@@ -715,18 +715,18 @@ export default function HomeworkDetailPage() {
 
               {/* Project Description */}
               {homework.projectDescription && (
-                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700/40">
-                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3 flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-indigo-500" />
                     Project Brief
                   </h3>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-line bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4 leading-relaxed prose prose-sm dark:prose-invert max-w-none">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 whitespace-pre-line bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4 leading-relaxed prose prose-sm dark:prose-invert max-w-none">
                     {homework.projectDescription.split("\n").map((line, i) => {
                       if (line.startsWith("**") && line.endsWith("**")) {
-                        return <p key={i} className="font-semibold text-gray-800 dark:text-gray-200 mt-3 first:mt-0">{line.replace(/\*\*/g, "")}</p>;
+                        return <p key={i} className="font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mt-3 first:mt-0">{line.replace(/\*\*/g, "")}</p>;
                       }
                       if (line.startsWith("- ")) {
-                        return <p key={i} className="ml-4 text-gray-600 dark:text-gray-400">{line}</p>;
+                        return <p key={i} className="ml-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{line}</p>;
                       }
                       return <p key={i} className={line.trim() === "" ? "h-2" : ""}>{line}</p>;
                     })}
@@ -736,8 +736,8 @@ export default function HomeworkDetailPage() {
 
               {/* Attachments */}
               {homework.attachments && homework.attachments.length > 0 && (
-                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700/40">
-                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3 flex items-center gap-2">
                     <Download className="w-4 h-4 text-gray-400" />
                     Attachments
                   </h3>
@@ -751,10 +751,10 @@ export default function HomeworkDetailPage() {
                         <div className="p-2 rounded-md bg-rose-50 dark:bg-rose-900/20">
                           <FileText className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400" />
                         </div>
-                        <span className="flex-1 text-sm text-gray-600 dark:text-gray-300">
+                        <span className="flex-1 text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                           {attachment.name}
                         </span>
-                        <Download className="w-4 h-4 text-gray-300 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-colors" />
+                        <Download className="w-4 h-4 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-colors" />
                       </a>
                     ))}
                   </div>
@@ -763,22 +763,22 @@ export default function HomeworkDetailPage() {
 
               {/* Submission Info (if submitted or graded) */}
               {(homework.status === "submitted" || homework.status === "graded") && (
-                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700/40">
-                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3 flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                     Submission
                   </h3>
                   <div className="space-y-3">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
                       <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                      <span className="text-gray-500 dark:text-gray-400">Submitted:</span>
-                      <span className="font-medium text-gray-700 dark:text-gray-200">
+                      <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Submitted:</span>
+                      <span className="font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
                         {homework.submissionDate && formatDate(homework.submissionDate)}
                       </span>
                     </div>
                     {homework.submissionNotes && (
-                      <div className="text-sm text-gray-600 dark:text-gray-400 bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-3">
-                        <span className="font-medium text-gray-700 dark:text-gray-300">Note:</span>{" "}
+                      <div className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-3">
+                        <span className="font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">Note:</span>{" "}
                         {homework.submissionNotes}
                       </div>
                     )}
@@ -788,8 +788,8 @@ export default function HomeworkDetailPage() {
 
               {/* Student Submitted Files */}
               {homework.submittedFiles && homework.submittedFiles.length > 0 && (
-                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700/40">
-                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3 flex items-center gap-2">
                     <FileText className="w-4 h-4 text-blue-500" />
                     Student&apos;s Submitted Work
                     <span className="ml-auto text-xs font-normal text-gray-400">
@@ -800,21 +800,21 @@ export default function HomeworkDetailPage() {
                     {homework.submittedFiles.map((file) => (
                       <div
                         key={file.id}
-                        className="group flex items-center gap-3 p-3 rounded-lg bg-blue-50/30 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-800/30 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors"
+                        className="group flex items-center gap-3 p-3 rounded-lg bg-blue-50/30 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 border border-blue-100/50 dark:border-blue-800/30 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors"
                       >
                         <div className={`p-2 rounded-lg ${
                           file.type === "pdf" ? "bg-rose-50 dark:bg-rose-900/20" :
                           file.type === "image" ? "bg-purple-50 dark:bg-purple-900/20" :
-                          "bg-blue-50 dark:bg-blue-900/20"
+                          "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20"
                         }`}>
                           <FileText className={`w-4 h-4 ${
                             file.type === "pdf" ? "text-rose-500 dark:text-rose-400" :
                             file.type === "image" ? "text-purple-500 dark:text-purple-400" :
-                            "text-blue-500 dark:text-blue-400"
+                            "text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                           }`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">
                             {file.name}
                           </p>
                           <div className="flex items-center gap-2 text-xs text-gray-400">
@@ -837,7 +837,7 @@ export default function HomeworkDetailPage() {
                                 isGraded: false,
                               });
                             }}
-                            className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-800/60 text-blue-600 dark:text-blue-400 transition-colors cursor-pointer active:scale-95"
+                            className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-800/60 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 transition-colors cursor-pointer active:scale-95"
                             title="View file"
                           >
                             <Eye className="w-4 h-4" />
@@ -854,7 +854,7 @@ export default function HomeworkDetailPage() {
                               link.click();
                               document.body.removeChild(link);
                             }}
-                            className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-800/60 text-blue-600 dark:text-blue-400 transition-colors cursor-pointer active:scale-95"
+                            className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-800/60 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 transition-colors cursor-pointer active:scale-95"
                             title="Download file"
                           >
                             <Download className="w-4 h-4" />
@@ -868,8 +868,8 @@ export default function HomeworkDetailPage() {
 
               {/* Teacher Graded Files */}
               {homework.gradedFiles && homework.gradedFiles.length > 0 && (
-                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700/40">
-                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3 flex items-center gap-2">
                     <GraduationCap className="w-4 h-4 text-emerald-500" />
                     Teacher&apos;s Graded Work
                     <span className="ml-auto text-xs font-normal text-gray-400">
@@ -895,11 +895,11 @@ export default function HomeworkDetailPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">
                               {file.name}
                             </p>
                             {file.hasAnnotations && (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400">
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">
                                 <MessageSquare className="w-3 h-3" />
                                 Annotated
                               </span>
@@ -952,7 +952,7 @@ export default function HomeworkDetailPage() {
                       </div>
                     ))}
                   </div>
-                  <p className="mt-3 text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
+                  <p className="mt-3 text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 flex items-center gap-1.5">
                     <AlertCircle className="w-3.5 h-3.5" />
                     View the graded files to see teacher&apos;s corrections and comments
                   </p>
@@ -962,7 +962,7 @@ export default function HomeworkDetailPage() {
               {/* Grade and Feedback (if graded) */}
               {homework.status === "graded" && (
                 <div className="p-4 sm:p-5">
-                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-4 flex items-center gap-2">
                     <Award className="w-4 h-4 text-amber-500" />
                     Grade & Feedback
                   </h3>
@@ -971,17 +971,17 @@ export default function HomeworkDetailPage() {
                   <div className="flex items-center gap-4 sm:gap-5 mb-4 p-3.5 rounded-lg bg-slate-50/50 dark:bg-slate-800/30">
                     <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold ${
                       homework.grade === "A" ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" :
-                      homework.grade === "B" ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" :
-                      homework.grade === "C" ? "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" :
-                      "bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+                      homework.grade === "B" ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" :
+                      homework.grade === "C" ? "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" :
+                      "bg-red-50 text-red-600 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
                     }`}>
                       {homework.grade}
                     </div>
                     <div>
-                      <p className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
-                        {homework.score}<span className="text-gray-300 dark:text-gray-600 font-normal">/</span>{homework.maxScore}
+                      <p className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        {homework.score}<span className="text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 font-normal">/</span>{homework.maxScore}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
                         {((homework.score! / homework.maxScore!) * 100).toFixed(0)}% Score
                       </p>
                     </div>
@@ -993,7 +993,7 @@ export default function HomeworkDetailPage() {
                       <div className="flex items-start gap-3">
                         <MessageSquare className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-1">
+                          <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 mb-1">
                             Teacher&apos;s Feedback
                           </p>
                           <p className="text-sm text-amber-600/90 dark:text-amber-300/80 leading-relaxed">
@@ -1011,12 +1011,12 @@ export default function HomeworkDetailPage() {
           {/* Right Column - Sidebar */}
           <div className="space-y-4 sm:space-y-5">
             {/* Student Card */}
-            <div className="bg-white dark:bg-gray-800/95 rounded-xl border border-gray-100 dark:border-gray-700/60 shadow-sm p-4">
-              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 shadow-sm p-4">
+              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide mb-3">
                 Student
               </h3>
               <div className="flex items-center gap-3">
-                <div className="relative w-10 h-10 rounded-lg overflow-hidden ring-1 ring-gray-100 dark:ring-gray-700">
+                <div className="relative w-10 h-10 rounded-lg overflow-hidden ring-1 ring-gray-100 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20">
                   <Image
                     src={homework.childPhoto}
                     alt={homework.childName}
@@ -1026,10 +1026,10 @@ export default function HomeworkDetailPage() {
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 dark:text-white truncate">
+                  <p className="text-sm font-medium text-gray-800 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                     {homework.childName}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                     {homework.class} - {homework.section}
                   </p>
                 </div>
@@ -1037,12 +1037,12 @@ export default function HomeworkDetailPage() {
             </div>
 
             {/* Teacher Card */}
-            <div className="bg-white dark:bg-gray-800/95 rounded-xl border border-gray-100 dark:border-gray-700/60 shadow-sm p-4">
-              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 shadow-sm p-4">
+              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide mb-3">
                 Teacher
               </h3>
               <div className="flex items-center gap-3">
-                <div className="relative w-10 h-10 rounded-lg overflow-hidden ring-1 ring-gray-100 dark:ring-gray-700">
+                <div className="relative w-10 h-10 rounded-lg overflow-hidden ring-1 ring-gray-100 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20">
                   <Image
                     src={homework.teacherPhoto}
                     alt={homework.teacher}
@@ -1052,10 +1052,10 @@ export default function HomeworkDetailPage() {
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 dark:text-white truncate">
+                  <p className="text-sm font-medium text-gray-800 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                     {homework.teacher}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                     {homework.subject}
                   </p>
                 </div>
@@ -1063,25 +1063,25 @@ export default function HomeworkDetailPage() {
             </div>
 
             {/* Dates Card */}
-            <div className="bg-white dark:bg-gray-800/95 rounded-xl border border-gray-100 dark:border-gray-700/60 shadow-sm p-4">
-              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 shadow-sm p-4">
+              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide mb-3">
                 Timeline
               </h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600 mt-1.5" />
+                  <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 mt-1.5" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Assigned</p>
-                    <p className="text-sm text-gray-700 dark:text-gray-200">
+                    <p className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Assigned</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
                       {formatDate(homework.assignedDate)}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className={`w-2 h-2 rounded-full mt-1.5 ${homework.status === "overdue" ? "bg-red-400" : "bg-gray-300 dark:bg-gray-600"}`} />
+                  <div className={`w-2 h-2 rounded-full mt-1.5 ${homework.status === "overdue" ? "bg-red-400" : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700"}`} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Due Date</p>
-                    <p className={`text-sm ${homework.status === "overdue" ? "text-red-500 dark:text-red-400 font-medium" : "text-gray-700 dark:text-gray-200"}`}>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Due Date</p>
+                    <p className={`text-sm ${homework.status === "overdue" ? "text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 font-medium" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"}`}>
                       {formatDate(homework.dueDate)}
                     </p>
                   </div>
@@ -1090,7 +1090,7 @@ export default function HomeworkDetailPage() {
                   <div className="flex items-start gap-3">
                     <div className="w-2 h-2 rounded-full bg-emerald-400 mt-1.5" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-400 dark:text-gray-500">Submitted</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Submitted</p>
                       <p className="text-sm text-emerald-600 dark:text-emerald-400">
                         {formatDate(homework.submissionDate)}
                       </p>
@@ -1106,10 +1106,10 @@ export default function HomeworkDetailPage() {
                 <div className="flex items-start gap-2.5">
                   <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                    <p className="text-sm font-medium text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
                       Assignment Overdue
                     </p>
-                    <p className="text-xs text-red-600/80 dark:text-red-400/70 mt-0.5 leading-relaxed">
+                    <p className="text-xs text-red-600/80 dark:text-red-400 midnight:text-red-400 purple:text-red-400/70 mt-0.5 leading-relaxed">
                       Contact the teacher for late submission options.
                     </p>
                   </div>
@@ -1122,10 +1122,10 @@ export default function HomeworkDetailPage() {
                 <div className="flex items-start gap-2.5">
                   <Clock className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                    <p className="text-sm font-medium text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">
                       Awaiting Submission
                     </p>
-                    <p className="text-xs text-amber-600/80 dark:text-amber-400/70 mt-0.5 leading-relaxed">
+                    <p className="text-xs text-amber-600/80 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/70 mt-0.5 leading-relaxed">
                       Due on {formatDate(homework.dueDate)}.
                     </p>
                   </div>

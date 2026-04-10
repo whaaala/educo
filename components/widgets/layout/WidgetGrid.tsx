@@ -95,7 +95,7 @@ export function WidgetDragHandle({ className }: { className?: string }) {
           cn(
             "inline-flex h-7 w-7 shrink-0 touch-none items-center justify-center rounded-lg",
             "border border-gray-200/80 dark:border-gray-700/70 midnight:border-gray-700/50 purple:border-gray-700/50",
-            "bg-white/90 dark:bg-gray-900/70 midnight:bg-gray-900/70 purple:bg-gray-900/70",
+            "bg-white/90 dark:bg-[#0f1115]/70 midnight:bg-[#0a0e27]/70 purple:bg-[#1a0b2e]/70",
             "text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400",
             "shadow-sm backdrop-blur cursor-grab transition-all duration-200"
           )
@@ -115,10 +115,10 @@ export function WidgetDragHandle({ className }: { className?: string }) {
         cn(
           "inline-flex h-7 w-7 shrink-0 touch-none items-center justify-center rounded-lg",
           "border border-gray-200/80 dark:border-gray-700/70 midnight:border-gray-700/50 purple:border-gray-700/50",
-          "bg-white/90 dark:bg-gray-900/70 midnight:bg-gray-900/70 purple:bg-gray-900/70",
+          "bg-white/90 dark:bg-[#0f1115]/70 midnight:bg-[#0a0e27]/70 purple:bg-[#1a0b2e]/70",
           "text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400",
           "shadow-sm backdrop-blur transition-all duration-200",
-          "hover:bg-white dark:hover:bg-gray-900 midnight:hover:bg-gray-800 purple:hover:bg-gray-800",
+          "hover:bg-white dark:hover:bg-gray-900 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5",
           "hover:text-gray-700 dark:hover:text-white midnight:hover:text-cyan-400 purple:hover:text-pink-400",
           "hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30",
           "hover:shadow-md",

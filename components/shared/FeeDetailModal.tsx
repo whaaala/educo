@@ -87,7 +87,7 @@ export interface FeeDetailModalProps {
 const defaultStatusConfigs: Record<string, StatusConfig> = {
   paid: {
     bg: "bg-green-100 dark:bg-green-900/30",
-    text: "text-green-700 dark:text-green-400",
+    text: "text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
     icon: <CheckCircle2 className="w-4 h-4" />,
     label: "Paid",
   },
@@ -98,14 +98,14 @@ const defaultStatusConfigs: Record<string, StatusConfig> = {
     label: "Partial",
   },
   pending: {
-    bg: "bg-blue-100 dark:bg-blue-900/30",
-    text: "text-blue-700 dark:text-blue-400",
+    bg: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30",
+    text: "text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
     icon: <Clock className="w-4 h-4" />,
     label: "Pending",
   },
   overdue: {
-    bg: "bg-red-100 dark:bg-red-900/30",
-    text: "text-red-700 dark:text-red-400",
+    bg: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30",
+    text: "text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
     icon: <AlertCircle className="w-4 h-4" />,
     label: "Overdue",
   },
@@ -157,29 +157,29 @@ export default function FeeDetailModal({
         {/* Status Banner */}
         <div className={`flex items-center justify-between p-4 rounded-xl ${statusConfig.bg}`}>
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg bg-white/60 dark:bg-gray-800/60 ${statusConfig.text}`}>
+            <div className={`p-2 rounded-lg bg-white/60 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 ${statusConfig.text}`}>
               {statusConfig.icon}
             </div>
             <div>
               <p className={`font-semibold ${statusConfig.text}`}>{statusConfig.label}</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Payment Status</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Payment Status</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{progressPercent}%</p>
-            <p className="text-xs text-gray-600 dark:text-gray-400">Completed</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{progressPercent}%</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Completed</p>
           </div>
         </div>
 
         {/* Progress Bar */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600 dark:text-gray-400">Payment Progress</span>
-            <span className="font-medium text-gray-900 dark:text-white">
+            <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Payment Progress</span>
+            <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
               {money(record.paidAmount)} / {money(record.amount)}
             </span>
           </div>
-          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-3 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 progressPercent === 100
@@ -200,13 +200,13 @@ export default function FeeDetailModal({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Student Card */}
           {showStudentInfo && (
-          <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2 mb-3">
-              <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{studentInfoTitle}</h4>
+              <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+              <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">{studentInfoTitle}</h4>
             </div>
             <div className="flex items-center gap-3">
-              <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+              <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex-shrink-0">
                 <Image
                   src={`https://i.pravatar.cc/150?u=${record.childId}`}
                   alt={record.childName}
@@ -216,8 +216,8 @@ export default function FeeDetailModal({
                 />
               </div>
               <div>
-                <p className="font-semibold text-gray-900 dark:text-white">{record.childName}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{record.childClass}</p>
+                <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{record.childName}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{record.childClass}</p>
               </div>
             </div>
           </div>
@@ -225,13 +225,13 @@ export default function FeeDetailModal({
 
           {/* Parent Card */}
           {showParentInfo && (
-          <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2 mb-3">
               <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-              <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{parentInfoTitle}</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">{parentInfoTitle}</h4>
             </div>
             <div className="flex items-center gap-3">
-              <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+              <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex-shrink-0">
                 <Image
                   src={`https://i.pravatar.cc/150?u=${record.parentId}`}
                   alt={record.parentName}
@@ -241,12 +241,12 @@ export default function FeeDetailModal({
                 />
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-gray-900 dark:text-white">{record.parentName}</p>
-                <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{record.parentName}</p>
+                <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                   <Mail className="w-3 h-3" />
                   <span className="truncate">{record.parentEmail}</span>
                 </div>
-                <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                   <Phone className="w-3 h-3" />
                   <span>{record.parentPhone}</span>
                 </div>
@@ -258,27 +258,27 @@ export default function FeeDetailModal({
         )}
 
         {/* Fee Details */}
-        <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+        <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="flex items-center gap-2 mb-4">
             <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{feeDetailsTitle}</h4>
+            <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">{feeDetailsTitle}</h4>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Fee Type</p>
-              <p className="font-medium text-gray-900 dark:text-white text-sm">{record.feeType}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">Fee Type</p>
+              <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">{record.feeType}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Term</p>
-              <p className="font-medium text-gray-900 dark:text-white text-sm">{record.term}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">Term</p>
+              <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">{record.term}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Academic Year</p>
-              <p className="font-medium text-gray-900 dark:text-white text-sm">{record.academicYear}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">Academic Year</p>
+              <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">{record.academicYear}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Due Date</p>
-              <p className="font-medium text-gray-900 dark:text-white text-sm">
+              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">Due Date</p>
+              <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
                 {new Date(record.dueDate).toLocaleDateString("en-GB", {
                   day: "numeric",
                   month: "short",
@@ -287,12 +287,12 @@ export default function FeeDetailModal({
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Record ID</p>
-              <p className="font-medium text-gray-900 dark:text-white text-sm font-mono">{record.id}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">Record ID</p>
+              <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-mono">{record.id}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Last Updated</p>
-              <p className="font-medium text-gray-900 dark:text-white text-sm">
+              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">Last Updated</p>
+              <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
                 {new Date(record.updatedAt).toLocaleDateString("en-GB", {
                   day: "numeric",
                   month: "short",
@@ -306,21 +306,21 @@ export default function FeeDetailModal({
         {/* Amount Summary */}
         <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800">
           <div className="flex items-center gap-2 mb-4">
-            <Banknote className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{amountSummaryTitle}</h4>
+            <Banknote className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+            <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">{amountSummaryTitle}</h4>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-3 rounded-lg bg-white/60 dark:bg-gray-800/60">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{totalLabel}</p>
-              <p className="text-lg font-bold text-gray-900 dark:text-white">{money(record.amount)}</p>
+            <div className="text-center p-3 rounded-lg bg-white/60 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60">
+              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">{totalLabel}</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{money(record.amount)}</p>
             </div>
-            <div className="text-center p-3 rounded-lg bg-white/60 dark:bg-gray-800/60">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{paidLabel}</p>
-              <p className="text-lg font-bold text-green-600 dark:text-green-400">{money(record.paidAmount)}</p>
+            <div className="text-center p-3 rounded-lg bg-white/60 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60">
+              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">{paidLabel}</p>
+              <p className="text-lg font-bold text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">{money(record.paidAmount)}</p>
             </div>
-            <div className="text-center p-3 rounded-lg bg-white/60 dark:bg-gray-800/60">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{balanceLabel}</p>
-              <p className={`text-lg font-bold ${record.balance > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
+            <div className="text-center p-3 rounded-lg bg-white/60 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60">
+              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">{balanceLabel}</p>
+              <p className={`text-lg font-bold ${record.balance > 0 ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"}`}>
                 {money(record.balance)}
               </p>
             </div>
@@ -329,11 +329,11 @@ export default function FeeDetailModal({
 
         {/* Recent Payments */}
         {showPaymentHistory && record.paymentHistory.length > 0 && (
-          <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2 mb-4">
-              <CreditCard className="w-4 h-4 text-green-600 dark:text-green-400" />
-              <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{paymentsTitle}</h4>
-              <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
+              <CreditCard className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
+              <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">{paymentsTitle}</h4>
+              <span className="ml-auto text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                 {record.paymentHistory.length} payment(s)
               </span>
             </div>
@@ -341,17 +341,17 @@ export default function FeeDetailModal({
               {record.paymentHistory.slice(0, maxPaymentsToShow).map((payment) => (
                 <div
                   key={payment.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700"
+                  className="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                      <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
+                      <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white text-sm">
+                      <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
                         {money(payment.amount)}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                         {payment.method} • {new Date(payment.date).toLocaleDateString("en-GB", {
                           day: "numeric",
                           month: "short",
@@ -361,7 +361,7 @@ export default function FeeDetailModal({
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-mono text-gray-600 dark:text-gray-400">{payment.receiptNumber}</p>
+                    <p className="text-xs font-mono text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{payment.receiptNumber}</p>
                   </div>
                 </div>
               ))}

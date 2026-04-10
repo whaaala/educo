@@ -174,7 +174,7 @@ export default function BulkAbsenceReasonModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+      <div className="relative w-full max-w-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header with gradient */}
         <div className="relative bg-gradient-to-r from-red-500 to-rose-600 dark:from-red-600 dark:to-rose-700 midnight:from-red-600 midnight:to-rose-700 purple:from-red-600 purple:to-rose-700 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -227,7 +227,7 @@ export default function BulkAbsenceReasonModal({
                 {students.map((student) => (
                   <div
                     key={student.id}
-                    className="flex items-center justify-between p-3 border-b last:border-b-0 border-gray-100 dark:border-gray-700/50 midnight:border-gray-700/50 purple:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30 midnight:hover:bg-gray-800/30 purple:hover:bg-gray-800/30 transition-colors"
+                    className="flex items-center justify-between p-3 border-b last:border-b-0 border-gray-100 dark:border-gray-700/50 midnight:border-gray-700/50 purple:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/30 purple:hover:bg-pink-500/5/30 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       {student.avatar ? (
@@ -275,7 +275,7 @@ export default function BulkAbsenceReasonModal({
                   <button
                     key={student.id}
                     onClick={() => handleRestoreStudent(student)}
-                    className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-100 dark:bg-[#22262e] text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35] transition-colors cursor-pointer"
                     title="Click to restore"
                   >
                     <RotateCcw className="w-3 h-3" />
@@ -310,7 +310,7 @@ export default function BulkAbsenceReasonModal({
               className={`w-full p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer text-left ${
                 excused
                   ? "border-blue-500 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20"
-                  : "border-gray-200 dark:border-gray-600 midnight:border-gray-700 purple:border-gray-700 hover:border-gray-300 dark:hover:border-gray-500 midnight:hover:border-gray-600 purple:hover:border-gray-600 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800"
+                  : "border-gray-200 dark:border-gray-600 midnight:border-gray-700 purple:border-gray-700 hover:border-gray-300 dark:hover:border-gray-500 midnight:hover:border-gray-600 purple:hover:border-gray-600 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340]"
               }`}
             >
               <div className="flex items-start gap-3">
@@ -318,7 +318,7 @@ export default function BulkAbsenceReasonModal({
                   className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
                     excused
                       ? "bg-blue-100 dark:bg-blue-800/50 midnight:bg-cyan-800/50 purple:bg-pink-800/50"
-                      : "bg-gray-100 dark:bg-gray-700 midnight:bg-gray-700 purple:bg-gray-700"
+                      : "bg-gray-100 dark:bg-[#22262e] midnight:bg-gray-700 purple:bg-gray-700"
                   }`}
                 >
                   <ShieldCheck
@@ -366,7 +366,7 @@ export default function BulkAbsenceReasonModal({
             onChange={(value) => setNotes(value)}
             placeholder="Add any additional information about these absences..."
             icon={<FileText className="w-2.5 h-2.5" />}
-            iconBgColor="bg-gray-100 dark:bg-gray-700 midnight:bg-gray-700 purple:bg-gray-700"
+            iconBgColor="bg-gray-100 dark:bg-[#22262e] midnight:bg-gray-700 purple:bg-gray-700"
             iconColor="text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400"
             rows={3}
             optional
@@ -422,14 +422,14 @@ export default function BulkAbsenceReasonModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 flex items-center justify-between gap-3">
+        <div className="px-6 py-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border-t border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 flex items-center justify-between gap-3">
           <div className="text-sm text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400">
             {students.length} {students.length === 1 ? "student" : "students"} selected
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="px-6 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
+              className="px-6 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all duration-200 cursor-pointer"
             >
               Cancel
             </button>
@@ -439,7 +439,7 @@ export default function BulkAbsenceReasonModal({
               className={`px-6 py-2.5 rounded-lg font-medium text-sm text-white transition-all duration-200 flex items-center gap-2 ${
                 canSubmit
                   ? "bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 dark:from-red-600 dark:to-rose-700 dark:hover:from-red-700 dark:hover:to-rose-800 midnight:from-red-600 midnight:to-rose-700 midnight:hover:from-red-700 midnight:hover:to-rose-800 purple:from-red-600 purple:to-rose-700 purple:hover:from-red-700 purple:hover:to-rose-800 shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
-                  : "bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-50"
+                  : "bg-gray-400 dark:bg-[#2a2d35] cursor-not-allowed opacity-50"
               }`}
             >
               <CircleX className="w-4 h-4" />

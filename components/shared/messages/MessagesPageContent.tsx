@@ -470,7 +470,7 @@ export default function MessagesPageContent({
             }
             setSelectedIds(newSelectedIds);
           }}
-          className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+          className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
         />
       ),
     },
@@ -483,12 +483,12 @@ export default function MessagesPageContent({
           <div
             className={`p-1 rounded-md ${
               msg.type === "received"
-                ? "bg-blue-100 dark:bg-blue-900/30"
+                ? "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
                 : "bg-emerald-100 dark:bg-emerald-900/30"
             }`}
           >
             {msg.type === "received" ? (
-              <Inbox className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              <Inbox className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             ) : (
               <Send className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             )}
@@ -504,7 +504,7 @@ export default function MessagesPageContent({
       render: (msg) => (
         <div className="flex items-center gap-2">
           <div className="relative cursor-pointer group/avatar flex-shrink-0">
-            <div className="relative w-7 h-7 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-1 ring-white/80 dark:ring-gray-700/50 shadow-sm transition-all duration-300 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-lg group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 group-hover/avatar:z-[100]">
+            <div className="relative w-7 h-7 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] ring-1 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 shadow-sm transition-all duration-300 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-lg group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 group-hover/avatar:z-[100]">
               {msg.senderAvatar ? (
                 <Image
                   src={msg.senderAvatar}
@@ -525,16 +525,16 @@ export default function MessagesPageContent({
               <p
                 className={`text-xs sm:text-sm truncate leading-tight ${
                   !msg.isRead && msg.type === "received"
-                    ? "font-semibold text-gray-900 dark:text-white"
-                    : "font-medium text-gray-700 dark:text-gray-300"
+                    ? "font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                    : "font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                 }`}
               >
                 {msg.senderName}
               </p>
             </Tooltip>
             <Tooltip content={msg.recipientName} block>
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate leading-tight">
-                <span className="text-gray-400 dark:text-gray-500">→</span> {msg.recipientName}
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate leading-tight">
+                <span className="text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">→</span> {msg.recipientName}
               </p>
             </Tooltip>
           </div>
@@ -557,8 +557,8 @@ export default function MessagesPageContent({
               <p
                 className={`text-xs sm:text-sm truncate leading-tight ${
                   !msg.isRead && msg.type === "received"
-                    ? "font-semibold text-gray-900 dark:text-white"
-                    : "text-gray-700 dark:text-gray-300"
+                    ? "font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                    : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                 }`}
               >
                 {msg.subject}
@@ -566,7 +566,7 @@ export default function MessagesPageContent({
             </Tooltip>
           </div>
           <Tooltip content={msg.preview} block>
-            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5 leading-tight">
+            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate mt-0.5 leading-tight">
               {msg.preview}
             </p>
           </Tooltip>
@@ -588,7 +588,7 @@ export default function MessagesPageContent({
       render: (msg) =>
         msg.childName ? (
           <Tooltip content={msg.childName} block>
-            <span className="text-xs text-gray-700 dark:text-gray-300 truncate block">
+            <span className="text-xs text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 truncate block">
               {msg.childName.split(" ")[0]}{" "}
               {msg.childName
                 .split(" ")
@@ -607,7 +607,7 @@ export default function MessagesPageContent({
       className: "min-w-[80px] md:min-w-[130px] text-right pr-2",
       render: (msg) => (
         <div className="flex items-center justify-end gap-0.5">
-          <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mr-1 sm:mr-1.5 whitespace-nowrap">
+          <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mr-1 sm:mr-1.5 whitespace-nowrap">
             {formatMessageTime(msg.timestamp)}
           </span>
           <div className="hidden sm:flex items-center gap-0.5">
@@ -615,9 +615,9 @@ export default function MessagesPageContent({
               <button
                 type="button"
                 onClick={() => handleCardView(msg)}
-                className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
               >
-                <Eye className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                <Eye className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
               </button>
             </Tooltip>
             <Tooltip content="Reply">
@@ -626,7 +626,7 @@ export default function MessagesPageContent({
                 onClick={() => handleCardReply(msg)}
                 className="p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
               >
-                <Reply className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                <Reply className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </button>
             </Tooltip>
             <Tooltip content="Delete">
@@ -635,7 +635,7 @@ export default function MessagesPageContent({
                 onClick={() => handleDeleteClick(msg)}
                 className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
               >
-                <Trash2 className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                <Trash2 className="w-3.5 h-3.5 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
               </button>
             </Tooltip>
           </div>
@@ -643,9 +643,9 @@ export default function MessagesPageContent({
             <button
               type="button"
               onClick={() => handleCardView(msg)}
-              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
             >
-              <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
             </button>
           </div>
         </div>
@@ -712,7 +712,7 @@ export default function MessagesPageContent({
 
             {/* Selected Recipient Filter Chip */}
             {selectedRecipient && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 border border-blue-200 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500">
                 <div className="flex items-center gap-2">
                   {selectedRecipient.profilePhoto ? (
                     <Image
@@ -730,14 +730,14 @@ export default function MessagesPageContent({
                       </span>
                     </div>
                   )}
-                  <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                  <span className="text-xs font-medium text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
                     {selectedRecipient.firstName} {selectedRecipient.lastName}
                   </span>
                 </div>
                 {onClearRecipient && (
                   <button
                     onClick={onClearRecipient}
-                    className="w-4 h-4 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors cursor-pointer"
+                    className="w-4 h-4 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors cursor-pointer"
                     title="Clear filter"
                   >
                     <span className="text-sm font-bold">&times;</span>
@@ -746,8 +746,8 @@ export default function MessagesPageContent({
               </div>
             )}
 
-            <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-              <span className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
+            <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+              <span className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 whitespace-nowrap">
                 {filteredMessages.length} messages
               </span>
             </div>
@@ -796,13 +796,13 @@ export default function MessagesPageContent({
                       <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 animate-pulse" />
                     </div>
                     <div className="relative z-10 flex items-center justify-center w-16 h-16">
-                      <MessageSquare className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                      <MessageSquare className="w-8 h-8 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
                   </div>
-                  <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1">
                     No messages found
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                     {hasActiveFilters
                       ? "No results match the current filters. Try adjusting your filters."
                       : "No messages available"}
@@ -813,7 +813,7 @@ export default function MessagesPageContent({
                         handleClearFilters();
                         if (onClearRecipient) onClearRecipient();
                       }}
-                      className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer transition-colors duration-200"
+                      className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer transition-colors duration-200"
                     >
                       Clear filters
                     </button>
@@ -861,13 +861,13 @@ export default function MessagesPageContent({
                       <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-800/20 animate-pulse" />
                     </div>
                     <div className="relative z-10 flex items-center justify-center w-16 h-16">
-                      <MessageSquare className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                      <MessageSquare className="w-8 h-8 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
                   </div>
-                  <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1">
                     No messages found
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                     {hasActiveFilters
                       ? "No results match the current filters. Try adjusting your filters."
                       : "No messages available"}
@@ -875,7 +875,7 @@ export default function MessagesPageContent({
                   {hasActiveFilters && (
                     <button
                       onClick={handleClearFilters}
-                      className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer transition-colors duration-200"
+                      className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer transition-colors duration-200"
                     >
                       Clear filters
                     </button>

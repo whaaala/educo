@@ -35,7 +35,7 @@ export default function ParentProfileCard({
   onChildSelect,
 }: ParentProfileCardProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
       {/* Header Banner with Gradient */}
       <div className="relative h-24 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 dark:from-blue-600 dark:via-blue-700 dark:to-indigo-800">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
@@ -50,7 +50,7 @@ export default function ParentProfileCard({
         {/* Avatar - Overlapping Banner */}
         <div className="relative -mt-12 mb-4 flex items-end gap-4">
           <div className="relative">
-            <div className="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-gray-800 shadow-xl bg-white dark:bg-gray-700">
+            <div className="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-gray-800 shadow-xl bg-white dark:bg-[#22262e]">
               <Image
                 src={parent.profilePhoto}
                 alt={parent.fullName}
@@ -61,7 +61,7 @@ export default function ParentProfileCard({
               />
             </div>
             {/* Online Status */}
-            <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 border-3 border-white dark:border-gray-800 flex items-center justify-center shadow-lg">
+            <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 border-3 border-white dark:border-[#1a1d24] flex items-center justify-center shadow-lg">
               <CheckCircle2 className="w-4 h-4 text-white" />
             </div>
           </div>
@@ -80,7 +80,7 @@ export default function ParentProfileCard({
             {parent.fullName}
           </h3>
           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-            <div className="p-1 rounded-md bg-gray-100 dark:bg-gray-700/50">
+            <div className="p-1 rounded-md bg-gray-100 dark:bg-[#22262e]/50">
               <Mail className="w-3.5 h-3.5" />
             </div>
             <span className="truncate">{parent.email}</span>
@@ -118,7 +118,7 @@ export default function ParentProfileCard({
                   className={`w-full flex items-center gap-3.5 p-3.5 rounded-xl transition-all duration-300 group ${
                     isSelected
                       ? "bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-2 border-blue-400 dark:border-blue-500 shadow-md shadow-blue-500/10"
-                      : "bg-gray-50/80 dark:bg-gray-700/20 border-2 border-transparent hover:bg-white dark:hover:bg-gray-700/40 hover:border-gray-200 dark:hover:border-gray-600 hover:shadow-md"
+                      : "bg-gray-50/80 dark:bg-[#22262e]/20 border-2 border-transparent hover:bg-white dark:hover:bg-[#22262e]/40 hover:border-gray-200 dark:hover:border-gray-600 hover:shadow-md"
                   }`}
                 >
                   {/* Child Avatar */}
@@ -148,7 +148,7 @@ export default function ParentProfileCard({
                       <span className={`text-xs px-2 py-0.5 rounded-md font-semibold ${
                         isSelected
                           ? "bg-blue-200/70 dark:bg-blue-800/50 text-blue-700 dark:text-blue-200"
-                          : "bg-gray-200/80 dark:bg-gray-600/50 text-gray-600 dark:text-gray-300"
+                          : "bg-gray-200/80 dark:bg-[#2a2d35]/50 text-gray-600 dark:text-gray-300"
                       }`}>
                         {child.classLevel}
                       </span>
@@ -163,7 +163,7 @@ export default function ParentProfileCard({
                   <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
                     isSelected
                       ? "bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30"
-                      : "bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
+                      : "bg-gray-100 dark:bg-[#22262e] group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
                   }`}>
                     {isSelected ? (
                       <CheckCircle2 className="w-4 h-4 text-white" />

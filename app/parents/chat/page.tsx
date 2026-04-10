@@ -285,11 +285,11 @@ export default function ParentChatPage() {
         </div>
 
         {/* Chat Container */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden h-[calc(100vh-220px)] min-h-[500px] flex">
+        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden h-[calc(100vh-220px)] min-h-[500px] flex">
           {/* Sidebar - Conversations List */}
-          <div className={`w-full lg:w-80 xl:w-96 border-r border-gray-200 dark:border-gray-700 flex flex-col ${showMobileChat ? "hidden lg:flex" : "flex"}`}>
+          <div className={`w-full lg:w-80 xl:w-96 border-r border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex flex-col ${showMobileChat ? "hidden lg:flex" : "flex"}`}>
             {/* Search */}
-            <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+            <div className="p-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -297,7 +297,7 @@ export default function ParentChatPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search conversations..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 text-sm outline-none"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 text-sm outline-none"
                 />
               </div>
             </div>
@@ -306,20 +306,20 @@ export default function ParentChatPage() {
             <div className="flex-1 overflow-y-auto">
               {filteredConversations.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4">
-                  <MessageCircle className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400 text-center">No conversations yet</p>
+                  <MessageCircle className="w-12 h-12 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 mb-3" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-center">No conversations yet</p>
                 </div>
               ) : (
                 filteredConversations.map((conv) => (
                   <button
                     key={conv.contact.id}
                     onClick={() => handleSelectContact(conv.contact)}
-                    className={`w-full flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer text-left border-b border-gray-100 dark:border-gray-700/50 ${
-                      selectedContact?.id === conv.contact.id ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                    className={`w-full flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 transition-colors cursor-pointer text-left border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 ${
+                      selectedContact?.id === conv.contact.id ? "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20" : ""
                     }`}
                   >
                     <div className="relative flex-shrink-0">
-                      <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+                      <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]">
                         {conv.contact.avatar ? (
                           <Image src={conv.contact.avatar} alt={conv.contact.name} fill className="object-cover" unoptimized />
                         ) : (
@@ -329,22 +329,22 @@ export default function ParentChatPage() {
                         )}
                       </div>
                       {conv.contact.isOnline && (
-                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full" />
+                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 rounded-full" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 mb-0.5">
-                        <p className={`text-sm truncate ${conv.unreadCount > 0 ? "font-semibold text-gray-900 dark:text-white" : "font-medium text-gray-700 dark:text-gray-300"}`}>
+                        <p className={`text-sm truncate ${conv.unreadCount > 0 ? "font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50" : "font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"}`}>
                           {conv.contact.name}
                         </p>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">{formatTime(conv.lastMessage.timestamp)}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 flex-shrink-0">{formatTime(conv.lastMessage.timestamp)}</span>
                       </div>
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1.5 min-w-0">
                           {conv.lastMessage.from === "parent" && (
                             <CheckCheck className={`w-4 h-4 flex-shrink-0 ${conv.lastMessage.status === "read" ? "text-blue-500" : "text-gray-400"}`} />
                           )}
-                          <p className={`text-xs truncate ${conv.unreadCount > 0 ? "font-medium text-gray-800 dark:text-gray-200" : "text-gray-500 dark:text-gray-400"}`}>
+                          <p className={`text-xs truncate ${conv.unreadCount > 0 ? "font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"}`}>
                             {conv.lastMessage.message}
                           </p>
                         </div>
@@ -352,7 +352,7 @@ export default function ParentChatPage() {
                           <span className="px-2 py-0.5 rounded-full bg-blue-500 text-white text-xs font-bold flex-shrink-0">{conv.unreadCount}</span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{conv.contact.role}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-0.5">{conv.contact.role}</p>
                     </div>
                   </button>
                 ))
@@ -365,15 +365,15 @@ export default function ParentChatPage() {
             {selectedContact ? (
               <>
                 {/* Chat Header */}
-                <div className="flex items-center gap-3 p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <div className="flex items-center gap-3 p-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
                   <button
                     onClick={() => setShowMobileChat(false)}
-                    className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                    className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                   >
-                    <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                   </button>
                   <div className="relative flex-shrink-0">
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+                    <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]">
                       {selectedContact.avatar ? (
                         <Image src={selectedContact.avatar} alt={selectedContact.name} fill className="object-cover" unoptimized />
                       ) : (
@@ -383,30 +383,30 @@ export default function ParentChatPage() {
                       )}
                     </div>
                     {selectedContact.isOnline && (
-                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full" />
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 rounded-full" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{selectedContact.name}</p>
-                    <p className={`text-xs ${selectedContact.isOnline ? "text-green-600 dark:text-green-400" : "text-gray-500 dark:text-gray-400"}`}>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{selectedContact.name}</p>
+                    <p className={`text-xs ${selectedContact.isOnline ? "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"}`}>
                       {selectedContact.isOnline ? "Online" : `Last seen ${formatTime(selectedContact.lastSeen || "")}`}
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer">
-                      <Phone className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+                      <Phone className="w-5 h-5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                     </button>
-                    <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer">
-                      <Video className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+                      <Video className="w-5 h-5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                     </button>
-                    <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer">
-                      <MoreVertical className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+                      <MoreVertical className="w-5 h-5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                     </button>
                   </div>
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 dark:bg-gray-900/30">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30">
                   {messages.map((msg, index) => {
                     const isParent = msg.from === "parent";
                     const showDate = index === 0 || new Date(msg.timestamp).toDateString() !== new Date(messages[index - 1].timestamp).toDateString();
@@ -415,7 +415,7 @@ export default function ParentChatPage() {
                       <React.Fragment key={msg.id}>
                         {showDate && (
                           <div className="flex items-center justify-center">
-                            <span className="px-3 py-1 rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-400">
+                            <span className="px-3 py-1 rounded-full bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                               {formatDateSeparator(msg.timestamp)}
                             </span>
                           </div>
@@ -423,7 +423,7 @@ export default function ParentChatPage() {
                         <div className={`flex ${isParent ? "justify-end" : "justify-start"}`}>
                           <div className={`flex items-end gap-2 max-w-[75%] ${isParent ? "flex-row-reverse" : ""}`}>
                             {!isParent && (
-                              <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+                              <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex-shrink-0">
                                 {selectedContact.avatar ? (
                                   <Image src={selectedContact.avatar} alt={selectedContact.name} fill className="object-cover" unoptimized />
                                 ) : (
@@ -438,13 +438,13 @@ export default function ParentChatPage() {
                                 className={`px-4 py-2.5 rounded-2xl ${
                                   isParent
                                     ? "bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-br-md"
-                                    : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-bl-md border border-gray-200 dark:border-gray-700"
+                                    : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 rounded-bl-md border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                                 }`}
                               >
                                 <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.message}</p>
                               </div>
                               <div className={`flex items-center gap-1.5 mt-1 ${isParent ? "justify-end" : "justify-start"}`}>
-                                <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                                <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
                                   {new Date(msg.timestamp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}
                                 </span>
                                 {isParent && (
@@ -462,7 +462,7 @@ export default function ParentChatPage() {
                   {isTyping && (
                     <div className="flex justify-start">
                       <div className="flex items-end gap-2">
-                        <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+                        <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex-shrink-0">
                           {selectedContact.avatar ? (
                             <Image src={selectedContact.avatar} alt={selectedContact.name} fill className="object-cover" unoptimized />
                           ) : (
@@ -471,7 +471,7 @@ export default function ParentChatPage() {
                             </div>
                           )}
                         </div>
-                        <div className="px-4 py-3 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-bl-md">
+                        <div className="px-4 py-3 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-bl-md">
                           <div className="flex gap-1">
                             <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "0ms" }} />
                             <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -486,7 +486,7 @@ export default function ParentChatPage() {
                 </div>
 
                 {/* Message Input */}
-                <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <div className="border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
                   {/* Attachments Preview */}
                   {attachments.length > 0 && (
                     <div className="px-4 pt-3">
@@ -494,11 +494,11 @@ export default function ParentChatPage() {
                         {attachments.map((file, index) => (
                           <div key={index} className="relative flex-shrink-0 group">
                             {file.type.startsWith("image/") ? (
-                              <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
+                              <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
                                 <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />
                               </div>
                             ) : (
-                              <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 flex flex-col items-center justify-center p-1">
+                              <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex flex-col items-center justify-center p-1">
                                 {getFileIcon(file)}
                                 <span className="text-[8px] text-gray-500 truncate w-full text-center mt-1">{file.name.slice(0, 8)}...</span>
                               </div>
@@ -522,7 +522,7 @@ export default function ParentChatPage() {
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                        className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                       >
                         <Paperclip className="w-5 h-5" />
                       </button>
@@ -549,7 +549,7 @@ export default function ParentChatPage() {
                         }}
                         placeholder="Type a message..."
                         rows={1}
-                        className="w-full px-4 py-3 rounded-2xl bg-gray-100 dark:bg-gray-900 border-0 focus:ring-2 focus:ring-blue-500/50 resize-none text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 outline-none"
+                        className="w-full px-4 py-3 rounded-2xl bg-gray-100 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-0 focus:ring-2 focus:ring-blue-500/50 resize-none text-sm text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 outline-none"
                         style={{ minHeight: "48px", maxHeight: "120px" }}
                       />
                     </div>
@@ -570,12 +570,12 @@ export default function ParentChatPage() {
               </>
             ) : (
               /* No Chat Selected */
-              <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50/30 dark:bg-gray-900/30">
-                <div className="w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-6">
+              <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50/30 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30">
+                <div className="w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center mb-6">
                   <MessageCircle className="w-12 h-12 text-blue-500" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Your Messages</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm mb-6">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">Your Messages</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-center max-w-sm mb-6">
                   Select a conversation from the list or start a new chat with a teacher or administrator.
                 </p>
                 <Link href={fromAdmin ? "/parents/chat/compose?from=admin" : "/parents/chat/compose"}>

@@ -69,7 +69,7 @@ export function SubmenuPanel({ children, className = "" }: { children: React.Rea
         ref={panelRef}
         data-editor-menu-panel
         data-doc-menu-panel
-        className={`fixed z-[10000] rounded-2xl border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible ${className}`}
+        className={`fixed z-[10000] rounded-2xl border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible ${className}`}
         onMouseEnter={() => timerCtx?.cancelClose()}
         onMouseLeave={() => timerCtx?.scheduleClose()}
       >
@@ -93,7 +93,7 @@ export function ViewMenuPanel({ children }: { children: React.ReactNode }) {
   }, []);
 
   const glassClasses = [
-    "bg-white/80 dark:bg-[#121212]/80 midnight:bg-[#0b1220]/80 purple:bg-[#1a0d2e]/80",
+    "bg-white/80 dark:bg-[#121212]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0d2e]/80",
     "backdrop-blur-[20px] backdrop-saturate-[180%]",
     "border border-gray-300/60 dark:border-gray-600/50 midnight:border-cyan-400/20 purple:border-pink-400/20",
   ].join(" ");
@@ -115,7 +115,7 @@ export function ViewMenuPanel({ children }: { children: React.ReactNode }) {
           ].join(" ")}
         >
           <div className="flex justify-center pt-3 pb-1">
-            <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+            <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-[#2a2d35]" />
           </div>
           <div className="px-1 pb-6 max-h-[70vh] overflow-y-auto">{children}</div>
         </div>
@@ -293,7 +293,7 @@ export function ViewMenuToggle({ label, description, shortcut, isOn, onToggle }:
         "relative w-[38px] h-[22px] rounded-full flex-shrink-0 transition-colors duration-200",
         isOn
           ? "bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500"
-          : "bg-gray-300 dark:bg-gray-600 midnight:bg-gray-600 purple:bg-gray-600",
+          : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-600 purple:bg-gray-600",
       ].join(" ")}>
         <div className={[
           "absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white shadow-sm transition-transform duration-200",
@@ -310,7 +310,7 @@ export function MenuPanel({ children }: { children: React.ReactNode }) {
     <div
       data-editor-menu-panel
       data-doc-menu-panel
-      className="absolute z-[120] mt-2 left-0 w-[260px] rounded-2xl border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-gray-900/95 midnight:bg-[#0d1526]/95 purple:bg-[#1f1035]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible"
+      className="absolute z-[120] mt-2 left-0 w-[260px] rounded-2xl border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible"
     >
       <div className="py-1 max-h-[calc(100vh-120px)] overflow-y-auto">{children}</div>
     </div>
@@ -319,7 +319,7 @@ export function MenuPanel({ children }: { children: React.ReactNode }) {
 
 // ── MenuDivider (compact) ──
 export function MenuDivider() {
-  return <div className="my-1 h-px bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-500/10 purple:bg-pink-500/10" />;
+  return <div className="my-1 h-px bg-gray-100 dark:bg-[#1a1d24] midnight:bg-cyan-500/10 purple:bg-pink-500/10" />;
 }
 
 // ── MenuRoot (top-level menu button) ──
@@ -342,8 +342,8 @@ export function MenuRoot({
         type="button"
         className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
           isOpen
-            ? "bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
-            : "hover:bg-gray-100/70 dark:hover:bg-gray-800/60 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8"
+            ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-cyan-500/10 purple:bg-pink-500/10"
+            : "hover:bg-gray-100/70 dark:hover:bg-[#22262e]/60 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8"
         }`}
         onClick={() => (isOpen ? onClose() : onOpen(id))}
         onMouseEnter={() => openMenu && openMenu !== id && onOpen(id)}

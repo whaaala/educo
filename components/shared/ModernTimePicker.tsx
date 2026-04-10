@@ -170,7 +170,7 @@ export default function ModernTimePicker({
     <div
       ref={pickerRef}
       style={pickerStyle}
-      className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 w-[280px] animate-in fade-in zoom-in-95 duration-200"
+      className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 w-[280px] animate-in fade-in zoom-in-95 duration-200"
     >
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5">
@@ -208,7 +208,7 @@ export default function ModernTimePicker({
             </label>
             <div
               ref={hourScrollRef}
-              className="h-40 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
+              className="h-40 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
             >
               {hours.map((hour) => (
                 <button
@@ -219,7 +219,7 @@ export default function ModernTimePicker({
                   className={`w-full px-3 py-2 text-sm text-center transition-colors cursor-pointer ${
                     selectedHour === hour
                       ? "bg-blue-500 dark:bg-blue-600 midnight:bg-cyan-600 purple:bg-pink-600 text-white font-semibold"
-                      : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700"
+                      : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                   }`}
                 >
                   {hour.toString().padStart(2, '0')}
@@ -235,7 +235,7 @@ export default function ModernTimePicker({
             </label>
             <div
               ref={minuteScrollRef}
-              className="h-40 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
+              className="h-40 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
             >
               {minutes.map((minute) => (
                 <button
@@ -246,7 +246,7 @@ export default function ModernTimePicker({
                   className={`w-full px-3 py-2 text-sm text-center transition-colors cursor-pointer ${
                     selectedMinute === minute
                       ? "bg-blue-500 dark:bg-blue-600 midnight:bg-cyan-600 purple:bg-pink-600 text-white font-semibold"
-                      : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700"
+                      : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                   }`}
                 >
                   {minute.toString().padStart(2, '0')}
@@ -268,7 +268,7 @@ export default function ModernTimePicker({
                   className={`w-full px-2 py-2 text-sm rounded-lg transition-colors cursor-pointer ${
                     selectedPeriod === "AM"
                       ? "bg-blue-500 dark:bg-blue-600 midnight:bg-cyan-600 purple:bg-pink-600 text-white font-semibold"
-                      : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30"
+                      : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30"
                   }`}
                 >
                   AM
@@ -279,7 +279,7 @@ export default function ModernTimePicker({
                   className={`w-full px-2 py-2 text-sm rounded-lg transition-colors cursor-pointer ${
                     selectedPeriod === "PM"
                       ? "bg-blue-500 dark:bg-blue-600 midnight:bg-cyan-600 purple:bg-pink-600 text-white font-semibold"
-                      : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30"
+                      : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30"
                   }`}
                 >
                   PM
@@ -291,12 +291,12 @@ export default function ModernTimePicker({
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50">
+      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
         <div className="flex gap-2 justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-colors cursor-pointer"
+            className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg hover:bg-gray-50 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
           >
             Cancel
           </button>

@@ -459,7 +459,7 @@ export default function LibraryFinesPage() {
               alt={fine.memberName}
               width={32}
               height={32}
-              className="absolute inset-0 w-8 h-8 rounded-full object-cover ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-300 ease-out group-hover/avatar:scale-[2.5] group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90"
+              className="absolute inset-0 w-8 h-8 rounded-full object-cover ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-300 ease-out group-hover/avatar:scale-[2.5] group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90"
               style={{ transformOrigin: "left center" }}
               unoptimized
             />
@@ -518,7 +518,7 @@ export default function LibraryFinesPage() {
             <span
               className={`font-semibold ${
                 fine.daysOverdue >= 7
-                  ? "text-red-600 dark:text-red-400"
+                  ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
                   : fine.daysOverdue >= 3
                   ? "text-yellow-600 dark:text-yellow-400"
                   : "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
@@ -545,7 +545,7 @@ export default function LibraryFinesPage() {
         <span
           className={`font-semibold ${
             !fine.isPaid
-              ? "text-red-600 dark:text-red-400"
+              ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
               : "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
           }`}
           style={{ fontSize: "11.8px" }}
@@ -571,7 +571,7 @@ export default function LibraryFinesPage() {
             })}
           </div>
           {fine.isPaid && fine.paidDate && (
-            <div className="flex items-center gap-1 text-green-600 dark:text-green-400" style={{ fontSize: "10px" }}>
+            <div className="flex items-center gap-1 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" style={{ fontSize: "10px" }}>
               <CheckCircle2 className="w-3 h-3" />
               Paid {new Date(fine.paidDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
             </div>
@@ -599,7 +599,7 @@ export default function LibraryFinesPage() {
               }}
               className="group relative p-2 rounded-lg bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/30 dark:to-blue-900/20 midnight:from-blue-950/30 midnight:to-blue-900/20 purple:from-blue-950/30 purple:to-blue-900/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-blue-900/40 dark:hover:to-blue-800/30 transition-all duration-200 cursor-pointer border border-blue-200/40 dark:border-blue-800/30 hover:border-blue-400/60 dark:hover:border-blue-600/50 active:scale-95"
             >
-              <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
+              <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors" />
             </button>
           </Tooltip>
           {!fine.isPaid && (
@@ -612,7 +612,7 @@ export default function LibraryFinesPage() {
                   }}
                   className="group relative p-2 rounded-lg bg-gradient-to-br from-green-50/50 to-green-100/30 dark:from-green-950/30 dark:to-green-900/20 midnight:from-green-950/30 midnight:to-green-900/20 purple:from-green-950/30 purple:to-green-900/20 hover:from-green-100 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/30 transition-all duration-200 cursor-pointer border border-green-200/40 dark:border-green-800/30 hover:border-green-400/60 dark:hover:border-green-600/50 active:scale-95"
                 >
-                  <CreditCard className="w-4 h-4 text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors" />
+                  <CreditCard className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors" />
                 </button>
               </Tooltip>
               <Tooltip content="Waive Fine">
@@ -749,7 +749,7 @@ export default function LibraryFinesPage() {
             {/* Fine Summary Card */}
             <div className="rounded-xl bg-gradient-to-br from-red-50 to-rose-50/80 dark:from-red-900/20 dark:to-rose-900/10 p-4 border border-red-200/60 dark:border-red-700/30">
               <div className="flex items-center gap-3 mb-4">
-                <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 flex-shrink-0 shadow-md ring-2 ring-white dark:ring-gray-700">
+                <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 flex-shrink-0 shadow-md ring-2 ring-white dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20">
                   <Image
                     src={`https://i.pravatar.cc/150?u=${processingFine.memberId}`}
                     alt={processingFine.memberName}
@@ -759,14 +759,14 @@ export default function LibraryFinesPage() {
                   />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold text-gray-900 dark:text-white truncate">{processingFine.memberName}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{processingFine.bookTitle}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{processingFine.memberName}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">{processingFine.bookTitle}</p>
                 </div>
               </div>
-              <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="pt-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Fine Amount</p>
-                  <p className="text-xl font-bold text-red-600 dark:text-red-400">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Fine Amount</p>
+                  <p className="text-xl font-bold text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
                     {formatCurrency(processingFine.amount, countryCode)}
                   </p>
                 </div>
@@ -783,7 +783,7 @@ export default function LibraryFinesPage() {
                 onChange={(val) => setPaymentAmount(String(val))}
                 placeholder="Enter amount"
                 iconBgColor="bg-green-100 dark:bg-green-900/30"
-                iconColor="text-green-600 dark:text-green-400"
+                iconColor="text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
               />
 
               <FormDropdown
@@ -797,16 +797,16 @@ export default function LibraryFinesPage() {
                   { value: "Bank Transfer", label: "Bank Transfer" },
                   { value: "Mobile Money", label: "Mobile Money" },
                 ]}
-                iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-                iconColor="text-blue-600 dark:text-blue-400"
+                iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+                iconColor="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
               />
             </div>
 
             {/* Info Notice */}
-            <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200/60 dark:border-blue-700/30">
+            <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 border border-blue-200/60 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/30">
               <div className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-blue-700 dark:text-blue-300">
+                <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
                   A payment receipt will be automatically generated upon confirmation.
                 </p>
               </div>
@@ -866,11 +866,11 @@ export default function LibraryFinesPage() {
             <div className="p-4 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50/80 dark:from-amber-900/20 dark:to-orange-900/10 border border-amber-200/60 dark:border-amber-700/30">
               <div className="flex items-start gap-3">
                 <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex-shrink-0">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 mb-1">This action cannot be undone</p>
-                  <p className="text-xs text-amber-600/80 dark:text-amber-400/70">
+                  <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 mb-1">This action cannot be undone</p>
+                  <p className="text-xs text-amber-600/80 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/70">
                     Once waived, this fine will be permanently removed from the member&apos;s account.
                   </p>
                 </div>
@@ -880,7 +880,7 @@ export default function LibraryFinesPage() {
             {/* Fine Summary Card */}
             <div className="rounded-xl bg-gradient-to-br from-purple-50 to-violet-50/80 dark:from-purple-900/20 dark:to-violet-900/10 p-4 border border-purple-200/60 dark:border-purple-700/30">
               <div className="flex items-center gap-3 mb-4">
-                <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 flex-shrink-0 shadow-md ring-2 ring-white dark:ring-gray-700">
+                <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 flex-shrink-0 shadow-md ring-2 ring-white dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20">
                   <Image
                     src={`https://i.pravatar.cc/150?u=${processingFine.memberId}`}
                     alt={processingFine.memberName}
@@ -890,13 +890,13 @@ export default function LibraryFinesPage() {
                   />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-gray-900 dark:text-white truncate">{processingFine.memberName}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{processingFine.bookTitle}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{processingFine.memberName}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">{processingFine.bookTitle}</p>
                 </div>
               </div>
               <div className="pt-3 border-t border-purple-200/60 dark:border-purple-700/30">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Fine to Waive</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Fine to Waive</p>
                   <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
                     {formatCurrency(processingFine.amount, countryCode)}
                   </p>
@@ -918,10 +918,10 @@ export default function LibraryFinesPage() {
             />
 
             {/* Info Notice */}
-            <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200/60 dark:border-gray-700/30">
+            <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30">
               <div className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-gray-600 dark:text-gray-400">
+                <CheckCircle2 className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                   The waiver will be recorded with the current date and your user details for audit purposes.
                 </p>
               </div>
@@ -990,22 +990,22 @@ function FineViewModal({
         bgLight: "bg-amber-50 dark:bg-amber-900/20",
         bgSubtle: "bg-gradient-to-br from-amber-50 to-orange-50/80 dark:from-amber-900/20 dark:to-orange-900/10",
         border: "border-amber-200 dark:border-amber-700/30",
-        text: "text-amber-700 dark:text-amber-400",
+        text: "text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
         iconBg: "bg-amber-100 dark:bg-amber-900/30",
-        iconColor: "text-amber-600 dark:text-amber-400",
-        amountColor: "text-amber-700 dark:text-amber-400",
+        iconColor: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
+        amountColor: "text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
         icon: <Clock className="w-5 h-5" />,
         label: "Overdue Fine",
       },
       lost: {
         gradient: "from-red-500 to-rose-500",
-        bgLight: "bg-red-50 dark:bg-red-900/20",
+        bgLight: "bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20",
         bgSubtle: "bg-gradient-to-br from-red-50 to-rose-50/80 dark:from-red-900/20 dark:to-rose-900/10",
         border: "border-red-200 dark:border-red-700/30",
-        text: "text-red-700 dark:text-red-400",
-        iconBg: "bg-red-100 dark:bg-red-900/30",
-        iconColor: "text-red-600 dark:text-red-400",
-        amountColor: "text-red-700 dark:text-red-400",
+        text: "text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
+        iconBg: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30",
+        iconColor: "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
+        amountColor: "text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
         icon: <AlertTriangle className="w-5 h-5" />,
         label: "Lost Book",
       },
@@ -1074,14 +1074,14 @@ function FineViewModal({
               </div>
               <div>
                 <p className={`text-sm font-medium ${typeConfig.text}`}>{typeConfig.label}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">{fine.id.toUpperCase()}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-mono">{fine.id.toUpperCase()}</p>
               </div>
             </div>
             {getPaymentBadge(fine)}
           </div>
 
-          <div className="mt-6 pt-4 border-t border-gray-200/60 dark:border-gray-700/40">
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Total Amount</p>
+          <div className="mt-6 pt-4 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">Total Amount</p>
             <div className="flex items-baseline gap-1">
               <span className={`text-sm font-semibold ${typeConfig.amountColor}`}>{currencySymbol}</span>
               <span className={`text-4xl font-bold tracking-tight ${typeConfig.amountColor}`}>
@@ -1101,15 +1101,15 @@ function FineViewModal({
         {/* Member & Book Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Member Card */}
-          <div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/80 dark:to-gray-800/40 border border-gray-200/60 dark:border-gray-700/40 shadow-sm">
+          <div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/80 dark:to-gray-800/40 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
               <div className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/30">
                 <Receipt className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
               </div>
-              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Member</span>
+              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Member</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 flex-shrink-0 shadow-md ring-2 ring-white dark:ring-gray-700">
+              <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 flex-shrink-0 shadow-md ring-2 ring-white dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20">
                 <Image
                   src={`https://i.pravatar.cc/150?u=${fine.memberId}`}
                   alt={fine.memberName}
@@ -1119,22 +1119,22 @@ function FineViewModal({
                 />
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-gray-900 dark:text-white truncate">{fine.memberName}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">{fine.memberId}</p>
+                <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{fine.memberName}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-mono">{fine.memberId}</p>
               </div>
             </div>
           </div>
 
           {/* Book Card */}
-          <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/60 dark:border-blue-700/30 shadow-sm">
+          <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/60 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/30 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
-              <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <BookOpen className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
+                <BookOpen className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
-              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Book</span>
+              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Book</span>
             </div>
-            <p className="font-semibold text-gray-900 dark:text-white line-clamp-2">{fine.bookTitle}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Loan: {fine.loanId}</p>
+            <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 line-clamp-2">{fine.bookTitle}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">Loan: {fine.loanId}</p>
           </div>
         </div>
 
@@ -1142,31 +1142,31 @@ function FineViewModal({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* Fine Type */}
           <div className={`p-3 rounded-xl ${typeConfig.bgLight} ${typeConfig.border} border`}>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">Type</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5">Type</p>
             <div className="flex items-center gap-1.5">
               {getFineTypeBadge(fine.fineType)}
             </div>
           </div>
 
           {/* Amount */}
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200/60 dark:border-gray-700/40">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">Amount</p>
-            <p className={`text-lg font-bold ${!fine.isPaid ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5">Amount</p>
+            <p className={`text-lg font-bold ${!fine.isPaid ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"}`}>
               {formatCurrency(fine.amount)}
             </p>
           </div>
 
           {/* Created Date */}
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200/60 dark:border-gray-700/40">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">Created</p>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5">Created</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
               {new Date(fine.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </p>
           </div>
 
           {/* Status */}
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200/60 dark:border-gray-700/40">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">Status</p>
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5">Status</p>
             {getPaymentBadge(fine)}
           </div>
         </div>
@@ -1176,26 +1176,26 @@ function FineViewModal({
           <div className="p-4 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/10 border border-green-200/60 dark:border-green-700/30 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <div className="p-1.5 rounded-lg bg-green-100 dark:bg-green-900/30">
-                <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
+                <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
               </div>
-              <span className="text-sm font-semibold text-green-700 dark:text-green-400">Payment Received</span>
+              <span className="text-sm font-semibold text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">Payment Received</span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <p className="text-xs text-green-600/70 dark:text-green-400/60 mb-1">Amount Paid</p>
+                <p className="text-xs text-green-600/70 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400/60 mb-1">Amount Paid</p>
                 <p className="text-base font-bold text-green-700 dark:text-green-300">
                   {formatCurrency(fine.paidAmount)}
                 </p>
               </div>
               {fine.paymentMethod && (
                 <div>
-                  <p className="text-xs text-green-600/70 dark:text-green-400/60 mb-1">Method</p>
+                  <p className="text-xs text-green-600/70 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400/60 mb-1">Method</p>
                   <p className="text-sm font-semibold text-green-700 dark:text-green-300">{fine.paymentMethod}</p>
                 </div>
               )}
               {fine.paidDate && (
                 <div>
-                  <p className="text-xs text-green-600/70 dark:text-green-400/60 mb-1">Date</p>
+                  <p className="text-xs text-green-600/70 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400/60 mb-1">Date</p>
                   <p className="text-sm font-semibold text-green-700 dark:text-green-300">
                     {new Date(fine.paidDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                   </p>
@@ -1203,7 +1203,7 @@ function FineViewModal({
               )}
               {fine.paymentReference && (
                 <div>
-                  <p className="text-xs text-green-600/70 dark:text-green-400/60 mb-1">Reference</p>
+                  <p className="text-xs text-green-600/70 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400/60 mb-1">Reference</p>
                   <p className="text-sm font-mono font-semibold text-green-700 dark:text-green-300">{fine.paymentReference}</p>
                 </div>
               )}
@@ -1242,12 +1242,12 @@ function FineViewModal({
         {!fine.isPaid && (
           <div className="p-4 rounded-xl bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/10 border border-red-200/60 dark:border-red-700/30">
             <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 flex-shrink-0">
-                <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
+              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 flex-shrink-0">
+                <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">Payment Required</p>
-                <p className="text-xs text-red-600/80 dark:text-red-400/70">
+                <p className="text-sm font-semibold text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mb-1">Payment Required</p>
+                <p className="text-xs text-red-600/80 dark:text-red-400 midnight:text-red-400 purple:text-red-400/70">
                   This fine is pending payment. Please collect {formatCurrency(fine.amount)} from the member or waive the fine if applicable.
                 </p>
               </div>
@@ -1379,9 +1379,9 @@ function IssueFineModal({
       <div className="space-y-6">
         {/* Fine Type Selection - Card Style */}
         <div>
-          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-            <div className="w-5 h-5 rounded-md bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-              <Receipt className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-3">
+            <div className="w-5 h-5 rounded-md bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
+              <Receipt className="w-3 h-3 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
             Fine Type
           </label>
@@ -1398,7 +1398,7 @@ function IssueFineModal({
               className={`group relative p-4 rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden ${
                 fineType === "overdue"
                   ? "border-amber-400 dark:border-amber-500 bg-gradient-to-br from-amber-50 via-amber-50/50 to-orange-50/30 dark:from-amber-900/30 dark:via-amber-900/20 dark:to-orange-900/10 shadow-lg shadow-amber-500/10"
-                  : "border-gray-200 dark:border-gray-700 hover:border-amber-300 dark:hover:border-amber-600 bg-white dark:bg-gray-800 hover:shadow-md"
+                  : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-amber-300 dark:hover:border-amber-600 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:shadow-md"
               }`}
             >
               {fineType === "overdue" && (
@@ -1412,25 +1412,25 @@ function IssueFineModal({
                 <div className={`p-3 rounded-xl mb-3 transition-all duration-300 ${
                   fineType === "overdue"
                     ? "bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/30"
-                    : "bg-gray-100 dark:bg-gray-700 group-hover:bg-amber-100 dark:group-hover:bg-amber-900/30"
+                    : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] group-hover:bg-amber-100 dark:group-hover:bg-amber-900/30"
                 }`}>
                   <Clock className={`w-6 h-6 transition-colors ${
                     fineType === "overdue"
                       ? "text-white"
-                      : "text-gray-500 dark:text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-400"
+                      : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-amber-600 dark:group-hover:text-amber-400"
                   }`} />
                 </div>
                 <span className={`text-sm font-bold transition-colors ${
                   fineType === "overdue"
-                    ? "text-amber-700 dark:text-amber-400"
-                    : "text-gray-700 dark:text-gray-300"
+                    ? "text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400"
+                    : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                 }`}>
                   Overdue Fine
                 </span>
                 <span className={`text-xs mt-1 px-2 py-0.5 rounded-full ${
                   fineType === "overdue"
                     ? "bg-amber-200/50 dark:bg-amber-800/30 text-amber-700 dark:text-amber-300"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+                    : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
                 }`}>
                   {currencySymbol}100/day
                 </span>
@@ -1449,7 +1449,7 @@ function IssueFineModal({
               className={`group relative p-4 rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden ${
                 fineType === "lost"
                   ? "border-red-400 dark:border-red-500 bg-gradient-to-br from-red-50 via-red-50/50 to-rose-50/30 dark:from-red-900/30 dark:via-red-900/20 dark:to-rose-900/10 shadow-lg shadow-red-500/10"
-                  : "border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-600 bg-white dark:bg-gray-800 hover:shadow-md"
+                  : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-red-300 dark:hover:border-red-600 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:shadow-md"
               }`}
             >
               {fineType === "lost" && (
@@ -1463,25 +1463,25 @@ function IssueFineModal({
                 <div className={`p-3 rounded-xl mb-3 transition-all duration-300 ${
                   fineType === "lost"
                     ? "bg-gradient-to-br from-red-400 to-rose-500 shadow-lg shadow-red-500/30"
-                    : "bg-gray-100 dark:bg-gray-700 group-hover:bg-red-100 dark:group-hover:bg-red-900/30"
+                    : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] group-hover:bg-red-100 dark:group-hover:bg-red-900/30"
                 }`}>
                   <AlertTriangle className={`w-6 h-6 transition-colors ${
                     fineType === "lost"
                       ? "text-white"
-                      : "text-gray-500 dark:text-gray-400 group-hover:text-red-600 dark:group-hover:text-red-400"
+                      : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-red-600 dark:group-hover:text-red-400"
                   }`} />
                 </div>
                 <span className={`text-sm font-bold transition-colors ${
                   fineType === "lost"
-                    ? "text-red-700 dark:text-red-400"
-                    : "text-gray-700 dark:text-gray-300"
+                    ? "text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
+                    : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                 }`}>
                   Lost Book
                 </span>
                 <span className={`text-xs mt-1 px-2 py-0.5 rounded-full ${
                   fineType === "lost"
                     ? "bg-red-200/50 dark:bg-red-800/30 text-red-700 dark:text-red-300"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+                    : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
                 }`}>
                   2x book price
                 </span>
@@ -1500,7 +1500,7 @@ function IssueFineModal({
               className={`group relative p-4 rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden ${
                 fineType === "damaged"
                   ? "border-orange-400 dark:border-orange-500 bg-gradient-to-br from-orange-50 via-orange-50/50 to-amber-50/30 dark:from-orange-900/30 dark:via-orange-900/20 dark:to-amber-900/10 shadow-lg shadow-orange-500/10"
-                  : "border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600 bg-white dark:bg-gray-800 hover:shadow-md"
+                  : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-orange-300 dark:hover:border-orange-600 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:shadow-md"
               }`}
             >
               {fineType === "damaged" && (
@@ -1514,25 +1514,25 @@ function IssueFineModal({
                 <div className={`p-3 rounded-xl mb-3 transition-all duration-300 ${
                   fineType === "damaged"
                     ? "bg-gradient-to-br from-orange-400 to-amber-500 shadow-lg shadow-orange-500/30"
-                    : "bg-gray-100 dark:bg-gray-700 group-hover:bg-orange-100 dark:group-hover:bg-orange-900/30"
+                    : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] group-hover:bg-orange-100 dark:group-hover:bg-orange-900/30"
                 }`}>
                   <AlertCircle className={`w-6 h-6 transition-colors ${
                     fineType === "damaged"
                       ? "text-white"
-                      : "text-gray-500 dark:text-gray-400 group-hover:text-orange-600 dark:group-hover:text-orange-400"
+                      : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-orange-600 dark:group-hover:text-orange-400"
                   }`} />
                 </div>
                 <span className={`text-sm font-bold transition-colors ${
                   fineType === "damaged"
                     ? "text-orange-700 dark:text-orange-400"
-                    : "text-gray-700 dark:text-gray-300"
+                    : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                 }`}>
                   Damaged Book
                 </span>
                 <span className={`text-xs mt-1 px-2 py-0.5 rounded-full ${
                   fineType === "damaged"
                     ? "bg-orange-200/50 dark:bg-orange-800/30 text-orange-700 dark:text-orange-300"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+                    : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
                 }`}>
                   50% of price
                 </span>
@@ -1585,8 +1585,8 @@ function IssueFineModal({
               })),
             ]}
             placeholder="Select borrower..."
-            iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-            iconColor="text-blue-600 dark:text-blue-400"
+            iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+            iconColor="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
             required
           />
         </div>
@@ -1603,9 +1603,9 @@ function IssueFineModal({
                   onChange={(e) => setAutoCalculate(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-9 h-5 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                <div className="w-9 h-5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
               </div>
-              <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors">Auto-calculate</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors">Auto-calculate</span>
             </label>
           </div>
           <FormInput
@@ -1616,14 +1616,14 @@ function IssueFineModal({
             onChange={setFineAmount}
             placeholder="Enter amount"
             disabled={autoCalculate}
-            leftIcon={<span className="text-sm font-bold text-blue-600 dark:text-blue-400">{currencySymbol}</span>}
-            leftIconBg="bg-blue-100 dark:bg-blue-900/30"
-            iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-            iconColor="text-blue-600 dark:text-blue-400"
+            leftIcon={<span className="text-sm font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">{currencySymbol}</span>}
+            leftIconBg="bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+            iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+            iconColor="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
             required
           />
           {fineType === "overdue" && fineAmount && selectedLoan && (
-            <div className="mt-2 flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 bg-blue-100/50 dark:bg-blue-900/30 rounded-lg px-3 py-2">
+            <div className="mt-2 flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-100/50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 rounded-lg px-3 py-2">
               <Clock className="w-4 h-4" />
               <span className="font-medium">
                 {selectedLoan.daysOverdue} days × {currencySymbol}100 = {currencySymbol}{Number(fineAmount).toLocaleString()}
@@ -1641,8 +1641,8 @@ function IssueFineModal({
           placeholder="Add any notes about this fine..."
           rows={2}
           optional
-          iconBgColor="bg-gray-100 dark:bg-gray-700"
-          iconColor="text-gray-500 dark:text-gray-400"
+          iconBgColor="bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"
+          iconColor="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
         />
 
         {/* Summary Card */}
@@ -1663,37 +1663,37 @@ function IssueFineModal({
                   : "bg-orange-100 dark:bg-orange-900/40"
               }`}>
                 {fineType === "overdue" ? (
-                  <Clock className={`w-6 h-6 text-amber-600 dark:text-amber-400`} />
+                  <Clock className={`w-6 h-6 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400`} />
                 ) : fineType === "lost" ? (
-                  <AlertTriangle className={`w-6 h-6 text-red-600 dark:text-red-400`} />
+                  <AlertTriangle className={`w-6 h-6 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400`} />
                 ) : (
                   <AlertCircle className={`w-6 h-6 text-orange-600 dark:text-orange-400`} />
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className={`text-base font-bold ${
-                  fineType === "overdue" ? "text-amber-700 dark:text-amber-400" :
-                  fineType === "lost" ? "text-red-700 dark:text-red-400" :
+                  fineType === "overdue" ? "text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" :
+                  fineType === "lost" ? "text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400" :
                   "text-orange-700 dark:text-orange-400"
                 }`}>
                   {fineType === "overdue" ? "Overdue Fine" : fineType === "lost" ? "Lost Book Fine" : "Damaged Book Fine"}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
                   {selectedLoan.label} • {selectedLoan.book}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-0.5">
                   Loan #{selectedLoanId}
                 </p>
               </div>
               <div className="text-right">
                 <p className={`text-2xl font-bold ${
-                  fineType === "overdue" ? "text-amber-600 dark:text-amber-400" :
-                  fineType === "lost" ? "text-red-600 dark:text-red-400" :
+                  fineType === "overdue" ? "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" :
+                  fineType === "lost" ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" :
                   "text-orange-600 dark:text-orange-400"
                 }`}>
                   {currencySymbol}{Number(fineAmount).toLocaleString()}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Total Fine</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Total Fine</p>
               </div>
             </div>
           </div>

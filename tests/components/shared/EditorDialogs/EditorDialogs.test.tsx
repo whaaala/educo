@@ -91,7 +91,7 @@ describe("EditorDialog", () => {
   it("has dark mode support on the dialog panel", () => {
     // The dialog panel should have dark mode variants
     expect(source).toContain("dark:border-gray-700");
-    expect(source).toContain("dark:bg-gray-900");
+    expect(source).toContain("dark:bg-[#0f1115]");
     expect(source).toContain("dark:text-gray-100");
   });
 });
@@ -112,7 +112,7 @@ describe("EditorDialogButton", () => {
     );
     expect(source).toContain("rounded-xl");
     expect(source).toContain("hover:bg-gray-50");
-    expect(source).toContain("dark:hover:bg-gray-800");
+    expect(source).toContain("dark:hover:bg-[#22262e]");
     expect(source).toContain("transition-colors");
     expect(source).toContain("cursor-pointer");
   });
@@ -217,8 +217,8 @@ describe("FullscreenFloatingPill", () => {
 
   it("has dark, midnight, and purple theme variants", () => {
     // Glassmorphism pill supports all themes
-    expect(source).toContain("dark:bg-gray-800/80");
-    expect(source).toContain("midnight:bg-[#0b1220]/80");
+    expect(source).toContain("dark:bg-[#1a1d24]/80");
+    expect(source).toContain("midnight:bg-[#0a0e27]/80");
     expect(source).toContain("purple:bg-[#1a0d2e]/80");
   });
 

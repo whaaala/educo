@@ -53,7 +53,7 @@ export default function DocumentViewerModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -65,7 +65,7 @@ export default function DocumentViewerModal({
         />
 
         {/* Document Viewer */}
-        <div className="flex-1 overflow-hidden bg-gray-100 dark:bg-gray-900 midnight:bg-gray-950 purple:bg-gray-950 p-4">
+        <div className="flex-1 overflow-hidden bg-gray-100 dark:bg-[#0f1115] midnight:bg-gray-950 purple:bg-gray-950 p-4">
           {documentUrl && documentType.toLowerCase() === "pdf" ? (
             <iframe
               src={`${documentUrl}#toolbar=0&navpanes=0&scrollbar=1`}
@@ -104,7 +104,7 @@ export default function DocumentViewerModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/30 dark:bg-gray-800/20 midnight:bg-gray-800/20 purple:bg-gray-800/20">
+        <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/30 dark:bg-[#1a1d24]/20 midnight:bg-[#0f1330]/20 purple:bg-[#251340]/20">
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
             <FileText className="w-4 h-4" />
             <span className="font-medium">{documentType.toUpperCase()}</span>
@@ -119,7 +119,7 @@ export default function DocumentViewerModal({
             </button>
             <button
               onClick={onClose}
-              className="px-5 py-2.5 rounded-lg bg-gray-200 dark:bg-gray-700 midnight:bg-gray-700 purple:bg-gray-700 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-300 dark:hover:bg-gray-600 midnight:hover:bg-gray-600 purple:hover:bg-gray-600 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow active:scale-95 cursor-pointer"
+              className="px-5 py-2.5 rounded-lg bg-gray-200 dark:bg-[#22262e] midnight:bg-gray-700 purple:bg-gray-700 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-300 dark:hover:bg-[#2a2d35] midnight:hover:bg-gray-600 purple:hover:bg-gray-600 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow active:scale-95 cursor-pointer"
             >
               Close
             </button>

@@ -263,7 +263,7 @@ export default function BulkImportPage() {
       label: REQUIRED_FIELDS.concat(OPTIONAL_FIELDS).find((f) => f.field === mapping.systemField)?.label || mapping.systemField,
       sortable: false,
       render: (row: ImportedRow) => (
-        <span className={row._errors.some((e) => e.field === mapping.systemField) ? "text-red-600 dark:text-red-400" : ""}>
+        <span className={row._errors.some((e) => e.field === mapping.systemField) ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : ""}>
           {row[mapping.systemField] || "-"}
         </span>
       ),
@@ -276,13 +276,13 @@ export default function BulkImportPage() {
         <div className="flex items-center gap-2">
           {row._errors.length === 0 ? (
             <>
-              <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
-              <span className="text-xs text-green-600 dark:text-green-400">Valid</span>
+              <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
+              <span className="text-xs text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">Valid</span>
             </>
           ) : (
             <>
-              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
-              <span className="text-xs text-red-600 dark:text-red-400">{row._errors.length} errors</span>
+              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
+              <span className="text-xs text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">{row._errors.length} errors</span>
             </>
           )}
         </div>
@@ -540,7 +540,7 @@ export default function BulkImportPage() {
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                 </div>
                 <div>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">Valid Records</p>
@@ -553,8 +553,8 @@ export default function BulkImportPage() {
 
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                  <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                <div className="w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 flex items-center justify-center">
+                  <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
                 </div>
                 <div>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">Invalid Records</p>
@@ -568,7 +568,7 @@ export default function BulkImportPage() {
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                  <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                  <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
                 </div>
                 <div>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">Total Errors</p>
@@ -590,9 +590,9 @@ export default function BulkImportPage() {
                 {validationErrors.slice(0, 50).map((error, index) => (
                   <div
                     key={index}
-                    className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800"
+                    className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800"
                   >
-                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
                       <p className="text-sm font-medium text-red-900 dark:text-red-100">
                         Row {error.row}: {error.field}
@@ -664,7 +664,7 @@ export default function BulkImportPage() {
                   {successCount}
                 </p>
               </div>
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <div className="p-4 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 rounded-lg">
                 <p className="text-sm text-red-700 dark:text-red-300">Failed</p>
                 <p className="text-2xl font-bold text-red-900 dark:text-red-100">
                   {errorCount}
@@ -679,7 +679,7 @@ export default function BulkImportPage() {
         <div className="bg-white dark:bg-neutral-800 rounded-lg p-12 shadow-sm">
           <div className="max-w-2xl mx-auto text-center space-y-6">
             <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-              <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
+              <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
             </div>
             <div>
               <h2 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
@@ -697,7 +697,7 @@ export default function BulkImportPage() {
                   {successCount}
                 </p>
               </div>
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <div className="p-4 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 rounded-lg">
                 <p className="text-sm text-red-700 dark:text-red-300">Failed</p>
                 <p className="text-3xl font-bold text-red-900 dark:text-red-100">
                   {errorCount}

@@ -27,7 +27,7 @@ export default function ExamResultsSection({
   onViewResult,
 }: ExamResultsSectionProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
+    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
       {/* Header */}
       <div className="p-4 border-b border-gray-100 dark:border-gray-700/50 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -83,11 +83,11 @@ export default function ExamResultsSection({
               results.map((result) => (
                 <tr
                   key={result.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
+                  className="hover:bg-gray-50 dark:hover:bg-[#22262e]/30 transition-colors"
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="relative w-9 h-9 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-600 flex-shrink-0">
+                      <div className="relative w-9 h-9 rounded-full overflow-hidden bg-gray-200 dark:bg-[#2a2d35] flex-shrink-0">
                         <Image
                           src={result.studentPhoto}
                           alt={result.studentName}
@@ -108,7 +108,7 @@ export default function ExamResultsSection({
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div className="w-16 h-2 bg-gray-200 dark:bg-[#22262e] rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full transition-all duration-500 ${
                             result.percentage >= 70
@@ -151,7 +151,7 @@ export default function ExamResultsSection({
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
-                        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                         title="More Options"
                       >
                         <MoreVertical className="w-4 h-4" />

@@ -194,9 +194,9 @@ function getEventTypeInfo(type: EventType) {
       return {
         label: "Academic",
         icon: GraduationCap,
-        bgClass: "bg-blue-50 dark:bg-blue-900/20",
-        textClass: "text-blue-600 dark:text-blue-400",
-        borderClass: "border-blue-200 dark:border-blue-700/30",
+        bgClass: "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20",
+        textClass: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
+        borderClass: "border-blue-200 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/30",
       };
     case "sports":
       return {
@@ -219,7 +219,7 @@ function getEventTypeInfo(type: EventType) {
         label: "Meeting",
         icon: Users,
         bgClass: "bg-amber-50 dark:bg-amber-900/20",
-        textClass: "text-amber-600 dark:text-amber-400",
+        textClass: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
         borderClass: "border-amber-200 dark:border-amber-700/30",
       };
     case "holiday":
@@ -234,8 +234,8 @@ function getEventTypeInfo(type: EventType) {
       return {
         label: "Examination",
         icon: FileText,
-        bgClass: "bg-red-50 dark:bg-red-900/20",
-        textClass: "text-red-600 dark:text-red-400",
+        bgClass: "bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20",
+        textClass: "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
         borderClass: "border-red-200 dark:border-red-700/30",
       };
   }
@@ -244,11 +244,11 @@ function getEventTypeInfo(type: EventType) {
 function getEventStatusInfo(status: EventStatus) {
   switch (status) {
     case "upcoming":
-      return { label: "Upcoming", bgClass: "bg-blue-100 dark:bg-blue-900/40", textClass: "text-blue-700 dark:text-blue-300" };
+      return { label: "Upcoming", bgClass: "bg-blue-100 dark:bg-blue-900/40", textClass: "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300" };
     case "ongoing":
       return { label: "Ongoing", bgClass: "bg-green-100 dark:bg-green-900/40", textClass: "text-green-700 dark:text-green-300" };
     case "completed":
-      return { label: "Completed", bgClass: "bg-gray-100 dark:bg-gray-700/40", textClass: "text-gray-600 dark:text-gray-400" };
+      return { label: "Completed", bgClass: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/40", textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" };
     case "cancelled":
       return { label: "Cancelled", bgClass: "bg-red-100 dark:bg-red-900/40", textClass: "text-red-700 dark:text-red-300" };
   }
@@ -267,7 +267,7 @@ function EventGridCard({ item }: GridCardProps<SchoolEvent>) {
   return (
     <Link
       href={`/parents/events/${event.id}`}
-      className={`group relative bg-white dark:bg-gray-800 rounded-2xl border ${typeInfo.borderClass} shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden`}
+      className={`group relative bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border ${typeInfo.borderClass} shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden`}
     >
       <div className={`absolute inset-0 opacity-[0.03] bg-gradient-to-br ${typeInfo.bgClass}`} />
 
@@ -317,11 +317,11 @@ function EventGridCard({ item }: GridCardProps<SchoolEvent>) {
       </div>
 
       <div className="relative p-4">
-        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-3 leading-relaxed">
+        <p className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 line-clamp-2 mb-3 leading-relaxed">
           {event.description}
         </p>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
           {event.time && (
             <span className="inline-flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5" />
@@ -377,17 +377,17 @@ export default function ParentEventsPage() {
           const TypeIcon = typeInfo.icon;
           return (
             <div className="flex items-center gap-3">
-              <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700">
+              <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]">
                 <Image src={event.image} alt={event.title} fill className="object-cover" unoptimized />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                     {event.title}
                   </span>
                   {event.isImportant && <Star className="w-4 h-4 text-red-500" />}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
                   <span className={`inline-flex items-center gap-1 ${typeInfo.textClass}`}>
                     <TypeIcon className="w-3.5 h-3.5" />
                     {typeInfo.label}
@@ -410,10 +410,10 @@ export default function ParentEventsPage() {
         sortable: true,
         sortValue: (e) => new Date(e.date).getTime(),
         render: (event) => (
-          <div className="text-sm text-gray-700 dark:text-gray-300">
+          <div className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
             <div className="font-medium">{formatDate(event.date)}</div>
             {event.endDate ? (
-              <div className="text-xs text-gray-500 dark:text-gray-400">to {formatDate(event.endDate)}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">to {formatDate(event.endDate)}</div>
             ) : null}
           </div>
         ),
@@ -443,7 +443,7 @@ export default function ParentEventsPage() {
         render: (event) => (
           <Link
             href={`/parents/events/${event.id}`}
-            className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-blue-700 dark:text-blue-300 text-xs font-semibold"
+            className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 text-xs font-semibold"
           >
             View
           </Link>

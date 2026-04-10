@@ -118,7 +118,7 @@ function getPreviewConfig(category: FileCategory): { bg: string; icon: React.Rea
       return {
         bg: "bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/20",
         icon: (
-          <div className="relative w-12 h-9 rounded-md bg-white dark:bg-gray-800 shadow-sm overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
+          <div className="relative w-12 h-9 rounded-md bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm overflow-hidden border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
             <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-300" />
             <div className="absolute bottom-0 left-0 right-0 h-4">
               <svg viewBox="0 0 48 16" className="w-full h-full text-green-400/40 dark:text-green-600/30"><path d="M0 16 L16 6 L28 12 L48 2 L48 16 Z" fill="currentColor"/></svg>
@@ -132,14 +132,14 @@ function getPreviewConfig(category: FileCategory): { bg: string; icon: React.Rea
         icon: (
           <div className="grid grid-cols-3 gap-[1.5px] w-11 bg-green-200/50 dark:bg-green-700/20 rounded overflow-hidden">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className={`h-2.5 ${i < 3 ? "bg-green-500/25" : "bg-white dark:bg-gray-800/50"}`} />
+              <div key={i} className={`h-2.5 ${i < 3 ? "bg-green-500/25" : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50"}`} />
             ))}
           </div>
         ),
       };
     case "document":
       return {
-        bg: "bg-white dark:bg-gray-900",
+        bg: "bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]",
         icon: (
           <div className="flex flex-col gap-[5px] w-[70%] py-2">
             <div className="h-2 w-[60%] rounded-sm bg-gray-800/10 dark:bg-gray-400/10" />
@@ -156,9 +156,9 @@ function getPreviewConfig(category: FileCategory): { bg: string; icon: React.Rea
       };
     case "presentation":
       return {
-        bg: "bg-white dark:bg-gray-900",
+        bg: "bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]",
         icon: (
-          <div className="w-[75%] aspect-video rounded bg-gray-100 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/30 flex flex-col items-center justify-center gap-1 p-2">
+          <div className="w-[75%] aspect-video rounded bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 flex flex-col items-center justify-center gap-1 p-2">
             <div className="h-2 w-[50%] rounded-sm bg-gray-800/10 dark:bg-gray-400/10" />
             <div className="h-[3px] w-[35%] rounded-sm bg-gray-400/15 dark:bg-gray-500/10" />
           </div>
@@ -167,12 +167,12 @@ function getPreviewConfig(category: FileCategory): { bg: string; icon: React.Rea
     case "archive":
       return {
         bg: "bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-800/20 dark:to-slate-800/15",
-        icon: <FileArchive className="w-8 h-8 text-gray-300 dark:text-gray-600" />,
+        icon: <FileArchive className="w-8 h-8 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500" />,
       };
     default:
       return {
-        bg: "bg-gray-50 dark:bg-gray-900/30",
-        icon: <File className="w-8 h-8 text-gray-300 dark:text-gray-600" />,
+        bg: "bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30",
+        icon: <File className="w-8 h-8 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500" />,
       };
   }
 }
@@ -218,11 +218,11 @@ export default function SuggestedFiles({
           >
             {/* Card — title bar + preview + footer all inside */}
             <div
-              className="rounded-xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-300 group-hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] group-hover:border-blue-300 dark:group-hover:border-blue-500/30 overflow-hidden"
+              className="rounded-xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-300 group-hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] group-hover:border-blue-300 dark:group-hover:border-blue-500/30 overflow-hidden"
               style={{ borderTop: `3px solid ${getTypeColor(file.sourceType)}` }}
             >
               {/* Title bar — type icon + file name with tooltip */}
-              <div className="flex items-center gap-2 px-3 py-2.5 bg-white dark:bg-[#1e2028] midnight:bg-[#111827] purple:bg-[#1e1030]">
+              <div className="flex items-center gap-2 px-3 py-2.5 bg-white dark:bg-[#1e2028] midnight:bg-[#0a0e27] purple:bg-[#1e1030]">
                 {getTypeIcon(file.sourceType, "w-[16px] h-[16px] flex-shrink-0")}
                 <div className="flex-1 min-w-0 overflow-hidden">
                   <Tooltip content={file.name} block>
@@ -234,12 +234,12 @@ export default function SuggestedFiles({
               </div>
 
               {/* Preview area — real content or fallback icon */}
-              <div className="h-[140px] bg-white dark:bg-gray-900 midnight:bg-[#0d1321] purple:bg-[#150d20] relative overflow-hidden">
+              <div className="h-[140px] bg-white dark:bg-[#0f1115] midnight:bg-[#0d1321] purple:bg-[#150d20] relative overflow-hidden">
                 {file.content ? (
                   <>
                     <div className="w-[420px] origin-top-left pointer-events-none select-none" style={{ transform: "scale(0.28)" }}>
                       <div
-                        className="px-6 pt-4 pb-8 text-[13px] leading-[1.6] text-gray-800 dark:text-gray-200 [&_h1]:text-[22px] [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:leading-tight [&_h2]:text-[16px] [&_h2]:font-bold [&_h2]:mt-3 [&_h2]:mb-1 [&_h3]:text-[14px] [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1 [&_p]:my-1 [&_ul]:pl-5 [&_ul]:my-1 [&_ul]:list-disc [&_li]:my-0.5 [&_hr]:my-2 [&_hr]:border-gray-200 [&_strong]:font-semibold"
+                        className="px-6 pt-4 pb-8 text-[13px] leading-[1.6] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 [&_h1]:text-[22px] [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:leading-tight [&_h2]:text-[16px] [&_h2]:font-bold [&_h2]:mt-3 [&_h2]:mb-1 [&_h3]:text-[14px] [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1 [&_p]:my-1 [&_ul]:pl-5 [&_ul]:my-1 [&_ul]:list-disc [&_li]:my-0.5 [&_hr]:my-2 [&_hr]:border-gray-200 [&_strong]:font-semibold"
                         dangerouslySetInnerHTML={{ __html: file.content }}
                       />
                     </div>
@@ -258,8 +258,8 @@ export default function SuggestedFiles({
               </div>
 
               {/* Footer — time + owner */}
-              <div className="flex items-center justify-between px-3 py-2.5 bg-white dark:bg-[#1e2028] midnight:bg-[#111827] purple:bg-[#1e1030] border-t border-gray-100/80 dark:border-gray-800/60">
-                <span className="text-[10px] text-gray-400 dark:text-gray-500">{timeAgo(file.updatedAt)}</span>
+              <div className="flex items-center justify-between px-3 py-2.5 bg-white dark:bg-[#1e2028] midnight:bg-[#0a0e27] purple:bg-[#1e1030] border-t border-gray-100/80 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/60">
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{timeAgo(file.updatedAt)}</span>
                 {file.owner && (
                   <AvatarHover src={file.ownerAvatar} name={file.owner} size="w-5 h-5" initialSize="text-[8px]" />
                 )}

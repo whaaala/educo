@@ -221,7 +221,7 @@ function CustomHexRow({ color, onSelect }: { color: string; onSelect: (c: string
   }, [color, isFocused]);
 
   return (
-    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/50" onMouseDown={(e) => e.stopPropagation()}>
+    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50" onMouseDown={(e) => e.stopPropagation()}>
       <label className="relative cursor-pointer">
         <input
           type="color"
@@ -232,11 +232,11 @@ function CustomHexRow({ color, onSelect }: { color: string; onSelect: (c: string
           onBlur={() => { setTimeout(() => { _nativeColorPickerOpen = false; }, 300); }}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
-        <div className="w-7 h-7 rounded-lg border border-gray-200 dark:border-gray-600 shadow-inner" style={{ background: color.startsWith("gradient:") ? colorToCSS(color) : color }}>
+        <div className="w-7 h-7 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 shadow-inner" style={{ background: color.startsWith("gradient:") ? colorToCSS(color) : color }}>
           <div className="w-full h-full rounded-lg" style={{ background: "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)", opacity: 0.3 }} />
         </div>
       </label>
-      <span className="text-[10px] text-gray-400 dark:text-gray-500">Custom</span>
+      <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Custom</span>
       <input
         type="text"
         value={hexText}
@@ -252,7 +252,7 @@ function CustomHexRow({ color, onSelect }: { color: string; onSelect: (c: string
             onSelect(hexText);
           }
         }}
-        className="flex-1 px-2 py-1 text-[11px] font-mono rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 outline-none focus:border-blue-400"
+        className="flex-1 px-2 py-1 text-[11px] font-mono rounded-md border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 outline-none focus:border-blue-400"
         maxLength={7}
         spellCheck={false}
       />
@@ -299,8 +299,8 @@ export function ColorGrid({
             onClick={onNoFill}
             className={`${size} rounded-md border cursor-pointer hover:scale-110 transition-transform flex items-center justify-center ${
               noFillSelected
-                ? "ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-gray-800"
-                : "border-gray-200 dark:border-gray-600"
+                ? "ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-gray-800 midnight:ring-offset-[#111827] purple:ring-offset-[#2a1447]"
+                : "border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
             }`}
             style={{ backgroundColor: "transparent" }}
             title="No fill"
@@ -316,8 +316,8 @@ export function ColorGrid({
             onClick={() => onSelect(c)}
             className={`${size} rounded-md border cursor-pointer hover:scale-110 transition-transform ${
               selectedColor === c
-                ? "ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-gray-800"
-                : "border-gray-200 dark:border-gray-600"
+                ? "ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-gray-800 midnight:ring-offset-[#111827] purple:ring-offset-[#2a1447]"
+                : "border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
             }`}
             style={{ background: colorToCSS(c) }}
           />
@@ -381,8 +381,8 @@ export function TabbedColorPalette({
             onClick={() => setTab(t)}
             className={`flex-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-colors cursor-pointer capitalize ${
               tab === t
-                ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400"
-                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
             }`}
           >
             {t}
@@ -469,7 +469,7 @@ export function ColorPickerPopover({
       <div onClick={() => setIsOpen(!isOpen)}>{children}</div>
       {isOpen && (
         <div
-          className={`absolute ${align === "right" ? "right-0" : "left-0"} top-full mt-1 z-[80] p-2 bg-white dark:bg-gray-800 midnight:bg-[#111827] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-lg shadow-xl`}
+          className={`absolute ${align === "right" ? "right-0" : "left-0"} top-full mt-1 z-[80] p-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-lg shadow-xl`}
           style={{ width }}
         >
           {label && (

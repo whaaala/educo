@@ -601,7 +601,7 @@ export default function ParentFeesPage() {
       render: (fee) => (
         <div className="flex items-center gap-2">
           <div className="relative cursor-pointer group/avatar flex-shrink-0">
-            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]">
+            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]">
               <Image
                 src={`https://i.pravatar.cc/150?u=${fee.childId}`}
                 alt={fee.childName}
@@ -773,7 +773,7 @@ export default function ParentFeesPage() {
       }
     >
       {/* Need Help? Quick Actions */}
-      <div className="mt-6 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-4 sm:p-6">
+      <div className="mt-6 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-4 sm:p-6">
         <div className="flex items-start gap-3 mb-4 sm:mb-5">
           <div className="p-2 sm:p-2.5 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 midnight:from-gray-800 midnight:to-gray-700 purple:from-gray-800 purple:to-gray-700">
             <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 dark:text-gray-300 midnight:text-cyan-400 purple:text-pink-400" />

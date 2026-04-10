@@ -40,7 +40,7 @@ export default function WhiteboardBottomBar({
   const zoomPercent = Math.round(viewport.zoom * 100);
 
   return (
-    <div className="flex items-center justify-between px-3 py-1.5 bg-white dark:bg-gray-800 midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+    <div className="flex items-center justify-between px-3 py-1.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
       {/* Undo / Redo */}
       <div className="flex items-center gap-1">
         {!readOnly && (
@@ -71,7 +71,7 @@ export default function WhiteboardBottomBar({
         />
         <button
           onClick={onFitToScreen}
-          className="px-2 py-1 text-[10px] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded transition-colors cursor-pointer"
+          className="px-2 py-1 text-[10px] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded transition-colors cursor-pointer"
           title="Fit to screen"
         >
           {zoomPercent}%
@@ -102,14 +102,14 @@ export default function WhiteboardBottomBar({
             {showClearConfirm && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowClearConfirm(false)} />
-                <div className="absolute bottom-full right-0 mb-2 z-50 p-3 bg-white dark:bg-gray-800 midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-150 min-w-[180px]">
+                <div className="absolute bottom-full right-0 mb-2 z-50 p-3 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-150 min-w-[180px]">
                   <p className="text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2">
                     Clear all elements?
                   </p>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setShowClearConfirm(false)}
-                      className="flex-1 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+                      className="flex-1 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-[#22262e] rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a2d35] transition-colors cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -155,7 +155,7 @@ function BarButton({
           ? "opacity-30 cursor-not-allowed"
           : danger
           ? "text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20"
-          : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+          : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
       }`}
       title={title}
     >

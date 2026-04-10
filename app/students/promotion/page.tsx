@@ -296,14 +296,14 @@ export default function PromotionPage() {
         <div className="flex items-center gap-2">
           {record.status === "success" && (
             <>
-              <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
-              <span className="text-xs text-green-600 dark:text-green-400">Success</span>
+              <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
+              <span className="text-xs text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">Success</span>
             </>
           )}
           {record.status === "failed" && (
             <>
-              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
-              <span className="text-xs text-red-600 dark:text-red-400">Failed</span>
+              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
+              <span className="text-xs text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">Failed</span>
             </>
           )}
           {record.status === "pending" && (
@@ -640,7 +640,7 @@ export default function PromotionPage() {
         <div className="bg-white dark:bg-neutral-800 rounded-lg p-12 shadow-sm">
           <div className="max-w-2xl mx-auto text-center space-y-6">
             <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-              <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
+              <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
             </div>
             <div>
               <h2 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
@@ -658,7 +658,7 @@ export default function PromotionPage() {
                   {promotionRecords.filter((r) => r.status === "success").length}
                 </p>
               </div>
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <div className="p-4 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 rounded-lg">
                 <p className="text-sm text-red-700 dark:text-red-300">Failed</p>
                 <p className="text-3xl font-bold text-red-900 dark:text-red-100">
                   {promotionRecords.filter((r) => r.status === "failed").length}

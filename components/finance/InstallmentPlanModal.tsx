@@ -837,7 +837,7 @@ export default function InstallmentPlanModal({
       <button
         type="button"
         onClick={handleClose}
-        className="w-full sm:w-auto px-6 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 midnight:bg-cyan-900/20 midnight:hover:bg-cyan-900/30 purple:bg-pink-900/20 purple:hover:bg-pink-900/30 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 rounded-lg text-sm font-medium transition-all cursor-pointer"
+        className="w-full sm:w-auto px-6 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-[#22262e] dark:hover:bg-[#2a2d35] midnight:bg-cyan-900/20 midnight:hover:bg-cyan-900/30 purple:bg-pink-900/20 purple:hover:bg-pink-900/30 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 rounded-lg text-sm font-medium transition-all cursor-pointer"
       >
         Cancel
       </button>
@@ -943,7 +943,7 @@ export default function InstallmentPlanModal({
                         : plan.color === "green"
                         ? "border-green-500 bg-green-50 dark:bg-green-900/20 midnight:bg-green-900/20 purple:bg-green-900/20"
                         : "border-purple-500 bg-purple-50 dark:bg-purple-900/20 midnight:bg-purple-900/20 purple:bg-pink-900/20"
-                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900"
+                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]"
                   }`}
                 >
                   {/* Badge */}
@@ -975,7 +975,7 @@ export default function InstallmentPlanModal({
                         : plan.color === "green"
                         ? "bg-green-500 text-white"
                         : "bg-purple-500 text-white"
-                      : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 group-hover:bg-gray-200 dark:group-hover:bg-gray-600"
+                      : "bg-gray-100 dark:bg-[#22262e] text-gray-600 dark:text-gray-400 group-hover:bg-gray-200 dark:group-hover:bg-gray-600"
                   }`}>
                     <Icon className="w-5 h-5" />
                   </div>
@@ -1054,7 +1054,7 @@ export default function InstallmentPlanModal({
               />
 
               {/* Configuration Mode Toggle */}
-              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700">
+              <div className="p-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl border border-gray-200 dark:border-gray-700">
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                   Configuration Mode
                 </p>
@@ -1065,7 +1065,7 @@ export default function InstallmentPlanModal({
                     className={`flex-1 min-w-[140px] px-4 py-3 rounded-lg border-2 font-medium text-sm transition-all cursor-pointer ${
                       formData.termConfigMode === "single"
                         ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                        : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-blue-300"
+                        : "border-gray-200 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-600 dark:text-gray-400 hover:border-blue-300"
                     }`}
                   >
                     <div className="flex items-center justify-center gap-2">
@@ -1082,7 +1082,7 @@ export default function InstallmentPlanModal({
                     className={`flex-1 min-w-[140px] px-4 py-3 rounded-lg border-2 font-medium text-sm transition-all cursor-pointer ${
                       formData.termConfigMode === "individual"
                         ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                        : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-blue-300"
+                        : "border-gray-200 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-600 dark:text-gray-400 hover:border-blue-300"
                     }`}
                   >
                     <div className="flex items-center justify-center gap-2">
@@ -1199,7 +1199,7 @@ export default function InstallmentPlanModal({
                         className={`p-4 rounded-xl border-2 transition-all ${
                           termConfig.enabled
                             ? "border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-900/10"
-                            : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 opacity-60"
+                            : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1a1d24]/50 opacity-60"
                         }`}
                       >
                         {/* Term Header with Toggle */}
@@ -1211,7 +1211,7 @@ export default function InstallmentPlanModal({
                               className={`w-10 h-6 rounded-full transition-all cursor-pointer relative ${
                                 termConfig.enabled
                                   ? "bg-blue-500 dark:bg-blue-600"
-                                  : "bg-gray-300 dark:bg-gray-600"
+                                  : "bg-gray-300 dark:bg-[#2a2d35]"
                               }`}
                             >
                               <span
@@ -1269,7 +1269,7 @@ export default function InstallmentPlanModal({
                                 {termConfig.installmentDueDates.map((dueDateConfig, dueDateIndex) => (
                                   <div
                                     key={dueDateIndex}
-                                    className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+                                    className="p-3 bg-white dark:bg-[#1a1d24] rounded-lg border border-gray-200 dark:border-gray-700"
                                   >
                                     <div className="flex items-center gap-2 mb-2">
                                       <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center justify-center">
@@ -1283,7 +1283,7 @@ export default function InstallmentPlanModal({
                                       type="date"
                                       value={dueDateConfig.dueDate}
                                       onChange={(e) => updateInstallmentDueDate(index, dueDateIndex, e.target.value)}
-                                      className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all text-gray-900 dark:text-white"
+                                      className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all text-gray-900 dark:text-white"
                                       required
                                     />
                                     {termConfig.amount && (
@@ -1330,14 +1330,14 @@ export default function InstallmentPlanModal({
                       className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all cursor-pointer text-left ${
                         isSelected
                           ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                          : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-green-300 dark:hover:border-green-700"
+                          : "border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1d24] hover:border-green-300 dark:hover:border-green-700"
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
                           isSelected
                             ? "bg-green-500 text-white"
-                            : "bg-gray-200 dark:bg-gray-700"
+                            : "bg-gray-200 dark:bg-[#22262e]"
                         }`}>
                           {isSelected && <Check className="w-3 h-3" />}
                         </div>
@@ -1441,7 +1441,7 @@ export default function InstallmentPlanModal({
                       className={`px-4 py-2.5 rounded-lg border-2 font-medium text-sm transition-all cursor-pointer ${
                         isSelected
                           ? "border-blue-500 bg-blue-500 text-white dark:bg-blue-600 dark:border-blue-600"
-                          : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-blue-300 dark:hover:border-blue-700"
+                          : "border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1d24] text-gray-700 dark:text-gray-300 hover:border-blue-300 dark:hover:border-blue-700"
                       }`}
                     >
                       {isSelected && <Check className="w-4 h-4 inline mr-2" />}
@@ -1476,14 +1476,14 @@ export default function InstallmentPlanModal({
                         className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all cursor-pointer text-left ${
                           isSelected
                             ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-green-300 dark:hover:border-green-700"
+                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1d24] hover:border-green-300 dark:hover:border-green-700"
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
                             isSelected
                               ? "bg-green-500 text-white"
-                              : "bg-gray-200 dark:bg-gray-700"
+                              : "bg-gray-200 dark:bg-[#22262e]"
                           }`}>
                             {isSelected && <Check className="w-3 h-3" />}
                           </div>
@@ -1573,7 +1573,7 @@ export default function InstallmentPlanModal({
                   {formData.customInstallments.map((installment, index) => (
                     <div
                       key={index}
-                      className="p-4 bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 animate-in fade-in slide-in-from-top-2 duration-300"
+                      className="p-4 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 animate-in fade-in slide-in-from-top-2 duration-300"
                     >
                       <div className="flex items-center justify-between mb-3">
                         <h5 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -1668,13 +1668,13 @@ export default function InstallmentPlanModal({
                 return (
                   <div
                     key={item.sequence}
-                    className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg"
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                         hasOverride
                           ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                          : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300"
                       }`}>
                         {item.sequence}
                       </div>

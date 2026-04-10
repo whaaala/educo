@@ -63,9 +63,9 @@ export default function PerformanceStatusBadge({ status, size = "md" }: Performa
         return {
           label: status,
           icon: Clock,
-          bgClass: "bg-gray-50 dark:bg-gray-900/20 midnight:bg-gray-900/10 purple:bg-gray-900/10",
+          bgClass: "bg-gray-50 dark:bg-[#0f1115]/20 midnight:bg-[#0a0e27]/10 purple:bg-[#1a0b2e]/10",
           textClass: "text-gray-700 dark:text-gray-300 midnight:text-gray-400 purple:text-gray-400",
-          borderClass: "border-gray-200 dark:border-gray-800/30 midnight:border-gray-700/30 purple:border-gray-700/30",
+          borderClass: "border-gray-200 dark:border-[#1a1d24]/30 midnight:border-gray-700/30 purple:border-gray-700/30",
           iconClass: "text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400",
         };
     }

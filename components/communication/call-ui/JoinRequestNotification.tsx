@@ -34,7 +34,7 @@ export function JoinRequestNotification({
     <div
       className={cn(
         "flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3",
-        "bg-white dark:bg-gray-800 rounded-full shadow-xl",
+        "bg-white dark:bg-[#1a1d24] rounded-full shadow-xl",
         "border border-gray-200 dark:border-gray-700",
         "animate-in slide-in-from-top-4 duration-300",
         className

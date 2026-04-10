@@ -235,7 +235,7 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
 
   if (filteredRecords.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl p-8 sm:p-12 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm text-center animate-in fade-in duration-300">
+      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-8 sm:p-12 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm text-center animate-in fade-in duration-300">
         <div className="text-gray-400 dark:text-gray-500 mb-4">
           <DollarSign className="mx-auto h-12 w-12" />
         </div>
@@ -263,7 +263,7 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
+            className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
           />
         </div>
       </div>
@@ -274,7 +274,7 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
           {filteredRecords.map((record, index) => (
             <div
               key={record.id}
-              className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-200 animate-in slide-in-from-right duration-300"
+              className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-200 animate-in slide-in-from-right duration-300"
               style={{ animationDelay: `${index * 50}ms` }}
             >
               {/* Fee Details */}
@@ -342,7 +342,7 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
       <div className="hidden lg:block">
         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 transition-colors duration-200">
           <div className="inline-block min-w-full align-middle">
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 midnight:divide-cyan-500/10 purple:divide-pink-500/10">
                 <thead className="bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-gray-800 midnight:to-gray-800/50 purple:from-gray-800 purple:to-gray-800/50">
                   <tr>
@@ -369,11 +369,11 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700 midnight:divide-cyan-500/10 purple:divide-pink-500/10">
+                <tbody className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] divide-y divide-gray-200 dark:divide-gray-700 midnight:divide-cyan-500/10 purple:divide-pink-500/10">
                   {filteredRecords.map((record, index) => (
                     <tr
                       key={record.id}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all duration-200 animate-in slide-in-from-bottom duration-300"
+                      className="hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all duration-200 animate-in slide-in-from-bottom duration-300"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       {/* Fee Details */}

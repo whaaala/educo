@@ -27,10 +27,10 @@ export default function TenantsPage() {
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      Active: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-      Inactive: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
-      Suspended: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-      Trial: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+      Active: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
+      Inactive: "bg-gray-100 text-gray-800 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
+      Suspended: "bg-red-100 text-red-800 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
+      Trial: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
     };
 
     return (
@@ -156,21 +156,21 @@ export default function TenantsPage() {
           <div className="flex items-center justify-end gap-2">
             <button
               onClick={() => router.push(`/admin/tenants/${tenant.id}`)}
-              className="p-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+              className="p-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
               title="View Details"
             >
               <Eye className="w-4 h-4" />
             </button>
             <button
               onClick={() => router.push(`/admin/tenants/${tenant.id}/edit`)}
-              className="p-2 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+              className="p-2 text-green-600 hover:text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors"
               title="Edit"
             >
               <Edit className="w-4 h-4" />
             </button>
             <button
               onClick={() => requestDelete(tenant)}
-              className="p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+              className="p-2 text-red-600 hover:text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
               title="Delete"
             >
               <Trash2 className="w-4 h-4" />

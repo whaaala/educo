@@ -596,7 +596,7 @@ export default function FeesManagement({
       rose: "bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800/50",
       cyan: "bg-cyan-50 dark:bg-cyan-950/20 text-cyan-700 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800/50",
       orange: "bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800/50",
-      gray: "bg-gray-50 dark:bg-gray-800/20 text-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-700/50",
+      gray: "bg-gray-50 dark:bg-[#1a1d24]/20 text-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-700/50",
       violet: "bg-violet-50 dark:bg-violet-950/20 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-800/50",
       emerald: "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50",
       sky: "bg-sky-50 dark:bg-sky-950/20 text-sky-700 dark:text-sky-400 border-sky-200 dark:border-sky-800/50",
@@ -629,7 +629,7 @@ export default function FeesManagement({
       rose: "bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800/50",
       cyan: "bg-cyan-50 dark:bg-cyan-950/20 text-cyan-700 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800/50",
       orange: "bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800/50",
-      gray: "bg-gray-50 dark:bg-gray-800/20 text-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-700/50",
+      gray: "bg-gray-50 dark:bg-[#1a1d24]/20 text-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-700/50",
       violet: "bg-violet-50 dark:bg-violet-950/20 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-800/50",
       emerald: "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50",
       sky: "bg-sky-50 dark:bg-sky-950/20 text-sky-700 dark:text-sky-400 border-sky-200 dark:border-sky-800/50",
@@ -666,7 +666,7 @@ export default function FeesManagement({
       key: "feeType",
       label: "Fee Details",
       sortable: true,
-      className: "text-left sticky left-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 z-10 after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gradient-to-b after:from-transparent after:via-gray-200 after:to-transparent dark:after:via-gray-700",
+      className: "text-left sticky left-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] z-10 after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gradient-to-b after:from-transparent after:via-gray-200 after:to-transparent dark:after:via-gray-700",
       render: (row) => {
         const content = (
           <div className="flex flex-col gap-1 pr-4">

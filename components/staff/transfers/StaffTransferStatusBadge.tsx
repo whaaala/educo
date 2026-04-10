@@ -37,7 +37,7 @@ export default function StaffTransferStatusBadge({ status, size = "md" }: StaffT
     },
     cancelled: {
       label: "Cancelled",
-      className: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300 midnight:bg-gray-900/20 midnight:text-gray-400 purple:bg-gray-900/20 purple:text-gray-400 border border-gray-200 dark:border-gray-800/50 midnight:border-gray-700/30 purple:border-gray-700/30",
+      className: "bg-gray-100 text-gray-800 dark:bg-[#0f1115]/30 dark:text-gray-300 midnight:bg-[#0a0e27]/20 midnight:text-gray-400 purple:bg-[#1a0b2e]/20 purple:text-gray-400 border border-gray-200 dark:border-[#1a1d24]/50 midnight:border-gray-700/30 purple:border-gray-700/30",
     },
   };
 

@@ -91,10 +91,10 @@ export default function TenantDetailsPage() {
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      Active: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-      Inactive: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
-      Suspended: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-      Trial: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+      Active: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
+      Inactive: "bg-gray-100 text-gray-800 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
+      Suspended: "bg-red-100 text-red-800 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
+      Trial: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
     };
 
     return (
@@ -128,7 +128,7 @@ export default function TenantDetailsPage() {
             <Button
               onClick={requestDelete}
               variant="outline"
-              className="flex items-center gap-2 text-red-600 hover:text-red-700 dark:text-red-400"
+              className="flex items-center gap-2 text-red-600 hover:text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
             >
               <Trash2 className="w-4 h-4" />
               Delete
@@ -139,8 +139,8 @@ export default function TenantDetailsPage() {
         <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-4">
-              <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <Building2 className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+              <div className="p-4 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 rounded-lg">
+                <Building2 className="w-8 h-8 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
@@ -183,7 +183,7 @@ export default function TenantDetailsPage() {
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
                     activeTab === tab.id
-                      ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
+                      ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                       : "border-transparent text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
                   }`}
                 >
@@ -268,7 +268,7 @@ export default function TenantDetailsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <Users className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                         <div>
                           <p className="text-sm text-neutral-600 dark:text-neutral-400">
                             Institution Type
@@ -281,7 +281,7 @@ export default function TenantDetailsPage() {
                     </div>
                     <div className="p-4 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <Globe className="w-5 h-5 text-green-600 dark:text-green-400" />
+                        <Globe className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                         <div>
                           <p className="text-sm text-neutral-600 dark:text-neutral-400">Region</p>
                           <p className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
@@ -360,7 +360,7 @@ export default function TenantDetailsPage() {
                         {tenant.config.supportedLevels.map((level) => (
                           <span
                             key={level}
-                            className="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded-full text-sm"
+                            className="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 rounded-full text-sm"
                           >
                             {level}
                           </span>
@@ -450,7 +450,7 @@ export default function TenantDetailsPage() {
                     {tenant.config.enabledFeatures.map((feature) => (
                       <span
                         key={feature}
-                        className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded-full text-sm"
+                        className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 rounded-full text-sm"
                       >
                         {feature}
                       </span>
@@ -518,7 +518,7 @@ export default function TenantDetailsPage() {
                               <span className="font-medium capitalize">{type}</span>
                             </div>
                             {isEnabled ? (
-                              <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                              <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                             ) : (
                               <XCircle className="w-5 h-5 text-neutral-400" />
                             )}
@@ -557,7 +557,7 @@ export default function TenantDetailsPage() {
                           </p>
                         </div>
                         {tenant.config.communication?.allowParentInitiatedCalls !== false ? (
-                          <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                          <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                         ) : (
                           <XCircle className="w-5 h-5 text-red-500" />
                         )}
@@ -574,7 +574,7 @@ export default function TenantDetailsPage() {
                           </p>
                         </div>
                         {tenant.config.communication?.requireApproval ? (
-                          <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                          <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                         ) : (
                           <XCircle className="w-5 h-5 text-neutral-400" />
                         )}
@@ -591,22 +591,22 @@ export default function TenantDetailsPage() {
                     </h3>
                     <div className="space-y-4">
                       {tenant.config.communication.settings.educoMeet?.enabled && (
-                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                           <div className="flex items-center gap-2 mb-2">
-                            <Video className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            <Video className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                             <span className="font-medium text-blue-900 dark:text-blue-100">
                               Educo Meet
                             </span>
                           </div>
                           <div className="grid grid-cols-2 gap-4 text-sm">
                             <div>
-                              <span className="text-blue-700 dark:text-blue-300">Max Participants:</span>{" "}
+                              <span className="text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">Max Participants:</span>{" "}
                               <span className="font-medium">
                                 {tenant.config.communication.settings.educoMeet.maxParticipants || "Unlimited"}
                               </span>
                             </div>
                             <div>
-                              <span className="text-blue-700 dark:text-blue-300">Recording:</span>{" "}
+                              <span className="text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">Recording:</span>{" "}
                               <span className="font-medium">
                                 {tenant.config.communication.settings.educoMeet.recordingEnabled
                                   ? "Enabled"
@@ -614,7 +614,7 @@ export default function TenantDetailsPage() {
                               </span>
                             </div>
                             <div>
-                              <span className="text-blue-700 dark:text-blue-300">Virtual Background:</span>{" "}
+                              <span className="text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">Virtual Background:</span>{" "}
                               <span className="font-medium">
                                 {tenant.config.communication.settings.educoMeet.virtualBackgroundEnabled
                                   ? "Enabled"
@@ -647,7 +647,7 @@ export default function TenantDetailsPage() {
                       {tenant.config.communication.settings.whatsapp?.enabled && (
                         <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                           <div className="flex items-center gap-2 mb-2">
-                            <MessageSquare className="w-5 h-5 text-green-600 dark:text-green-400" />
+                            <MessageSquare className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                             <span className="font-medium text-green-900 dark:text-green-100">
                               WhatsApp Business
                             </span>

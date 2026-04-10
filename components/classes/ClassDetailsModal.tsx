@@ -143,7 +143,7 @@ export default function ClassDetailsModal({
 
         {/* Tertiary: Faculty & Department */}
         {isTertiary && (classData.faculty || classData.department) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-[#22262e]/30 rounded-xl">
             {classData.faculty && (
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
@@ -259,7 +259,7 @@ export default function ClassDetailsModal({
               {classData.subjects.map((subject, index) => (
                 <div
                   key={index}
-                  className="p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg flex items-center justify-between"
+                  className="p-3 bg-gray-50 dark:bg-[#22262e]/30 rounded-lg flex items-center justify-between"
                 >
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
                     {subject.name}
@@ -275,7 +275,7 @@ export default function ClassDetailsModal({
 
         {/* Schedule */}
         {classData.schedule && (
-          <div className="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
+          <div className="p-4 bg-gray-50 dark:bg-[#22262e]/30 rounded-xl">
             <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Schedule
             </h4>
@@ -336,11 +336,11 @@ export default function ClassDetailsModal({
       </div>
 
       {/* Footer with Actions */}
-      <div className="flex-shrink-0 px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+      <div className="flex-shrink-0 px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1a1d24]/50">
         <div className="flex items-center justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#22262e] rounded-lg transition-colors"
           >
             Close
           </button>

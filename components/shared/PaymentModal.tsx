@@ -105,7 +105,7 @@ export default function PaymentModal({
         type="button"
         onClick={onClose}
         disabled={isProcessing}
-        className="flex-1 px-6 py-3 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        className="flex-1 px-6 py-3 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 font-semibold hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
         Cancel
       </button>
@@ -206,7 +206,7 @@ export default function PaymentModal({
                   className={`relative p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${
                     isSelected
                       ? "border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 bg-blue-50 dark:bg-blue-950/30 midnight:bg-cyan-950/30 purple:bg-pink-950/30 shadow-md"
-                      : "border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800"
+                      : "border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340]"
                   }`}
                 >
                   {/* Selected indicator */}
@@ -220,7 +220,7 @@ export default function PaymentModal({
                     className={`w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-2 transition-transform group-hover:scale-105 ${
                       isSelected
                         ? "bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 midnight:from-cyan-400 midnight:to-blue-500 purple:from-pink-400 purple:to-purple-500 shadow-md"
-                        : "bg-gray-100 dark:bg-gray-700 midnight:bg-gray-700 purple:bg-gray-700"
+                        : "bg-gray-100 dark:bg-[#22262e] midnight:bg-gray-700 purple:bg-gray-700"
                     }`}
                   >
                     <Icon
@@ -262,7 +262,7 @@ export default function PaymentModal({
                   value={cardName}
                   onChange={(e) => setCardName(e.target.value)}
                   placeholder="John Doe"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/50 purple:border-pink-700/50 bg-gray-50 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-400/20 purple:focus:ring-pink-400/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 transition-all text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/50 purple:border-pink-700/50 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-400/20 purple:focus:ring-pink-400/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 transition-all text-sm"
                 />
               </div>
 
@@ -277,7 +277,7 @@ export default function PaymentModal({
                     onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
                     placeholder="0000 0000 0000 0000"
                     maxLength={19}
-                    className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/50 purple:border-pink-700/50 bg-gray-50 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-400/20 purple:focus:ring-pink-400/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 transition-all text-sm font-mono"
+                    className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/50 purple:border-pink-700/50 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-400/20 purple:focus:ring-pink-400/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 transition-all text-sm font-mono"
                   />
                   <CreditCard className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 </div>
@@ -294,7 +294,7 @@ export default function PaymentModal({
                     onChange={(e) => setExpiryDate(formatExpiryDate(e.target.value))}
                     placeholder="MM/YY"
                     maxLength={5}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/50 purple:border-pink-700/50 bg-gray-50 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-400/20 purple:focus:ring-pink-400/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 transition-all text-sm font-mono"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/50 purple:border-pink-700/50 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-400/20 purple:focus:ring-pink-400/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 transition-all text-sm font-mono"
                   />
                 </div>
 
@@ -309,7 +309,7 @@ export default function PaymentModal({
                       onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
                       placeholder="***"
                       maxLength={4}
-                      className="w-full px-4 py-3 pr-10 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/50 purple:border-pink-700/50 bg-gray-50 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-400/20 purple:focus:ring-pink-400/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 transition-all text-sm font-mono"
+                      className="w-full px-4 py-3 pr-10 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/50 purple:border-pink-700/50 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-400/20 purple:focus:ring-pink-400/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 transition-all text-sm font-mono"
                     />
                     <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   </div>
@@ -342,7 +342,7 @@ export default function PaymentModal({
                   ].map((item) => (
                     <div
                       key={item.label}
-                      className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20"
+                      className="flex items-center justify-between p-3 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20"
                     >
                       <div>
                         <p className="text-xs text-gray-400 dark:text-gray-500">
@@ -355,7 +355,7 @@ export default function PaymentModal({
                       <button
                         type="button"
                         onClick={() => handleCopy(item.value, item.label)}
-                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-colors cursor-pointer"
+                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                       >
                         {copied === item.label ? (
                           <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -387,7 +387,7 @@ export default function PaymentModal({
                 <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4">
                   Visit the school bursar&apos;s office during working hours to make your cash payment.
                 </p>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 rounded-xl text-sm border border-gray-100 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-xl text-sm border border-gray-100 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20">
                   <span className="text-gray-500 dark:text-gray-400">Office Hours:</span>
                   <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">8:00 AM - 4:00 PM</span>
                 </div>

@@ -302,7 +302,7 @@ export default function ParentsTable({
       render: (parent) => (
         <div className="flex items-center gap-2 min-w-0">
           <div className="relative cursor-pointer group/avatar flex-shrink-0">
-            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-2 ring-white/80 dark:ring-gray-700/50 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 group-hover/avatar:z-[100]">
+            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] ring-2 ring-white/80 dark:ring-gray-700/50 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 group-hover/avatar:z-[100]">
               {parent.profilePhoto ? (
                 <Image
                   src={parent.profilePhoto}
@@ -490,7 +490,7 @@ export default function ParentsTable({
               <button
                 className={`p-1 rounded-md transition-all duration-200 hover:scale-105 cursor-pointer ${
                   openMenuParentId === parent.id
-                    ? "bg-gray-200 dark:bg-gray-600"
+                    ? "bg-gray-200 dark:bg-[#2a2d35]"
                     : "hover:bg-gray-100 dark:hover:bg-gray-500/20"
                 }`}
                 onClick={(e) => handleMenuToggle(parent.id, e)}
@@ -502,7 +502,7 @@ export default function ParentsTable({
             {openMenuParentId === parent.id && (
               <div
                 ref={menuRef}
-                className={`absolute right-0 w-52 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 z-[999999] py-1 animate-in fade-in duration-200 ${
+                className={`absolute right-0 w-52 bg-white dark:bg-[#1a1d24] rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 z-[999999] py-1 animate-in fade-in duration-200 ${
                   menuPosition === "top"
                     ? "bottom-full mb-1 slide-in-from-bottom-2"
                     : "top-full mt-1 slide-in-from-top-2"
@@ -510,35 +510,35 @@ export default function ParentsTable({
               >
                 <button
                   onClick={() => handleMenuItemClick("View Profile", parent)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
                 >
                   <Eye className="w-4 h-4" />
                   <span>View Profile</span>
                 </button>
                 <button
                   onClick={() => handleMenuItemClick("Schedule Meeting", parent)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
                 >
                   <CalendarPlus className="w-4 h-4" />
                   <span>Schedule Meeting</span>
                 </button>
                 <button
                   onClick={() => handleMenuItemClick("View Fee Statement", parent)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
                 >
                   <FileText className="w-4 h-4" />
                   <span>View Fee Statement</span>
                 </button>
                 <button
                   onClick={() => handleMenuItemClick("Record Payment", parent)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
                 >
                   <Banknote className="w-4 h-4" />
                   <span>Record Payment</span>
                 </button>
                 <button
                   onClick={() => handleMenuItemClick("Edit Contact Info", parent)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
                 >
                   <UserCog className="w-4 h-4" />
                   <span>Edit Contact Info</span>
@@ -546,7 +546,7 @@ export default function ParentsTable({
                 {parent.children && parent.children.length > 0 && (
                   <button
                     onClick={() => handleMenuItemClick("Disconnect Children", parent)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
                   >
                     <UserMinus className="w-4 h-4" />
                     <span>Disconnect Children</span>
@@ -701,7 +701,7 @@ export default function ParentsTable({
                 {activeParent.children.map((child) => (
                   <div
                     key={child.id}
-                    className="flex items-center gap-3 p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                    className="flex items-center gap-3 p-2.5 rounded-lg bg-gray-50 dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700"
                   >
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/20 flex items-center justify-center flex-shrink-0">
                       <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />

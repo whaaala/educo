@@ -311,7 +311,7 @@ export default function CallLogsPageContent({
             }
           }}
           onClick={(e) => e.stopPropagation()}
-          className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+          className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
         />
       ),
       render: (call) => (
@@ -320,7 +320,7 @@ export default function CallLogsPageContent({
           checked={selectedIds.has(call.id)}
           onChange={(e) => handleCardSelect(call.id, e.target.checked)}
           onClick={(e) => e.stopPropagation()}
-          className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+          className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
         />
       ),
     },
@@ -333,12 +333,12 @@ export default function CallLogsPageContent({
           <div
             className={`p-1.5 rounded-lg ${
               call.callType === "video"
-                ? "bg-blue-100 dark:bg-blue-900/30"
+                ? "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
                 : "bg-emerald-100 dark:bg-emerald-900/30"
             }`}
           >
             {call.callType === "video" ? (
-              <Video className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <Video className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             ) : (
               <Phone className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             )}
@@ -357,7 +357,7 @@ export default function CallLogsPageContent({
         return (
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="relative flex-shrink-0 group">
-              <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 transition-all duration-300 ease-out group-hover:scale-150 group-hover:shadow-lg group-hover:ring-2 group-hover:ring-blue-500 group-hover:z-[100]">
+              <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] transition-all duration-300 ease-out group-hover:scale-150 group-hover:shadow-lg group-hover:ring-2 group-hover:ring-blue-500 group-hover:z-[100]">
                 {call.recipientAvatar ? (
                   <Image
                     src={call.recipientAvatar}
@@ -392,8 +392,8 @@ export default function CallLogsPageContent({
                   <p
                     className={`text-xs sm:text-sm truncate ${
                       isMissed
-                        ? "font-semibold text-red-600 dark:text-red-400"
-                        : "font-medium text-gray-700 dark:text-gray-300"
+                        ? "font-semibold text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
+                        : "font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                     }`}
                   >
                     {call.recipientName}
@@ -402,7 +402,7 @@ export default function CallLogsPageContent({
               </div>
               {call.recipientEmail && (
                 <Tooltip content={call.recipientEmail} block>
-                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">
+                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate hidden sm:block">
                     {call.recipientEmail}
                   </p>
                 </Tooltip>
@@ -428,7 +428,7 @@ export default function CallLogsPageContent({
       sortValue: (call) => call.duration || 0,
       render: (call) =>
         call.duration ? (
-          <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
             {formatDuration(call.duration)}
           </span>
         ) : (
@@ -442,7 +442,7 @@ export default function CallLogsPageContent({
       className: "min-w-[70px] md:min-w-[100px] text-left",
       sortValue: (call) => new Date(call.startTime).getTime(),
       render: (call) => (
-        <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
+        <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
           {formatCallTime(call.startTime)}
         </span>
       ),
@@ -461,9 +461,9 @@ export default function CallLogsPageContent({
             <Tooltip content="Play Recording">
               <button
                 onClick={() => handleViewCall(call)}
-                className="p-1 sm:p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                className="p-1 sm:p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
               >
-                <Play className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <Play className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </button>
             </Tooltip>
           )}
@@ -482,7 +482,7 @@ export default function CallLogsPageContent({
               onClick={() => handleDeleteClick(call)}
               className="p-1 sm:p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors cursor-pointer hidden sm:block"
             >
-              <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+              <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
             </button>
           </Tooltip>
         </div>
@@ -527,8 +527,8 @@ export default function CallLogsPageContent({
               <DeleteAllButton selectedCount={selectedIds.size} onDeleteAll={handleDeleteAll} />
             )}
 
-            <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-              <span className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
+            <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+              <span className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 whitespace-nowrap">
                 {filteredCalls.length} calls
               </span>
             </div>
@@ -562,13 +562,13 @@ export default function CallLogsPageContent({
             />
           ) : filteredCalls.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
-              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700/20 flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/20 flex items-center justify-center mb-4">
                 <PhoneCall className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-1">
+              <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1">
                 No call history found
               </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                 {hasActiveFilters
                   ? "Try adjusting your filters."
                   : `Start a call with a ${config.recipientLabel.toLowerCase()}.`}
@@ -576,7 +576,7 @@ export default function CallLogsPageContent({
               {hasActiveFilters && (
                 <button
                   onClick={handleClearFilters}
-                  className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                  className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer"
                 >
                   Clear filters
                 </button>

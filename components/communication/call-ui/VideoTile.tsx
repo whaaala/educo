@@ -64,7 +64,7 @@ export const VideoTile = forwardRef<HTMLVideoElement, VideoTileProps>(
       <div
         className={cn(
           "relative rounded-xl sm:rounded-2xl overflow-hidden group",
-          "bg-gray-900 dark:bg-gray-800",
+          "bg-gray-900 dark:bg-[#1a1d24]",
           sizeClasses[size],
           isSpeaking && "ring-2 sm:ring-3",
           onClick && "cursor-pointer",

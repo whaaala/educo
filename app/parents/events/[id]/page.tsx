@@ -319,9 +319,9 @@ function getEventTypeInfo(type: EventType) {
       return {
         label: "Academic",
         icon: GraduationCap,
-        bgClass: "bg-blue-50 dark:bg-blue-900/20",
-        textClass: "text-blue-600 dark:text-blue-400",
-        borderClass: "border-blue-200 dark:border-blue-700/30",
+        bgClass: "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20",
+        textClass: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
+        borderClass: "border-blue-200 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/30",
         gradientFrom: "from-blue-500",
         gradientTo: "to-indigo-500",
       };
@@ -350,7 +350,7 @@ function getEventTypeInfo(type: EventType) {
         label: "Meeting",
         icon: Users,
         bgClass: "bg-amber-50 dark:bg-amber-900/20",
-        textClass: "text-amber-600 dark:text-amber-400",
+        textClass: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
         borderClass: "border-amber-200 dark:border-amber-700/30",
         gradientFrom: "from-amber-500",
         gradientTo: "to-orange-500",
@@ -369,8 +369,8 @@ function getEventTypeInfo(type: EventType) {
       return {
         label: "Examination",
         icon: FileText,
-        bgClass: "bg-red-50 dark:bg-red-900/20",
-        textClass: "text-red-600 dark:text-red-400",
+        bgClass: "bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20",
+        textClass: "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
         borderClass: "border-red-200 dark:border-red-700/30",
         gradientFrom: "from-red-500",
         gradientTo: "to-orange-500",
@@ -381,11 +381,11 @@ function getEventTypeInfo(type: EventType) {
 function getEventStatusInfo(status: EventStatus) {
   switch (status) {
     case "upcoming":
-      return { label: "Upcoming", bgClass: "bg-blue-100 dark:bg-blue-900/40", textClass: "text-blue-700 dark:text-blue-300" };
+      return { label: "Upcoming", bgClass: "bg-blue-100 dark:bg-blue-900/40", textClass: "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300" };
     case "ongoing":
       return { label: "Ongoing", bgClass: "bg-green-100 dark:bg-green-900/40", textClass: "text-green-700 dark:text-green-300" };
     case "completed":
-      return { label: "Completed", bgClass: "bg-gray-100 dark:bg-gray-700/40", textClass: "text-gray-600 dark:text-gray-400" };
+      return { label: "Completed", bgClass: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/40", textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" };
     case "cancelled":
       return { label: "Cancelled", bgClass: "bg-red-100 dark:bg-red-900/40", textClass: "text-red-700 dark:text-red-300" };
   }
@@ -432,15 +432,15 @@ export default function EventDetailPage() {
         ]}
         loadingText="Loading Event"
         afterStats={
-          <div className="mt-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-12">
+          <div className="mt-6 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-12">
             <div className="flex flex-col items-center justify-center text-center">
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700/50 dark:to-gray-800 flex items-center justify-center mb-4">
                 <CalendarDays className="w-10 h-10 text-gray-400" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
                 Event Not Found
               </h2>
-              <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
+              <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-6 max-w-sm">
                 The event you&apos;re looking for doesn&apos;t exist or may have been removed.
               </p>
               <Link href="/parents/events">
@@ -476,7 +476,7 @@ export default function EventDetailPage() {
           {/* Left Column - Event Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Hero Image Card */}
-            <div className={`relative bg-white dark:bg-gray-800 rounded-2xl border ${typeInfo.borderClass} shadow-sm overflow-hidden`}>
+            <div className={`relative bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border ${typeInfo.borderClass} shadow-sm overflow-hidden`}>
               {/* Subtle gradient background */}
               <div className={`absolute inset-0 opacity-[0.03] bg-gradient-to-br ${typeInfo.bgClass}`} />
 
@@ -529,14 +529,14 @@ export default function EventDetailPage() {
               </div>
 
               {/* Quick Info Strip */}
-              <div className="relative flex flex-wrap bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-800/80 dark:to-gray-800 border-t border-gray-100 dark:border-gray-700/50">
-                <div className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3 border-r border-b sm:border-b-0 border-gray-100 dark:border-gray-700/50">
+              <div className="relative flex flex-wrap bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-800/80 dark:to-gray-800 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                <div className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3 border-r border-b sm:border-b-0 border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
                   <div className={`p-2 sm:p-2.5 rounded-xl ${typeInfo.bgClass} flex-shrink-0`}>
                     <Calendar className={`w-3.5 sm:w-4 h-3.5 sm:h-4 ${typeInfo.textClass}`} />
                   </div>
                   <div>
-                    <p className="text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500">Date</p>
-                    <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white whitespace-nowrap">
+                    <p className="text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Date</p>
+                    <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap">
                       {formatShortDate(event.date)}
                       {event.endDate && <span className="font-normal text-gray-500"> - {formatShortDate(event.endDate)}</span>}
                     </p>
@@ -544,25 +544,25 @@ export default function EventDetailPage() {
                 </div>
 
                 {event.time && (
-                  <div className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3 border-r border-b sm:border-b-0 border-gray-100 dark:border-gray-700/50">
+                  <div className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3 border-r border-b sm:border-b-0 border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
                     <div className="p-2 sm:p-2.5 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex-shrink-0">
                       <Clock className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div>
-                      <p className="text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500">Time</p>
-                      <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white whitespace-nowrap">{event.time}</p>
+                      <p className="text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Time</p>
+                      <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap">{event.time}</p>
                     </div>
                   </div>
                 )}
 
                 {event.location && (
-                  <div className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3 border-r border-b sm:border-b-0 border-gray-100 dark:border-gray-700/50">
+                  <div className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3 border-r border-b sm:border-b-0 border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
                     <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex-shrink-0">
                       <MapPin className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
-                      <p className="text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500">Location</p>
-                      <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white whitespace-nowrap">{event.location}</p>
+                      <p className="text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Location</p>
+                      <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap">{event.location}</p>
                     </div>
                   </div>
                 )}
@@ -570,11 +570,11 @@ export default function EventDetailPage() {
                 {event.organizer && (
                   <div className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
                     <div className="p-2 sm:p-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex-shrink-0">
-                      <Users className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-amber-600 dark:text-amber-400" />
+                      <Users className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
                     </div>
                     <div>
-                      <p className="text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500">Organizer</p>
-                      <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white whitespace-nowrap">{event.organizer}</p>
+                      <p className="text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Organizer</p>
+                      <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap">{event.organizer}</p>
                     </div>
                   </div>
                 )}
@@ -586,12 +586,12 @@ export default function EventDetailPage() {
               <div className={`relative bg-gradient-to-r from-indigo-50 via-blue-50 to-purple-50 dark:from-indigo-900/20 dark:via-blue-900/20 dark:to-purple-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800/30 p-5 overflow-hidden`}>
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-200/30 dark:from-indigo-500/10 to-transparent rounded-full -mr-10 -mt-10" />
                 <div className="relative flex items-center gap-4">
-                  <div className="p-3 rounded-xl bg-white dark:bg-gray-800 shadow-sm">
+                  <div className="p-3 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm">
                     <Users className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">This event is for</p>
-                    <p className="text-lg font-bold text-gray-900 dark:text-white">
+                    <p className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                       {event.childName}
                       <span className="ml-2 text-sm font-medium text-indigo-500 dark:text-indigo-400">({event.classLevel})</span>
                     </p>
@@ -602,11 +602,11 @@ export default function EventDetailPage() {
 
             {/* About This Event */}
             {event.fullDescription && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="p-5 border-b border-gray-100 dark:border-gray-700/50">
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
-                    <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20">
-                      <Info className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2.5">
+                    <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20">
+                      <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
                     About This Event
                   </h3>
@@ -614,7 +614,7 @@ export default function EventDetailPage() {
                 <div className="p-5">
                   <div className="prose prose-sm dark:prose-invert max-w-none">
                     {event.fullDescription.split('\n\n').map((paragraph, idx) => (
-                      <p key={idx} className="text-gray-600 dark:text-gray-300 leading-relaxed mb-4 last:mb-0">
+                      <p key={idx} className="text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 leading-relaxed mb-4 last:mb-0">
                         {paragraph}
                       </p>
                     ))}
@@ -625,9 +625,9 @@ export default function EventDetailPage() {
 
             {/* Schedule/Agenda */}
             {event.agenda && event.agenda.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="p-5 border-b border-gray-100 dark:border-gray-700/50">
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
+              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2.5">
                     <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/20">
                       <Clock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                     </div>
@@ -643,7 +643,7 @@ export default function EventDetailPage() {
                       {event.agenda.map((item, idx) => (
                         <div
                           key={idx}
-                          className="group relative flex items-center gap-4 p-3 pl-0 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
+                          className="group relative flex items-center gap-4 p-3 pl-0 rounded-xl hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/30 transition-colors"
                         >
                           {/* Time badge */}
                           <div className="relative z-10 flex-shrink-0 w-[88px]">
@@ -653,10 +653,10 @@ export default function EventDetailPage() {
                           </div>
 
                           {/* Dot */}
-                          <div className="relative z-10 w-3 h-3 rounded-full bg-white dark:bg-gray-800 border-2 border-purple-400 dark:border-purple-500 flex-shrink-0 group-hover:scale-125 transition-transform" />
+                          <div className="relative z-10 w-3 h-3 rounded-full bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-2 border-purple-400 dark:border-purple-500 flex-shrink-0 group-hover:scale-125 transition-transform" />
 
                           {/* Activity */}
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
                             {item.activity}
                           </span>
                         </div>
@@ -671,7 +671,7 @@ export default function EventDetailPage() {
           {/* Right Column - Sidebar */}
           <div className="space-y-6">
             {/* Action Buttons Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-5">
               <div className="space-y-3">
                 {reminderSet ? (
                   <div className="space-y-2">
@@ -691,7 +691,7 @@ export default function EventDetailPage() {
                     </div>
                     <button
                       onClick={() => setShowReminderModal(true)}
-                      className="w-full text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors py-1"
+                      className="w-full text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 transition-colors py-1"
                     >
                       Change reminder
                     </button>
@@ -707,13 +707,13 @@ export default function EventDetailPage() {
                 )}
                 {/* Share button - only show for public events (no childId) */}
                 {event.childId ? (
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-700/30 border border-gray-100 dark:border-gray-600/30">
-                    <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-600/50 flex items-center justify-center">
-                      <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 border border-gray-100 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/30">
+                    <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700/50 flex items-center justify-center">
+                      <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Personal Event</p>
-                      <p className="text-[10px] text-gray-400 dark:text-gray-500">This event cannot be shared</p>
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Personal Event</p>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">This event cannot be shared</p>
                     </div>
                   </div>
                 ) : (
@@ -731,9 +731,9 @@ export default function EventDetailPage() {
 
             {/* Requirements Card */}
             {event.requirements && event.requirements.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-gray-100 dark:border-gray-700/50 bg-gradient-to-r from-emerald-50/50 to-white dark:from-emerald-900/10 dark:to-gray-800">
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 bg-gradient-to-r from-emerald-50/50 to-white dark:from-emerald-900/10 dark:to-gray-800">
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                     Requirements
                   </h3>
@@ -745,7 +745,7 @@ export default function EventDetailPage() {
                         <div className="mt-0.5 p-1 rounded-md bg-emerald-50 dark:bg-emerald-900/20 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30 transition-colors">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                         </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{req}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 leading-relaxed">{req}</span>
                       </li>
                     ))}
                   </ul>
@@ -755,36 +755,36 @@ export default function EventDetailPage() {
 
             {/* Contact Information Card */}
             {(event.contactPerson || event.contactPhone) && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-gray-100 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/50 to-white dark:from-blue-900/10 dark:to-gray-800">
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 bg-gradient-to-r from-blue-50/50 to-white dark:from-blue-900/10 dark:to-gray-800">
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
                     <Phone className="w-4 h-4 text-blue-500" />
                     Contact Information
                   </h3>
                 </div>
                 <div className="p-4 space-y-3">
                   {event.contactPerson && (
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-700/30">
-                      <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20">
-                        <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30">
+                      <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20">
+                        <User className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                       </div>
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500">Contact Person</p>
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{event.contactPerson}</p>
+                        <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Contact Person</p>
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{event.contactPerson}</p>
                       </div>
                     </div>
                   )}
                   {event.contactPhone && (
                     <a
                       href={`tel:${event.contactPhone}`}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-700/30 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors group"
                     >
                       <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30 transition-colors">
                         <Phone className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500">Phone</p>
-                        <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 group-hover:underline">{event.contactPhone}</p>
+                        <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Phone</p>
+                        <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 group-hover:underline">{event.contactPhone}</p>
                       </div>
                       <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
                     </a>
@@ -794,14 +794,14 @@ export default function EventDetailPage() {
             )}
 
             {/* Help Section */}
-            <div className="bg-gradient-to-br from-gray-50 via-gray-50 to-blue-50/50 dark:from-gray-800 dark:via-gray-800 dark:to-blue-900/10 rounded-2xl border border-gray-100 dark:border-gray-700 p-5">
+            <div className="bg-gradient-to-br from-gray-50 via-gray-50 to-blue-50/50 dark:from-gray-800 dark:via-gray-800 dark:to-blue-900/10 rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-5">
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-white dark:bg-gray-700 shadow-sm">
-                  <Info className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <div className="p-2 rounded-lg bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] shadow-sm">
+                  <Info className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">Need Help?</h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">Need Help?</h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 leading-relaxed">
                     If you have any questions about this event, please contact the organizer or reach out to the school administration.
                   </p>
                 </div>

@@ -73,7 +73,7 @@ export default function Modal({
         onClick={preventBackdropClose ? undefined : onClose}
       >
         <div
-          className={`bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl w-full ${maxWidthClasses[effectiveMaxWidth]} max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-4 duration-300`}
+          className={`bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl w-full ${maxWidthClasses[effectiveMaxWidth]} max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-4 duration-300`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -121,7 +121,7 @@ export default function Modal({
                     <button
                       type="button"
                       onClick={onClose}
-                      className="relative group p-2 sm:p-2.5 hover:bg-white/60 dark:hover:bg-gray-700/60 midnight:hover:bg-gray-800/60 purple:hover:bg-gray-800/60 rounded-xl transition-all flex-shrink-0 cursor-pointer animate-in slide-in-from-right-4 duration-500"
+                      className="relative group p-2 sm:p-2.5 hover:bg-white/60 dark:hover:bg-[#22262e]/60 midnight:hover:bg-cyan-500/5/60 purple:hover:bg-pink-500/5/60 rounded-xl transition-all flex-shrink-0 cursor-pointer animate-in slide-in-from-right-4 duration-500"
                       aria-label="Close"
                     >
                       <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors" />
@@ -139,7 +139,7 @@ export default function Modal({
 
           {/* Footer */}
           {footer && (
-            <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50">
+            <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               {footer}
             </div>
           )}

@@ -92,10 +92,10 @@ export default function ViewTeacherPage() {
         afterStats={
           <div className="mt-6 flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                 Teacher Not Found
               </h2>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
+              <p className="mt-2 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                 The teacher you&apos;re looking for doesn&apos;t exist.
               </p>
               <button
@@ -113,7 +113,7 @@ export default function ViewTeacherPage() {
 
   const getRoleBadgeColor = (role: string) => {
     const colors: { [key: string]: string } = {
-      Teacher: "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+      Teacher: "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border-blue-200 dark:border-blue-800",
       Lecturer: "bg-purple-100 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800",
       Admin: "bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800",
     };
@@ -171,7 +171,7 @@ export default function ViewTeacherPage() {
           </div>
 
         {/* Profile Overview Card */}
-        <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm overflow-hidden">
           <div className="p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row gap-6">
               {/* Profile Image */}
@@ -212,22 +212,22 @@ export default function ViewTeacherPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                      <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
+                      <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Email</p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{teacherData.email}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Email</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{teacherData.email}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                      <Phone className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      <Phone className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Phone</p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{teacherData.phone}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Phone</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{teacherData.phone}</p>
                     </div>
                   </div>
 
@@ -236,8 +236,8 @@ export default function ViewTeacherPage() {
                       <Briefcase className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Department</p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{teacherData.department}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Department</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{teacherData.department}</p>
                     </div>
                   </div>
                 </div>
@@ -264,7 +264,7 @@ export default function ViewTeacherPage() {
                   ${
                     activeTab === tab.id
                       ? "border-blue-500 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
                   }
                 `}
               >
@@ -280,69 +280,69 @@ export default function ViewTeacherPage() {
           {activeTab === "details" && (
             <>
               {/* Personal Information */}
-              <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
+              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
                   Personal Information
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400">Full Name</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white">
+                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Full Name</label>
+                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                       {teacherData.firstName} {teacherData.lastName}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400">Date of Birth</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white">
+                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Date of Birth</label>
+                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                       {new Date(teacherData.dateOfBirth).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400">Gender</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white">{teacherData.gender}</p>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Gender</label>
+                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{teacherData.gender}</p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400">Address</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white">{teacherData.address}</p>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Address</label>
+                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{teacherData.address}</p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400">Qualification</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white">{teacherData.qualification}</p>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Qualification</label>
+                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{teacherData.qualification}</p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400">Specialization</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white">{teacherData.specialization}</p>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Specialization</label>
+                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{teacherData.specialization}</p>
                   </div>
                 </div>
               </div>
 
               {/* Employment Information */}
-              <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
+              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
                   Employment Information
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400">Join Date</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white">
+                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Join Date</label>
+                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                       {new Date(teacherData.joinDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400">Employment Type</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white">{teacherData.employmentType}</p>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Employment Type</label>
+                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{teacherData.employmentType}</p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400">Experience</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white">{teacherData.experience} years</p>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Experience</label>
+                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{teacherData.experience} years</p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400">Branch</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white">{teacherData.branch}</p>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Branch</label>
+                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{teacherData.branch}</p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400">Salary</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white">₦{teacherData.salary.toLocaleString()}</p>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Salary</label>
+                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">₦{teacherData.salary.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
@@ -350,23 +350,23 @@ export default function ViewTeacherPage() {
           )}
 
           {activeTab === "classes" && (
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
                 Classes & Subjects
               </h3>
               <div className="space-y-6">
                 <div>
-                  <label className="text-xs text-gray-500 dark:text-gray-400">Classes</label>
+                  <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Classes</label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {teacherData.classes.map((cls, idx) => (
-                      <span key={idx} className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                      <span key={idx} className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
                         {cls}
                       </span>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 dark:text-gray-400">Subjects</label>
+                  <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Subjects</label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {teacherData.subjects.map((subject, idx) => (
                       <span key={idx} className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
@@ -380,23 +380,23 @@ export default function ViewTeacherPage() {
           )}
 
           {activeTab === "attendance" && (
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">Attendance Records</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Teacher attendance tracking will be displayed here.</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Teacher attendance tracking will be displayed here.</p>
             </div>
           )}
 
           {activeTab === "performance" && (
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">Performance Reviews</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Teacher performance reviews and evaluations will be displayed here.</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Teacher performance reviews and evaluations will be displayed here.</p>
             </div>
           )}
 
           {activeTab === "documents" && (
-            <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">Documents</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Teacher documents and certificates will be displayed here.</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Teacher documents and certificates will be displayed here.</p>
             </div>
           )}
         </div>

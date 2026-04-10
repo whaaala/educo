@@ -810,7 +810,7 @@ export default function ExamResults({
         </div>
 
         {/* Filter Buttons */}
-        <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-3 sm:p-4">
+        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-3 sm:p-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             {/* Year Selector */}
             <div className="w-full sm:w-auto">
@@ -831,7 +831,7 @@ export default function ExamResults({
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "all"
                     ? "bg-blue-600 dark:bg-blue-500 text-white shadow-sm"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
                 }`}
               >
                 <span className="flex items-center gap-1.5">
@@ -839,7 +839,7 @@ export default function ExamResults({
                   <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
                     statusFilter === "all"
                       ? "bg-blue-500 dark:bg-blue-600 text-white"
-                      : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
+                      : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
                   }`}>
                     {statusCounts.all}
                   </span>
@@ -852,7 +852,7 @@ export default function ExamResults({
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "Pass"
                     ? "bg-emerald-600 dark:bg-emerald-500 text-white shadow-sm"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
                 }`}
               >
                 <span className="flex items-center gap-1.5">
@@ -861,7 +861,7 @@ export default function ExamResults({
                   <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
                     statusFilter === "Pass"
                       ? "bg-emerald-500 dark:bg-emerald-600 text-white"
-                      : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
+                      : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
                   }`}>
                     {statusCounts.Pass}
                   </span>
@@ -874,7 +874,7 @@ export default function ExamResults({
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "Fail"
                     ? "bg-red-600 dark:bg-red-500 text-white shadow-sm"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
                 }`}
               >
                 <span className="flex items-center gap-1.5">
@@ -883,7 +883,7 @@ export default function ExamResults({
                   <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
                     statusFilter === "Fail"
                       ? "bg-red-500 dark:bg-red-600 text-white"
-                      : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
+                      : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
                   }`}>
                     {statusCounts.Fail}
                   </span>
@@ -896,7 +896,7 @@ export default function ExamResults({
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "In Progress"
                     ? "bg-amber-600 dark:bg-amber-500 text-white shadow-sm"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
                 }`}
               >
                 <span className="flex items-center gap-1.5">
@@ -905,7 +905,7 @@ export default function ExamResults({
                   <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
                     statusFilter === "In Progress"
                       ? "bg-amber-500 dark:bg-amber-600 text-white"
-                      : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
+                      : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
                   }`}>
                     {statusCounts["In Progress"]}
                   </span>
@@ -917,9 +917,9 @@ export default function ExamResults({
       </div>
 
       {/* Subjects/Modules Table */}
-      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden shadow-xl">
+      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden shadow-xl">
         {/* Search Bar */}
-        <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-2 sm:gap-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-t-xl md:rounded-t-2xl">
+        <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-2 sm:gap-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-t-xl md:rounded-t-2xl">
           <h2 className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-300 purple:text-pink-300 tracking-tight whitespace-nowrap">
             {isTertiary ? "Modules" : "Subjects"} {searchQuery && `(${sortedSubjects.length})`}
           </h2>
@@ -935,10 +935,10 @@ export default function ExamResults({
         <div className="overflow-x-auto smooth-scroll">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border-b border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
+              <tr className="bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border-b border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
                 <th
                   onClick={() => handleSort("code")}
-                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-left text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-gray-600/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out ${
+                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-left text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out ${
                     sortColumn === "code"
                       ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
                       : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70"
@@ -960,7 +960,7 @@ export default function ExamResults({
                 </th>
                 <th
                   onClick={() => handleSort("name")}
-                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-left text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-gray-600/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out hidden sm:table-cell ${
+                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-left text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out hidden sm:table-cell ${
                     sortColumn === "name"
                       ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
                       : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70"
@@ -981,7 +981,7 @@ export default function ExamResults({
                 </th>
                 <th
                   onClick={() => handleSort("teacher")}
-                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-left text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-gray-600/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out hidden md:table-cell ${
+                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-left text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out hidden md:table-cell ${
                     sortColumn === "teacher"
                       ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
                       : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70"
@@ -1010,7 +1010,7 @@ export default function ExamResults({
                 </th>
                 <th
                   onClick={() => handleSort("score")}
-                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-gray-600/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out ${
+                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out ${
                     sortColumn === "score"
                       ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
                       : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70"
@@ -1036,7 +1036,7 @@ export default function ExamResults({
                 )}
                 <th
                   onClick={() => handleSort("result")}
-                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-gray-600/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out ${
+                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out ${
                     sortColumn === "result"
                       ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
                       : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70"
@@ -1093,7 +1093,7 @@ export default function ExamResults({
                       style={{
                         animation: isSearching ? `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${index / 80}s both` : undefined,
                       } as React.CSSProperties}
-                      className={`border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 ${!isSorting ? 'transition-all duration-200' : ''} ${animationClass} cursor-pointer`}
+                      className={`border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 ${!isSorting ? 'transition-all duration-200' : ''} ${animationClass} cursor-pointer`}
                     >
                       {/* Subject Code */}
                       <td className="px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 text-left align-middle whitespace-nowrap">
@@ -1136,7 +1136,7 @@ export default function ExamResults({
                       {/* Progress */}
                       <td className="px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 text-center align-middle hidden sm:table-cell">
                         <div className="flex flex-col items-center gap-1">
-                          <div className="w-full max-w-[80px] h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div className="w-full max-w-[80px] h-1.5 bg-gray-200 dark:bg-[#22262e] rounded-full overflow-hidden">
                             <div
                               className={`h-full ${getProgressBarColor(progressPercentage)} transition-all duration-500`}
                               style={{ width: `${progressPercentage}%` }}
@@ -1226,7 +1226,7 @@ export default function ExamResults({
                               {subject.gradingComponents.map((component) => (
                                 <div
                                   key={component.id}
-                                  className="bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow"
+                                  className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-lg p-3 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow"
                                 >
                                   <div className="flex items-start justify-between mb-2">
                                     <div className="flex-1">
@@ -1263,7 +1263,7 @@ export default function ExamResults({
 
                                   {/* Component Progress Bar */}
                                   {component.status === "completed" && component.percentage !== undefined && (
-                                    <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div className="w-full h-1.5 bg-gray-200 dark:bg-[#22262e] rounded-full overflow-hidden">
                                       <div
                                         className={`h-full ${getProgressBarColor(component.percentage)} transition-all duration-500`}
                                         style={{ width: `${component.percentage}%` }}
@@ -1275,7 +1275,7 @@ export default function ExamResults({
                             </div>
 
                             {/* Summary */}
-                            <div className="mt-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                            <div className="mt-3 p-3 bg-gray-100 dark:bg-[#22262e] rounded-lg">
                               <div className="flex items-center justify-between text-[12px]">
                                 <span className="font-semibold text-gray-800 dark:text-gray-200">Final Score:</span>
                                 <span className={`text-[12px] font-bold ${getGradeColor(subject.percentage)}`}>
@@ -1320,7 +1320,7 @@ export default function ExamResults({
                   disabled={currentPage === 1}
                   className={`p-2.5 rounded-xl transition-all duration-200 ${
                     currentPage === 1
-                      ? "opacity-40 cursor-not-allowed bg-gray-100 dark:bg-gray-700"
+                      ? "opacity-40 cursor-not-allowed bg-gray-100 dark:bg-[#22262e]"
                       : "hover:bg-blue-100 dark:hover:bg-blue-500/20 cursor-pointer hover:scale-110 shadow-sm"
                   }`}
                 >
@@ -1334,7 +1334,7 @@ export default function ExamResults({
                     className={`min-w-[36px] sm:min-w-[40px] h-9 sm:h-10 px-3 sm:px-4 rounded-xl text-sm sm:text-base font-bold transition-all duration-200 ${
                       currentPage === pageNum
                         ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30 scale-110"
-                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-105 shadow-sm"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#22262e] hover:scale-105 shadow-sm"
                     }`}
                   >
                     {pageNum}
@@ -1346,7 +1346,7 @@ export default function ExamResults({
                   disabled={currentPage === totalPages}
                   className={`p-2.5 rounded-xl transition-all duration-200 ${
                     currentPage === totalPages
-                      ? "opacity-40 cursor-not-allowed bg-gray-100 dark:bg-gray-700"
+                      ? "opacity-40 cursor-not-allowed bg-gray-100 dark:bg-[#22262e]"
                       : "hover:bg-blue-100 dark:hover:bg-blue-500/20 cursor-pointer hover:scale-110 shadow-sm"
                   }`}
                 >
@@ -1361,7 +1361,7 @@ export default function ExamResults({
       {/* Grading Configuration Modal */}
       {configModalOpen && selectedSubjectForConfig && (
         <div className="fixed inset-0 bg-black/60 dark:bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
               <div>
@@ -1374,7 +1374,7 @@ export default function ExamResults({
               </div>
               <button
                 onClick={closeConfigModal}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-[#22262e] rounded-lg transition-colors"
               >
                 <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

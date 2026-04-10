@@ -57,7 +57,7 @@ function TrendIcon({ trend }: { trend: "up" | "down" | "stable" | string }) {
 
 export function ParentProfileCard({ parent }: { parent: ParentProfile }) {
   return (
-    <div className="group relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+    <div className="group relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
       {/* Subtle top shine effect */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
       <div className="absolute top-2.5 right-2.5 z-10">
@@ -73,7 +73,7 @@ export function ParentProfileCard({ parent }: { parent: ParentProfile }) {
           <div className="w-20 h-20 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-gray-800 midnight:ring-gray-900 purple:ring-gray-900 shadow-xl group-hover:shadow-2xl transition-shadow duration-300">
             <Image src={parent.profilePhoto} alt={parent.fullName} width={80} height={80} className="object-cover" unoptimized />
           </div>
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 border-2 border-white dark:border-gray-800 midnight:border-gray-900 purple:border-gray-900 flex items-center justify-center shadow-lg">
+          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 border-2 border-white dark:border-[#1a1d24] midnight:border-gray-900 purple:border-gray-900 flex items-center justify-center shadow-lg">
             <CheckCircle2 className="w-3.5 h-3.5 text-white" />
           </div>
         </div>
@@ -99,7 +99,7 @@ export function MyChildrenCard({
   onSelectChild: (child: Child) => void;
 }) {
   return (
-    <div className="group relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 p-4">
+    <div className="group relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 p-4">
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.02] via-transparent to-purple-500/[0.02] dark:from-indigo-500/[0.05] dark:to-purple-500/[0.05] midnight:from-cyan-500/[0.05] midnight:to-indigo-500/[0.05] purple:from-pink-500/[0.05] purple:to-purple-500/[0.05] pointer-events-none" />
       {/* Top shine */}
@@ -128,7 +128,7 @@ export function MyChildrenCard({
               className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200 group ${
                 isSelected
                   ? "bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 midnight:from-cyan-900/30 midnight:to-indigo-900/30 purple:from-pink-900/30 purple:to-purple-900/30 border border-blue-200 dark:border-blue-700/50 midnight:border-cyan-500/30 purple:border-pink-500/30 shadow-sm"
-                  : "bg-gray-50/80 dark:bg-gray-700/20 midnight:bg-gray-800/30 purple:bg-gray-800/30 border border-transparent hover:bg-gray-100 dark:hover:bg-gray-700/40 hover:border-gray-200 dark:hover:border-gray-600"
+                  : "bg-gray-50/80 dark:bg-[#22262e]/20 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-transparent hover:bg-gray-100 dark:hover:bg-[#22262e]/40 hover:border-gray-200 dark:hover:border-gray-600"
               }`}
               type="button"
             >
@@ -165,7 +165,7 @@ export function MyChildrenCard({
                 className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
                   isSelected
                     ? "bg-gradient-to-r from-blue-500 to-indigo-500 midnight:from-cyan-400 midnight:to-indigo-400 purple:from-pink-400 purple:to-purple-400 shadow-sm"
-                    : "bg-gray-300 dark:bg-gray-600 opacity-0 group-hover:opacity-50"
+                    : "bg-gray-300 dark:bg-[#2a2d35] opacity-0 group-hover:opacity-50"
                 }`}
               />
             </button>
@@ -178,7 +178,7 @@ export function MyChildrenCard({
 
 export function QuickActionsCard() {
   return (
-    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 p-4">
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 p-4">
       {/* Top shine */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
       <div className="relative flex flex-wrap items-center justify-between gap-2 mb-3">
@@ -237,7 +237,7 @@ export function PaymentHistoryCard({
   countryCode: string;
 }) {
   return (
-    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 p-3">
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 p-3">
       {/* Top shine */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
       <div className="relative flex flex-wrap items-center justify-between gap-2 mb-3">
@@ -289,7 +289,7 @@ export function PaymentHistoryCard({
 
 export function ExamResultsCard({ results }: { results: ExamResultItem[] }) {
   return (
-    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
       {/* Top shine */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
       <div className="relative px-4 py-3 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
@@ -352,7 +352,7 @@ export function ExamResultsCard({ results }: { results: ExamResultItem[] }) {
 
               {/* Bottom row: Progress bar + Percentage */}
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 midnight:bg-gray-700 purple:bg-gray-700 rounded-full overflow-hidden">
+                <div className="flex-1 h-1.5 bg-gray-200 dark:bg-[#22262e] midnight:bg-gray-700 purple:bg-gray-700 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
                       result.percentage >= 70 ? "bg-gradient-to-r from-green-400 to-emerald-500" : "bg-gradient-to-r from-amber-400 to-orange-500"
@@ -382,7 +382,7 @@ export function RecentGradesCard({
   progress: ChildProgress | undefined;
 }) {
   return (
-    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
       {/* Top shine */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
       <div className="relative px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
@@ -421,7 +421,7 @@ export function RecentGradesCard({
                   ? "bg-green-100 dark:bg-green-900/40 midnight:bg-green-900/40 purple:bg-green-900/40"
                   : grade.trend === "down"
                     ? "bg-red-100 dark:bg-red-900/40 midnight:bg-red-900/40 purple:bg-red-900/40"
-                    : "bg-gray-100 dark:bg-gray-700/50 midnight:bg-gray-700/50 purple:bg-gray-700/50"
+                    : "bg-gray-100 dark:bg-[#22262e]/50 midnight:bg-gray-700/50 purple:bg-gray-700/50"
               }`}
             >
               <TrendIcon trend={grade.trend} />
@@ -441,7 +441,7 @@ export function EventsCard({ events, selectedChildId }: { events: ParentEvent[];
     : events;
 
   return (
-    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
       {/* Top shine */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
 
@@ -513,7 +513,7 @@ export function EventsCard({ events, selectedChildId }: { events: ParentEvent[];
       {/* Empty state */}
       {filteredEvents.length === 0 && (
         <div className="flex-1 flex flex-col items-center justify-center py-8 text-center">
-          <div className="p-3 rounded-full bg-gray-100 dark:bg-gray-700/50 mb-3">
+          <div className="p-3 rounded-full bg-gray-100 dark:bg-[#22262e]/50 mb-3">
             <CalendarDays className="w-6 h-6 text-gray-400" />
           </div>
           <p className="text-sm font-medium text-gray-600 dark:text-gray-300">No upcoming events</p>
@@ -526,7 +526,7 @@ export function EventsCard({ events, selectedChildId }: { events: ParentEvent[];
 
 export function ChildLeaveRequestsCard({ leaves }: { leaves: ChildLeaveRequest[] }) {
   return (
-    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
       {/* Top shine */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
       <div className="relative px-3 py-2.5 flex items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
@@ -624,7 +624,7 @@ export function ChildLeaveRequestsCard({ leaves }: { leaves: ChildLeaveRequest[]
 
 export function HomeworkCard({ homework }: { homework: HomeworkItem[] }) {
   return (
-    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
       {/* Top shine */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
       <div className="relative px-3 py-2.5 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
@@ -669,7 +669,7 @@ export function HomeworkCard({ homework }: { homework: HomeworkItem[] }) {
               >
                 {hw.subject}
               </div>
-              <div className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100/80 dark:bg-gray-700/50 midnight:bg-gray-700/50 purple:bg-gray-700/50">
+              <div className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100/80 dark:bg-[#22262e]/50 midnight:bg-gray-700/50 purple:bg-gray-700/50">
                 <Clock className="w-3 h-3 text-gray-500 dark:text-gray-400" />
                 <span className="text-[9px] font-semibold text-gray-600 dark:text-gray-300">{formatShortDate(hw.dueDate)}</span>
               </div>
@@ -698,7 +698,7 @@ export function FeesReminderCard({
   onPayNow?: (fee: FeeReminderItem) => void;
 }) {
   return (
-    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
       {/* Top shine */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
       <div className="relative px-3 py-2.5 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
@@ -775,7 +775,7 @@ export function FeesReminderCard({
 export function MessagesCard({ messages }: { messages: ParentMessage[] }) {
   const unreadCount = messages.filter((m) => m.unread).length;
   return (
-    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
       {/* Top shine */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
       <div className="relative px-3 py-2.5 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
@@ -830,7 +830,7 @@ export function MessagesCard({ messages }: { messages: ParentMessage[] }) {
 
 export function NoticeBoardCard({ notices }: { notices: NoticeItem[] }) {
   return (
-    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
       {/* Top shine */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
       <div className="relative p-3 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20 flex items-center justify-between">
@@ -875,7 +875,7 @@ export function NoticeBoardCard({ notices }: { notices: NoticeItem[] }) {
 
 export function QuickLinksCard({ selectedChildId }: { selectedChildId: string }) {
   return (
-    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
       {/* Top shine */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
       <div className="relative px-3 py-2.5 flex items-center justify-between gap-2.5 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
@@ -892,7 +892,7 @@ export function QuickLinksCard({ selectedChildId }: { selectedChildId: string })
           href={`/parents/children/${selectedChildId}/report-card`}
           className="flex items-center gap-3 p-2.5 rounded-xl bg-gradient-to-r from-blue-50/80 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/10 midnight:from-blue-900/20 midnight:to-indigo-900/10 purple:from-blue-900/20 purple:to-indigo-900/10 border border-blue-100/50 dark:border-blue-800/30 midnight:border-blue-800/20 purple:border-blue-800/20 hover:border-blue-300 dark:hover:border-blue-700/50 hover:shadow-md hover:-translate-x-0.5 transition-all duration-200 group"
         >
-          <div className="p-2 rounded-xl bg-white dark:bg-gray-800/80 midnight:bg-gray-800/80 purple:bg-gray-800/80 shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
+          <div className="p-2 rounded-xl bg-white dark:bg-[#1a1d24]/80 midnight:bg-[#0f1330]/80 purple:bg-[#251340]/80 shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
             <Award className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
           <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -904,7 +904,7 @@ export function QuickLinksCard({ selectedChildId }: { selectedChildId: string })
           href={`/parents/children/${selectedChildId}/attendance`}
           className="flex items-center gap-3 p-2.5 rounded-xl bg-gradient-to-r from-purple-50/80 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/10 midnight:from-purple-900/20 midnight:to-pink-900/10 purple:from-pink-900/20 purple:to-purple-900/10 border border-purple-100/50 dark:border-purple-800/30 midnight:border-purple-800/20 purple:border-pink-800/20 hover:border-purple-300 dark:hover:border-purple-700/50 hover:shadow-md hover:-translate-x-0.5 transition-all duration-200 group"
         >
-          <div className="p-2 rounded-xl bg-white dark:bg-gray-800/80 midnight:bg-gray-800/80 purple:bg-gray-800/80 shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
+          <div className="p-2 rounded-xl bg-white dark:bg-[#1a1d24]/80 midnight:bg-[#0f1330]/80 purple:bg-[#251340]/80 shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
             <CalendarCheck className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-indigo-400 purple:text-pink-400" />
           </div>
           <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
@@ -916,7 +916,7 @@ export function QuickLinksCard({ selectedChildId }: { selectedChildId: string })
           href="/parents/messages"
           className="flex items-center gap-3 p-2.5 rounded-xl bg-gradient-to-r from-green-50/80 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/10 midnight:from-green-900/20 midnight:to-emerald-900/10 purple:from-green-900/20 purple:to-emerald-900/10 border border-green-100/50 dark:border-green-800/30 midnight:border-green-800/20 purple:border-green-800/20 hover:border-green-300 dark:hover:border-green-700/50 hover:shadow-md hover:-translate-x-0.5 transition-all duration-200 group"
         >
-          <div className="p-2 rounded-xl bg-white dark:bg-gray-800/80 midnight:bg-gray-800/80 purple:bg-gray-800/80 shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
+          <div className="p-2 rounded-xl bg-white dark:bg-[#1a1d24]/80 midnight:bg-[#0f1330]/80 purple:bg-[#251340]/80 shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
             <Send className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
           </div>
           <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
@@ -988,7 +988,7 @@ export function UpcomingMeetingsCard({ meetings }: { meetings: UpcomingMeeting[]
   const upcomingMeetings = meetings.filter((m) => m.status === "scheduled" || m.status === "in-progress");
 
   return (
-    <div className="group/card relative bg-white/95 dark:bg-gray-800/95 midnight:bg-gray-900/95 purple:bg-gray-900/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
       {/* Top shine */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
       <div className="relative px-3 py-2.5 flex items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
@@ -1016,7 +1016,7 @@ export function UpcomingMeetingsCard({ meetings }: { meetings: UpcomingMeeting[]
       <div className="relative flex-1 px-3 py-2.5 flex flex-col justify-between gap-2">
         {upcomingMeetings.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-6 text-center">
-            <div className="p-3 rounded-full bg-gray-100 dark:bg-gray-700/50 mb-2">
+            <div className="p-3 rounded-full bg-gray-100 dark:bg-[#22262e]/50 mb-2">
               <Video className="w-5 h-5 text-gray-400" />
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">No upcoming meetings</p>

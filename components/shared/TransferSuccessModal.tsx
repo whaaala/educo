@@ -62,7 +62,7 @@ export default function TransferSuccessModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+      <div className="relative w-full max-w-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header with gradient */}
         <div className="relative bg-gradient-to-r from-green-600 to-green-700 dark:from-green-500 dark:to-green-600 midnight:from-green-600 midnight:to-green-700 purple:from-green-600 purple:to-green-700 px-6 py-4">
           {/* Close button */}
@@ -94,7 +94,7 @@ export default function TransferSuccessModal({
               className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 last:border-0"
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center flex-shrink-0">
                   {field.icon}
                 </div>
                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">

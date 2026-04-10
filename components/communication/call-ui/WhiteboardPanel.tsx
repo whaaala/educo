@@ -42,7 +42,7 @@ export function WhiteboardPanel({
   }, [isExpanded]);
 
   const header = (
-    <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-gray-800/50 midnight:bg-[#0a0f1a] purple:bg-[#1a0e2e] flex-shrink-0">
+    <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0f1a] purple:bg-[#1a0e2e] flex-shrink-0">
       <div className="flex items-center gap-2">
         <div
           className="w-2 h-2 rounded-full"
@@ -55,7 +55,7 @@ export function WhiteboardPanel({
       <div className="flex items-center gap-1">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
           title={isExpanded ? "Minimize" : "Expand"}
         >
           {isExpanded ? (
@@ -66,7 +66,7 @@ export function WhiteboardPanel({
         </button>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
           title="Close whiteboard"
         >
           <X className="w-4 h-4" />
@@ -86,7 +86,7 @@ export function WhiteboardPanel({
   if (isExpanded && portalRoot) {
     return createPortal(
       <div
-        className="fixed top-[64px] bottom-0 right-0 left-0 lg:left-[var(--sidebar-width)] z-[9999] flex flex-col bg-white dark:bg-gray-900 midnight:bg-[#0a0f1a] purple:bg-[#120622]"
+        className="fixed top-[64px] bottom-0 right-0 left-0 lg:left-[var(--sidebar-width)] z-[9999] flex flex-col bg-white dark:bg-[#0f1115] midnight:bg-[#0a0f1a] purple:bg-[#120622]"
         style={{ "--sidebar-width": `${sidebarWidth}px` } as React.CSSProperties}
       >
         {header}

@@ -192,7 +192,7 @@ export default function FeeActionsDropdown({
       label: "View Details",
       icon: <Eye className="w-4 h-4" />,
       onClick: onViewDetails,
-      color: "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700",
+      color: "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10",
       show: !!onViewDetails,
     },
     {
@@ -200,7 +200,7 @@ export default function FeeActionsDropdown({
       label: "Edit Record",
       icon: <Edit className="w-4 h-4" />,
       onClick: onEdit,
-      color: "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700",
+      color: "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10",
       show: !!onEdit,
     },
     {
@@ -208,7 +208,7 @@ export default function FeeActionsDropdown({
       label: "Record Payment",
       icon: <CreditCard className="w-4 h-4" />,
       onClick: onRecordPayment,
-      color: "text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30",
+      color: "text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 hover:bg-green-50 dark:hover:bg-green-900/30",
       show: !!onRecordPayment,
     },
     {
@@ -216,7 +216,7 @@ export default function FeeActionsDropdown({
       label: "Payment History",
       icon: <History className="w-4 h-4" />,
       onClick: onViewHistory,
-      color: "text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30",
+      color: "text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-blue-900/30",
       show: !!onViewHistory && hasPayments,
     },
     {
@@ -261,7 +261,7 @@ export default function FeeActionsDropdown({
       label: "Download Statement",
       icon: <Download className="w-4 h-4" />,
       onClick: onDownload,
-      color: "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700",
+      color: "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10",
       show: !!onDownload,
     },
     {
@@ -269,7 +269,7 @@ export default function FeeActionsDropdown({
       label: "Print Statement",
       icon: <Printer className="w-4 h-4" />,
       onClick: onPrint,
-      color: "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700",
+      color: "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10",
       show: !!onPrint,
     },
     {
@@ -282,7 +282,7 @@ export default function FeeActionsDropdown({
       label: "Delete Record",
       icon: <Trash2 className="w-4 h-4" />,
       onClick: onDelete,
-      color: "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30",
+      color: "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30",
       show: !!onDelete,
     },
   ];
@@ -295,9 +295,9 @@ export default function FeeActionsDropdown({
         ref={buttonRef}
         type="button"
         onClick={handleToggle}
-        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
       >
-        <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+        <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
       </button>
 
       {/* Dropdown Menu - Rendered via Portal */}
@@ -306,14 +306,14 @@ export default function FeeActionsDropdown({
           <div
             ref={dropdownRef}
             style={dropdownStyle}
-            className="w-48 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 animate-in fade-in zoom-in-95 duration-150"
+            className="w-48 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 animate-in fade-in zoom-in-95 duration-150"
           >
             {visibleItems.map((item) => {
               if (item.type === "divider") {
                 return (
                   <div
                     key={item.id}
-                    className="my-1 border-t border-gray-200 dark:border-gray-700"
+                    className="my-1 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                   />
                 );
               }

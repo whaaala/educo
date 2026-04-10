@@ -37,11 +37,11 @@ export function CopyableField({
 
   const variantStyles = {
     default: cn(
-      "bg-gray-50 dark:bg-gray-700/30 midnight:bg-gray-800/50 purple:bg-gray-800/50",
+      "bg-gray-50 dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50",
       "p-4 rounded-xl"
     ),
     compact: cn(
-      "bg-gray-50 dark:bg-gray-700/30 midnight:bg-gray-800/50 purple:bg-gray-800/50",
+      "bg-gray-50 dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50",
       "p-3 rounded-lg"
     ),
     prominent: cn(
@@ -87,7 +87,7 @@ export function CopyableField({
                 "text-gray-500 hover:text-primary-600",
                 "midnight:text-gray-400 midnight:hover:text-cyan-400",
                 "purple:text-gray-400 purple:hover:text-pink-400",
-                "hover:bg-white dark:hover:bg-gray-600 midnight:hover:bg-gray-800 purple:hover:bg-gray-800"
+                "hover:bg-white dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
               )}
               title="Open link"
             >
@@ -104,7 +104,7 @@ export function CopyableField({
                     "text-gray-500 hover:text-primary-600",
                     "midnight:text-gray-400 midnight:hover:text-cyan-400",
                     "purple:text-gray-400 purple:hover:text-pink-400",
-                    "hover:bg-white dark:hover:bg-gray-600 midnight:hover:bg-gray-800 purple:hover:bg-gray-800"
+                    "hover:bg-white dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
                   )
             )}
             title={copied ? "Copied!" : "Copy to clipboard"}

@@ -92,7 +92,7 @@ const getStatusConfig = (status: string) => {
       return {
         icon: XCircle,
         label: "Unknown",
-        bgColor: "bg-gray-100 dark:bg-gray-700",
+        bgColor: "bg-gray-100 dark:bg-[#22262e]",
         textColor: "text-gray-700 dark:text-gray-400",
         iconColor: "text-gray-600 dark:text-gray-400",
       };
@@ -171,7 +171,7 @@ export default function ViewFeeStatementModal({
         </div>
 
         {/* Status Summary */}
-        <div className="flex items-center gap-4 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-4 px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24]/50 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-green-500"></div>
             <span className="text-sm text-gray-600 dark:text-gray-400">{summary.paidCount} Paid</span>
@@ -198,7 +198,7 @@ export default function ViewFeeStatementModal({
               return (
                 <div
                   key={record.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+                  className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={`w-10 h-10 rounded-lg ${statusConfig.bgColor} flex items-center justify-center flex-shrink-0`}>

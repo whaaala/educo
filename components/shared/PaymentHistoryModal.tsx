@@ -107,9 +107,9 @@ export default function PaymentHistoryModal({
     switch (method.toLowerCase()) {
       case "bank transfer":
         return {
-          bg: "bg-blue-100 dark:bg-blue-900/30",
-          text: "text-blue-700 dark:text-blue-400",
-          border: "border-blue-200 dark:border-blue-700",
+          bg: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30",
+          text: "text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
+          border: "border-blue-200 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500",
         };
       case "card":
         return {
@@ -120,7 +120,7 @@ export default function PaymentHistoryModal({
       case "cash":
         return {
           bg: "bg-green-100 dark:bg-green-900/30",
-          text: "text-green-700 dark:text-green-400",
+          text: "text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
           border: "border-green-200 dark:border-green-700",
         };
       case "ussd":
@@ -137,9 +137,9 @@ export default function PaymentHistoryModal({
         };
       default:
         return {
-          bg: "bg-gray-100 dark:bg-gray-900/30",
-          text: "text-gray-700 dark:text-gray-400",
-          border: "border-gray-200 dark:border-gray-700",
+          bg: "bg-gray-100 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30",
+          text: "text-gray-700 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
+          border: "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20",
         };
     }
   };
@@ -651,12 +651,12 @@ export default function PaymentHistoryModal({
     >
       <div className="space-y-5">
         {/* Summary Card - Subtle Design */}
-        <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-4">
+        <div className="rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4">
           {/* Top Section: Student Info + Amount */}
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex items-center gap-3 min-w-0">
               {showStudentImage && (
-                <div className="relative w-11 h-11 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-2 ring-white dark:ring-gray-800 flex-shrink-0">
+                <div className="relative w-11 h-11 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] ring-2 ring-white dark:ring-gray-800 flex-shrink-0">
                   <Image
                     src={`https://i.pravatar.cc/150?u=${studentId}`}
                     alt={studentName}
@@ -667,10 +667,10 @@ export default function PaymentHistoryModal({
                 </div>
               )}
               <div className="min-w-0">
-                <p className="font-semibold text-gray-900 dark:text-white truncate">
+                <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                   {studentName}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                   {payments.length} payment{payments.length !== 1 ? "s" : ""}{" "}
                   made
                 </p>
@@ -680,7 +680,7 @@ export default function PaymentHistoryModal({
               <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
                 {money(paidAmount)}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                 of {money(totalAmount)}
               </p>
             </div>
@@ -690,21 +690,21 @@ export default function PaymentHistoryModal({
           {showProgressBar && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-500 dark:text-gray-400">
+              <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                 Payment Progress
               </span>
-              <span className="font-medium text-gray-700 dark:text-gray-300">
+              <span className="font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                 {progressPercent}%
               </span>
             </div>
-            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div className="h-2 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-full overflow-hidden">
               <div
                 className="h-full bg-emerald-500 rounded-full transition-all duration-700 ease-out"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
             {balance > 0 && (
-              <p className="text-xs text-right text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-right text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                 Balance remaining:{" "}
                 <span className="font-medium text-orange-600 dark:text-orange-400">
                   {money(balance)}
@@ -717,10 +717,10 @@ export default function PaymentHistoryModal({
 
         {/* Payment Records Header */}
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-800">
-            <CreditCard className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+          <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+            <CreditCard className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
           </div>
-          <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
+          <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
             {paymentRecordsTitle}
           </h4>
         </div>
@@ -728,13 +728,13 @@ export default function PaymentHistoryModal({
         {/* Payment List */}
         {payments.length === 0 ? (
           <div className="text-center py-10">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-center justify-center">
               <Receipt className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-gray-500 dark:text-gray-400 font-medium">
+            <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium">
               {emptyStateText}
             </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+            <p className="text-sm text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-1">
               {emptyStateSubtext}
             </p>
           </div>
@@ -749,7 +749,7 @@ export default function PaymentHistoryModal({
               return (
                 <div
                   key={payment.id}
-                  className="rounded-xl bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700"
+                  className="rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700"
                 >
                   {/* Main Row - Always Visible */}
                   <div className="p-3.5">
@@ -760,7 +760,7 @@ export default function PaymentHistoryModal({
                           <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <div className="min-w-0">
-                          <p className="font-bold text-lg text-gray-900 dark:text-white">
+                          <p className="font-bold text-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                             {money(payment.amount)}
                           </p>
                           <span
@@ -789,7 +789,7 @@ export default function PaymentHistoryModal({
                                 `receipt-${payment.id}`
                               )
                             }
-                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                           >
                             {copiedId === `receipt-${payment.id}` ? (
                               <Check className="w-4 h-4 text-emerald-500" />
@@ -838,7 +838,7 @@ export default function PaymentHistoryModal({
                     </div>
 
                     {/* Details Row */}
-                    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                       <div className="grid grid-cols-3 gap-2">
                         {/* Date */}
                         <div className="min-w-0">
@@ -848,7 +848,7 @@ export default function PaymentHistoryModal({
                               Date
                             </span>
                           </div>
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                             {new Date(payment.date).toLocaleDateString(
                               "en-GB",
                               {
@@ -869,7 +869,7 @@ export default function PaymentHistoryModal({
                             </span>
                           </div>
                           <Tooltip content={payment.receiptNumber}>
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white font-mono truncate cursor-help">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-mono truncate cursor-help">
                               {truncateText(payment.receiptNumber, 14)}
                             </p>
                           </Tooltip>
@@ -885,7 +885,7 @@ export default function PaymentHistoryModal({
                           </div>
                           <div className="flex items-center gap-1">
                             <Tooltip content={payment.reference}>
-                              <p className="text-sm font-semibold text-gray-900 dark:text-white font-mono truncate cursor-help flex-1">
+                              <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-mono truncate cursor-help flex-1">
                                 {truncateText(payment.reference, 12)}
                               </p>
                             </Tooltip>
@@ -897,7 +897,7 @@ export default function PaymentHistoryModal({
                                     isExpanded ? null : payment.id
                                   )
                                 }
-                                className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer flex-shrink-0"
+                                className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer flex-shrink-0"
                               >
                                 {isExpanded ? (
                                   <ChevronUp className="w-3.5 h-3.5 text-gray-400" />
@@ -912,13 +912,13 @@ export default function PaymentHistoryModal({
 
                       {/* Expanded Reference */}
                       {isExpanded && (
-                        <div className="mt-3 p-2.5 rounded-lg bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
+                        <div className="mt-3 p-2.5 rounded-lg bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
                               <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">
                                 Full Reference
                               </span>
-                              <p className="text-xs font-mono text-gray-900 dark:text-white break-all mt-1">
+                              <p className="text-xs font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 break-all mt-1">
                                 {payment.reference}
                               </p>
                             </div>
@@ -937,7 +937,7 @@ export default function PaymentHistoryModal({
                                     `ref-${payment.id}`
                                   )
                                 }
-                                className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer flex-shrink-0"
+                                className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer flex-shrink-0"
                               >
                                 {copiedId === `ref-${payment.id}` ? (
                                   <Check className="w-3.5 h-3.5 text-emerald-500" />

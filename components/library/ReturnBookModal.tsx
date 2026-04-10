@@ -215,7 +215,7 @@ export default function ReturnBookModal({
             {/* Arrow with Duration */}
             <div className="flex-1 flex items-center justify-center px-2">
               <div className="flex-1 h-0.5 bg-gradient-to-r from-blue-500 via-gray-300 to-emerald-500 dark:via-gray-600 rounded-full" />
-              <div className="px-3 py-1 rounded-full bg-white dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm mx-2">
+              <div className="px-3 py-1 rounded-full bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-700 shadow-sm mx-2">
                 <p className="text-xs font-bold text-gray-700 dark:text-gray-300">
                   {loanDuration} days
                 </p>

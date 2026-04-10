@@ -35,9 +35,9 @@ describe("Modal — Visual / CSS", () => {
       const dialog = container.querySelector(".rounded-2xl.shadow-2xl");
       expect(dialog).toBeInTheDocument();
       expect(dialog!.className).toContain("bg-white");
-      expect(dialog!.className).toContain("dark:bg-gray-800");
-      expect(dialog!.className).toContain("midnight:bg-gray-900");
-      expect(dialog!.className).toContain("purple:bg-gray-900");
+      expect(dialog!.className).toContain("dark:bg-[#1a1d24]");
+      expect(dialog!.className).toContain("midnight:bg-[#0a0e27]");
+      expect(dialog!.className).toContain("purple:bg-[#1a0b2e]");
     });
 
     it("has rounded-2xl shadow-2xl", () => {

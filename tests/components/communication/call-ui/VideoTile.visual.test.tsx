@@ -84,7 +84,7 @@ describe("VideoTile — Visual / CSS", () => {
       );
       const tile = container.firstChild as HTMLElement;
       expect(tile.className).toContain("bg-gray-900");
-      expect(tile.className).toContain("dark:bg-gray-800");
+      expect(tile.className).toContain("dark:bg-[#1a1d24]");
     });
 
     it("has overflow-hidden and group class", () => {

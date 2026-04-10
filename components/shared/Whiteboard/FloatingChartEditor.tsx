@@ -152,7 +152,7 @@ export default function FloatingChartEditor({
   return (
     <div
       ref={panelRef}
-      className="absolute z-[70] w-[280px] bg-white dark:bg-gray-800 midnight:bg-[#111827] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl shadow-xl shadow-black/15 dark:shadow-black/40 select-none overflow-hidden"
+      className="absolute z-[70] w-[280px] bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl shadow-xl shadow-black/15 dark:shadow-black/40 select-none overflow-hidden"
       style={{ left: rightEdgeX, top: topY }}
       onPointerDown={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
@@ -164,7 +164,7 @@ export default function FloatingChartEditor({
         </span>
         <button
           onClick={onClose}
-          className="p-1 rounded-md text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+          className="p-1 rounded-md text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
         >
           <X className="w-3.5 h-3.5" />
         </button>
@@ -182,7 +182,7 @@ export default function FloatingChartEditor({
               value={title}
               onChange={(e) => handleTitleChange(e.target.value)}
               placeholder="Chart title..."
-              className="flex-1 min-w-0 px-2 py-1.5 rounded-lg text-xs text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 outline-none focus:ring-1 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="flex-1 min-w-0 px-2 py-1.5 rounded-lg text-xs text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 outline-none focus:ring-1 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
             {/* Title color swatch */}
             <div className="relative" ref={showTitleColorPicker ? titleColorPickerRef : undefined}>
@@ -195,7 +195,7 @@ export default function FloatingChartEditor({
                 <Type className="w-3 h-3" style={{ color: isLightColor(titleColor) ? "#374151" : "#ffffff" }} />
               </button>
               {showTitleColorPicker && (
-                <div className="absolute right-0 top-full mt-1 z-[80] p-2 bg-white dark:bg-gray-800 midnight:bg-[#111827] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-lg shadow-xl w-[160px]">
+                <div className="absolute right-0 top-full mt-1 z-[80] p-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-lg shadow-xl w-[160px]">
                   <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-600 midnight:text-cyan-500/40 purple:text-pink-500/40 mb-1.5">
                     Title Color
                   </div>
@@ -255,7 +255,7 @@ export default function FloatingChartEditor({
                 className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-150 cursor-pointer ${
                   chartType === type || (chartType === "column" && type === "bar")
                     ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400 ring-1 ring-blue-500/15 dark:ring-blue-500/25"
-                    : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                    : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -282,7 +282,7 @@ export default function FloatingChartEditor({
                     title="Change color"
                   />
                   {colorPickerIndex === i && (
-                    <div className="absolute left-0 top-full mt-1 z-[80] p-2 bg-white dark:bg-gray-800 midnight:bg-[#111827] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-lg shadow-xl w-[200px]">
+                    <div className="absolute left-0 top-full mt-1 z-[80] p-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-lg shadow-xl w-[200px]">
                       <TabbedColorPalette
                         selectedColor={colors[i]}
                         onSelect={(c) => handleColorChange(i, c)}
@@ -298,7 +298,7 @@ export default function FloatingChartEditor({
                   value={labels[i] || ""}
                   onChange={(e) => handleLabelChange(i, e.target.value)}
                   placeholder="Label"
-                  className="flex-1 min-w-0 px-1.5 py-1 rounded-md text-[11px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 outline-none focus:ring-1 focus:ring-blue-500/40 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  className="flex-1 min-w-0 px-1.5 py-1 rounded-md text-[11px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 outline-none focus:ring-1 focus:ring-blue-500/40 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
 
                 {/* Value input */}
@@ -307,14 +307,14 @@ export default function FloatingChartEditor({
                   value={val}
                   onChange={(e) => handleValueChange(i, e.target.value)}
                   min={0}
-                  className="w-14 px-1.5 py-1 rounded-md text-[11px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 outline-none focus:ring-1 focus:ring-blue-500/40 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-14 px-1.5 py-1 rounded-md text-[11px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 outline-none focus:ring-1 focus:ring-blue-500/40 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
 
                 {/* Delete button */}
                 <button
                   onClick={() => handleRemovePoint(i)}
                   disabled={values.length <= 2}
-                  className="p-1 rounded-md text-gray-400 dark:text-gray-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+                  className="p-1 rounded-md text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
                   title="Remove data point"
                 >
                   <Trash2 className="w-3 h-3" />

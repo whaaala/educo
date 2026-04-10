@@ -195,7 +195,7 @@ function getStatusConfig(status: TicketStatus) {
         label: "Open",
         icon: AlertCircle,
         bg: "bg-amber-50 dark:bg-amber-500/10",
-        text: "text-amber-600 dark:text-amber-400",
+        text: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
         dot: "bg-amber-500",
         border: "border-amber-200 dark:border-amber-500/20",
         accent: "amber",
@@ -205,9 +205,9 @@ function getStatusConfig(status: TicketStatus) {
         label: "In Progress",
         icon: Loader2,
         bg: "bg-blue-50 dark:bg-blue-500/10",
-        text: "text-blue-600 dark:text-blue-400",
+        text: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
         dot: "bg-blue-500",
-        border: "border-blue-200 dark:border-blue-500/20",
+        border: "border-blue-200 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/20",
         accent: "blue",
       };
     case "resolved":
@@ -238,7 +238,7 @@ function getTypeConfig(type: TicketType) {
     case "complaint":
       return { icon: AlertTriangle, bg: "bg-rose-50 dark:bg-rose-500/10", text: "text-rose-600 dark:text-rose-400", label: "Complaint" };
     case "inquiry":
-      return { icon: HelpCircle, bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", label: "Inquiry" };
+      return { icon: HelpCircle, bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400", label: "Inquiry" };
     case "feedback":
       return { icon: MessageSquare, bg: "bg-violet-50 dark:bg-violet-500/10", text: "text-violet-600 dark:text-violet-400", label: "Feedback" };
     case "request":
@@ -246,16 +246,16 @@ function getTypeConfig(type: TicketType) {
     case "meeting_request":
       return { icon: Calendar, bg: "bg-orange-50 dark:bg-orange-500/10", text: "text-orange-600 dark:text-orange-400", label: "Meeting Request" };
     default:
-      return { icon: FileText, bg: "bg-gray-50 dark:bg-gray-500/10", text: "text-gray-600 dark:text-gray-400", label: "Other" };
+      return { icon: FileText, bg: "bg-gray-50 dark:bg-gray-500/10", text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300", label: "Other" };
   }
 }
 
 function getPriorityConfig(priority: TicketPriority) {
   switch (priority) {
     case "high":
-      return { label: "High", bg: "bg-red-50 dark:bg-red-500/10", text: "text-red-600 dark:text-red-400", dot: "bg-red-500" };
+      return { label: "High", bg: "bg-red-50 dark:bg-red-500/10", text: "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400", dot: "bg-red-500" };
     case "medium":
-      return { label: "Medium", bg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-600 dark:text-amber-400", dot: "bg-amber-500" };
+      return { label: "Medium", bg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400", dot: "bg-amber-500" };
     case "low":
       return { label: "Low", bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" };
   }
@@ -295,10 +295,10 @@ export default function ParentSupportPage() {
                   <type.icon className={`w-4 h-4 ${type.text}`} />
                 </div>
                 <div className="min-w-0">
-                  <div className="font-semibold text-gray-900 dark:text-white group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors truncate">
+                  <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors truncate">
                     {t.subject}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 line-clamp-2 mt-0.5">
                     {t.message}
                   </div>
                 </div>
@@ -347,7 +347,7 @@ export default function ParentSupportPage() {
         sortable: true,
         sortValue: (t) => new Date(t.createdAt).getTime(),
         render: (t) => (
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
             {new Date(t.createdAt).toLocaleDateString()}
           </span>
         ),
@@ -387,12 +387,12 @@ export default function ParentSupportPage() {
       beforeContent={
         <div className="mb-4 bg-gradient-to-br from-cyan-50/80 via-blue-50/80 to-indigo-50/80 dark:from-cyan-950/30 dark:via-blue-950/30 dark:to-indigo-950/30 backdrop-blur-xl rounded-2xl border border-cyan-200/50 dark:border-cyan-800/30 p-4 sm:p-6">
           <div className="flex items-start gap-3 sm:gap-4">
-            <div className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-gray-800/80 shadow-sm shrink-0">
+            <div className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm shrink-0">
               <Info className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-600 dark:text-cyan-400" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Support Guidelines</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">Support Guidelines</h3>
+              <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 leading-relaxed">
                 Our support team typically responds within 24-48 hours. For urgent matters, please mark your ticket as
                 high priority. You can track the status of your tickets here.
               </p>
@@ -438,25 +438,25 @@ function TicketCard({ ticket, onClick }: { ticket: CommunicationRecord; onClick:
   // Status-based subtle styling
   const statusStyles = {
     open: {
-      card: "bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90 border-gray-100/80 dark:border-gray-700/30 hover:border-amber-200/60 dark:hover:border-amber-500/20",
+      card: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 hover:border-amber-200/60 dark:hover:border-amber-500/20",
       accent: "from-amber-500/[0.03] to-transparent",
       indicator: "bg-amber-500",
       glow: "group-hover:shadow-amber-500/5",
     },
     in_progress: {
-      card: "bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90 border-gray-100/80 dark:border-gray-700/30 hover:border-blue-200/60 dark:hover:border-blue-500/20",
+      card: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 hover:border-blue-200/60 dark:hover:border-blue-500/20",
       accent: "from-blue-500/[0.03] to-transparent",
       indicator: "bg-blue-500",
       glow: "group-hover:shadow-blue-500/5",
     },
     resolved: {
-      card: "bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90 border-gray-100/80 dark:border-gray-700/30 hover:border-emerald-200/60 dark:hover:border-emerald-500/20",
+      card: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 hover:border-emerald-200/60 dark:hover:border-emerald-500/20",
       accent: "from-emerald-500/[0.03] to-transparent",
       indicator: "bg-emerald-500",
       glow: "group-hover:shadow-emerald-500/5",
     },
     closed: {
-      card: "bg-white dark:bg-gray-800/90 midnight:bg-gray-900/90 purple:bg-gray-900/90 border-gray-100/80 dark:border-gray-700/30 hover:border-slate-200/60 dark:hover:border-slate-500/20",
+      card: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 hover:border-slate-200/60 dark:hover:border-slate-500/20",
       accent: "from-slate-500/[0.03] to-transparent",
       indicator: "bg-slate-500",
       glow: "group-hover:shadow-slate-500/5",
@@ -499,7 +499,7 @@ function TicketCard({ ticket, onClick }: { ticket: CommunicationRecord; onClick:
         </h3>
 
         {/* Message Preview */}
-        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">
+        <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 line-clamp-2 mb-3">
           {ticket.message}
         </p>
 
@@ -510,25 +510,25 @@ function TicketCard({ ticket, onClick }: { ticket: CommunicationRecord; onClick:
             <span className={`text-[10px] font-medium ${priority.text}`}>{priority.label}</span>
           </div>
           {ticket.responses.length > 0 && (
-            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50">
               <MessageSquare className="w-3 h-3 text-gray-400" />
-              <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">{ticket.responses.length} response{ticket.responses.length !== 1 ? "s" : ""}</span>
+              <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{ticket.responses.length} response{ticket.responses.length !== 1 ? "s" : ""}</span>
             </div>
           )}
         </div>
 
         {/* Date Information */}
-        <div className="flex items-center justify-between gap-4 p-3 rounded-xl bg-gray-50/80 dark:bg-gray-900/40 midnight:bg-gray-800/40 purple:bg-gray-800/40">
+        <div className="flex items-center justify-between gap-4 p-3 rounded-xl bg-gray-50/80 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0f1330]/40 purple:bg-[#251340]/40">
           {/* Created Date */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 shadow-sm flex items-center justify-center">
-              <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+            <div className="w-9 h-9 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm flex items-center justify-center">
+              <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">
+              <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
                 {formatShortDate(ticket.createdAt)}
               </p>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
                 Created
               </p>
             </div>
@@ -537,8 +537,8 @@ function TicketCard({ ticket, onClick }: { ticket: CommunicationRecord; onClick:
           {/* Assigned To */}
           {ticket.assignedTo && (
             <div className="text-right">
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium">Assigned</p>
-              <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mt-0.5">{ticket.assignedTo}</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wider font-medium">Assigned</p>
+              <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">{ticket.assignedTo}</p>
             </div>
           )}
         </div>
@@ -590,7 +590,7 @@ function ViewTicketModal({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
       >
         {/* Header */}
         <div className="relative px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-r from-cyan-500 to-blue-600">
@@ -630,20 +630,20 @@ function ViewTicketModal({
 
           {/* Subject */}
           <div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{ticket.subject}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{ticket.message}</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">{ticket.subject}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 leading-relaxed">{ticket.message}</p>
           </div>
 
           {/* Meta Information */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-900/40">
+            <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40">
               <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium mb-1">Created</p>
-              <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{formatDate(ticket.createdAt)}</p>
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">{formatDate(ticket.createdAt)}</p>
             </div>
             {ticket.assignedTo && (
-              <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-900/40">
+              <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40">
                 <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium mb-1">Assigned To</p>
-                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{ticket.assignedTo}</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">{ticket.assignedTo}</p>
               </div>
             )}
             {ticket.resolvedAt && (
@@ -657,7 +657,7 @@ function ViewTicketModal({
           {/* Responses */}
           {ticket.responses.length > 0 && (
             <div>
-              <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+              <h4 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 flex items-center gap-2">
                 <MessageSquare className="w-4 h-4" />
                 Conversation ({ticket.responses.length})
               </h4>
@@ -667,8 +667,8 @@ function ViewTicketModal({
                     key={response.id}
                     className={`p-4 rounded-xl ${
                       response.from === "admin"
-                        ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30"
-                        : "bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-700/30"
+                        ? "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 border border-blue-100 dark:border-blue-800/30"
+                        : "bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30"
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-2">
@@ -678,13 +678,13 @@ function ViewTicketModal({
                         <User className="w-3.5 h-3.5 text-white" />
                       </div>
                       <span className={`text-xs font-semibold ${
-                        response.from === "admin" ? "text-blue-700 dark:text-blue-300" : "text-gray-700 dark:text-gray-300"
+                        response.from === "admin" ? "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300" : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                       }`}>
                         {response.from === "admin" ? "School Admin" : "You"}
                       </span>
                       <span className="text-[10px] text-gray-400 ml-auto">{formatDate(response.date)}</span>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{response.message}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 leading-relaxed">{response.message}</p>
                   </div>
                 ))}
               </div>
@@ -693,10 +693,10 @@ function ViewTicketModal({
         </div>
 
         {/* Footer */}
-        <div className="px-4 sm:px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700/50">
+        <div className="px-4 sm:px-6 py-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
           <button
             onClick={onClose}
-            className="w-full py-2.5 rounded-xl bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-semibold transition-colors"
+            className="w-full py-2.5 rounded-xl bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] hover:bg-gray-300 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 text-sm font-semibold transition-colors"
           >
             Close
           </button>
@@ -782,7 +782,7 @@ function CreateTicketModal({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => !isSubmitting && onClose()}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
       >
         {/* Header */}
         <div className="relative px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-r from-cyan-500 to-blue-600">
@@ -806,8 +806,8 @@ function CreateTicketModal({
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
                 <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Ticket Created!</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Your support ticket has been submitted successfully.</p>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">Ticket Created!</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Your support ticket has been submitted successfully.</p>
             </div>
           ) : (
             <>
@@ -854,7 +854,7 @@ function CreateTicketModal({
 
               {/* Preview Card */}
               {(subject.trim() || message.trim()) && (
-                <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-700/30">
+                <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30">
                   <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium mb-2">Preview</p>
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg ${getTypeConfig(ticketType).bg}`}>
@@ -866,14 +866,14 @@ function CreateTicketModal({
                     </div>
                     <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 dark:bg-amber-500/10">
                       <AlertCircle className="w-3 h-3 text-amber-500" />
-                      <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">Open</span>
+                      <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">Open</span>
                     </div>
                   </div>
                   {subject.trim() && (
-                    <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">{subject}</h4>
+                    <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-1">{subject}</h4>
                   )}
                   {message.trim() && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{message}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 line-clamp-2">{message}</p>
                   )}
                 </div>
               )}
@@ -883,11 +883,11 @@ function CreateTicketModal({
 
         {/* Footer */}
         {!isSuccess && (
-          <div className="px-4 sm:px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700/50 flex gap-3">
+          <div className="px-4 sm:px-6 py-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 flex gap-3">
             <button
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 py-2.5 rounded-xl bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-semibold transition-colors disabled:opacity-50"
+              className="flex-1 py-2.5 rounded-xl bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] hover:bg-gray-300 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 text-sm font-semibold transition-colors disabled:opacity-50"
             >
               Cancel
             </button>

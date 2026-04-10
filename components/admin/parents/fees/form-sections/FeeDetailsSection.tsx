@@ -69,7 +69,7 @@ export default function FeeDetailsSection({
   };
 
   return (
-    <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <section className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
       {/* Collapsible Header */}
       <button
         type="button"
@@ -195,7 +195,7 @@ export default function FeeDetailsSection({
                         errors.amount
                           ? "border-red-500 dark:border-red-400"
                           : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
-                      } bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-1 focus:ring-blue-500/10 focus:border-blue-400 dark:focus:border-blue-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500`}
+                      } bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-1 focus:ring-blue-500/10 focus:border-blue-400 dark:focus:border-blue-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500`}
                     />
                   </div>
                   {formData.amount && (
@@ -253,7 +253,7 @@ export default function FeeDetailsSection({
                     onChange={(e) => onChange("notes", e.target.value)}
                     placeholder="Add any additional notes or remarks about this fee..."
                     rows={3}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-1 focus:ring-blue-500/10 focus:border-blue-400 dark:focus:border-blue-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-1 focus:ring-blue-500/10 focus:border-blue-400 dark:focus:border-blue-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 resize-none"
                   />
                 </div>
               </div>

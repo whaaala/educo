@@ -10,10 +10,10 @@ import Portal from "./Portal";
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
   loading: () => (
-    <div className="w-[350px] h-[400px] flex items-center justify-center bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl">
+    <div className="w-[350px] h-[400px] flex items-center justify-center bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-xl">
       <div className="flex flex-col items-center gap-2">
         <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        <span className="text-sm text-gray-500 dark:text-gray-400">Loading emojis...</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Loading emojis...</span>
       </div>
     </div>
   ),
@@ -179,8 +179,8 @@ export default function EmojiPickerPopover({
           buttonClassName ||
           `p-2 rounded-lg transition-colors cursor-pointer ${
             isOpen
-              ? "text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400"
-              : "text-gray-400 hover:text-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+              ? "text-blue-600 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+              : "text-gray-400 hover:text-gray-600 hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
           } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`
         }
         aria-label="Open emoji picker"

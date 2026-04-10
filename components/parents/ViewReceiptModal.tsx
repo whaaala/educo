@@ -586,7 +586,7 @@ export default function ViewReceiptModal({
       <button
         type="button"
         onClick={handlePrint}
-        className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all cursor-pointer"
+        className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-[#22262e] transition-all cursor-pointer"
       >
         <Printer className="w-4 h-4" />
         <span className="hidden sm:inline">Print</span>
@@ -655,7 +655,7 @@ export default function ViewReceiptModal({
         {/* Details Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Student Details */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20">
+          <div className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20">
             <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
               Student Details
             </h4>
@@ -686,7 +686,7 @@ export default function ViewReceiptModal({
           </div>
 
           {/* Payment Details */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20">
+          <div className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20">
             <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
               Payment Details
             </h4>
@@ -718,7 +718,7 @@ export default function ViewReceiptModal({
         </div>
 
         {/* Fee Breakdown */}
-        <div className="bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20 overflow-hidden">
+        <div className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20">
             <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               Fee Breakdown

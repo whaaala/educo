@@ -30,7 +30,7 @@ export default function EventsSection({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
+    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
       {/* Header */}
       <div className="p-4 border-b border-gray-100 dark:border-gray-700/50 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -66,7 +66,7 @@ export default function EventsSection({
                   unoptimized
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <span className="absolute bottom-2 left-2 px-2.5 py-1 rounded-lg text-xs font-semibold bg-white/95 dark:bg-gray-900/95 text-gray-800 dark:text-white shadow-sm">
+                <span className="absolute bottom-2 left-2 px-2.5 py-1 rounded-lg text-xs font-semibold bg-white/95 dark:bg-[#0f1115]/95 text-gray-800 dark:text-white shadow-sm">
                   {event.duration}
                 </span>
               </div>

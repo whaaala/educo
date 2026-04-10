@@ -1036,7 +1036,7 @@ export default function IssueLoanModal({
           ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
           : selectedBook
             ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-            : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+            : "bg-gray-100 text-gray-500 dark:bg-[#1a1d24] dark:text-gray-400"
       }`}>
         <BookOpen className="w-3.5 h-3.5" />
         <span>Book</span>
@@ -1048,7 +1048,7 @@ export default function IssueLoanModal({
           ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
           : selectedMember
             ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-            : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+            : "bg-gray-100 text-gray-500 dark:bg-[#1a1d24] dark:text-gray-400"
       }`}>
         <User className="w-3.5 h-3.5" />
         <span>Borrower</span>
@@ -1058,7 +1058,7 @@ export default function IssueLoanModal({
       <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
         currentStep === "details"
           ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-          : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+          : "bg-gray-100 text-gray-500 dark:bg-[#1a1d24] dark:text-gray-400"
       }`}>
         <Calendar className="w-3.5 h-3.5" />
         <span>Details</span>
@@ -1165,7 +1165,7 @@ export default function IssueLoanModal({
                       by {selectedBook.author}
                     </p>
                     <div className="flex flex-wrap items-center gap-2 mt-2">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300">
                         <Hash className="w-3 h-3" />
                         {selectedBook.isbn}
                       </span>
@@ -1223,7 +1223,7 @@ export default function IssueLoanModal({
                         value={bookSearchQuery}
                         onChange={(e) => setBookSearchQuery(e.target.value)}
                         placeholder="Search by title, author, ISBN, or subject..."
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                       />
                     </div>
 
@@ -1315,7 +1315,7 @@ export default function IssueLoanModal({
           <div className="space-y-4">
             {/* Selected Book Summary */}
             {selectedBook && (
-              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
+              <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-3">
                   {selectedBook.coverImage ? (
                     <Image
@@ -1327,7 +1327,7 @@ export default function IssueLoanModal({
                       unoptimized
                     />
                   ) : (
-                    <div className="w-8 h-10 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                    <div className="w-8 h-10 bg-gray-200 dark:bg-[#22262e] rounded flex items-center justify-center">
                       <BookOpen className="w-4 h-4 text-gray-400" />
                     </div>
                   )}
@@ -1352,7 +1352,7 @@ export default function IssueLoanModal({
                         alt={selectedMember.name}
                         width={40}
                         height={40}
-                        className="w-10 h-10 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-gray-700"
+                        className="w-10 h-10 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-[#22262e]"
                         unoptimized
                       />
                     ) : (
@@ -1467,7 +1467,7 @@ export default function IssueLoanModal({
                         value={memberSearchQuery}
                         onChange={(e) => setMemberSearchQuery(e.target.value)}
                         placeholder="Search by name, ID, class, or department..."
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                       />
                     </div>
 
@@ -1479,7 +1479,7 @@ export default function IssueLoanModal({
                             key={member.id}
                             type="button"
                             onClick={() => handleSelectMember(member)}
-                            className="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                            className="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
                           >
                             <div className="flex items-start gap-3">
                               {member.avatarUrl ? (
@@ -1488,7 +1488,7 @@ export default function IssueLoanModal({
                                   alt={member.name}
                                   width={32}
                                   height={32}
-                                  className="w-8 h-8 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-gray-700"
+                                  className="w-8 h-8 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-[#22262e]"
                                   unoptimized
                                 />
                               ) : (
@@ -1559,7 +1559,7 @@ export default function IssueLoanModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Book Summary */}
               {selectedBook && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-2 mb-3">
                     <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Book</p>
@@ -1596,7 +1596,7 @@ export default function IssueLoanModal({
 
               {/* Borrower Summary */}
               {selectedMember && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-2 mb-3">
                     <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Borrower</p>
@@ -1608,7 +1608,7 @@ export default function IssueLoanModal({
                         alt={selectedMember.name}
                         width={40}
                         height={40}
-                        className="w-10 h-10 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-gray-700"
+                        className="w-10 h-10 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-[#22262e]"
                         unoptimized
                       />
                     ) : (

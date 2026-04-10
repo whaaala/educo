@@ -47,7 +47,7 @@ export default function ViewPerformanceReviewModal({
       "needs-improvement": "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
       "unsatisfactory": "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
     };
-    return colors[rating] || "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400";
+    return colors[rating] || "bg-gray-100 text-gray-700 dark:bg-[#1a1d24] dark:text-gray-400";
   };
 
   const getStarRating = (score: number) => {
@@ -69,7 +69,7 @@ export default function ViewPerformanceReviewModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-gray-800/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -95,7 +95,7 @@ export default function ViewPerformanceReviewModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-gray-800/50 purple:hover:bg-gray-800/50 rounded-lg transition-all duration-200 hover:rotate-90 active:scale-95 cursor-pointer"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5/50 purple:hover:bg-pink-500/5/50 rounded-lg transition-all duration-200 hover:rotate-90 active:scale-95 cursor-pointer"
               aria-label="Close"
             >
               <X className="w-5 h-5 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
@@ -152,7 +152,7 @@ export default function ViewPerformanceReviewModal({
           {/* Review Information Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Review Period */}
-            <div className="bg-white dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-cyan-400 purple:text-pink-400" />
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
@@ -168,7 +168,7 @@ export default function ViewPerformanceReviewModal({
             </div>
 
             {/* Review Date */}
-            <div className="bg-white dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
@@ -181,7 +181,7 @@ export default function ViewPerformanceReviewModal({
             </div>
 
             {/* Due Date */}
-            <div className="bg-white dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="w-4 h-4 text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400" />
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
@@ -195,7 +195,7 @@ export default function ViewPerformanceReviewModal({
           </div>
 
           {/* Reviewer Information */}
-          <div className="bg-white dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2 mb-3">
               <User className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" />
               <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
@@ -254,7 +254,7 @@ export default function ViewPerformanceReviewModal({
                 {review.criteria.map((criterion) => (
                   <div
                     key={criterion.id}
-                    className="bg-white dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                    className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div>
@@ -315,7 +315,7 @@ export default function ViewPerformanceReviewModal({
 
           {/* Reviewer Comments */}
           {review.reviewerComments && (
-            <div className="bg-white dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
                 <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
@@ -330,7 +330,7 @@ export default function ViewPerformanceReviewModal({
 
           {/* Employee Comments */}
           {review.employeeComments && (
-            <div className="bg-white dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
                 <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
@@ -345,7 +345,7 @@ export default function ViewPerformanceReviewModal({
 
           {/* Signatures Section */}
           {(review.reviewerSignedDate || review.employeeAcknowledgedDate || review.hrApprovedDate) && (
-            <div className="bg-gray-50 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-gray-50 dark:bg-[#1a1d24]/30 midnight:bg-[#0a0e27]/30 purple:bg-[#1a0b2e]/30 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3">
                 Signatures & Approvals
               </h5>
@@ -383,7 +383,7 @@ export default function ViewPerformanceReviewModal({
         </div>
 
         {/* Footer */}
-        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
           <div className="flex justify-between items-center">
             {onEdit && review.status !== "completed" && (
               <button

@@ -277,7 +277,7 @@ export default function WhatsAppChat({
   // If not configured, show setup prompt
   if (!isLoading && !isConfiguredState) {
     return (
-      <div className="flex flex-col h-full bg-white dark:bg-gray-900">
+      <div className="flex flex-col h-full bg-white dark:bg-[#0f1115]">
         {/* Header */}
         <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-green-600">
           <div className="flex items-center gap-3">
@@ -318,7 +318,7 @@ export default function WhatsAppChat({
             </a>
             <button
               onClick={openWhatsAppExternal}
-              className="block w-full px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="block w-full px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e] transition-colors"
             >
               Open in WhatsApp App
             </button>
@@ -329,7 +329,7 @@ export default function WhatsAppChat({
   }
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
+    <div className="flex flex-col h-full bg-white dark:bg-[#0f1115]">
       {/* Header - WhatsApp green theme */}
       <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-green-600">
         <div className="flex items-center gap-3">
@@ -437,7 +437,7 @@ export default function WhatsAppChat({
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow px-6 py-4 text-center">
+            <div className="bg-white dark:bg-[#1a1d24] rounded-lg shadow px-6 py-4 text-center">
               <MessageCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
               <p className="text-gray-600 dark:text-gray-400 text-sm">
                 No messages yet with this contact.
@@ -452,7 +452,7 @@ export default function WhatsAppChat({
             <div key={group.date}>
               {/* Date separator */}
               <div className="flex items-center justify-center my-4">
-                <span className="px-3 py-1 bg-white/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400 text-xs rounded-lg shadow-sm">
+                <span className="px-3 py-1 bg-white/80 dark:bg-[#1a1d24]/80 text-gray-600 dark:text-gray-400 text-xs rounded-lg shadow-sm">
                   {group.date}
                 </span>
               </div>
@@ -471,7 +471,7 @@ export default function WhatsAppChat({
                       className={`max-w-[70%] rounded-lg px-3 py-2 shadow ${
                         isOwn
                           ? "bg-green-100 dark:bg-green-900 rounded-br-none"
-                          : "bg-white dark:bg-gray-800 rounded-bl-none"
+                          : "bg-white dark:bg-[#1a1d24] rounded-bl-none"
                       }`}
                     >
                       {/* Message type indicator */}
@@ -523,29 +523,29 @@ export default function WhatsAppChat({
       </div>
 
       {/* Input */}
-      <div className="flex-shrink-0 p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
+      <div className="flex-shrink-0 p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-[#1a1d24]">
         <div className="flex items-center gap-2">
           {/* Attachment */}
           <div className="relative">
             <button
               onClick={() => setShowAttachMenu(!showAttachMenu)}
-              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+              className="p-2 hover:bg-gray-200 dark:hover:bg-[#22262e] rounded-full transition-colors"
             >
               <Paperclip className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </button>
 
             {showAttachMenu && (
-              <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 min-w-[150px]">
+              <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-[#1a1d24] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 min-w-[150px]">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-3 w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-left"
+                  className="flex items-center gap-3 w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-[#22262e] text-left"
                 >
                   <ImageIcon className="w-4 h-4 text-purple-500" />
                   <span className="text-sm">Photo</span>
                 </button>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-3 w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-left"
+                  className="flex items-center gap-3 w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-[#22262e] text-left"
                 >
                   <FileText className="w-4 h-4 text-blue-500" />
                   <span className="text-sm">Document</span>
@@ -555,7 +555,7 @@ export default function WhatsAppChat({
                     // Would open location picker
                     setShowAttachMenu(false);
                   }}
-                  className="flex items-center gap-3 w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-left"
+                  className="flex items-center gap-3 w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-[#22262e] text-left"
                 >
                   <MapPin className="w-4 h-4 text-green-500" />
                   <span className="text-sm">Location</span>
@@ -581,7 +581,7 @@ export default function WhatsAppChat({
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
             placeholder="Type a message..."
-            className="flex-1 px-4 py-2 bg-white dark:bg-gray-700 border-0 rounded-full text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="flex-1 px-4 py-2 bg-white dark:bg-[#22262e] border-0 rounded-full text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
             suppressHydrationWarning
           />
 
@@ -592,7 +592,7 @@ export default function WhatsAppChat({
             className={`p-3 rounded-full transition-colors ${
               newMessage.trim() && !isSending
                 ? "bg-green-600 hover:bg-green-700 text-white"
-                : "bg-gray-300 dark:bg-gray-600 text-gray-400"
+                : "bg-gray-300 dark:bg-[#2a2d35] text-gray-400"
             }`}
           >
             {isSending ? (

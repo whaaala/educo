@@ -26,7 +26,7 @@ export function DetailCard({
 }: DetailCardProps) {
   const variantStyles = {
     default: cn(
-      "bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900",
+      "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]",
       "border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/10 purple:border-pink-500/10"
     ),
     gradient: cn(
@@ -35,11 +35,11 @@ export function DetailCard({
       "border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/10 purple:border-pink-500/10"
     ),
     elevated: cn(
-      "bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900",
+      "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]",
       "shadow-xl shadow-gray-200/50 dark:shadow-gray-900/50 midnight:shadow-cyan-900/20 purple:shadow-pink-900/20"
     ),
     glass: cn(
-      "bg-white/80 dark:bg-gray-800/80 midnight:bg-gray-900/80 purple:bg-gray-900/80",
+      "bg-white/80 dark:bg-[#1a1d24]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80",
       "backdrop-blur-xl border border-white/20 dark:border-gray-700/50",
       "midnight:border-cyan-500/20 purple:border-pink-500/20"
     ),

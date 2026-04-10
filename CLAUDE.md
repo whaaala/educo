@@ -60,7 +60,20 @@ Run through this checklist BEFORE telling the user it's done:
 - **Loading spinners are MANDATORY on ALL pages** — use `PageLoader` (`components/shared/PageLoader.tsx`) for full-page loading states and `InPageSpinner` (`components/shared/InPageSpinner.tsx`) for content-area loading. Every page must show a spinner while data/components load. This applies to all existing and newly implemented pages.
 - **Every UI element MUST have working functionality** — no placeholder UI. When implementing any component, menu, button, or interactive element, the actual functionality must be implemented alongside the UI. Never create a button/menu item without its working action. Test every item works in ALL places the component is used.
 
-### 4. Testing (ALL types required for every change)
+### 4. Theme Support (MANDATORY)
+- **Every feature, component, and page MUST support ALL 4 themes**: light, dark, midnight, purple
+- Every `dark:` Tailwind class MUST have corresponding `midnight:` and `purple:` variants
+- Theme color mapping (must match MainLayout: `dark:bg-[#0f1115]`, `midnight:bg-[#0a0e27]`, `purple:bg-[#1a0b2e]`):
+  - Backgrounds: `dark:bg-gray-900` → `midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]`, `dark:bg-gray-800` → `midnight:bg-[#111827] purple:bg-[#2a1447]`
+  - Text: `dark:text-gray-300` → `midnight:text-cyan-200 purple:text-pink-200`
+  - Borders: `dark:border-gray-700` → `midnight:border-cyan-500/20 purple:border-pink-500/20`
+  - Hover: `dark:hover:bg-gray-800` → `midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5`
+- Use `scripts/add-theme-variants.js <file>` to bulk-add missing theme variants
+- Theme MUST work on ALL screen sizes (mobile 375px, tablet 768px, desktop 1280px+)
+- NO hardcoded colors — always use Tailwind theme-aware classes
+- Test every implementation in all 4 themes before reporting done
+
+### 5. Testing (ALL types required for every change)
 - **Unit** — pure functions, helpers, data mutations, storage methods
 - **Functional** — component renders, prop handling, state changes, event handlers (black box + white box)
 - **Integration** — components working together, parent↔child data flow, context providers
@@ -72,7 +85,7 @@ Run through this checklist BEFORE telling the user it's done:
 - Mobile tests cover BOTH `isTablet=true` and `isTablet=false`
 - Feature files in `tests/features/` — one per component/module
 
-### 5. Session Continuity (MANDATORY)
+### 6. Session Continuity (MANDATORY)
 - **When the conversation ends, context limit is reached, or the user stops work** — you MUST save a memory file recording:
   - The **current task/feature** being worked on
   - **Exactly where you stopped** (last file edited, last step completed, next step planned)
@@ -81,7 +94,7 @@ Run through this checklist BEFORE telling the user it's done:
 - Save to `memory/project_last_session.md` (overwrite each time) and keep `MEMORY.md` index updated
 - This is NON-NEGOTIABLE — never end a session without saving this state
 
-### 6. Verification
+### 7. Verification
 - After ANY code change, verify app loads without errors on ALL target devices
 - Check Metro/dev server logs for errors before reporting success
 - Never say "done" without personally verifying every interaction

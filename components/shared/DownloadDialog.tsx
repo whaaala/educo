@@ -264,18 +264,18 @@ export default function DownloadDialog({
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-[480px] max-w-[92vw] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden">
+      <div className="relative z-10 w-[480px] max-w-[92vw] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden">
 
         {/* Header */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-sm shadow-green-500/20">
             <Download className="w-4.5 h-4.5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-[15px] font-semibold text-gray-900 dark:text-gray-100">Download</h2>
+            <h2 className="text-[15px] font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Download</h2>
             <p className="text-[11px] text-gray-400 truncate">{title}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
             <X className="w-4 h-4 text-gray-400" />
           </button>
         </div>
@@ -308,7 +308,7 @@ export default function DownloadDialog({
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-950/50">
+        <div className="px-5 py-3 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gray-50/50 dark:bg-gray-950 midnight:bg-[#070d1a] purple:bg-[#150a28]/50">
           <p className="text-[11px] text-gray-400 text-center">
             {content.length} slide{content.length !== 1 ? "s" : ""} · Click a format to download
           </p>
@@ -332,12 +332,12 @@ function FormatRow({ format, filename, estimatedSize, isDownloading, isCompleted
           ? "bg-green-50 dark:bg-green-900/15 border border-green-200 dark:border-green-800"
           : isDownloading
             ? "bg-blue-50 dark:bg-blue-900/15 border border-blue-200 dark:border-blue-800"
-            : "border border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/30 hover:shadow-sm"
+            : "border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/30 hover:shadow-sm"
       }`}
     >
       {/* Icon */}
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-        isCompleted ? "bg-green-100 dark:bg-green-900/30" : "bg-gray-50 dark:bg-gray-800"
+        isCompleted ? "bg-green-100 dark:bg-green-900/30" : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]"
       }`}>
         {isCompleted ? <Check className="w-5 h-5 text-green-600" /> : <FormatIcon type={format.icon} />}
       </div>
@@ -345,10 +345,10 @@ function FormatRow({ format, filename, estimatedSize, isDownloading, isCompleted
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-[13px] font-semibold text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          <span className="text-[13px] font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
             {format.label}
           </span>
-          <span className="text-[10px] font-mono text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
+          <span className="text-[10px] font-mono text-gray-400 bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] px-1.5 py-0.5 rounded">
             {format.extension}
           </span>
         </div>

@@ -19,7 +19,7 @@ export default function AddressCard({
       </h3>
 
       {/* Divider */}
-      <div className="h-px bg-gray-100 dark:bg-gray-800/50 midnight:bg-gray-800/30 purple:bg-gray-800/30 mb-2"></div>
+      <div className="h-px bg-gray-100 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 mb-2"></div>
 
       {/* Address Entries */}
       <div className="space-y-2">

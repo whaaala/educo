@@ -352,15 +352,15 @@ export default function DrawingCanvas({ onSave, onCancel }: { onSave: (dataUrl: 
     <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onCancel}>
       <div
         ref={containerRef}
-        className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden"
+        className="bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex flex-col overflow-hidden"
         style={{ width: CANVAS_W + 48, maxWidth: "95vw", maxHeight: "95vh" }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Drawing</span>
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Drawing</span>
           <div className="flex items-center gap-2">
-            <button onClick={onCancel} className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer">
+            <button onClick={onCancel} className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-lg transition-colors cursor-pointer">
               Cancel
             </button>
             <button onClick={handleSave} className="px-4 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5">
@@ -371,37 +371,37 @@ export default function DrawingCanvas({ onSave, onCancel }: { onSave: (dataUrl: 
         </div>
 
         {/* Toolbar */}
-        <div className="flex items-center gap-1 px-3 py-2 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 flex-wrap">
+        <div className="flex items-center gap-1 px-3 py-2 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex-wrap">
           {TOOLS.map(tool => (
             <button
               key={tool.type}
               onClick={() => setActiveTool(tool.type)}
               title={tool.label}
-              className={`w-8 h-8 inline-flex items-center justify-center rounded-lg transition-colors cursor-pointer ${activeTool === tool.type ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 ring-1 ring-indigo-400" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+              className={`w-8 h-8 inline-flex items-center justify-center rounded-lg transition-colors cursor-pointer ${activeTool === tool.type ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 ring-1 ring-indigo-400" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
             >
               <tool.Icon className="w-4 h-4" />
             </button>
           ))}
-          <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
-          <label className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400 cursor-pointer" title="Fill color">
+          <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-1" />
+          <label className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 cursor-pointer" title="Fill color">
             Fill
             <input type="color" value={fillColor} onChange={e => setFillColor(e.target.value)} className="w-5 h-5 border-0 p-0 rounded cursor-pointer" />
           </label>
-          <label className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400 cursor-pointer" title="Stroke color">
+          <label className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 cursor-pointer" title="Stroke color">
             Stroke
             <input type="color" value={strokeColor} onChange={e => setStrokeColor(e.target.value)} className="w-5 h-5 border-0 p-0 rounded cursor-pointer" />
           </label>
-          <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
-          <button onClick={rotateSelected} disabled={!selectedId} title="Rotate 15°" className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 cursor-pointer transition-colors">
+          <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-1" />
+          <button onClick={rotateSelected} disabled={!selectedId} title="Rotate 15°" className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 disabled:opacity-30 cursor-pointer transition-colors">
             <RotateCw className="w-4 h-4" />
           </button>
-          <button onClick={deleteSelected} disabled={!selectedId} title="Delete" className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-30 cursor-pointer transition-colors">
+          <button onClick={deleteSelected} disabled={!selectedId} title="Delete" className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 disabled:opacity-30 cursor-pointer transition-colors">
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
 
         {/* Canvas */}
-        <div className="flex-1 overflow-auto p-4 bg-gray-100 dark:bg-gray-800 flex items-start justify-center">
+        <div className="flex-1 overflow-auto p-4 bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-start justify-center">
           <canvas
             ref={canvasRef}
             width={CANVAS_W}
@@ -425,7 +425,7 @@ export default function DrawingCanvas({ onSave, onCancel }: { onSave: (dataUrl: 
             return (
               <textarea
                 autoFocus
-                className="fixed z-[510] border-2 border-indigo-400 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-none outline-none p-1 text-[16px] font-sans rounded"
+                className="fixed z-[510] border-2 border-indigo-400 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 resize-none outline-none p-1 text-[16px] font-sans rounded"
                 style={{ top: rect.top + shape.y, left: rect.left + shape.x, width: shape.w, minHeight: shape.h }}
                 defaultValue={shape.text || ""}
                 onBlur={(e) => {
@@ -440,7 +440,7 @@ export default function DrawingCanvas({ onSave, onCancel }: { onSave: (dataUrl: 
         </div>
 
         {/* Footer status */}
-        <div className="px-4 py-1.5 border-t border-gray-100 dark:border-gray-700 text-[10px] text-gray-400 dark:text-gray-500 flex items-center justify-between">
+        <div className="px-4 py-1.5 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 flex items-center justify-between">
           <span>{shapes.length} shape{shapes.length !== 1 ? "s" : ""} · {CANVAS_W}×{CANVAS_H}</span>
           <span className="italic">Click &amp; drag to draw · Shift+click to multi-select</span>
         </div>

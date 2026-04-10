@@ -326,12 +326,12 @@ export default function AdminParentsPage() {
         <div className="space-y-4">
           {/* Warning Message */}
           <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
                 {parentsWithChildren.length} parent{parentsWithChildren.length > 1 ? "s have" : " has"} connected children
               </p>
-              <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+              <p className="text-sm text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 mt-1">
                 Select and disconnect children below, then delete the parents. You can also delete parents that already have no children connected.
               </p>
             </div>
@@ -340,7 +340,7 @@ export default function AdminParentsPage() {
           {/* Parents with Children List */}
           {parentsWithChildren.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                 Parents with Connected Children:
               </h4>
               <div className="space-y-3 max-h-[280px] overflow-y-auto">
@@ -352,7 +352,7 @@ export default function AdminParentsPage() {
                   return (
                     <div
                       key={parent.id}
-                      className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                      className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                     >
                       {/* Parent Header */}
                       <div className="flex items-center justify-between mb-3">
@@ -369,10 +369,10 @@ export default function AdminParentsPage() {
                             </div>
                           )}
                           <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                               {parent.firstName} {parent.lastName}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                               {selectedForParent.length} of {parent.children.length} selected
                             </p>
                           </div>
@@ -381,7 +381,7 @@ export default function AdminParentsPage() {
                           <button
                             type="button"
                             onClick={() => toggleAllChildrenForParent(parent.id, parent.children)}
-                            className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 cursor-pointer"
+                            className="text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 cursor-pointer"
                           >
                             {allSelected ? "Deselect All" : "Select All"}
                           </button>
@@ -389,7 +389,7 @@ export default function AdminParentsPage() {
                             type="button"
                             onClick={() => handleDisconnectInModal(parent.id)}
                             disabled={!someSelected}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <UserMinus className="w-3.5 h-3.5" />
                             Disconnect
@@ -407,8 +407,8 @@ export default function AdminParentsPage() {
                               onClick={() => toggleChildInModal(parent.id, child.id)}
                               className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border cursor-pointer transition-all ${
                                 isSelected
-                                  ? "bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700"
-                                  : "bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                                  ? "bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 border-red-300 dark:border-red-700"
+                                  : "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-300 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40"
                               }`}
                             >
                               <div
@@ -420,8 +420,8 @@ export default function AdminParentsPage() {
                               >
                                 {isSelected && <Check className="w-3 h-3 text-white" />}
                               </div>
-                              <GraduationCap className={`w-3.5 h-3.5 ${isSelected ? "text-red-600 dark:text-red-400" : "text-blue-600 dark:text-blue-400"}`} />
-                              <span className={`text-xs font-medium ${isSelected ? "text-red-700 dark:text-red-300" : "text-gray-700 dark:text-gray-300"}`}>
+                              <GraduationCap className={`w-3.5 h-3.5 ${isSelected ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"}`} />
+                              <span className={`text-xs font-medium ${isSelected ? "text-red-700 dark:text-red-300" : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"}`}>
                                 {child.firstName} {child.lastName}
                               </span>
                             </div>
@@ -439,7 +439,7 @@ export default function AdminParentsPage() {
           {getEligibleForDeletion().length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-green-700 dark:text-green-400">
+                <h4 className="text-sm font-semibold text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
                   Ready for Deletion ({getEligibleForDeletion().length}):
                 </h4>
                 <button
@@ -477,7 +477,7 @@ export default function AdminParentsPage() {
                       className="ml-1 p-1 rounded hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
                       title="Delete this parent"
                     >
-                      <Trash2 className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                      <Trash2 className="w-3.5 h-3.5 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
                     </button>
                   </div>
                 ))}
@@ -488,10 +488,10 @@ export default function AdminParentsPage() {
           {/* Success message when all done */}
           {parentsWithChildren.length === 0 && getEligibleForDeletion().length === 0 && (
             <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-              <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+              <Check className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-green-800 dark:text-green-300">All done!</p>
-                <p className="text-sm text-green-700 dark:text-green-400 mt-1">
+                <p className="text-sm text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 mt-1">
                   All selected parents have been processed.
                 </p>
               </div>
@@ -499,7 +499,7 @@ export default function AdminParentsPage() {
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <FormButton
               type="button"
               variant="secondary"
@@ -528,14 +528,14 @@ export default function AdminParentsPage() {
           <button
             type="button"
             onClick={() => handleAddParentType("parent")}
-            className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all cursor-pointer group"
+            className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 midnight:hover:bg-cyan-900/10 purple:hover:bg-pink-900/10 transition-all cursor-pointer group"
           >
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform">
               <Users className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-base font-semibold text-gray-900 dark:text-white">Parent</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Parent</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                 Biological parent (Father or Mother) of a student
               </p>
             </div>
@@ -544,22 +544,22 @@ export default function AdminParentsPage() {
           <button
             type="button"
             onClick={() => handleAddParentType("guardian")}
-            className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-900/10 transition-all cursor-pointer group"
+            className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-900/10 transition-all cursor-pointer group"
           >
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform">
               <Shield className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-base font-semibold text-gray-900 dark:text-white">Guardian</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Guardian</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                 Legal guardian, sponsor, or caregiver of a student
               </p>
             </div>
           </button>
 
-          <div className="flex items-start gap-2 p-3 mt-2 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
-            <AlertTriangle className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-gray-600 dark:text-gray-400">
+          <div className="flex items-start gap-2 p-3 mt-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <AlertTriangle className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
               After creating the account, you can link them to one or more students in the system.
             </p>
           </div>

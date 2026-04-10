@@ -97,7 +97,7 @@ const iconColorStyles: Record<ActivityIconColor, { bg: string; text: string }> =
     text: "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
   },
   gray: {
-    bg: "bg-gray-100 dark:bg-gray-700/40 midnight:bg-gray-800/40 purple:bg-gray-800/40",
+    bg: "bg-gray-100 dark:bg-[#22262e]/40 midnight:bg-[#0f1330]/40 purple:bg-[#251340]/40",
     text: "text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400",
   },
 };

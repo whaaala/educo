@@ -52,7 +52,7 @@ export default function NewFolderDialog({
         <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" onClick={onClose} />
 
         {/* Dialog */}
-        <div className="relative z-10 w-[440px] max-w-[92vw] bg-white dark:bg-[#1e2028] midnight:bg-[#111827] purple:bg-[#1e1030] rounded-2xl shadow-[0_25px_60px_-12px_rgba(0,0,0,0.25)] animate-in zoom-in-95 fade-in duration-200">
+        <div className="relative z-10 w-[440px] max-w-[92vw] bg-white dark:bg-[#1e2028] midnight:bg-[#0a0e27] purple:bg-[#1e1030] rounded-2xl shadow-[0_25px_60px_-12px_rgba(0,0,0,0.25)] animate-in zoom-in-95 fade-in duration-200">
 
           {/* Header */}
           <div className="flex items-center justify-between px-6 pt-6 pb-4">

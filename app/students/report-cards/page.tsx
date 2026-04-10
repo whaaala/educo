@@ -1532,8 +1532,8 @@ export default function ReportCardsPage() {
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 px-4 sm:px-6 py-3 sm:py-4 border-b border-neutral-200 dark:border-neutral-700">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
-                  <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
+                <div className="p-1.5 sm:p-2 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 rounded-lg flex-shrink-0">
+                  <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100">
@@ -1565,8 +1565,8 @@ export default function ReportCardsPage() {
                     <FormDropdown
                       label="Education Level"
                       icon={<GraduationCap className="w-full h-full" />}
-                      iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-                      iconColor="text-blue-600 dark:text-blue-400"
+                      iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+                      iconColor="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                       value={config.educationLevel}
                       onChange={(value) =>
                         setConfig({
@@ -1588,7 +1588,7 @@ export default function ReportCardsPage() {
                     label="Class"
                     icon={<BookOpen className="w-full h-full" />}
                     iconBgColor="bg-green-100 dark:bg-green-900/30"
-                    iconColor="text-green-600 dark:text-green-400"
+                    iconColor="text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
                     value={config.class}
                     onChange={(value) => setConfig({ ...config, class: value })}
                     options={[
@@ -1626,7 +1626,7 @@ export default function ReportCardsPage() {
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="p-1.5 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-                    <Calendar className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    <Calendar className="w-4 h-4 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
                   </div>
                   <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                     Term & Academic Year
@@ -1682,7 +1682,7 @@ export default function ReportCardsPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Attendance */}
-                  <label className="group relative flex items-start gap-3 p-4 rounded-lg border-2 border-neutral-200 dark:border-neutral-700 cursor-pointer transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 has-[:checked]:border-blue-500 dark:has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 dark:has-[:checked]:bg-blue-900/20">
+                  <label className="group relative flex items-start gap-3 p-4 rounded-lg border-2 border-neutral-200 dark:border-neutral-700 cursor-pointer transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 midnight:hover:bg-cyan-900/10 purple:hover:bg-pink-900/10 has-[:checked]:border-blue-500 dark:has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 dark:has-[:checked]:bg-blue-900/20">
                     <input
                       type="checkbox"
                       checked={config.includeAttendance}
@@ -1693,7 +1693,7 @@ export default function ReportCardsPage() {
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <UserCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <UserCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                         <span className="font-medium text-sm text-neutral-900 dark:text-neutral-100">
                           Attendance
                         </span>
@@ -1735,7 +1735,7 @@ export default function ReportCardsPage() {
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <MessageSquare className="w-4 h-4 text-green-600 dark:text-green-400" />
+                        <MessageSquare className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                         <span className="font-medium text-sm text-neutral-900 dark:text-neutral-100">
                           Teacher/Principal Remarks
                         </span>

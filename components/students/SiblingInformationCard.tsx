@@ -29,7 +29,7 @@ export default function SiblingInformationCard({
       </h3>
 
       {/* Divider */}
-      <div className="h-px bg-gray-100 dark:bg-gray-800/50 midnight:bg-gray-800/30 purple:bg-gray-800/30 mb-2 sm:mb-3"></div>
+      <div className="h-px bg-gray-100 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 mb-2 sm:mb-3"></div>
 
       {/* Siblings List */}
       <div className="space-y-1.5 sm:space-y-2.5">

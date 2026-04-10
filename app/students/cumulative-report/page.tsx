@@ -428,8 +428,8 @@ export default function CumulativeReportPage() {
             {/* Instructions Card */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 sm:p-6">
               <div className="flex items-start gap-3 sm:gap-4">
-                <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
-                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
+                <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 rounded-lg flex-shrink-0">
+                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
@@ -456,7 +456,7 @@ export default function CumulativeReportPage() {
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 px-4 sm:px-6 py-3 sm:py-4 border-b border-neutral-200 dark:border-neutral-700">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="p-1.5 sm:p-2 bg-green-100 dark:bg-green-900/30 rounded-lg flex-shrink-0">
-                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400" />
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100">
@@ -477,8 +477,8 @@ export default function CumulativeReportPage() {
                     <FormDropdown
                       label="Education Level"
                       icon={<GraduationCap className="w-full h-full" />}
-                      iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-                      iconColor="text-blue-600 dark:text-blue-400"
+                      iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+                      iconColor="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                       value={config.educationLevel}
                       onChange={(value) =>
                         setConfig({
@@ -500,7 +500,7 @@ export default function CumulativeReportPage() {
                     label="Class"
                     icon={<BookOpen className="w-full h-full" />}
                     iconBgColor="bg-green-100 dark:bg-green-900/30"
-                    iconColor="text-green-600 dark:text-green-400"
+                    iconColor="text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
                     value={config.class}
                     onChange={(value) => setConfig({ ...config, class: value })}
                     options={[
@@ -534,9 +534,9 @@ export default function CumulativeReportPage() {
                 </div>
 
                 {/* Results Summary */}
-                <div className="mt-4 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="mt-4 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                   <p className="text-xs sm:text-sm text-neutral-700 dark:text-neutral-300">
-                    <span className="font-semibold text-blue-600 dark:text-blue-400">
+                    <span className="font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
                       {filteredStudents.length}
                     </span>{" "}
                     student{filteredStudents.length !== 1 ? "s" : ""} found
@@ -928,7 +928,7 @@ export default function CumulativeReportPage() {
               <li>Click Save / Print</li>
               <li>Choose where to save your PDF</li>
             </ol>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
               Note: the browser print dialog handles colors and layout best.
             </p>
           </div>

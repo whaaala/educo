@@ -93,7 +93,7 @@ export default function ActionMenuDropdown({
               return (
                 <div
                   key={`divider-${idx}`}
-                  className="my-1.5 h-px bg-gray-100 dark:bg-gray-700 midnight:bg-cyan-500/10 purple:bg-pink-500/10 mx-2"
+                  className="my-1.5 h-px bg-gray-100 dark:bg-[#22262e] midnight:bg-cyan-500/10 purple:bg-pink-500/10 mx-2"
                 />
               );
             }

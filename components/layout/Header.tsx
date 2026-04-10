@@ -121,7 +121,7 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
   };
 
   return (
-    <header className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-b border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 sticky top-0 z-50 transition-colors duration-300 backdrop-blur-xl dark:backdrop-blur-xl dark:bg-opacity-90 overflow-visible">
+    <header className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-b border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/50 midnight:border-cyan-500/20 purple:border-pink-500/20 sticky top-0 z-50 transition-colors duration-300 backdrop-blur-xl dark:backdrop-blur-xl dark:bg-opacity-90 overflow-visible">
       <div className="flex items-center justify-between gap-3 sm:gap-4 px-3 sm:px-6 py-2 sm:py-3 overflow-visible">
         {/* Left Section: Mobile Menu + Search Bar */}
         <div className="flex items-center gap-2 sm:gap-3 flex-1 max-w-2xl">
@@ -189,8 +189,8 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
               isParent
                 ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700/30"
                 : isAnyAdmin
-                  ? "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700/30"
-                  : "bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800/50 dark:text-gray-300 dark:border-gray-700/50"
+                  ? "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/30"
+                  : "bg-gray-50 text-gray-700 border-gray-200 dark:bg-[#1a1d24] midnight:bg-[#111827] purple:bg-[#2a1447]/50 midnight:bg-[#111827]/50 purple:bg-[#2a1447]/50 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50"
             }`}>
               {isParent ? "Parent Portal" : isAnyAdmin ? "Admin Portal" : (user?.role ?? "User")}
             </span>
@@ -212,7 +212,7 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
               onClick={() => setIsYearDropdownOpen(!isYearDropdownOpen)}
               className={`flex items-center gap-2 px-3 py-2 h-10 text-sm font-medium transition-all duration-200 rounded-lg border cursor-pointer ${
                 isYearDropdownOpen
-                  ? "bg-blue-50 dark:bg-blue-500/15 midnight:bg-cyan-500/10 purple:bg-pink-500/10 border-blue-300 dark:border-blue-500/40 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 shadow-sm"
+                  ? "bg-blue-50 dark:bg-blue-500/15 midnight:bg-cyan-500/10 purple:bg-pink-500/10 border-blue-300 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/40 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 shadow-sm"
                   : "bg-white dark:bg-[#252930] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#2d3139] midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 hover:border-gray-300 dark:hover:border-gray-500 midnight:hover:border-cyan-400/30 purple:hover:border-pink-400/30"
               }`}
             >
@@ -226,10 +226,10 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
 
             {/* Dropdown Menu */}
             {isYearDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-100 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 transition-colors duration-300">
+              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/50 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 transition-colors duration-300">
                 {/* Header */}
-                <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 border-b border-gray-100 dark:border-gray-800">
-                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Select Academic Year</p>
+                <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Select Academic Year</p>
                 </div>
 
                 {/* Years List */}
@@ -243,15 +243,15 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
                       }}
                       className={`w-full text-left px-4 py-3 transition-all duration-150 flex items-center justify-between group cursor-pointer ${
                         selectedYear === year
-                          ? "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252930]"
+                          ? "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                          : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#252930]"
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
                           selectedYear === year
                             ? "bg-blue-500 dark:bg-blue-400 scale-110"
-                            : "bg-gray-300 dark:bg-gray-600 group-hover:bg-gray-400 dark:group-hover:bg-gray-500"
+                            : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 group-hover:bg-gray-400 dark:group-hover:bg-gray-500"
                         }`}></div>
                         <span className={`text-sm ${selectedYear === year ? "font-semibold" : "font-medium"}`}>
                           {year}
@@ -265,7 +265,7 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
                       )}
 
                       {selectedYear === year && (
-                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       )}
@@ -282,7 +282,7 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
               onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
               className={`flex items-center gap-2 px-3 py-2 h-10 text-sm font-medium transition-all duration-200 rounded-lg border cursor-pointer ${
                 isLangDropdownOpen
-                  ? "bg-blue-50 dark:bg-blue-500/15 midnight:bg-cyan-500/10 purple:bg-pink-500/10 border-blue-300 dark:border-blue-500/40 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 shadow-sm"
+                  ? "bg-blue-50 dark:bg-blue-500/15 midnight:bg-cyan-500/10 purple:bg-pink-500/10 border-blue-300 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/40 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 shadow-sm"
                   : "bg-white dark:bg-[#252930] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#2d3139] midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 hover:border-gray-300 dark:hover:border-gray-500 midnight:hover:border-cyan-400/30 purple:hover:border-pink-400/30"
               }`}
               title={selectedLanguage.name}
@@ -294,10 +294,10 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
 
             {/* Dropdown Menu */}
             {isLangDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#2a2d4e] rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 transition-colors duration-300">
+              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#2a2d4e] rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 transition-colors duration-300">
                 {/* Header */}
-                <div className="px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-b border-gray-100 dark:border-gray-700">
-                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Select Language</p>
+                <div className="px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Select Language</p>
                 </div>
 
                 {/* Languages List */}
@@ -311,8 +311,8 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
                       }}
                       className={`w-full text-left px-4 py-2.5 transition-all duration-150 flex items-center justify-between group cursor-pointer ${
                         selectedLanguage.name === lang.name
-                          ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                          ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
+                          : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -325,7 +325,7 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
                       </div>
 
                       {selectedLanguage.name === lang.name && (
-                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       )}
@@ -353,9 +353,9 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
 
             {/* Add New Dropdown Menu */}
             {isAddNewOpen && (
-              <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-xl border border-gray-200 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 transition-colors duration-300">
+              <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-xl border border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/50 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 transition-colors duration-300">
                 {/* Header */}
-                <div className="px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 midnight:from-cyan-500/10 midnight:to-blue-500/10 purple:from-pink-500/10 purple:to-purple-500/10 border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                <div className="px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 midnight:from-cyan-500/10 midnight:to-blue-500/10 purple:from-pink-500/10 purple:to-purple-500/10 border-b border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Add New</h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-200 purple:text-pink-200">Quick actions</p>
                 </div>
@@ -368,7 +368,7 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
                       setIsAddNewOpen(false);
                       router.push("/students/add");
                     }}
-                    className="group relative flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-br from-blue-100 via-indigo-50 to-blue-50 dark:from-blue-600/25 dark:via-indigo-600/20 dark:to-blue-500/15 midnight:from-blue-500/30 midnight:via-cyan-500/25 midnight:to-blue-400/20 purple:from-blue-500/25 purple:via-indigo-500/20 purple:to-blue-400/15 hover:shadow-lg hover:shadow-blue-500/20 dark:hover:shadow-blue-400/15 midnight:hover:shadow-cyan-400/20 purple:hover:shadow-indigo-400/15 hover:scale-105 transition-all duration-150 border border-blue-200/50 dark:border-blue-500/20 midnight:border-cyan-400/25 purple:border-indigo-400/25 hover:border-blue-400 dark:hover:border-blue-400/40 midnight:hover:border-cyan-300/40 purple:hover:border-indigo-300/40 cursor-pointer"
+                    className="group relative flex flex-col items-center justify-center p-3 rounded-lg bg-gradient-to-br from-blue-100 via-indigo-50 to-blue-50 dark:from-blue-600/25 dark:via-indigo-600/20 dark:to-blue-500/15 midnight:from-blue-500/30 midnight:via-cyan-500/25 midnight:to-blue-400/20 purple:from-blue-500/25 purple:via-indigo-500/20 purple:to-blue-400/15 hover:shadow-lg hover:shadow-blue-500/20 dark:hover:shadow-blue-400/15 midnight:hover:shadow-cyan-400/20 purple:hover:shadow-indigo-400/15 hover:scale-105 transition-all duration-150 border border-blue-200/50 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/20 midnight:border-cyan-400/25 purple:border-indigo-400/25 hover:border-blue-400 dark:hover:border-blue-400/40 midnight:hover:border-cyan-300/40 purple:hover:border-indigo-300/40 cursor-pointer"
                   >
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 dark:from-blue-400 dark:via-blue-500 dark:to-indigo-500 midnight:from-cyan-400 midnight:via-blue-400 midnight:to-blue-600 purple:from-blue-400 purple:via-indigo-400 purple:to-indigo-600 flex items-center justify-center mb-1.5 group-hover:rotate-3 group-hover:scale-110 transition-all duration-150 shadow-md shadow-blue-500/40 dark:shadow-blue-400/25 midnight:shadow-cyan-400/30 purple:shadow-indigo-400/30">
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

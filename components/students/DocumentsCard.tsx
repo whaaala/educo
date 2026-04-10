@@ -47,7 +47,7 @@ export default function DocumentsCard({ documents }: DocumentsCardProps) {
       </h3>
 
       {/* Divider */}
-      <div className="h-px bg-gray-100 dark:bg-gray-800/50 midnight:bg-gray-800/30 purple:bg-gray-800/30 mb-2"></div>
+      <div className="h-px bg-gray-100 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 mb-2"></div>
 
       {/* Documents List */}
       {documentsArray.length > 0 ? (
@@ -88,7 +88,7 @@ export default function DocumentsCard({ documents }: DocumentsCardProps) {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-3 px-4">
-          <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 flex items-center justify-center mb-1.5">
+          <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 flex items-center justify-center mb-1.5">
             <FileText className="w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50" />
           </div>
           <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 text-center">

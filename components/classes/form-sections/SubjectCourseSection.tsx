@@ -80,7 +80,7 @@ export default function SubjectCourseSection({
   };
 
   return (
-    <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <section className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
       {/* Collapsible Header */}
       <button
         type="button"
@@ -126,7 +126,7 @@ export default function SubjectCourseSection({
               {formData.subjects.map((subject: any, index: number) => (
                 <div
                   key={index}
-                  className="p-4 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/10 purple:border-pink-500/10"
+                  className="p-4 bg-gray-50 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/10 purple:border-pink-500/10"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -203,7 +203,7 @@ export default function SubjectCourseSection({
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 px-4 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="text-center py-8 px-4 bg-gray-50 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <BookOpen className="w-12 h-12 mx-auto text-gray-400 mb-3" />
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
                 No {isTertiary ? "courses" : "subjects"} added yet

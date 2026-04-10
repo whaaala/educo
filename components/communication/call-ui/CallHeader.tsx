@@ -80,7 +80,7 @@ export function CallHeader({
   return (
     <header
       className={cn(
-        "bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20",
+        "bg-white dark:bg-[#0f1115] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-b border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20",
         "px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3",
         "flex items-center justify-between gap-2 sm:gap-4",
         className
@@ -93,7 +93,7 @@ export function CallHeader({
           onClick={onClose}
           className={cn(
             "p-1.5 sm:p-2 rounded-lg transition-all duration-200",
-            "hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
+            "hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
             "active:scale-95 cursor-pointer",
             "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           )}
@@ -119,7 +119,7 @@ export function CallHeader({
 
         {/* Duration Badge */}
         <div
-          className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-900/20 purple:bg-pink-900/20 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xs sm:text-sm font-semibold flex-shrink-0 shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+          className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-cyan-900/20 purple:bg-pink-900/20 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xs sm:text-sm font-semibold flex-shrink-0 shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
         >
           {isRecording && (
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -139,8 +139,8 @@ export function CallHeader({
             onClick={onShare}
             className={cn(
               "hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg",
-              "bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-900/20 purple:bg-pink-900/20",
-              "hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30",
+              "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-cyan-900/20 purple:bg-pink-900/20",
+              "hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30",
               "active:scale-95 cursor-pointer",
               "transition-all duration-200",
               "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 text-sm font-medium"
@@ -157,7 +157,7 @@ export function CallHeader({
             onClick={() => setShowMenu(!showMenu)}
             className={cn(
               "p-1.5 sm:p-2 rounded-lg",
-              "hover:bg-gray-100 dark:hover:bg-gray-800",
+              "hover:bg-gray-100 dark:hover:bg-[#22262e]",
               "active:scale-95 cursor-pointer",
               "transition-all duration-200",
               "text-gray-500 dark:text-gray-400"
@@ -172,7 +172,7 @@ export function CallHeader({
                 className="fixed inset-0 z-40"
                 onClick={() => setShowMenu(false)}
               />
-              <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 py-1">
+              <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 py-1">
                 {onSettings && (
                   <button
                     onClick={() => {
@@ -182,7 +182,7 @@ export function CallHeader({
                     className={cn(
                       "w-full flex items-center gap-3 px-4 py-2.5",
                       "text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200",
-                      "hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
+                      "hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
                       "cursor-pointer transition-colors"
                     )}
                   >
@@ -196,7 +196,7 @@ export function CallHeader({
                     className={cn(
                       "w-full flex items-center gap-3 px-4 py-2.5",
                       "text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200",
-                      "hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
+                      "hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
                       "cursor-pointer transition-colors"
                     )}
                   >
@@ -213,7 +213,7 @@ export function CallHeader({
                     className={cn(
                       "w-full flex items-center gap-3 px-4 py-2.5",
                       "text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200",
-                      "hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
+                      "hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20",
                       "cursor-pointer transition-colors"
                     )}
                   >

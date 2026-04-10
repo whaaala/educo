@@ -493,7 +493,7 @@ describe("ColorPalettePicker", () => {
       const hexInput = container.querySelector('input[type="text"]');
       const classes = (hexInput!.getAttribute("class") ?? "").split(/\s+/);
       expect(classes).toContain("dark:border-gray-600");
-      expect(classes).toContain("dark:bg-gray-800");
+      expect(classes).toContain("dark:bg-[#1a1d24]");
       expect(classes).toContain("dark:text-gray-300");
     });
   });

@@ -35,9 +35,9 @@ describe("FormInput — Visual / CSS", () => {
       const { container } = render(<FormInput {...defaultProps} />);
       const input = container.querySelector("input")!;
       expect(input.className).toContain("bg-white");
-      expect(input.className).toContain("dark:bg-gray-800");
-      expect(input.className).toContain("midnight:bg-gray-900");
-      expect(input.className).toContain("purple:bg-gray-900");
+      expect(input.className).toContain("dark:bg-[#1a1d24]");
+      expect(input.className).toContain("midnight:bg-[#0a0e27]");
+      expect(input.className).toContain("purple:bg-[#1a0b2e]");
     });
 
     it("input has theme-responsive text colors", () => {

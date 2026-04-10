@@ -225,7 +225,7 @@ export default function MemberViewModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Email */}
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800">
+              <div className="p-2 rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]">
                 <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </div>
               <div>
@@ -247,7 +247,7 @@ export default function MemberViewModal({
 
             {/* Phone */}
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800">
+              <div className="p-2 rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]">
                 <Phone className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </div>
               <div>

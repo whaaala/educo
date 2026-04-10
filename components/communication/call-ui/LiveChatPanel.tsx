@@ -87,13 +87,13 @@ export function LiveChatPanel({
   return (
     <div
       className={cn(
-        "flex flex-col bg-white dark:bg-gray-900 midnight:bg-[#0f1729] purple:bg-[#2a1a3e]",
+        "flex flex-col bg-white dark:bg-[#0f1115] midnight:bg-[#0f1729] purple:bg-[#2a1a3e]",
         "w-full h-full",
         className
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
             Live Chat
@@ -109,7 +109,7 @@ export function LiveChatPanel({
         </div>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-all duration-200 cursor-pointer active:scale-95"
+          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-all duration-200 cursor-pointer active:scale-95"
         >
           <MoreHorizontal className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70" />
         </button>
@@ -122,7 +122,7 @@ export function LiveChatPanel({
       >
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center py-8">
-            <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-900/20 purple:bg-pink-900/20 flex items-center justify-center mb-3">
+            <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-cyan-900/20 purple:bg-pink-900/20 flex items-center justify-center mb-3">
               <Send className="w-6 h-6 text-gray-400" />
             </div>
             <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -179,7 +179,7 @@ export function LiveChatPanel({
                         "px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed",
                         isOwn
                           ? "text-white rounded-br-md"
-                          : "bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-900/20 purple:bg-pink-900/20 text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 rounded-bl-md"
+                          : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-cyan-900/20 purple:bg-pink-900/20 text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 rounded-bl-md"
                       )}
                       style={
                         isOwn
@@ -196,7 +196,7 @@ export function LiveChatPanel({
                         {message.reactions.map((reaction, idx) => (
                           <button
                             key={idx}
-                            className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-900/20 purple:bg-pink-900/20 text-xs hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-cyan-900/20 purple:bg-pink-900/20 text-xs hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-900/30 purple:hover:bg-pink-900/30 transition-colors cursor-pointer"
                           >
                             <span>{reaction.emoji}</span>
                             <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-medium">
@@ -214,13 +214,13 @@ export function LiveChatPanel({
                   "hidden group-hover:flex items-center gap-1 mt-1 ml-10",
                   isOwn && "mr-10 ml-0 justify-end"
                 )}>
-                  <button className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors cursor-pointer">
+                  <button className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors cursor-pointer">
                     <ThumbsUp className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70" />
                   </button>
-                  <button className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors cursor-pointer">
+                  <button className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors cursor-pointer">
                     <Heart className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70" />
                   </button>
-                  <button className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors cursor-pointer">
+                  <button className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors cursor-pointer">
                     <Smile className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70" />
                   </button>
                 </div>
@@ -232,9 +232,9 @@ export function LiveChatPanel({
       </div>
 
       {/* Input */}
-      <div className="p-3 border-t border-gray-100 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20">
-        <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-full px-3 py-2">
-          <button className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-400 cursor-pointer">
+      <div className="p-3 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex items-center gap-2 bg-gray-100 dark:bg-[#1a1d24] midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-full px-3 py-2">
+          <button className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-[#22262e] transition-colors text-gray-600 dark:text-gray-400 cursor-pointer">
             <Smile className="w-5 h-5" />
           </button>
           <input

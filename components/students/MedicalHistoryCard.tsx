@@ -20,7 +20,7 @@ export default function MedicalHistoryCard({
       </h3>
 
       {/* Divider */}
-      <div className="h-px bg-gray-100 dark:bg-gray-800/50 midnight:bg-gray-800/30 purple:bg-gray-800/30 mb-3"></div>
+      <div className="h-px bg-gray-100 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 mb-3"></div>
 
       {/* Content */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">

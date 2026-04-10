@@ -104,7 +104,7 @@ export default function StorageSettings() {
   return (
     <div className="space-y-6">
       {/* ── Platform Storage (Supabase) ── */}
-      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
+      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2.5 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20">
             <Database className="w-5 h-5 text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
@@ -123,7 +123,7 @@ export default function StorageSettings() {
         <div className={`flex items-center gap-3 px-4 py-3 rounded-lg ${
           supabaseReady
             ? "bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20"
-            : "bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700"
+            : "bg-gray-50 dark:bg-[#1a1d24]/50 border border-gray-200 dark:border-gray-700"
         }`}>
           {supabaseReady ? (
             <>
@@ -161,14 +161,14 @@ export default function StorageSettings() {
                 <span>{formatBytes(supabaseQuotaUsed)} / {formatBytes(supabaseQuotaTotal)}</span>
                 <button
                   onClick={handleRefreshQuota}
-                  className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+                  className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-[#22262e] cursor-pointer"
                   title="Refresh quota"
                 >
                   <RefreshCw className={`w-3 h-3 text-gray-400 ${isRefreshingQuota ? "animate-spin" : ""}`} />
                 </button>
               </div>
             </div>
-            <div className="h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+            <div className="h-2 rounded-full bg-gray-200 dark:bg-[#22262e] overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all ${
                   quotaPercent > 90 ? "bg-red-500" : quotaPercent > 70 ? "bg-amber-500" : "bg-indigo-500"
@@ -192,7 +192,7 @@ export default function StorageSettings() {
           <select
             value={settings.supabaseUserQuotaMb}
             onChange={(e) => updateSettings({ supabaseUserQuotaMb: parseInt(e.target.value) })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-gray-100"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#22262e] text-sm text-gray-900 dark:text-gray-100"
           >
             <option value="50">50 MB</option>
             <option value="100">100 MB (Default)</option>
@@ -205,7 +205,7 @@ export default function StorageSettings() {
       </div>
 
       {/* ── Additional Storage (Dropbox Overflow) ── */}
-      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
+      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-500/20">
             <Cloud className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -266,7 +266,7 @@ export default function StorageSettings() {
                       <span>Dropbox storage used</span>
                       <span>{formatBytes(connection.quotaUsed)} / {formatBytes(connection.quotaTotal)}</span>
                     </div>
-                    <div className="h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                    <div className="h-2 rounded-full bg-gray-200 dark:bg-[#22262e] overflow-hidden">
                       <div
                         className="h-full rounded-full bg-blue-500 transition-all"
                         style={{ width: `${Math.min(100, (connection.quotaUsed / connection.quotaTotal) * 100)}%` }}
@@ -283,7 +283,7 @@ export default function StorageSettings() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 dark:bg-[#1a1d24]/50 border border-gray-200 dark:border-gray-700">
                   <HardDrive className="w-5 h-5 text-gray-400 flex-shrink-0" />
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Not connected. When your platform storage is full, files will overflow to your Dropbox account.
@@ -309,7 +309,7 @@ export default function StorageSettings() {
       </div>
 
       {/* ── File Settings ── */}
-      <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
+      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
         <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
           File Settings
         </h4>
@@ -322,7 +322,7 @@ export default function StorageSettings() {
             <select
               value={settings.maxUploadSizeMb}
               onChange={(e) => updateSettings({ maxUploadSizeMb: parseInt(e.target.value) })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#22262e] text-sm text-gray-900 dark:text-gray-100"
             >
               <option value="10">10 MB</option>
               <option value="25">25 MB</option>

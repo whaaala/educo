@@ -38,7 +38,7 @@ export default function LeaveStatusBadge({ status, size = "md" }: LeaveStatusBad
     cancelled: {
       icon: Ban,
       label: "Cancelled",
-      className: "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800 midnight:bg-gray-900/20 midnight:text-gray-400 midnight:border-gray-800 purple:bg-gray-900/20 purple:text-gray-400 purple:border-gray-800",
+      className: "bg-gray-100 text-gray-700 border-gray-200 dark:bg-[#0f1115]/20 dark:text-gray-400 dark:border-[#1a1d24] midnight:bg-[#0a0e27]/20 midnight:text-gray-400 midnight:border-gray-800 purple:bg-[#1a0b2e]/20 purple:text-gray-400 purple:border-gray-800",
     },
   };
 

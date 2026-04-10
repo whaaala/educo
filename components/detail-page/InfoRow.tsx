@@ -22,8 +22,8 @@ export function InfoRow({
 }: InfoRowProps) {
   const variantStyles = {
     default: cn(
-      "bg-gray-50 dark:bg-gray-700/30",
-      "midnight:bg-gray-800/50 purple:bg-gray-800/50"
+      "bg-gray-50 dark:bg-[#22262e]/30",
+      "midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50"
     ),
     highlight: cn(
       "bg-primary-50 dark:bg-primary-900/20",
@@ -32,8 +32,8 @@ export function InfoRow({
       "midnight:border-cyan-500/20 purple:border-pink-500/20"
     ),
     muted: cn(
-      "bg-gray-50/50 dark:bg-gray-700/20",
-      "midnight:bg-gray-800/30 purple:bg-gray-800/30"
+      "bg-gray-50/50 dark:bg-[#22262e]/20",
+      "midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30"
     ),
   };
 
@@ -55,7 +55,7 @@ export function InfoRow({
       {icon && (
         <div className={cn(
           "flex-shrink-0 w-10 h-10 rounded-lg shadow-sm flex items-center justify-center",
-          "bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900",
+          "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]",
           "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400"
         )}>
           {icon}

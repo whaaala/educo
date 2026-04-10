@@ -47,7 +47,7 @@ export default function TransferHistoryCard({ studentId }: TransferHistoryCardPr
       case "in-progress":
         return "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-800 dark:text-blue-200 midnight:text-cyan-200 purple:text-pink-200 border border-blue-200 dark:border-blue-800 midnight:border-cyan-800 purple:border-pink-800";
       default:
-        return "bg-gray-100 dark:bg-gray-900/30 midnight:bg-gray-900/30 purple:bg-gray-900/30 text-gray-800 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 border border-gray-200 dark:border-gray-800 midnight:border-gray-800 purple:border-gray-800";
+        return "bg-gray-100 dark:bg-[#0f1115]/30 midnight:bg-[#0a0e27]/30 purple:bg-[#1a0b2e]/30 text-gray-800 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 border border-gray-200 dark:border-[#1a1d24] midnight:border-gray-800 purple:border-gray-800";
     }
   };
 
@@ -72,11 +72,11 @@ export default function TransferHistoryCard({ studentId }: TransferHistoryCardPr
         </h3>
 
         {/* Divider */}
-        <div className="h-px bg-gray-100 dark:bg-gray-800/50 midnight:bg-gray-800/30 purple:bg-gray-800/30 mb-3"></div>
+        <div className="h-px bg-gray-100 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 mb-3"></div>
 
         {/* Empty State */}
         <div className="text-center py-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 mb-3">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] mb-3">
             <ArrowRightLeft className="w-6 h-6 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50" />
           </div>
           <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
@@ -100,7 +100,7 @@ export default function TransferHistoryCard({ studentId }: TransferHistoryCardPr
       </div>
 
       {/* Divider */}
-      <div className="h-px bg-gray-100 dark:bg-gray-800/50 midnight:bg-gray-800/30 purple:bg-gray-800/30 mb-3"></div>
+      <div className="h-px bg-gray-100 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 mb-3"></div>
 
       {/* Timeline */}
       <div className="space-y-3 sm:space-y-4">
@@ -115,7 +115,7 @@ export default function TransferHistoryCard({ studentId }: TransferHistoryCardPr
             </div>
 
             {/* Transfer Card */}
-            <div className="bg-gray-50/50 dark:bg-gray-800/30 midnight:bg-gray-800/30 purple:bg-gray-800/30 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:shadow-sm transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 midnight:hover:bg-gray-800/50 purple:hover:bg-gray-800/50">
+            <div className="bg-gray-50/50 dark:bg-[#1a1d24]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:shadow-sm transition-all duration-200 hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5/50 purple:hover:bg-pink-500/5/50">
               <div className="flex items-start justify-between gap-2 mb-2 sm:mb-3">
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
@@ -136,7 +136,7 @@ export default function TransferHistoryCard({ studentId }: TransferHistoryCardPr
 
               {/* Transfer Details */}
               <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm mb-2 sm:mb-3">
-                <div className="bg-white/50 dark:bg-gray-900/20 midnight:bg-gray-900/20 purple:bg-gray-900/20 rounded-lg p-2 sm:p-2.5">
+                <div className="bg-white/50 dark:bg-[#0f1115]/20 midnight:bg-[#0a0e27]/20 purple:bg-[#1a0b2e]/20 rounded-lg p-2 sm:p-2.5">
                   <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-1">
                     From
                   </p>
@@ -146,7 +146,7 @@ export default function TransferHistoryCard({ studentId }: TransferHistoryCardPr
                       : "N/A"}
                   </p>
                 </div>
-                <div className="bg-white/50 dark:bg-gray-900/20 midnight:bg-gray-900/20 purple:bg-gray-900/20 rounded-lg p-2 sm:p-2.5">
+                <div className="bg-white/50 dark:bg-[#0f1115]/20 midnight:bg-[#0a0e27]/20 purple:bg-[#1a0b2e]/20 rounded-lg p-2 sm:p-2.5">
                   <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-1">
                     To
                   </p>
@@ -160,7 +160,7 @@ export default function TransferHistoryCard({ studentId }: TransferHistoryCardPr
 
               {/* Effective Date */}
               {transfer.effectiveDate && (
-                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-300/90 purple:text-pink-300/90 mb-2 sm:mb-3 bg-white/50 dark:bg-gray-900/20 midnight:bg-gray-900/20 purple:bg-gray-900/20 rounded-lg p-2 sm:p-2.5">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-300/90 purple:text-pink-300/90 mb-2 sm:mb-3 bg-white/50 dark:bg-[#0f1115]/20 midnight:bg-[#0a0e27]/20 purple:bg-[#1a0b2e]/20 rounded-lg p-2 sm:p-2.5">
                   <Calendar className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                   <span className="truncate">
                     Effective: {new Date(transfer.effectiveDate).toLocaleDateString("en-US", {

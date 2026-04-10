@@ -101,7 +101,7 @@ export default function UserPermissionManagement() {
           return (
             <div
               key={user.id}
-              className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4"
+              className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4"
             >
               <div className="flex items-start justify-between gap-4">
                 {/* User Info */}
@@ -115,7 +115,7 @@ export default function UserPermissionManagement() {
                         <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                           {user.name}
                         </h4>
-                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium rounded capitalize">
+                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 text-xs font-medium rounded capitalize">
                           {user.role}
                         </span>
                         {hasOverride && (
@@ -158,7 +158,7 @@ export default function UserPermissionManagement() {
                             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                               editPermissions.includes(permission)
                                 ? "bg-green-600 text-white"
-                                : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                                : "bg-gray-200 dark:bg-[#22262e] text-gray-600 dark:text-gray-400"
                             }`}
                           >
                             {editPermissions.includes(permission) && (
@@ -197,7 +197,7 @@ export default function UserPermissionManagement() {
                       </button>
                       <button
                         onClick={handleCancelEdit}
-                        className="p-2 rounded-lg bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-colors"
+                        className="p-2 rounded-lg bg-gray-300 dark:bg-[#22262e] hover:bg-gray-400 dark:hover:bg-[#2a2d35] text-gray-700 dark:text-gray-300 transition-colors"
                         title="Cancel"
                       >
                         <X className="w-4 h-4" />

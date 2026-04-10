@@ -121,8 +121,8 @@ export default function FileUpload({
             ${isDragging
               ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20"
               : value
-              ? "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900"
-              : "border-dashed border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-gray-50 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
+              ? "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]"
+              : "border-dashed border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-gray-50 dark:bg-[#1a1d24]/30 midnight:bg-[#0a0e27]/30 purple:bg-[#1a0b2e]/30 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
             }`}
         >
           <input
@@ -134,7 +134,7 @@ export default function FileUpload({
           />
 
           {/* Preview/Icon */}
-          <div className={`relative w-12 h-12 ${circular ? 'rounded-full' : 'rounded-lg'} overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 flex items-center justify-center ring-2 ring-gray-200 dark:ring-gray-600`}>
+          <div className={`relative w-12 h-12 ${circular ? 'rounded-full' : 'rounded-lg'} overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center ring-2 ring-gray-200 dark:ring-gray-600`}>
             {isLoadingPreview ? (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-5 h-5 border-2 border-blue-200 dark:border-blue-800 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin" />
@@ -226,7 +226,7 @@ export default function FileUpload({
 
         <div className="p-4 flex items-center gap-4">
           {/* Preview/Icon */}
-          <div className={`relative w-16 h-16 ${circular ? 'rounded-full' : 'rounded-xl'} overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 flex items-center justify-center shadow-sm ring-2 ring-gray-200 dark:ring-gray-600`}>
+          <div className={`relative w-16 h-16 ${circular ? 'rounded-full' : 'rounded-xl'} overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center shadow-sm ring-2 ring-gray-200 dark:ring-gray-600`}>
             {isLoadingPreview ? (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-7 h-7 border-2 border-blue-200 dark:border-blue-800 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin" />

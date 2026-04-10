@@ -134,22 +134,22 @@ const MOCK_EVENTS = generateAdminEvents();
 // Helper functions
 const getEventTypeInfo = (type: EventType) => {
   const config: Record<EventType, { label: string; icon: typeof Calendar; bgClass: string; textClass: string }> = {
-    academic: { label: "Academic", icon: GraduationCap, bgClass: "bg-blue-100 dark:bg-blue-900/30", textClass: "text-blue-600 dark:text-blue-400" },
+    academic: { label: "Academic", icon: GraduationCap, bgClass: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30", textClass: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" },
     sports: { label: "Sports", icon: Trophy, bgClass: "bg-emerald-100 dark:bg-emerald-900/30", textClass: "text-emerald-600 dark:text-emerald-400" },
     cultural: { label: "Cultural", icon: PartyPopper, bgClass: "bg-purple-100 dark:bg-purple-900/30", textClass: "text-purple-600 dark:text-purple-400" },
-    meeting: { label: "Meeting", icon: Users, bgClass: "bg-amber-100 dark:bg-amber-900/30", textClass: "text-amber-600 dark:text-amber-400" },
+    meeting: { label: "Meeting", icon: Users, bgClass: "bg-amber-100 dark:bg-amber-900/30", textClass: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" },
     holiday: { label: "Holiday", icon: Palmtree, bgClass: "bg-rose-100 dark:bg-rose-900/30", textClass: "text-rose-600 dark:text-rose-400" },
-    examination: { label: "Exam", icon: FileText, bgClass: "bg-red-100 dark:bg-red-900/30", textClass: "text-red-600 dark:text-red-400" },
+    examination: { label: "Exam", icon: FileText, bgClass: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30", textClass: "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" },
   };
   return config[type];
 };
 
 const getStatusBadge = (status: EventStatus) => {
   const config: Record<EventStatus, { label: string; bgClass: string; textClass: string; icon: typeof CheckCircle2 }> = {
-    upcoming: { label: "Upcoming", bgClass: "bg-blue-100 dark:bg-blue-900/30", textClass: "text-blue-700 dark:text-blue-400", icon: Clock },
-    ongoing: { label: "Ongoing", bgClass: "bg-green-100 dark:bg-green-900/30", textClass: "text-green-700 dark:text-green-400", icon: CheckCircle2 },
-    completed: { label: "Completed", bgClass: "bg-gray-100 dark:bg-gray-700/50", textClass: "text-gray-600 dark:text-gray-400", icon: CheckCircle2 },
-    cancelled: { label: "Cancelled", bgClass: "bg-red-100 dark:bg-red-900/30", textClass: "text-red-700 dark:text-red-400", icon: XCircle },
+    upcoming: { label: "Upcoming", bgClass: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30", textClass: "text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400", icon: Clock },
+    ongoing: { label: "Ongoing", bgClass: "bg-green-100 dark:bg-green-900/30", textClass: "text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400", icon: CheckCircle2 },
+    completed: { label: "Completed", bgClass: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50", textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300", icon: CheckCircle2 },
+    cancelled: { label: "Cancelled", bgClass: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30", textClass: "text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400", icon: XCircle },
   };
   const c = config[status];
   const Icon = c.icon;
@@ -199,7 +199,7 @@ export default function AdminParentEventsPage() {
                   {evt.isImportant && (
                     <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 flex-shrink-0" />
                   )}
-                  <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+                  <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm truncate">
                     {evt.title}
                   </p>
                 </div>
@@ -222,14 +222,14 @@ export default function AdminParentEventsPage() {
         sortable: true,
         render: (evt) => (
           <div>
-            <p className="font-medium text-gray-900 dark:text-white text-sm">
+            <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
               {new Date(evt.date).toLocaleDateString("en-GB", {
                 day: "numeric",
                 month: "short",
                 year: "numeric",
               })}
             </p>
-            {evt.time && <p className="text-xs text-gray-500 dark:text-gray-400">{evt.time}</p>}
+            {evt.time && <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{evt.time}</p>}
           </div>
         ),
       },
@@ -238,7 +238,7 @@ export default function AdminParentEventsPage() {
         label: "Location",
         render: (evt) =>
           evt.location ? (
-            <span className="text-sm text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+            <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-gray-400" />
               {evt.location}
             </span>
@@ -250,7 +250,7 @@ export default function AdminParentEventsPage() {
         key: "audience",
         label: "Audience",
         render: (evt) => (
-          <span className="text-sm text-gray-700 dark:text-gray-300">
+          <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
             {evt.targetAudience}
             {evt.targetClasses && (
               <span className="text-gray-400"> ({evt.targetClasses.length} classes)</span>
@@ -265,19 +265,19 @@ export default function AdminParentEventsPage() {
         render: (evt) => (
           <div className="flex items-center gap-3">
             <Tooltip content="Confirmed">
-              <span className="flex items-center gap-0.5 text-green-600 dark:text-green-400">
+              <span className="flex items-center gap-0.5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span className="text-xs font-semibold">{evt.confirmedParents}</span>
               </span>
             </Tooltip>
             <Tooltip content="Pending">
-              <span className="flex items-center gap-0.5 text-amber-600 dark:text-amber-400">
+              <span className="flex items-center gap-0.5 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">
                 <Clock className="w-3.5 h-3.5" />
                 <span className="text-xs font-semibold">{evt.pendingParents}</span>
               </span>
             </Tooltip>
             <Tooltip content="Declined">
-              <span className="flex items-center gap-0.5 text-red-600 dark:text-red-400">
+              <span className="flex items-center gap-0.5 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
                 <XCircle className="w-3.5 h-3.5" />
                 <span className="text-xs font-semibold">{evt.declinedParents}</span>
               </span>
@@ -303,9 +303,9 @@ export default function AdminParentEventsPage() {
               <button
                 type="button"
                 onClick={() => console.log("View", evt.id)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
               >
-                <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
               </button>
             </Tooltip>
             <Tooltip content="Edit Event">
@@ -314,7 +314,7 @@ export default function AdminParentEventsPage() {
                 onClick={() => router.push(`/admin/parents/events/${evt.id}/edit`)}
                 className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
               >
-                <Edit className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <Edit className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </button>
             </Tooltip>
             <Tooltip content="Send Reminder">
@@ -347,7 +347,7 @@ export default function AdminParentEventsPage() {
               checked={isSelected}
               onChange={(e) => onSelectionChange(e.target.checked)}
               onClick={(e) => e.stopPropagation()}
-              className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer bg-white/90"
+              className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 focus:ring-2 focus:ring-blue-500/20 cursor-pointer bg-white/90"
               aria-label={`Select ${item.title}`}
             />
           </div>
@@ -437,7 +437,7 @@ function EventCard({ event, getEventTypeInfo, getStatusBadge }: EventCardProps) 
   const TypeIcon = typeInfo.icon;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden group">
+    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden group">
       {/* Image */}
       <div className="relative h-36 w-full overflow-hidden">
         <Image src={event.image} alt={event.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
@@ -475,7 +475,7 @@ function EventCard({ event, getEventTypeInfo, getStatusBadge }: EventCardProps) 
       {/* Content */}
       <div className="p-4">
         {/* Meta */}
-        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-3">
+        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-3">
           {event.time && (
             <span className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />
@@ -491,29 +491,29 @@ function EventCard({ event, getEventTypeInfo, getStatusBadge }: EventCardProps) 
         </div>
 
         {/* RSVP Stats */}
-        <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 mb-3">
+        <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 mb-3">
           <div className="text-center">
-            <p className="text-lg font-bold text-green-600 dark:text-green-400">{event.confirmedParents}</p>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400">Confirmed</p>
+            <p className="text-lg font-bold text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">{event.confirmedParents}</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Confirmed</p>
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{event.pendingParents}</p>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400">Pending</p>
+            <p className="text-lg font-bold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">{event.pendingParents}</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Pending</p>
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold text-red-600 dark:text-red-400">{event.declinedParents}</p>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400">Declined</p>
+            <p className="text-lg font-bold text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">{event.declinedParents}</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Declined</p>
           </div>
         </div>
 
         {/* Audience */}
         <div className="flex items-center justify-between text-xs mb-3">
-          <span className="text-gray-500 dark:text-gray-400">Target Audience</span>
-          <span className="font-medium text-gray-700 dark:text-gray-300">{event.targetAudience}</span>
+          <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Target Audience</span>
+          <span className="font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{event.targetAudience}</span>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-1 pt-3 border-t border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-end gap-1 pt-3 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <Tooltip content="Send Reminder">
             <button className="p-2 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors cursor-pointer">
               <Send className="w-4 h-4 text-orange-600 dark:text-orange-400" />
@@ -521,12 +521,12 @@ function EventCard({ event, getEventTypeInfo, getStatusBadge }: EventCardProps) 
           </Tooltip>
           <Tooltip content="Edit">
             <button className="p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer">
-              <Edit className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <Edit className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             </button>
           </Tooltip>
           <Tooltip content="View Details">
-            <button className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer">
-              <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <button className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
+              <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
             </button>
           </Tooltip>
         </div>

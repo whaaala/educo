@@ -78,7 +78,7 @@ export default function FloatingTextToolbar({
   return (
     <div
       ref={toolbarRef}
-      className="absolute z-[70] px-2 py-1.5 bg-white dark:bg-gray-800 midnight:bg-[#111827] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl shadow-xl shadow-black/15 dark:shadow-black/40 select-none"
+      className="absolute z-[70] px-2 py-1.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl shadow-xl shadow-black/15 dark:shadow-black/40 select-none"
       style={{
         left: elCenterX,
         top: topY,

@@ -57,7 +57,7 @@ export default function SuccessModal({
     <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/60 backdrop-blur-md pt-4 pb-4 px-4 sm:px-6 overflow-y-auto">
       <div
         ref={modalRef}
-        className="relative w-full max-w-2xl bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200"
+        className="relative w-full max-w-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200"
       >
         {/* Header with Gradient */}
         <div className="flex-shrink-0 relative bg-gradient-to-r from-green-500/90 to-emerald-500/90 dark:from-green-500/80 dark:to-emerald-500/80 midnight:from-green-500/90 midnight:to-emerald-500/90 purple:from-green-500/90 purple:to-emerald-500/90 px-4 sm:px-5 py-3 sm:py-4 rounded-t-xl sm:rounded-t-2xl">
@@ -91,7 +91,7 @@ export default function SuccessModal({
               <div className="space-y-4">
                 {fields.map((field, index) => (
                   <div key={index} className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 flex items-center justify-center">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 flex items-center justify-center">
                       {field.icon}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -119,7 +119,7 @@ export default function SuccessModal({
         </div>
 
         {/* Footer - Action Button */}
-        <div className="flex-shrink-0 px-4 sm:px-5 py-4 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 rounded-b-xl sm:rounded-b-2xl">
+        <div className="flex-shrink-0 px-4 sm:px-5 py-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 rounded-b-xl sm:rounded-b-2xl">
           <button
             type="button"
             onClick={onClose}
