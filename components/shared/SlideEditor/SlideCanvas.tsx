@@ -10,8 +10,9 @@ import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from
 import { createPortal } from "react-dom";
 import type { SlideObject, TextBoxObject, ImageObject, ShapeObject, DrawingObject, TableObject, TableCell } from "@/lib/slide-storage";
 import { SHAPE_DEFS } from "./shapes";
-import { ColorGrid, TabbedColorPalette, ColorPickerPopover, SOLID_COLORS, GRADIENT_COLORS, GLOSSY_COLORS, BORDER_COLORS, TEXT_COLORS, colorToCSS } from "@/components/shared/ColorPalettePicker";
+import { ColorGrid, TabbedColorPalette, ColorPickerPopover, isNativeColorPickerOpen, SOLID_COLORS, GRADIENT_COLORS, GLOSSY_COLORS, BORDER_COLORS, TEXT_COLORS, colorToCSS } from "@/components/shared/ColorPalettePicker";
 import CustomDropdown from "@/components/shared/CustomDropdown";
+import TableStylePanel from "@/components/shared/TableStylePanel";
 
 // ══════════════════════════════════════════════════
 // Types
@@ -351,6 +352,8 @@ export default function SlideCanvas({
     const clickedObj = (e.target as HTMLElement).closest("[data-slide-obj]");
     // If clicked on the canvas background (not on any object) → deselect
     if (!clickedObj) {
+      // Don't close anything if the native color picker is open
+      if (isNativeColorPickerOpen()) return;
       if (croppingId) { applyCrop(croppingId); setCroppingId(null); }
       onSelect(null);
       setEditingTextId(null);
@@ -398,6 +401,7 @@ export default function SlideCanvas({
         }}
         onMouseDown={(e) => {
           if (!canEdit || drawingMode) return;
+          if (isNativeColorPickerOpen()) return;
           if (contextMenu) setContextMenu(null);
           // Apply and exit crop/color mode if clicking a different object
           if (croppingId && croppingId !== obj.id) { applyCrop(croppingId); setCroppingId(null); }
@@ -649,11 +653,17 @@ export default function SlideCanvas({
 
         {/* Color toolbar — only when user clicks the color button */}
         {showColorPickerId === obj.id && canEdit && obj.type === "shape" && typeof document !== "undefined" && createPortal(
-          <ShapeColorToolbar obj={obj as ShapeObject} updateObj={updateObj} canvasRef={canvasRef} />,
+          <>
+            <div className="fixed inset-0 z-[10000]" onMouseDown={(e) => e.stopPropagation()} onMouseUp={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()} />
+            <ShapeColorToolbar obj={obj as ShapeObject} updateObj={updateObj} canvasRef={canvasRef} />
+          </>,
           document.body,
         )}
         {showColorPickerId === obj.id && canEdit && obj.type === "table" && typeof document !== "undefined" && createPortal(
-          <TableColorToolbar obj={obj as TableObject} updateObj={updateObj} canvasRef={canvasRef} />,
+          <>
+            <div className="fixed inset-0 z-[10000]" onMouseDown={(e) => e.stopPropagation()} onMouseUp={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()} />
+            <TableColorToolbar obj={obj as TableObject} updateObj={updateObj} canvasRef={canvasRef} onClose={() => setShowColorPickerId(null)} />
+          </>,
           document.body,
         )}
       </div>
@@ -799,9 +809,19 @@ function FontSizeCombo({ value, onChange }: { value: number; onChange: (v: numbe
   const [isOpen, setIsOpen] = useState(false);
   const [inputVal, setInputVal] = useState(String(value));
   const ref = useRef<HTMLDivElement>(null);
+  const idRef = useRef(`fontsize-${Math.random().toString(36).slice(2)}`);
 
   // Sync input when value changes externally
   useEffect(() => { setInputVal(String(value)); }, [value]);
+
+  // Close when another dropdown/popover opens
+  useEffect(() => {
+    const handleOtherOpen = (e: Event) => {
+      if ((e as CustomEvent).detail !== idRef.current) setIsOpen(false);
+    };
+    window.addEventListener("dropdown-open", handleOtherOpen);
+    return () => window.removeEventListener("dropdown-open", handleOtherOpen);
+  }, []);
 
   // Close on outside click
   useEffect(() => {
@@ -836,7 +856,11 @@ function FontSizeCombo({ value, onChange }: { value: number; onChange: (v: numbe
         />
         <button
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => {
+            const opening = !isOpen;
+            if (opening) window.dispatchEvent(new CustomEvent("dropdown-open", { detail: idRef.current }));
+            setIsOpen(opening);
+          }}
           className="h-full px-1 flex items-center justify-center cursor-pointer hover:bg-blue-100 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-colors"
         >
           <svg viewBox="0 0 10 6" className={`w-2.5 h-2.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><polyline points="1,1 5,5 9,1" /></svg>
@@ -1159,12 +1183,12 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
 
             {/* Bold */}
             <button onClick={() => onCellUpdate(editingCell.r, editingCell.c, { bold: !activeCell.bold })}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] font-bold cursor-pointer transition-all ${activeCell.bold ? "bg-blue-500 text-white" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] font-bold cursor-pointer transition-all ${activeCell.bold ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
               title="Bold">B</button>
 
             {/* Italic */}
             <button onClick={() => onCellUpdate(editingCell.r, editingCell.c, { italic: !activeCell.italic })}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] italic cursor-pointer transition-all ${activeCell.italic ? "bg-blue-500 text-white" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] italic cursor-pointer transition-all ${activeCell.italic ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
               title="Italic">I</button>
 
             <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
@@ -1172,7 +1196,7 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
             {/* Alignment */}
             {(["left", "center", "right"] as const).map(a => (
               <button key={a} onClick={() => onCellUpdate(editingCell.r, editingCell.c, { align: a })}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${(activeCell.align || "left") === a ? "bg-blue-500 text-white" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
+                className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${(activeCell.align || "left") === a ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
                 title={`Align ${a}`}>
                 <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                   {a === "left" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="1" y1="8" x2="10" y2="8"/><line x1="1" y1="12" x2="13" y2="12"/></>}
@@ -1186,7 +1210,7 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
 
             {/* Wrap toggle */}
             <button onClick={() => onCellUpdate(editingCell.r, editingCell.c, { noWrap: !activeCell.noWrap })}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${!activeCell.noWrap ? "bg-blue-500 text-white" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${!activeCell.noWrap ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
               title={activeCell.noWrap ? "Enable wrap" : "Wrap on"}>
               <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                 <line x1="1" y1="4" x2="15" y2="4"/><line x1="1" y1="8" x2="11" y2="8"/><path d="M11 8 C14 8 14 12 11 12 L6 12" /><polyline points="8,10 6,12 8,14" />
@@ -1198,7 +1222,7 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
             {/* Vertical alignment — top, middle, bottom */}
             {(["top", "middle", "bottom"] as const).map(va => (
               <button key={va} onClick={() => onCellUpdate(editingCell.r, editingCell.c, { verticalAlign: va })}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${(activeCell.verticalAlign || "middle") === va ? "bg-blue-500 text-white" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
+                className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${(activeCell.verticalAlign || "middle") === va ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
                 title={`Align ${va}`}>
                 <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                   {va === "top" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="8" x2="9" y2="8"/><path d="M8 12 L8 10 M6 12 L8 10 L10 12" strokeWidth="1.2" /></>}
@@ -1210,14 +1234,14 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
 
             <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
 
-            {/* Text color — using ColorPickerPopover */}
+            {/* Text color — full matrix picker like Google Slides */}
             <ColorPickerPopover
               selectedColor={activeCell.color || "#1f2937"}
               onSelect={(c) => onCellUpdate(editingCell.r, editingCell.c, { color: c })}
-              mode="text"
+              mode="matrix"
               label="Text Color"
               align="right"
-              width={180}
+              width={272}
             >
               <button className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 relative" title="Text color">
                 <span className="text-[13px] font-bold" style={{ color: activeCell.color || "#1f2937" }}>A</span>
@@ -1225,14 +1249,14 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
               </button>
             </ColorPickerPopover>
 
-            {/* Cell fill — using ColorPickerPopover */}
+            {/* Cell fill — full matrix picker like Google Slides */}
             <ColorPickerPopover
               selectedColor={activeCell.backgroundColor || "#ffffff"}
               onSelect={(c) => onCellUpdate(editingCell.r, editingCell.c, { backgroundColor: c })}
-              mode="solid"
+              mode="matrix"
               label="Cell Fill"
               align="right"
-              width={200}
+              width={272}
             >
               <button className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5" title="Cell fill">
                 <div className="w-5 h-5 rounded border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30" style={{ backgroundColor: activeCell.backgroundColor || "#fff" }} />
@@ -1488,230 +1512,29 @@ function ShapeColorToolbar({ obj, updateObj, canvasRef }: {
 }
 
 // ══════════════════════════════════════════════════
-// TableColorToolbar — Table formatting panel
+// TableColorToolbar — Wrapper for shared TableStylePanel
 // ══════════════════════════════════════════════════
 
-function TableColorToolbar({ obj, updateObj, canvasRef }: {
+function TableColorToolbar({ obj, updateObj, canvasRef, onClose }: {
   obj: TableObject;
   updateObj: (id: string, updates: Partial<SlideObject>) => void;
   canvasRef: React.RefObject<HTMLDivElement | null>;
+  onClose?: () => void;
 }) {
-  const [pos, setPos] = useState({ top: 0, left: 0 });
-  const [section, setSection] = useState<"style" | "border" | "rows">("style");
+  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
 
   useEffect(() => {
     const el = canvasRef.current?.querySelector(`[data-slide-obj="${obj.id}"]`) as HTMLElement;
     if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const w = 280, h = 340;
-    let top = rect.top;
-    let left = rect.right + 12;
-    if (left + w > window.innerWidth - 8) left = rect.left - w - 12;
-    if (left < 8) left = 8;
-    if (top + h > window.innerHeight - 8) top = window.innerHeight - h - 8;
-    if (top < 8) top = 8;
-    setPos({ top, left });
+    setAnchorRect(el.getBoundingClientRect());
   }, [obj.id, obj.x, obj.y, obj.width, obj.height, canvasRef]);
 
-  const TABLE_THEMES = [
-    { name: "Blue", header: "#3b82f6", even: "#ffffff", odd: "#eff6ff" },
-    { name: "Green", header: "#22c55e", even: "#ffffff", odd: "#f0fdf4" },
-    { name: "Red", header: "#ef4444", even: "#ffffff", odd: "#fef2f2" },
-    { name: "Purple", header: "#8b5cf6", even: "#ffffff", odd: "#faf5ff" },
-    { name: "Orange", header: "#f97316", even: "#ffffff", odd: "#fff7ed" },
-    { name: "Teal", header: "#14b8a6", even: "#ffffff", odd: "#f0fdfa" },
-    { name: "Dark", header: "#1f2937", even: "#f9fafb", odd: "#e5e7eb" },
-    { name: "Rose", header: "#ec4899", even: "#ffffff", odd: "#fdf2f8" },
-  ];
-
   return (
-    <div
-      className="fixed z-[10001] rounded-2xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 overflow-hidden"
-      style={{ top: pos.top, left: pos.left, width: 280, backdropFilter: "blur(20px)" }}
-      onClick={(e) => e.stopPropagation()}
-      onMouseDown={(e) => e.stopPropagation()}
-    >
-      {/* Header */}
-      <div className="px-4 pt-3 pb-2 bg-gradient-to-b from-gray-50 dark:from-gray-800/50 to-transparent">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-center justify-center">
-            <svg viewBox="0 0 20 20" className="w-5 h-5 text-gray-500"><rect x="2" y="2" width="16" height="16" rx="1" fill="none" stroke="currentColor" strokeWidth="1.5" /><line x1="2" y1="7" x2="18" y2="7" stroke="currentColor" strokeWidth="1" /><line x1="2" y1="12" x2="18" y2="12" stroke="currentColor" strokeWidth="1" /><line x1="9" y1="7" x2="9" y2="18" stroke="currentColor" strokeWidth="1" /></svg>
-          </div>
-          <div>
-            <div className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Table {obj.rows} × {obj.cols}</div>
-            <div className="text-[9px] text-gray-400">Double-click to edit cells</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex px-3 gap-0.5 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
-        {([["style", "◼ Style"], ["border", "◻ Border"], ["rows", "≡ Rows"]] as const).map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setSection(key as typeof section)}
-            className={`flex-1 py-2 text-[11px] font-medium transition-all cursor-pointer relative ${
-              section === key ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-400 hover:text-gray-600"
-            }`}
-          >
-            {label}
-            {section === key && <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-blue-500 rounded-full" />}
-          </button>
-        ))}
-      </div>
-
-      {/* Content */}
-      <div className="px-3 py-3 max-h-[260px] overflow-y-auto">
-        {section === "style" && (
-          <div className="space-y-3">
-            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Quick Themes</div>
-            <div className="grid grid-cols-4 gap-1.5">
-              {TABLE_THEMES.map(t => (
-                <button
-                  key={t.name}
-                  onClick={() => updateObj(obj.id, { headerColor: t.header, evenRowColor: t.even, oddRowColor: t.odd } as Partial<TableObject>)}
-                  className={`rounded-lg p-1 cursor-pointer transition-all hover:scale-105 border ${
-                    obj.headerColor === t.header ? "ring-2 ring-blue-500 border-blue-300" : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
-                  }`}
-                  title={t.name}
-                >
-                  <div className="rounded overflow-hidden">
-                    <div className="h-2.5" style={{ backgroundColor: t.header }} />
-                    <div className="h-2" style={{ backgroundColor: t.even }} />
-                    <div className="h-2" style={{ backgroundColor: t.odd }} />
-                    <div className="h-2" style={{ backgroundColor: t.even }} />
-                  </div>
-                  <div className="text-[8px] text-gray-500 mt-0.5 text-center">{t.name}</div>
-                </button>
-              ))}
-            </div>
-
-            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mt-3 mb-1.5">Header Color</div>
-            <ColorGrid
-              colors={SOLID_COLORS.slice(0, 18)}
-              selectedColor={obj.headerColor}
-              onSelect={(c) => updateObj(obj.id, { headerColor: c } as Partial<TableObject>)}
-              columns={6}
-              swatchSize="sm"
-              showCustomHex
-            />
-
-            <div className="flex items-center gap-2 mt-2">
-              <label className="flex items-center gap-1.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={obj.headerRow}
-                  onChange={(e) => updateObj(obj.id, { headerRow: e.target.checked } as Partial<TableObject>)}
-                  className="w-3.5 h-3.5 rounded accent-blue-500 cursor-pointer"
-                />
-                <span className="text-[11px] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Header row</span>
-              </label>
-            </div>
-          </div>
-        )}
-
-        {section === "border" && (
-          <div className="space-y-3">
-            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Border Color</div>
-            <ColorGrid
-              colors={BORDER_COLORS.slice(0, 24)}
-              selectedColor={obj.borderColor}
-              onSelect={(c) => updateObj(obj.id, { borderColor: c } as Partial<TableObject>)}
-              columns={8}
-              swatchSize="sm"
-              showCustomHex
-            />
-
-            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mt-2 mb-1.5">Border Width</div>
-            <div className="flex gap-1">
-              {[0, 1, 2, 3, 4].map(w => (
-                <button key={w}
-                  onClick={() => updateObj(obj.id, { borderWidth: w } as Partial<TableObject>)}
-                  className={`flex-1 h-8 flex items-center justify-center rounded-lg transition-all cursor-pointer ${
-                    obj.borderWidth === w ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 ring-1.5 ring-blue-400" : "border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50"
-                  }`}
-                  title={w === 0 ? "None" : `${w}px`}
-                >
-                  {w === 0 ? <svg viewBox="0 0 20 20" className="w-4 h-4 text-gray-400"><line x1="4" y1="16" x2="16" y2="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-                    : <div style={{ width: 18, height: Math.max(1, w), backgroundColor: obj.borderColor, borderRadius: 1 }} />}
-                </button>
-              ))}
-            </div>
-
-            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mt-2 mb-1.5">Cell Padding</div>
-            <div className="flex items-center gap-2">
-              <input type="range" min={2} max={16} value={obj.cellPadding} onChange={(e) => updateObj(obj.id, { cellPadding: Number(e.target.value) } as Partial<TableObject>)} className="flex-1 h-1 accent-blue-500 cursor-pointer" />
-              <span className="text-[10px] font-mono text-gray-500 w-6 text-right">{obj.cellPadding}px</span>
-            </div>
-
-            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mt-2 mb-1.5">Font Size</div>
-            <div className="flex gap-1">
-              {[8, 10, 12, 14, 16, 18, 20].map(s => (
-                <button key={s}
-                  onClick={() => updateObj(obj.id, { fontSize: s } as Partial<TableObject>)}
-                  className={`flex-1 py-1.5 rounded-lg text-[10px] font-medium cursor-pointer transition-all ${
-                    obj.fontSize === s ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 ring-1 ring-blue-200" : "text-gray-500 hover:bg-gray-50 border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10"
-                  }`}
-                >{s}</button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {section === "rows" && (
-          <div className="space-y-3">
-            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Add / Remove</div>
-            <div className="flex gap-2">
-              <button onClick={() => {
-                const newCells = [...obj.cells, Array.from({ length: obj.cols }, () => ({ content: "" }))];
-                updateObj(obj.id, { rows: obj.rows + 1, cells: newCells, height: obj.height + 6 } as Partial<TableObject>);
-              }} className="flex-1 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 text-[11px] font-medium cursor-pointer hover:bg-blue-100 transition-colors">+ Row</button>
-              <button onClick={() => {
-                const newCells = obj.cells.map(row => [...row, { content: "" }]);
-                updateObj(obj.id, { cols: obj.cols + 1, cells: newCells } as Partial<TableObject>);
-              }} className="flex-1 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 text-[11px] font-medium cursor-pointer hover:bg-blue-100 transition-colors">+ Column</button>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => {
-                if (obj.rows <= 1) return;
-                const newCells = obj.cells.slice(0, -1);
-                updateObj(obj.id, { rows: obj.rows - 1, cells: newCells, height: Math.max(10, obj.height - 6) } as Partial<TableObject>);
-              }} className={`flex-1 py-2 rounded-lg text-[11px] font-medium cursor-pointer transition-colors ${obj.rows <= 1 ? "bg-gray-100 text-gray-300 cursor-not-allowed" : "bg-red-50 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 text-red-600 hover:bg-red-100"}`}>- Row</button>
-              <button onClick={() => {
-                if (obj.cols <= 1) return;
-                const newCells = obj.cells.map(row => row.slice(0, -1));
-                updateObj(obj.id, { cols: obj.cols - 1, cells: newCells } as Partial<TableObject>);
-              }} className={`flex-1 py-2 rounded-lg text-[11px] font-medium cursor-pointer transition-colors ${obj.cols <= 1 ? "bg-gray-100 text-gray-300 cursor-not-allowed" : "bg-red-50 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 text-red-600 hover:bg-red-100"}`}>- Column</button>
-            </div>
-
-            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mt-3 mb-1.5">Row Colors</div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-gray-400 w-12">Even</span>
-                <div className="flex gap-1 flex-1">
-                  {["#ffffff", "#f9fafb", "#f3f4f6", "#eff6ff", "#f0fdf4", "#fef2f2", "#faf5ff", "#fff7ed"].map(c => (
-                    <button key={c} onClick={() => updateObj(obj.id, { evenRowColor: c } as Partial<TableObject>)}
-                      className={`w-6 h-6 rounded-md border cursor-pointer hover:scale-110 transition-transform ${obj.evenRowColor === c ? "ring-2 ring-blue-500 ring-offset-1" : "border-gray-200"}`}
-                      style={{ backgroundColor: c }}
-                    />
-                  ))}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-gray-400 w-12">Odd</span>
-                <div className="flex gap-1 flex-1">
-                  {["#f9fafb", "#f3f4f6", "#e5e7eb", "#dbeafe", "#dcfce7", "#fee2e2", "#ede9fe", "#ffedd5"].map(c => (
-                    <button key={c} onClick={() => updateObj(obj.id, { oddRowColor: c } as Partial<TableObject>)}
-                      className={`w-6 h-6 rounded-md border cursor-pointer hover:scale-110 transition-transform ${obj.oddRowColor === c ? "ring-2 ring-blue-500 ring-offset-1" : "border-gray-200"}`}
-                      style={{ backgroundColor: c }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+    <TableStylePanel
+      obj={obj}
+      onUpdate={(updates) => updateObj(obj.id, updates as Partial<SlideObject>)}
+      anchorRect={anchorRect}
+      onClose={onClose}
+    />
   );
 }

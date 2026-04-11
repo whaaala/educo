@@ -367,7 +367,12 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, on
         {showRuler && <SlideRuler direction="v" length={size.h} slideOffset={slideTop - 18} />}
 
         {/* Canvas area */}
-        <div className="flex-1 flex items-center justify-center overflow-hidden" onClick={() => onSelectObject?.(null)}>
+        <div className="flex-1 flex items-center justify-center overflow-hidden" onClick={() => {
+          // Don't deselect if native color picker is open
+          const activeEl = document.activeElement as HTMLInputElement | null;
+          if (activeEl?.type === "color") return;
+          onSelectObject?.(null);
+        }}>
           <div
             onClick={(e) => e.stopPropagation()}
             style={{

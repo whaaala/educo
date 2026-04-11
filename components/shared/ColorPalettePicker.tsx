@@ -229,7 +229,8 @@ function CustomHexRow({ color, onSelect }: { color: string; onSelect: (c: string
           onMouseDown={() => { _nativeColorPickerOpen = true; }}
           onFocus={() => { _nativeColorPickerOpen = true; }}
           onChange={(e) => { _nativeColorPickerOpen = true; onSelect(e.target.value); }}
-          onBlur={() => { setTimeout(() => { _nativeColorPickerOpen = false; }, 300); }}
+          onBlur={() => { setTimeout(() => { _nativeColorPickerOpen = false; }, 1000); }}
+          onClick={() => { _nativeColorPickerOpen = true; }}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
         <div className="w-7 h-7 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 shadow-inner" style={{ background: color.startsWith("gradient:") ? colorToCSS(color) : color }}>
@@ -330,6 +331,121 @@ export function ColorGrid({
   );
 }
 
+// ─── Color Matrix Grid (10 cols × hue rows, like Google Slides) ────────
+
+interface ColorMatrixGridProps {
+  matrix?: string[][];
+  selectedColor?: string | null;
+  onSelect: (color: string) => void;
+  /** Called when color changes from custom hex/native picker (doesn't close popover) */
+  onCustomSelect?: (color: string) => void;
+  showCustomHex?: boolean;
+}
+
+/**
+ * A 10-column color grid organized by hue (dark→light per row).
+ * Matches Google Slides / Google Docs color picker layout.
+ */
+export function ColorMatrixGrid({
+  matrix = TEXT_COLORS_MATRIX,
+  selectedColor,
+  onSelect,
+  onCustomSelect,
+  showCustomHex = true,
+}: ColorMatrixGridProps) {
+  return (
+    <div>
+      <div className="grid gap-[3px]" style={{ gridTemplateColumns: "repeat(10, 1fr)" }}>
+        {matrix.flat().map((c, i) => (
+          <button
+            key={`${c}-${i}`}
+            onClick={() => onSelect(c)}
+            className={`w-[22px] h-[22px] rounded-[4px] border cursor-pointer hover:scale-115 transition-transform ${
+              selectedColor === c
+                ? "ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-[#0f1115] midnight:ring-offset-[#0a0e27] purple:ring-offset-[#1a0b2e] scale-110"
+                : "border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/15 purple:border-pink-500/15 hover:border-gray-400 dark:hover:border-gray-500"
+            }`}
+            style={{ backgroundColor: c }}
+            title={c}
+          />
+        ))}
+      </div>
+      {showCustomHex && (
+        <CustomHexRow color={selectedColor ?? "#000000"} onSelect={onCustomSelect || onSelect} />
+      )}
+    </div>
+  );
+}
+
+// ─── Full Color Picker Panel (Matrix + Gradient tabs, like Google Slides) ──
+
+interface FullColorPickerProps {
+  selectedColor?: string | null;
+  onSelect: (color: string) => void;
+  /** Called from custom hex/native picker — doesn't close the popover */
+  onCustomSelect?: (color: string) => void;
+  showGradients?: boolean;
+  gradientColors?: string[];
+  glossyColors?: string[];
+  matrix?: string[][];
+}
+
+/**
+ * Full color picker with Solid (matrix) / Gradient / Glossy tabs.
+ * Designed to look like Google Slides' color picker.
+ */
+export function FullColorPicker({
+  selectedColor,
+  onSelect,
+  onCustomSelect,
+  showGradients = true,
+  gradientColors = GRADIENT_COLORS,
+  glossyColors,
+  matrix = TEXT_COLORS_MATRIX,
+}: FullColorPickerProps) {
+  const tabs = showGradients
+    ? glossyColors ? ["Solid", "Gradient", "Glossy"] : ["Solid", "Gradient"]
+    : ["Solid"];
+  const [tab, setTab] = useState(
+    selectedColor?.startsWith("gradient:") ? "Gradient" : "Solid"
+  );
+
+  return (
+    <div>
+      {/* Tabs — only show if more than one */}
+      {tabs.length > 1 && (
+        <div className="flex mb-2 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          {tabs.map(t => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`flex-1 py-1.5 text-[11px] font-medium transition-colors cursor-pointer relative ${
+                tab === t
+                  ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+                  : "text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50 hover:text-gray-600 dark:hover:text-gray-300"
+              }`}
+            >
+              {t}
+              {tab === t && <div className="absolute bottom-0 left-2 right-2 h-[2px] bg-blue-500 dark:bg-blue-400 midnight:bg-cyan-400 purple:bg-pink-400 rounded-full" />}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Content */}
+      {tab === "Solid" && (
+        <ColorMatrixGrid matrix={matrix} selectedColor={selectedColor} onSelect={onSelect} onCustomSelect={onCustomSelect} showCustomHex />
+      )}
+      {tab === "Gradient" && (
+        <ColorGrid colors={gradientColors} selectedColor={selectedColor} onSelect={onSelect} columns={6} swatchSize="sm" showCustomHex />
+      )}
+      {tab === "Glossy" && glossyColors && (
+        <ColorGrid colors={glossyColors} selectedColor={selectedColor} onSelect={onSelect} columns={6} swatchSize="sm" showCustomHex />
+      )}
+    </div>
+  );
+}
+
 // ─── Tabbed Color Palette (Solid / Gradient) ────────────────────────────
 
 type ColorTabName = "solid" | "gradient" | "glossy";
@@ -410,8 +526,8 @@ interface ColorPickerPopoverProps {
   onSelect: (color: string) => void;
   /** The trigger element (color swatch button) */
   children: React.ReactNode;
-  /** Which palettes to show: "solid" | "gradient" | "both" | "text" */
-  mode?: "solid" | "gradient" | "both" | "text";
+  /** Which palettes to show: "solid" | "gradient" | "both" | "text" | "matrix" */
+  mode?: "solid" | "gradient" | "both" | "text" | "matrix";
   /** Custom solid colors (overrides defaults) */
   solidColors?: string[];
   /** Custom gradient colors (overrides defaults) */
@@ -447,10 +563,27 @@ export function ColorPickerPopover({
 }: ColorPickerPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const idRef = useRef(`cpicker-${Math.random().toString(36).slice(2)}`);
+
+  // Close when another dropdown/popover opens (shared event with CustomDropdown)
+  useEffect(() => {
+    const handleOtherOpen = (e: Event) => {
+      if (_nativeColorPickerOpen) return;
+      if ((e as CustomEvent).detail !== idRef.current) setIsOpen(false);
+    };
+    window.addEventListener("dropdown-open", handleOtherOpen);
+    return () => window.removeEventListener("dropdown-open", handleOtherOpen);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: MouseEvent) => {
+      // Don't close if native color picker is open
+      if (_nativeColorPickerOpen) return;
+      // Don't close if any input[type=color] in the document is focused
+      const activeEl = document.activeElement as HTMLInputElement | null;
+      if (activeEl?.type === "color") return;
+      // Don't close if click target is inside the popover
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
@@ -459,17 +592,39 @@ export function ColorPickerPopover({
     return () => document.removeEventListener("mousedown", handler);
   }, [isOpen]);
 
+  // Close popover when selecting from grid swatches
   const handleSelect = (color: string) => {
     onSelect(color);
     setIsOpen(false);
   };
+  // Don't close popover when using custom/native picker — just update color
+  const handleCustomSelect = (color: string) => {
+    onSelect(color);
+  };
+
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const [openAbove, setOpenAbove] = useState(false);
+
+  // Check if popover would overflow viewport bottom, flip above if needed
+  useEffect(() => {
+    if (!isOpen || !ref.current) return;
+    const triggerRect = ref.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - triggerRect.bottom - 16; // 16px margin
+    const estimatedHeight = mode === "matrix" ? 380 : 300;
+    setOpenAbove(spaceBelow < estimatedHeight && triggerRect.top > estimatedHeight);
+  }, [isOpen, mode]);
 
   return (
     <div className="relative" ref={ref}>
-      <div onClick={() => setIsOpen(!isOpen)}>{children}</div>
+      <div onClick={() => {
+        const opening = !isOpen;
+        if (opening) window.dispatchEvent(new CustomEvent("dropdown-open", { detail: idRef.current }));
+        setIsOpen(opening);
+      }}>{children}</div>
       {isOpen && (
         <div
-          className={`absolute ${align === "right" ? "right-0" : "left-0"} top-full mt-1 z-[80] p-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-lg shadow-xl`}
+          ref={popoverRef}
+          className={`absolute ${align === "right" ? "right-0" : "left-0"} ${openAbove ? "bottom-full mb-1" : "top-full mt-1"} z-[10003] p-2.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-xl shadow-2xl max-h-[min(420px,calc(100vh-100px))] overflow-y-auto`}
           style={{ width }}
         >
           {label && (
@@ -491,6 +646,15 @@ export function ColorPickerPopover({
               selectedColor={selectedColor}
               onSelect={handleSelect}
               columns={5}
+            />
+          ) : mode === "matrix" ? (
+            <FullColorPicker
+              selectedColor={selectedColor}
+              onSelect={handleSelect}
+              onCustomSelect={handleCustomSelect}
+              showGradients
+              gradientColors={gradientColors}
+              glossyColors={GLOSSY_COLORS}
             />
           ) : (
             <ColorGrid
