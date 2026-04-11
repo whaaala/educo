@@ -654,14 +654,14 @@ export default function SlideCanvas({
         {/* Color toolbar — only when user clicks the color button */}
         {showColorPickerId === obj.id && canEdit && obj.type === "shape" && typeof document !== "undefined" && createPortal(
           <>
-            <div className="fixed inset-0 z-[10000]" onMouseDown={(e) => e.stopPropagation()} onMouseUp={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()} />
+            <div className="fixed inset-0 z-[10000]" onClick={() => { if (!isNativeColorPickerOpen()) setShowColorPickerId(null); }} onMouseDown={(e) => e.stopPropagation()} />
             <ShapeColorToolbar obj={obj as ShapeObject} updateObj={updateObj} canvasRef={canvasRef} />
           </>,
           document.body,
         )}
         {showColorPickerId === obj.id && canEdit && obj.type === "table" && typeof document !== "undefined" && createPortal(
           <>
-            <div className="fixed inset-0 z-[10000]" onMouseDown={(e) => e.stopPropagation()} onMouseUp={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()} />
+            <div className="fixed inset-0 z-[10000]" onClick={() => { if (!isNativeColorPickerOpen()) setShowColorPickerId(null); }} onMouseDown={(e) => e.stopPropagation()} />
             <TableColorToolbar obj={obj as TableObject} updateObj={updateObj} canvasRef={canvasRef} onClose={() => setShowColorPickerId(null)} />
           </>,
           document.body,
