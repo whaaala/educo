@@ -882,7 +882,7 @@ function TableResizeHandles({ containerRef, obj, startColResize, startRowResize,
       {/* Bottom edge — resize last row only (grows/shrinks table height) */}
       <div
         className="absolute left-0 right-0 z-[30] cursor-row-resize group"
-        style={{ bottom: 0, height: 12, marginBottom: -6, pointerEvents: "auto" }}
+        style={{ bottom: 0, height: 8, pointerEvents: "auto" }}
         onMouseDown={(e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -918,7 +918,7 @@ function TableResizeHandles({ containerRef, obj, startColResize, startRowResize,
       {/* Top edge — resize first row only */}
       <div
         className="absolute left-0 right-0 z-[30] cursor-row-resize group"
-        style={{ top: 0, height: 12, marginTop: -6, pointerEvents: "auto" }}
+        style={{ top: 0, height: 8, pointerEvents: "auto" }}
         onMouseDown={(e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -954,7 +954,7 @@ function TableResizeHandles({ containerRef, obj, startColResize, startRowResize,
       {/* Left edge — resize first column only */}
       <div
         className="absolute top-0 bottom-0 z-[30] cursor-col-resize group"
-        style={{ left: 0, width: 12, marginLeft: -6, pointerEvents: "auto" }}
+        style={{ left: 0, width: 8, pointerEvents: "auto" }}
         onMouseDown={(e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -990,7 +990,7 @@ function TableResizeHandles({ containerRef, obj, startColResize, startRowResize,
       {/* Right edge — resize last column only */}
       <div
         className="absolute top-0 bottom-0 z-[30] cursor-col-resize group"
-        style={{ right: 0, width: 12, marginRight: -6, pointerEvents: "auto" }}
+        style={{ right: 0, width: 8, pointerEvents: "auto" }}
         onMouseDown={(e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -1125,7 +1125,19 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
   objId?: string;
 }) {
   const [editingCell, setEditingCell] = useState<{ r: number; c: number } | null>(null);
+  const [showCellToolbar, setShowCellToolbar] = useState(false);
   const [toolbarPos, setToolbarPos] = useState<{ top: number; left: number } | null>(null);
+  const cellEditRef = useRef<HTMLDivElement | null>(null); // ref to the active contentEditable
+
+  // Clear cell editing state when table exits edit mode
+  useEffect(() => {
+    if (!isEditing) { setEditingCell(null); setShowCellToolbar(false); cellEditRef.current = null; }
+  }, [isEditing]);
+
+  // Reset ref when switching cells
+  useEffect(() => {
+    cellEditRef.current = null;
+  }, [editingCell?.r, editingCell?.c]);
 
   // Position the cell toolbar above the TABLE object (not above the cell)
   useEffect(() => {
@@ -1264,39 +1276,75 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
                       <div
                         contentEditable
                         suppressContentEditableWarning
-                        className="outline-none min-h-[1em] w-full"
+                        className="outline-none min-h-[1em] w-full [&_img]:max-w-full [&_img]:h-auto [&_video]:max-w-full"
                         style={{ color: textColor }}
                         onBlur={(e) => {
-                          onCellChange(ri, ci, e.currentTarget.textContent || "");
+                          onCellChange(ri, ci, e.currentTarget.innerHTML || "");
                         }}
                         onKeyDown={(e) => {
                           e.stopPropagation();
                           if (e.key === "Tab") {
                             e.preventDefault();
-                            onCellChange(ri, ci, (e.target as HTMLElement).textContent || "");
+                            onCellChange(ri, ci, (e.target as HTMLElement).innerHTML || "");
                             const nextC = ci + 1 < obj.cols ? ci + 1 : 0;
                             const nextR = ci + 1 < obj.cols ? ri : ri + 1 < obj.rows ? ri + 1 : 0;
                             setEditingCell({ r: nextR, c: nextC });
                           }
-                          if (e.key === "Escape") { setEditingCell(null); onStopEditing(); }
+                          if (e.key === "Escape") {
+                            onCellChange(ri, ci, (e.target as HTMLElement).innerHTML || "");
+                            setEditingCell(null); setShowCellToolbar(false); onStopEditing();
+                          }
                           if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
-                            onCellChange(ri, ci, (e.target as HTMLElement).textContent || "");
+                            onCellChange(ri, ci, (e.target as HTMLElement).innerHTML || "");
                             if (ri + 1 < obj.rows) setEditingCell({ r: ri + 1, c: ci });
                             else setEditingCell(null);
                           }
                         }}
                         onMouseDown={(e) => e.stopPropagation()}
-                        dangerouslySetInnerHTML={{ __html: cell.content || "" }}
+                        onPaste={(e) => {
+                          // Allow rich paste including images
+                          const items = e.clipboardData?.items;
+                          if (items) {
+                            for (const item of Array.from(items)) {
+                              if (item.type.startsWith("image/")) {
+                                e.preventDefault();
+                                const file = item.getAsFile();
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onload = () => {
+                                    document.execCommand("insertHTML", false, `<img src="${reader.result}" style="max-width:100%;height:auto;" />`);
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                                return;
+                              }
+                            }
+                          }
+                        }}
                         ref={(el) => {
-                          if (el && !el.dataset.focused) {
-                            el.dataset.focused = "1";
-                            setTimeout(() => el.focus(), 0);
+                          if (el && cellEditRef.current !== el) {
+                            cellEditRef.current = el;
+                            el.innerHTML = cell.content || "";
+                            setTimeout(() => {
+                              el.focus();
+                              const sel = window.getSelection();
+                              if (sel && el.childNodes.length > 0) {
+                                const range = document.createRange();
+                                range.selectNodeContents(el);
+                                range.collapse(false);
+                                sel.removeAllRanges();
+                                sel.addRange(range);
+                              }
+                            }, 0);
                           }
                         }}
                       />
                     ) : (
-                      <span className={`block ${cell.noWrap ? "truncate whitespace-nowrap" : "whitespace-pre-wrap break-words"}`}>{cell.content || (isEditing ? "\u00A0" : "")}</span>
+                      <div
+                        className={`w-full ${cell.noWrap ? "truncate whitespace-nowrap" : "whitespace-pre-wrap break-words"} [&_img]:max-w-full [&_img]:h-auto [&_video]:max-w-full`}
+                        dangerouslySetInnerHTML={{ __html: cell.content || (isEditing ? "&nbsp;" : "") }}
+                      />
                     )}
                   </div>
                 );
@@ -1314,8 +1362,28 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
         onUpdateTableRef={onUpdateTableRef}
       />}
 
-      {/* Cell formatting toolbar — floating above the table, only when a cell is active */}
-      {editingCell && activeCell && toolbarPos && onCellUpdate && typeof document !== "undefined" && createPortal(
+      {/* Format button — shows when a cell is being edited */}
+      {editingCell && !showCellToolbar && toolbarPos && typeof document !== "undefined" && createPortal(
+        <button
+          className="fixed z-[10002] w-8 h-8 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex items-center justify-center cursor-pointer hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all"
+          style={{ top: toolbarPos.top + 4, left: toolbarPos.left }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            setShowCellToolbar(true);
+          }}
+          title="Format cell"
+        >
+          <svg viewBox="0 0 16 16" className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <line x1="2" y1="4" x2="14" y2="4"/><line x1="2" y1="8" x2="10" y2="8"/><line x1="2" y1="12" x2="12" y2="12"/>
+            <circle cx="13" cy="11" r="2.5" fill="currentColor" stroke="none" opacity="0.3" />
+          </svg>
+        </button>,
+        document.body,
+      )}
+
+      {/* Cell formatting toolbar — only shown when user explicitly opens it */}
+      {showCellToolbar && editingCell && toolbarPos && onCellUpdate && typeof document !== "undefined" && createPortal(
         <div
           data-cell-toolbar
           className="fixed z-[10002] rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
@@ -1445,9 +1513,9 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
 
             {/* Close button */}
             <button
-              onClick={() => { setEditingCell(null); onStopEditing(); }}
+              onClick={() => setShowCellToolbar(false)}
               className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 transition-all"
-              title="Close toolbar (Esc)"
+              title="Close toolbar"
             >
               <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <line x1="4" y1="4" x2="12" y2="12" /><line x1="12" y1="4" x2="4" y2="12" />
