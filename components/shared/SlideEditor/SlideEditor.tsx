@@ -265,7 +265,7 @@ function SlideContentPreview({ slide, themeTextColor, scale = 1 }: { slide: Slid
                             fontSize: cell.fontSize ? cell.fontSize * scale : undefined,
                             fontFamily: cell.fontFamily || undefined,
                           }}>
-                            <span className={`block ${cell.noWrap ? "truncate whitespace-nowrap" : "whitespace-pre-wrap break-words"}`}>{cell.content}</span>
+                            <span className={`block ${cell.noWrap ? "truncate whitespace-nowrap" : "whitespace-pre-wrap break-words"} [&_img]:max-w-full [&_img]:h-auto`} dangerouslySetInnerHTML={{ __html: cell.content || "" }} />
                           </td>
                         );
                       })}
@@ -385,6 +385,7 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, on
           >
             <div
               ref={editorRef}
+              data-slide-canvas
               className="absolute inset-0 shadow-[0_1px_3px_rgba(0,0,0,0.1),0_4px_16px_rgba(0,0,0,0.05)] overflow-hidden"
               style={{ background: activeSlide?.background || "#ffffff" }}
             >
@@ -913,6 +914,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [drawingMode, setDrawingMode] = useState(false);
   const [drawingColor, setDrawingColor] = useState("#1a1a2e");
   const [drawingWidth, setDrawingWidth] = useState(2);
+  const [textBoxDrawMode, setTextBoxDrawMode] = useState(false);
   const [showImageUrlDialog, setShowImageUrlDialog] = useState(false);
   const [imageUrlInput, setImageUrlInput] = useState("");
   const [showImageSearchDialog, setShowImageSearchDialog] = useState(false);
@@ -1299,7 +1301,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       const isEditingText = active?.getAttribute("contenteditable") === "true" || active?.tagName === "INPUT" || active?.tagName === "TEXTAREA";
 
       if (e.key === "F11") { e.preventDefault(); setIsFullscreen(v => !v); }
-      else if (e.key === "Escape") { setShowGridView(false); setIsFullscreen(false); }
+      else if (e.key === "Escape") { setShowGridView(false); setIsFullscreen(false); setTextBoxDrawMode(false); }
       else if (e.key === "F5" && e.ctrlKey) { e.preventDefault(); setActiveSlideIdx(0); setIsPresenting(true); }
       else if (e.key === "F5") { e.preventDefault(); setIsPresenting(true); }
       else if (e.key === "1" && e.ctrlKey && e.altKey) { e.preventDefault(); setShowGridView(v => !v); }
@@ -1932,10 +1934,8 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           case "insert:imageWeb": { setShowImageSearchDialog(true); break; }
           case "insert:imageCamera": { setShowCameraCapture(true); break; }
           case "insert:textBox": {
-            const th = THEMES[theme] || THEMES.default;
-            migrateSlideToObjects();
-            const tbPos = getInsertPosition(70, 15);
-            addObjectToSlide(createTextBox({ ...tbPos, width: 70, height: 15, color: th.text, zIndex: currentObjects.length + 1 }));
+            setTextBoxDrawMode(true);
+            setDrawingMode(false);
             break;
           }
           case "insert:wordArt": {
@@ -2436,6 +2436,90 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             drawingWidth={drawingWidth}
             onDrawingComplete={handleDrawingComplete}
           />
+
+          {/* Textbox draw mode overlay — click and drag to create a textbox */}
+          {textBoxDrawMode && (
+            <div
+              className="absolute inset-0 z-[100] cursor-crosshair"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const slideEl = document.querySelector("[data-slide-canvas]") as HTMLElement;
+                const slideRect = slideEl?.getBoundingClientRect() || e.currentTarget.getBoundingClientRect();
+                const startX = e.clientX;
+                const startY = e.clientY;
+
+                // Create preview rect
+                const preview = document.createElement("div");
+                preview.style.cssText = "position:fixed;border:2px dashed #3b82f6;background:rgba(59,130,246,0.08);pointer-events:none;z-index:10000;border-radius:4px;";
+                document.body.appendChild(preview);
+
+                const onMove = (ev: MouseEvent) => {
+                  const x = Math.min(startX, ev.clientX);
+                  const y = Math.min(startY, ev.clientY);
+                  const w = Math.abs(ev.clientX - startX);
+                  const h = Math.abs(ev.clientY - startY);
+                  preview.style.left = x + "px";
+                  preview.style.top = y + "px";
+                  preview.style.width = w + "px";
+                  preview.style.height = h + "px";
+                };
+
+                const onUp = (ev: MouseEvent) => {
+                  document.removeEventListener("mousemove", onMove);
+                  document.removeEventListener("mouseup", onUp);
+                  preview.remove();
+                  setTextBoxDrawMode(false);
+
+                  // Calculate position as percentage of slide
+                  const x1 = Math.min(startX, ev.clientX);
+                  const y1 = Math.min(startY, ev.clientY);
+                  const w = Math.abs(ev.clientX - startX);
+                  const h = Math.abs(ev.clientY - startY);
+
+                  // Minimum size — if just clicked (no drag), create default size
+                  const minPx = 20;
+                  const finalW = w < minPx ? slideRect.width * 0.4 : w;
+                  const finalH = h < minPx ? slideRect.height * 0.08 : h;
+                  const finalX = w < minPx ? x1 - slideRect.left - finalW / 2 : x1 - slideRect.left;
+                  const finalY = h < minPx ? y1 - slideRect.top - finalH / 2 : y1 - slideRect.top;
+
+                  const pctX = Math.max(0, Math.min(95, (finalX / slideRect.width) * 100));
+                  const pctY = Math.max(0, Math.min(95, (finalY / slideRect.height) * 100));
+                  const pctW = Math.max(5, Math.min(100 - pctX, (finalW / slideRect.width) * 100));
+                  const pctH = Math.max(3, Math.min(100 - pctY, (finalH / slideRect.height) * 100));
+
+                  const th = THEMES[theme] || THEMES.default;
+                  migrateSlideToObjects();
+                  const tbObj = createTextBox({
+                    x: pctX, y: pctY, width: pctW, height: pctH,
+                    color: th.text, fontSize: 18,
+                    zIndex: (activeSlide?.objects?.length || 0) + 1,
+                  });
+                  const currentSlides = [...slidesRef.current];
+                  const idx = activeSlideIdx;
+                  const slide = currentSlides[idx];
+                  const existingObjects = slide?.objects || [];
+                  currentSlides[idx] = { ...slide, objects: [...existingObjects, tbObj] };
+                  undoStackRef.current.push(JSON.stringify(slidesRef.current));
+                  if (undoStackRef.current.length > 50) undoStackRef.current.shift();
+                  redoStackRef.current = [];
+                  onChangeRef.current({ ...valueRef.current, slides: currentSlides });
+                  setSelectedObjectId(tbObj.id);
+                  setEditingTextId(tbObj.id); // Auto-enter edit mode
+                };
+
+                document.addEventListener("mousemove", onMove);
+                document.addEventListener("mouseup", onUp);
+              }}
+            >
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className="text-[13px] text-gray-400 dark:text-gray-500 bg-white/80 dark:bg-[#0f1115]/80 px-3 py-1.5 rounded-lg shadow-sm">
+                  Click and drag to draw a text box, or click to place one
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Suggestion accept/reject popup */}
           {activeSuggestionId && suggestionPopupPos && (

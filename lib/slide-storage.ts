@@ -65,6 +65,8 @@ export interface ShapeObject extends SlideObjectBase {
   text?: string;
   textColor?: string;
   textSize?: number;
+  textAlign?: "left" | "center" | "right";
+  textVerticalAlign?: "top" | "middle" | "bottom";
 }
 
 export interface DrawingObject extends SlideObjectBase {

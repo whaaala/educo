@@ -75,7 +75,7 @@ export default function CustomDropdown({
           if (opening) window.dispatchEvent(new CustomEvent("dropdown-open", { detail: idRef.current }));
           setIsOpen(opening);
         }}
-        className={`appearance-none w-full font-semibold text-gray-700 dark:text-white midnight:text-cyan-50 purple:text-pink-50 ${styles.button} rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2.5 pr-7 sm:pr-9 cursor-pointer outline-none focus:ring-2 transition-all border`}
+        className={`appearance-none w-full font-semibold text-gray-700 dark:text-white midnight:text-cyan-50 purple:text-pink-50 ${styles.button} rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2.5 pr-7 sm:pr-9 cursor-pointer outline-none focus:ring-2 transition-all border truncate whitespace-nowrap overflow-hidden`}
         style={{ fontSize: '11.8px' }}
       >
         {selectedOption?.label || value}

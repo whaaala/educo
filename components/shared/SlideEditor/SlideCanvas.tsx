@@ -423,30 +423,70 @@ export default function SlideCanvas({
             style={{
               fontSize: obj.fontSize, fontFamily: obj.fontFamily, color: obj.color,
               fontWeight: obj.bold ? 700 : 400, fontStyle: obj.italic ? "italic" : "normal",
-              textAlign: obj.align, display: "flex", alignItems: obj.verticalAlign === "middle" ? "center" : obj.verticalAlign === "bottom" ? "flex-end" : "flex-start",
+              textAlign: obj.align,
+              display: "grid",
+              alignContent: obj.verticalAlign === "middle" ? "center" : obj.verticalAlign === "bottom" ? "end" : "start",
               backgroundColor: obj.backgroundColor || "transparent", borderRadius: obj.borderRadius ?? 0,
               border: obj.borderColor ? `${obj.borderWidth || 1}px solid ${obj.borderColor}` : "none",
               padding: obj.padding ?? 4,
+              wordBreak: "break-word",
+              overflowWrap: "break-word",
             }}
           >
             {isEditing ? (
               <div
                 contentEditable
                 suppressContentEditableWarning
-                className="w-full outline-none min-h-[1em]"
+                data-textbox-edit={obj.id}
+                className="w-full outline-none min-h-[1em] break-words overflow-hidden [&_img]:max-w-full [&_img]:h-auto"
                 style={{ textAlign: obj.align }}
-                dangerouslySetInnerHTML={{ __html: obj.content || "" }}
                 onBlur={(e) => {
                   updateObj(obj.id, { content: (e.target as HTMLDivElement).innerHTML });
-                  setEditingTextId(null);
                 }}
-                onKeyDown={(e) => { if (e.key === "Escape") { setEditingTextId(null); e.preventDefault(); } }}
-                ref={(el) => { if (el && isEditing) el.focus(); }}
+                onKeyDown={(e) => {
+                  e.stopPropagation();
+                  if (e.key === "Escape") { setEditingTextId(null); e.preventDefault(); }
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onPaste={(e) => {
+                  const items = e.clipboardData?.items;
+                  if (items) {
+                    for (const item of Array.from(items)) {
+                      if (item.type.startsWith("image/")) {
+                        e.preventDefault();
+                        const file = item.getAsFile();
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = () => { document.execCommand("insertHTML", false, `<img src="${reader.result}" style="max-width:100%;height:auto;" />`); };
+                          reader.readAsDataURL(file);
+                        }
+                        return;
+                      }
+                    }
+                  }
+                }}
+                ref={(el) => {
+                  if (el && !(el as any).__tbInit) {
+                    (el as any).__tbInit = true;
+                    el.innerHTML = obj.content || "";
+                    setTimeout(() => {
+                      el.focus();
+                      const sel = window.getSelection();
+                      if (sel && el.childNodes.length > 0) {
+                        const range = document.createRange();
+                        range.selectNodeContents(el);
+                        range.collapse(false);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                      }
+                    }, 0);
+                  }
+                }}
               />
             ) : (
-              <div className="w-full" style={{ textAlign: obj.align }}>
+              <div className="w-full break-words overflow-hidden [&_img]:max-w-full [&_img]:h-auto" style={{ textAlign: obj.align }}>
                 {obj.content ? (
-                  <span dangerouslySetInnerHTML={{ __html: obj.content }} />
+                  <div dangerouslySetInnerHTML={{ __html: obj.content }} />
                 ) : (
                   <span style={{ opacity: 0.35 }}>{obj.placeholder || "Click to add text"}</span>
                 )}
@@ -536,27 +576,70 @@ export default function SlideCanvas({
               <div
                 contentEditable
                 suppressContentEditableWarning
-                className="absolute inset-0 flex items-center justify-center text-center outline-none cursor-text"
-                style={{ color: obj.textColor || "#fff", fontSize: obj.textSize || 14, fontWeight: 600, padding: "10%", wordBreak: "break-word" }}
+                data-shape-text={obj.id}
+                className="absolute inset-0 flex outline-none cursor-text [&_img]:max-w-full [&_img]:h-auto"
+                style={{
+                  color: obj.textColor || "#fff", fontSize: obj.textSize || 14, fontWeight: 600, padding: "5%", wordBreak: "break-word",
+                  justifyContent: (obj as ShapeObject).textAlign === "left" ? "flex-start" : (obj as ShapeObject).textAlign === "right" ? "flex-end" : "center",
+                  alignItems: (obj as ShapeObject).textVerticalAlign === "top" ? "flex-start" : (obj as ShapeObject).textVerticalAlign === "bottom" ? "flex-end" : "center",
+                  textAlign: (obj as ShapeObject).textAlign || "center",
+                }}
                 onBlur={(e) => {
-                  updateObj(obj.id, { text: e.currentTarget.textContent || "" } as Partial<ShapeObject>);
-                  setEditingTextId(null);
+                  updateObj(obj.id, { text: e.currentTarget.innerHTML || "" } as Partial<ShapeObject>);
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === "Escape") { e.currentTarget.blur(); }
-                  e.stopPropagation(); // Prevent global shortcuts while typing
+                  if (e.key === "Escape") { e.currentTarget.blur(); setEditingTextId(null); }
+                  e.stopPropagation();
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
-                dangerouslySetInnerHTML={{ __html: obj.text || "" }}
-                ref={(el) => { if (el && isEditing) setTimeout(() => el.focus(), 0); }}
+                onPaste={(e) => {
+                  const items = e.clipboardData?.items;
+                  if (items) {
+                    for (const item of Array.from(items)) {
+                      if (item.type.startsWith("image/")) {
+                        e.preventDefault();
+                        const file = item.getAsFile();
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            document.execCommand("insertHTML", false, `<img src="${reader.result}" style="max-width:80%;height:auto;" />`);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                        return;
+                      }
+                    }
+                  }
+                }}
+                ref={(el) => {
+                  if (el && !(el as any).__shapeInit) {
+                    (el as any).__shapeInit = true;
+                    el.innerHTML = obj.text || "";
+                    setTimeout(() => {
+                      el.focus();
+                      const sel = window.getSelection();
+                      if (sel && el.childNodes.length > 0) {
+                        const range = document.createRange();
+                        range.selectNodeContents(el);
+                        range.collapse(false);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                      }
+                    }, 0);
+                  }
+                }}
               />
             ) : obj.text ? (
               <div
-                className="absolute inset-0 flex items-center justify-center text-center pointer-events-none"
-                style={{ color: obj.textColor || "#fff", fontSize: obj.textSize || 14, fontWeight: 600, padding: "10%", wordBreak: "break-word" }}
-              >
-                {obj.text}
-              </div>
+                className="absolute inset-0 flex pointer-events-none [&_img]:max-w-full [&_img]:h-auto"
+                style={{
+                  color: obj.textColor || "#fff", fontSize: obj.textSize || 14, fontWeight: 600, padding: "5%", wordBreak: "break-word",
+                  justifyContent: (obj as ShapeObject).textAlign === "left" ? "flex-start" : (obj as ShapeObject).textAlign === "right" ? "flex-end" : "center",
+                  alignItems: (obj as ShapeObject).textVerticalAlign === "top" ? "flex-start" : (obj as ShapeObject).textVerticalAlign === "bottom" ? "flex-end" : "center",
+                  textAlign: (obj as ShapeObject).textAlign || "center",
+                }}
+                dangerouslySetInnerHTML={{ __html: obj.text }}
+              />
             ) : null}
           </div>
         )}
@@ -666,6 +749,218 @@ export default function SlideCanvas({
           </>,
           document.body,
         )}
+
+        {/* Shape text format toolbar — shows when editing text inside a shape */}
+        {isEditing && obj.type === "shape" && typeof document !== "undefined" && (() => {
+          const shapeEl = canvasRef.current?.querySelector(`[data-slide-obj="${obj.id}"]`) as HTMLElement;
+          if (!shapeEl) return null;
+          const rect = shapeEl.getBoundingClientRect();
+          const toolbarW = 320;
+          let top = rect.top - 44;
+          if (top < 8) top = rect.bottom + 8;
+          const shapeObj = obj as ShapeObject;
+          const shapeUseRight = rect.left + rect.width / 2 > window.innerWidth / 2;
+          return createPortal(
+            <div
+              className="fixed z-[10002] rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+              style={{ top, ...(shapeUseRight ? { right: 8 } : { left: Math.max(8, rect.left) }), maxWidth: "calc(100vw - 16px)" }}
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-1 px-2 py-1.5">
+                {/* Font size */}
+                <CustomDropdown
+                  value={shapeObj.textSize || 14}
+                  options={[8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48].map(s => ({ label: `${s}`, value: s }))}
+                  onChange={(v) => updateObj(obj.id, { textSize: Number(v) } as Partial<ShapeObject>)}
+                  className="w-[56px]"
+                />
+
+                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e]" />
+
+                {/* Bold — uses execCommand on the contentEditable */}
+                <button onMouseDown={(e) => { e.preventDefault(); document.execCommand("bold"); }}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-[13px] font-bold cursor-pointer text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e]"
+                  title="Bold (Ctrl+B)">B</button>
+
+                {/* Italic */}
+                <button onMouseDown={(e) => { e.preventDefault(); document.execCommand("italic"); }}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-[13px] italic cursor-pointer text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e]"
+                  title="Italic (Ctrl+I)">I</button>
+
+                {/* Underline */}
+                <button onMouseDown={(e) => { e.preventDefault(); document.execCommand("underline"); }}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-[13px] underline cursor-pointer text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e]"
+                  title="Underline (Ctrl+U)">U</button>
+
+                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e]" />
+
+                {/* Horizontal align */}
+                {(["left", "center", "right"] as const).map(a => (
+                  <button key={a} onMouseDown={(e) => { e.preventDefault(); updateObj(obj.id, { textAlign: a } as Partial<ShapeObject>); }}
+                    className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${(shapeObj.textAlign || "center") === a ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 midnight:bg-cyan-500/15 midnight:text-cyan-400 purple:bg-pink-500/15 purple:text-pink-400" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#22262e]"}`}
+                    title={`Align ${a}`}>
+                    <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                      {a === "left" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="1" y1="8" x2="10" y2="8"/><line x1="1" y1="12" x2="13" y2="12"/></>}
+                      {a === "center" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="3.5" y1="8" x2="12.5" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/></>}
+                      {a === "right" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="6" y1="8" x2="15" y2="8"/><line x1="3" y1="12" x2="15" y2="12"/></>}
+                    </svg>
+                  </button>
+                ))}
+
+                {/* Vertical align */}
+                {(["top", "middle", "bottom"] as const).map(va => (
+                  <button key={va} onMouseDown={(e) => { e.preventDefault(); updateObj(obj.id, { textVerticalAlign: va } as Partial<ShapeObject>); }}
+                    className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${(shapeObj.textVerticalAlign || "middle") === va ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 midnight:bg-cyan-500/15 midnight:text-cyan-400 purple:bg-pink-500/15 purple:text-pink-400" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#22262e]"}`}
+                    title={`Vertical ${va}`}>
+                    <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                      {va === "top" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="8" x2="9" y2="8"/></>}
+                      {va === "middle" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="6.5" x2="11" y2="6.5"/><line x1="5" y1="9.5" x2="9" y2="9.5"/></>}
+                      {va === "bottom" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="8" x2="9" y2="8"/><line x1="5" y1="11" x2="11" y2="11"/></>}
+                    </svg>
+                  </button>
+                ))}
+
+                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e]" />
+
+                {/* Text color */}
+                <ColorPickerPopover
+                  selectedColor={shapeObj.textColor || "#ffffff"}
+                  onSelect={(c) => updateObj(obj.id, { textColor: c } as Partial<ShapeObject>)}
+                  mode="matrix"
+                  label="Text Color"
+                  align="right"
+                  width={272}
+                >
+                  <button className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-[#22262e] relative" title="Text color">
+                    <span className="text-[13px] font-bold" style={{ color: shapeObj.textColor || "#fff" }}>A</span>
+                    <div className="absolute bottom-1 left-2 right-2 h-[2.5px] rounded-full" style={{ backgroundColor: shapeObj.textColor || "#fff" }} />
+                  </button>
+                </ColorPickerPopover>
+
+                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e]" />
+
+                {/* Close */}
+                <button onMouseDown={(e) => { e.preventDefault(); setEditingTextId(null); }}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                  title="Done editing">
+                  <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="4" y1="4" x2="12" y2="12" /><line x1="12" y1="4" x2="4" y2="12" /></svg>
+                </button>
+              </div>
+            </div>,
+            document.body,
+          );
+        })()}
+
+        {/* Textbox format toolbar — identical to table cell toolbar */}
+        {isEditing && obj.type === "textbox" && typeof document !== "undefined" && (() => {
+          const tbEl = canvasRef.current?.querySelector(`[data-slide-obj="${obj.id}"]`) as HTMLElement;
+          if (!tbEl) return null;
+          const rect = tbEl.getBoundingClientRect();
+          const toolbarH = 44;
+          let top = rect.top - toolbarH - 8;
+          if (top < 8) top = rect.bottom + 8;
+          // Anchor to right edge of viewport if textbox is on the right half
+          const useRight = rect.left > window.innerWidth / 2;
+          return createPortal(
+            <div
+              className="fixed z-[10002] rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+              style={{ top, ...(useRight ? { right: 8 } : { left: Math.max(8, rect.left) }), maxWidth: "calc(100vw - 16px)" }}
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-1 px-2 py-1.5">
+                <CustomDropdown
+                  value={obj.fontFamily}
+                  options={[
+                    { label: "Inter", value: "Inter, sans-serif" },
+                    { label: "Arial", value: "Arial, sans-serif" },
+                    { label: "Arial Black", value: "Arial Black, sans-serif" },
+                    { label: "Calibri", value: "Calibri, sans-serif" },
+                    { label: "Cambria", value: "Cambria, serif" },
+                    { label: "Comic Sans MS", value: "Comic Sans MS, cursive" },
+                    { label: "Consolas", value: "Consolas, monospace" },
+                    { label: "Courier New", value: "Courier New, monospace" },
+                    { label: "Garamond", value: "Garamond, serif" },
+                    { label: "Georgia", value: "Georgia, serif" },
+                    { label: "Impact", value: "Impact, sans-serif" },
+                    { label: "Lucida Console", value: "Lucida Console, monospace" },
+                    { label: "Palatino", value: "Palatino Linotype, serif" },
+                    { label: "Segoe UI", value: "Segoe UI, sans-serif" },
+                    { label: "Tahoma", value: "Tahoma, sans-serif" },
+                    { label: "Times New Roman", value: "Times New Roman, serif" },
+                    { label: "Trebuchet MS", value: "Trebuchet MS, sans-serif" },
+                    { label: "Verdana", value: "Verdana, sans-serif" },
+                  ]}
+                  onChange={(v) => updateObj(obj.id, { fontFamily: String(v) })}
+                  className="w-[130px]"
+                />
+                <FontSizeCombo
+                  value={obj.fontSize}
+                  onChange={(v) => updateObj(obj.id, { fontSize: v })}
+                />
+                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
+                <button onMouseDown={(e) => { e.preventDefault(); document.execCommand("bold"); }}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] font-bold cursor-pointer transition-all ${obj.bold ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
+                  title="Bold">B</button>
+                <button onMouseDown={(e) => { e.preventDefault(); document.execCommand("italic"); }}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] italic cursor-pointer transition-all ${obj.italic ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
+                  title="Italic">I</button>
+                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
+                {(["left", "center", "right"] as const).map(a => (
+                  <button key={a} onMouseDown={(e) => { e.preventDefault(); updateObj(obj.id, { align: a }); }}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${obj.align === a ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
+                    title={`Align ${a}`}>
+                    <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                      {a === "left" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="1" y1="8" x2="10" y2="8"/><line x1="1" y1="12" x2="13" y2="12"/></>}
+                      {a === "center" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="3.5" y1="8" x2="12.5" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/></>}
+                      {a === "right" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="6" y1="8" x2="15" y2="8"/><line x1="3" y1="12" x2="15" y2="12"/></>}
+                    </svg>
+                  </button>
+                ))}
+                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
+                <button onMouseDown={(e) => { e.preventDefault(); updateObj(obj.id, { noWrap: !obj.noWrap } as any); }}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${!obj.noWrap ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e]"}`}
+                  title="Text wrap">
+                  <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <line x1="1" y1="4" x2="15" y2="4"/><line x1="1" y1="8" x2="11" y2="8"/><path d="M11 8 C14 8 14 12 11 12 L6 12" /><polyline points="8,10 6,12 8,14" />
+                  </svg>
+                </button>
+                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
+                {(["top", "middle", "bottom"] as const).map(va => (
+                  <button key={va} onMouseDown={(e) => { e.preventDefault(); updateObj(obj.id, { verticalAlign: va }); }}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${obj.verticalAlign === va ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e]"}`}
+                    title={`Vertical ${va}`}>
+                    <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                      {va === "top" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="8" x2="9" y2="8"/></>}
+                      {va === "middle" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="6.5" x2="11" y2="6.5"/><line x1="5" y1="9.5" x2="9" y2="9.5"/></>}
+                      {va === "bottom" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="8" x2="9" y2="8"/><line x1="5" y1="11" x2="11" y2="11"/></>}
+                    </svg>
+                  </button>
+                ))}
+                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
+                <ColorPickerPopover selectedColor={obj.color} onSelect={(c) => updateObj(obj.id, { color: c })} mode="matrix" label="Text Color" align="right" width={272}>
+                  <button className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 relative" title="Text color">
+                    <span className="text-[13px] font-bold" style={{ color: obj.color }}>A</span>
+                    <div className="absolute bottom-1 left-2 right-2 h-[2.5px] rounded-full" style={{ backgroundColor: obj.color }} />
+                  </button>
+                </ColorPickerPopover>
+                <ColorPickerPopover selectedColor={obj.backgroundColor || "transparent"} onSelect={(c) => updateObj(obj.id, { backgroundColor: c })} mode="matrix" label="Fill" align="right" width={272}>
+                  <button className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5" title="Fill color">
+                    <div className="w-5 h-5 rounded border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30" style={{ backgroundColor: obj.backgroundColor || "transparent" }} />
+                  </button>
+                </ColorPickerPopover>
+                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
+                <button onMouseDown={(e) => { e.preventDefault(); setEditingTextId(null); }}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                  title="Close toolbar (Esc)">
+                  <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="4" y1="4" x2="12" y2="12" /><line x1="12" y1="4" x2="4" y2="12" /></svg>
+                </button>
+              </div>
+            </div>,
+            document.body,
+          );
+        })()}
       </div>
     );
   };
@@ -1145,13 +1440,11 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
     const objEl = canvasRef.current.querySelector(`[data-slide-obj="${objId}"]`) as HTMLElement;
     if (!objEl) return;
     const objRect = objEl.getBoundingClientRect();
-    const toolbarW = 420;
     const toolbarH = 44;
     let top = objRect.top - toolbarH - 8;
-    let left = objRect.left + objRect.width / 2 - toolbarW / 2;
-    // If no room above, place below the table
     if (top < 8) top = objRect.bottom + 8;
-    left = Math.max(8, Math.min(window.innerWidth - toolbarW - 8, left));
+    // Clamp left so toolbar stays in viewport
+    let left = Math.max(8, Math.min(objRect.left, window.innerWidth - 500));
     setToolbarPos({ top, left });
   }, [editingCell, canvasRef, objId]);
 
